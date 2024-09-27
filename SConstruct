@@ -6,7 +6,7 @@ import subprocess
 # Global Setting.
 GODOT_CPP_REF = "godot-4.3-stable"
 PROJECT_DIR = "project"
-EXTENSION_NAME = "myextension"
+EXTENSION_NAME = "sentrysdk"
 COMPATIBILITY_MINIMUM = "4.3"
 
 # Checkout godot-cpp...
@@ -22,6 +22,13 @@ if not os.path.exists("godot-cpp"):
     print("Finished cloning godot-cpp repository.")
 
 env = SConscript("godot-cpp/SConstruct")
+
+# Sentry includes and lib
+env.AppendUnique(CPPPATH=[env.Dir("sentry-native/include")])
+env.AppendUnique(LIBPATH=["project/addons/" + EXTENSION_NAME + "/bin"])
+env.AppendUnique(LIBS=["libsentry"])
+
+# TODO: build and deploy sentry lib
 
 # Source files to compile.
 sources = Glob("src/*.cpp")
