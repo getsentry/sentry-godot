@@ -2,6 +2,8 @@
 project/addons
 project/export_presets.cfg
 
+.sentry-native
+
 # godot-cpp directory if not using submodules
 godot-cpp/
 
