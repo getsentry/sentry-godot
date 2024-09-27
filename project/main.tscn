@@ -8,41 +8,69 @@ script = ExtResource("1_p65em")
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 offset_left = 24.0
 offset_top = 28.0
-offset_right = 615.0
-offset_bottom = 376.0
+offset_right = 612.0
+offset_bottom = 345.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="Breadcrumb" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
-[node name="MessageLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="BreadcrumbLabel" type="Label" parent="VBoxContainer/Breadcrumb"]
+layout_mode = 2
+text = "Breadcrumb: "
+
+[node name="BreadcrumbMessage" type="LineEdit" parent="VBoxContainer/Breadcrumb"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+placeholder_text = "Message"
+
+[node name="BreadcrumbCategory" type="LineEdit" parent="VBoxContainer/Breadcrumb"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+placeholder_text = "Category"
+
+[node name="Spacer2" type="Control" parent="VBoxContainer/Breadcrumb"]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
+[node name="AddBreadcrumbButton" type="Button" parent="VBoxContainer/Breadcrumb"]
+layout_mode = 2
+text = "Add Breadcrumb"
+
+[node name="MessageEvent" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="MessageLabel" type="Label" parent="VBoxContainer/MessageEvent"]
 layout_mode = 2
 text = "Message: 
 "
 
-[node name="MessageEdit" type="LineEdit" parent="VBoxContainer/HBoxContainer"]
+[node name="MessageEdit" type="LineEdit" parent="VBoxContainer/MessageEvent"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Type message text"
 
-[node name="LevelLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="LevelLabel" type="Label" parent="VBoxContainer/MessageEvent"]
 layout_mode = 2
 text = "Level: 
 "
 
-[node name="LevelChoice" type="MenuButton" parent="VBoxContainer/HBoxContainer"]
+[node name="LevelChoice" type="MenuButton" parent="VBoxContainer/MessageEvent"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 text = "WARNING"
 flat = false
 
-[node name="Spacer" type="Control" parent="VBoxContainer/HBoxContainer"]
+[node name="Spacer" type="Control" parent="VBoxContainer/MessageEvent"]
 custom_minimum_size = Vector2(8, 0)
 layout_mode = 2
 
-[node name="CaptureButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+[node name="CaptureButton" type="Button" parent="VBoxContainer/MessageEvent"]
 layout_mode = 2
-text = "Capture event!"
+text = "Capture Event"
 
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/CaptureButton" to="." method="_on_capture_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/Breadcrumb/AddBreadcrumbButton" to="." method="_on_add_breadcrumb_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]

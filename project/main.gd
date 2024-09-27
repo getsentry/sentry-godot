@@ -2,6 +2,8 @@ extends Node2D
 
 @onready var message_edit: LineEdit = %MessageEdit
 @onready var level_choice: MenuButton = %LevelChoice
+@onready var breadcrumb_message: LineEdit = %BreadcrumbMessage
+@onready var breadcrumb_category: LineEdit = %BreadcrumbCategory
 
 var _event_level: Sentry.Level
 
@@ -39,3 +41,7 @@ func _on_level_choice_id_pressed(id: int) -> void:
 
 func _on_capture_button_pressed() -> void:
 	Sentry.capture_message_event(message_edit.text, _event_level)
+
+
+func _on_add_breadcrumb_button_pressed() -> void:
+	Sentry.add_breadcrumb(breadcrumb_message.text, breadcrumb_category.text, Sentry.LEVEL_ERROR, "default")
