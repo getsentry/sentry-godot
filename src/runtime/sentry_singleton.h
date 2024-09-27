@@ -4,6 +4,7 @@
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/variant/char_string.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 class Sentry : public godot::Object {
@@ -27,8 +28,11 @@ public:
 	static Sentry *get_singleton() { return singleton; }
 
 	godot::CharString get_environment() { return "production"; }
+	godot::CharString get_level_cstring(Level p_level);
 
-	void capture_message_event(const godot::String &p_text, Level p_level, const godot::String &p_logger = "");
+	void capture_message_event(const godot::String &p_message, Level p_level, const godot::String &p_logger = "");
+	void add_breadcrumb(const godot::String &p_message, const godot::String &p_category, Level p_level,
+			const godot::String &p_type, const godot::Dictionary &p_data);
 
 	Sentry();
 	~Sentry();
