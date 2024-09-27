@@ -1,10 +1,12 @@
 #include "sentry_singleton.h"
 
 #include "sentry.h"
+#include "sentry_util.h"
 #include "settings.h"
 
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/error_macros.hpp>
 
 using namespace godot;
 
@@ -41,10 +43,10 @@ void Sentry::capture_message_event(const String &p_message, Level p_level, const
 
 void Sentry::add_breadcrumb(const godot::String &p_message, const godot::String &p_category, Level p_level,
 		const godot::String &p_type, const godot::Dictionary &p_data) {
-	// TODO: process data
 	sentry_value_t crumb = sentry_value_new_breadcrumb(p_type.utf8().ptr(), p_message.utf8().ptr());
 	sentry_value_set_by_key(crumb, "category", sentry_value_new_string(p_category.utf8().ptr()));
 	sentry_value_set_by_key(crumb, "level", sentry_value_new_string(get_level_cstring(p_level)));
+	sentry_value_set_by_key(crumb, "data", SentryUtil::variant_to_sentry_value(p_data));
 	sentry_add_breadcrumb(crumb);
 }
 
