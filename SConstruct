@@ -32,6 +32,7 @@ env.AppendUnique(LIBS=["libsentry"])
 
 # Source files to compile.
 sources = Glob("src/*.cpp")
+sources += Glob("src/runtime/*.cpp")
 # sources += Glob("some_dir/*.cpp")
 
 # Build library.

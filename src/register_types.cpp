@@ -1,10 +1,23 @@
 
+#include <sentry.h>
+
+#include "runtime/sentry_singleton.h"
+#include "runtime/settings.h"
+
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/godot.hpp>
 
 using namespace godot;
 
 void initialize_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+		Settings *settings = new Settings();
+		GDREGISTER_CLASS(Sentry);
+		Sentry *sentry_singleton = memnew(Sentry);
+	} else if (p_level == godot::MODULE_INITIALIZATION_LEVEL_SERVERS) {
+	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		Engine::get_singleton()->register_singleton("Sentry", Sentry::get_singleton());
 	}
 
 #ifdef TOOLS_ENABLED
@@ -14,6 +27,10 @@ void initialize_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+		memdelete(Sentry::get_singleton());
+		delete Settings::get_singleton();
+	}
 }
 
 extern "C" {
