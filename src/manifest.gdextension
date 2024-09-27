@@ -27,3 +27,13 @@ android.debug.x86_32 = "res://addons/{name}/bin/lib{name}.android.template_debug
 android.release.x86_32 = "res://addons/{name}/bin/lib{name}.android.template_release.x86_32.so"
 web.debug.wasm32 = "res://addons/{name}/bin/lib{name}.web.template_debug.wasm32.wasm"
 web.release.wasm32 = "res://addons/{name}/bin/lib{name}.web.template_release.wasm32.wasm"
+
+[dependencies]
+
+linux.x86_64 = {
+	"res://addons/{name}/bin/libsentry.so" : ""
+}
+
+windows.x86_64 = {
+	"res://addons/{name}/bin/libsentry.dll" : ""
+}
