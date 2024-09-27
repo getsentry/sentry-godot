@@ -14,7 +14,7 @@ offset_bottom = 376.0
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="MessageLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 text = "Message: 
 "
@@ -25,8 +25,24 @@ layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Type message text"
 
+[node name="LevelLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Level: 
+"
+
+[node name="LevelChoice" type="MenuButton" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "WARNING"
+flat = false
+
+[node name="Spacer" type="Control" parent="VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(8, 0)
+layout_mode = 2
+
 [node name="CaptureButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
-text = "Capture"
+text = "Capture event!"
 
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/CaptureButton" to="." method="_on_capture_button_pressed"]
