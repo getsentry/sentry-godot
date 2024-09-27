@@ -1,5 +1,6 @@
 # Project build artifacts
 project/addons
+project/export_presets.cfg
 
 # godot-cpp directory if not using submodules
 godot-cpp/
