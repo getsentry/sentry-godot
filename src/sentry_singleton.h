@@ -1,6 +1,7 @@
 #ifndef SENTRY_SINGLETON_H
 #define SENTRY_SINGLETON_H
 
+#include <sentry.h>
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/variant/char_string.hpp>
@@ -12,6 +13,8 @@ class Sentry : public godot::Object {
 
 private:
 	static Sentry *singleton;
+
+	sentry_uuid_t last_uuid;
 
 protected:
 	static void _bind_methods();
@@ -33,6 +36,7 @@ public:
 	void capture_message(const godot::String &p_message, Level p_level, const godot::String &p_logger = "");
 	void add_breadcrumb(const godot::String &p_message, const godot::String &p_category, Level p_level,
 			const godot::String &p_type, const godot::Dictionary &p_data);
+	godot::String get_last_event_id() const;
 
 	void set_tag(const godot::String &p_key, const godot::String &p_value);
 	void remove_tag(const godot::String &p_key);

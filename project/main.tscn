@@ -14,7 +14,7 @@ offset_bottom = 345.0
 [node name="Breadcrumb" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
-[node name="BreadcrumbLabel" type="Label" parent="VBoxContainer/Breadcrumb"]
+[node name="Label" type="Label" parent="VBoxContainer/Breadcrumb"]
 layout_mode = 2
 text = "Breadcrumb: "
 
@@ -30,7 +30,7 @@ custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 placeholder_text = "Category"
 
-[node name="Spacer2" type="Control" parent="VBoxContainer/Breadcrumb"]
+[node name="Spacer" type="Control" parent="VBoxContainer/Breadcrumb"]
 custom_minimum_size = Vector2(8, 0)
 layout_mode = 2
 

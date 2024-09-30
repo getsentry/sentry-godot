@@ -40,7 +40,7 @@ void Sentry::capture_message(const String &p_message, Level p_level, const Strin
 			(sentry_level_t)p_level,
 			p_logger.utf8().get_data(),
 			p_message.utf8().get_data());
-	sentry_capture_event(event);
+	last_uuid = sentry_capture_event(event);
 }
 
 void Sentry::add_breadcrumb(const godot::String &p_message, const godot::String &p_category, Level p_level,
@@ -50,6 +50,12 @@ void Sentry::add_breadcrumb(const godot::String &p_message, const godot::String 
 	sentry_value_set_by_key(crumb, "level", sentry_value_new_string(get_level_cstring(p_level)));
 	sentry_value_set_by_key(crumb, "data", SentryUtil::variant_to_sentry_value(p_data));
 	sentry_add_breadcrumb(crumb);
+}
+
+String Sentry::get_last_event_id() const {
+	char str[37];
+	sentry_uuid_as_string(&last_uuid, str);
+	return str;
 }
 
 void Sentry::set_tag(const godot::String &p_key, const godot::String &p_value) {
@@ -71,6 +77,7 @@ void Sentry::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("capture_message", "message", "level", "logger"), &Sentry::capture_message, DEFVAL(LEVEL_INFO), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "message", "category", "level", "type", "data"), &Sentry::add_breadcrumb, DEFVAL(LEVEL_INFO), DEFVAL("default"), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("get_last_event_id"), &Sentry::get_last_event_id);
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &Sentry::set_tag);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &Sentry::remove_tag);
 }
