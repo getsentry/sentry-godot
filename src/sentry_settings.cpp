@@ -30,15 +30,24 @@ void SentrySettings::_load_config() {
 	attach_log = (bool)conf->get_value("sentry", "config/attach_log", attach_log);
 }
 
-void SentrySettings::_define_setting(const String &p_setting, const Variant &p_default) {
+void SentrySettings::_define_setting(const String &p_setting, const Variant &p_default, bool p_basic) {
 	if (!ProjectSettings::get_singleton()->has_setting(p_setting)) {
 		ProjectSettings::get_singleton()->set(p_setting, p_default);
 	}
 	ProjectSettings::get_singleton()->set_initial_value(p_setting, p_default);
+	ProjectSettings::get_singleton()->set_as_basic(p_setting, p_basic);
+	ProjectSettings::get_singleton()->set_restart_if_changed(p_setting, false);
+
+	// Preserve order of the defined settings.
+	if (config_value_order == 0) {
+		config_value_order = ProjectSettings::get_singleton()->get_order(p_setting);
+	}
+	ProjectSettings::get_singleton()->set_order(p_setting, config_value_order);
+	config_value_order++;
 }
 
-void SentrySettings::_define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default) {
-	_define_setting(p_info.name, p_default);
+void SentrySettings::_define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default, bool p_basic) {
+	_define_setting(p_info.name, p_default, p_basic);
 	Dictionary info = (Dictionary)p_info;
 	ProjectSettings::get_singleton()->add_property_info(info);
 }

@@ -16,9 +16,10 @@ private:
 	bool debug_printing = false;
 	double sample_rate = 1.0;
 	bool attach_log = true;
+	int32_t config_value_order = 0;
 
-	void _define_setting(const godot::String &p_setting, const godot::Variant &p_default);
-	void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default);
+	void _define_setting(const godot::String &p_setting, const godot::Variant &p_default, bool p_basic = true);
+	void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default, bool p_basic = true);
 	void _define_project_settings();
 	void _load_config();
 
