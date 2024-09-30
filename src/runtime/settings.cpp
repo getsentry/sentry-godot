@@ -29,6 +29,12 @@ void Settings::_define_setting(const String &p_setting, const Variant &p_default
 	ProjectSettings::get_singleton()->set_initial_value(p_setting, p_default);
 }
 
+void Settings::_define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default) {
+	_define_setting(p_info.name, p_default);
+	Dictionary info = (Dictionary)p_info;
+	ProjectSettings::get_singleton()->add_property_info(info);
+}
+
 void Settings::_define_project_settings() {
 	_define_setting("sentry/config/dsn", String(""));
 	_define_setting("sentry/config/debug_printing", false);

@@ -1,6 +1,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/char_string.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -14,6 +15,7 @@ private:
 	bool debug_printing = false;
 
 	void _define_setting(const godot::String &p_setting, const godot::Variant &p_default);
+	void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default);
 	void _define_project_settings();
 	void _load_config();
 
