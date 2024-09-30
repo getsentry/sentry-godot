@@ -121,6 +121,16 @@ Sentry::Sentry() {
 	sentry_options_set_environment(options, get_environment());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
 
+	// Attach LOG file.
+	// TODO: Decide whether log-file must be trimmed before send.
+	// TODO: Check if the log file location can be overriden in the project settings.
+	if (SentrySettings::get_singleton()->is_attach_log_enabled()) {
+		String log_path = OS::get_singleton()->get_user_data_dir() + "/logs/godot.log";
+		// if (FileAccess::file_exists(log_path)) {
+		sentry_options_add_attachment(options, log_path.utf8());
+		// }
+	}
+
 	sentry_init(options);
 }
 

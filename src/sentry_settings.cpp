@@ -27,6 +27,7 @@ void SentrySettings::_load_config() {
 	dsn = ((String)conf->get_value("sentry", "config/dsn", String(dsn))).utf8();
 	debug_printing = (bool)conf->get_value("sentry", "config/debug_printing", debug_printing);
 	sample_rate = (double)conf->get_value("sentry", "config/sample_rate", sample_rate);
+	attach_log = (bool)conf->get_value("sentry", "config/attach_log", attach_log);
 }
 
 void SentrySettings::_define_setting(const String &p_setting, const Variant &p_default) {
@@ -43,11 +44,12 @@ void SentrySettings::_define_setting(const godot::PropertyInfo &p_info, const go
 }
 
 void SentrySettings::_define_project_settings() {
-	_define_setting("sentry/config/sentry_enabled", true);
-	_define_setting("sentry/config/dsn", String(""));
-	_define_setting("sentry/config/release", "{app_name}@{app_version}");
-	_define_setting("sentry/config/debug_printing", false);
-	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/config/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), 1.0);
+	_define_setting("sentry/config/sentry_enabled", sentry_enabled);
+	_define_setting("sentry/config/dsn", String(dsn));
+	_define_setting("sentry/config/release", String(release));
+	_define_setting("sentry/config/debug_printing", debug_printing);
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/config/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), sample_rate);
+	_define_setting("sentry/config/attach_log", attach_log);
 }
 
 SentrySettings::SentrySettings() {
