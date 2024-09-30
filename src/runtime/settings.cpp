@@ -20,10 +20,6 @@ void Settings::_load_config() {
 
 	dsn = ((String)conf->get_value("sentry", "config/dsn", "")).utf8();
 	debug_printing = (bool)conf->get_value("sentry", "config/debug_printing", false);
-
-	// TODO: Use user folder instead.
-	// See https://docs.sentry.io/platforms/native/configuration/options/#database-path
-	db_path = ".sentry-native";
 }
 
 void Settings::_define_setting(const String &p_setting, const Variant &p_default) {

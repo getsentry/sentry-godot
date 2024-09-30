@@ -9,7 +9,6 @@ class Settings {
 private:
 	static Settings *singleton;
 
-	godot::CharString db_path;
 	godot::CharString dsn;
 	godot::CharString release;
 	bool debug_printing = false;
@@ -23,7 +22,6 @@ public:
 
 	godot::CharString get_release() const { return release; }
 	godot::CharString get_dsn() const { return dsn; }
-	godot::CharString get_db_path() const { return db_path; }
 	bool is_debug_printing_enabled() const { return debug_printing; }
 
 	Settings();
