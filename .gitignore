@@ -1,6 +1,7 @@
-# Project build artifacts
+# Project-related
 project/addons
 project/export_presets.cfg
+project/.vscode
 
 .sentry-native
 
