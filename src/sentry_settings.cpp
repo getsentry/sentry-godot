@@ -17,11 +17,11 @@ void SentrySettings::_load_config() {
 	// Prepare release name.
 	String app_name = conf->get_value("application", "config/name", "Unknown Godot project");
 	String app_version = conf->get_value("application", "config/version", "noversion");
-	String release_str = ((String)conf->get_value("sentry", "config/release", String(dsn)));
+	String release_str = ((String)conf->get_value("sentry", "config/release", String(release)));
 	Dictionary format_params;
 	format_params["app_name"] = app_name;
 	format_params["app_version"] = app_version;
-	release = (release_str % format_params).utf8();
+	release = release_str.format(format_params).utf8();
 
 	sentry_enabled = (bool)conf->get_value("sentry", "config/sentry_enabled", sentry_enabled);
 	dsn = ((String)conf->get_value("sentry", "config/dsn", String(dsn))).utf8();
