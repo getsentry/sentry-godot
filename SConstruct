@@ -24,9 +24,9 @@ if not os.path.exists("godot-cpp"):
 env = SConscript("godot-cpp/SConstruct")
 
 # Sentry includes and lib
-env.AppendUnique(CPPPATH=[env.Dir("sentry-native/include")])
-env.AppendUnique(LIBPATH=["project/addons/" + EXTENSION_NAME + "/bin"])
-env.AppendUnique(LIBS=["libsentry"])
+env.Append(CPPPATH=[env.Dir("sentry-native/include")])
+env.Append(LIBPATH=["project/addons/" + EXTENSION_NAME + "/bin"])
+env.Append(LIBS=["libsentry"])
 
 # TODO: build and deploy sentry lib
 

@@ -72,5 +72,18 @@ layout_mode = 2
 layout_mode = 2
 text = "Capture Event"
 
+[node name="Crash" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Crash"]
+layout_mode = 2
+text = "Crash program: "
+
+[node name="CrashButton" type="Button" parent="VBoxContainer/Crash"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "CRASH!"
+
 [connection signal="pressed" from="VBoxContainer/Breadcrumb/AddBreadcrumbButton" to="." method="_on_add_breadcrumb_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/Crash/CrashButton" to="." method="_on_crash_button_pressed"]

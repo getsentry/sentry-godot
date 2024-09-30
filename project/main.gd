@@ -45,3 +45,7 @@ func _on_capture_button_pressed() -> void:
 
 func _on_add_breadcrumb_button_pressed() -> void:
 	Sentry.add_breadcrumb(breadcrumb_message.text, breadcrumb_category.text, Sentry.LEVEL_ERROR, "default")
+
+
+func _on_crash_button_pressed() -> void:
+	OS.crash("Crashing on button press")

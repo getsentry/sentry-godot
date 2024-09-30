@@ -4,6 +4,7 @@
 #include "sentry_util.h"
 #include "settings.h"
 
+#include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/class_db.hpp>
@@ -63,12 +64,33 @@ void Sentry::_bind_methods() {
 }
 
 Sentry::Sentry() {
-	sentry_options_t *options = sentry_options_new();
+	ERR_FAIL_NULL(OS::get_singleton());
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+	ERR_FAIL_NULL(Settings::get_singleton());
 
+	sentry_options_t *options = sentry_options_new();
 	sentry_options_set_dsn(options, Settings::get_singleton()->get_dsn());
+
+	// Establish handler path.
+	String handler_fn;
+#ifdef LINUX_ENABLED
+	handler_fn = "crashpad_handler";
+#elif WINDOWS_ENABLED
+	handler_fn = "crashpad_handler.exe";
+#endif
+	String handler_path = OS::get_singleton()->get_executable_path() + "/" + handler_fn;
+	if (!FileAccess::file_exists(handler_path)) {
+		handler_path = ProjectSettings::get_singleton()->globalize_path("res://addons/sentrysdk/bin/" + handler_fn);
+	}
+	if (FileAccess::file_exists(handler_path)) {
+		sentry_options_set_handler_path(options, handler_path.utf8());
+	} else {
+		ERR_PRINT("Sentry: Failed to locate crash handler (crashpad)");
+		sentry_options_set_backend(options, NULL);
+	}
+
 	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
 	sentry_options_set_release(options, Settings::get_singleton()->get_release());
-
 	sentry_options_set_debug(options, 1);
 	sentry_options_set_environment(options, get_environment());
 

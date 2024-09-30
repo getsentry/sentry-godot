@@ -12,11 +12,12 @@ using namespace godot;
 
 void initialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+	} else if (p_level == godot::MODULE_INITIALIZATION_LEVEL_SERVERS) {
+	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		// Note: Godot singletons are only available at higher initialization levels.
 		Settings *settings = new Settings();
 		GDREGISTER_CLASS(Sentry);
 		Sentry *sentry_singleton = memnew(Sentry);
-	} else if (p_level == godot::MODULE_INITIALIZATION_LEVEL_SERVERS) {
-	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		Engine::get_singleton()->register_singleton("Sentry", Sentry::get_singleton());
 	}
 
