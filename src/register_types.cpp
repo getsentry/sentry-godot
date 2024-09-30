@@ -1,9 +1,7 @@
+#include "sentry_settings.h"
+#include "sentry_singleton.h"
 
 #include <sentry.h>
-
-#include "runtime/sentry_singleton.h"
-#include "runtime/settings.h"
-
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/godot.hpp>
@@ -15,7 +13,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 	} else if (p_level == godot::MODULE_INITIALIZATION_LEVEL_SERVERS) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		// Note: Godot singletons are only available at higher initialization levels.
-		Settings *settings = new Settings();
+		SentrySettings *settings = new SentrySettings();
 		GDREGISTER_CLASS(Sentry);
 		Sentry *sentry_singleton = memnew(Sentry);
 		Engine::get_singleton()->register_singleton("Sentry", Sentry::get_singleton());
@@ -30,7 +28,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 void uninitialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
 		memdelete(Sentry::get_singleton());
-		delete Settings::get_singleton();
+		delete SentrySettings::get_singleton();
 	}
 }
 

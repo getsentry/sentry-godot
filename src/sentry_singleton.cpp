@@ -1,8 +1,8 @@
 #include "sentry_singleton.h"
 
 #include "sentry.h"
+#include "sentry_settings.h"
 #include "sentry_util.h"
-#include "settings.h"
 
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
@@ -66,10 +66,10 @@ void Sentry::_bind_methods() {
 Sentry::Sentry() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
-	ERR_FAIL_NULL(Settings::get_singleton());
+	ERR_FAIL_NULL(SentrySettings::get_singleton());
 
 	sentry_options_t *options = sentry_options_new();
-	sentry_options_set_dsn(options, Settings::get_singleton()->get_dsn());
+	sentry_options_set_dsn(options, SentrySettings::get_singleton()->get_dsn());
 
 	// Establish handler path.
 	String handler_fn;
@@ -90,9 +90,9 @@ Sentry::Sentry() {
 	}
 
 	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
-	sentry_options_set_sample_rate(options, Settings::get_singleton()->get_sample_rate());
-	sentry_options_set_release(options, Settings::get_singleton()->get_release());
-	sentry_options_set_debug(options, Settings::get_singleton()->is_debug_printing_enabled());
+	sentry_options_set_sample_rate(options, SentrySettings::get_singleton()->get_sample_rate());
+	sentry_options_set_release(options, SentrySettings::get_singleton()->get_release());
+	sentry_options_set_debug(options, SentrySettings::get_singleton()->is_debug_printing_enabled());
 	sentry_options_set_environment(options, get_environment());
 
 	sentry_init(options);

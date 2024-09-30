@@ -1,14 +1,14 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#ifndef SENTRY_SETTINGS_H
+#define SENTRY_SETTINGS_H
 
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/char_string.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
-class Settings {
+class SentrySettings {
 private:
-	static Settings *singleton;
+	static SentrySettings *singleton;
 
 	godot::CharString dsn;
 	godot::CharString release;
@@ -21,15 +21,15 @@ private:
 	void _load_config();
 
 public:
-	static Settings *get_singleton() { return singleton; }
+	static SentrySettings *get_singleton() { return singleton; }
 
 	godot::CharString get_dsn() const { return dsn; }
 	godot::CharString get_release() const { return release; }
 	bool is_debug_printing_enabled() const { return debug_printing; }
 	double get_sample_rate() const { return sample_rate; }
 
-	Settings();
-	~Settings();
+	SentrySettings();
+	~SentrySettings();
 };
 
-#endif // SETTINGS_H
+#endif // SENTRY_SETTINGS_H
