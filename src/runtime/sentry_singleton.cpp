@@ -90,6 +90,7 @@ Sentry::Sentry() {
 	}
 
 	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
+	sentry_options_set_sample_rate(options, Settings::get_singleton()->get_sample_rate());
 	sentry_options_set_release(options, Settings::get_singleton()->get_release());
 	sentry_options_set_debug(options, Settings::get_singleton()->is_debug_printing_enabled());
 	sentry_options_set_environment(options, get_environment());

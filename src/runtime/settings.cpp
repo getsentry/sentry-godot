@@ -2,7 +2,6 @@
 
 #include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/core/error_macros.hpp>
 
 using namespace godot;
 
@@ -20,6 +19,7 @@ void Settings::_load_config() {
 
 	dsn = ((String)conf->get_value("sentry", "config/dsn", "")).utf8();
 	debug_printing = (bool)conf->get_value("sentry", "config/debug_printing", false);
+	sample_rate = (double)conf->get_value("sentry", "config/sample_rate", 1.0);
 }
 
 void Settings::_define_setting(const String &p_setting, const Variant &p_default) {
@@ -38,6 +38,7 @@ void Settings::_define_setting(const godot::PropertyInfo &p_info, const godot::V
 void Settings::_define_project_settings() {
 	_define_setting("sentry/config/dsn", String(""));
 	_define_setting("sentry/config/debug_printing", false);
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/config/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), 1.0);
 }
 
 Settings::Settings() {

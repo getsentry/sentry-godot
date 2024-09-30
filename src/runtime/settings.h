@@ -13,6 +13,7 @@ private:
 	godot::CharString dsn;
 	godot::CharString release;
 	bool debug_printing = false;
+	double sample_rate = 1.0;
 
 	void _define_setting(const godot::String &p_setting, const godot::Variant &p_default);
 	void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default);
@@ -22,9 +23,10 @@ private:
 public:
 	static Settings *get_singleton() { return singleton; }
 
-	godot::CharString get_release() const { return release; }
 	godot::CharString get_dsn() const { return dsn; }
+	godot::CharString get_release() const { return release; }
 	bool is_debug_printing_enabled() const { return debug_printing; }
+	double get_sample_rate() const { return sample_rate; }
 
 	Settings();
 	~Settings();
