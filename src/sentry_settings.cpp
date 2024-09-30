@@ -2,6 +2,7 @@
 
 #include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
 
 using namespace godot;
 
@@ -13,9 +14,14 @@ void SentrySettings::_load_config() {
 	Error err = conf->load("res://project.godot");
 	ERR_FAIL_COND_MSG(err > 0, "Sentry: Fatal error: Failed to open project config.");
 
+	// Prepare release name.
 	String app_name = conf->get_value("application", "config/name", "Unknown Godot project");
 	String app_version = conf->get_value("application", "config/version", "noversion");
-	release = (app_name + "@" + app_version).utf8();
+	String release_str = ((String)conf->get_value("sentry", "config/release", String(dsn)));
+	Dictionary format_params;
+	format_params["app_name"] = app_name;
+	format_params["app_version"] = app_version;
+	release = (release_str % format_params).utf8();
 
 	sentry_enabled = (bool)conf->get_value("sentry", "config/sentry_enabled", sentry_enabled);
 	dsn = ((String)conf->get_value("sentry", "config/dsn", String(dsn))).utf8();
@@ -39,6 +45,7 @@ void SentrySettings::_define_setting(const godot::PropertyInfo &p_info, const go
 void SentrySettings::_define_project_settings() {
 	_define_setting("sentry/config/sentry_enabled", true);
 	_define_setting("sentry/config/dsn", String(""));
+	_define_setting("sentry/config/release", "{app_name}@{app_version}");
 	_define_setting("sentry/config/debug_printing", false);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/config/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), 1.0);
 }
