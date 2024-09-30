@@ -91,7 +91,7 @@ Sentry::Sentry() {
 
 	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
 	sentry_options_set_release(options, Settings::get_singleton()->get_release());
-	sentry_options_set_debug(options, 1);
+	sentry_options_set_debug(options, Settings::get_singleton()->is_debug_printing_enabled());
 	sentry_options_set_environment(options, get_environment());
 
 	sentry_init(options);
