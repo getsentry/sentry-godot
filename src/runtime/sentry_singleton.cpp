@@ -35,7 +35,7 @@ godot::CharString Sentry::get_level_cstring(Level p_level) {
 	return "invalid";
 }
 
-void Sentry::capture_message_event(const String &p_message, Level p_level, const String &p_logger) {
+void Sentry::capture_message(const String &p_message, Level p_level, const String &p_logger) {
 	sentry_value_t event = sentry_value_new_message_event(
 			(sentry_level_t)p_level,
 			p_logger.utf8().get_data(),
@@ -59,7 +59,7 @@ void Sentry::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_ERROR);
 	BIND_ENUM_CONSTANT(LEVEL_FATAL);
 
-	ClassDB::bind_method(D_METHOD("capture_message_event", "message", "level", "logger"), &Sentry::capture_message_event, DEFVAL(LEVEL_INFO), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("capture_message", "message", "level", "logger"), &Sentry::capture_message, DEFVAL(LEVEL_INFO), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "message", "category", "level", "type", "data"), &Sentry::add_breadcrumb, DEFVAL(LEVEL_INFO), DEFVAL("default"), DEFVAL(Dictionary()));
 }
 

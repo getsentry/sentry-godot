@@ -40,7 +40,7 @@ func _on_level_choice_id_pressed(id: int) -> void:
 
 
 func _on_capture_button_pressed() -> void:
-	Sentry.capture_message_event(message_edit.text, _event_level)
+	Sentry.capture_message(message_edit.text, _event_level)
 
 
 func _on_add_breadcrumb_button_pressed() -> void:

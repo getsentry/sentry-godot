@@ -30,7 +30,7 @@ public:
 	godot::CharString get_environment() { return "production"; }
 	godot::CharString get_level_cstring(Level p_level);
 
-	void capture_message_event(const godot::String &p_message, Level p_level, const godot::String &p_logger = "");
+	void capture_message(const godot::String &p_message, Level p_level, const godot::String &p_logger = "");
 	void add_breadcrumb(const godot::String &p_message, const godot::String &p_category, Level p_level,
 			const godot::String &p_type, const godot::Dictionary &p_data);
 
