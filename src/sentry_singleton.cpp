@@ -52,6 +52,16 @@ void Sentry::add_breadcrumb(const godot::String &p_message, const godot::String 
 	sentry_add_breadcrumb(crumb);
 }
 
+void Sentry::set_tag(const godot::String &p_key, const godot::String &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set tag with an empty key.");
+	sentry_set_tag(p_key.utf8(), p_value.utf8());
+}
+
+void Sentry::remove_tag(const godot::String &p_key) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't remove tag with an empty key.");
+	sentry_remove_tag(p_key.utf8());
+}
+
 void Sentry::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_DEBUG);
 	BIND_ENUM_CONSTANT(LEVEL_INFO);
@@ -61,6 +71,8 @@ void Sentry::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("capture_message", "message", "level", "logger"), &Sentry::capture_message, DEFVAL(LEVEL_INFO), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "message", "category", "level", "type", "data"), &Sentry::add_breadcrumb, DEFVAL(LEVEL_INFO), DEFVAL("default"), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &Sentry::set_tag);
+	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &Sentry::remove_tag);
 }
 
 Sentry::Sentry() {

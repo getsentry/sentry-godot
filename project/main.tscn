@@ -38,6 +38,28 @@ layout_mode = 2
 layout_mode = 2
 text = "Add Breadcrumb"
 
+[node name="Tags" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Tags"]
+layout_mode = 2
+text = "Tag:"
+
+[node name="TagKey" type="LineEdit" parent="VBoxContainer/Tags"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Key"
+
+[node name="TagValue" type="LineEdit" parent="VBoxContainer/Tags"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Value"
+
+[node name="AddTagButton" type="Button" parent="VBoxContainer/Tags"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Add Tag"
+
 [node name="MessageEvent" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
@@ -85,5 +107,6 @@ size_flags_horizontal = 3
 text = "CRASH!"
 
 [connection signal="pressed" from="VBoxContainer/Breadcrumb/AddBreadcrumbButton" to="." method="_on_add_breadcrumb_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/Tags/AddTagButton" to="." method="_on_add_tag_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Crash/CrashButton" to="." method="_on_crash_button_pressed"]

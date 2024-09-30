@@ -34,6 +34,9 @@ public:
 	void add_breadcrumb(const godot::String &p_message, const godot::String &p_category, Level p_level,
 			const godot::String &p_type, const godot::Dictionary &p_data);
 
+	void set_tag(const godot::String &p_key, const godot::String &p_value);
+	void remove_tag(const godot::String &p_key);
+
 	Sentry();
 	~Sentry();
 };

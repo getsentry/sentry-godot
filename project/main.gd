@@ -4,6 +4,8 @@ extends Node2D
 @onready var level_choice: MenuButton = %LevelChoice
 @onready var breadcrumb_message: LineEdit = %BreadcrumbMessage
 @onready var breadcrumb_category: LineEdit = %BreadcrumbCategory
+@onready var tag_key: LineEdit = $VBoxContainer/Tags/TagKey
+@onready var tag_value: LineEdit = $VBoxContainer/Tags/TagValue
 
 var _event_level: Sentry.Level
 
@@ -45,6 +47,10 @@ func _on_capture_button_pressed() -> void:
 
 func _on_add_breadcrumb_button_pressed() -> void:
 	Sentry.add_breadcrumb(breadcrumb_message.text, breadcrumb_category.text, Sentry.LEVEL_ERROR, "default")
+
+
+func _on_add_tag_button_pressed() -> void:
+	Sentry.set_tag(tag_key.text, tag_value.text)
 
 
 func _on_crash_button_pressed() -> void:
