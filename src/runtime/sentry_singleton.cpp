@@ -4,6 +4,7 @@
 #include "sentry_util.h"
 #include "settings.h"
 
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
@@ -65,8 +66,7 @@ Sentry::Sentry() {
 	sentry_options_t *options = sentry_options_new();
 
 	sentry_options_set_dsn(options, Settings::get_singleton()->get_dsn());
-	sentry_options_set_backend(options, NULL);
-	sentry_options_set_database_path(options, Settings::get_singleton()->get_db_path());
+	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
 	sentry_options_set_release(options, Settings::get_singleton()->get_release());
 
 	sentry_options_set_debug(options, 1);
