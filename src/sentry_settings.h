@@ -10,7 +10,8 @@ class SentrySettings {
 private:
 	static SentrySettings *singleton;
 
-	godot::CharString dsn;
+	bool sentry_enabled = true;
+	godot::CharString dsn = "";
 	godot::CharString release;
 	bool debug_printing = false;
 	double sample_rate = 1.0;
@@ -23,6 +24,7 @@ private:
 public:
 	static SentrySettings *get_singleton() { return singleton; }
 
+	bool is_sentry_enabled() const { return sentry_enabled; }
 	godot::CharString get_dsn() const { return dsn; }
 	godot::CharString get_release() const { return release; }
 	bool is_debug_printing_enabled() const { return debug_printing; }

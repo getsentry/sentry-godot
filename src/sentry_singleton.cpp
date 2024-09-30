@@ -68,6 +68,12 @@ Sentry::Sentry() {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 	ERR_FAIL_NULL(SentrySettings::get_singleton());
 
+	singleton = this;
+
+	if (!SentrySettings::get_singleton()->is_sentry_enabled()) {
+		return;
+	}
+
 	sentry_options_t *options = sentry_options_new();
 	sentry_options_set_dsn(options, SentrySettings::get_singleton()->get_dsn());
 
@@ -96,8 +102,6 @@ Sentry::Sentry() {
 	sentry_options_set_environment(options, get_environment());
 
 	sentry_init(options);
-
-	singleton = this;
 }
 
 Sentry::~Sentry() {
