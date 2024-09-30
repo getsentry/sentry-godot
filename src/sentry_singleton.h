@@ -30,7 +30,7 @@ public:
 
 	static Sentry *get_singleton() { return singleton; }
 
-	godot::CharString get_environment() { return "production"; }
+	godot::CharString get_environment() const;
 	godot::CharString get_level_cstring(Level p_level);
 
 	void capture_message(const godot::String &p_message, Level p_level, const godot::String &p_logger = "");

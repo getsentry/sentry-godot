@@ -4,6 +4,7 @@
 #include "sentry_settings.h"
 #include "sentry_util.h"
 
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -13,6 +14,19 @@
 using namespace godot;
 
 Sentry *Sentry::singleton = nullptr;
+
+CharString Sentry::get_environment() const {
+	ERR_FAIL_NULL_V(Engine::get_singleton(), "production");
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return "editor";
+	} else if (OS::get_singleton()->has_feature("editor")) {
+		return "editor-run";
+	} else if (OS::get_singleton()->is_debug_build()) {
+		return "export-debug";
+	} else {
+		return "export-release";
+	}
+}
 
 godot::CharString Sentry::get_level_cstring(Level p_level) {
 	switch (p_level) {
