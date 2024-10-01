@@ -4,6 +4,7 @@
 #include "sentry_settings.h"
 #include "sentry_util.h"
 
+#include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
@@ -18,7 +19,7 @@ using namespace godot;
 
 Sentry *Sentry::singleton = nullptr;
 
-void Sentry::initialize_gpu_context() {
+void Sentry::add_gpu_context() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	ERR_FAIL_NULL(OS::get_singleton());
 
@@ -62,6 +63,69 @@ void Sentry::initialize_gpu_context() {
 	sentry_value_set_by_key(gpu_context, "device_type", sentry_value_new_string(device_type.utf8()));
 
 	sentry_set_context("gpu", gpu_context);
+}
+
+void Sentry::add_display_context() {
+	ERR_FAIL_NULL(DisplayServer::get_singleton());
+
+	sentry_value_t display_context = sentry_value_new_object();
+
+	int32_t num_screens = DisplayServer::get_singleton()->get_screen_count();
+	sentry_value_set_by_key(display_context, "screen_count",
+			sentry_value_new_int32(num_screens));
+	sentry_value_set_by_key(display_context, "display_server",
+			sentry_value_new_string(DisplayServer::get_singleton()->get_name().utf8()));
+
+	sentry_value_t screen_list = sentry_value_new_list();
+	for (int32_t i = 0; i < num_screens; i++) {
+		sentry_value_t screen_data = sentry_value_new_object();
+		sentry_value_set_by_key(screen_data, "size",
+				SentryUtil::variant_to_sentry_value(DisplayServer::get_singleton()->screen_get_size(i)));
+		sentry_value_set_by_key(screen_data, "dpi",
+				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_dpi(i)));
+		sentry_value_set_by_key(screen_data, "refresh_rate",
+				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_refresh_rate(i)));
+		sentry_value_set_by_key(screen_data, "position",
+				SentryUtil::variant_to_sentry_value(DisplayServer::get_singleton()->screen_get_position(i)));
+		sentry_value_set_by_key(screen_data, "scale_factor",
+				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_scale(i)));
+		sentry_value_set_by_key(screen_data, "primary",
+				sentry_value_new_bool(i == DisplayServer::get_singleton()->get_primary_screen()));
+
+		CharString orientation;
+		switch (DisplayServer::get_singleton()->screen_get_orientation(i)) {
+			case DisplayServer::SCREEN_LANDSCAPE: {
+				orientation = "Landscape";
+			} break;
+			case DisplayServer::SCREEN_PORTRAIT: {
+				orientation = "Portrait";
+			} break;
+			case DisplayServer::SCREEN_REVERSE_LANDSCAPE: {
+				orientation = "Landscape (reverse)";
+			} break;
+			case DisplayServer::SCREEN_REVERSE_PORTRAIT: {
+				orientation = "Portrait (reverse)";
+			} break;
+			case DisplayServer::SCREEN_SENSOR_LANDSCAPE: {
+				orientation = "Landscape (defined by sensor)";
+			} break;
+			case DisplayServer::SCREEN_SENSOR_PORTRAIT: {
+				orientation = "Portrait (defined by sensor)";
+			} break;
+			case DisplayServer::SCREEN_SENSOR: {
+				orientation = "Defined by sensor";
+			} break;
+			default: {
+				orientation = "Undefined";
+			} break;
+		}
+		sentry_value_set_by_key(screen_data, "orientation", sentry_value_new_string(orientation));
+
+		sentry_value_append(screen_list, screen_data);
+	}
+
+	sentry_value_set_by_key(display_context, "screens", screen_list);
+	sentry_set_context("display", display_context);
 }
 
 CharString Sentry::get_environment() const {
