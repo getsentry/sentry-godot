@@ -134,6 +134,7 @@ Sentry::Sentry() {
 	sentry_options_set_debug(options, SentrySettings::get_singleton()->is_debug_printing_enabled());
 	sentry_options_set_environment(options, get_environment());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
+	sentry_options_set_max_breadcrumbs(options, SentrySettings::get_singleton()->get_max_breadcrumbs());
 
 	// Attach LOG file.
 	// TODO: Decide whether log-file must be trimmed before send.
