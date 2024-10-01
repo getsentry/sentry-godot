@@ -23,12 +23,35 @@ if not os.path.exists("godot-cpp"):
 
 env = SConscript("godot-cpp/SConstruct")
 
-# Sentry includes and lib
-env.Append(CPPPATH=[env.Dir("sentry-native/include")])
-env.Append(LIBPATH=["project/addons/" + EXTENSION_NAME + "/bin"])
-env.Append(LIBS=["libsentry"])
+# Include sentry-native libs (static)
+if env["platform"] in ["linux", "windows", "macos"]:
+    env.Append(CPPDEFINES=["SENTRY_BUILD_STATIC"])
+    env.Append(CPPPATH=[env.Dir("sentry-native/include")])
+    env.Append(LIBPATH=[
+        "sentry-native/build-static/",
+        "sentry-native/build-static/crashpad_build/client/",
+        "sentry-native/build-static/crashpad_build/compat/",
+        "sentry-native/build-static/crashpad_build/handler/",
+        "sentry-native/build-static/crashpad_build/minidump/",
+        "sentry-native/build-static/crashpad_build/snapshot/",
+        "sentry-native/build-static/crashpad_build/third_party/mini_chromium/",
+        "sentry-native/build-static/crashpad_build/tools/",
+        "sentry-native/build-static/crashpad_build/util/",
+        ])
+    env.Append(LIBS=[
+        "libsentry",
+        "libcrashpad_client",
+        "libcrashpad_compat",
+        "libcrashpad_handler_lib",
+        "libcrashpad_minidump",
+        "libcrashpad_snapshot",
+        "libcrashpad_tools",
+        "libcrashpad_util",
+        "libcurl",
+        "libmini_chromium",
+        ])
 
-# TODO: build and deploy sentry lib
+# TODO: build sentry lib
 
 # Source files to compile.
 sources = Glob("src/*.cpp")

@@ -31,11 +31,9 @@ web.release.wasm32 = "res://addons/{name}/bin/lib{name}.web.template_release.was
 [dependencies]
 
 linux.x86_64 = {
-	"res://addons/{name}/bin/libsentry.so" : "",
 	"res://addons/{name}/bin/crashpad_handler" : ""
 }
 
 windows.x86_64 = {
-	"res://addons/{name}/bin/libsentry.dll" : "",
 	"res://addons/{name}/bin/crashpad_handler.exe" : ""
 }
