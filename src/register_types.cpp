@@ -17,6 +17,9 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(Sentry);
 		Sentry *sentry_singleton = memnew(Sentry);
 		Engine::get_singleton()->register_singleton("Sentry", Sentry::get_singleton());
+
+		// RenderingServer singleton is not available at this point.
+		callable_mp(sentry_singleton, &Sentry::initialize_gpu_context).call_deferred();
 	}
 
 #ifdef TOOLS_ENABLED

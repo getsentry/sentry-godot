@@ -8,12 +8,61 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/rendering_device.hpp>
+#include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/variant/packed_string_array.hpp>
 
 using namespace godot;
 
 Sentry *Sentry::singleton = nullptr;
+
+void Sentry::initialize_gpu_context() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	ERR_FAIL_NULL(OS::get_singleton());
+
+	sentry_value_t gpu_context = sentry_value_new_object();
+	sentry_value_set_by_key(gpu_context, "name",
+			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_name().utf8()));
+	sentry_value_set_by_key(gpu_context, "vendor_name",
+			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_vendor().utf8()));
+	sentry_value_set_by_key(gpu_context, "version",
+			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_api_version().utf8()));
+
+	// Driver info.
+	PackedStringArray driver_info = OS::get_singleton()->get_video_adapter_driver_info();
+	if (driver_info.size() >= 2) {
+		sentry_value_set_by_key(gpu_context, "driver_name", sentry_value_new_string(driver_info[0].utf8()));
+		sentry_value_set_by_key(gpu_context, "driver_version", sentry_value_new_string(driver_info[1].utf8()));
+	}
+
+	// Device type.
+	String device_type = "unknown";
+	switch (RenderingServer::get_singleton()->get_video_adapter_type()) {
+		case RenderingDevice::DEVICE_TYPE_OTHER: {
+			device_type = "Other";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_INTEGRATED_GPU: {
+			device_type = "Integrated GPU";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_DISCRETE_GPU: {
+			device_type = "Discrete GPU";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_VIRTUAL_GPU: {
+			device_type = "Virtual GPU";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_CPU: {
+			device_type = "CPU";
+		} break;
+		default: {
+			device_type = "Unknown";
+		} break;
+	}
+	sentry_value_set_by_key(gpu_context, "device_type", sentry_value_new_string(device_type.utf8()));
+
+	sentry_set_context("gpu", gpu_context);
+}
 
 CharString Sentry::get_environment() const {
 	ERR_FAIL_NULL_V(Engine::get_singleton(), "production");
