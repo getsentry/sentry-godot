@@ -52,7 +52,6 @@ sentry_value_t SentryUtil::variant_to_sentry_value(const godot::Variant &p_varia
 			} while (!oob);
 			return sentry_list;
 		} break;
-
 		default: {
 			return sentry_value_new_string(p_variant.stringify().utf8());
 		} break;

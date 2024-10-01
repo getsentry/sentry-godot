@@ -31,6 +31,8 @@ void SentrySettings::_load_config() {
 }
 
 void SentrySettings::_define_setting(const String &p_setting, const Variant &p_default, bool p_basic) {
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+
 	if (!ProjectSettings::get_singleton()->has_setting(p_setting)) {
 		ProjectSettings::get_singleton()->set(p_setting, p_default);
 	}
@@ -47,6 +49,8 @@ void SentrySettings::_define_setting(const String &p_setting, const Variant &p_d
 }
 
 void SentrySettings::_define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default, bool p_basic) {
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+
 	_define_setting(p_info.name, p_default, p_basic);
 	Dictionary info = (Dictionary)p_info;
 	ProjectSettings::get_singleton()->add_property_info(info);
