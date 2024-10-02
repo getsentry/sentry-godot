@@ -23,6 +23,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		callable_mp(sentry_singleton, &Sentry::add_display_context).call_deferred();
 		callable_mp(sentry_singleton, &Sentry::add_engine_context).call_deferred();
 		callable_mp(sentry_singleton, &Sentry::add_environment_context).call_deferred();
+		callable_mp(sentry_singleton, &Sentry::add_device_context).call_deferred();
 	}
 
 #ifdef TOOLS_ENABLED

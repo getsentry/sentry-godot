@@ -1,5 +1,7 @@
 #include "sentry_util.h"
 
+#include <godot_cpp/classes/display_server.hpp>
+
 using namespace godot;
 
 sentry_value_t SentryUtil::variant_to_sentry_value(const godot::Variant &p_variant) {
@@ -8,13 +10,13 @@ sentry_value_t SentryUtil::variant_to_sentry_value(const godot::Variant &p_varia
 			return sentry_value_new_null();
 		} break;
 		case Variant::Type::BOOL: {
-			return sentry_value_new_bool(p_variant);
+			return sentry_value_new_bool((bool)p_variant);
 		} break;
 		case Variant::Type::INT: {
-			return sentry_value_new_int32(p_variant);
+			return sentry_value_new_int32((int32_t)p_variant);
 		} break;
 		case Variant::Type::FLOAT: {
-			return sentry_value_new_double(p_variant);
+			return sentry_value_new_double((double)p_variant);
 		} break;
 		case Variant::Type::STRING: {
 			return sentry_value_new_string(((String)p_variant).utf8());
@@ -54,6 +56,36 @@ sentry_value_t SentryUtil::variant_to_sentry_value(const godot::Variant &p_varia
 		} break;
 		default: {
 			return sentry_value_new_string(p_variant.stringify().utf8());
+		} break;
+	}
+}
+
+godot::CharString SentryUtil::get_screen_orientation_cstring(int32_t p_screen) {
+	ERR_FAIL_NULL_V(DisplayServer::get_singleton(), "");
+	switch (DisplayServer::get_singleton()->screen_get_orientation(p_screen)) {
+		case DisplayServer::SCREEN_LANDSCAPE: {
+			return "Landscape";
+		} break;
+		case DisplayServer::SCREEN_PORTRAIT: {
+			return "Portrait";
+		} break;
+		case DisplayServer::SCREEN_REVERSE_LANDSCAPE: {
+			return "Landscape (reverse)";
+		} break;
+		case DisplayServer::SCREEN_REVERSE_PORTRAIT: {
+			return "Portrait (reverse)";
+		} break;
+		case DisplayServer::SCREEN_SENSOR_LANDSCAPE: {
+			return "Landscape (defined by sensor)";
+		} break;
+		case DisplayServer::SCREEN_SENSOR_PORTRAIT: {
+			return "Portrait (defined by sensor)";
+		} break;
+		case DisplayServer::SCREEN_SENSOR: {
+			return "Defined by sensor";
+		} break;
+		default: {
+			return "";
 		} break;
 	}
 }

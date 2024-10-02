@@ -34,6 +34,7 @@ public:
 	void add_display_context();
 	void add_engine_context();
 	void add_environment_context();
+	void add_device_context();
 
 	godot::CharString get_environment() const;
 	godot::CharString get_level_cstring(Level p_level);

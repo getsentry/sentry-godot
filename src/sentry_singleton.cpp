@@ -4,6 +4,7 @@
 #include "sentry_settings.h"
 #include "sentry_util.h"
 
+#include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
@@ -13,6 +14,7 @@
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/core/math.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
 
 using namespace godot;
@@ -92,34 +94,10 @@ void Sentry::add_display_context() {
 		sentry_value_set_by_key(screen_data, "primary",
 				sentry_value_new_bool(i == DisplayServer::get_singleton()->get_primary_screen()));
 
-		CharString orientation;
-		switch (DisplayServer::get_singleton()->screen_get_orientation(i)) {
-			case DisplayServer::SCREEN_LANDSCAPE: {
-				orientation = "Landscape";
-			} break;
-			case DisplayServer::SCREEN_PORTRAIT: {
-				orientation = "Portrait";
-			} break;
-			case DisplayServer::SCREEN_REVERSE_LANDSCAPE: {
-				orientation = "Landscape (reverse)";
-			} break;
-			case DisplayServer::SCREEN_REVERSE_PORTRAIT: {
-				orientation = "Portrait (reverse)";
-			} break;
-			case DisplayServer::SCREEN_SENSOR_LANDSCAPE: {
-				orientation = "Landscape (defined by sensor)";
-			} break;
-			case DisplayServer::SCREEN_SENSOR_PORTRAIT: {
-				orientation = "Portrait (defined by sensor)";
-			} break;
-			case DisplayServer::SCREEN_SENSOR: {
-				orientation = "Defined by sensor";
-			} break;
-			default: {
-				orientation = "Undefined";
-			} break;
+		CharString orientation = SentryUtil::get_screen_orientation_cstring(i);
+		if (orientation.size() > 0) {
+			sentry_value_set_by_key(screen_data, "orientation", sentry_value_new_string(orientation));
 		}
-		sentry_value_set_by_key(screen_data, "orientation", sentry_value_new_string(orientation));
 
 		sentry_value_append(screen_list, screen_data);
 	}
@@ -175,6 +153,72 @@ void Sentry::add_environment_context() {
 	}
 
 	sentry_set_context("Environment", env_context);
+}
+
+void Sentry::add_device_context() {
+	ERR_FAIL_NULL(OS::get_singleton());
+	ERR_FAIL_NULL(Engine::get_singleton());
+	ERR_FAIL_NULL(DisplayServer::get_singleton());
+
+	sentry_value_t device_context = sentry_value_new_object();
+
+	sentry_value_set_by_key(device_context, "arch",
+			sentry_value_new_string(Engine::get_singleton()->get_architecture_name().utf8()));
+
+	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
+	CharString orientation = SentryUtil::get_screen_orientation_cstring(primary_screen);
+	if (orientation.size() > 0) {
+		sentry_value_set_by_key(device_context, "orientation", sentry_value_new_string(orientation));
+	}
+
+	String host = OS::get_singleton()->get_environment("HOST");
+	if (host.is_empty()) {
+		host = "localhost";
+	}
+	sentry_value_set_by_key(device_context, "name", sentry_value_new_string(host.utf8()));
+
+	String model = OS::get_singleton()->get_model_name();
+	if (!model.is_empty()) {
+		sentry_value_set_by_key(device_context, "model", sentry_value_new_string(model.utf8()));
+	}
+
+	Vector2i resolution = DisplayServer::get_singleton()->screen_get_size(primary_screen);
+	sentry_value_set_by_key(device_context, "screen_width_pixels", sentry_value_new_int32(resolution.x));
+	sentry_value_set_by_key(device_context, "screen_height_pixels", sentry_value_new_int32(resolution.y));
+
+	double refresh_rate = DisplayServer::get_singleton()->screen_get_refresh_rate(primary_screen);
+	refresh_rate = Math::snapped(refresh_rate, 0.01);
+	sentry_value_set_by_key(device_context, "screen_refresh_rate", sentry_value_new_double(refresh_rate));
+
+	sentry_value_set_by_key(device_context, "screen_dpi",
+			sentry_value_new_int32(
+					DisplayServer::get_singleton()->screen_get_dpi(
+							DisplayServer::get_singleton()->get_primary_screen())));
+
+	Dictionary meminfo = OS::get_singleton()->get_memory_info();
+	// Note: Custom keys.
+	// TODO: int32 overflows...
+	sentry_value_set_by_key(device_context, "memory_physical",
+			sentry_value_new_string(String::humanize_size(meminfo["physical"]).utf8()));
+	sentry_value_set_by_key(device_context, "memory_free",
+			sentry_value_new_string(String::humanize_size(meminfo["free"]).utf8()));
+	sentry_value_set_by_key(device_context, "memory_stack",
+			sentry_value_new_string(String::humanize_size(meminfo["stack"]).utf8()));
+	sentry_value_set_by_key(device_context, "memory_available",
+			sentry_value_new_string(String::humanize_size(meminfo["available"]).utf8()));
+
+	auto dir = DirAccess::open("user://");
+	if (dir.is_valid()) {
+		sentry_value_set_by_key(device_context, "userfs_free_space",
+				sentry_value_new_string(String::humanize_size(dir->get_space_left()).utf8()));
+	}
+
+	sentry_value_set_by_key(device_context, "processor_count",
+			sentry_value_new_int32(OS::get_singleton()->get_processor_count()));
+	sentry_value_set_by_key(device_context, "cpu_description",
+			sentry_value_new_string(OS::get_singleton()->get_processor_name().utf8()));
+
+	sentry_set_context("device", device_context);
 }
 
 CharString Sentry::get_environment() const {
