@@ -6,10 +6,18 @@
 script = ExtResource("1_p65em")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-offset_left = 24.0
-offset_top = 28.0
-offset_right = 612.0
-offset_bottom = 345.0
+offset_left = 34.0
+offset_top = 3.0
+offset_right = 622.0
+offset_bottom = 626.0
+theme_override_constants/separation = 16
+
+[node name="Header - Enrich" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = "ENRICH EVENTS"
+horizontal_alignment = 1
+vertical_alignment = 2
 
 [node name="Breadcrumb" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -60,6 +68,40 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Add Tag"
 
+[node name="Context" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Context"]
+layout_mode = 2
+text = "Context"
+
+[node name="ContextName" type="LineEdit" parent="VBoxContainer/Context"]
+layout_mode = 2
+placeholder_text = "Enter name for the context"
+
+[node name="ContextExpression" type="CodeEdit" parent="VBoxContainer/Context"]
+custom_minimum_size = Vector2(0, 226)
+layout_mode = 2
+text = "# custom context expressed as a dictionary
+{
+	\"name\": \"Rocket Ship 2000\",
+	\"speed\": 100,
+	\"boost\": true,
+	\"parts\": [\"engine\", \"rocket_launcher\", \"escape_pod\"],
+}
+"
+
+[node name="SetContext" type="Button" parent="VBoxContainer/Context"]
+layout_mode = 2
+text = "Add context"
+
+[node name="Header - Capture" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = "CAPTURE EVENTS"
+horizontal_alignment = 1
+vertical_alignment = 2
+
 [node name="MessageEvent" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
@@ -72,7 +114,7 @@ text = "Message:
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "Type message text"
+placeholder_text = "Enter message text"
 
 [node name="LevelLabel" type="Label" parent="VBoxContainer/MessageEvent"]
 layout_mode = 2
@@ -108,5 +150,6 @@ text = "CRASH!"
 
 [connection signal="pressed" from="VBoxContainer/Breadcrumb/AddBreadcrumbButton" to="." method="_on_add_breadcrumb_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Tags/AddTagButton" to="." method="_on_add_tag_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/Context/SetContext" to="." method="_on_set_context_pressed"]
 [connection signal="pressed" from="VBoxContainer/MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Crash/CrashButton" to="." method="_on_crash_button_pressed"]

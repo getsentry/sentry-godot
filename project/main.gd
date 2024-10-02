@@ -6,6 +6,8 @@ extends Node2D
 @onready var breadcrumb_category: LineEdit = %BreadcrumbCategory
 @onready var tag_key: LineEdit = $VBoxContainer/Tags/TagKey
 @onready var tag_value: LineEdit = $VBoxContainer/Tags/TagValue
+@onready var context_name: LineEdit = $VBoxContainer/Context/ContextName
+@onready var context_expression: CodeEdit = $VBoxContainer/Context/ContextExpression
 
 var _event_level: Sentry.Level
 
@@ -56,3 +58,28 @@ func _on_add_tag_button_pressed() -> void:
 
 func _on_crash_button_pressed() -> void:
 	OS.crash("Crashing on button press")
+
+
+func _on_set_context_pressed() -> void:
+	if context_name.text.is_empty():
+		print("Please provide a name for the context.")
+		return
+
+	# Filter out comments because Expression doesn't support them.
+	var expr_lines := Array(context_expression.text.split("\n")).filter(
+			func(s: String): return not s.begins_with("#"))
+	var filtered_expression := "".join(expr_lines)
+
+	# Parsing expression dictionary.
+	var expr := Expression.new()
+	var error: Error = expr.parse(filtered_expression)
+	if error == OK:
+		var result = expr.execute()
+		if typeof(result) == TYPE_DICTIONARY:
+			# Adding context.
+			Sentry.set_context(context_name.text, result)
+			print("Context added.")
+		else:
+			print("Failed set context: Dictionary is expected, but found: ", type_string(typeof(result)))
+	else:
+		print("Failed to parse expression: ", expr.get_error_text())

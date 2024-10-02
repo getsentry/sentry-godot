@@ -288,6 +288,11 @@ void Sentry::remove_tag(const godot::String &p_key) {
 	sentry_remove_tag(p_key.utf8());
 }
 
+void Sentry::set_context(const godot::String &p_key, const godot::Dictionary &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
+	sentry_set_context(p_key.utf8(), SentryUtil::variant_to_sentry_value(p_value));
+}
+
 void Sentry::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_DEBUG);
 	BIND_ENUM_CONSTANT(LEVEL_INFO);
@@ -298,6 +303,7 @@ void Sentry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("capture_message", "message", "level", "logger"), &Sentry::capture_message, DEFVAL(LEVEL_INFO), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "message", "category", "level", "type", "data"), &Sentry::add_breadcrumb, DEFVAL(LEVEL_INFO), DEFVAL("default"), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("get_last_event_id"), &Sentry::get_last_event_id);
+	ClassDB::bind_method(D_METHOD("set_context", "key", "value"), &Sentry::set_context);
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &Sentry::set_tag);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &Sentry::remove_tag);
 }
