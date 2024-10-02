@@ -350,12 +350,14 @@ Sentry::Sentry() {
 
 	// Attach LOG file.
 	// TODO: Decide whether log-file must be trimmed before send.
-	// TODO: Check if the log file location can be overriden in the project settings.
 	if (SentrySettings::get_singleton()->is_attach_log_enabled()) {
-		String log_path = OS::get_singleton()->get_user_data_dir() + "/logs/godot.log";
-		// if (FileAccess::file_exists(log_path)) {
-		sentry_options_add_attachment(options, log_path.utf8());
-		// }
+		String log_path = ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path");
+		if (FileAccess::file_exists(log_path)) {
+			log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
+			sentry_options_add_attachment(options, log_path.utf8());
+		} else {
+			WARN_PRINT("Sentry: Log file not found. Make sure \"debug/file_logging/enable_file_logging\" is turned ON in the Project Settings.");
+		}
 	}
 
 	sentry_init(options);
