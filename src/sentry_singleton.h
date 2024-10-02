@@ -32,6 +32,7 @@ public:
 
 	void add_gpu_context();
 	void add_display_context();
+	void add_engine_context();
 
 	godot::CharString get_environment() const;
 	godot::CharString get_level_cstring(Level p_level);

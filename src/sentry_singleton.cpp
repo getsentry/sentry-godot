@@ -128,6 +128,23 @@ void Sentry::add_display_context() {
 	sentry_set_context("display", display_context);
 }
 
+void Sentry::add_engine_context() {
+	ERR_FAIL_NULL(OS::get_singleton());
+	ERR_FAIL_NULL(Engine::get_singleton());
+
+	sentry_value_t godot_context = sentry_value_new_object();
+	sentry_value_set_by_key(godot_context, "version",
+			sentry_value_new_string(Engine::get_singleton()->get_version_info()["string"].stringify().utf8()));
+	sentry_value_set_by_key(godot_context, "debug_build",
+			sentry_value_new_bool(OS::get_singleton()->is_debug_build()));
+	sentry_value_set_by_key(godot_context, "executable_path",
+			sentry_value_new_string(OS::get_singleton()->get_executable_path().utf8()));
+	sentry_value_set_by_key(godot_context, "command_line_arguments",
+			SentryUtil::variant_to_sentry_value(OS::get_singleton()->get_cmdline_args()));
+
+	sentry_set_context("Godot Engine", godot_context);
+}
+
 CharString Sentry::get_environment() const {
 	ERR_FAIL_NULL_V(Engine::get_singleton(), "production");
 	if (Engine::get_singleton()->is_editor_hint()) {

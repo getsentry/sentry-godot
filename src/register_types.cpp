@@ -21,6 +21,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		// Some singletons are not available at this point.
 		callable_mp(sentry_singleton, &Sentry::add_gpu_context).call_deferred();
 		callable_mp(sentry_singleton, &Sentry::add_display_context).call_deferred();
+		callable_mp(sentry_singleton, &Sentry::add_engine_context).call_deferred();
 	}
 
 #ifdef TOOLS_ENABLED
