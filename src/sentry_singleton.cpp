@@ -16,6 +16,7 @@
 #include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/core/math.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
 
@@ -227,8 +228,10 @@ void Sentry::add_device_context() {
 
 CharString Sentry::get_environment() const {
 	ERR_FAIL_NULL_V(Engine::get_singleton(), "production");
-	if (DisplayServer::get_singleton()->get_name() == "headless") {
-		return "headless";
+	ERR_FAIL_NULL_V(OS::get_singleton(), "production");
+
+	if (OS::get_singleton()->has_feature("dedicated_server")) {
+		return "dedicated_server";
 	} else if (Engine::get_singleton()->is_editor_hint()) {
 		return "editor";
 	} else if (OS::get_singleton()->has_feature("editor")) {
@@ -334,8 +337,10 @@ Sentry::Sentry() {
 	handler_fn = "crashpad_handler";
 #elif WINDOWS_ENABLED
 	handler_fn = "crashpad_handler.exe";
-#endif
+#elif MACOS_ENABLED
 	// TODO: macOS handler?
+	handler_fn = "crashpad_handler";
+#endif
 	String handler_path = OS::get_singleton()->get_executable_path() + "/" + handler_fn;
 	if (!FileAccess::file_exists(handler_path)) {
 		handler_path = ProjectSettings::get_singleton()->globalize_path("res://addons/sentrysdk/bin/" + handler_fn);

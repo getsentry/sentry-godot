@@ -31,8 +31,6 @@ Prerequisites: cmake, scons, C/C++ compiler, clang-format, libcurl(?).
     ```
 5. Open demo project in Godot Engine:
     ```bash
-    # create empty project file
-    touch project/project.godot
     # open demo project in Godot 4.3
     godot project/project.godot
     ```
