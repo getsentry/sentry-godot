@@ -9,6 +9,7 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/performance.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/rendering_device.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
@@ -317,6 +318,37 @@ void Sentry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &Sentry::remove_tag);
 }
 
+sentry_value_t Sentry::_before_send(sentry_value_t event, void *hint, void *closure) {
+	if (!OS::get_singleton()) {
+		return event;
+	}
+
+	// Constructing "Performance" context...
+	sentry_value_t perf_context = sentry_value_new_object();
+	sentry_value_set_by_key(perf_context, "static_memory_peak_usage",
+			sentry_value_new_string(String::humanize_size(OS::get_singleton()->get_static_memory_peak_usage()).utf8()));
+	sentry_value_set_by_key(perf_context, "static_memory_usage",
+			sentry_value_new_string(String::humanize_size(OS::get_singleton()->get_static_memory_usage()).utf8()));
+
+	sentry_value_t contexts = sentry_value_get_by_key(event, "contexts");
+
+	if (!Performance::get_singleton()) {
+		sentry_value_set_by_key(contexts, "Performance", perf_context);
+		return event;
+	}
+
+	double fps_metric = Performance::get_singleton()->get_monitor(Performance::TIME_FPS);
+	if (fps_metric) {
+		sentry_value_set_by_key(perf_context, "fps",
+				sentry_value_new_double(fps_metric));
+	}
+
+	// TODO: Collect more useful metrics.
+
+	sentry_value_set_by_key(contexts, "Performance", perf_context);
+	return event;
+}
+
 Sentry::Sentry() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
@@ -371,6 +403,12 @@ Sentry::Sentry() {
 			WARN_PRINT("Sentry: Log file not found. Make sure \"debug/file_logging/enable_file_logging\" is turned ON in the Project Settings.");
 		}
 	}
+
+	// "before_send" hook.
+	auto lambda = [](sentry_value_t event, void *hint, void *closure) {
+		return Sentry::get_singleton()->_before_send(event, hint, closure);
+	};
+	sentry_options_set_before_send(options, lambda, NULL);
 
 	sentry_init(options);
 }

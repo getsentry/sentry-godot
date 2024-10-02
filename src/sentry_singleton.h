@@ -16,6 +16,8 @@ private:
 
 	sentry_uuid_t last_uuid;
 
+	sentry_value_t _before_send(sentry_value_t event, void *hint, void *closure);
+
 protected:
 	static void _bind_methods();
 
