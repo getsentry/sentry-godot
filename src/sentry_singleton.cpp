@@ -26,6 +26,8 @@ void Sentry::add_gpu_context() {
 	ERR_FAIL_NULL(OS::get_singleton());
 
 	sentry_value_t gpu_context = sentry_value_new_object();
+
+	// Note: In headless/server mode, some of these functions return empty strings.
 	sentry_value_set_by_key(gpu_context, "name",
 			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_name().utf8()));
 	sentry_value_set_by_key(gpu_context, "vendor_name",
@@ -223,7 +225,9 @@ void Sentry::add_device_context() {
 
 CharString Sentry::get_environment() const {
 	ERR_FAIL_NULL_V(Engine::get_singleton(), "production");
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (DisplayServer::get_singleton()->get_name() == "headless") {
+		return "headless";
+	} else if (Engine::get_singleton()->is_editor_hint()) {
 		return "editor";
 	} else if (OS::get_singleton()->has_feature("editor")) {
 		return "editor-run";
