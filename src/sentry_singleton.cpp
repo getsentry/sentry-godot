@@ -35,13 +35,6 @@ void Sentry::add_gpu_context() {
 	sentry_value_set_by_key(gpu_context, "version",
 			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_api_version().utf8()));
 
-	// Driver info.
-	PackedStringArray driver_info = OS::get_singleton()->get_video_adapter_driver_info();
-	if (driver_info.size() >= 2) {
-		sentry_value_set_by_key(gpu_context, "driver_name", sentry_value_new_string(driver_info[0].utf8()));
-		sentry_value_set_by_key(gpu_context, "driver_version", sentry_value_new_string(driver_info[1].utf8()));
-	}
-
 	// Device type.
 	String device_type = "unknown";
 	switch (RenderingServer::get_singleton()->get_video_adapter_type()) {
@@ -65,6 +58,13 @@ void Sentry::add_gpu_context() {
 		} break;
 	}
 	sentry_value_set_by_key(gpu_context, "device_type", sentry_value_new_string(device_type.utf8()));
+
+	// Driver info.
+	PackedStringArray driver_info = OS::get_singleton()->get_video_adapter_driver_info();
+	if (driver_info.size() >= 2) {
+		sentry_value_set_by_key(gpu_context, "driver_name", sentry_value_new_string(driver_info[0].utf8()));
+		sentry_value_set_by_key(gpu_context, "driver_version", sentry_value_new_string(driver_info[1].utf8()));
+	}
 
 	sentry_set_context("gpu", gpu_context);
 }
@@ -121,6 +121,7 @@ void Sentry::add_engine_context() {
 			sentry_value_new_string(OS::get_singleton()->get_executable_path().utf8()));
 	sentry_value_set_by_key(godot_context, "command_line_arguments",
 			SentryUtil::variant_to_sentry_value(OS::get_singleton()->get_cmdline_args()));
+	sentry_value_set_by_key(godot_context, "mode", sentry_value_new_string(get_environment()));
 
 	sentry_set_context("Godot Engine", godot_context);
 }
@@ -188,6 +189,7 @@ void Sentry::add_device_context() {
 	sentry_value_set_by_key(device_context, "screen_width_pixels", sentry_value_new_int32(resolution.x));
 	sentry_value_set_by_key(device_context, "screen_height_pixels", sentry_value_new_int32(resolution.y));
 
+	// Note: Custom key.
 	double refresh_rate = DisplayServer::get_singleton()->screen_get_refresh_rate(primary_screen);
 	refresh_rate = Math::snapped(refresh_rate, 0.01);
 	sentry_value_set_by_key(device_context, "screen_refresh_rate", sentry_value_new_double(refresh_rate));
@@ -333,6 +335,7 @@ Sentry::Sentry() {
 #elif WINDOWS_ENABLED
 	handler_fn = "crashpad_handler.exe";
 #endif
+	// TODO: macOS handler?
 	String handler_path = OS::get_singleton()->get_executable_path() + "/" + handler_fn;
 	if (!FileAccess::file_exists(handler_path)) {
 		handler_path = ProjectSettings::get_singleton()->globalize_path("res://addons/sentrysdk/bin/" + handler_fn);
@@ -340,7 +343,7 @@ Sentry::Sentry() {
 	if (FileAccess::file_exists(handler_path)) {
 		sentry_options_set_handler_path(options, handler_path.utf8());
 	} else {
-		ERR_PRINT("Sentry: Failed to locate crash handler (crashpad)");
+		ERR_PRINT("Sentry: Failed to locate crash handler (crashpad) - backend disabled.");
 		sentry_options_set_backend(options, NULL);
 	}
 

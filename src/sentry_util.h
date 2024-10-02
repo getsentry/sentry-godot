@@ -1,8 +1,7 @@
 #ifndef SENTRY_UTIL_H
 #define SENTRY_UTIL_H
 
-#include "sentry.h"
-
+#include <sentry.h>
 #include <godot_cpp/variant/char_string.hpp>
 #include <godot_cpp/variant/variant.hpp>
 

@@ -27,6 +27,7 @@ public:
 		LEVEL_ERROR = 2,
 		LEVEL_FATAL = 3,
 	};
+	static godot::CharString get_level_cstring(Level p_level);
 
 	static Sentry *get_singleton() { return singleton; }
 
@@ -37,16 +38,16 @@ public:
 	void add_device_context();
 
 	godot::CharString get_environment() const;
-	godot::CharString get_level_cstring(Level p_level);
 
-	void capture_message(const godot::String &p_message, Level p_level, const godot::String &p_logger = "");
 	void add_breadcrumb(const godot::String &p_message, const godot::String &p_category, Level p_level,
 			const godot::String &p_type, const godot::Dictionary &p_data);
-	godot::String get_last_event_id() const;
 	void set_context(const godot::String &p_key, const godot::Dictionary &p_value);
 
 	void set_tag(const godot::String &p_key, const godot::String &p_value);
 	void remove_tag(const godot::String &p_key);
+
+	void capture_message(const godot::String &p_message, Level p_level, const godot::String &p_logger = "");
+	godot::String get_last_event_id() const;
 
 	Sentry();
 	~Sentry();
