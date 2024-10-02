@@ -36,3 +36,5 @@ Prerequisites: cmake, scons, C/C++ compiler, clang-format, libcurl(?).
     # open demo project in Godot 4.3
     godot project/project.godot
     ```
+
+In the Godot editor, you can adjust the Sentry SDK settings by going to `Project Settings -> Sentry -> Config`.
