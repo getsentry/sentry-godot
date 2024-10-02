@@ -145,6 +145,38 @@ void Sentry::add_engine_context() {
 	sentry_set_context("Godot Engine", godot_context);
 }
 
+void Sentry::add_environment_context() {
+	ERR_FAIL_NULL(OS::get_singleton());
+
+	sentry_value_t env_context = sentry_value_new_object();
+	sentry_value_set_by_key(env_context, "name",
+			sentry_value_new_string(OS::get_singleton()->get_name().utf8()));
+	sentry_value_set_by_key(env_context, "sandboxed",
+			sentry_value_new_bool(OS::get_singleton()->is_sandboxed()));
+	sentry_value_set_by_key(env_context, "user_data_dir",
+			sentry_value_new_string(OS::get_singleton()->get_user_data_dir().utf8()));
+	sentry_value_set_by_key(env_context, "userfs_persistent",
+			sentry_value_new_bool(OS::get_singleton()->is_userfs_persistent()));
+	sentry_value_set_by_key(env_context, "granted_permissions",
+			SentryUtil::variant_to_sentry_value(OS::get_singleton()->get_granted_permissions()));
+	sentry_value_set_by_key(env_context, "locale",
+			sentry_value_new_string(OS::get_singleton()->get_locale().utf8()));
+
+	String distribution_name = OS::get_singleton()->get_distribution_name();
+	if (!distribution_name.is_empty()) {
+		sentry_value_set_by_key(env_context, "distribution_name",
+				sentry_value_new_string(distribution_name.utf8()));
+	}
+
+	String version = OS::get_singleton()->get_version();
+	if (!version.is_empty()) {
+		sentry_value_set_by_key(env_context, "version",
+				sentry_value_new_string(version.utf8()));
+	}
+
+	sentry_set_context("Environment", env_context);
+}
+
 CharString Sentry::get_environment() const {
 	ERR_FAIL_NULL_V(Engine::get_singleton(), "production");
 	if (Engine::get_singleton()->is_editor_hint()) {
