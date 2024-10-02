@@ -4,6 +4,8 @@ An eventual Godot SDK for Sentry
 
 ## Build steps (work-in-progress)
 
+Prerequisites: cmake, scons, C/C++ compiler, clang-format, libcurl(?).
+
 1. Clone repository and its submodules.
 2. Build sentry-native (libsentry and crashpad):
     ```bash
@@ -14,7 +16,7 @@ An eventual Godot SDK for Sentry
     cmake --build build-static --parallel
     ```
 3. Copy crashpad_handler executable into `project/addons/sentrysdk/bin/`
-4. Build the Godot GDExtension libraries:
+4. Build GDExtension libraries:
     ```bash
     # build *editor* library for the current platform
     # run from the repository root dir
@@ -26,4 +28,11 @@ An eventual Godot SDK for Sentry
     ```bash
     # build *export* library for the current platform
     scons target=template_release
+    ```
+5. Open demo project in Godot Engine:
+    ```bash
+    # create empty project file
+    touch project/project.godot
+    # open demo project in Godot 4.3
+    godot project/project.godot
     ```
