@@ -202,7 +202,7 @@ void Sentry::add_device_context() {
 							DisplayServer::get_singleton()->get_primary_screen())));
 
 	Dictionary meminfo = OS::get_singleton()->get_memory_info();
-	// Note: Custom keys.
+	// Note: Using custom keys because int32 can't handle size in bytes.
 	// TODO: int32 overflows...
 	sentry_value_set_by_key(device_context, "memory_physical",
 			sentry_value_new_string(String::humanize_size(meminfo["physical"]).utf8()));
@@ -213,16 +213,22 @@ void Sentry::add_device_context() {
 	sentry_value_set_by_key(device_context, "memory_available",
 			sentry_value_new_string(String::humanize_size(meminfo["available"]).utf8()));
 
+	sentry_value_set_by_key(device_context, "processor_count",
+			sentry_value_new_int32(OS::get_singleton()->get_processor_count()));
+	sentry_value_set_by_key(device_context, "cpu_description",
+			sentry_value_new_string(OS::get_singleton()->get_processor_name().utf8()));
+
+	// Custom keys.
+	sentry_value_set_by_key(device_context, "has_touchscreen",
+			sentry_value_new_bool(DisplayServer::get_singleton()->is_touchscreen_available()));
+	sentry_value_set_by_key(device_context, "has_virtual_keyboard",
+			sentry_value_new_bool(DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD)));
+
 	auto dir = DirAccess::open("user://");
 	if (dir.is_valid()) {
 		sentry_value_set_by_key(device_context, "userfs_free_space",
 				sentry_value_new_string(String::humanize_size(dir->get_space_left()).utf8()));
 	}
-
-	sentry_value_set_by_key(device_context, "processor_count",
-			sentry_value_new_int32(OS::get_singleton()->get_processor_count()));
-	sentry_value_set_by_key(device_context, "cpu_description",
-			sentry_value_new_string(OS::get_singleton()->get_processor_name().utf8()));
 
 	sentry_set_context("device", device_context);
 }
