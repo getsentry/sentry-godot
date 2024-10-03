@@ -1,13 +1,13 @@
-extends Node2D
+extends CanvasLayer
 
 @onready var message_edit: LineEdit = %MessageEdit
 @onready var level_choice: MenuButton = %LevelChoice
 @onready var breadcrumb_message: LineEdit = %BreadcrumbMessage
 @onready var breadcrumb_category: LineEdit = %BreadcrumbCategory
-@onready var tag_key: LineEdit = $VBoxContainer/Tags/TagKey
-@onready var tag_value: LineEdit = $VBoxContainer/Tags/TagValue
-@onready var context_name: LineEdit = $VBoxContainer/Context/ContextName
-@onready var context_expression: CodeEdit = $VBoxContainer/Context/ContextExpression
+@onready var tag_key: LineEdit = %TagKey
+@onready var tag_value: LineEdit = %TagValue
+@onready var context_name: LineEdit = %ContextName
+@onready var context_expression: CodeEdit = %ContextExpression
 
 var _event_level: Sentry.Level
 
@@ -50,10 +50,13 @@ func _on_capture_button_pressed() -> void:
 
 func _on_add_breadcrumb_button_pressed() -> void:
 	Sentry.add_breadcrumb(breadcrumb_message.text, breadcrumb_category.text, Sentry.LEVEL_ERROR, "default")
+	print("Breadcrumb added.")
 
 
 func _on_add_tag_button_pressed() -> void:
 	Sentry.set_tag(tag_key.text, tag_value.text)
+	if not tag_key.text.is_empty():
+		print("Tag added.")
 
 
 func _on_crash_button_pressed() -> void:
