@@ -51,7 +51,42 @@ if env["platform"] in ["linux", "windows", "macos"]:
         "libmini_chromium",
         ])
 
-# TODO: build sentry lib
+# Build libsentry.
+# TODO: macOS needs to use a different SDK.
+if env["platform"] in ["linux", "windows", "macos"]:
+    libsentry = env.Command(
+        "sentry-native/build-static/libsentry.a",
+        [],
+        [
+            "cd sentry-native; cmake -B build-static -D SENTRY_BUILD_SHARED_LIBS=OFF -D CMAKE_BUILD_TYPE=RelWithDebInfo -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.godot",
+            "cd sentry-native; cmake --build build-static --target sentry --parallel",
+        ]
+    )
+    Default(libsentry)
+
+# Build crashpad handler.
+if env["platform"] == "linux":
+    crashpad_handler = env.Command(
+        "project/addons/sentrysdk/bin/crashpad_handler",
+        [],
+        [
+            "cd sentry-native; cmake --build build-static --target crashpad_handler --config Release --parallel",
+            Copy("project/addons/sentrysdk/bin/crashpad_handler",
+                "sentry-native/build-static/crashpad_build/handler/crashpad_handler"),
+        ]
+    )
+    Default(crashpad_handler)
+elif env["platform"] == "windows":
+    crashpad_handler = env.Command(
+        "project/addons/sentrysdk/bin/crashpad_handler.exe",
+        [],
+        [
+            "cd sentry-native; cmake --build build-static --target crashpad_handler --config Release --parallel",
+            Copy("project/addons/sentrysdk/bin/crashpad_handler.exe",
+                "sentry-native/build-static/crashpad_build/handler/crashpad_handler.exe"),
+        ]
+    )
+    Default(crashpad_handler)
 
 # Source files to compile.
 sources = Glob("src/*.cpp")
