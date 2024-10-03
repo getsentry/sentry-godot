@@ -1,6 +1,8 @@
 #include "sentry_util.h"
 
+#include <sentry.h>
 #include <godot_cpp/classes/display_server.hpp>
+#include <godot_cpp/core/error_macros.hpp>
 
 using namespace godot;
 
@@ -88,4 +90,17 @@ godot::CharString SentryUtil::get_screen_orientation_cstring(int32_t p_screen) {
 			return "";
 		} break;
 	}
+}
+
+void SentryUtil::sentry_event_set_context(sentry_value_t p_event, const char *p_context_name, sentry_value_t p_context) {
+	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
+	ERR_FAIL_COND(sentry_value_get_type(p_context) != SENTRY_VALUE_TYPE_OBJECT);
+	ERR_FAIL_COND(strlen(p_context_name) == 0);
+
+	sentry_value_t contexts = sentry_value_get_by_key(p_event, "contexts");
+	if (sentry_value_is_null(contexts)) {
+		contexts = sentry_value_new_object();
+		sentry_value_set_by_key(p_event, "contexts", contexts);
+	}
+	sentry_value_set_by_key(contexts, "Performance", p_context);
 }
