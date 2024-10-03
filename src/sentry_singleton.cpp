@@ -326,31 +326,65 @@ void Sentry::_bind_methods() {
 
 sentry_value_t Sentry::_before_send(sentry_value_t event, void *hint, void *closure) {
 	if (!OS::get_singleton()) {
+		// Too early, bailing out.
 		return event;
 	}
 
-	// Constructing "Performance" context...
+	// * Injecting "Performance" context...
 	sentry_value_t perf_context = sentry_value_new_object();
+
+	// Static memory allocation.
 	sentry_value_set_by_key(perf_context, "static_memory_peak_usage",
 			sentry_value_new_string(String::humanize_size(OS::get_singleton()->get_static_memory_peak_usage()).utf8()));
 	sentry_value_set_by_key(perf_context, "static_memory_usage",
 			sentry_value_new_string(String::humanize_size(OS::get_singleton()->get_static_memory_usage()).utf8()));
 
+	if (Engine::get_singleton()) {
+		double fps_metric = Engine::get_singleton()->get_frames_per_second();
+		if (fps_metric) {
+			sentry_value_set_by_key(perf_context, "fps",
+					sentry_value_new_double(fps_metric));
+		}
+
+		// Frames drawn since engine started - age metric.
+		sentry_value_set_by_key(perf_context, "frames_drawn",
+				sentry_value_new_int32(Engine::get_singleton()->get_frames_drawn()));
+	}
+
+	if (Performance::get_singleton()) {
+		// Object allocation info.
+		sentry_value_set_by_key(perf_context, "object_count",
+				sentry_value_new_int32(Performance::get_singleton()->get_monitor(Performance::OBJECT_COUNT)));
+		sentry_value_set_by_key(perf_context, "object_node_count",
+				sentry_value_new_int32(Performance::get_singleton()->get_monitor(Performance::OBJECT_NODE_COUNT)));
+		sentry_value_set_by_key(perf_context, "object_orphan_node_count",
+				sentry_value_new_int32(Performance::get_singleton()->get_monitor(Performance::OBJECT_ORPHAN_NODE_COUNT)));
+		sentry_value_set_by_key(perf_context, "object_resource_count",
+				sentry_value_new_int32(Performance::get_singleton()->get_monitor(Performance::OBJECT_RESOURCE_COUNT)));
+	}
+
+	if (RenderingServer::get_singleton()) {
+		// VRAM usage.
+		uint64_t video_mem_used = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_VIDEO_MEM_USED);
+		sentry_value_set_by_key(perf_context, "rendering_video_mem_used",
+				sentry_value_new_string(String::humanize_size(video_mem_used).utf8()));
+		uint64_t texture_mem = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_TEXTURE_MEM_USED);
+		sentry_value_set_by_key(perf_context, "rendering_texture_mem_used",
+				sentry_value_new_string(String::humanize_size(texture_mem).utf8()));
+		uint64_t buffer_mem = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_BUFFER_MEM_USED);
+		sentry_value_set_by_key(perf_context, "rendering_buffer_mem_used",
+				sentry_value_new_string(String::humanize_size(buffer_mem).utf8()));
+
+		// Frame statistics.
+		uint64_t draw_calls = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
+		sentry_value_set_by_key(perf_context, "rendering_draw_calls", sentry_value_new_int32(draw_calls));
+	}
+
+	// TODO: Collect more useful metrics: physics, navigation, audio...
+	// TODO: Split into categories and make it optional?
+	// TODO: Make performance context optional?
+
 	sentry_value_t contexts = sentry_value_get_by_key(event, "contexts");
-
-	if (!Performance::get_singleton()) {
-		sentry_value_set_by_key(contexts, "Performance", perf_context);
-		return event;
-	}
-
-	double fps_metric = Performance::get_singleton()->get_monitor(Performance::TIME_FPS);
-	if (fps_metric) {
-		sentry_value_set_by_key(perf_context, "fps",
-				sentry_value_new_double(fps_metric));
-	}
-
-	// TODO: Collect more useful metrics.
-
 	sentry_value_set_by_key(contexts, "Performance", perf_context);
 	return event;
 }
