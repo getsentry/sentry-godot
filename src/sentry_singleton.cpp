@@ -128,6 +128,9 @@ void Sentry::add_engine_context() {
 			SentryUtil::variant_to_sentry_value(OS::get_singleton()->get_cmdline_args()));
 	sentry_value_set_by_key(godot_context, "mode", sentry_value_new_string(get_environment()));
 
+	// TODO: Engine build commit hash.
+	// TODO: Dev-build, tools, debug... (Engine.get_version_info)
+
 	sentry_set_context("Godot Engine", godot_context);
 }
 
@@ -231,6 +234,36 @@ void Sentry::add_device_context() {
 #endif
 
 	sentry_set_context("device", device_context);
+}
+
+void Sentry::add_app_context() {
+	ERR_FAIL_NULL(Time::get_singleton());
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+	ERR_FAIL_NULL(Engine::get_singleton());
+
+	sentry_value_t app_context = sentry_value_new_object();
+
+	// app_start_time
+	double time = Time::get_singleton()->get_unix_time_from_system();
+	time -= Time::get_singleton()->get_ticks_msec() * 0.001;
+	String start_time = Time::get_singleton()->get_datetime_string_from_unix_time(time, true);
+	sentry_value_set_by_key(app_context, "app_start_time", sentry_value_new_string(start_time.utf8()));
+
+	// app_name
+	String app_name = ProjectSettings::get_singleton()->get_setting("application/config/name", "Unnamed project");
+	sentry_value_set_by_key(app_context, "app_name", sentry_value_new_string(app_name.utf8()));
+
+	// app_version
+	String app_version = ProjectSettings::get_singleton()->get_setting("application/config/version", "");
+	if (!app_version.is_empty()) {
+		sentry_value_set_by_key(app_context, "app_version", sentry_value_new_string(app_version.utf8()));
+	}
+
+	// app_arch
+	String app_arch = Engine::get_singleton()->get_architecture_name();
+	sentry_value_set_by_key(app_context, "app_arch", sentry_value_new_string(app_arch.utf8()));
+
+	sentry_set_context("app", app_context);
 }
 
 sentry_value_t Sentry::_create_performance_context() {

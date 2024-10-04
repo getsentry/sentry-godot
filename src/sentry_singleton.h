@@ -36,6 +36,7 @@ public:
 	static Sentry *get_singleton() { return singleton; }
 
 	void add_device_context();
+	void add_app_context();
 	void add_gpu_context();
 	void add_display_context();
 	void add_engine_context();

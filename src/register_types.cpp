@@ -19,11 +19,12 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		Engine::get_singleton()->register_singleton("Sentry", Sentry::get_singleton());
 
 		// Some singletons are not available at this point.
+		callable_mp(sentry_singleton, &Sentry::add_device_context).call_deferred();
+		callable_mp(sentry_singleton, &Sentry::add_app_context).call_deferred();
 		callable_mp(sentry_singleton, &Sentry::add_gpu_context).call_deferred();
 		callable_mp(sentry_singleton, &Sentry::add_display_context).call_deferred();
 		callable_mp(sentry_singleton, &Sentry::add_engine_context).call_deferred();
 		callable_mp(sentry_singleton, &Sentry::add_environment_context).call_deferred();
-		callable_mp(sentry_singleton, &Sentry::add_device_context).call_deferred();
 	}
 
 #ifdef TOOLS_ENABLED
