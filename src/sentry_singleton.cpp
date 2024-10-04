@@ -202,12 +202,13 @@ void Sentry::add_device_context() {
 							DisplayServer::get_singleton()->get_primary_screen())));
 
 	Dictionary meminfo = OS::get_singleton()->get_memory_info();
-	// Note: Using custom keys because int32 can't handle size in bytes.
-	// TODO: int32 overflows...
-	sentry_value_set_by_key(device_context, "memory_physical",
-			sentry_value_new_string(String::humanize_size(meminfo["physical"]).utf8()));
-	sentry_value_set_by_key(device_context, "memory_free",
-			sentry_value_new_string(String::humanize_size(meminfo["free"]).utf8()));
+	// Note: Using double since int32 can't handle size in bytes.
+	sentry_value_set_by_key(device_context, "memory_size",
+			sentry_value_new_double(meminfo["physical"]));
+	sentry_value_set_by_key(device_context, "free_memory",
+			sentry_value_new_double(meminfo["free"]));
+
+	// Custom keys.
 	sentry_value_set_by_key(device_context, "memory_stack",
 			sentry_value_new_string(String::humanize_size(meminfo["stack"]).utf8()));
 	sentry_value_set_by_key(device_context, "memory_available",
