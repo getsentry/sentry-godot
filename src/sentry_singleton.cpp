@@ -39,7 +39,8 @@ void Sentry::add_gpu_context() {
 			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_api_version().utf8()));
 
 	// Device type.
-	String device_type = "unknown";
+	// TODO: Custom key. Keep or remove?
+	String device_type = "Unknown";
 	switch (RenderingServer::get_singleton()->get_video_adapter_type()) {
 		case RenderingDevice::DEVICE_TYPE_OTHER: {
 			device_type = "Other";
@@ -264,6 +265,23 @@ void Sentry::add_app_context() {
 	sentry_value_set_by_key(app_context, "app_arch", sentry_value_new_string(app_arch.utf8()));
 
 	sentry_set_context("app", app_context);
+}
+
+void Sentry::add_culture_context() {
+	ERR_FAIL_NULL(OS::get_singleton());
+
+	sentry_value_t culture_context = sentry_value_new_object();
+	sentry_value_set_by_key(culture_context, "type", sentry_value_new_string("culture"));
+
+	String locale = OS::get_singleton()->get_locale();
+	sentry_value_set_by_key(culture_context, "locale", sentry_value_new_string(locale.utf8()));
+
+	String timezone = Time::get_singleton()->get_time_zone_from_system().get("name", "");
+	if (!timezone.is_empty()) {
+		sentry_value_set_by_key(culture_context, "timezone", sentry_value_new_string(timezone.utf8()));
+	}
+
+	sentry_set_context("culture", culture_context);
 }
 
 sentry_value_t Sentry::_create_performance_context() {
