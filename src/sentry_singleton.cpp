@@ -13,6 +13,7 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/rendering_device.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
+#include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/core/math.hpp>
@@ -81,6 +82,8 @@ void Sentry::add_display_context() {
 			sentry_value_new_int32(num_screens));
 	sentry_value_set_by_key(display_context, "display_server",
 			sentry_value_new_string(DisplayServer::get_singleton()->get_name().utf8()));
+	sentry_value_set_by_key(display_context, "touchscreen_available",
+			sentry_value_new_bool(DisplayServer::get_singleton()->is_touchscreen_available()));
 
 	sentry_value_t screen_list = sentry_value_new_list();
 	for (int32_t i = 0; i < num_screens; i++) {
@@ -164,6 +167,7 @@ void Sentry::add_device_context() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(Engine::get_singleton());
 	ERR_FAIL_NULL(DisplayServer::get_singleton());
+	ERR_FAIL_NULL(Time::get_singleton());
 
 	sentry_value_t device_context = sentry_value_new_object();
 
@@ -176,6 +180,7 @@ void Sentry::add_device_context() {
 		sentry_value_set_by_key(device_context, "orientation", sentry_value_new_string(orientation));
 	}
 
+	// TODO: Need platform-specific solutions - this won't work well in most environments.
 	String host = OS::get_singleton()->get_environment("HOST");
 	if (host.is_empty()) {
 		host = "localhost";
@@ -183,18 +188,13 @@ void Sentry::add_device_context() {
 	sentry_value_set_by_key(device_context, "name", sentry_value_new_string(host.utf8()));
 
 	String model = OS::get_singleton()->get_model_name();
-	if (!model.is_empty()) {
+	if (!model.is_empty() && model != "GenericDevice") {
 		sentry_value_set_by_key(device_context, "model", sentry_value_new_string(model.utf8()));
 	}
 
 	Vector2i resolution = DisplayServer::get_singleton()->screen_get_size(primary_screen);
 	sentry_value_set_by_key(device_context, "screen_width_pixels", sentry_value_new_int32(resolution.x));
 	sentry_value_set_by_key(device_context, "screen_height_pixels", sentry_value_new_int32(resolution.y));
-
-	// Note: Custom key.
-	double refresh_rate = DisplayServer::get_singleton()->screen_get_refresh_rate(primary_screen);
-	refresh_rate = Math::snapped(refresh_rate, 0.01);
-	sentry_value_set_by_key(device_context, "screen_refresh_rate", sentry_value_new_double(refresh_rate));
 
 	sentry_value_set_by_key(device_context, "screen_dpi",
 			sentry_value_new_int32(
@@ -207,29 +207,28 @@ void Sentry::add_device_context() {
 			sentry_value_new_double(meminfo["physical"]));
 	sentry_value_set_by_key(device_context, "free_memory",
 			sentry_value_new_double(meminfo["free"]));
+	sentry_value_set_by_key(device_context, "usable_memory",
+			sentry_value_new_double(meminfo["available"]));
 
-	// Custom keys.
-	sentry_value_set_by_key(device_context, "memory_stack",
-			sentry_value_new_string(String::humanize_size(meminfo["stack"]).utf8()));
-	sentry_value_set_by_key(device_context, "memory_available",
-			sentry_value_new_string(String::humanize_size(meminfo["available"]).utf8()));
+	auto dir = DirAccess::open("user://");
+	if (dir.is_valid()) {
+		sentry_value_set_by_key(device_context, "free_storage", sentry_value_new_double(dir->get_space_left()));
+	}
+
+	// TODO: device type.
 
 	sentry_value_set_by_key(device_context, "processor_count",
 			sentry_value_new_int32(OS::get_singleton()->get_processor_count()));
 	sentry_value_set_by_key(device_context, "cpu_description",
 			sentry_value_new_string(OS::get_singleton()->get_processor_name().utf8()));
 
-	// Custom keys.
-	sentry_value_set_by_key(device_context, "has_touchscreen",
-			sentry_value_new_bool(DisplayServer::get_singleton()->is_touchscreen_available()));
-	sentry_value_set_by_key(device_context, "has_virtual_keyboard",
-			sentry_value_new_bool(DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD)));
-
-	auto dir = DirAccess::open("user://");
-	if (dir.is_valid()) {
-		sentry_value_set_by_key(device_context, "userfs_free_space",
-				sentry_value_new_string(String::humanize_size(dir->get_space_left()).utf8()));
+#ifndef WEB_ENABLED
+	// Generates an error on wasm builds.
+	String unique_id = OS::get_singleton()->get_unique_id();
+	if (!unique_id.is_empty()) {
+		sentry_value_set_by_key(device_context, "device_unique_identifier", sentry_value_new_string(unique_id.utf8()));
 	}
+#endif
 
 	sentry_set_context("device", device_context);
 }
@@ -249,6 +248,10 @@ sentry_value_t Sentry::_create_performance_context() {
 			sentry_value_new_string(String::humanize_size(OS::get_singleton()->get_static_memory_peak_usage()).utf8()));
 	sentry_value_set_by_key(perf_context, "static_memory_usage",
 			sentry_value_new_string(String::humanize_size(OS::get_singleton()->get_static_memory_usage()).utf8()));
+
+	Dictionary meminfo = OS::get_singleton()->get_memory_info();
+	sentry_value_set_by_key(perf_context, "thread_stack_size",
+			sentry_value_new_string(String::humanize_size(meminfo["stack"]).utf8()));
 
 	if (Engine::get_singleton()) {
 		double fps_metric = Engine::get_singleton()->get_frames_per_second();
@@ -292,8 +295,9 @@ sentry_value_t Sentry::_create_performance_context() {
 	}
 
 	// TODO: Collect more useful metrics: physics, navigation, audio...
-	// TODO: Split into categories and make it optional?
-	// TODO: Make performance context optional?
+	// TODO: Q: Split into categories and make it optional?
+	// TODO: Q: Make performance context optional?
+	// TODO: Q: Rename it?
 
 	return perf_context;
 }
