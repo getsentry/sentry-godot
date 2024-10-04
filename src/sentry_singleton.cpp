@@ -24,149 +24,6 @@ using namespace godot;
 
 Sentry *Sentry::singleton = nullptr;
 
-void Sentry::add_gpu_context() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	ERR_FAIL_NULL(OS::get_singleton());
-
-	sentry_value_t gpu_context = sentry_value_new_object();
-
-	// Note: In headless/server mode, some of these functions return empty strings.
-	sentry_value_set_by_key(gpu_context, "name",
-			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_name().utf8()));
-	sentry_value_set_by_key(gpu_context, "vendor_name",
-			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_vendor().utf8()));
-	sentry_value_set_by_key(gpu_context, "version",
-			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_api_version().utf8()));
-
-	// Device type.
-	// TODO: Custom key. Keep or remove?
-	String device_type = "Unknown";
-	switch (RenderingServer::get_singleton()->get_video_adapter_type()) {
-		case RenderingDevice::DEVICE_TYPE_OTHER: {
-			device_type = "Other";
-		} break;
-		case RenderingDevice::DEVICE_TYPE_INTEGRATED_GPU: {
-			device_type = "Integrated GPU";
-		} break;
-		case RenderingDevice::DEVICE_TYPE_DISCRETE_GPU: {
-			device_type = "Discrete GPU";
-		} break;
-		case RenderingDevice::DEVICE_TYPE_VIRTUAL_GPU: {
-			device_type = "Virtual GPU";
-		} break;
-		case RenderingDevice::DEVICE_TYPE_CPU: {
-			device_type = "CPU";
-		} break;
-		default: {
-			device_type = "Unknown";
-		} break;
-	}
-	sentry_value_set_by_key(gpu_context, "device_type", sentry_value_new_string(device_type.utf8()));
-
-	// Driver info.
-	PackedStringArray driver_info = OS::get_singleton()->get_video_adapter_driver_info();
-	if (driver_info.size() >= 2) {
-		sentry_value_set_by_key(gpu_context, "driver_name", sentry_value_new_string(driver_info[0].utf8()));
-		sentry_value_set_by_key(gpu_context, "driver_version", sentry_value_new_string(driver_info[1].utf8()));
-	}
-
-	sentry_set_context("gpu", gpu_context);
-}
-
-void Sentry::add_display_context() {
-	ERR_FAIL_NULL(DisplayServer::get_singleton());
-
-	sentry_value_t display_context = sentry_value_new_object();
-
-	int32_t num_screens = DisplayServer::get_singleton()->get_screen_count();
-	sentry_value_set_by_key(display_context, "screen_count",
-			sentry_value_new_int32(num_screens));
-	sentry_value_set_by_key(display_context, "display_server",
-			sentry_value_new_string(DisplayServer::get_singleton()->get_name().utf8()));
-	sentry_value_set_by_key(display_context, "touchscreen_available",
-			sentry_value_new_bool(DisplayServer::get_singleton()->is_touchscreen_available()));
-
-	sentry_value_t screen_list = sentry_value_new_list();
-	for (int32_t i = 0; i < num_screens; i++) {
-		sentry_value_t screen_data = sentry_value_new_object();
-		sentry_value_set_by_key(screen_data, "size",
-				SentryUtil::variant_to_sentry_value(DisplayServer::get_singleton()->screen_get_size(i)));
-		sentry_value_set_by_key(screen_data, "dpi",
-				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_dpi(i)));
-		sentry_value_set_by_key(screen_data, "refresh_rate",
-				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_refresh_rate(i)));
-		sentry_value_set_by_key(screen_data, "position",
-				SentryUtil::variant_to_sentry_value(DisplayServer::get_singleton()->screen_get_position(i)));
-		sentry_value_set_by_key(screen_data, "scale_factor",
-				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_scale(i)));
-		sentry_value_set_by_key(screen_data, "primary",
-				sentry_value_new_bool(i == DisplayServer::get_singleton()->get_primary_screen()));
-
-		CharString orientation = SentryUtil::get_screen_orientation_cstring(i);
-		if (orientation.size() > 0) {
-			sentry_value_set_by_key(screen_data, "orientation", sentry_value_new_string(orientation));
-		}
-
-		sentry_value_append(screen_list, screen_data);
-	}
-
-	sentry_value_set_by_key(display_context, "screens", screen_list);
-	sentry_set_context("display", display_context);
-}
-
-void Sentry::add_engine_context() {
-	ERR_FAIL_NULL(OS::get_singleton());
-	ERR_FAIL_NULL(Engine::get_singleton());
-
-	sentry_value_t godot_context = sentry_value_new_object();
-	sentry_value_set_by_key(godot_context, "version",
-			sentry_value_new_string(Engine::get_singleton()->get_version_info()["string"].stringify().utf8()));
-	sentry_value_set_by_key(godot_context, "debug_build",
-			sentry_value_new_bool(OS::get_singleton()->is_debug_build()));
-	sentry_value_set_by_key(godot_context, "executable_path",
-			sentry_value_new_string(OS::get_singleton()->get_executable_path().utf8()));
-	sentry_value_set_by_key(godot_context, "command_line_arguments",
-			SentryUtil::variant_to_sentry_value(OS::get_singleton()->get_cmdline_args()));
-	sentry_value_set_by_key(godot_context, "mode", sentry_value_new_string(get_environment()));
-
-	// TODO: Engine build commit hash.
-	// TODO: Dev-build, tools, debug... (Engine.get_version_info)
-
-	sentry_set_context("Godot Engine", godot_context);
-}
-
-void Sentry::add_environment_context() {
-	ERR_FAIL_NULL(OS::get_singleton());
-
-	sentry_value_t env_context = sentry_value_new_object();
-	sentry_value_set_by_key(env_context, "name",
-			sentry_value_new_string(OS::get_singleton()->get_name().utf8()));
-	sentry_value_set_by_key(env_context, "sandboxed",
-			sentry_value_new_bool(OS::get_singleton()->is_sandboxed()));
-	sentry_value_set_by_key(env_context, "user_data_dir",
-			sentry_value_new_string(OS::get_singleton()->get_user_data_dir().utf8()));
-	sentry_value_set_by_key(env_context, "userfs_persistent",
-			sentry_value_new_bool(OS::get_singleton()->is_userfs_persistent()));
-	sentry_value_set_by_key(env_context, "granted_permissions",
-			SentryUtil::variant_to_sentry_value(OS::get_singleton()->get_granted_permissions()));
-	sentry_value_set_by_key(env_context, "locale",
-			sentry_value_new_string(OS::get_singleton()->get_locale().utf8()));
-
-	String distribution_name = OS::get_singleton()->get_distribution_name();
-	if (!distribution_name.is_empty()) {
-		sentry_value_set_by_key(env_context, "distribution_name",
-				sentry_value_new_string(distribution_name.utf8()));
-	}
-
-	String version = OS::get_singleton()->get_version();
-	if (!version.is_empty()) {
-		sentry_value_set_by_key(env_context, "version",
-				sentry_value_new_string(version.utf8()));
-	}
-
-	sentry_set_context("Environment", env_context);
-}
-
 void Sentry::add_device_context() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(Engine::get_singleton());
@@ -267,6 +124,55 @@ void Sentry::add_app_context() {
 	sentry_set_context("app", app_context);
 }
 
+void Sentry::add_gpu_context() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	ERR_FAIL_NULL(OS::get_singleton());
+
+	sentry_value_t gpu_context = sentry_value_new_object();
+
+	// Note: In headless/server mode, some of these functions return empty strings.
+	sentry_value_set_by_key(gpu_context, "name",
+			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_name().utf8()));
+	sentry_value_set_by_key(gpu_context, "vendor_name",
+			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_vendor().utf8()));
+	sentry_value_set_by_key(gpu_context, "version",
+			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_api_version().utf8()));
+
+	// Device type.
+	// TODO: Custom key. Keep or remove?
+	String device_type = "Unknown";
+	switch (RenderingServer::get_singleton()->get_video_adapter_type()) {
+		case RenderingDevice::DEVICE_TYPE_OTHER: {
+			device_type = "Other";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_INTEGRATED_GPU: {
+			device_type = "Integrated GPU";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_DISCRETE_GPU: {
+			device_type = "Discrete GPU";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_VIRTUAL_GPU: {
+			device_type = "Virtual GPU";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_CPU: {
+			device_type = "CPU";
+		} break;
+		default: {
+			device_type = "Unknown";
+		} break;
+	}
+	sentry_value_set_by_key(gpu_context, "device_type", sentry_value_new_string(device_type.utf8()));
+
+	// Driver info.
+	PackedStringArray driver_info = OS::get_singleton()->get_video_adapter_driver_info();
+	if (driver_info.size() >= 2) {
+		sentry_value_set_by_key(gpu_context, "driver_name", sentry_value_new_string(driver_info[0].utf8()));
+		sentry_value_set_by_key(gpu_context, "driver_version", sentry_value_new_string(driver_info[1].utf8()));
+	}
+
+	sentry_set_context("gpu", gpu_context);
+}
+
 void Sentry::add_culture_context() {
 	ERR_FAIL_NULL(OS::get_singleton());
 
@@ -282,6 +188,92 @@ void Sentry::add_culture_context() {
 	}
 
 	sentry_set_context("culture", culture_context);
+}
+
+void Sentry::add_display_context() {
+	ERR_FAIL_NULL(DisplayServer::get_singleton());
+
+	sentry_value_t display_context = sentry_value_new_object();
+
+	int32_t num_screens = DisplayServer::get_singleton()->get_screen_count();
+	sentry_value_set_by_key(display_context, "screen_count",
+			sentry_value_new_int32(num_screens));
+	sentry_value_set_by_key(display_context, "display_server",
+			sentry_value_new_string(DisplayServer::get_singleton()->get_name().utf8()));
+	sentry_value_set_by_key(display_context, "touchscreen_available",
+			sentry_value_new_bool(DisplayServer::get_singleton()->is_touchscreen_available()));
+
+	sentry_value_t screen_list = sentry_value_new_list();
+	for (int32_t i = 0; i < num_screens; i++) {
+		sentry_value_t screen_data = sentry_value_new_object();
+		sentry_value_set_by_key(screen_data, "size",
+				SentryUtil::variant_to_sentry_value(DisplayServer::get_singleton()->screen_get_size(i)));
+		sentry_value_set_by_key(screen_data, "dpi",
+				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_dpi(i)));
+		sentry_value_set_by_key(screen_data, "refresh_rate",
+				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_refresh_rate(i)));
+		sentry_value_set_by_key(screen_data, "position",
+				SentryUtil::variant_to_sentry_value(DisplayServer::get_singleton()->screen_get_position(i)));
+		sentry_value_set_by_key(screen_data, "scale_factor",
+				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_scale(i)));
+		sentry_value_set_by_key(screen_data, "primary",
+				sentry_value_new_bool(i == DisplayServer::get_singleton()->get_primary_screen()));
+
+		CharString orientation = SentryUtil::get_screen_orientation_cstring(i);
+		if (orientation.size() > 0) {
+			sentry_value_set_by_key(screen_data, "orientation", sentry_value_new_string(orientation));
+		}
+
+		sentry_value_append(screen_list, screen_data);
+	}
+
+	sentry_value_set_by_key(display_context, "screens", screen_list);
+	sentry_set_context("Display", display_context);
+}
+
+void Sentry::add_engine_context() {
+	ERR_FAIL_NULL(OS::get_singleton());
+	ERR_FAIL_NULL(Engine::get_singleton());
+
+	sentry_value_t godot_context = sentry_value_new_object();
+
+	Dictionary version_info = Engine::get_singleton()->get_version_info();
+	String version = version_info.get("string", "");
+	sentry_value_set_by_key(godot_context, "version", sentry_value_new_string(version.utf8()));
+	String hash = version_info.get("hash", "");
+	sentry_value_set_by_key(godot_context, "version_commit", sentry_value_new_string(hash.utf8()));
+
+	sentry_value_set_by_key(godot_context, "debug_build",
+			sentry_value_new_bool(OS::get_singleton()->is_debug_build()));
+	sentry_value_set_by_key(godot_context, "command_line_arguments",
+			SentryUtil::variant_to_sentry_value(OS::get_singleton()->get_cmdline_args()));
+	sentry_value_set_by_key(godot_context, "mode", sentry_value_new_string(get_environment()));
+	sentry_value_set_by_key(godot_context, "editor_build",
+			sentry_value_new_bool(OS::get_singleton()->has_feature("editor")));
+
+	sentry_set_context("Godot Engine", godot_context);
+}
+
+void Sentry::add_environment_context() {
+	ERR_FAIL_NULL(OS::get_singleton());
+
+	sentry_value_t env_context = sentry_value_new_object();
+	sentry_value_set_by_key(env_context, "sandboxed",
+			sentry_value_new_bool(OS::get_singleton()->is_sandboxed()));
+	sentry_value_set_by_key(env_context, "userfs_persistent",
+			sentry_value_new_bool(OS::get_singleton()->is_userfs_persistent()));
+	sentry_value_set_by_key(env_context, "granted_permissions",
+			SentryUtil::variant_to_sentry_value(OS::get_singleton()->get_granted_permissions()));
+
+#ifdef LINUX_ENABLED
+	String distribution_name = OS::get_singleton()->get_distribution_name();
+	if (!distribution_name.is_empty()) {
+		sentry_value_set_by_key(env_context, "distribution_name",
+				sentry_value_new_string(distribution_name.utf8()));
+	}
+#endif
+
+	sentry_set_context("Environment", env_context);
 }
 
 sentry_value_t Sentry::_create_performance_context() {
@@ -305,15 +297,15 @@ sentry_value_t Sentry::_create_performance_context() {
 			sentry_value_new_string(String::humanize_size(meminfo["stack"]).utf8()));
 
 	if (Engine::get_singleton()) {
-		double fps_metric = Engine::get_singleton()->get_frames_per_second();
-		if (fps_metric) {
-			sentry_value_set_by_key(perf_context, "fps",
-					sentry_value_new_double(fps_metric));
-		}
+		// double fps_metric = Engine::get_singleton()->get_frames_per_second();
+		// if (fps_metric) {
+		// 	sentry_value_set_by_key(perf_context, "fps",
+		// 			sentry_value_new_double(fps_metric));
+		// }
 
 		// Frames drawn since engine started - age metric.
-		sentry_value_set_by_key(perf_context, "frames_drawn",
-				sentry_value_new_int32(Engine::get_singleton()->get_frames_drawn()));
+		// sentry_value_set_by_key(perf_context, "frames_drawn",
+		// 		sentry_value_new_int32(Engine::get_singleton()->get_frames_drawn()));
 	}
 
 	if (Performance::get_singleton()) {
