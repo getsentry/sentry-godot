@@ -1,6 +1,7 @@
 #ifndef SENTRY_SETTINGS_H
 #define SENTRY_SETTINGS_H
 
+#include <godot_cpp/core/object.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/char_string.hpp>
 #include <godot_cpp/variant/string.hpp>
