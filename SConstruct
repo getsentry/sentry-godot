@@ -9,6 +9,10 @@ PROJECT_DIR = "project"
 EXTENSION_NAME = "sentrysdk"
 COMPATIBILITY_MINIMUM = "4.3"
 
+BIN_DIR = "{project_dir}/addons/{extension_name}/bin".format(
+    project_dir=PROJECT_DIR,
+    extension_name=EXTENSION_NAME)
+
 # Checkout godot-cpp...
 if not os.path.exists("godot-cpp"):
     print("Cloning godot-cpp repository...")
@@ -35,13 +39,15 @@ if env["platform"] in ["linux", "macos"]:
         return result.returncode
 
     sentry_native = env.Command(
-        ["sentry-native/install/lib/libsentry.a", "project/addons/sentrysdk/bin/crashpad_handler"],
+        ["sentry-native/install/lib/libsentry.a", BIN_DIR + "/crashpad_handler"],
         ["sentry-native/src"],
         [
             build_sentry_native,
-            Copy("project/addons/sentrysdk/bin/crashpad_handler",
-                "sentry-native/install/bin/crashpad_handler"),
-        ]
+            Copy(
+                BIN_DIR + "/crashpad_handler",
+                "sentry-native/install/bin/crashpad_handler",
+            ),
+        ],
     )
 elif env["platform"] == "windows":
 
@@ -53,15 +59,17 @@ elif env["platform"] == "windows":
         return result.returncode
 
     sentry_native = env.Command(
-        ["sentry-native/install/lib/sentry.lib", "project/addons/sentrysdk/bin/crashpad_handler.exe"],
+        ["sentry-native/install/lib/sentry.lib", BIN_DIR + "/crashpad_handler.exe"],
         ["sentry-native/src/"],
         [
             build_sentry_native,
-            Copy("project/addons/sentrysdk/bin/crashpad_handler.exe",
-                "sentry-native/install/bin/crashpad_handler.exe"),
-        ]
+            Copy(
+                BIN_DIR + "/crashpad_handler.exe",
+                "sentry-native/install/bin/crashpad_handler.exe",
+            ),
+        ],
     )
-Depends(sentry_native, "godot-cpp") # Force sentry-native to be built sequential to godot-cpp (not in parallel)
+Depends(sentry_native, "godot-cpp")  # Force sentry-native to be built sequential to godot-cpp (not in parallel)
 Default(sentry_native)
 Clean(sentry_native, ["sentry-native/build", "sentry-native/install"])
 
@@ -81,8 +89,9 @@ if env["platform"] in ["linux", "macos", "windows"]:
             "crashpad_tools",
             "crashpad_util",
             "mini_chromium",
-        ])
-# Include additional libs on Windows that are needed for sentry-native.
+        ]
+    )
+# Include additional platform-specific libs.
 if env["platform"] == "windows":
     env.Append(
         LIBS=[
@@ -90,7 +99,14 @@ if env["platform"] == "windows":
             "advapi32",
             "DbgHelp",
             "Version",
-        ])
+        ]
+    )
+elif env["platform"] == "linux":
+    env.Append(
+        LIBS=[
+            "curl",
+        ]
+    )
 
 # Source files to compile.
 sources = Glob("src/*.cpp")
@@ -99,8 +115,8 @@ sources = Glob("src/*.cpp")
 # Build library.
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        "{project_dir}/addons/{name}/bin/lib{name}.{platform}.{target}.framework/liblimboai.{platform}.{target}".format(
-            project_dir=PROJECT_DIR,
+        "{bin_dir}/lib{name}.{platform}.{target}.framework/liblimboai.{platform}.{target}".format(
+            bin_dir=BIN_DIR,
             name=EXTENSION_NAME,
             platform=env["platform"],
             target=env["target"],
@@ -109,8 +125,8 @@ if env["platform"] == "macos":
     )
 else:
     library = env.SharedLibrary(
-        "{project_dir}/addons/{name}/bin/lib{name}{suffix}{shlib_suffix}".format(
-            project_dir=PROJECT_DIR,
+        "{bin_dir}/lib{name}{suffix}{shlib_suffix}".format(
+            bin_dir=BIN_DIR,
             name=EXTENSION_NAME,
             suffix=env["suffix"],
             shlib_suffix=env["SHLIBSUFFIX"],
@@ -122,8 +138,8 @@ Default(library)
 
 # Deploy extension manifest.
 manifest = env.Substfile(
-    target="{project_dir}/addons/{name}/bin/{name}.gdextension".format(
-        project_dir=PROJECT_DIR,
+    target="{bin_dir}/{name}.gdextension".format(
+        bin_dir=BIN_DIR,
         name=EXTENSION_NAME,
     ),
     source="src/manifest.gdextension",
