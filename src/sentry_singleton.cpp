@@ -421,6 +421,16 @@ void Sentry::set_context(const godot::String &p_key, const godot::Dictionary &p_
 	sentry_set_context(p_key.utf8(), SentryUtil::variant_to_sentry_value(p_value));
 }
 
+sentry_value_t Sentry::_before_send(sentry_value_t p_event) {
+	SentryUtil::sentry_event_set_context(p_event, "Performance", _create_performance_context());
+	return p_event;
+}
+
+sentry_value_t Sentry::_on_crash(sentry_value_t p_event) {
+	SentryUtil::sentry_event_set_context(p_event, "Performance", _create_performance_context());
+	return p_event;
+}
+
 void Sentry::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_DEBUG);
 	BIND_ENUM_CONSTANT(LEVEL_INFO);
@@ -434,16 +444,6 @@ void Sentry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_context", "key", "value"), &Sentry::set_context);
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &Sentry::set_tag);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &Sentry::remove_tag);
-}
-
-sentry_value_t Sentry::_before_send(sentry_value_t p_event) {
-	SentryUtil::sentry_event_set_context(p_event, "Performance", _create_performance_context());
-	return p_event;
-}
-
-sentry_value_t Sentry::_on_crash(sentry_value_t p_event) {
-	SentryUtil::sentry_event_set_context(p_event, "Performance", _create_performance_context());
-	return p_event;
 }
 
 Sentry::Sentry() {
