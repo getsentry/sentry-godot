@@ -416,6 +416,35 @@ void Sentry::remove_tag(const godot::String &p_key) {
 	sentry_remove_tag(p_key.utf8());
 }
 
+void Sentry::set_user(const godot::Ref<SentryUser> &p_user) {
+	ERR_FAIL_NULL_MSG(p_user, "Sentry: Setting user failed - user object is null. Please, use Sentry.remove_user() to clear user info.");
+	ERR_FAIL_COND_MSG(!p_user->is_user_valid(), "Sentry: Setting user failed - user data empty. Please, provide at least one of the following: user_id, name, email, ip_address.");
+
+	sentry_value_t user_data = sentry_value_new_object();
+
+	if (!p_user->get_user_id().is_empty()) {
+		sentry_value_set_by_key(user_data, "id",
+				sentry_value_new_string(p_user->get_user_id().utf8()));
+	}
+	if (!p_user->get_username().is_empty()) {
+		sentry_value_set_by_key(user_data, "username",
+				sentry_value_new_string(p_user->get_username().utf8()));
+	}
+	if (!p_user->get_email().is_empty()) {
+		sentry_value_set_by_key(user_data, "email",
+				sentry_value_new_string(p_user->get_email().utf8()));
+	}
+	if (!p_user->get_ip_address().is_empty()) {
+		sentry_value_set_by_key(user_data, "ip_address",
+				sentry_value_new_string(p_user->get_ip_address().utf8()));
+	}
+	sentry_set_user(user_data);
+}
+
+void Sentry::remove_user() {
+	sentry_remove_user();
+}
+
 void Sentry::set_context(const godot::String &p_key, const godot::Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	sentry_set_context(p_key.utf8(), SentryUtil::variant_to_sentry_value(p_value));
@@ -444,6 +473,8 @@ void Sentry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_context", "key", "value"), &Sentry::set_context);
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &Sentry::set_tag);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &Sentry::remove_tag);
+	ClassDB::bind_method(D_METHOD("set_user", "user"), &Sentry::set_user);
+	ClassDB::bind_method(D_METHOD("remove_user"), &Sentry::remove_user);
 }
 
 Sentry::Sentry() {

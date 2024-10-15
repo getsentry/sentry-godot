@@ -1,6 +1,8 @@
 #ifndef SENTRY_SINGLETON_H
 #define SENTRY_SINGLETON_H
 
+#include "sentry_user.h"
+
 #include <sentry.h>
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/core/object.hpp>
@@ -51,6 +53,9 @@ public:
 
 	void set_tag(const godot::String &p_key, const godot::String &p_value);
 	void remove_tag(const godot::String &p_key);
+
+	void set_user(const godot::Ref<SentryUser> &p_user);
+	void remove_user();
 
 	void capture_message(const godot::String &p_message, Level p_level, const godot::String &p_logger = "");
 	godot::String get_last_event_id() const;
