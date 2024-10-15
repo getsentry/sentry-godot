@@ -8,6 +8,10 @@ extends CanvasLayer
 @onready var tag_value: LineEdit = %TagValue
 @onready var context_name: LineEdit = %ContextName
 @onready var context_expression: CodeEdit = %ContextExpression
+@onready var user_id: LineEdit = %UserID
+@onready var username: LineEdit = %Username
+@onready var email: LineEdit = %Email
+@onready var infer_ip: CheckBox = %InferIP
 
 var _event_level: Sentry.Level
 
@@ -86,3 +90,14 @@ func _on_set_context_pressed() -> void:
 			print("Failed set context: Dictionary is expected, but found: ", type_string(typeof(result)))
 	else:
 		print("Failed to parse expression: ", expr.get_error_text())
+
+
+func _on_set_user_button_pressed() -> void:
+	print("Setting user info.")
+	var sentry_user := SentryUser.new()
+	sentry_user.user_id = user_id.text
+	sentry_user.username = username.text
+	sentry_user.email = email.text
+	if infer_ip.button_pressed:
+		sentry_user.infer_ip_address()
+	Sentry.set_user(sentry_user)
