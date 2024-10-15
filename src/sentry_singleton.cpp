@@ -453,7 +453,7 @@ Sentry::Sentry() {
 
 	singleton = this;
 
-	if (!SentryOptions::get_singleton()->is_sentry_enabled()) {
+	if (!SentryOptions::get_singleton()->is_enabled()) {
 		return;
 	}
 
@@ -484,7 +484,7 @@ Sentry::Sentry() {
 	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
 	sentry_options_set_sample_rate(options, SentryOptions::get_singleton()->get_sample_rate());
 	sentry_options_set_release(options, SentryOptions::get_singleton()->get_release());
-	sentry_options_set_debug(options, SentryOptions::get_singleton()->is_debug_printing_enabled());
+	sentry_options_set_debug(options, SentryOptions::get_singleton()->is_debug_enabled());
 	sentry_options_set_environment(options, get_environment());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
 	sentry_options_set_max_breadcrumbs(options, SentryOptions::get_singleton()->get_max_breadcrumbs());

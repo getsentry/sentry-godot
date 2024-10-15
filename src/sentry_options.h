@@ -11,10 +11,10 @@ class SentryOptions {
 private:
 	static SentryOptions *singleton;
 
-	bool sentry_enabled = true;
+	bool enabled = true;
 	godot::CharString dsn = "";
 	godot::CharString release = "{app_name}@{app_version}";
-	bool debug_printing = false;
+	bool debug = false;
 	double sample_rate = 1.0;
 	bool attach_log = true;
 	int32_t config_value_order = 0;
@@ -28,10 +28,10 @@ private:
 public:
 	static SentryOptions *get_singleton() { return singleton; }
 
-	bool is_sentry_enabled() const { return sentry_enabled; }
+	bool is_enabled() const { return enabled; }
 	godot::CharString get_dsn() const { return dsn; }
 	godot::CharString get_release() const { return release; }
-	bool is_debug_printing_enabled() const { return debug_printing; }
+	bool is_debug_enabled() const { return debug; }
 	double get_sample_rate() const { return sample_rate; }
 	bool is_attach_log_enabled() const { return attach_log; }
 	int get_max_breadcrumbs() const { return max_breadcrumbs; }
