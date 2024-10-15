@@ -1,7 +1,7 @@
 #include "sentry_singleton.h"
 
 #include "sentry.h"
-#include "sentry_settings.h"
+#include "sentry_options.h"
 #include "sentry_util.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
@@ -449,16 +449,16 @@ void Sentry::_bind_methods() {
 Sentry::Sentry() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
-	ERR_FAIL_NULL(SentrySettings::get_singleton());
+	ERR_FAIL_NULL(SentryOptions::get_singleton());
 
 	singleton = this;
 
-	if (!SentrySettings::get_singleton()->is_sentry_enabled()) {
+	if (!SentryOptions::get_singleton()->is_sentry_enabled()) {
 		return;
 	}
 
 	sentry_options_t *options = sentry_options_new();
-	sentry_options_set_dsn(options, SentrySettings::get_singleton()->get_dsn());
+	sentry_options_set_dsn(options, SentryOptions::get_singleton()->get_dsn());
 
 	// Establish handler path.
 	String handler_fn;
@@ -482,16 +482,16 @@ Sentry::Sentry() {
 	}
 
 	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
-	sentry_options_set_sample_rate(options, SentrySettings::get_singleton()->get_sample_rate());
-	sentry_options_set_release(options, SentrySettings::get_singleton()->get_release());
-	sentry_options_set_debug(options, SentrySettings::get_singleton()->is_debug_printing_enabled());
+	sentry_options_set_sample_rate(options, SentryOptions::get_singleton()->get_sample_rate());
+	sentry_options_set_release(options, SentryOptions::get_singleton()->get_release());
+	sentry_options_set_debug(options, SentryOptions::get_singleton()->is_debug_printing_enabled());
 	sentry_options_set_environment(options, get_environment());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
-	sentry_options_set_max_breadcrumbs(options, SentrySettings::get_singleton()->get_max_breadcrumbs());
+	sentry_options_set_max_breadcrumbs(options, SentryOptions::get_singleton()->get_max_breadcrumbs());
 
 	// Attach LOG file.
 	// TODO: Decide whether log-file must be trimmed before send.
-	if (SentrySettings::get_singleton()->is_attach_log_enabled()) {
+	if (SentryOptions::get_singleton()->is_attach_log_enabled()) {
 		String log_path = ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path");
 		if (FileAccess::file_exists(log_path)) {
 			log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");

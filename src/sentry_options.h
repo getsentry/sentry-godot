@@ -1,5 +1,5 @@
-#ifndef SENTRY_SETTINGS_H
-#define SENTRY_SETTINGS_H
+#ifndef SENTRY_OPTIONS_H
+#define SENTRY_OPTIONS_H
 
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/core/property_info.hpp>
@@ -7,9 +7,9 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
-class SentrySettings {
+class SentryOptions {
 private:
-	static SentrySettings *singleton;
+	static SentryOptions *singleton;
 
 	bool sentry_enabled = true;
 	godot::CharString dsn = "";
@@ -26,7 +26,7 @@ private:
 	void _load_config();
 
 public:
-	static SentrySettings *get_singleton() { return singleton; }
+	static SentryOptions *get_singleton() { return singleton; }
 
 	bool is_sentry_enabled() const { return sentry_enabled; }
 	godot::CharString get_dsn() const { return dsn; }
@@ -36,8 +36,8 @@ public:
 	bool is_attach_log_enabled() const { return attach_log; }
 	int get_max_breadcrumbs() const { return max_breadcrumbs; }
 
-	SentrySettings();
-	~SentrySettings();
+	SentryOptions();
+	~SentryOptions();
 };
 
-#endif // SENTRY_SETTINGS_H
+#endif // SENTRY_OPTIONS_H

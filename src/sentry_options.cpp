@@ -1,4 +1,4 @@
-#include "sentry_settings.h"
+#include "sentry_options.h"
 
 #include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -6,9 +6,9 @@
 
 using namespace godot;
 
-SentrySettings *SentrySettings::singleton = nullptr;
+SentryOptions *SentryOptions::singleton = nullptr;
 
-void SentrySettings::_load_config() {
+void SentryOptions::_load_config() {
 	// Read project config since ProjectSettings singleton may not be initialized at this point.
 	Ref<ConfigFile> conf = memnew(ConfigFile);
 	Error err = conf->load("res://project.godot");
@@ -31,7 +31,7 @@ void SentrySettings::_load_config() {
 	max_breadcrumbs = (int)conf->get_value("sentry", "config/max_breadcrumbs", max_breadcrumbs);
 }
 
-void SentrySettings::_define_setting(const String &p_setting, const Variant &p_default, bool p_basic) {
+void SentryOptions::_define_setting(const String &p_setting, const Variant &p_default, bool p_basic) {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	if (!ProjectSettings::get_singleton()->has_setting(p_setting)) {
@@ -49,7 +49,7 @@ void SentrySettings::_define_setting(const String &p_setting, const Variant &p_d
 	config_value_order++;
 }
 
-void SentrySettings::_define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default, bool p_basic) {
+void SentryOptions::_define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default, bool p_basic) {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	_define_setting(p_info.name, p_default, p_basic);
@@ -57,7 +57,7 @@ void SentrySettings::_define_setting(const godot::PropertyInfo &p_info, const go
 	ProjectSettings::get_singleton()->add_property_info(info);
 }
 
-void SentrySettings::_define_project_settings() {
+void SentryOptions::_define_project_settings() {
 	_define_setting("sentry/config/sentry_enabled", sentry_enabled);
 	_define_setting("sentry/config/dsn", String(dsn));
 	_define_setting("sentry/config/release", String(release));
@@ -67,7 +67,7 @@ void SentrySettings::_define_project_settings() {
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), max_breadcrumbs);
 }
 
-SentrySettings::SentrySettings() {
+SentryOptions::SentryOptions() {
 	singleton = this;
 
 	if (ProjectSettings::get_singleton()) {
@@ -77,6 +77,6 @@ SentrySettings::SentrySettings() {
 	_load_config();
 }
 
-SentrySettings::~SentrySettings() {
+SentryOptions::~SentryOptions() {
 	singleton = nullptr;
 }
