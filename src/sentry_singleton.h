@@ -46,7 +46,7 @@ public:
 	godot::CharString get_environment() const;
 
 	void add_breadcrumb(const godot::String &p_message, const godot::String &p_category, Level p_level,
-			const godot::String &p_type, const godot::Dictionary &p_data);
+			const godot::String &p_type = "default", const godot::Dictionary &p_data = godot::Dictionary());
 	void set_context(const godot::String &p_key, const godot::Dictionary &p_value);
 
 	void set_tag(const godot::String &p_key, const godot::String &p_value);
