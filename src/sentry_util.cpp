@@ -102,5 +102,5 @@ void SentryUtil::sentry_event_set_context(sentry_value_t p_event, const char *p_
 		contexts = sentry_value_new_object();
 		sentry_value_set_by_key(p_event, "contexts", contexts);
 	}
-	sentry_value_set_by_key(contexts, "Performance", p_context);
+	sentry_value_set_by_key(contexts, p_context_name, p_context);
 }
