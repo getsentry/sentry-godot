@@ -26,12 +26,12 @@ private:
 	void _load_config();
 
 public:
-	static SentryOptions *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static SentryOptions *get_singleton() { return singleton; }
 
-	bool is_enabled() const { return enabled; }
+	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
 	godot::CharString get_dsn() const { return dsn; }
 	godot::CharString get_release() const { return release; }
-	bool is_debug_enabled() const { return debug; }
+	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }
 	double get_sample_rate() const { return sample_rate; }
 	bool is_attach_log_enabled() const { return attach_log; }
 	int get_max_breadcrumbs() const { return max_breadcrumbs; }
