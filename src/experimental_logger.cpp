@@ -96,7 +96,7 @@ void ExperimentalLogger::setup(const String &p_log_path) {
 	String log_path = p_log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
 	log_file.open(log_path.utf8(), std::ios::in);
 	set_process(log_file.is_open());
-	ERR_FAIL_COND_MSG(log_file.is_open(), "Sentry: Failed to open log file: " + p_log_path);
+	ERR_FAIL_COND_MSG(!log_file.is_open(), "Sentry: Failed to open log file: " + p_log_path);
 }
 
 ExperimentalLogger::ExperimentalLogger() {
