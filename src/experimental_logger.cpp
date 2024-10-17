@@ -56,8 +56,9 @@ void ExperimentalLogger::_process_log_file() {
 	int num_lines_read = 0;
 	char first_line[MAX_LINE_LENGTH];
 	char second_line[MAX_LINE_LENGTH];
+	int max_lines = SentryOptions::get_singleton()->get_error_logger_max_lines();
 
-	while (num_lines_read < 20 && log_file.getline(first_line, MAX_LINE_LENGTH)) {
+	while (num_lines_read < max_lines && log_file.getline(first_line, MAX_LINE_LENGTH)) {
 		num_lines_read++;
 
 		for (int i = 0; i < num_error_types; i++) {

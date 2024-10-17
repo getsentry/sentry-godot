@@ -15,6 +15,9 @@
 using namespace godot;
 
 void _init_logger() {
+	if (!SentryOptions::get_singleton()->is_error_logger_enabled()) {
+		return;
+	}
 	// Add experimental logger to scene tree.
 	ExperimentalLogger *logger = memnew(ExperimentalLogger);
 	logger->setup(ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path"));
