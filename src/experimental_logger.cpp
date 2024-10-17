@@ -26,6 +26,17 @@ const char *error_types[] = {
 	"USER SHADER ERROR"
 };
 
+ExperimentalLogger::ErrorType error_type_as_enum[] = {
+	ExperimentalLogger::ERROR_TYPE_ERROR,
+	ExperimentalLogger::ERROR_TYPE_WARNING,
+	ExperimentalLogger::ERROR_TYPE_SCRIPT,
+	ExperimentalLogger::ERROR_TYPE_SHADER,
+	ExperimentalLogger::ERROR_TYPE_ERROR,
+	ExperimentalLogger::ERROR_TYPE_WARNING,
+	ExperimentalLogger::ERROR_TYPE_SCRIPT,
+	ExperimentalLogger::ERROR_TYPE_SHADER,
+};
+
 const int num_error_types = sizeof(error_types) / sizeof(error_types[0]);
 
 } //namespace
@@ -42,29 +53,36 @@ void ExperimentalLogger::_process_log_file() {
 	log_file.clear();
 
 	int num_lines_read = 0;
-	char line[MAX_LINE_LENGTH];
-	char message[MAX_LINE_LENGTH * 2 + 2];
+	char first_line[MAX_LINE_LENGTH];
+	char second_line[MAX_LINE_LENGTH];
 
-	while (num_lines_read < 20 && log_file.getline(line, MAX_LINE_LENGTH)) {
+	while (num_lines_read < 20 && log_file.getline(first_line, MAX_LINE_LENGTH)) {
 		num_lines_read++;
 
 		for (int i = 0; i < num_error_types; i++) {
-			if (strncmp(line, error_types[i], strlen(error_types[i])) == 0) {
-				// std::cout << DEBUG_PREFIX << "CAUGHT ERROR" << std::endl;
-
-				strcpy(message, line);
-				strcat(message, "\n");
-
-				if (log_file.getline(line, MAX_LINE_LENGTH)) {
-					num_lines_read++;
-					strcat(message, line);
-					strcat(message, "\n");
+			if (strncmp(first_line, error_types[i], strlen(error_types[i])) == 0) {
+				if (!log_file.getline(second_line, MAX_LINE_LENGTH)) {
+					continue;
 				}
+				num_lines_read++;
 
-				sentry_value_t crumb = sentry_value_new_breadcrumb("default", message);
-				sentry_value_set_by_key(crumb, "category", sentry_value_new_string("godot.logger"));
-				sentry_value_set_by_key(crumb, "level", sentry_value_new_string("error"));
-				sentry_add_breadcrumb(crumb);
+				// Parse error string.
+				// See: https://github.com/godotengine/godot/blob/04692d83cb8f61002f18ea1d954df8c558ee84f7/core/io/logger.cpp#L88
+				ErrorType err_type = error_type_as_enum[i];
+				char *rationale = first_line + strlen(error_types[i]) + 2; // +2 to skip ": "
+				char func[100];
+				char file_part[200];
+				int parsed = sscanf(second_line, "   at: %99s (%199[^)])\n", func, file_part);
+				printf("Parse status: %i for: %s\n", parsed, second_line);
+				if (parsed == 2) {
+					// Split file name and line number.
+					char *last_colon = strrchr(file_part, ':');
+					if (last_colon != NULL) {
+						*last_colon = '\0';
+						int line = atoi(last_colon + 1);
+						_log_error(func, file_part, line, rationale, err_type);
+					}
+				}
 
 				break;
 			}
@@ -78,7 +96,23 @@ void ExperimentalLogger::_process_log_file() {
 
 	auto end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	// TODO: Remove the following line before merge.
 	std::cout << DEBUG_PREFIX << "Godot log processing took " << duration << " usec" << std::endl;
+}
+
+void ExperimentalLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, ErrorType p_error_type) {
+	// TODO: Remove the following lines before merge.
+	printf("[sentry] DEBUG Godot error caught:\n");
+	printf("   Function: \"%s\"\n", p_func);
+	printf("   File: \"%s\"\n", p_file);
+	printf("   Line: %d\n", p_line);
+	printf("   Rationale: \"%s\"\n", p_rationale);
+	printf("   Error Type: %d\n", p_error_type);
+
+	sentry_value_t crumb = sentry_value_new_breadcrumb("default", p_rationale);
+	sentry_value_set_by_key(crumb, "category", sentry_value_new_string("godot.logger"));
+	sentry_value_set_by_key(crumb, "level", sentry_value_new_string("error"));
+	sentry_add_breadcrumb(crumb);
 }
 
 void ExperimentalLogger::_notification(int p_what) {
