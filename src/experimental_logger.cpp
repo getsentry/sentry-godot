@@ -97,7 +97,7 @@ void ExperimentalLogger::_process_log_file() {
 	// std::cout << DEBUG_PREFIX << "Lines read: " << num_lines_read << std::endl;
 	auto end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-	// std::cout << DEBUG_PREFIX << "Godot log processing took " << duration << " usec" << std::endl;
+	std::cout << DEBUG_PREFIX << "Godot log processing took " << duration << " usec" << std::endl;
 }
 
 void ExperimentalLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, ErrorType p_error_type) {
@@ -159,6 +159,7 @@ void ExperimentalLogger::setup(const String &p_log_path) {
 	log_file.open(log_path.utf8(), std::ios::in);
 	set_process(log_file.is_open());
 	ERR_FAIL_COND_MSG(!log_file.is_open(), "Sentry: Failed to open log file: " + p_log_path);
+	// TODO: Handle absence of the log file, warn if the log-file is disabled.
 }
 
 ExperimentalLogger::ExperimentalLogger() {
