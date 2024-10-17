@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 
 using namespace godot;
@@ -152,14 +153,27 @@ void ExperimentalLogger::_notification(int p_what) {
 	}
 }
 
-void ExperimentalLogger::setup(const String &p_log_path) {
-	ERR_FAIL_COND(p_log_path.is_empty());
+void ExperimentalLogger::setup() {
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+	ERR_FAIL_NULL(OS::get_singleton());
 	process_log = callable_mp(this, &ExperimentalLogger::_process_log_file);
-	String log_path = p_log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
+
+	bool logging_setting = ProjectSettings::get_singleton()->get_setting("debug/file_logging/enable_file_logging");
+	bool logging_setting_pc = ProjectSettings::get_singleton()->get_setting("debug/file_logging/enable_file_logging.pc");
+	bool logging_enabled;
+#if defined(WINDOWS_ENABLED) || defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
+	logging_enabled = logging_setting_pc || logging_setting;
+#else
+	logging_enabled = logging_setting;
+#endif
+	ERR_FAIL_COND_MSG(!logging_enabled, "Sentry: Error logger failure - file logging disabled in project settings. Tip: Enable \"debug/file_logging/enable_file_logging\" in the project settings.");
+
+	String log_path = ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path");
+	ERR_FAIL_COND_MSG(log_path.is_empty(), "Sentry: Error logger failure - project settings \"debug/file_logging/log_path\" is not set. Please, assign a valid file path in the project settings.");
+	log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
 	log_file.open(log_path.utf8(), std::ios::in);
 	set_process(log_file.is_open());
-	ERR_FAIL_COND_MSG(!log_file.is_open(), "Sentry: Failed to open log file: " + p_log_path);
-	// TODO: Handle absence of the log file, warn if the log-file is disabled.
+	ERR_FAIL_COND_MSG(!log_file.is_open(), "Sentry: Error logger failure - couldn't open the log file: " + log_path);
 }
 
 ExperimentalLogger::ExperimentalLogger() {

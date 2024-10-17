@@ -29,7 +29,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void setup(const godot::String &p_log_path);
+	void setup();
 	ExperimentalLogger();
 };
 
