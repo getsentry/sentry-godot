@@ -15,6 +15,12 @@ var _event_level: Sentry.Level
 func _ready() -> void:
 	level_choice.get_popup().id_pressed.connect(_on_level_choice_id_pressed)
 	_init_level_choice_popup()
+	set_process(false)
+
+
+func _process(delta: float) -> void:
+	for i in range(20):
+		print("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 
 
 func _init_level_choice_popup() -> void:
@@ -86,3 +92,21 @@ func _on_set_context_pressed() -> void:
 			print("Failed set context: Dictionary is expected, but found: ", type_string(typeof(result)))
 	else:
 		print("Failed to parse expression: ", expr.get_error_text())
+
+
+func _on_toggle_flood_printing_pressed() -> void:
+	set_process(not is_processing())
+
+
+func _on_gen_script_error_pressed() -> void:
+	# Generate script error (type error)
+	print("Generating GDScript type error...")
+	var value = "123"
+	var int_value: int = value
+	print("Int value: ", int_value) # not executed
+
+
+func _on_gen_native_error_pressed() -> void:
+	# Generate native Godot error (in C++ unit)
+	print("Generating C++ error...")
+	load("res://file_does_not_exist")
