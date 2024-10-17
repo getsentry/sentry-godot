@@ -5,7 +5,6 @@
 
 #include <sentry.h>
 #include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/window.hpp>
 #include <godot_cpp/core/class_db.hpp>
@@ -20,7 +19,7 @@ void _init_logger() {
 	}
 	// Add experimental logger to scene tree.
 	ExperimentalLogger *logger = memnew(ExperimentalLogger);
-	logger->setup(ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path"));
+	logger->setup();
 	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	if (sml) {
 		sml->get_root()->add_child(logger);

@@ -25,7 +25,7 @@ func _ready() -> void:
 	set_process(false)
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	for i in range(20):
 		print("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 >> >> >> > bfe737b(Demo: Buttonstogenerateerrors)
