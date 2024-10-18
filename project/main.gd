@@ -19,6 +19,7 @@ var _event_level: Sentry.Level
 func _ready() -> void:
 	level_choice.get_popup().id_pressed.connect(_on_level_choice_id_pressed)
 	_init_level_choice_popup()
+	_init_user_info()
 
 
 func _init_level_choice_popup() -> void:
@@ -30,6 +31,15 @@ func _init_level_choice_popup() -> void:
 	popup.add_item("FATAL", Sentry.LEVEL_FATAL + 1)
 
 	_on_level_choice_id_pressed(Sentry.LEVEL_INFO + 1)
+
+
+func _init_user_info() -> void:
+	# The user info is persisted in the user data directory (referenced by "user://"),
+	# so it will be loaded again on subsequent launches.
+	var user: SentryUser = Sentry.get_user()
+	username.text = user.username
+	email.text = user.email
+	user_id.text = user.user_id
 
 
 func _on_level_choice_id_pressed(id: int) -> void:

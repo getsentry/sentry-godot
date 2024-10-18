@@ -1,5 +1,6 @@
 #include "sentry_singleton.h"
 
+#include "runtime_config.h"
 #include "sentry.h"
 #include "sentry_options.h"
 #include "sentry_util.h"
@@ -420,6 +421,10 @@ void Sentry::set_user(const godot::Ref<SentryUser> &p_user) {
 	ERR_FAIL_NULL_MSG(p_user, "Sentry: Setting user failed - user object is null. Please, use Sentry.remove_user() to clear user info.");
 	ERR_FAIL_COND_MSG(!p_user->is_user_valid(), "Sentry: Setting user failed - user data empty. Please, provide at least one of the following: user_id, name, email, ip_address.");
 
+	// Save user in a runtime conf-file.
+	// TODO: Make it optional?
+	runtime_config.set_user(p_user);
+
 	sentry_value_t user_data = sentry_value_new_object();
 
 	if (!p_user->get_user_id().is_empty()) {
@@ -474,6 +479,7 @@ void Sentry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &Sentry::set_tag);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &Sentry::remove_tag);
 	ClassDB::bind_method(D_METHOD("set_user", "user"), &Sentry::set_user);
+	ClassDB::bind_method(D_METHOD("get_user"), &Sentry::get_user);
 	ClassDB::bind_method(D_METHOD("remove_user"), &Sentry::remove_user);
 }
 
@@ -487,6 +493,9 @@ Sentry::Sentry() {
 	if (!SentryOptions::get_singleton()->is_enabled()) {
 		return;
 	}
+
+	// Load the runtime configuration from the user's data directory.
+	runtime_config.load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.conf");
 
 	sentry_options_t *options = sentry_options_new();
 	sentry_options_set_dsn(options, SentryOptions::get_singleton()->get_dsn());
@@ -545,6 +554,8 @@ Sentry::Sentry() {
 	sentry_options_set_on_crash(options, on_crash_lambda, NULL);
 
 	sentry_init(options);
+
+	set_user(runtime_config.get_user());
 }
 
 Sentry::~Sentry() {
