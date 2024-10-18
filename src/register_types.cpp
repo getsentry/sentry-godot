@@ -19,7 +19,6 @@ void _init_logger() {
 	}
 	// Add experimental logger to scene tree.
 	ExperimentalLogger *logger = memnew(ExperimentalLogger);
-	logger->setup();
 	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	if (sml) {
 		sml->get_root()->add_child(logger);
