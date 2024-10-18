@@ -16,6 +16,8 @@ private:
 protected:
 	static void _bind_methods();
 
+	godot::String _to_string() const;
+
 public:
 	void set_user_id(godot::String p_user_id) { user_id = p_user_id; }
 	godot::String get_user_id() const { return user_id; }
@@ -30,6 +32,8 @@ public:
 	godot::String get_ip_address() const { return ip_address; }
 
 	void infer_ip_address() { ip_address = "{{auto}}"; }
+
+	void assign_unique_id();
 
 	bool is_user_valid() const;
 };
