@@ -48,7 +48,7 @@ void ExperimentalLogger::_process_log_file() {
 
 	if (!log_file.is_open()) {
 		set_process(false);
-		ERR_FAIL_MSG("Sentry: Internal error: Log file not open.");
+		ERR_FAIL_MSG("Sentry: Internal error: Log file not open. Error logging stopped.");
 		return;
 	}
 
@@ -146,6 +146,12 @@ void ExperimentalLogger::_log_error(const char *p_func, const char *p_file, int 
 
 void ExperimentalLogger::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			_setup();
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			log_file.close();
+		} break;
 		case NOTIFICATION_PROCESS: {
 			// Process log file at the end of the current frame.
 			process_log.call_deferred();
@@ -153,10 +159,9 @@ void ExperimentalLogger::_notification(int p_what) {
 	}
 }
 
-void ExperimentalLogger::setup() {
+void ExperimentalLogger::_setup() {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 	ERR_FAIL_NULL(OS::get_singleton());
-	process_log = callable_mp(this, &ExperimentalLogger::_process_log_file);
 
 	bool logging_setting = ProjectSettings::get_singleton()->get_setting("debug/file_logging/enable_file_logging");
 	bool logging_setting_pc = ProjectSettings::get_singleton()->get_setting("debug/file_logging/enable_file_logging.pc");
@@ -178,4 +183,5 @@ void ExperimentalLogger::setup() {
 
 ExperimentalLogger::ExperimentalLogger() {
 	set_process(false);
+	process_log = callable_mp(this, &ExperimentalLogger::_process_log_file);
 }

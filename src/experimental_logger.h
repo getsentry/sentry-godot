@@ -21,6 +21,7 @@ private:
 	godot::Callable process_log;
 	std::ifstream log_file;
 
+	void _setup();
 	void _process_log_file();
 	void _log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, ErrorType error_type);
 
@@ -29,7 +30,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void setup();
 	ExperimentalLogger();
 };
 
