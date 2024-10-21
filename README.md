@@ -1,6 +1,6 @@
 # Sentry for Godot Engine
 
-An eventual Godot SDK for Sentry
+This SDK is a work in progress
 
 ## Building Sentry Godot SDK
 
