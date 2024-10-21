@@ -1,0 +1,61 @@
+# Project-related
+project/addons
+project/export_presets.cfg
+project/.vscode
+
+.sentry-native
+
+# godot-cpp directory if not using submodules
+godot-cpp/
+
+# Godot auto generated files
+project/.godot/
+
+# Objects
+*.o
+*.os
+*.so
+*.obj
+*.bc
+*.pyc
+*.dblite
+*.pdb
+*.lib
+*.config
+*.creator
+*.creator.user
+*.files
+*.includes
+*.idb
+
+# Vim temp files
+*.swo
+*.swp
+
+# Scons
+.sconf_temp
+.sconsign.dblite
+.scons_node_count
+
+# Misc
+.DS_Store
+~$*
+*~
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Windows folder config file
+Desktop.ini
+
+# Visual Studio and Visual Studio Code workspace folders
+/.vs
+/.vscode
+*.code-workspace
+
+# compile commands (https://clang.llvm.org/docs/JSONCompilationDatabase.html)
+compile_commands.json
+
+# clang cache
+.cache
