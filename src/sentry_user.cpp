@@ -5,20 +5,6 @@
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
-void SentryUser::assign_unique_id() {
-	ERR_FAIL_COND_MSG(!user_id.is_empty(), "Sentry: User ID already assigned!");
-
-	std::random_device rd;
-	auto seed_data = std::array<int, std::mt19937::state_size>{};
-	std::generate(std::begin(seed_data), std::end(seed_data), std::ref(rd));
-	std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
-	std::mt19937 generator(seq);
-	uuids::uuid_random_generator gen{ generator };
-	uuids::uuid const id = gen();
-
-	user_id = uuids::to_string(id).c_str();
-}
-
 bool SentryUser::is_user_valid() const {
 	return !user_id.is_empty() || !username.is_empty() || !email.is_empty() || !ip_address.is_empty();
 }
@@ -59,5 +45,4 @@ void SentryUser::_bind_methods() {
 	// Other methods
 	ClassDB::bind_method(D_METHOD("infer_ip_address"), &SentryUser::infer_ip_address);
 	ClassDB::bind_method(D_METHOD("is_user_valid"), &SentryUser::is_user_valid);
-	ClassDB::bind_method(D_METHOD("assign_unique_id"), &SentryUser::assign_unique_id);
 }
