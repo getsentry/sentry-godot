@@ -1,6 +1,5 @@
 #include "sentry_user.h"
 
-#include <uuid.h>
 #include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/variant.hpp>
