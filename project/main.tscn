@@ -90,40 +90,6 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Add Tag"
 
-[node name="User info" type="HBoxContainer" parent="VBoxContainer/Columns/Column1"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="VBoxContainer/Columns/Column1/User info"]
-layout_mode = 2
-text = "User:"
-
-[node name="Username" type="LineEdit" parent="VBoxContainer/Columns/Column1/User info"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Username"
-
-[node name="Email" type="LineEdit" parent="VBoxContainer/Columns/Column1/User info"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Email"
-
-[node name="UserID" type="LineEdit" parent="VBoxContainer/Columns/Column1/User info"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "ID"
-
-[node name="InferIP" type="CheckBox" parent="VBoxContainer/Columns/Column1/User info"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Infer IP"
-
-[node name="SetUserButton" type="Button" parent="VBoxContainer/Columns/Column1/User info"]
-layout_mode = 2
-text = "Set User"
-
 [node name="Context" type="VBoxContainer" parent="VBoxContainer/Columns/Column1"]
 layout_mode = 2
 
@@ -161,6 +127,50 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 16
+
+[node name="Header - User Info" type="Label" parent="VBoxContainer/Columns/Column2"]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = "USER INFO"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="User info" type="HBoxContainer" parent="VBoxContainer/Columns/Column2"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Columns/Column2/User info"]
+layout_mode = 2
+text = "User ID: "
+
+[node name="UserID" type="LineEdit" parent="VBoxContainer/Columns/Column2/User info"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "ID"
+
+[node name="InferIP" type="CheckBox" parent="VBoxContainer/Columns/Column2/User info"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Infer IP"
+
+[node name="User info (continued)" type="HBoxContainer" parent="VBoxContainer/Columns/Column2"]
+layout_mode = 2
+
+[node name="Username" type="LineEdit" parent="VBoxContainer/Columns/Column2/User info (continued)"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Username"
+
+[node name="Email" type="LineEdit" parent="VBoxContainer/Columns/Column2/User info (continued)"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Email"
+
+[node name="SetUserButton" type="Button" parent="VBoxContainer/Columns/Column2"]
+layout_mode = 2
+text = "Set User"
 
 [node name="Header - Capture" type="Label" parent="VBoxContainer/Columns/Column2"]
 custom_minimum_size = Vector2(0, 40.505)
@@ -250,7 +260,7 @@ grow_vertical = 2
 
 [connection signal="pressed" from="VBoxContainer/Columns/Column1/Breadcrumb/AddBreadcrumbButton" to="." method="_on_add_breadcrumb_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column1/Tags/AddTagButton" to="." method="_on_add_tag_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/Columns/Column1/User info/SetUserButton" to="." method="_on_set_user_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column1/Context/SetContext" to="." method="_on_set_context_pressed"]
+[connection signal="pressed" from="VBoxContainer/Columns/Column2/SetUserButton" to="." method="_on_set_user_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/Crash2/CrashButton" to="." method="_on_crash_button_pressed"]
