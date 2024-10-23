@@ -1,6 +1,5 @@
 #include "sentry_singleton.h"
 
-#include "runtime_config.h"
 #include "sentry.h"
 #include "sentry_options.h"
 #include "sentry_util.h"
@@ -84,13 +83,13 @@ void Sentry::add_device_context() {
 	sentry_value_set_by_key(device_context, "cpu_description",
 			sentry_value_new_string(OS::get_singleton()->get_processor_name().utf8()));
 
-#ifndef WEB_ENABLED
-	// Generates an error on wasm builds.
-	String unique_id = OS::get_singleton()->get_unique_id();
-	if (!unique_id.is_empty()) {
-		sentry_value_set_by_key(device_context, "device_unique_identifier", sentry_value_new_string(unique_id.utf8()));
+	// Read/initialize device unique identifier.
+	CharString device_id = runtime_config.get_device_id();
+	if (device_id.length() == 0) {
+		device_id = SentryUtil::generate_uuid();
+		runtime_config.set_device_id(device_id);
 	}
-#endif
+	sentry_value_set_by_key(device_context, "device_unique_identifier", sentry_value_new_string(device_id));
 
 	sentry_set_context("device", device_context);
 }
@@ -419,7 +418,6 @@ void Sentry::remove_tag(const godot::String &p_key) {
 
 void Sentry::set_user(const godot::Ref<SentryUser> &p_user) {
 	ERR_FAIL_NULL_MSG(p_user, "Sentry: Setting user failed - user object is null. Please, use Sentry.remove_user() to clear user info.");
-	ERR_FAIL_COND_MSG(!p_user->is_user_valid(), "Sentry: Setting user failed - user data empty. Please, provide at least one of the following: user_id, name, email, ip_address.");
 
 	// Save user in a runtime conf-file.
 	// TODO: Make it optional?
