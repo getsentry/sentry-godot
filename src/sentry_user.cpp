@@ -5,8 +5,6 @@
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
-using namespace godot;
-
 void SentryUser::assign_unique_id() {
 	ERR_FAIL_COND_MSG(!user_id.is_empty(), "Sentry: User ID already assigned!");
 
@@ -25,7 +23,7 @@ bool SentryUser::is_user_valid() const {
 	return !user_id.is_empty() || !username.is_empty() || !email.is_empty() || !ip_address.is_empty();
 }
 
-godot::String SentryUser::_to_string() const {
+String SentryUser::_to_string() const {
 	PackedStringArray parts;
 	if (!user_id.is_empty()) {
 		parts.append("id: " + user_id);
