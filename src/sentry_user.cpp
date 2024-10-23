@@ -37,7 +37,7 @@ String SentryUser::_to_string() const {
 	if (!ip_address.is_empty()) {
 		parts.append("ip: " + ip_address);
 	}
-	return "SentryUser:{" + String("; ").join(parts) + "}";
+	return "SentryUser:{ " + String("; ").join(parts) + " }";
 }
 
 void SentryUser::_bind_methods() {
