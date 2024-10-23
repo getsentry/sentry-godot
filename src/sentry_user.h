@@ -21,16 +21,16 @@ protected:
 	String _to_string() const;
 
 public:
-	void set_user_id(String p_user_id) { user_id = p_user_id; }
+	void set_user_id(const String &p_user_id) { user_id = p_user_id; }
 	String get_user_id() const { return user_id; }
 
-	void set_username(String p_username) { username = p_username; }
+	void set_username(const String &p_username) { username = p_username; }
 	String get_username() const { return username; }
 
-	void set_email(String p_email) { email = p_email; }
+	void set_email(const String &p_email) { email = p_email; }
 	String get_email() const { return email; }
 
-	void set_ip_address(String p_ip_address) { ip_address = p_ip_address; }
+	void set_ip_address(const String &p_ip_address) { ip_address = p_ip_address; }
 	String get_ip_address() const { return ip_address; }
 
 	void infer_ip_address() { ip_address = "{{auto}}"; }
