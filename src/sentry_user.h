@@ -36,6 +36,8 @@ public:
 	void infer_ip_address() { ip_address = "{{auto}}"; }
 
 	bool is_user_valid() const;
+
+	void generate_user_id();
 };
 
 #endif // SENTRY_USER_H

@@ -1,5 +1,7 @@
 #include "sentry_user.h"
 
+#include "sentry_util.h"
+
 #include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -25,6 +27,10 @@ String SentryUser::_to_string() const {
 	return "SentryUser:{ " + String("; ").join(parts) + " }";
 }
 
+void SentryUser::generate_user_id() {
+	user_id = SentryUtil::generate_uuid();
+}
+
 void SentryUser::_bind_methods() {
 	// Setters / getters
 	ClassDB::bind_method(D_METHOD("set_user_id", "id"), &SentryUser::set_user_id);
@@ -44,4 +50,5 @@ void SentryUser::_bind_methods() {
 	// Other methods
 	ClassDB::bind_method(D_METHOD("infer_ip_address"), &SentryUser::infer_ip_address);
 	ClassDB::bind_method(D_METHOD("is_user_valid"), &SentryUser::is_user_valid);
+	ClassDB::bind_method(D_METHOD("generate_user_id"), &SentryUser::generate_user_id);
 }
