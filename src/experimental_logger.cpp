@@ -44,7 +44,7 @@ const int num_error_types = sizeof(error_types) / sizeof(error_types[0]);
 
 void ExperimentalLogger::_process_log_file() {
 	// TODO: Remove the following block before merge.
-	auto start = std::chrono::high_resolution_clock::now();
+	// auto start = std::chrono::high_resolution_clock::now();
 
 	if (!log_file.is_open()) {
 		set_process(false);
@@ -52,7 +52,7 @@ void ExperimentalLogger::_process_log_file() {
 		return;
 	}
 
-	log_file.clear();
+	log_file.clear(); // Remove eof flag, so that we can read the next line.
 
 	int num_lines_read = 0;
 	char first_line[MAX_LINE_LENGTH];
@@ -96,19 +96,21 @@ void ExperimentalLogger::_process_log_file() {
 
 	// TODO: Remove the following block before merge.
 	// std::cout << DEBUG_PREFIX << "Lines read: " << num_lines_read << std::endl;
-	auto end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-	std::cout << DEBUG_PREFIX << "Godot log processing took " << duration << " usec" << std::endl;
+	// auto end = std::chrono::high_resolution_clock::now();
+	// auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	// std::cout << DEBUG_PREFIX << "Godot log processing took " << duration << " usec" << std::endl;
 }
 
 void ExperimentalLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, ErrorType p_error_type) {
-	// TODO: Remove the following block before merge.
-	printf("[sentry] DEBUG Godot error caught:\n");
-	printf("   Function: \"%s\"\n", p_func);
-	printf("   File: \"%s\"\n", p_file);
-	printf("   Line: %d\n", p_line);
-	printf("   Rationale: \"%s\"\n", p_rationale);
-	printf("   Error Type: %d\n", p_error_type);
+	// Debug output.
+	if (SentryOptions::get_singleton()->is_debug_enabled()) {
+		printf("[sentry] DEBUG Godot error caught:\n");
+		printf("   Function: \"%s\"\n", p_func);
+		printf("   File: \"%s\"\n", p_file);
+		printf("   Line: %d\n", p_line);
+		printf("   Rationale: \"%s\"\n", p_rationale);
+		printf("   Error Type: %s\n", error_types[p_error_type]);
+	}
 
 	// * Note: Currently, added as a breadcrumb until a proper mechanism is established.
 	sentry_value_t crumb = sentry_value_new_breadcrumb("error", p_rationale);
@@ -122,22 +124,7 @@ void ExperimentalLogger::_log_error(const char *p_func, const char *p_file, int 
 	sentry_value_set_by_key(data, "file", sentry_value_new_string(p_file));
 	sentry_value_set_by_key(data, "line", sentry_value_new_int32(p_line));
 
-	const char *error_string;
-	switch (p_error_type) {
-		case ERROR_TYPE_WARNING: {
-			error_string = "WARNING";
-		} break;
-		case ERROR_TYPE_SCRIPT: {
-			error_string = "SCRIPT ERROR";
-		} break;
-		case ERROR_TYPE_SHADER: {
-			error_string = "SHADER ERROR";
-		} break;
-		case ERROR_TYPE_ERROR:
-		default: {
-			error_string = "ERROR";
-		} break;
-	}
+	const char *error_string = error_types[p_error_type];
 	sentry_value_set_by_key(data, "godot_error_type", sentry_value_new_string(error_string));
 
 	sentry_value_set_by_key(crumb, "data", data);

@@ -10,6 +10,7 @@
 class ExperimentalLogger : public godot::Node {
 	GDCLASS(ExperimentalLogger, godot::Node)
 public:
+	// Godot Engine logger error types.
 	enum ErrorType {
 		ERROR_TYPE_ERROR,
 		ERROR_TYPE_WARNING,
