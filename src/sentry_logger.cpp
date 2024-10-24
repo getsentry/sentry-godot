@@ -146,9 +146,25 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		sentry_add_breadcrumb(crumb);
 	} else {
 		// Log error as event.
+		sentry_value_t event = sentry_value_new_event();
 		Sentry::Level sentry_level = p_error_type == ERROR_TYPE_WARNING ? Sentry::LEVEL_WARNING : Sentry::LEVEL_ERROR;
-		String message = vformat("%s: %s\n   at: %s (%s:%d)\n", error_types[p_error_type], p_rationale, p_func, p_file, p_line);
-		Sentry::get_singleton()->capture_message(message, sentry_level);
+		sentry_value_set_by_key(event, "level",
+				sentry_value_new_string(Sentry::get_level_cstring(sentry_level)));
+
+		sentry_value_t exception = sentry_value_new_exception(error_types[p_error_type], p_rationale);
+		sentry_value_t stack_trace = sentry_value_new_object();
+
+		sentry_value_t frames = sentry_value_new_list();
+		sentry_value_t top_frame = sentry_value_new_object();
+		sentry_value_set_by_key(top_frame, "filename", sentry_value_new_string(p_file));
+		sentry_value_set_by_key(top_frame, "function", sentry_value_new_string(p_func));
+		sentry_value_set_by_key(top_frame, "lineno", sentry_value_new_int32(p_line));
+		sentry_value_append(frames, top_frame);
+
+		sentry_value_set_by_key(stack_trace, "frames", frames);
+		sentry_value_set_by_key(exception, "stacktrace", stack_trace);
+		sentry_event_add_exception(event, exception);
+		sentry_capture_event(event);
 	}
 }
 
