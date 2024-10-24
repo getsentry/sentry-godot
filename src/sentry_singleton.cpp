@@ -503,7 +503,7 @@ Sentry::Sentry() {
 	}
 
 	// Load the runtime configuration from the user's data directory.
-	runtime_config.load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.conf");
+	runtime_config.load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
 	sentry_options_t *options = sentry_options_new();
 	sentry_options_set_dsn(options, SentryOptions::get_singleton()->get_dsn());
