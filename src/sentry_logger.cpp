@@ -102,6 +102,20 @@ void SentryLogger::_process_log_file() {
 }
 
 void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, ErrorType p_error_type) {
+	bool as_breadcrumb = false;
+	if (p_error_type == ERROR_TYPE_WARNING) {
+		if (SentryOptions::get_singleton()->is_error_logger_log_warnings_enabled()) {
+			as_breadcrumb = true;
+		} else {
+			// Don't log if warnings are disabled.
+			return;
+		}
+	} else {
+		if (SentryOptions::get_singleton()->get_error_logger_capture_type() == SentryOptions::CAPTURE_AS_BREADCRUMB) {
+			as_breadcrumb = true;
+		}
+	}
+
 	// Debug output.
 	if (SentryOptions::get_singleton()->is_debug_enabled()) {
 		printf("[sentry] DEBUG Godot error caught:\n");
@@ -112,23 +126,30 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		printf("   Error Type: %s\n", error_types[p_error_type]);
 	}
 
-	// * Note: Currently, added as a breadcrumb until a proper mechanism is established.
-	sentry_value_t crumb = sentry_value_new_breadcrumb("error", p_rationale);
-	sentry_value_set_by_key(crumb, "category", sentry_value_new_string("error"));
-	sentry_value_set_by_key(crumb, "level",
-			sentry_value_new_string(
-					p_error_type == ERROR_TYPE_WARNING ? "warning" : "error"));
+	if (as_breadcrumb) {
+		// Log error as breadcrumb.
+		sentry_value_t crumb = sentry_value_new_breadcrumb("error", p_rationale);
+		sentry_value_set_by_key(crumb, "category", sentry_value_new_string("error"));
+		sentry_value_set_by_key(crumb, "level",
+				sentry_value_new_string(
+						p_error_type == ERROR_TYPE_WARNING ? "warning" : "error"));
 
-	sentry_value_t data = sentry_value_new_object();
-	sentry_value_set_by_key(data, "function", sentry_value_new_string(p_func));
-	sentry_value_set_by_key(data, "file", sentry_value_new_string(p_file));
-	sentry_value_set_by_key(data, "line", sentry_value_new_int32(p_line));
+		sentry_value_t data = sentry_value_new_object();
+		sentry_value_set_by_key(data, "function", sentry_value_new_string(p_func));
+		sentry_value_set_by_key(data, "file", sentry_value_new_string(p_file));
+		sentry_value_set_by_key(data, "line", sentry_value_new_int32(p_line));
 
-	const char *error_string = error_types[p_error_type];
-	sentry_value_set_by_key(data, "godot_error_type", sentry_value_new_string(error_string));
+		const char *error_string = error_types[p_error_type];
+		sentry_value_set_by_key(data, "godot_error_type", sentry_value_new_string(error_string));
 
-	sentry_value_set_by_key(crumb, "data", data);
-	sentry_add_breadcrumb(crumb);
+		sentry_value_set_by_key(crumb, "data", data);
+		sentry_add_breadcrumb(crumb);
+	} else {
+		// Log error as event.
+		Sentry::Level sentry_level = p_error_type == ERROR_TYPE_WARNING ? Sentry::LEVEL_WARNING : Sentry::LEVEL_ERROR;
+		String message = vformat("%s: %s\n   at: %s (%s:%d)\n", error_types[p_error_type], p_rationale, p_func, p_file, p_line);
+		Sentry::get_singleton()->capture_message(message, sentry_level);
+	}
 }
 
 void SentryLogger::_notification(int p_what) {
