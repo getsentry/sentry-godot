@@ -1,5 +1,5 @@
-#ifndef EXPERIMENTAL_LOGGER_H
-#define EXPERIMENTAL_LOGGER_H
+#ifndef SENTRY_LOGGER_H
+#define SENTRY_LOGGER_H
 
 #include <fstream>
 #include <godot_cpp/classes/file_access.hpp>
@@ -7,8 +7,10 @@
 #include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/variant/string.hpp>
 
-class ExperimentalLogger : public godot::Node {
-	GDCLASS(ExperimentalLogger, godot::Node)
+using namespace godot;
+
+class SentryLogger : public Node {
+	GDCLASS(SentryLogger, Node)
 public:
 	// Godot Engine logger error types.
 	enum ErrorType {
@@ -19,7 +21,7 @@ public:
 	};
 
 private:
-	godot::Callable process_log;
+	Callable process_log;
 	std::ifstream log_file;
 
 	void _setup();
@@ -31,7 +33,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	ExperimentalLogger();
+	SentryLogger();
 };
 
-#endif // EXPERIMENTAL_LOGGER_H
+#endif // SENTRY_LOGGER_H

@@ -1,4 +1,4 @@
-#include "experimental_logger.h"
+#include "sentry_logger.h"
 
 #include "sentry.h"
 #include "sentry_options.h"
@@ -27,22 +27,22 @@ const char *error_types[] = {
 	"USER SHADER ERROR"
 };
 
-ExperimentalLogger::ErrorType error_type_as_enum[] = {
-	ExperimentalLogger::ERROR_TYPE_ERROR,
-	ExperimentalLogger::ERROR_TYPE_WARNING,
-	ExperimentalLogger::ERROR_TYPE_SCRIPT,
-	ExperimentalLogger::ERROR_TYPE_SHADER,
-	ExperimentalLogger::ERROR_TYPE_ERROR,
-	ExperimentalLogger::ERROR_TYPE_WARNING,
-	ExperimentalLogger::ERROR_TYPE_SCRIPT,
-	ExperimentalLogger::ERROR_TYPE_SHADER,
+SentryLogger::ErrorType error_type_as_enum[] = {
+	SentryLogger::ERROR_TYPE_ERROR,
+	SentryLogger::ERROR_TYPE_WARNING,
+	SentryLogger::ERROR_TYPE_SCRIPT,
+	SentryLogger::ERROR_TYPE_SHADER,
+	SentryLogger::ERROR_TYPE_ERROR,
+	SentryLogger::ERROR_TYPE_WARNING,
+	SentryLogger::ERROR_TYPE_SCRIPT,
+	SentryLogger::ERROR_TYPE_SHADER,
 };
 
 const int num_error_types = sizeof(error_types) / sizeof(error_types[0]);
 
 } //namespace
 
-void ExperimentalLogger::_process_log_file() {
+void SentryLogger::_process_log_file() {
 	// TODO: Remove the following block before merge.
 	// auto start = std::chrono::high_resolution_clock::now();
 
@@ -101,7 +101,7 @@ void ExperimentalLogger::_process_log_file() {
 	// std::cout << DEBUG_PREFIX << "Godot log processing took " << duration << " usec" << std::endl;
 }
 
-void ExperimentalLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, ErrorType p_error_type) {
+void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, ErrorType p_error_type) {
 	// Debug output.
 	if (SentryOptions::get_singleton()->is_debug_enabled()) {
 		printf("[sentry] DEBUG Godot error caught:\n");
@@ -131,7 +131,7 @@ void ExperimentalLogger::_log_error(const char *p_func, const char *p_file, int 
 	sentry_add_breadcrumb(crumb);
 }
 
-void ExperimentalLogger::_notification(int p_what) {
+void SentryLogger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_setup();
@@ -146,7 +146,7 @@ void ExperimentalLogger::_notification(int p_what) {
 	}
 }
 
-void ExperimentalLogger::_setup() {
+void SentryLogger::_setup() {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 	ERR_FAIL_NULL(OS::get_singleton());
 
@@ -168,7 +168,7 @@ void ExperimentalLogger::_setup() {
 	ERR_FAIL_COND_MSG(!log_file.is_open(), "Sentry: Error logger failure - couldn't open the log file: " + log_path);
 }
 
-ExperimentalLogger::ExperimentalLogger() {
+SentryLogger::SentryLogger() {
 	set_process(false);
-	process_log = callable_mp(this, &ExperimentalLogger::_process_log_file);
+	process_log = callable_mp(this, &SentryLogger::_process_log_file);
 }
