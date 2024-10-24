@@ -518,14 +518,14 @@ Sentry::Sentry() {
 	// TODO: macOS handler?
 	handler_fn = "crashpad_handler";
 #endif
-	String handler_path = OS::get_singleton()->get_executable_path() + "/" + handler_fn;
+	String handler_path = OS::get_singleton()->get_executable_path().get_base_dir() + "/" + handler_fn;
 	if (!FileAccess::file_exists(handler_path)) {
 		handler_path = ProjectSettings::get_singleton()->globalize_path("res://addons/sentrysdk/bin/" + handler_fn);
 	}
 	if (FileAccess::file_exists(handler_path)) {
 		sentry_options_set_handler_path(options, handler_path.utf8());
 	} else {
-		ERR_PRINT("Sentry: Failed to locate crash handler (crashpad) - backend disabled.");
+		ERR_PRINT(vformat("Sentry: Failed to locate crash handler (crashpad) - backend disabled (%s)", handler_path));
 		sentry_options_set_backend(options, NULL);
 	}
 
