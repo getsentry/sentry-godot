@@ -1,4 +1,4 @@
-#include "experimental_logger.h"
+#include "sentry_logger.h"
 #include "sentry_options.h"
 #include "sentry_singleton.h"
 #include "sentry_user.h"
@@ -13,12 +13,14 @@
 
 using namespace godot;
 
+namespace {
+
 void _init_logger() {
 	if (!SentryOptions::get_singleton()->is_error_logger_enabled()) {
 		return;
 	}
 	// Add experimental logger to scene tree.
-	ExperimentalLogger *logger = memnew(ExperimentalLogger);
+	SentryLogger *logger = memnew(SentryLogger);
 	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	if (sml) {
 		sml->get_root()->add_child(logger);
@@ -26,6 +28,8 @@ void _init_logger() {
 		ERR_FAIL_MSG("Sentry: Internal error: SceneTree is null.");
 	}
 }
+
+} // unnamed namespace
 
 void initialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
@@ -35,7 +39,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		SentryOptions *options = new SentryOptions();
 
 		if (!Engine::get_singleton()->is_editor_hint()) {
-			GDREGISTER_INTERNAL_CLASS(ExperimentalLogger);
+			GDREGISTER_INTERNAL_CLASS(SentryLogger);
 			callable_mp_static(_init_logger).call_deferred();
 		}
 
