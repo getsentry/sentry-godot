@@ -104,3 +104,10 @@ void SentryUtil::sentry_event_set_context(sentry_value_t p_event, const char *p_
 	}
 	sentry_value_set_by_key(contexts, p_context_name, p_context);
 }
+
+godot::CharString SentryUtil::generate_uuid() {
+	sentry_uuid_t uuid = sentry_uuid_new_v4();
+	char cstr[37];
+	sentry_uuid_as_string(&uuid, cstr);
+	return CharString(cstr);
+}
