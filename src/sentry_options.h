@@ -33,7 +33,7 @@ private:
 	void _define_setting(const godot::String &p_setting, const godot::Variant &p_default, bool p_basic = true);
 	void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default, bool p_basic = true);
 	void _define_project_settings();
-	void _load_config();
+	void _load_project_settings();
 
 public:
 	_FORCE_INLINE_ static SentryOptions *get_singleton() { return singleton; }
