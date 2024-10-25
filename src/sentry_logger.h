@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/callable.hpp>
+#include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 using namespace godot;
@@ -27,6 +28,7 @@ private:
 	void _setup();
 	void _process_log_file();
 	void _log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, ErrorType error_type);
+	bool _get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) const;
 
 protected:
 	static void _bind_methods() {}

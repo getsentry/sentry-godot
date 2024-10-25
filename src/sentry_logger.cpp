@@ -3,13 +3,14 @@
 #include "sentry.h"
 #include "sentry_options.h"
 #include "sentry_singleton.h"
+#include "sentry_util.h"
 
 #include <cstring>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/core/error_macros.hpp>
-
-using namespace godot;
 
 namespace {
 
@@ -118,7 +119,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 
 	// Debug output.
 	if (SentryOptions::get_singleton()->is_debug_enabled()) {
-		printf("[sentry] DEBUG Godot error caught:\n");
+		printf("[sentry] DEBUG GODOTSDK error logged:\n");
 		printf("   Function: \"%s\"\n", p_func);
 		printf("   File: \"%s\"\n", p_file);
 		printf("   Line: %d\n", p_line);
@@ -161,6 +162,18 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		sentry_value_set_by_key(top_frame, "lineno", sentry_value_new_int32(p_line));
 		sentry_value_append(frames, top_frame);
 
+		if (p_error_type == ERROR_TYPE_SCRIPT) {
+			String context_line;
+			PackedStringArray pre_context;
+			PackedStringArray post_context;
+			bool err = _get_script_context(p_file, p_line, context_line, pre_context, post_context);
+			if (!err) {
+				sentry_value_set_by_key(top_frame, "context_line", sentry_value_new_string(context_line.utf8()));
+				sentry_value_set_by_key(top_frame, "pre_context", SentryUtil::strings_to_sentry_list(pre_context));
+				sentry_value_set_by_key(top_frame, "post_context", SentryUtil::strings_to_sentry_list(post_context));
+			}
+		}
+
 		sentry_value_set_by_key(stack_trace, "frames", frames);
 		sentry_value_set_by_key(exception, "stacktrace", stack_trace);
 		sentry_event_add_exception(event, exception);
@@ -168,12 +181,46 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 	}
 }
 
+bool SentryLogger::_get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) const {
+	if (p_file.is_empty()) {
+		return true;
+	}
+
+	Ref<Script> script = ResourceLoader::get_singleton()->load(p_file);
+
+	// ! Note: Script source code is only available if GDScript is exported as Text (not binary tokens).
+
+	if (script.is_null()) {
+		SentryUtil::print_error("Failed to load script ", p_file);
+		return true;
+	}
+
+	String source_code = script->get_source_code();
+	if (source_code.is_empty()) {
+		SentryUtil::print_debug("Script source not available ", p_file.utf8().ptr());
+		return true;
+	}
+
+	PackedStringArray lines = script->get_source_code().split("\n");
+	if (lines.size() < p_line) {
+		SentryUtil::print_error("Script source is smaller than the referenced line, lineno: ", p_line);
+		return true;
+	}
+
+	r_context_line = lines[p_line - 1];
+	r_pre_context = lines.slice(MAX(p_line - 6, 0), p_line - 1);
+	r_post_context = lines.slice(p_line, MIN(p_line + 5, lines.size()));
+	return false;
+}
+
 void SentryLogger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			SentryUtil::print_debug("starting logger");
 			_setup();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			SentryUtil::print_debug("finishing logger");
 			log_file.close();
 		} break;
 		case NOTIFICATION_PROCESS: {
