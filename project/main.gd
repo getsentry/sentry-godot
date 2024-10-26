@@ -39,7 +39,7 @@ func _update_user_info() -> void:
 	var user: SentryUser = Sentry.get_user()
 	username.text = user.username
 	email.text = user.email
-	user_id.text = user.user_id
+	user_id.text = user.id
 
 
 func _on_level_choice_id_pressed(id: int) -> void:
@@ -105,7 +105,7 @@ func _on_set_context_pressed() -> void:
 func _on_set_user_button_pressed() -> void:
 	print("Setting user info...")
 	var sentry_user := SentryUser.new()
-	sentry_user.user_id = user_id.text
+	sentry_user.id = user_id.text
 	sentry_user.username = username.text
 	sentry_user.email = email.text
 	if infer_ip.button_pressed:

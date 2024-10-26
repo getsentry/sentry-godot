@@ -420,13 +420,13 @@ void Sentry::set_user(const godot::Ref<SentryUser> &p_user) {
 	ERR_FAIL_NULL_MSG(p_user, "Sentry: Setting user failed - user object is null. Please, use Sentry.remove_user() to clear user info.");
 
 	// Initialize user ID if not supplied.
-	if (p_user->get_user_id().is_empty()) {
+	if (p_user->get_id().is_empty()) {
 		// Take user ID from the runtime config or generate a new one if it's empty.
-		String user_id = get_user()->get_user_id();
+		String user_id = get_user()->get_id();
 		if (user_id.is_empty()) {
 			user_id = SentryUtil::generate_uuid();
 		}
-		p_user->set_user_id(user_id);
+		p_user->set_id(user_id);
 	}
 
 	// Save user in a runtime conf-file.
@@ -435,9 +435,9 @@ void Sentry::set_user(const godot::Ref<SentryUser> &p_user) {
 
 	sentry_value_t user_data = sentry_value_new_object();
 
-	if (!p_user->get_user_id().is_empty()) {
+	if (!p_user->get_id().is_empty()) {
 		sentry_value_set_by_key(user_data, "id",
-				sentry_value_new_string(p_user->get_user_id().utf8()));
+				sentry_value_new_string(p_user->get_id().utf8()));
 	}
 	if (!p_user->get_username().is_empty()) {
 		sentry_value_set_by_key(user_data, "username",

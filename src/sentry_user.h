@@ -10,7 +10,7 @@ class SentryUser : public RefCounted {
 	GDCLASS(SentryUser, RefCounted);
 
 private:
-	String user_id;
+	String id;
 	String username;
 	String email;
 	String ip_address;
@@ -21,8 +21,8 @@ protected:
 	String _to_string() const;
 
 public:
-	void set_user_id(const String &p_user_id) { user_id = p_user_id; }
-	String get_user_id() const { return user_id; }
+	void set_id(const String &p_user_id) { id = p_user_id; }
+	String get_id() const { return id; }
 
 	void set_username(const String &p_username) { username = p_username; }
 	String get_username() const { return username; }
@@ -37,7 +37,7 @@ public:
 
 	bool is_user_valid() const;
 
-	void generate_user_id();
+	void generate_new_id();
 };
 
 #endif // SENTRY_USER_H
