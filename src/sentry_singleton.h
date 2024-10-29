@@ -1,6 +1,9 @@
 #ifndef SENTRY_SINGLETON_H
 #define SENTRY_SINGLETON_H
 
+#include "runtime_config.h"
+#include "sentry_user.h"
+
 #include <sentry.h>
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/core/object.hpp>
@@ -14,6 +17,7 @@ class Sentry : public godot::Object {
 private:
 	static Sentry *singleton;
 
+	RuntimeConfig runtime_config;
 	sentry_uuid_t last_uuid;
 
 	sentry_value_t _create_performance_context();
@@ -51,6 +55,10 @@ public:
 
 	void set_tag(const godot::String &p_key, const godot::String &p_value);
 	void remove_tag(const godot::String &p_key);
+
+	void set_user(const godot::Ref<SentryUser> &p_user);
+	Ref<SentryUser> get_user() const { return runtime_config.get_user(); }
+	void remove_user();
 
 	void capture_message(const godot::String &p_message, Level p_level, const godot::String &p_logger = "");
 	godot::String get_last_event_id() const;

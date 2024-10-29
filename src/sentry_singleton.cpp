@@ -83,13 +83,13 @@ void Sentry::add_device_context() {
 	sentry_value_set_by_key(device_context, "cpu_description",
 			sentry_value_new_string(OS::get_singleton()->get_processor_name().utf8()));
 
-#ifndef WEB_ENABLED
-	// Generates an error on wasm builds.
-	String unique_id = OS::get_singleton()->get_unique_id();
-	if (!unique_id.is_empty()) {
-		sentry_value_set_by_key(device_context, "device_unique_identifier", sentry_value_new_string(unique_id.utf8()));
+	// Read/initialize device unique identifier.
+	CharString device_id = runtime_config.get_device_id();
+	if (device_id.length() == 0) {
+		device_id = SentryUtil::generate_uuid();
+		runtime_config.set_device_id(device_id);
 	}
-#endif
+	sentry_value_set_by_key(device_context, "device_unique_identifier", sentry_value_new_string(device_id));
 
 	sentry_set_context("device", device_context);
 }
@@ -416,6 +416,48 @@ void Sentry::remove_tag(const godot::String &p_key) {
 	sentry_remove_tag(p_key.utf8());
 }
 
+void Sentry::set_user(const godot::Ref<SentryUser> &p_user) {
+	ERR_FAIL_NULL_MSG(p_user, "Sentry: Setting user failed - user object is null. Please, use Sentry.remove_user() to clear user info.");
+
+	// Initialize user ID if not supplied.
+	if (p_user->get_id().is_empty()) {
+		// Take user ID from the runtime config or generate a new one if it's empty.
+		String user_id = get_user()->get_id();
+		if (user_id.is_empty()) {
+			user_id = SentryUtil::generate_uuid();
+		}
+		p_user->set_id(user_id);
+	}
+
+	// Save user in a runtime conf-file.
+	// TODO: Make it optional?
+	runtime_config.set_user(p_user);
+
+	sentry_value_t user_data = sentry_value_new_object();
+
+	if (!p_user->get_id().is_empty()) {
+		sentry_value_set_by_key(user_data, "id",
+				sentry_value_new_string(p_user->get_id().utf8()));
+	}
+	if (!p_user->get_username().is_empty()) {
+		sentry_value_set_by_key(user_data, "username",
+				sentry_value_new_string(p_user->get_username().utf8()));
+	}
+	if (!p_user->get_email().is_empty()) {
+		sentry_value_set_by_key(user_data, "email",
+				sentry_value_new_string(p_user->get_email().utf8()));
+	}
+	if (!p_user->get_ip_address().is_empty()) {
+		sentry_value_set_by_key(user_data, "ip_address",
+				sentry_value_new_string(p_user->get_ip_address().utf8()));
+	}
+	sentry_set_user(user_data);
+}
+
+void Sentry::remove_user() {
+	sentry_remove_user();
+}
+
 void Sentry::set_context(const godot::String &p_key, const godot::Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	sentry_set_context(p_key.utf8(), SentryUtil::variant_to_sentry_value(p_value));
@@ -444,6 +486,9 @@ void Sentry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_context", "key", "value"), &Sentry::set_context);
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &Sentry::set_tag);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &Sentry::remove_tag);
+	ClassDB::bind_method(D_METHOD("set_user", "user"), &Sentry::set_user);
+	ClassDB::bind_method(D_METHOD("get_user"), &Sentry::get_user);
+	ClassDB::bind_method(D_METHOD("remove_user"), &Sentry::remove_user);
 }
 
 Sentry::Sentry() {
@@ -456,6 +501,9 @@ Sentry::Sentry() {
 	if (!SentryOptions::get_singleton()->is_enabled()) {
 		return;
 	}
+
+	// Load the runtime configuration from the user's data directory.
+	runtime_config.load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
 	sentry_options_t *options = sentry_options_new();
 	sentry_options_set_dsn(options, SentryOptions::get_singleton()->get_dsn());
@@ -514,6 +562,9 @@ Sentry::Sentry() {
 	sentry_options_set_on_crash(options, on_crash_lambda, NULL);
 
 	sentry_init(options);
+
+	// Initialize user.
+	set_user(runtime_config.get_user());
 }
 
 Sentry::~Sentry() {

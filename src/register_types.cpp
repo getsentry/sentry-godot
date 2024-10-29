@@ -1,5 +1,6 @@
 #include "sentry_options.h"
 #include "sentry_singleton.h"
+#include "sentry_user.h"
 
 #include <sentry.h>
 #include <godot_cpp/classes/engine.hpp>
@@ -14,6 +15,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		// Note: Godot singletons are only available at higher initialization levels.
 		SentryOptions *options = new SentryOptions();
+		GDREGISTER_CLASS(SentryUser);
 		GDREGISTER_CLASS(Sentry);
 		Sentry *sentry_singleton = memnew(Sentry);
 		Engine::get_singleton()->register_singleton("Sentry", Sentry::get_singleton());

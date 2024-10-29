@@ -8,6 +8,10 @@ extends CanvasLayer
 @onready var tag_value: LineEdit = %TagValue
 @onready var context_name: LineEdit = %ContextName
 @onready var context_expression: CodeEdit = %ContextExpression
+@onready var user_id: LineEdit = %UserID
+@onready var username: LineEdit = %Username
+@onready var email: LineEdit = %Email
+@onready var infer_ip: CheckBox = %InferIP
 
 var _event_level: Sentry.Level
 
@@ -15,6 +19,7 @@ var _event_level: Sentry.Level
 func _ready() -> void:
 	level_choice.get_popup().id_pressed.connect(_on_level_choice_id_pressed)
 	_init_level_choice_popup()
+	_update_user_info()
 
 
 func _init_level_choice_popup() -> void:
@@ -26,6 +31,15 @@ func _init_level_choice_popup() -> void:
 	popup.add_item("FATAL", Sentry.LEVEL_FATAL + 1)
 
 	_on_level_choice_id_pressed(Sentry.LEVEL_INFO + 1)
+
+
+func _update_user_info() -> void:
+	# The user info is persisted in the user data directory (referenced by "user://"),
+	# so it will be loaded again on subsequent launches.
+	var user: SentryUser = Sentry.get_user()
+	username.text = user.username
+	email.text = user.email
+	user_id.text = user.id
 
 
 func _on_level_choice_id_pressed(id: int) -> void:
@@ -86,3 +100,16 @@ func _on_set_context_pressed() -> void:
 			print("Failed set context: Dictionary is expected, but found: ", type_string(typeof(result)))
 	else:
 		print("Failed to parse expression: ", expr.get_error_text())
+
+
+func _on_set_user_button_pressed() -> void:
+	print("Setting user info...")
+	var sentry_user := SentryUser.new()
+	sentry_user.id = user_id.text
+	sentry_user.username = username.text
+	sentry_user.email = email.text
+	if infer_ip.button_pressed:
+		sentry_user.infer_ip_address()
+	Sentry.set_user(sentry_user)
+	print("   ", sentry_user)
+	_update_user_info()
