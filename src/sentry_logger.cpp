@@ -13,7 +13,6 @@
 
 namespace {
 
-// #define DEBUG_PREFIX "[sentry] DEBUG "
 #define MAX_LINE_LENGTH 1024
 
 const char *error_types[] = {
