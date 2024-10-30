@@ -26,10 +26,10 @@ void SentryOptions::_load_project_settings() {
 	sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/config/sample_rate", sample_rate);
 	attach_log = ProjectSettings::get_singleton()->get_setting("sentry/config/attach_log", attach_log);
 	max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/config/max_breadcrumbs", max_breadcrumbs);
-	error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger_enabled", error_logger_enabled);
-	error_logger_max_lines = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger_max_lines", error_logger_max_lines);
-	error_logger_log_warnings = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger_log_warnings", error_logger_log_warnings);
-	error_logger_capture_type = (CaptureType)(int)ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger_capture_type", error_logger_capture_type);
+	error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/enabled", error_logger_enabled);
+	error_logger_max_lines = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/max_lines", error_logger_max_lines);
+	error_logger_log_warnings = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/log_warnings", error_logger_log_warnings);
+	error_logger_capture_type = (CaptureType)(int)ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/capture_type", error_logger_capture_type);
 }
 
 void SentryOptions::_define_setting(const String &p_setting, const Variant &p_default, bool p_basic) {
@@ -66,10 +66,11 @@ void SentryOptions::_define_project_settings() {
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/config/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), sample_rate);
 	_define_setting("sentry/config/attach_log", attach_log);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), max_breadcrumbs);
-	_define_setting("sentry/config/error_logger", error_logger_enabled);
-	_define_setting("sentry/config/error_logger_max_lines", error_logger_max_lines);
-	_define_setting("sentry/config/error_logger_log_warnings", error_logger_log_warnings);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger_capture_type", godot::PROPERTY_HINT_ENUM, "As Breadcrumb,As Event"), error_logger_capture_type);
+
+	_define_setting("sentry/config/error_logger/enabled", error_logger_enabled);
+	_define_setting("sentry/config/error_logger/max_lines", error_logger_max_lines);
+	_define_setting("sentry/config/error_logger/log_warnings", error_logger_log_warnings);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/capture_type", godot::PROPERTY_HINT_ENUM, "As Breadcrumb,As Event"), error_logger_capture_type);
 }
 
 SentryOptions::SentryOptions() {
