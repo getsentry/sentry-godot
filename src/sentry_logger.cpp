@@ -1,20 +1,19 @@
 #include "sentry_logger.h"
 
-#include "sentry.h"
 #include "sentry_options.h"
 #include "sentry_singleton.h"
 #include "sentry_util.h"
 
+#include <sentry.h>
 #include <cstring>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/script.hpp>
-#include <godot_cpp/core/error_macros.hpp>
 
 namespace {
 
-#define DEBUG_PREFIX "[sentry] DEBUG "
+// #define DEBUG_PREFIX "[sentry] DEBUG "
 #define MAX_LINE_LENGTH 1024
 
 const char *error_types[] = {
@@ -129,6 +128,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 
 	if (as_breadcrumb) {
 		// Log error as breadcrumb.
+		// TODO: Move this code to abstraction layer later when its available.
 		sentry_value_t crumb = sentry_value_new_breadcrumb("error", p_rationale);
 		sentry_value_set_by_key(crumb, "category", sentry_value_new_string("error"));
 		sentry_value_set_by_key(crumb, "level",
@@ -147,6 +147,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		sentry_add_breadcrumb(crumb);
 	} else {
 		// Log error as event.
+		// TODO: Move this code to abstraction layer later when its available.
 		sentry_value_t event = sentry_value_new_event();
 		Sentry::Level sentry_level = p_error_type == ERROR_TYPE_WARNING ? Sentry::LEVEL_WARNING : Sentry::LEVEL_ERROR;
 		sentry_value_set_by_key(event, "level",
@@ -163,6 +164,8 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		sentry_value_append(frames, top_frame);
 
 		if (p_error_type == ERROR_TYPE_SCRIPT) {
+			// Provide script source code context for script errors if available.
+			// TODO: Should it be optional?
 			String context_line;
 			PackedStringArray pre_context;
 			PackedStringArray post_context;
@@ -188,7 +191,7 @@ bool SentryLogger::_get_script_context(const String &p_file, int p_line, String 
 
 	Ref<Script> script = ResourceLoader::get_singleton()->load(p_file);
 
-	// ! Note: Script source code is only available if GDScript is exported as Text (not binary tokens).
+	// ! Note: Script source code context is only automatically provided if GDScript is exported as text (not binary tokens).
 
 	if (script.is_null()) {
 		SentryUtil::print_error("Failed to load script ", p_file);

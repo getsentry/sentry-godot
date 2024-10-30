@@ -24,6 +24,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	# TODO: Flood printing used for testing performance - remove before merge.
 	for i in range(20):
 		print("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 

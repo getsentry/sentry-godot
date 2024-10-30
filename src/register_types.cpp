@@ -17,6 +17,7 @@ namespace {
 
 void _init_logger() {
 	if (!SentryOptions::get_singleton()->is_error_logger_enabled()) {
+		// If error logger is disabled, don't add it to the scene tree.
 		return;
 	}
 	// Add experimental logger to scene tree.
