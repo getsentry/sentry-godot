@@ -190,10 +190,6 @@ text = "Generate GDScript error"
 layout_mode = 2
 text = "Generate C++ error"
 
-[node name="ToggleFloodPrinting" type="Button" parent="VBoxContainer/Columns/Column2/GenerateErrors"]
-layout_mode = 2
-text = "Toggle flood-printing"
-
 [node name="Header - Capture" type="Label" parent="VBoxContainer/Columns/Column2"]
 custom_minimum_size = Vector2(0, 40.505)
 layout_mode = 2
@@ -286,6 +282,5 @@ grow_vertical = 2
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/SetUserButton" to="." method="_on_set_user_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/GenerateErrors/GenScriptError" to="." method="_on_gen_script_error_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/GenerateErrors/GenNativeError" to="." method="_on_gen_native_error_pressed"]
-[connection signal="pressed" from="VBoxContainer/Columns/Column2/GenerateErrors/ToggleFloodPrinting" to="." method="_on_toggle_flood_printing_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/Crash2/CrashButton" to="." method="_on_crash_button_pressed"]

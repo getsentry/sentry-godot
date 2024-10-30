@@ -20,13 +20,6 @@ func _ready() -> void:
 	level_choice.get_popup().id_pressed.connect(_on_level_choice_id_pressed)
 	_init_level_choice_popup()
 	_update_user_info()
-	set_process(false)
-
-
-func _process(_delta: float) -> void:
-	# TODO: Flood printing used for testing performance - remove before merge.
-	for i in range(20):
-		print("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.")
 
 
 func _init_level_choice_popup() -> void:
@@ -120,10 +113,6 @@ func _on_set_user_button_pressed() -> void:
 	Sentry.set_user(sentry_user)
 	print("   ", sentry_user)
 	_update_user_info()
-
-
-func _on_toggle_flood_printing_pressed() -> void:
-	set_process(not is_processing())
 
 
 func _on_gen_script_error_pressed() -> void:
