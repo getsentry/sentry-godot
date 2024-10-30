@@ -30,6 +30,7 @@ private:
 	int error_logger_max_lines = 30;
 	bool error_logger_log_warnings = true; // Note: Godot warnings are captured as breadcrumbs if this option is enabled.
 	CaptureType error_logger_capture_type = CaptureType::CAPTURE_AS_BREADCRUMB;
+	bool error_logger_include_source = true;
 
 	void _define_setting(const godot::String &p_setting, const godot::Variant &p_default, bool p_basic = true);
 	void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default, bool p_basic = true);
@@ -50,6 +51,7 @@ public:
 	int get_error_logger_max_lines() const { return error_logger_max_lines; }
 	bool is_error_logger_log_warnings_enabled() const { return error_logger_log_warnings; }
 	CaptureType get_error_logger_capture_type() const { return error_logger_capture_type; }
+	bool is_error_logger_include_source_enabled() const { return error_logger_include_source; }
 
 	SentryOptions();
 	~SentryOptions();

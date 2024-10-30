@@ -43,9 +43,6 @@ const int num_error_types = sizeof(error_types) / sizeof(error_types[0]);
 } //namespace
 
 void SentryLogger::_process_log_file() {
-	// TODO: Remove the following block before merge.
-	// auto start = std::chrono::high_resolution_clock::now();
-
 	if (!log_file.is_open()) {
 		set_process(false);
 		ERR_FAIL_MSG("Sentry: Internal error: Log file not open. Error logging stopped.");
@@ -93,12 +90,6 @@ void SentryLogger::_process_log_file() {
 
 	// Seek to the end of file - don't process the rest of the lines.
 	log_file.seekg(0, std::ios::end);
-
-	// TODO: Remove the following block before merge.
-	// std::cout << DEBUG_PREFIX << "Lines read: " << num_lines_read << std::endl;
-	// auto end = std::chrono::high_resolution_clock::now();
-	// auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-	// std::cout << DEBUG_PREFIX << "Godot log processing took " << duration << " usec" << std::endl;
 }
 
 void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, ErrorType p_error_type) {
@@ -163,7 +154,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		sentry_value_set_by_key(top_frame, "lineno", sentry_value_new_int32(p_line));
 		sentry_value_append(frames, top_frame);
 
-		if (p_error_type == ERROR_TYPE_SCRIPT) {
+		if (p_error_type == ERROR_TYPE_SCRIPT && SentryOptions::get_singleton()->is_error_logger_include_source_enabled()) {
 			// Provide script source code context for script errors if available.
 			// TODO: Should it be optional?
 			String context_line;
