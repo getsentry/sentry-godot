@@ -172,7 +172,6 @@ placeholder_text = "Email"
 layout_mode = 2
 text = "Set User"
 
-[node name="Header - Capture" type="Label" parent="VBoxContainer/Columns/Column2"]
 [node name="Header - Generate Errors" type="Label" parent="VBoxContainer/Columns/Column2"]
 custom_minimum_size = Vector2(0, 40.505)
 layout_mode = 2
@@ -183,10 +182,6 @@ vertical_alignment = 2
 [node name="GenerateErrors" type="HBoxContainer" parent="VBoxContainer/Columns/Column2"]
 layout_mode = 2
 
-[node name="ToggleFloodPrinting" type="Button" parent="VBoxContainer/Columns/Column2/GenerateErrors"]
-layout_mode = 2
-text = "Toggle flood-printing"
-
 [node name="GenScriptError" type="Button" parent="VBoxContainer/Columns/Column2/GenerateErrors"]
 layout_mode = 2
 text = "Generate GDScript error"
@@ -195,7 +190,11 @@ text = "Generate GDScript error"
 layout_mode = 2
 text = "Generate C++ error"
 
-[node name="Header - Capture2" type="Label" parent="VBoxContainer/Columns/Column2"]
+[node name="ToggleFloodPrinting" type="Button" parent="VBoxContainer/Columns/Column2/GenerateErrors"]
+layout_mode = 2
+text = "Toggle flood-printing"
+
+[node name="Header - Capture" type="Label" parent="VBoxContainer/Columns/Column2"]
 custom_minimum_size = Vector2(0, 40.505)
 layout_mode = 2
 text = "CAPTURE EVENTS"
@@ -285,8 +284,8 @@ grow_vertical = 2
 [connection signal="pressed" from="VBoxContainer/Columns/Column1/Tags/AddTagButton" to="." method="_on_add_tag_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column1/Context/SetContext" to="." method="_on_set_context_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/SetUserButton" to="." method="_on_set_user_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/Columns/Column2/GenerateErrors/ToggleFloodPrinting" to="." method="_on_toggle_flood_printing_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/GenerateErrors/GenScriptError" to="." method="_on_gen_script_error_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/GenerateErrors/GenNativeError" to="." method="_on_gen_native_error_pressed"]
+[connection signal="pressed" from="VBoxContainer/Columns/Column2/GenerateErrors/ToggleFloodPrinting" to="." method="_on_toggle_flood_printing_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/Crash2/CrashButton" to="." method="_on_crash_button_pressed"]

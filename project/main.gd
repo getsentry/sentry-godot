@@ -19,16 +19,13 @@ var _event_level: Sentry.Level
 func _ready() -> void:
 	level_choice.get_popup().id_pressed.connect(_on_level_choice_id_pressed)
 	_init_level_choice_popup()
-<< << << < HEAD
 	_update_user_info()
-== == == =
 	set_process(false)
 
 
 func _process(_delta: float) -> void:
 	for i in range(20):
 		print("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.")
->> >> >> > bfe737b(Demo: Buttonstogenerateerrors)
 
 
 func _init_level_choice_popup() -> void:
