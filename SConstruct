@@ -110,7 +110,8 @@ elif env["platform"] == "linux":
 
 # Source files to compile.
 sources = Glob("src/*.cpp")
-# To add subdirectories to compilation: sources += Glob("src/some_dir/*.cpp")
+sources += Glob("src/sentry/*.cpp")
+sources += Glob("src/sentry/native/*.cpp")
 
 # Build library.
 if env["platform"] == "macos":

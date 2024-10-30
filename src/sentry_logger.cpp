@@ -1,7 +1,7 @@
 #include "sentry_logger.h"
 
 #include "sentry_options.h"
-#include "sentry_singleton.h"
+#include "sentry_sdk.h"
 #include "sentry_util.h"
 
 #include <sentry.h>
@@ -139,9 +139,9 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		// Log error as event.
 		// TODO: Move this code to abstraction layer later when its available.
 		sentry_value_t event = sentry_value_new_event();
-		Sentry::Level sentry_level = p_error_type == ERROR_TYPE_WARNING ? Sentry::LEVEL_WARNING : Sentry::LEVEL_ERROR;
+		sentry::Level sentry_level = p_error_type == ERROR_TYPE_WARNING ? sentry::LEVEL_WARNING : sentry::LEVEL_ERROR;
 		sentry_value_set_by_key(event, "level",
-				sentry_value_new_string(Sentry::get_level_cstring(sentry_level)));
+				sentry_value_new_string(sentry::level_as_cstring(sentry_level)));
 
 		sentry_value_t exception = sentry_value_new_exception(error_types[p_error_type], p_rationale);
 		sentry_value_t stack_trace = sentry_value_new_object();
