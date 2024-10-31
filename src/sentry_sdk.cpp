@@ -115,54 +115,66 @@ void SentrySDK::add_app_context() {
 	internal_sdk->set_context("app", app_context);
 }
 
-// void SentrySDK::add_gpu_context() {
-// 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-// 	ERR_FAIL_NULL(OS::get_singleton());
+void SentrySDK::add_gpu_context() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	ERR_FAIL_NULL(OS::get_singleton());
 
-// 	sentry_value_t gpu_context = sentry_value_new_object();
+	Dictionary gpu_context = Dictionary();
 
-// 	// Note: In headless/server mode, some of these functions return empty strings.
-// 	sentry_value_set_by_key(gpu_context, "name",
-// 			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_name().utf8()));
-// 	sentry_value_set_by_key(gpu_context, "vendor_name",
-// 			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_vendor().utf8()));
-// 	sentry_value_set_by_key(gpu_context, "version",
-// 			sentry_value_new_string(RenderingServer::get_singleton()->get_video_adapter_api_version().utf8()));
+	// Note: In headless/server mode, some of these functions return empty strings.
+	String adapter_name = RenderingServer::get_singleton()->get_video_adapter_name();
+	if (!adapter_name.is_empty()) {
+		gpu_context["name"] = RenderingServer::get_singleton()->get_video_adapter_name();
+	} else {
+		// Since `name` is required for GPU context, don't add the context.
+		// We're in the headless environment, most likely.
+		return;
+	}
 
-// 	// Device type.
-// 	// TODO: Custom key. Keep or remove?
-// 	String device_type = "Unknown";
-// 	switch (RenderingServer::get_singleton()->get_video_adapter_type()) {
-// 		case RenderingDevice::DEVICE_TYPE_OTHER: {
-// 			device_type = "Other";
-// 		} break;
-// 		case RenderingDevice::DEVICE_TYPE_INTEGRATED_GPU: {
-// 			device_type = "Integrated GPU";
-// 		} break;
-// 		case RenderingDevice::DEVICE_TYPE_DISCRETE_GPU: {
-// 			device_type = "Discrete GPU";
-// 		} break;
-// 		case RenderingDevice::DEVICE_TYPE_VIRTUAL_GPU: {
-// 			device_type = "Virtual GPU";
-// 		} break;
-// 		case RenderingDevice::DEVICE_TYPE_CPU: {
-// 			device_type = "CPU";
-// 		} break;
-// 		default: {
-// 			device_type = "Unknown";
-// 		} break;
-// 	}
-// 	sentry_value_set_by_key(gpu_context, "device_type", sentry_value_new_string(device_type.utf8()));
+	String adapter_vendor = RenderingServer::get_singleton()->get_video_adapter_vendor();
+	if (!adapter_vendor.is_empty()) {
+		gpu_context["vendor_name"] = adapter_vendor;
+	}
 
-// 	// Driver info.
-// 	PackedStringArray driver_info = OS::get_singleton()->get_video_adapter_driver_info();
-// 	if (driver_info.size() >= 2) {
-// 		sentry_value_set_by_key(gpu_context, "driver_name", sentry_value_new_string(driver_info[0].utf8()));
-// 		sentry_value_set_by_key(gpu_context, "driver_version", sentry_value_new_string(driver_info[1].utf8()));
-// 	}
+	String api_version = RenderingServer::get_singleton()->get_video_adapter_api_version();
+	if (!api_version.is_empty()) {
+		gpu_context["version"] = api_version;
+	}
 
-// 	sentry_set_context("gpu", gpu_context);
-// }
+	// Device type.
+	// TODO: Custom key. Keep or remove?
+	String device_type = "Unknown";
+	switch (RenderingServer::get_singleton()->get_video_adapter_type()) {
+		case RenderingDevice::DEVICE_TYPE_OTHER: {
+			device_type = "Other";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_INTEGRATED_GPU: {
+			device_type = "Integrated GPU";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_DISCRETE_GPU: {
+			device_type = "Discrete GPU";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_VIRTUAL_GPU: {
+			device_type = "Virtual GPU";
+		} break;
+		case RenderingDevice::DEVICE_TYPE_CPU: {
+			device_type = "CPU";
+		} break;
+		default: {
+			device_type = "Unknown";
+		} break;
+	}
+	gpu_context["device_type"] = device_type;
+
+	// Driver info.
+	PackedStringArray driver_info = OS::get_singleton()->get_video_adapter_driver_info();
+	if (driver_info.size() >= 2) {
+		gpu_context["driver_name"] = driver_info[0];
+		gpu_context["driver_version"] = driver_info[1];
+	}
+
+	internal_sdk->set_context("gpu", gpu_context);
+}
 
 // void SentrySDK::add_culture_context() {
 // 	ERR_FAIL_NULL(OS::get_singleton());
