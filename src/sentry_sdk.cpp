@@ -176,22 +176,21 @@ void SentrySDK::add_gpu_context() {
 	internal_sdk->set_context("gpu", gpu_context);
 }
 
-// void SentrySDK::add_culture_context() {
-// 	ERR_FAIL_NULL(OS::get_singleton());
+void SentrySDK::add_culture_context() {
+	ERR_FAIL_NULL(OS::get_singleton());
 
-// 	sentry_value_t culture_context = sentry_value_new_object();
-// 	sentry_value_set_by_key(culture_context, "type", sentry_value_new_string("culture"));
+	Dictionary culture_context = Dictionary();
 
-// 	String locale = OS::get_singleton()->get_locale();
-// 	sentry_value_set_by_key(culture_context, "locale", sentry_value_new_string(locale.utf8()));
+	culture_context["type"] = "culture";
+	culture_context["locale"] = OS::get_singleton()->get_locale();
 
-// 	String timezone = Time::get_singleton()->get_time_zone_from_system().get("name", "");
-// 	if (!timezone.is_empty()) {
-// 		sentry_value_set_by_key(culture_context, "timezone", sentry_value_new_string(timezone.utf8()));
-// 	}
+	String timezone = Time::get_singleton()->get_time_zone_from_system().get("name", "");
+	if (!timezone.is_empty()) {
+		culture_context["timezone"] = timezone;
+	}
 
-// 	sentry_set_context("culture", culture_context);
-// }
+	internal_sdk->set_context("culture", culture_context);
+}
 
 // void SentrySDK::add_display_context() {
 // 	ERR_FAIL_NULL(DisplayServer::get_singleton());
