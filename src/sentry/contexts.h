@@ -3,6 +3,7 @@
 
 #include "../runtime_config.h"
 
+#include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 
 using namespace godot;
@@ -17,6 +18,9 @@ Dictionary make_display_context();
 Dictionary make_godot_engine_context();
 Dictionary make_environment_context();
 Dictionary make_performance_context();
+
+// Creates contexts that can only be generated right before an event, e.g. performance info.
+HashMap<String, Dictionary> make_event_contexts();
 
 } //namespace sentry::contexts
 

@@ -9,7 +9,6 @@
 // #include <sentry.h>
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/core/object.hpp>
-#include <godot_cpp/variant/char_string.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <memory>
@@ -38,10 +37,7 @@ protected:
 public:
 	static SentrySDK *get_singleton() { return singleton; }
 
-	// TODO: Fix hooks!
-	// Called by internal SDKs to process events before sending them.
-	// sentry_value_t handle_before_send(sentry_value_t p_event);
-	// sentry_value_t handle_on_crash(sentry_value_t p_event);
+	// * Exported API
 
 	void add_breadcrumb(const String &p_message, const String &p_category, sentry::Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary());

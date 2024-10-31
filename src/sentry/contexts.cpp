@@ -299,4 +299,10 @@ Dictionary make_performance_context() {
 	return perf_context;
 }
 
+HashMap<String, Dictionary> make_event_contexts() {
+	HashMap<String, Dictionary> event_contexts;
+	event_contexts["Godot Performance"] = make_performance_context();
+	return event_contexts;
+}
+
 } //namespace sentry::contexts

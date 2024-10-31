@@ -3,6 +3,7 @@
 #include "../../sentry_options.h"
 #include "../../sentry_sdk.h"
 #include "../../sentry_util.h"
+#include "../contexts.h"
 #include "../environment.h"
 
 #include <sentry.h>
@@ -10,7 +11,44 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/variant/string.hpp>
+
+namespace {
+
+void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name, sentry_value_t p_context) {
+	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
+	ERR_FAIL_COND(sentry_value_get_type(p_context) != SENTRY_VALUE_TYPE_OBJECT);
+	ERR_FAIL_COND(strlen(p_context_name) == 0);
+
+	sentry_value_t contexts = sentry_value_get_by_key(p_event, "contexts");
+	if (sentry_value_is_null(contexts)) {
+		contexts = sentry_value_new_object();
+		sentry_value_set_by_key(p_event, "contexts", contexts);
+	}
+	sentry_value_set_by_key(contexts, p_context_name, p_context);
+}
+
+inline void inject_contexts(sentry_value_t p_event) {
+	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
+
+	HashMap<String, Dictionary> contexts = sentry::contexts::make_event_contexts();
+	for (const auto &kv : contexts) {
+		sentry_event_set_context(p_event, kv.key.utf8(), SentryUtil::variant_to_sentry_value(kv.value));
+	}
+}
+
+sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closure) {
+	inject_contexts(event);
+	return event;
+}
+
+sentry_value_t handle_before_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
+	inject_contexts(event);
+	return event;
+}
+
+} // unnamed namespace
 
 namespace sentry {
 
@@ -132,18 +170,9 @@ void NativeSDK::initialize() {
 		}
 	}
 
-	// TODO: Fix hooks!
-	// "before_send" hook.
-	// auto before_send_handler = [](sentry_value_t event, void *hint, void *closure) {
-	// 	return SentrySDK::get_singleton()->handle_before_send(event);
-	// };
-	// sentry_options_set_before_send(options, before_send_handler, NULL);
-
-	// "on_crash" hook.
-	// auto on_crash_handler = [](const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
-	// 	return SentrySDK::get_singleton()->handle_on_crash(event);
-	// };
-	// sentry_options_set_on_crash(options, on_crash_handler, NULL);
+	// Hooks.
+	sentry_options_set_before_send(options, handle_before_send, NULL);
+	sentry_options_set_on_crash(options, handle_before_crash, NULL);
 
 	sentry_init(options);
 }
