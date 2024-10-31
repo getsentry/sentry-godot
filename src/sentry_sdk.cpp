@@ -241,27 +241,23 @@ void SentrySDK::add_engine_context() {
 	internal_sdk->set_context("Godot Engine", godot_context);
 }
 
-// void SentrySDK::add_environment_context() {
-// 	ERR_FAIL_NULL(OS::get_singleton());
+void SentrySDK::add_environment_context() {
+	ERR_FAIL_NULL(OS::get_singleton());
 
-// 	sentry_value_t env_context = sentry_value_new_object();
-// 	sentry_value_set_by_key(env_context, "sandboxed",
-// 			sentry_value_new_bool(OS::get_singleton()->is_sandboxed()));
-// 	sentry_value_set_by_key(env_context, "userfs_persistent",
-// 			sentry_value_new_bool(OS::get_singleton()->is_userfs_persistent()));
-// 	sentry_value_set_by_key(env_context, "granted_permissions",
-// 			SentryUtil::variant_to_sentry_value(OS::get_singleton()->get_granted_permissions()));
+	Dictionary env_context = Dictionary();
+	env_context["sandboxed"] = OS::get_singleton()->is_sandboxed();
+	env_context["userfs_persistent"] = OS::get_singleton()->is_userfs_persistent();
+	env_context["granted_permissions"] = OS::get_singleton()->get_granted_permissions();
 
-// #ifdef LINUX_ENABLED
-// 	String distribution_name = OS::get_singleton()->get_distribution_name();
-// 	if (!distribution_name.is_empty()) {
-// 		sentry_value_set_by_key(env_context, "distribution_name",
-// 				sentry_value_new_string(distribution_name.utf8()));
-// 	}
-// #endif
+#ifdef LINUX_ENABLED
+	String distribution_name = OS::get_singleton()->get_distribution_name();
+	if (!distribution_name.is_empty()) {
+		env_context["distribution_name"] = distribution_name;
+	}
+#endif
 
-// 	sentry_set_context("Environment", env_context);
-// }
+	internal_sdk->set_context("Environment", env_context);
+}
 
 // sentry_value_t SentrySDK::_create_performance_context() {
 // 	sentry_value_t perf_context = sentry_value_new_object();
