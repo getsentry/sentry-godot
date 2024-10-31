@@ -6,11 +6,7 @@
 #include "sentry/level.h"
 #include "sentry_user.h"
 
-// #include <sentry.h>
-#include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/core/object.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/string.hpp>
 #include <memory>
 
 using namespace godot;
@@ -24,12 +20,9 @@ private:
 	static SentrySDK *singleton;
 
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
-
 	Ref<RuntimeConfig> runtime_config;
 
 	void _init_contexts();
-	// TODO: Fix performance context!
-	Dictionary _create_performance_context();
 
 protected:
 	static void _bind_methods();

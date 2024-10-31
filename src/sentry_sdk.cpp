@@ -70,16 +70,17 @@ void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary 
 	internal_sdk->set_context(p_key, p_value);
 }
 
-// TODO: Fix handlers!
-// sentry_value_t SentrySDK::handle_before_send(sentry_value_t p_event) {
-// 	SentryUtil::sentry_event_set_context(p_event, "Performance", _create_performance_context());
-// 	return p_event;
-// }
+void SentrySDK::_init_contexts() {
+	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
+	internal_sdk->set_context("app", sentry::contexts::make_app_context());
+	internal_sdk->set_context("gpu", sentry::contexts::make_gpu_context());
+	internal_sdk->set_context("culture", sentry::contexts::make_culture_context());
 
-// sentry_value_t SentrySDK::handle_on_crash(sentry_value_t p_event) {
-// 	SentryUtil::sentry_event_set_context(p_event, "Performance", _create_performance_context());
-// 	return p_event;
-// }
+	// Custom contexts.
+	internal_sdk->set_context("Display", sentry::contexts::make_display_context());
+	internal_sdk->set_context("Godot Engine", sentry::contexts::make_godot_engine_context());
+	internal_sdk->set_context("Environment", sentry::contexts::make_environment_context());
+}
 
 void SentrySDK::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_DEBUG);
@@ -97,18 +98,6 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_user", "user"), &SentrySDK::set_user);
 	ClassDB::bind_method(D_METHOD("get_user"), &SentrySDK::get_user);
 	ClassDB::bind_method(D_METHOD("remove_user"), &SentrySDK::remove_user);
-}
-
-void SentrySDK::_init_contexts() {
-	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
-	internal_sdk->set_context("app", sentry::contexts::make_app_context());
-	internal_sdk->set_context("gpu", sentry::contexts::make_gpu_context());
-	internal_sdk->set_context("culture", sentry::contexts::make_culture_context());
-
-	// Custom contexts.
-	internal_sdk->set_context("Display", sentry::contexts::make_display_context());
-	internal_sdk->set_context("Godot Engine", sentry::contexts::make_godot_engine_context());
-	internal_sdk->set_context("Environment", sentry::contexts::make_environment_context());
 }
 
 SentrySDK::SentrySDK() {
@@ -138,19 +127,6 @@ SentrySDK::SentrySDK() {
 
 	// Delay the contexts initialization until the engine singletons are ready.
 	callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
-
-	// TODO: Fix hooks!
-	// "before_send" hook.
-	// auto before_send_lambda = [](sentry_value_t event, void *hint, void *closure) {
-	// 	return SentrySDK::get_singleton()->handle_before_send(event);
-	// };
-	// sentry_options_set_before_send(options, before_send_lambda, NULL);
-
-	// "on_crash" hook.
-	// auto on_crash_lambda = [](const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
-	// 	return SentrySDK::get_singleton()->handle_on_crash(event);
-	// };
-	// sentry_options_set_on_crash(options, on_crash_lambda, NULL);
 
 	// Initialize user.
 	set_user(runtime_config->get_user());
