@@ -3,6 +3,7 @@
 #include "sentry/contexts.h"
 #include "sentry/environment.h"
 #include "sentry/native/native_sdk.h"
+#include "sentry/uuid.h"
 #include "sentry_options.h"
 #include "sentry_util.h"
 
@@ -49,7 +50,7 @@ void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
 		// Take user ID from the runtime config or generate a new one if it's empty.
 		String user_id = get_user()->get_id();
 		if (user_id.is_empty()) {
-			user_id = SentryUtil::make_uuid();
+			user_id = sentry::uuid::make_uuid();
 		}
 		p_user->set_id(user_id);
 	}

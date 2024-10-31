@@ -1,5 +1,6 @@
 #include "sentry_user.h"
 
+#include "sentry/uuid.h"
 #include "sentry_util.h"
 
 #include <godot_cpp/core/error_macros.hpp>
@@ -28,7 +29,7 @@ String SentryUser::_to_string() const {
 }
 
 void SentryUser::generate_new_id() {
-	id = SentryUtil::make_uuid();
+	id = sentry::uuid::make_uuid();
 }
 
 void SentryUser::_bind_methods() {
