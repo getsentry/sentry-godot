@@ -207,7 +207,7 @@ void SentrySDK::add_display_context() {
 		Dictionary screen_data = Dictionary();
 		screen_data["size"] = DisplayServer::get_singleton()->screen_get_size(i);
 		screen_data["dpi"] = DisplayServer::get_singleton()->screen_get_dpi(i);
-		screen_data["refresh_rate"] = DisplayServer::get_singleton()->screen_get_refresh_rate(i);
+		screen_data["refresh_rate"] = Math::snapped(DisplayServer::get_singleton()->screen_get_refresh_rate(i), 0.01);
 		screen_data["position"] = DisplayServer::get_singleton()->screen_get_position(i);
 		screen_data["scale_factor"] = DisplayServer::get_singleton()->screen_get_scale(i);
 		screen_data["primary"] = i == DisplayServer::get_singleton()->get_primary_screen();
