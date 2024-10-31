@@ -26,10 +26,11 @@ private:
 
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 
-	RuntimeConfig runtime_config;
+	Ref<RuntimeConfig> runtime_config;
 
+	void _init_contexts();
 	// TODO: Fix performance context!
-	// sentry_value_t _create_performance_context();
+	Dictionary _create_performance_context();
 
 protected:
 	static void _bind_methods();
@@ -61,7 +62,7 @@ public:
 	void remove_tag(const String &p_key);
 
 	void set_user(const Ref<SentryUser> &p_user);
-	Ref<SentryUser> get_user() const { return runtime_config.get_user(); }
+	Ref<SentryUser> get_user() const { return runtime_config->get_user(); }
 	void remove_user();
 
 	void capture_message(const String &p_message, sentry::Level p_level, const String &p_logger = "");

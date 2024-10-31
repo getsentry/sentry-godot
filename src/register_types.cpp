@@ -1,3 +1,4 @@
+#include "runtime_config.h"
 #include "sentry_logger.h"
 #include "sentry_options.h"
 #include "sentry_sdk.h"
@@ -44,20 +45,11 @@ void initialize_module(ModuleInitializationLevel p_level) {
 			callable_mp_static(_init_logger).call_deferred();
 		}
 
+		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 		GDREGISTER_CLASS(SentryUser);
 		GDREGISTER_CLASS(SentrySDK);
 		SentrySDK *sentry_singleton = memnew(SentrySDK);
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
-
-		// TODO: Restore context init!
-		// Some singletons are not available at this point.
-		callable_mp(sentry_singleton, &SentrySDK::add_device_context).call_deferred();
-		callable_mp(sentry_singleton, &SentrySDK::add_app_context).call_deferred();
-		callable_mp(sentry_singleton, &SentrySDK::add_gpu_context).call_deferred();
-		callable_mp(sentry_singleton, &SentrySDK::add_culture_context).call_deferred();
-		callable_mp(sentry_singleton, &SentrySDK::add_display_context).call_deferred();
-		callable_mp(sentry_singleton, &SentrySDK::add_engine_context).call_deferred();
-		callable_mp(sentry_singleton, &SentrySDK::add_environment_context).call_deferred();
 	}
 
 #ifdef TOOLS_ENABLED

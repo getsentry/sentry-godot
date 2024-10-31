@@ -4,11 +4,13 @@
 #include "sentry_user.h"
 
 #include <godot_cpp/classes/config_file.hpp>
+#include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/char_string.hpp>
 
 using namespace godot;
 
-class RuntimeConfig {
+class RuntimeConfig : public RefCounted {
+	GDCLASS(RuntimeConfig, RefCounted)
 private:
 	String conf_path;
 	Ref<ConfigFile> conf;
@@ -16,6 +18,9 @@ private:
 	// Cached values.
 	Ref<SentryUser> user;
 	String device_id;
+
+protected:
+	static void _bind_methods() {}
 
 public:
 	Ref<SentryUser> get_user() const { return user; }
