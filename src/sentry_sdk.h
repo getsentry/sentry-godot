@@ -43,8 +43,6 @@ public:
 	// sentry_value_t handle_before_send(sentry_value_t p_event);
 	// sentry_value_t handle_on_crash(sentry_value_t p_event);
 
-	CharString get_environment() const;
-
 	void add_breadcrumb(const String &p_message, const String &p_category, sentry::Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary());
 	void set_context(const String &p_key, const Dictionary &p_value);

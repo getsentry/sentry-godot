@@ -18,10 +18,6 @@ SentrySDK *SentrySDK::singleton = nullptr;
 
 VARIANT_ENUM_CAST(Level);
 
-CharString SentrySDK::get_environment() const {
-	return sentry::environment::get_environment();
-}
-
 void SentrySDK::capture_message(const String &p_message, Level p_level, const String &p_logger) {
 	internal_sdk->capture_message(p_message, p_level, p_logger);
 }
