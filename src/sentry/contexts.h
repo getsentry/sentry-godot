@@ -16,6 +16,7 @@ Dictionary make_culture_context();
 Dictionary make_display_context();
 Dictionary make_godot_engine_context();
 Dictionary make_environment_context();
+Dictionary make_performance_context();
 
 } //namespace sentry::contexts
 

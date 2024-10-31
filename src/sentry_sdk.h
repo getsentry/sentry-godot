@@ -43,15 +43,6 @@ public:
 	// sentry_value_t handle_before_send(sentry_value_t p_event);
 	// sentry_value_t handle_on_crash(sentry_value_t p_event);
 
-	// TODO: Move out of SentrySDK.
-	void add_device_context();
-	void add_app_context();
-	void add_gpu_context();
-	void add_culture_context();
-	void add_display_context();
-	void add_engine_context();
-	void add_environment_context();
-
 	CharString get_environment() const;
 
 	void add_breadcrumb(const String &p_message, const String &p_category, sentry::Level p_level,
