@@ -224,28 +224,22 @@ void SentrySDK::add_display_context() {
 	internal_sdk->set_context("Display", display_context);
 }
 
-// void SentrySDK::add_engine_context() {
-// 	ERR_FAIL_NULL(OS::get_singleton());
-// 	ERR_FAIL_NULL(Engine::get_singleton());
+void SentrySDK::add_engine_context() {
+	ERR_FAIL_NULL(OS::get_singleton());
+	ERR_FAIL_NULL(Engine::get_singleton());
 
-// 	sentry_value_t godot_context = sentry_value_new_object();
+	Dictionary godot_context = Dictionary();
 
-// 	Dictionary version_info = Engine::get_singleton()->get_version_info();
-// 	String version = version_info.get("string", "");
-// 	sentry_value_set_by_key(godot_context, "version", sentry_value_new_string(version.utf8()));
-// 	String hash = version_info.get("hash", "");
-// 	sentry_value_set_by_key(godot_context, "version_commit", sentry_value_new_string(hash.utf8()));
+	Dictionary version_info = Engine::get_singleton()->get_version_info();
+	godot_context["version"] = version_info.get("string", "");
+	godot_context["version_commit"] = version_info.get("hash", "");
+	godot_context["debug_build"] = OS::get_singleton()->is_debug_build();
+	godot_context["command_line_arguments"] = OS::get_singleton()->get_cmdline_args();
+	godot_context["mode"] = String(sentry::environment::get_environment());
+	godot_context["editor_build"] = OS::get_singleton()->has_feature("editor");
 
-// 	sentry_value_set_by_key(godot_context, "debug_build",
-// 			sentry_value_new_bool(OS::get_singleton()->is_debug_build()));
-// 	sentry_value_set_by_key(godot_context, "command_line_arguments",
-// 			SentryUtil::variant_to_sentry_value(OS::get_singleton()->get_cmdline_args()));
-// 	sentry_value_set_by_key(godot_context, "mode", sentry_value_new_string(get_environment()));
-// 	sentry_value_set_by_key(godot_context, "editor_build",
-// 			sentry_value_new_bool(OS::get_singleton()->has_feature("editor")));
-
-// 	sentry_set_context("Godot Engine", godot_context);
-// }
+	internal_sdk->set_context("Godot Engine", godot_context);
+}
 
 // void SentrySDK::add_environment_context() {
 // 	ERR_FAIL_NULL(OS::get_singleton());
