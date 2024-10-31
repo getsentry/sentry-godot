@@ -21,6 +21,7 @@ private:
 
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
+	bool enabled = false;
 
 	void _init_contexts();
 
@@ -31,6 +32,8 @@ public:
 	static SentrySDK *get_singleton() { return singleton; }
 
 	// * Exported API
+
+	bool is_enabled() const { return enabled; }
 
 	void add_breadcrumb(const String &p_message, const String &p_category, sentry::Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary());

@@ -1,16 +1,19 @@
 #include "sentry_sdk.h"
 
 #include "sentry/contexts.h"
+#include "sentry/disabled_sdk.h"
 #include "sentry/environment.h"
-#include "sentry/native/native_sdk.h"
 #include "sentry/uuid.h"
 #include "sentry_options.h"
 #include "sentry_util.h"
 
-// #include <sentry.h>
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+
+#if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
+#include "sentry/native/native_sdk.h"
+#endif
 
 using namespace godot;
 using namespace sentry;
@@ -108,22 +111,24 @@ SentrySDK::SentrySDK() {
 
 #if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
 	internal_sdk = std::make_shared<NativeSDK>();
+	enabled = true;
 #else
 	// Unsupported platform
-	// TODO: Create fake SDK?
+	internal_sdk = std::make_shared<DisabledSDK>();
 	return;
 #endif
-	internal_sdk->initialize();
-
-	// Setup logging.
-
-	if (!SentryOptions::get_singleton()->is_enabled()) {
-		return;
-	}
 
 	// Load the runtime configuration from the user's data directory.
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
+
+	enabled = enabled && SentryOptions::get_singleton()->is_enabled();
+	if (!enabled) {
+		internal_sdk = std::make_shared<DisabledSDK>();
+		return;
+	}
+
+	internal_sdk->initialize();
 
 	// Delay the contexts initialization until the engine singletons are ready.
 	callable_mp(this, &SentrySDK::_init_contexts).call_deferred();

@@ -111,7 +111,8 @@ elif env["platform"] == "linux":
 # Source files to compile.
 sources = Glob("src/*.cpp")
 sources += Glob("src/sentry/*.cpp")
-sources += Glob("src/sentry/native/*.cpp")
+if env["platform"] in ["linux", "windows", "macos"]:
+    sources += Glob("src/sentry/native/*.cpp")
 
 # Build library.
 if env["platform"] == "macos":

@@ -1,5 +1,4 @@
 #include "sentry_util.h"
-#include "sentry/native/native_util.h"
 
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/core/error_macros.hpp>
