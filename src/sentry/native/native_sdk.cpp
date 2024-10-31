@@ -5,6 +5,7 @@
 #include "../../sentry_util.h"
 #include "../contexts.h"
 #include "../environment.h"
+#include "native_util.h"
 
 #include <sentry.h>
 #include <godot_cpp/classes/file_access.hpp>
@@ -34,7 +35,7 @@ inline void inject_contexts(sentry_value_t p_event) {
 
 	HashMap<String, Dictionary> contexts = sentry::contexts::make_event_contexts();
 	for (const auto &kv : contexts) {
-		sentry_event_set_context(p_event, kv.key.utf8(), SentryUtil::variant_to_sentry_value(kv.value));
+		sentry_event_set_context(p_event, kv.key.utf8(), sentry::native::variant_to_sentry_value(kv.value));
 	}
 }
 
@@ -54,7 +55,7 @@ namespace sentry {
 
 void NativeSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(p_key.is_empty());
-	sentry_set_context(p_key.utf8(), SentryUtil::variant_to_sentry_value(p_value));
+	sentry_set_context(p_key.utf8(), sentry::native::variant_to_sentry_value(p_value));
 }
 
 void NativeSDK::remove_context(const String &p_key) {
@@ -105,7 +106,7 @@ void NativeSDK::add_breadcrumb(const String &p_message, const String &p_category
 	sentry_value_t crumb = sentry_value_new_breadcrumb(p_type.utf8().ptr(), p_message.utf8().ptr());
 	sentry_value_set_by_key(crumb, "category", sentry_value_new_string(p_category.utf8().ptr()));
 	sentry_value_set_by_key(crumb, "level", sentry_value_new_string(sentry::level_as_cstring(p_level)));
-	sentry_value_set_by_key(crumb, "data", SentryUtil::variant_to_sentry_value(p_data));
+	sentry_value_set_by_key(crumb, "data", sentry::native::variant_to_sentry_value(p_data));
 	sentry_add_breadcrumb(crumb);
 }
 

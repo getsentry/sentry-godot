@@ -1,5 +1,6 @@
 #include "sentry_logger.h"
 
+#include "sentry/native/native_util.h"
 #include "sentry_options.h"
 #include "sentry_sdk.h"
 #include "sentry_util.h"
@@ -162,8 +163,8 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 			bool err = _get_script_context(p_file, p_line, context_line, pre_context, post_context);
 			if (!err) {
 				sentry_value_set_by_key(top_frame, "context_line", sentry_value_new_string(context_line.utf8()));
-				sentry_value_set_by_key(top_frame, "pre_context", SentryUtil::strings_to_sentry_list(pre_context));
-				sentry_value_set_by_key(top_frame, "post_context", SentryUtil::strings_to_sentry_list(post_context));
+				sentry_value_set_by_key(top_frame, "pre_context", sentry::native::strings_to_sentry_list(pre_context));
+				sentry_value_set_by_key(top_frame, "post_context", sentry::native::strings_to_sentry_list(post_context));
 			}
 		}
 
