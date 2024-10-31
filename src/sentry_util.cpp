@@ -1,6 +1,6 @@
 #include "sentry_util.h"
+#include "sentry/native/native_util.h"
 
-#include <sentry.h>
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 
@@ -36,9 +36,11 @@ String SentryUtil::get_screen_orientation_string(int32_t p_screen) {
 	}
 }
 
-godot::CharString SentryUtil::generate_uuid() {
-	sentry_uuid_t uuid = sentry_uuid_new_v4();
-	char cstr[37];
-	sentry_uuid_as_string(&uuid, cstr);
-	return CharString(cstr);
+String SentryUtil::generate_uuid() {
+#if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
+	return sentry::native::generate_uuid();
+#else
+	// TODO: uuid for other platforms.
+	return "1234";
+#endif
 }
