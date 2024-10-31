@@ -51,7 +51,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 
 		// TODO: Restore context init!
 		// Some singletons are not available at this point.
-		// callable_mp(sentry_singleton, &SentrySDK::add_device_context).call_deferred();
+		callable_mp(sentry_singleton, &SentrySDK::add_device_context).call_deferred();
 		// callable_mp(sentry_singleton, &SentrySDK::add_app_context).call_deferred();
 		// callable_mp(sentry_singleton, &SentrySDK::add_gpu_context).call_deferred();
 		// callable_mp(sentry_singleton, &SentrySDK::add_culture_context).call_deferred();

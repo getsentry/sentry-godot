@@ -25,7 +25,7 @@ void RuntimeConfig::set_user(const Ref<SentryUser> &p_user) {
 	conf->save(conf_path);
 }
 
-void RuntimeConfig::set_device_id(const CharString &p_device_id) {
+void RuntimeConfig::set_device_id(const String &p_device_id) {
 	ERR_FAIL_COND(p_device_id.length() == 0);
 	device_id = p_device_id;
 	conf->set_value("device", "id", (String)device_id);

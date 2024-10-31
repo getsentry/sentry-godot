@@ -19,6 +19,7 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/core/math.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -30,75 +31,64 @@ SentrySDK *SentrySDK::singleton = nullptr;
 VARIANT_ENUM_CAST(Level);
 
 // TODO: move contexts
-// void SentrySDK::add_device_context() {
-// 	ERR_FAIL_NULL(OS::get_singleton());
-// 	ERR_FAIL_NULL(Engine::get_singleton());
-// 	ERR_FAIL_NULL(DisplayServer::get_singleton());
-// 	ERR_FAIL_NULL(Time::get_singleton());
+void SentrySDK::add_device_context() {
+	ERR_FAIL_NULL(OS::get_singleton());
+	ERR_FAIL_NULL(Engine::get_singleton());
+	ERR_FAIL_NULL(DisplayServer::get_singleton());
+	ERR_FAIL_NULL(Time::get_singleton());
 
-// 	sentry_value_t device_context = sentry_value_new_object();
+	Dictionary device_context = Dictionary();
+	device_context["arch"] = Engine::get_singleton()->get_architecture_name();
+	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
+	String orientation = SentryUtil::get_screen_orientation_string(primary_screen);
+	if (orientation.length() > 0) {
+		device_context["orientation"] = orientation;
+	}
 
-// 	sentry_value_set_by_key(device_context, "arch",
-// 			sentry_value_new_string(Engine::get_singleton()->get_architecture_name().utf8()));
+	// TODO: Need platform-specific solutions - this doesn't work well.
+	String host = OS::get_singleton()->get_environment("HOST");
+	if (host.is_empty()) {
+		host = "localhost";
+	}
+	device_context["name"] = host;
 
-// 	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
-// 	CharString orientation = SentryUtil::get_screen_orientation_cstring(primary_screen);
-// 	if (orientation.size() > 0) {
-// 		sentry_value_set_by_key(device_context, "orientation", sentry_value_new_string(orientation));
-// 	}
+	String model = OS::get_singleton()->get_model_name();
+	if (!model.is_empty() && model != "GenericDevice") {
+		device_context["model"] = model;
+	}
 
-// 	// TODO: Need platform-specific solutions - this won't work well in most environments.
-// 	String host = OS::get_singleton()->get_environment("HOST");
-// 	if (host.is_empty()) {
-// 		host = "localhost";
-// 	}
-// 	sentry_value_set_by_key(device_context, "name", sentry_value_new_string(host.utf8()));
+	Vector2i resolution = DisplayServer::get_singleton()->screen_get_size(primary_screen);
+	device_context["screen_width_pixels"] = resolution.x;
+	device_context["screen_height_pixels"] = resolution.y;
+	device_context["screen_dpi"] = DisplayServer::get_singleton()->screen_get_dpi(
+			DisplayServer::get_singleton()->get_primary_screen());
 
-// 	String model = OS::get_singleton()->get_model_name();
-// 	if (!model.is_empty() && model != "GenericDevice") {
-// 		sentry_value_set_by_key(device_context, "model", sentry_value_new_string(model.utf8()));
-// 	}
+	Dictionary meminfo = OS::get_singleton()->get_memory_info();
+	// Note: Using double since int32 can't handle size in bytes.
+	device_context["memory_size"] = double(meminfo["physical"]);
+	device_context["free_memory"] = double(meminfo["free"]);
+	device_context["usable_memory"] = double(meminfo["available"]);
 
-// 	Vector2i resolution = DisplayServer::get_singleton()->screen_get_size(primary_screen);
-// 	sentry_value_set_by_key(device_context, "screen_width_pixels", sentry_value_new_int32(resolution.x));
-// 	sentry_value_set_by_key(device_context, "screen_height_pixels", sentry_value_new_int32(resolution.y));
+	auto dir = DirAccess::open("user://");
+	if (dir.is_valid()) {
+		device_context["free_storage"] = double(dir->get_space_left());
+	}
 
-// 	sentry_value_set_by_key(device_context, "screen_dpi",
-// 			sentry_value_new_int32(
-// 					DisplayServer::get_singleton()->screen_get_dpi(
-// 							DisplayServer::get_singleton()->get_primary_screen())));
+	// TODO: device type.
 
-// 	Dictionary meminfo = OS::get_singleton()->get_memory_info();
-// 	// Note: Using double since int32 can't handle size in bytes.
-// 	sentry_value_set_by_key(device_context, "memory_size",
-// 			sentry_value_new_double(meminfo["physical"]));
-// 	sentry_value_set_by_key(device_context, "free_memory",
-// 			sentry_value_new_double(meminfo["free"]));
-// 	sentry_value_set_by_key(device_context, "usable_memory",
-// 			sentry_value_new_double(meminfo["available"]));
+	device_context["processor_count"] = OS::get_singleton()->get_processor_count();
+	device_context["cpu_description"] = OS::get_singleton()->get_processor_name();
 
-// 	auto dir = DirAccess::open("user://");
-// 	if (dir.is_valid()) {
-// 		sentry_value_set_by_key(device_context, "free_storage", sentry_value_new_double(dir->get_space_left()));
-// 	}
+	// Read/initialize device unique identifier.
+	String device_id = runtime_config.get_device_id();
+	if (device_id.length() == 0) {
+		device_id = SentryUtil::generate_uuid();
+		runtime_config.set_device_id(device_id);
+	}
+	device_context["device_unique_identifier"] = device_id;
 
-// 	// TODO: device type.
-
-// 	sentry_value_set_by_key(device_context, "processor_count",
-// 			sentry_value_new_int32(OS::get_singleton()->get_processor_count()));
-// 	sentry_value_set_by_key(device_context, "cpu_description",
-// 			sentry_value_new_string(OS::get_singleton()->get_processor_name().utf8()));
-
-// 	// Read/initialize device unique identifier.
-// 	CharString device_id = runtime_config.get_device_id();
-// 	if (device_id.length() == 0) {
-// 		device_id = SentryUtil::generate_uuid();
-// 		runtime_config.set_device_id(device_id);
-// 	}
-// 	sentry_value_set_by_key(device_context, "device_unique_identifier", sentry_value_new_string(device_id));
-
-// 	sentry_set_context("device", device_context);
-// }
+	internal_sdk->set_context("device", device_context);
+}
 
 // void SentrySDK::add_app_context() {
 // 	ERR_FAIL_NULL(Time::get_singleton());
