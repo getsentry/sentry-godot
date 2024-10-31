@@ -1,8 +1,8 @@
 #include "contexts.h"
 
-#include "../sentry_util.h"
-#include "environment.h"
-#include "uuid.h"
+#include "sentry/environment.h"
+#include "sentry/uuid.h"
+#include "sentry_util.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>

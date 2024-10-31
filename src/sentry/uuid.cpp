@@ -1,6 +1,6 @@
 #include "uuid.h"
 
-#include "native/native_util.h"
+#include "sentry/native/native_util.h"
 
 namespace sentry::uuid {
 

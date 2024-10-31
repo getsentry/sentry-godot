@@ -1,11 +1,10 @@
 #include "native_sdk.h"
 
-#include "../../sentry_options.h"
-#include "../../sentry_sdk.h"
-#include "../../sentry_util.h"
-#include "../contexts.h"
-#include "../environment.h"
-#include "native_util.h"
+#include "sentry/contexts.h"
+#include "sentry/environment.h"
+#include "sentry/native/native_util.h"
+#include "sentry_options.h"
+#include "sentry_util.h"
 
 #include <sentry.h>
 #include <godot_cpp/classes/file_access.hpp>

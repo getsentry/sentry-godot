@@ -1,7 +1,7 @@
 #ifndef CONTEXTS_H
 #define CONTEXTS_H
 
-#include "../runtime_config.h"
+#include "runtime_config.h"
 
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/variant/dictionary.hpp>

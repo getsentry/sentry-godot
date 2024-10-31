@@ -73,6 +73,9 @@ Depends(sentry_native, "godot-cpp")  # Force sentry-native to be built sequentia
 Default(sentry_native)
 Clean(sentry_native, ["sentry-native/build", "sentry-native/install"])
 
+# Include relative to project source root.
+env.Append(CPPPATH=["src/"])
+
 # Include sentry-native libs (static).
 if env["platform"] in ["linux", "macos", "windows"]:
     env.Append(CPPDEFINES=["SENTRY_BUILD_STATIC"])

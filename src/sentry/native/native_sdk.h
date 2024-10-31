@@ -1,8 +1,9 @@
 #ifndef NATIVE_SDK_H
 #define NATIVE_SDK_H
 
-#include "../internal_sdk.h"
-#include "sentry.h"
+#include "sentry/internal_sdk.h"
+
+#include <sentry.h>
 
 namespace sentry {
 

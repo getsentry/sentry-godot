@@ -1,8 +1,8 @@
 #ifndef INTERNAL_SDK_H
 #define INTERNAL_SDK_H
 
-#include "../sentry_user.h"
 #include "level.h"
+#include "sentry_user.h"
 
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
