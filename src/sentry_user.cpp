@@ -28,7 +28,7 @@ String SentryUser::_to_string() const {
 }
 
 void SentryUser::generate_new_id() {
-	id = SentryUtil::generate_uuid();
+	id = SentryUtil::make_uuid();
 }
 
 void SentryUser::_bind_methods() {

@@ -16,7 +16,7 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant);
 sentry_value_t strings_to_sentry_list(const PackedStringArray &p_strings);
 
 // Create UUID as String.
-String generate_uuid();
+String make_uuid();
 
 } //namespace sentry::native
 

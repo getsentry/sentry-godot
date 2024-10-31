@@ -66,7 +66,7 @@ sentry_value_t strings_to_sentry_list(const PackedStringArray &p_strings) {
 	return sentry_list;
 }
 
-String generate_uuid() {
+String make_uuid() {
 	sentry_uuid_t uuid = sentry_uuid_new_v4();
 	char cstr[37];
 	sentry_uuid_as_string(&uuid, cstr);

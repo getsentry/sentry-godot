@@ -66,7 +66,7 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	// Read/initialize device unique identifier.
 	String device_id = p_runtime_config->get_device_id();
 	if (device_id.length() == 0) {
-		device_id = SentryUtil::generate_uuid();
+		device_id = SentryUtil::make_uuid();
 		p_runtime_config->set_device_id(device_id);
 	}
 	device_context["device_unique_identifier"] = device_id;

@@ -13,7 +13,7 @@ using namespace godot;
 class SentryUtil {
 public:
 	static String get_screen_orientation_string(int32_t p_screen = -1);
-	static String generate_uuid();
+	static String make_uuid();
 
 	template <typename... Args>
 	static void print_debug(const Variant &p_arg1, const Args &...p_args) {
