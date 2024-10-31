@@ -192,46 +192,37 @@ void SentrySDK::add_culture_context() {
 	internal_sdk->set_context("culture", culture_context);
 }
 
-// void SentrySDK::add_display_context() {
-// 	ERR_FAIL_NULL(DisplayServer::get_singleton());
+void SentrySDK::add_display_context() {
+	ERR_FAIL_NULL(DisplayServer::get_singleton());
 
-// 	sentry_value_t display_context = sentry_value_new_object();
+	Dictionary display_context = Dictionary();
 
-// 	int32_t num_screens = DisplayServer::get_singleton()->get_screen_count();
-// 	sentry_value_set_by_key(display_context, "screen_count",
-// 			sentry_value_new_int32(num_screens));
-// 	sentry_value_set_by_key(display_context, "display_server",
-// 			sentry_value_new_string(DisplayServer::get_singleton()->get_name().utf8()));
-// 	sentry_value_set_by_key(display_context, "touchscreen_available",
-// 			sentry_value_new_bool(DisplayServer::get_singleton()->is_touchscreen_available()));
+	int32_t num_screens = DisplayServer::get_singleton()->get_screen_count();
+	display_context["screen_count"] = num_screens;
+	display_context["display_server"] = DisplayServer::get_singleton()->get_name();
+	display_context["touchscreen_available"] = DisplayServer::get_singleton()->is_touchscreen_available();
 
-// 	sentry_value_t screen_list = sentry_value_new_list();
-// 	for (int32_t i = 0; i < num_screens; i++) {
-// 		sentry_value_t screen_data = sentry_value_new_object();
-// 		sentry_value_set_by_key(screen_data, "size",
-// 				SentryUtil::variant_to_sentry_value(DisplayServer::get_singleton()->screen_get_size(i)));
-// 		sentry_value_set_by_key(screen_data, "dpi",
-// 				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_dpi(i)));
-// 		sentry_value_set_by_key(screen_data, "refresh_rate",
-// 				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_refresh_rate(i)));
-// 		sentry_value_set_by_key(screen_data, "position",
-// 				SentryUtil::variant_to_sentry_value(DisplayServer::get_singleton()->screen_get_position(i)));
-// 		sentry_value_set_by_key(screen_data, "scale_factor",
-// 				sentry_value_new_int32(DisplayServer::get_singleton()->screen_get_scale(i)));
-// 		sentry_value_set_by_key(screen_data, "primary",
-// 				sentry_value_new_bool(i == DisplayServer::get_singleton()->get_primary_screen()));
+	Array screen_list = Array();
+	for (int32_t i = 0; i < num_screens; i++) {
+		Dictionary screen_data = Dictionary();
+		screen_data["size"] = DisplayServer::get_singleton()->screen_get_size(i);
+		screen_data["dpi"] = DisplayServer::get_singleton()->screen_get_dpi(i);
+		screen_data["refresh_rate"] = DisplayServer::get_singleton()->screen_get_refresh_rate(i);
+		screen_data["position"] = DisplayServer::get_singleton()->screen_get_position(i);
+		screen_data["scale_factor"] = DisplayServer::get_singleton()->screen_get_scale(i);
+		screen_data["primary"] = i == DisplayServer::get_singleton()->get_primary_screen();
 
-// 		CharString orientation = SentryUtil::get_screen_orientation_cstring(i);
-// 		if (orientation.size() > 0) {
-// 			sentry_value_set_by_key(screen_data, "orientation", sentry_value_new_string(orientation));
-// 		}
+		String orientation = SentryUtil::get_screen_orientation_string(i);
+		if (!orientation.is_empty()) {
+			screen_data["orientation"] = orientation;
+		}
 
-// 		sentry_value_append(screen_list, screen_data);
-// 	}
+		screen_list.append(screen_data);
+	}
 
-// 	sentry_value_set_by_key(display_context, "screens", screen_list);
-// 	sentry_set_context("Display", display_context);
-// }
+	display_context["screens"] = screen_list;
+	internal_sdk->set_context("Display", display_context);
+}
 
 // void SentrySDK::add_engine_context() {
 // 	ERR_FAIL_NULL(OS::get_singleton());
