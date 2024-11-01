@@ -22,7 +22,7 @@ public:
 	template <typename... Args>
 	static void print_debug(const Variant &p_arg1, const Args &...p_args) {
 		if (SentryOptions::get_singleton()->is_debug_enabled()) {
-			std::cout << "[sentry] DEBUG GODOTSDK ";
+			std::cout << "[sentry] DEBUG ";
 			for (const Variant &variant : { p_arg1, Variant(p_args)... }) {
 				std::cout << variant.stringify().utf8();
 			}
@@ -33,7 +33,7 @@ public:
 	template <typename... Args>
 	static void print_error(const Variant &p_arg1, const Args &...p_args) {
 		if (SentryOptions::get_singleton()->is_debug_enabled()) {
-			std::cerr << "[sentry] ERROR GODOTSDK ";
+			std::cerr << "[sentry] ERROR ";
 			for (const Variant &variant : { p_arg1, Variant(p_args)... }) {
 				std::cerr << variant.stringify().utf8();
 			}
