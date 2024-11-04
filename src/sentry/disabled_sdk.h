@@ -23,6 +23,7 @@ class DisabledSDK : public InternalSDK {
 
 	virtual void capture_message(const String &p_message, Level p_level, const String &p_logger = "") override {}
 	virtual String get_last_event_id() override { return ""; }
+	virtual void capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) override {}
 
 	virtual void initialize() override {}
 };

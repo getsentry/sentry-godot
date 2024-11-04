@@ -1,11 +1,8 @@
 #include "sentry_logger.h"
 
-#include "sentry/native/native_util.h"
-#include "sentry_options.h"
 #include "sentry_sdk.h"
 #include "sentry_util.h"
 
-#include <sentry.h>
 #include <cstring>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -119,41 +116,28 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 
 	if (as_breadcrumb) {
 		// Log error as breadcrumb.
-		// TODO: Move this code to abstraction layer later when its available.
-		sentry_value_t crumb = sentry_value_new_breadcrumb("error", p_rationale);
-		sentry_value_set_by_key(crumb, "category", sentry_value_new_string("error"));
-		sentry_value_set_by_key(crumb, "level",
-				sentry_value_new_string(
-						p_error_type == ERROR_TYPE_WARNING ? "warning" : "error"));
+		Dictionary data;
+		data["function"] = String(p_func);
+		data["file"] = String(p_file);
+		data["line"] = p_line;
+		data["godot_error_type"] = String(error_types[p_error_type]);
 
-		sentry_value_t data = sentry_value_new_object();
-		sentry_value_set_by_key(data, "function", sentry_value_new_string(p_func));
-		sentry_value_set_by_key(data, "file", sentry_value_new_string(p_file));
-		sentry_value_set_by_key(data, "line", sentry_value_new_int32(p_line));
-
-		const char *error_string = error_types[p_error_type];
-		sentry_value_set_by_key(data, "godot_error_type", sentry_value_new_string(error_string));
-
-		sentry_value_set_by_key(crumb, "data", data);
-		sentry_add_breadcrumb(crumb);
+		SentrySDK::get_singleton()->add_breadcrumb(
+				p_rationale,
+				"error",
+				p_error_type == ERROR_TYPE_WARNING ? sentry::LEVEL_WARNING : sentry::LEVEL_ERROR,
+				"error",
+				data);
 	} else {
-		// Log error as event.
-		// TODO: Move this code to abstraction layer later when its available.
-		sentry_value_t event = sentry_value_new_event();
+		// Capture error event.
 		sentry::Level sentry_level = p_error_type == ERROR_TYPE_WARNING ? sentry::LEVEL_WARNING : sentry::LEVEL_ERROR;
-		sentry_value_set_by_key(event, "level",
-				sentry_value_new_string(sentry::level_as_cstring(sentry_level)));
+		sentry::InternalSDK::StackFrame stack_frame{
+			.filename = p_file,
+			.function = p_func,
+			.lineno = p_line
+		};
 
-		sentry_value_t exception = sentry_value_new_exception(error_types[p_error_type], p_rationale);
-		sentry_value_t stack_trace = sentry_value_new_object();
-
-		sentry_value_t frames = sentry_value_new_list();
-		sentry_value_t top_frame = sentry_value_new_object();
-		sentry_value_set_by_key(top_frame, "filename", sentry_value_new_string(p_file));
-		sentry_value_set_by_key(top_frame, "function", sentry_value_new_string(p_func));
-		sentry_value_set_by_key(top_frame, "lineno", sentry_value_new_int32(p_line));
-		sentry_value_append(frames, top_frame);
-
+		// Provide script source code context for script errors if available.
 		if (p_error_type == ERROR_TYPE_SCRIPT && SentryOptions::get_singleton()->is_error_logger_include_source_enabled()) {
 			// Provide script source code context for script errors if available.
 			// TODO: Should it be optional?
@@ -162,16 +146,17 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 			PackedStringArray post_context;
 			bool err = _get_script_context(p_file, p_line, context_line, pre_context, post_context);
 			if (!err) {
-				sentry_value_set_by_key(top_frame, "context_line", sentry_value_new_string(context_line.utf8()));
-				sentry_value_set_by_key(top_frame, "pre_context", sentry::native::strings_to_sentry_list(pre_context));
-				sentry_value_set_by_key(top_frame, "post_context", sentry::native::strings_to_sentry_list(post_context));
+				stack_frame.context_line = context_line;
+				stack_frame.pre_context = pre_context;
+				stack_frame.post_context = post_context;
 			}
 		}
 
-		sentry_value_set_by_key(stack_trace, "frames", frames);
-		sentry_value_set_by_key(exception, "stacktrace", stack_trace);
-		sentry_event_add_exception(event, exception);
-		sentry_capture_event(event);
+		SentrySDK::get_singleton()->get_internal_sdk()->capture_error(
+				error_types[p_error_type],
+				p_rationale,
+				sentry_level,
+				{ stack_frame });
 	}
 }
 

@@ -31,6 +31,8 @@ protected:
 public:
 	static SentrySDK *get_singleton() { return singleton; }
 
+	_FORCE_INLINE_ std::shared_ptr<sentry::InternalSDK> get_internal_sdk() const { return internal_sdk; }
+
 	// * Exported API
 
 	bool is_enabled() const { return enabled; }
