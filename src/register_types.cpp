@@ -1,13 +1,36 @@
+#include "sentry_logger.h"
 #include "sentry_options.h"
 #include "sentry_singleton.h"
 #include "sentry_user.h"
 
 #include <sentry.h>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/window.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/godot.hpp>
 
 using namespace godot;
+
+namespace {
+
+void _init_logger() {
+	if (!SentryOptions::get_singleton()->is_error_logger_enabled()) {
+		// If error logger is disabled, don't add it to the scene tree.
+		return;
+	}
+	// Add experimental logger to scene tree.
+	SentryLogger *logger = memnew(SentryLogger);
+	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+	if (sml) {
+		sml->get_root()->add_child(logger);
+	} else {
+		ERR_FAIL_MSG("Sentry: Internal error: SceneTree is null.");
+	}
+}
+
+} // unnamed namespace
 
 void initialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
@@ -15,6 +38,12 @@ void initialize_module(ModuleInitializationLevel p_level) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		// Note: Godot singletons are only available at higher initialization levels.
 		SentryOptions *options = new SentryOptions();
+
+		if (!Engine::get_singleton()->is_editor_hint()) {
+			GDREGISTER_INTERNAL_CLASS(SentryLogger);
+			callable_mp_static(_init_logger).call_deferred();
+		}
+
 		GDREGISTER_CLASS(SentryUser);
 		GDREGISTER_CLASS(Sentry);
 		Sentry *sentry_singleton = memnew(Sentry);

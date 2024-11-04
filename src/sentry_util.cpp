@@ -111,3 +111,11 @@ godot::CharString SentryUtil::generate_uuid() {
 	sentry_uuid_as_string(&uuid, cstr);
 	return CharString(cstr);
 }
+
+sentry_value_t SentryUtil::strings_to_sentry_list(const godot::PackedStringArray &p_strings) {
+	sentry_value_t sentry_list = sentry_value_new_list();
+	for (int i = 0; i < p_strings.size(); i++) {
+		sentry_value_append(sentry_list, sentry_value_new_string(p_strings[i].utf8()));
+	}
+	return sentry_list;
+}

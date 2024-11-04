@@ -113,3 +113,15 @@ func _on_set_user_button_pressed() -> void:
 	Sentry.set_user(sentry_user)
 	print("   ", sentry_user)
 	_update_user_info()
+
+
+func _on_gen_script_error_pressed() -> void:
+	print("Generating GDScript error...")
+	# The following line should generate 2 errors:
+	# script parse error and failed to load script.
+	var ScriptWithErrors = load("res://script_with_errors.gd")
+
+
+func _on_gen_native_error_pressed() -> void:
+	print("Generating native Godot error (in C++ unit)...")
+	load("res://file_does_not_exist")
