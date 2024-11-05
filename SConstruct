@@ -78,7 +78,7 @@ env.Append(CPPPATH=["src/"])
 
 # Include sentry-native libs (static).
 if env["platform"] in ["linux", "macos", "windows"]:
-    env.Append(CPPDEFINES=["SENTRY_BUILD_STATIC"])
+    env.Append(CPPDEFINES=["SENTRY_BUILD_STATIC", "NATIVE_SDK"])
     env.Append(CPPPATH=["sentry-native/include"])
     env.Append(LIBPATH=["sentry-native/install/lib/"])
     env.Append(
@@ -114,6 +114,7 @@ elif env["platform"] == "linux":
 # Source files to compile.
 sources = Glob("src/*.cpp")
 sources += Glob("src/sentry/*.cpp")
+# Compile sentry-native code only on respective platforms.
 if env["platform"] in ["linux", "windows", "macos"]:
     sources += Glob("src/sentry/native/*.cpp")
 

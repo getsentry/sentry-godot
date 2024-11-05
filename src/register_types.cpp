@@ -40,11 +40,6 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		// Note: Godot singletons are only available at higher initialization levels.
 		SentryOptions *options = new SentryOptions();
 
-		if (!Engine::get_singleton()->is_editor_hint() && options->is_enabled()) {
-			GDREGISTER_INTERNAL_CLASS(SentryLogger);
-			callable_mp_static(_init_logger).call_deferred();
-		}
-
 		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 		GDREGISTER_CLASS(SentryUser);
 		GDREGISTER_CLASS(SentrySDK);

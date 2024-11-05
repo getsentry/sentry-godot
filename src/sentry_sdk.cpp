@@ -11,7 +11,7 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
-#if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
+#ifdef NATIVE_SDK
 #include "sentry/native/native_sdk.h"
 #endif
 
@@ -113,7 +113,7 @@ SentrySDK::SentrySDK() {
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
-#if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
+#ifdef NATIVE_SDK
 	internal_sdk = std::make_shared<NativeSDK>();
 	enabled = true;
 #else
