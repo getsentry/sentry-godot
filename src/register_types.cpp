@@ -45,6 +45,11 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(SentrySDK);
 		SentrySDK *sentry_singleton = memnew(SentrySDK);
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
+
+		if (!Engine::get_singleton()->is_editor_hint() && sentry_singleton->is_enabled()) {
+			GDREGISTER_INTERNAL_CLASS(SentryLogger);
+			callable_mp_static(_init_logger).call_deferred();
+		}
 	}
 
 #ifdef TOOLS_ENABLED
