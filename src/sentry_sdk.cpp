@@ -109,6 +109,10 @@ SentrySDK::SentrySDK() {
 
 	singleton = this;
 
+	// Load the runtime configuration from the user's data directory.
+	runtime_config.instantiate();
+	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
+
 #if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
 	internal_sdk = std::make_shared<NativeSDK>();
 	enabled = true;
@@ -117,10 +121,6 @@ SentrySDK::SentrySDK() {
 	internal_sdk = std::make_shared<DisabledSDK>();
 	return;
 #endif
-
-	// Load the runtime configuration from the user's data directory.
-	runtime_config.instantiate();
-	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
 	enabled = enabled && SentryOptions::get_singleton()->is_enabled();
 	if (!enabled) {

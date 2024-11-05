@@ -132,7 +132,7 @@ void NativeSDK::capture_error(const String &p_type, const String &p_value, Level
 	sentry_value_t stack_trace = sentry_value_new_object();
 
 	sentry_value_t frames = sentry_value_new_list();
-	for (const auto &frame : p_frames) {
+	for (const StackFrame &frame : p_frames) {
 		sentry_value_t sentry_frame = sentry_value_new_object();
 		sentry_value_set_by_key(sentry_frame, "filename", sentry_value_new_string(frame.filename.utf8()));
 		sentry_value_set_by_key(sentry_frame, "function", sentry_value_new_string(frame.function.utf8()));

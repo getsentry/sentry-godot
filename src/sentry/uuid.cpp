@@ -1,6 +1,8 @@
 #include "uuid.h"
 
+#if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
 #include "sentry/native/native_util.h"
+#endif
 
 namespace sentry::uuid {
 
