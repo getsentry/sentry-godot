@@ -4,13 +4,9 @@
 #include "sentry_sdk.h"
 #include "sentry_user.h"
 
-#include <sentry.h>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/window.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/error_macros.hpp>
-#include <godot_cpp/godot.hpp>
 
 using namespace godot;
 

@@ -4,7 +4,6 @@
 #include "runtime_config.h"
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
-#include "sentry_user.h"
 
 #include <godot_cpp/core/object.hpp>
 #include <memory>

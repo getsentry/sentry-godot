@@ -1,11 +1,12 @@
 #ifndef SENTRY_OPTIONS_H
 #define SENTRY_OPTIONS_H
 
-#include <godot_cpp/core/object.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/char_string.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/variant.hpp>
+
+using namespace godot;
 
 class SentryOptions {
 public:
@@ -18,8 +19,8 @@ private:
 	static SentryOptions *singleton;
 
 	bool enabled = true;
-	godot::CharString dsn = "";
-	godot::CharString release = "{app_name}@{app_version}";
+	CharString dsn = "";
+	CharString release = "{app_name}@{app_version}";
 	bool debug = false;
 	double sample_rate = 1.0;
 	bool attach_log = true;
@@ -32,8 +33,8 @@ private:
 	CaptureType error_logger_capture_type = CaptureType::CAPTURE_AS_BREADCRUMB;
 	bool error_logger_include_source = true;
 
-	void _define_setting(const godot::String &p_setting, const godot::Variant &p_default, bool p_basic = true);
-	void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default, bool p_basic = true);
+	void _define_setting(const String &p_setting, const Variant &p_default, bool p_basic = true);
+	void _define_setting(const PropertyInfo &p_info, const Variant &p_default, bool p_basic = true);
 	void _define_project_settings();
 	void _load_project_settings();
 
@@ -41,8 +42,8 @@ public:
 	_FORCE_INLINE_ static SentryOptions *get_singleton() { return singleton; }
 
 	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
-	godot::CharString get_dsn() const { return dsn; }
-	godot::CharString get_release() const { return release; }
+	CharString get_dsn() const { return dsn; }
+	CharString get_release() const { return release; }
 	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }
 	double get_sample_rate() const { return sample_rate; }
 	bool is_attach_log_enabled() const { return attach_log; }

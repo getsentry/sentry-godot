@@ -5,7 +5,7 @@
 
 #include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
-#include <godot_cpp/variant/char_string.hpp>
+#include <godot_cpp/variant/string.hpp>
 
 using namespace godot;
 

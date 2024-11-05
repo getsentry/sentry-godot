@@ -2,12 +2,9 @@
 
 #include "sentry/contexts.h"
 #include "sentry/disabled_sdk.h"
-#include "sentry/environment.h"
 #include "sentry/uuid.h"
 #include "sentry_options.h"
-#include "sentry_util.h"
 
-#include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 

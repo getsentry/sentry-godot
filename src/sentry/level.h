@@ -1,8 +1,8 @@
 #ifndef SENTRY_LEVEL_H
 #define SENTRY_LEVEL_H
 
-#include <godot_cpp/core/binder_common.hpp>
-#include <godot_cpp/core/object.hpp>
+#include <godot_cpp/variant/char_string.hpp>
+
 using namespace godot;
 
 namespace sentry {

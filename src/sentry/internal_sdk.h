@@ -1,10 +1,11 @@
 #ifndef INTERNAL_SDK_H
 #define INTERNAL_SDK_H
 
-#include "level.h"
+#include "sentry/level.h"
 #include "sentry_user.h"
 
 #include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 using namespace godot;

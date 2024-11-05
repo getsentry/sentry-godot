@@ -1,5 +1,4 @@
-#include "godot_cpp/classes/environment.hpp"
-#include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/char_string.hpp>
 
 using namespace godot;
 

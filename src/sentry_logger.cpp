@@ -1,7 +1,7 @@
 #include "sentry_logger.h"
 
+#include "sentry/util.h"
 #include "sentry_sdk.h"
-#include "sentry_util.h"
 
 #include <cstring>
 #include <godot_cpp/classes/os.hpp>
@@ -37,7 +37,7 @@ SentryLogger::ErrorType error_type_as_enum[] = {
 
 const int num_error_types = sizeof(error_types) / sizeof(error_types[0]);
 
-} //namespace
+} // unnamed namespace
 
 void SentryLogger::_process_log_file() {
 	if (!log_file.is_open()) {
@@ -170,19 +170,19 @@ bool SentryLogger::_get_script_context(const String &p_file, int p_line, String 
 	// ! Note: Script source code context is only automatically provided if GDScript is exported as text (not binary tokens).
 
 	if (script.is_null()) {
-		SentryUtil::print_error("Failed to load script ", p_file);
+		sentry::util::print_error("Failed to load script ", p_file);
 		return true;
 	}
 
 	String source_code = script->get_source_code();
 	if (source_code.is_empty()) {
-		SentryUtil::print_debug("Script source not available ", p_file.utf8().ptr());
+		sentry::util::print_debug("Script source not available ", p_file.utf8().ptr());
 		return true;
 	}
 
 	PackedStringArray lines = script->get_source_code().split("\n");
 	if (lines.size() < p_line) {
-		SentryUtil::print_error("Script source is smaller than the referenced line, lineno: ", p_line);
+		sentry::util::print_error("Script source is smaller than the referenced line, lineno: ", p_line);
 		return true;
 	}
 
@@ -195,11 +195,11 @@ bool SentryLogger::_get_script_context(const String &p_file, int p_line, String 
 void SentryLogger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			SentryUtil::print_debug("starting logger");
+			sentry::util::print_debug("starting logger");
 			_setup();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			SentryUtil::print_debug("finishing logger");
+			sentry::util::print_debug("finishing logger");
 			log_file.close();
 		} break;
 		case NOTIFICATION_PROCESS: {

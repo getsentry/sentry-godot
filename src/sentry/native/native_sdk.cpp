@@ -4,15 +4,10 @@
 #include "sentry/environment.h"
 #include "sentry/native/native_util.h"
 #include "sentry_options.h"
-#include "sentry_util.h"
 
-#include <sentry.h>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/core/error_macros.hpp>
-#include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/variant/string.hpp>
 
 namespace {
 

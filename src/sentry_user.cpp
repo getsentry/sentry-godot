@@ -1,11 +1,8 @@
 #include "sentry_user.h"
 
 #include "sentry/uuid.h"
-#include "sentry_util.h"
 
-#include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
-#include <godot_cpp/variant/variant.hpp>
 
 bool SentryUser::is_user_valid() const {
 	return !id.is_empty() || !username.is_empty() || !email.is_empty() || !ip_address.is_empty();

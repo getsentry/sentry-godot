@@ -2,7 +2,6 @@
 
 #include "sentry/environment.h"
 #include "sentry/uuid.h"
-#include "sentry_util.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
@@ -12,7 +11,40 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/time.hpp>
-#include <godot_cpp/core/error_macros.hpp>
+
+namespace {
+
+String _screen_orientation_as_string(int32_t p_screen) {
+	ERR_FAIL_NULL_V(DisplayServer::get_singleton(), "");
+	switch (DisplayServer::get_singleton()->screen_get_orientation(p_screen)) {
+		case DisplayServer::SCREEN_LANDSCAPE: {
+			return "Landscape";
+		} break;
+		case DisplayServer::SCREEN_PORTRAIT: {
+			return "Portrait";
+		} break;
+		case DisplayServer::SCREEN_REVERSE_LANDSCAPE: {
+			return "Landscape (reverse)";
+		} break;
+		case DisplayServer::SCREEN_REVERSE_PORTRAIT: {
+			return "Portrait (reverse)";
+		} break;
+		case DisplayServer::SCREEN_SENSOR_LANDSCAPE: {
+			return "Landscape (defined by sensor)";
+		} break;
+		case DisplayServer::SCREEN_SENSOR_PORTRAIT: {
+			return "Portrait (defined by sensor)";
+		} break;
+		case DisplayServer::SCREEN_SENSOR: {
+			return "Defined by sensor";
+		} break;
+		default: {
+			return "";
+		} break;
+	}
+}
+
+} // unnamed namespace
 
 namespace sentry::contexts {
 
@@ -21,11 +53,10 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	ERR_FAIL_NULL_V(OS::get_singleton(), device_context);
 	ERR_FAIL_NULL_V(Engine::get_singleton(), device_context);
 	ERR_FAIL_NULL_V(DisplayServer::get_singleton(), device_context);
-	ERR_FAIL_NULL_V(Time::get_singleton(), device_context);
 
 	device_context["arch"] = Engine::get_singleton()->get_architecture_name();
 	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
-	String orientation = SentryUtil::get_screen_orientation_string(primary_screen);
+	String orientation = _screen_orientation_as_string(primary_screen);
 	if (orientation.length() > 0) {
 		device_context["orientation"] = orientation;
 	}
@@ -193,7 +224,7 @@ Dictionary make_display_context() {
 		screen_data["scale_factor"] = DisplayServer::get_singleton()->screen_get_scale(i);
 		screen_data["primary"] = i == DisplayServer::get_singleton()->get_primary_screen();
 
-		String orientation = SentryUtil::get_screen_orientation_string(i);
+		String orientation = _screen_orientation_as_string(i);
 		if (!orientation.is_empty()) {
 			screen_data["orientation"] = orientation;
 		}

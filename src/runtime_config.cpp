@@ -1,7 +1,4 @@
 #include "runtime_config.h"
-#include "sentry_user.h"
-
-#include <godot_cpp/core/memory.hpp>
 
 namespace {
 
