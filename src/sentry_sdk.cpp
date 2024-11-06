@@ -77,9 +77,9 @@ void SentrySDK::_init_contexts() {
 	internal_sdk->set_context("culture", sentry::contexts::make_culture_context());
 
 	// Custom contexts.
-	internal_sdk->set_context("Display", sentry::contexts::make_display_context());
-	internal_sdk->set_context("Godot Engine", sentry::contexts::make_godot_engine_context());
-	internal_sdk->set_context("Environment", sentry::contexts::make_environment_context());
+	internal_sdk->set_context("display", sentry::contexts::make_display_context());
+	internal_sdk->set_context("godot_engine", sentry::contexts::make_godot_engine_context());
+	internal_sdk->set_context("environment", sentry::contexts::make_environment_context());
 }
 
 void SentrySDK::_bind_methods() {
