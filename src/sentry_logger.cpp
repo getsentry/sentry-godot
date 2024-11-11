@@ -42,7 +42,7 @@ const int num_error_types = sizeof(error_types) / sizeof(error_types[0]);
 void SentryLogger::_process_log_file() {
 	if (!log_file.is_open()) {
 		set_process(false);
-		ERR_FAIL_MSG("Sentry: Internal error: Log file not open. Error logging stopped.");
+		ERR_PRINT_ONCE("Sentry: Internal error: Log file not open. Error logging stopped.");
 		return;
 	}
 
@@ -125,12 +125,11 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		SentrySDK::get_singleton()->add_breadcrumb(
 				p_rationale,
 				"error",
-				p_error_type == ERROR_TYPE_WARNING ? sentry::LEVEL_WARNING : sentry::LEVEL_ERROR,
+				godot_error_to_sentry_level(p_error_type),
 				"error",
 				data);
 	} else {
 		// Capture error event.
-		sentry::Level sentry_level = p_error_type == ERROR_TYPE_WARNING ? sentry::LEVEL_WARNING : sentry::LEVEL_ERROR;
 		sentry::InternalSDK::StackFrame stack_frame{
 			.filename = p_file,
 			.function = p_func,
@@ -155,7 +154,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		SentrySDK::get_singleton()->get_internal_sdk()->capture_error(
 				error_types[p_error_type],
 				p_rationale,
-				sentry_level,
+				godot_error_to_sentry_level(p_error_type),
 				{ stack_frame });
 	}
 }

@@ -1,5 +1,6 @@
 #include "native_sdk.h"
 
+#include "godot_cpp/core/error_macros.hpp"
 #include "sentry.h"
 #include "sentry/contexts.h"
 #include "sentry/environment.h"
@@ -162,12 +163,12 @@ void NativeSDK::initialize() {
 
 	// Establish handler path.
 	String handler_fn;
-#ifdef LINUX_ENABLED
+#if defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
 	handler_fn = "crashpad_handler";
 #elif WINDOWS_ENABLED
 	handler_fn = "crashpad_handler.exe";
-#elif MACOS_ENABLED
-	handler_fn = "crashpad_handler";
+#else
+	ERR_PRINT("Sentry: Internal Error: NativeSDK should not be initialized on an unsupported platform (this should not happen).");
 #endif
 	String handler_path = OS::get_singleton()->get_executable_path().get_base_dir() + "/" + handler_fn;
 	if (!FileAccess::file_exists(handler_path)) {

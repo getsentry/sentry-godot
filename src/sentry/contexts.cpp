@@ -277,11 +277,6 @@ Dictionary make_performance_context() {
 	ERR_FAIL_NULL_V(Performance::get_singleton(), perf_context);
 	ERR_FAIL_NULL_V(RenderingServer::get_singleton(), perf_context);
 
-	if (!OS::get_singleton()) {
-		// Too early, bailing out.
-		return perf_context;
-	}
-
 	// * Injecting "Performance" context...
 
 	// Static memory allocation.
@@ -291,37 +286,31 @@ Dictionary make_performance_context() {
 	Dictionary meminfo = OS::get_singleton()->get_memory_info();
 	perf_context["thread_stack_size"] = String::humanize_size(meminfo["stack"]);
 
-	if (Engine::get_singleton()) {
-		double fps_metric = Engine::get_singleton()->get_frames_per_second();
-		if (fps_metric) {
-			perf_context["fps"] = fps_metric;
-		}
-
-		// Frames drawn since engine started - age metric.
-		perf_context["frames_drawn"] = Engine::get_singleton()->get_frames_drawn();
+	double fps_metric = Engine::get_singleton()->get_frames_per_second();
+	if (fps_metric) {
+		perf_context["fps"] = fps_metric;
 	}
 
-	if (Performance::get_singleton()) {
-		// Object allocation info.
-		perf_context["object_count"] = Performance::get_singleton()->get_monitor(Performance::OBJECT_COUNT);
-		perf_context["object_node_count"] = Performance::get_singleton()->get_monitor(Performance::OBJECT_NODE_COUNT);
-		perf_context["object_orphan_node_count"] = Performance::get_singleton()->get_monitor(Performance::OBJECT_ORPHAN_NODE_COUNT);
-		perf_context["object_resource_count"] = Performance::get_singleton()->get_monitor(Performance::OBJECT_RESOURCE_COUNT);
-	}
+	// Frames drawn since engine started - age metric.
+	perf_context["frames_drawn"] = Engine::get_singleton()->get_frames_drawn();
 
-	if (RenderingServer::get_singleton()) {
-		// VRAM usage.
-		uint64_t video_mem_used = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_VIDEO_MEM_USED);
-		perf_context["rendering_video_mem_used"] = String::humanize_size(video_mem_used);
-		uint64_t texture_mem = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_TEXTURE_MEM_USED);
-		perf_context["rendering_texture_mem_used"] = String::humanize_size(texture_mem);
-		uint64_t buffer_mem = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_BUFFER_MEM_USED);
-		perf_context["rendering_buffer_mem_used"] = String::humanize_size(buffer_mem);
+	// Object allocation info.
+	perf_context["object_count"] = Performance::get_singleton()->get_monitor(Performance::OBJECT_COUNT);
+	perf_context["object_node_count"] = Performance::get_singleton()->get_monitor(Performance::OBJECT_NODE_COUNT);
+	perf_context["object_orphan_node_count"] = Performance::get_singleton()->get_monitor(Performance::OBJECT_ORPHAN_NODE_COUNT);
+	perf_context["object_resource_count"] = Performance::get_singleton()->get_monitor(Performance::OBJECT_RESOURCE_COUNT);
 
-		// Frame statistics.
-		uint64_t draw_calls = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
-		perf_context["rendering_draw_calls"] = draw_calls;
-	}
+	// VRAM usage.
+	uint64_t video_mem_used = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_VIDEO_MEM_USED);
+	perf_context["rendering_video_mem_used"] = String::humanize_size(video_mem_used);
+	uint64_t texture_mem = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_TEXTURE_MEM_USED);
+	perf_context["rendering_texture_mem_used"] = String::humanize_size(texture_mem);
+	uint64_t buffer_mem = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_BUFFER_MEM_USED);
+	perf_context["rendering_buffer_mem_used"] = String::humanize_size(buffer_mem);
+
+	// Frame statistics.
+	uint64_t draw_calls = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
+	perf_context["rendering_draw_calls"] = draw_calls;
 
 	// TODO: Collect more useful metrics: physics, navigation, audio...
 	// TODO: Q: Split into categories and make it optional?

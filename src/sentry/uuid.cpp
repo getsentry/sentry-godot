@@ -11,7 +11,7 @@ String make_uuid() {
 	return sentry::native::make_uuid();
 #else
 	// TODO: uuid for other platforms.
-	return "1234";
+	ERR_FAIL_V_MSG("", "Sentry: UUID not supported on this platform.");
 #endif
 }
 

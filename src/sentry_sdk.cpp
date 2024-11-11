@@ -2,6 +2,7 @@
 
 #include "sentry/contexts.h"
 #include "sentry/disabled_sdk.h"
+#include "sentry/util.h"
 #include "sentry/uuid.h"
 #include "sentry_options.h"
 
@@ -115,6 +116,7 @@ SentrySDK::SentrySDK() {
 	enabled = true;
 #else
 	// Unsupported platform
+	sentry::util::print_debug("This is an unsupported platform. Operations with Sentry SDK will result in no-ops.");
 	internal_sdk = std::make_shared<DisabledSDK>();
 	return;
 #endif
