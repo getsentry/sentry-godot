@@ -21,9 +21,9 @@ class DisabledSDK : public InternalSDK {
 	// TODO: Consider adding the following function.
 	// virtual void clear_breadcrumbs() = 0;
 
-	virtual void capture_message(const String &p_message, Level p_level, const String &p_logger = "") override {}
+	virtual String capture_message(const String &p_message, Level p_level, const String &p_logger = "") override { return ""; }
 	virtual String get_last_event_id() override { return ""; }
-	virtual void capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) override {}
+	virtual String capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) override { return ""; }
 
 	virtual void initialize() override {}
 };

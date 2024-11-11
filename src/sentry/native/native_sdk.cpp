@@ -1,5 +1,6 @@
 #include "native_sdk.h"
 
+#include "sentry.h"
 #include "sentry/contexts.h"
 #include "sentry/environment.h"
 #include "sentry/native/native_util.h"
@@ -41,6 +42,12 @@ sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closur
 sentry_value_t handle_before_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
 	inject_contexts(event);
 	return event;
+}
+
+inline String _uuid_as_string(sentry_uuid_t p_uuid) {
+	char str[37];
+	sentry_uuid_as_string(&p_uuid, str);
+	return str;
 }
 
 } // unnamed namespace
@@ -104,21 +111,20 @@ void NativeSDK::add_breadcrumb(const String &p_message, const String &p_category
 	sentry_add_breadcrumb(crumb);
 }
 
-void NativeSDK::capture_message(const String &p_message, Level p_level, const String &p_logger) {
+String NativeSDK::capture_message(const String &p_message, Level p_level, const String &p_logger) {
 	sentry_value_t event = sentry_value_new_message_event(
 			(sentry_level_t)p_level,
 			p_logger.utf8().get_data(),
 			p_message.utf8().get_data());
 	last_uuid = sentry_capture_event(event);
+	return _uuid_as_string(last_uuid);
 }
 
 String NativeSDK::get_last_event_id() {
-	char str[37];
-	sentry_uuid_as_string(&last_uuid, str);
-	return str;
+	return _uuid_as_string(last_uuid);
 }
 
-void NativeSDK::capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) {
+String NativeSDK::capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) {
 	sentry_value_t event = sentry_value_new_event();
 	sentry_value_set_by_key(event, "level",
 			sentry_value_new_string(sentry::level_as_cstring(p_level)));
@@ -143,7 +149,8 @@ void NativeSDK::capture_error(const String &p_type, const String &p_value, Level
 	sentry_value_set_by_key(stack_trace, "frames", frames);
 	sentry_value_set_by_key(exception, "stacktrace", stack_trace);
 	sentry_event_add_exception(event, exception);
-	sentry_capture_event(event);
+	last_uuid = sentry_capture_event(event);
+	return _uuid_as_string(last_uuid);
 }
 
 void NativeSDK::initialize() {
