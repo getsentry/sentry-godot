@@ -58,8 +58,8 @@ func _on_level_choice_id_pressed(id: int) -> void:
 
 
 func _on_capture_button_pressed() -> void:
-	SentrySDK.capture_message(message_edit.text, _event_level)
-	print("Captured message event. Event ID: " + SentrySDK.get_last_event_id())
+	var event_id := SentrySDK.capture_message(message_edit.text, _event_level)
+	print("Captured message event. Event ID: " + event_id)
 
 
 func _on_add_breadcrumb_button_pressed() -> void:
