@@ -18,10 +18,10 @@ void RuntimeConfig::set_user(const Ref<SentryUser> &p_user) {
 	conf->save(conf_path);
 }
 
-void RuntimeConfig::set_device_id(const String &p_device_id) {
-	ERR_FAIL_COND(p_device_id.length() == 0);
-	device_id = p_device_id;
-	conf->set_value("device", "id", (String)device_id);
+void RuntimeConfig::set_installation_id(const String &p_id) {
+	ERR_FAIL_COND(p_id.length() == 0);
+	installation_id = p_id;
+	conf->set_value("main", "installation_id", (String)installation_id);
 	conf->save(conf_path);
 }
 
@@ -36,7 +36,7 @@ void RuntimeConfig::load_file(const String &p_conf_path) {
 	user->set_email(_ensure_string(conf->get_value("user", "email", ""), ""));
 	user->set_username(_ensure_string(conf->get_value("user", "username", ""), ""));
 
-	device_id = _ensure_string(conf->get_value("device", "id", ""), "");
+	installation_id = _ensure_string(conf->get_value("main", "installation_id", ""), "");
 }
 
 RuntimeConfig::RuntimeConfig() {

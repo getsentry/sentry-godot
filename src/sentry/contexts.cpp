@@ -95,13 +95,13 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	device_context["processor_count"] = OS::get_singleton()->get_processor_count();
 	device_context["cpu_description"] = OS::get_singleton()->get_processor_name();
 
-	// Read/initialize device unique identifier.
-	String device_id = p_runtime_config->get_device_id();
-	if (device_id.length() == 0) {
-		device_id = sentry::uuid::make_uuid();
-		p_runtime_config->set_device_id(device_id);
+	// Read/initialize installation id.
+	String installation_id = p_runtime_config->get_installation_id();
+	if (installation_id.length() == 0) {
+		installation_id = sentry::uuid::make_uuid();
+		p_runtime_config->set_installation_id(installation_id);
 	}
-	device_context["device_unique_identifier"] = device_id;
+	device_context["device_unique_identifier"] = installation_id;
 
 	return device_context;
 }
@@ -138,7 +138,7 @@ Dictionary make_gpu_context() {
 	// Note: In headless/server mode, some of these functions return empty strings.
 	String adapter_name = RenderingServer::get_singleton()->get_video_adapter_name();
 	if (!adapter_name.is_empty()) {
-		gpu_context["name"] = RenderingServer::get_singleton()->get_video_adapter_name();
+		gpu_context["name"] = adapter_name;
 	} else {
 		// Since `name` is required for GPU context, don't add the context.
 		// We're in the headless environment, most likely.

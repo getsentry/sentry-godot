@@ -17,7 +17,7 @@ private:
 
 	// Cached values.
 	Ref<SentryUser> user;
-	String device_id;
+	String installation_id;
 
 protected:
 	static void _bind_methods() {}
@@ -26,8 +26,8 @@ public:
 	Ref<SentryUser> get_user() const { return user; }
 	void set_user(const Ref<SentryUser> &p_user);
 
-	String get_device_id() const { return device_id; }
-	void set_device_id(const String &p_device_id);
+	String get_installation_id() const { return installation_id; }
+	void set_installation_id(const String &p_id);
 
 	void load_file(const String &p_conf_path);
 
