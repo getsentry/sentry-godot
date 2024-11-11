@@ -284,7 +284,7 @@ Dictionary make_performance_context() {
 	perf_context["static_memory_usage"] = String::humanize_size(OS::get_singleton()->get_static_memory_usage());
 
 	Dictionary meminfo = OS::get_singleton()->get_memory_info();
-	perf_context["thread_stack_size"] = String::humanize_size(meminfo["stack"]);
+	perf_context["main_thread_stack_size"] = String::humanize_size(meminfo["stack"]);
 
 	double fps_metric = Engine::get_singleton()->get_frames_per_second();
 	if (fps_metric) {
