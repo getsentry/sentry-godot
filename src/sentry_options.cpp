@@ -1,10 +1,6 @@
 #include "sentry_options.h"
 
-#include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-
-using namespace godot;
 
 SentryOptions *SentryOptions::singleton = nullptr;
 

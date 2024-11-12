@@ -1,6 +1,8 @@
 #ifndef SENTRY_LOGGER_H
 #define SENTRY_LOGGER_H
 
+#include "sentry/level.h"
+
 #include <fstream>
 #include <godot_cpp/classes/node.hpp>
 
@@ -16,6 +18,8 @@ public:
 		ERROR_TYPE_SCRIPT,
 		ERROR_TYPE_SHADER,
 	};
+
+	_FORCE_INLINE_ sentry::Level godot_error_to_sentry_level(ErrorType p_error_type) const { return p_error_type == ERROR_TYPE_WARNING ? sentry::LEVEL_WARNING : sentry::LEVEL_ERROR; }
 
 private:
 	Callable process_log;

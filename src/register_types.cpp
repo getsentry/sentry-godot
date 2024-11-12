@@ -1,15 +1,12 @@
+#include "runtime_config.h"
 #include "sentry_logger.h"
 #include "sentry_options.h"
-#include "sentry_singleton.h"
+#include "sentry_sdk.h"
 #include "sentry_user.h"
 
-#include <sentry.h>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/window.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/error_macros.hpp>
-#include <godot_cpp/godot.hpp>
 
 using namespace godot;
 
@@ -39,24 +36,16 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		// Note: Godot singletons are only available at higher initialization levels.
 		SentryOptions *options = new SentryOptions();
 
-		if (!Engine::get_singleton()->is_editor_hint()) {
+		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
+		GDREGISTER_CLASS(SentryUser);
+		GDREGISTER_CLASS(SentrySDK);
+		SentrySDK *sentry_singleton = memnew(SentrySDK);
+		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
+
+		if (!Engine::get_singleton()->is_editor_hint() && sentry_singleton->is_enabled()) {
 			GDREGISTER_INTERNAL_CLASS(SentryLogger);
 			callable_mp_static(_init_logger).call_deferred();
 		}
-
-		GDREGISTER_CLASS(SentryUser);
-		GDREGISTER_CLASS(Sentry);
-		Sentry *sentry_singleton = memnew(Sentry);
-		Engine::get_singleton()->register_singleton("Sentry", Sentry::get_singleton());
-
-		// Some singletons are not available at this point.
-		callable_mp(sentry_singleton, &Sentry::add_device_context).call_deferred();
-		callable_mp(sentry_singleton, &Sentry::add_app_context).call_deferred();
-		callable_mp(sentry_singleton, &Sentry::add_gpu_context).call_deferred();
-		callable_mp(sentry_singleton, &Sentry::add_culture_context).call_deferred();
-		callable_mp(sentry_singleton, &Sentry::add_display_context).call_deferred();
-		callable_mp(sentry_singleton, &Sentry::add_engine_context).call_deferred();
-		callable_mp(sentry_singleton, &Sentry::add_environment_context).call_deferred();
 	}
 
 #ifdef TOOLS_ENABLED
@@ -67,7 +56,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 
 void uninitialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
-		memdelete(Sentry::get_singleton());
+		memdelete(SentrySDK::get_singleton());
 		delete SentryOptions::get_singleton();
 	}
 }
