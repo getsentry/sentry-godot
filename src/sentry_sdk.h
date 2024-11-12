@@ -47,7 +47,7 @@ public:
 	Ref<SentryUser> get_user() const { return runtime_config->get_user(); }
 	void remove_user();
 
-	void capture_message(const String &p_message, sentry::Level p_level, const String &p_logger = "");
+	String capture_message(const String &p_message, sentry::Level p_level, const String &p_logger = "");
 	String get_last_event_id() const;
 
 	SentrySDK();

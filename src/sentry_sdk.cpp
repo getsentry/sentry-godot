@@ -20,8 +20,8 @@ SentrySDK *SentrySDK::singleton = nullptr;
 
 VARIANT_ENUM_CAST(Level);
 
-void SentrySDK::capture_message(const String &p_message, Level p_level, const String &p_logger) {
-	internal_sdk->capture_message(p_message, p_level, p_logger);
+String SentrySDK::capture_message(const String &p_message, Level p_level, const String &p_logger) {
+	return internal_sdk->capture_message(p_message, p_level, p_logger);
 }
 
 void SentrySDK::add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
