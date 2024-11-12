@@ -9,12 +9,6 @@
 using namespace godot;
 
 class SentryOptions {
-public:
-	enum CaptureType {
-		CAPTURE_AS_BREADCRUMB,
-		CAPTURE_AS_EVENT,
-	};
-
 private:
 	static SentryOptions *singleton;
 
@@ -28,9 +22,10 @@ private:
 	int max_breadcrumbs = 100;
 
 	bool error_logger_enabled = true;
+	bool error_logger_capture_as_breadcrumb = true;
+	bool error_logger_capture_as_event = false;
 	int error_logger_max_lines = 30;
 	bool error_logger_log_warnings = true; // Note: Godot warnings are captured as breadcrumbs if this option is enabled.
-	CaptureType error_logger_capture_type = CaptureType::CAPTURE_AS_BREADCRUMB;
 	bool error_logger_include_source = true;
 
 	void _define_setting(const String &p_setting, const Variant &p_default, bool p_basic = true);
@@ -48,10 +43,12 @@ public:
 	double get_sample_rate() const { return sample_rate; }
 	bool is_attach_log_enabled() const { return attach_log; }
 	int get_max_breadcrumbs() const { return max_breadcrumbs; }
+
 	bool is_error_logger_enabled() const { return error_logger_enabled; }
+	bool is_error_logger_capture_as_breadcrumb_enabled() const { return error_logger_capture_as_breadcrumb; }
+	bool is_error_logger_capture_as_event_enabled() const { return error_logger_capture_as_event; }
 	int get_error_logger_max_lines() const { return error_logger_max_lines; }
 	bool is_error_logger_log_warnings_enabled() const { return error_logger_log_warnings; }
-	CaptureType get_error_logger_capture_type() const { return error_logger_capture_type; }
 	bool is_error_logger_include_source_enabled() const { return error_logger_include_source; }
 
 	SentryOptions();
