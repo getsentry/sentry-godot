@@ -1,6 +1,8 @@
 #ifndef SENTRY_OPTIONS_H
 #define SENTRY_OPTIONS_H
 
+#include "sentry/godot_error_types.h"
+
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/char_string.hpp>
 #include <godot_cpp/variant/string.hpp>
@@ -9,6 +11,9 @@
 using namespace godot;
 
 class SentryOptions {
+	using GodotErrorType = sentry::GodotErrorType;
+	using GodotErrorMask = sentry::GodotErrorMask;
+
 private:
 	static SentryOptions *singleton;
 
@@ -22,10 +27,9 @@ private:
 	int max_breadcrumbs = 100;
 
 	bool error_logger_enabled = true;
-	bool error_logger_capture_as_breadcrumb = true;
-	bool error_logger_capture_as_event = false;
+	int error_logger_breadcrumb_mask = int(GodotErrorMask::ALL);
+	int error_logger_event_mask = int(GodotErrorMask::ALL_EXCEPT_WARNING);
 	int error_logger_max_lines = 30;
-	bool error_logger_log_warnings = true; // Note: Godot warnings are captured as breadcrumbs if this option is enabled.
 	bool error_logger_include_source = true;
 
 	void _define_setting(const String &p_setting, const Variant &p_default, bool p_basic = true);
@@ -45,11 +49,10 @@ public:
 	int get_max_breadcrumbs() const { return max_breadcrumbs; }
 
 	bool is_error_logger_enabled() const { return error_logger_enabled; }
-	bool is_error_logger_capture_as_breadcrumb_enabled() const { return error_logger_capture_as_breadcrumb; }
-	bool is_error_logger_capture_as_event_enabled() const { return error_logger_capture_as_event; }
 	int get_error_logger_max_lines() const { return error_logger_max_lines; }
-	bool is_error_logger_log_warnings_enabled() const { return error_logger_log_warnings; }
 	bool is_error_logger_include_source_enabled() const { return error_logger_include_source; }
+	bool is_error_logger_event_enabled(GodotErrorType p_error_type) { return error_logger_event_mask & sentry::godot_error_type_as_mask(p_error_type); }
+	bool is_error_logger_breadcrumb_enabled(GodotErrorType p_error_type) { return error_logger_breadcrumb_mask & sentry::godot_error_type_as_mask(p_error_type); }
 
 	SentryOptions();
 	~SentryOptions();

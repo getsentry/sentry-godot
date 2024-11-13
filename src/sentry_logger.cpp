@@ -11,6 +11,8 @@
 
 namespace {
 
+using GodotErrorType = sentry::GodotErrorType;
+
 #define MAX_LINE_LENGTH 1024
 
 const char *error_types[] = {
@@ -24,15 +26,15 @@ const char *error_types[] = {
 	"USER SHADER ERROR"
 };
 
-SentryLogger::ErrorType error_type_as_enum[] = {
-	SentryLogger::ERROR_TYPE_ERROR,
-	SentryLogger::ERROR_TYPE_WARNING,
-	SentryLogger::ERROR_TYPE_SCRIPT,
-	SentryLogger::ERROR_TYPE_SHADER,
-	SentryLogger::ERROR_TYPE_ERROR,
-	SentryLogger::ERROR_TYPE_WARNING,
-	SentryLogger::ERROR_TYPE_SCRIPT,
-	SentryLogger::ERROR_TYPE_SHADER,
+GodotErrorType error_type_as_enum[] = {
+	GodotErrorType::ERROR_TYPE_ERROR,
+	GodotErrorType::ERROR_TYPE_WARNING,
+	GodotErrorType::ERROR_TYPE_SCRIPT,
+	GodotErrorType::ERROR_TYPE_SHADER,
+	GodotErrorType::ERROR_TYPE_ERROR,
+	GodotErrorType::ERROR_TYPE_WARNING,
+	GodotErrorType::ERROR_TYPE_SCRIPT,
+	GodotErrorType::ERROR_TYPE_SHADER,
 };
 
 const int num_error_types = sizeof(error_types) / sizeof(error_types[0]);
@@ -65,7 +67,7 @@ void SentryLogger::_process_log_file() {
 
 				// Parse error string.
 				// See: https://github.com/godotengine/godot/blob/04692d83cb8f61002f18ea1d954df8c558ee84f7/core/io/logger.cpp#L88
-				ErrorType err_type = error_type_as_enum[i];
+				GodotErrorType err_type = error_type_as_enum[i];
 				char *rationale = first_line + strlen(error_types[i]) + 2; // +2 to skip ": "
 				char func[100];
 				char file_part[200];
@@ -89,24 +91,12 @@ void SentryLogger::_process_log_file() {
 	log_file.seekg(0, std::ios::end);
 }
 
-void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, ErrorType p_error_type) {
-	bool as_breadcrumb = SentryOptions::get_singleton()->is_error_logger_capture_as_breadcrumb_enabled();
-	bool as_event = SentryOptions::get_singleton()->is_error_logger_capture_as_event_enabled();
-
-	if (p_error_type == ERROR_TYPE_WARNING) {
-		if (SentryOptions::get_singleton()->is_error_logger_log_warnings_enabled()) {
-			// Log warning only if capture is enabled and set to capture as a breadcrumb.
-			as_breadcrumb = true && (as_breadcrumb || as_event);
-			as_event = false;
-		} else {
-			// Don't log if warnings are disabled.
-			as_breadcrumb = false;
-			as_event = false;
-		}
-	}
+void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType p_error_type) {
+	bool as_breadcrumb = SentryOptions::get_singleton()->is_error_logger_breadcrumb_enabled(p_error_type);
+	bool as_event = SentryOptions::get_singleton()->is_error_logger_event_enabled(p_error_type);
 
 	if (!as_breadcrumb && !as_event) {
-		// Don't capture if capture is disabled.
+		// Bail out if capture is disabled for this error type.
 		return;
 	}
 
@@ -117,7 +107,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		printf("   File: \"%s\"\n", p_file);
 		printf("   Line: %d\n", p_line);
 		printf("   Rationale: \"%s\"\n", p_rationale);
-		printf("   Error Type: %s\n", error_types[p_error_type]);
+		printf("   Error Type: %s\n", error_types[int(p_error_type)]);
 	}
 
 	// Capture error as event.
@@ -129,7 +119,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		};
 
 		// Provide script source code context for script errors if available.
-		if (p_error_type == ERROR_TYPE_SCRIPT && SentryOptions::get_singleton()->is_error_logger_include_source_enabled()) {
+		if (p_error_type == GodotErrorType::ERROR_TYPE_SCRIPT && SentryOptions::get_singleton()->is_error_logger_include_source_enabled()) {
 			// Provide script source code context for script errors if available.
 			// TODO: Should it be optional?
 			String context_line;
@@ -144,9 +134,9 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		}
 
 		SentrySDK::get_singleton()->get_internal_sdk()->capture_error(
-				error_types[p_error_type],
+				error_types[int(p_error_type)],
 				p_rationale,
-				godot_error_to_sentry_level(p_error_type),
+				sentry::get_sentry_level_for_godot_error_type(p_error_type),
 				{ stack_frame });
 	}
 
@@ -156,12 +146,12 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		data["function"] = String(p_func);
 		data["file"] = String(p_file);
 		data["line"] = p_line;
-		data["godot_error_type"] = String(error_types[p_error_type]);
+		data["godot_error_type"] = String(error_types[int(p_error_type)]);
 
 		SentrySDK::get_singleton()->add_breadcrumb(
 				p_rationale,
 				"error",
-				godot_error_to_sentry_level(p_error_type),
+				sentry::get_sentry_level_for_godot_error_type(p_error_type),
 				"error",
 				data);
 	}
