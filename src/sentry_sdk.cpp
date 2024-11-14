@@ -64,6 +64,7 @@ void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
 
 void SentrySDK::remove_user() {
 	internal_sdk->remove_user();
+	runtime_config->set_user(memnew(SentryUser));
 }
 
 void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary &p_value) {
