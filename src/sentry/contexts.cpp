@@ -73,6 +73,7 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 		device_context["model"] = model;
 	}
 
+	// Note: Godot Engine doesn't support changing screen resolution.
 	Vector2i resolution = DisplayServer::get_singleton()->screen_get_size(primary_screen);
 	device_context["screen_width_pixels"] = resolution.x;
 	device_context["screen_height_pixels"] = resolution.y;
@@ -102,6 +103,24 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 		p_runtime_config->set_installation_id(installation_id);
 	}
 	device_context["device_unique_identifier"] = installation_id;
+
+	return device_context;
+}
+
+Dictionary make_device_context_update() {
+	Dictionary device_context = Dictionary();
+	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
+	device_context["orientation"] = _screen_orientation_as_string(primary_screen);
+
+	const Dictionary &meminfo = OS::get_singleton()->get_memory_info();
+	// Note: Using double since int32 can't handle size in bytes.
+	device_context["free_memory"] = double(meminfo["free"]);
+	device_context["usable_memory"] = double(meminfo["available"]);
+
+	auto dir = DirAccess::open("user://");
+	if (dir.is_valid()) {
+		device_context["free_storage"] = double(dir->get_space_left());
+	}
 
 	return device_context;
 }
@@ -322,7 +341,8 @@ Dictionary make_performance_context() {
 
 HashMap<String, Dictionary> make_event_contexts() {
 	HashMap<String, Dictionary> event_contexts;
-	event_contexts["Godot Performance"] = make_performance_context();
+	event_contexts["godot_performance"] = make_performance_context();
+	event_contexts["device"] = make_device_context_update();
 	return event_contexts;
 }
 
