@@ -123,7 +123,7 @@ if env["platform"] in ["linux", "windows", "macos"]:
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        "{bin_dir}/lib{name}.{platform}.{target}.framework/liblimboai.{platform}.{target}".format(
+        "{bin_dir}/lib{name}.{platform}.{target}.framework/lib{name}.{platform}.{target}".format(
             bin_dir=BIN_DIR,
             name=EXTENSION_NAME,
             platform=env["platform"],
