@@ -27,7 +27,8 @@ if not os.path.exists("godot-cpp"):
 
 env = SConscript("godot-cpp/SConstruct")
 
-# Build sentry-native.
+# *** Build sentry-native.
+
 # TODO: macOS needs to use a different SDK.
 if env["platform"] in ["linux", "macos"]:
 
@@ -111,6 +112,8 @@ elif env["platform"] == "linux":
         ]
     )
 
+# *** Build GDExtension library.
+
 # Source files to compile.
 sources = Glob("src/*.cpp")
 sources += Glob("src/sentry/*.cpp")
@@ -118,7 +121,6 @@ sources += Glob("src/sentry/*.cpp")
 if env["platform"] in ["linux", "windows", "macos"]:
     sources += Glob("src/sentry/native/*.cpp")
 
-# Build library.
 if env["platform"] == "macos":
     library = env.SharedLibrary(
         "{bin_dir}/lib{name}.{platform}.{target}.framework/liblimboai.{platform}.{target}".format(
@@ -142,7 +144,8 @@ else:
 
 Default(library)
 
-# Deploy extension manifest.
+# *** Deploy extension manifest.
+
 manifest = env.Substfile(
     target="{bin_dir}/{name}.gdextension".format(
         bin_dir=BIN_DIR,
@@ -156,3 +159,25 @@ manifest = env.Substfile(
 )
 
 Default(manifest)
+
+# *** Create symbolic link from project addons dir to gdUnit4 testing framework submodule.
+
+def symlink(target, source, env):
+    # Note: parameter `target` is a list of build targets.
+    assert(len(target) == 1)
+    assert(len(source) == 1)
+    dst = str(target[0])
+    src = str(source[0])
+    src = os.path.relpath(src, os.path.dirname(dst))
+    os.symlink(src, dst)
+    return 0
+
+gdunit_symlink = env.Command(
+    PROJECT_DIR + "/addons/gdUnit4",
+    "modules/gdUnit4/addons/gdUnit4",
+    [
+        symlink,
+    ],
+)
+
+Default(gdunit_symlink)
