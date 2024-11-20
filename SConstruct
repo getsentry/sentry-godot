@@ -162,22 +162,24 @@ Default(manifest)
 
 # *** Create symbolic link from project addons dir to gdUnit4 testing framework submodule.
 
-def symlink(target, source, env):
-    # Note: parameter `target` is a list of build targets.
-    assert(len(target) == 1)
-    assert(len(source) == 1)
-    dst = str(target[0])
-    src = str(source[0])
-    src = os.path.relpath(src, os.path.dirname(dst))
-    os.symlink(src, dst)
-    return 0
+# Note: Windows requires elevated privileges to create symlinks. Please, run "scripts/link-testing-framework.ps1" instead.
+if env["platform"] != "windows":
+    def symlink(target, source, env):
+        # Note: parameter `target` is a list of build targets.
+        assert(len(target) == 1)
+        assert(len(source) == 1)
+        dst = str(target[0])
+        src = str(source[0])
+        src = os.path.relpath(src, os.path.dirname(dst))
+        os.symlink(src, dst)
+        return 0
 
-gdunit_symlink = env.Command(
-    PROJECT_DIR + "/addons/gdUnit4",
-    "modules/gdUnit4/addons/gdUnit4",
-    [
-        symlink,
-    ],
-)
+    gdunit_symlink = env.Command(
+        PROJECT_DIR + "/addons/gdUnit4",
+        "modules/gdUnit4/addons/gdUnit4",
+        [
+            symlink,
+        ],
+    )
 
-Default(gdunit_symlink)
+    Default(gdunit_symlink)
