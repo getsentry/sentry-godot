@@ -116,11 +116,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 
 	// Capture error as event.
 	if (as_event) {
-		sentry::InternalSDK::StackFrame stack_frame{
-			.filename = p_file,
-			.function = p_func,
-			.lineno = p_line
-		};
+		sentry::InternalSDK::StackFrame stack_frame{ p_file, p_func, p_line };
 
 		// Provide script source code context for script errors if available.
 		if (p_error_type == GodotErrorType::ERROR_TYPE_SCRIPT && SentryOptions::get_singleton()->is_error_logger_include_source_enabled()) {
