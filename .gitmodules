@@ -1,3 +1,6 @@
 [submodule "sentry-native"]
 	path = sentry-native
 	url = https://github.com/getsentry/sentry-native.git
+[submodule "modules/gdUnit4"]
+	path = modules/gdUnit4
+	url = https://github.com/MikeSchulze/gdUnit4.git
