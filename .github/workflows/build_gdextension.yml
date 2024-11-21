@@ -78,3 +78,15 @@ jobs:
         with:
           name: libsentrysdk.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}
           path: project/addons/sentrysdk/
+
+  package:
+    name: 📦 Package GDExtension
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - name: Merge artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: sentry-godot-gdextension
+          pattern: libsentrysdk.*
+          delete-merged: true
