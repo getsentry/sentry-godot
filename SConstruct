@@ -162,24 +162,33 @@ Default(manifest)
 
 # *** Create symbolic link from project addons dir to gdUnit4 testing framework submodule.
 
-# Note: Windows requires elevated privileges to create symlinks. Please, run "scripts/link-testing-framework.ps1" instead.
-if env["platform"] != "windows":
-    def symlink(target, source, env):
-        # Note: parameter `target` is a list of build targets.
-        assert(len(target) == 1)
-        assert(len(source) == 1)
-        dst = str(target[0])
-        src = str(source[0])
+def symlink(target, source, env):
+    # Note: parameter `target` is a list of build targets.
+    assert(len(target) == 1)
+    assert(len(source) == 1)
+    dst = str(target[0])
+    src = str(source[0])
+    if env["platform"] == "windows":
+        # Create NTFS junction.
+        # Note: Windows requires elevated privileges to create symlinks, so we're creating NTFS junction instead.
+        try:
+            import _winapi
+            _winapi.CreateJunction(src, dst)
+        except Exception as e:
+            # Don't fail the build if this step fails.
+            print("WARNING: Failed to create an NTFS junction for gdUnit4 testing framework: ", str(e))
+    else:
+        # Create symlink.
         src = os.path.relpath(src, os.path.dirname(dst))
         os.symlink(src, dst)
-        return 0
+    return 0
 
-    gdunit_symlink = env.Command(
-        PROJECT_DIR + "/addons/gdUnit4",
-        "modules/gdUnit4/addons/gdUnit4",
-        [
-            symlink,
-        ],
-    )
+gdunit_symlink = env.Command(
+    PROJECT_DIR + "/addons/gdUnit4",
+    "modules/gdUnit4/addons/gdUnit4",
+    [
+        symlink,
+    ],
+)
 
-    Default(gdunit_symlink)
+Default(gdunit_symlink)
