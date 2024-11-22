@@ -15,6 +15,8 @@ using GodotErrorType = sentry::GodotErrorType;
 
 #define MAX_LINE_LENGTH 1024
 
+// Godot error strings we look for in the log file.
+// A line starting with one of these strings will be parsed as an error.
 const char *error_types[] = {
 	"ERROR",
 	"WARNING",
@@ -26,6 +28,8 @@ const char *error_types[] = {
 	"USER SHADER ERROR"
 };
 
+// Map error strings from the previous array definition to error type enum.
+// For example, error_types[3] maps to error_type_as_enum[3].
 GodotErrorType error_type_as_enum[] = {
 	GodotErrorType::ERROR_TYPE_ERROR,
 	GodotErrorType::ERROR_TYPE_WARNING,
