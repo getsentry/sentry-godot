@@ -30,4 +30,3 @@ window/stretch/aspect="keep_height"
 
 config/dsn="https://3f1e095cf2e14598a0bd5b4ff324f712@o447951.ingest.us.sentry.io/6680910"
 config/debug=true
-config/error_logger/capture_type=1

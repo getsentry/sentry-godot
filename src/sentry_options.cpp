@@ -22,11 +22,12 @@ void SentryOptions::_load_project_settings() {
 	sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/config/sample_rate", sample_rate);
 	attach_log = ProjectSettings::get_singleton()->get_setting("sentry/config/attach_log", attach_log);
 	max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/config/max_breadcrumbs", max_breadcrumbs);
+
 	error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/enabled", error_logger_enabled);
 	error_logger_max_lines = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/max_lines", error_logger_max_lines);
-	error_logger_log_warnings = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/log_warnings", error_logger_log_warnings);
-	error_logger_capture_type = (CaptureType)(int)ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/capture_type", error_logger_capture_type);
 	error_logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/include_source", error_logger_include_source);
+	error_logger_event_mask = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/events", error_logger_event_mask);
+	error_logger_breadcrumb_mask = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/breadcrumbs", error_logger_breadcrumb_mask);
 }
 
 void SentryOptions::_define_setting(const String &p_setting, const Variant &p_default, bool p_basic) {
@@ -66,9 +67,9 @@ void SentryOptions::_define_project_settings() {
 
 	_define_setting("sentry/config/error_logger/enabled", error_logger_enabled);
 	_define_setting("sentry/config/error_logger/max_lines", error_logger_max_lines);
-	_define_setting("sentry/config/error_logger/log_warnings", error_logger_log_warnings);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/capture_type", godot::PROPERTY_HINT_ENUM, "As Breadcrumb,As Event"), error_logger_capture_type);
 	_define_setting("sentry/config/error_logger/include_source", error_logger_include_source);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING), error_logger_event_mask);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING), error_logger_breadcrumb_mask);
 }
 
 SentryOptions::SentryOptions() {

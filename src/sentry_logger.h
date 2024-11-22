@@ -1,6 +1,7 @@
 #ifndef SENTRY_LOGGER_H
 #define SENTRY_LOGGER_H
 
+#include "sentry/godot_error_types.h"
 #include "sentry/level.h"
 
 #include <fstream>
@@ -10,24 +11,15 @@ using namespace godot;
 
 class SentryLogger : public Node {
 	GDCLASS(SentryLogger, Node)
-public:
-	// Godot Engine logger error types that we can detect.
-	enum ErrorType {
-		ERROR_TYPE_ERROR,
-		ERROR_TYPE_WARNING,
-		ERROR_TYPE_SCRIPT,
-		ERROR_TYPE_SHADER,
-	};
-
-	_FORCE_INLINE_ sentry::Level godot_error_to_sentry_level(ErrorType p_error_type) const { return p_error_type == ERROR_TYPE_WARNING ? sentry::LEVEL_WARNING : sentry::LEVEL_ERROR; }
-
 private:
+	using GodotErrorType = sentry::GodotErrorType;
+
 	Callable process_log;
 	std::ifstream log_file;
 
 	void _setup();
 	void _process_log_file();
-	void _log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, ErrorType error_type);
+	void _log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType error_type);
 
 	// Returns true if an error occurred. Populates the last three arguments passed by reference.
 	bool _get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) const;
