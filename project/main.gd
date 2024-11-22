@@ -119,6 +119,7 @@ func _on_gen_script_error_pressed() -> void:
 	print("Generating GDScript error...")
 	# The following line should generate 2 errors:
 	# script parse error and failed to load script.
+	@warning_ignore("unused_variable")
 	var ScriptWithErrors = load("res://script_with_errors.gd")
 
 
