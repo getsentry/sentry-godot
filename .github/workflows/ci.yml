@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - "main"
+    paths-ignore:
+      - "*.md"
 
   pull_request:
     paths-ignore:
-      - ".github/**"
       - "*.md"
 
 # Cancel in-progress runs on PR update and on push.
