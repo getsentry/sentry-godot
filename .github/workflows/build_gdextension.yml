@@ -1,7 +1,19 @@
 name: 🔌 Build GDExtension libs
 
 on:
-  push:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        default: ''
+        description: 'The branch, tag or SHA to checkout (leave empty for event SHA)'
+
+  workflow_dispatch:
+    inputs:
+      ref:
+        type: string
+        default: ''
+        description: 'The branch, tag or SHA to checkout (leave empty for event SHA)'
 
 env:
   # Default SCons flags applied to each build.
@@ -44,6 +56,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          ref: ${{inputs.ref}}
 
       - name: Install Linux dependencies
         if: matrix.platform == 'linux'
