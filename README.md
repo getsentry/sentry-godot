@@ -23,11 +23,17 @@ python -m pip install scons
 # upgrade scons
 python -m pip install --upgrade scons
 ```
+Or, on a Mac:
+
+```
+brew install scons
+```
 
 ### Compiling
 
-1. Clone repository and its submodules.
-2. Build GDExtension libraries:
+1. Clone this repository
+2. Restore submodules: `git submodule update --init --recursive`
+3. Build GDExtension libraries:
     ```bash
     # build *editor* library for the current platform
     # run from the repository root dir
@@ -40,7 +46,7 @@ python -m pip install --upgrade scons
     # build *export* library for the current platform
     scons target=template_release debug_symbols=yes
     ```
-3. Open demo project in Godot Engine:
+4. Open demo project in Godot Engine:
     ```bash
     # open demo project in Godot 4.3
     godot project/project.godot
