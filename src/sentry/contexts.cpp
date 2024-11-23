@@ -65,10 +65,9 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	if (SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
 		// TODO: Need platform-specific solutions - this doesn't work well.
 		String host = OS::get_singleton()->get_environment("HOST");
-		if (host.is_empty()) {
-			host = "localhost";
+		if (!host.is_empty()) {
+			device_context["name"] = host;
 		}
-		device_context["name"] = host;
 	}
 
 	String model = OS::get_singleton()->get_model_name();
