@@ -1,7 +1,6 @@
 #ifndef LOGGER_ERROR_TYPES_H
 #define LOGGER_ERROR_TYPES_H
 
-#include "godot_cpp/core/defs.hpp"
 #include "level.h"
 
 #include <godot_cpp/variant/string.hpp>
@@ -11,21 +10,21 @@ namespace sentry {
 // Godot Engine error types that we can detect.
 // As defined in: https://github.com/godotengine/godot/blob/04692d83cb8f61002f18ea1d954df8c558ee84f7/core/io/logger.h#L51-L56
 enum class GodotErrorType {
-	ERROR_TYPE_ERROR,
-	ERROR_TYPE_WARNING,
-	ERROR_TYPE_SCRIPT,
-	ERROR_TYPE_SHADER,
+	ERROR_TYPE_ERROR = 0,
+	ERROR_TYPE_WARNING = 1,
+	ERROR_TYPE_SCRIPT = 2,
+	ERROR_TYPE_SHADER = 3,
 };
 
 // Enum used with bitwise operations to represent the set of Godot error types that the Sentry logger should capture.
 enum class GodotErrorMask {
-	NONE = 0,
-	ERROR = 1 << int(GodotErrorType::ERROR_TYPE_ERROR),
-	WARNING = 1 << int(GodotErrorType::ERROR_TYPE_WARNING),
-	SCRIPT = 1 << int(GodotErrorType::ERROR_TYPE_SCRIPT),
-	SHADER = 1 << int(GodotErrorType::ERROR_TYPE_SHADER),
-	ALL = ERROR | WARNING | SCRIPT | SHADER,
-	ALL_EXCEPT_WARNING = ERROR | SCRIPT | SHADER,
+	MASK_NONE = 0,
+	MASK_ERROR = (1 << int(GodotErrorType::ERROR_TYPE_ERROR)),
+	MASK_WARNING = (1 << int(GodotErrorType::ERROR_TYPE_WARNING)),
+	MASK_SCRIPT = (1 << int(GodotErrorType::ERROR_TYPE_SCRIPT)),
+	MASK_SHADER = (1 << int(GodotErrorType::ERROR_TYPE_SHADER)),
+	MASK_ALL = (int(MASK_ERROR) | int(MASK_WARNING) | int(MASK_SCRIPT) | int(MASK_SHADER)),
+	MASK_ALL_EXCEPT_WARNING = (int(MASK_ERROR) | int(MASK_SCRIPT) | int(MASK_SHADER)),
 };
 
 // Used for exporting as PropertyInfo.
