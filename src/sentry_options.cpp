@@ -68,8 +68,8 @@ void SentryOptions::_define_project_settings() {
 	_define_setting("sentry/config/error_logger/enabled", error_logger_enabled);
 	_define_setting("sentry/config/error_logger/max_lines", error_logger_max_lines);
 	_define_setting("sentry/config/error_logger/include_source", error_logger_include_source);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING), error_logger_event_mask);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING), error_logger_breadcrumb_mask);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), error_logger_event_mask);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), error_logger_breadcrumb_mask);
 }
 
 SentryOptions::SentryOptions() {
