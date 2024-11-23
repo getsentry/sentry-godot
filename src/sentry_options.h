@@ -29,8 +29,8 @@ private:
 	bool error_logger_enabled = true;
 	int error_logger_max_lines = 30;
 	bool error_logger_include_source = true;
-	int error_logger_event_mask = int(GodotErrorMask::ALL_EXCEPT_WARNING);
-	int error_logger_breadcrumb_mask = int(GodotErrorMask::ALL);
+	int error_logger_event_mask = int(GodotErrorMask::MASK_ALL_EXCEPT_WARNING);
+	int error_logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
 
 	void _define_setting(const String &p_setting, const Variant &p_default, bool p_basic = true);
 	void _define_setting(const PropertyInfo &p_info, const Variant &p_default, bool p_basic = true);
