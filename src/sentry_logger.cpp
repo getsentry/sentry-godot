@@ -59,17 +59,14 @@ void SentryLogger::_process_log_file() {
 	log_file.clear(); // Remove eof flag, so that we can read the next line.
 
 	SentryOptions::LoggerLimits limits = SentryOptions::get_singleton()->get_error_logger_limits();
-	int max_lines = limits.max_lines_parsed;
-	int max_events = limits.events_per_frame;
-	int max_breadcrumbs = limits.breadcrumbs_per_frame;
 	auto throttle_interval = std::chrono::milliseconds{ limits.repeated_error_throttling_ms };
 
 	int num_lines_read = 0;
 	char first_line[MAX_LINE_LENGTH];
 	char second_line[MAX_LINE_LENGTH];
 
-	while (num_lines_read < max_lines && log_file.getline(first_line, MAX_LINE_LENGTH) &&
-			(num_breadcrumbs_captured < max_breadcrumbs || num_events_captured < max_events)) {
+	while (num_lines_read < limits.max_lines_parsed && log_file.getline(first_line, MAX_LINE_LENGTH) &&
+			(num_breadcrumbs_captured < limits.breadcrumbs_per_frame || num_events_captured < limits.events_per_frame)) {
 		num_lines_read++;
 
 		for (int i = 0; i < num_error_types; i++) {
