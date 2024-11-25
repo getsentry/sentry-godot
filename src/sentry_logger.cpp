@@ -1,6 +1,7 @@
 #include "sentry_logger.h"
 
 #include "sentry/util.h"
+#include "sentry_options.h"
 #include "sentry_sdk.h"
 
 #include <cstring>
@@ -57,12 +58,15 @@ void SentryLogger::_process_log_file() {
 
 	log_file.clear(); // Remove eof flag, so that we can read the next line.
 
+	SentryOptions::LoggerLimits limits = SentryOptions::get_singleton()->get_error_logger_limits();
+	int max_lines = limits.max_lines_parsed;
+	int max_events = limits.events_per_frame;
+	int max_breadcrumbs = limits.breadcrumbs_per_frame;
+	auto throttle_interval = std::chrono::milliseconds{ limits.repeated_error_throttling_ms };
+
 	int num_lines_read = 0;
 	char first_line[MAX_LINE_LENGTH];
 	char second_line[MAX_LINE_LENGTH];
-	int max_lines = SentryOptions::get_singleton()->get_error_logger_max_lines();
-	int max_events = SentryOptions::get_singleton()->get_error_logger_limit_events_per_frame();
-	int max_breadcrumbs = SentryOptions::get_singleton()->get_error_logger_limit_breadcrumbs_per_frame();
 
 	while (num_lines_read < max_lines && log_file.getline(first_line, MAX_LINE_LENGTH) &&
 			(num_breadcrumbs_captured < max_breadcrumbs || num_events_captured < max_events)) {
@@ -88,7 +92,20 @@ void SentryLogger::_process_log_file() {
 					if (last_colon != NULL) {
 						*last_colon = '\0';
 						int line = atoi(last_colon + 1);
-						_log_error(func, file_part, line, rationale, err_type);
+
+						// Log errors based on throttle interval to prevent repetitive logging
+						// caused by loops or recurring errors in each frame.
+						// Last log time is tracked for each source line that produced an error.
+						SourceLine src_line{ file_part, line };
+						TimePoint now = std::chrono::high_resolution_clock::now();
+						auto it = last_logged.find(src_line);
+						if (it == last_logged.end() || now - it->second >= throttle_interval) {
+							_log_error(func, file_part, line, rationale, err_type);
+							last_logged[src_line] = now;
+						} else {
+							sentry::util::print_debug("error capture was canceled due to throttling for ",
+									file_part, " at line ", line, ".");
+						}
 					}
 				}
 
@@ -102,10 +119,11 @@ void SentryLogger::_process_log_file() {
 }
 
 void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType p_error_type) {
+	SentryOptions::LoggerLimits limits = SentryOptions::get_singleton()->get_error_logger_limits();
 	bool as_breadcrumb = SentryOptions::get_singleton()->is_error_logger_breadcrumb_enabled(p_error_type) &&
-			num_breadcrumbs_captured < SentryOptions::get_singleton()->get_error_logger_limit_breadcrumbs_per_frame();
+			num_breadcrumbs_captured < limits.breadcrumbs_per_frame;
 	bool as_event = SentryOptions::get_singleton()->is_error_logger_event_enabled(p_error_type) &&
-			num_events_captured < SentryOptions::get_singleton()->get_error_logger_limit_events_per_frame();
+			num_events_captured < limits.events_per_frame;
 
 	if (!as_breadcrumb && !as_event) {
 		// Bail out if capture is disabled for this error type.

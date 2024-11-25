@@ -4,15 +4,29 @@
 #include "sentry/godot_error_types.h"
 #include "sentry/level.h"
 
+#include <chrono>
 #include <fstream>
 #include <godot_cpp/classes/node.hpp>
+#include <unordered_map>
 
 using namespace godot;
 
 class SentryLogger : public Node {
 	GDCLASS(SentryLogger, Node)
+
 private:
 	using GodotErrorType = sentry::GodotErrorType;
+	using SourceLine = std::pair<std::string, int>;
+	using TimePoint = std::chrono::high_resolution_clock::time_point;
+
+	struct SourceLineHash {
+		std::size_t operator()(const SourceLine &p_source_line) const {
+			return std::hash<std::string>()(p_source_line.first) ^ std::hash<int>()(p_source_line.second);
+		}
+	};
+
+	// Stores the last time an error was logged for each source line.
+	std::unordered_map<SourceLine, TimePoint, SourceLineHash> last_logged;
 
 	Callable process_log;
 	std::ifstream log_file;
