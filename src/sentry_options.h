@@ -33,6 +33,8 @@ private:
 	bool error_logger_include_source = true;
 	int error_logger_event_mask = int(GodotErrorMask::MASK_ALL_EXCEPT_WARNING);
 	int error_logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
+	int error_logger_limit_breadcrumbs_per_frame = 10;
+	int error_logger_limit_events_per_frame = 2;
 
 	void _define_setting(const String &p_setting, const Variant &p_default, bool p_basic = true);
 	void _define_setting(const PropertyInfo &p_info, const Variant &p_default, bool p_basic = true);
@@ -57,6 +59,8 @@ public:
 	bool is_error_logger_include_source_enabled() const { return error_logger_include_source; }
 	bool is_error_logger_event_enabled(GodotErrorType p_error_type) { return error_logger_event_mask & sentry::godot_error_type_as_mask(p_error_type); }
 	bool is_error_logger_breadcrumb_enabled(GodotErrorType p_error_type) { return error_logger_breadcrumb_mask & sentry::godot_error_type_as_mask(p_error_type); }
+	int get_error_logger_limit_breadcrumbs_per_frame() const { return error_logger_limit_breadcrumbs_per_frame; }
+	int get_error_logger_limit_events_per_frame() const { return error_logger_limit_events_per_frame; }
 
 	SentryOptions();
 	~SentryOptions();

@@ -17,6 +17,9 @@ private:
 	Callable process_log;
 	std::ifstream log_file;
 
+	int num_breadcrumbs_captured = 0;
+	int num_events_captured = 0;
+
 	void _setup();
 	void _process_log_file();
 	void _log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType error_type);
