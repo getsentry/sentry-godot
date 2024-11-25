@@ -52,14 +52,20 @@ void SentryLogger::_process_log_file() {
 		return;
 	}
 
+	num_breadcrumbs_captured = 0;
+	num_events_captured = 0;
+
 	log_file.clear(); // Remove eof flag, so that we can read the next line.
 
 	int num_lines_read = 0;
 	char first_line[MAX_LINE_LENGTH];
 	char second_line[MAX_LINE_LENGTH];
 	int max_lines = SentryOptions::get_singleton()->get_error_logger_max_lines();
+	int max_events = SentryOptions::get_singleton()->get_error_logger_limit_events_per_frame();
+	int max_breadcrumbs = SentryOptions::get_singleton()->get_error_logger_limit_breadcrumbs_per_frame();
 
-	while (num_lines_read < max_lines && log_file.getline(first_line, MAX_LINE_LENGTH)) {
+	while (num_lines_read < max_lines && log_file.getline(first_line, MAX_LINE_LENGTH) &&
+			(num_breadcrumbs_captured < max_breadcrumbs || num_events_captured < max_events)) {
 		num_lines_read++;
 
 		for (int i = 0; i < num_error_types; i++) {
@@ -96,8 +102,10 @@ void SentryLogger::_process_log_file() {
 }
 
 void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType p_error_type) {
-	bool as_breadcrumb = SentryOptions::get_singleton()->is_error_logger_breadcrumb_enabled(p_error_type);
-	bool as_event = SentryOptions::get_singleton()->is_error_logger_event_enabled(p_error_type);
+	bool as_breadcrumb = SentryOptions::get_singleton()->is_error_logger_breadcrumb_enabled(p_error_type) &&
+			num_breadcrumbs_captured < SentryOptions::get_singleton()->get_error_logger_limit_breadcrumbs_per_frame();
+	bool as_event = SentryOptions::get_singleton()->is_error_logger_event_enabled(p_error_type) &&
+			num_events_captured < SentryOptions::get_singleton()->get_error_logger_limit_events_per_frame();
 
 	if (!as_breadcrumb && !as_event) {
 		// Bail out if capture is disabled for this error type.
@@ -138,6 +146,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 				p_rationale,
 				sentry::get_sentry_level_for_godot_error_type(p_error_type),
 				{ stack_frame });
+		num_events_captured++;
 	}
 
 	// Capture error as breadcrumb.
@@ -154,6 +163,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 				sentry::get_sentry_level_for_godot_error_type(p_error_type),
 				"error",
 				data);
+		num_breadcrumbs_captured++;
 	}
 }
 
