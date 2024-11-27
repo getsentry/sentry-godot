@@ -53,7 +53,7 @@ void SentryLogger::_process_log_file() {
 		return;
 	}
 
-	// Reset frame counters.
+	// Reset per-frame counters.
 	frame_crumbs = 0;
 	frame_events = 0;
 
@@ -79,8 +79,11 @@ void SentryLogger::_process_log_file() {
 	char first_line[MAX_LINE_LENGTH];
 	char second_line[MAX_LINE_LENGTH];
 
-	// Note: We use a sliding window approach to throttle error logging. If we reach the limit of events or breadcrumbs
-	// within the window, we stop logging errors until the window opens up.
+	// Throttling:
+	// - For throttling, we use a sliding window approach. If we reach the limit of events and breadcrumbs
+	//   within the throttling window, we stop logging errors until the window opens up again.
+	// - We also have a limit on events and breadcrumbs per frame, and on the number of lines
+	//   that can be parsed in each frame.
 	while (num_lines_read < limits.parse_lines && log_file.getline(first_line, MAX_LINE_LENGTH) &&
 			(frame_crumbs < limits.breadcrumbs_per_frame || frame_events < limits.events_per_frame) &&
 			(event_times.size() < limits.throttle_events || crumb_times.size() < limits.throttle_breadcrumbs)) {
@@ -107,7 +110,7 @@ void SentryLogger::_process_log_file() {
 						*last_colon = '\0';
 						int line = atoi(last_colon + 1);
 
-						// Reject errors based on per-source-line throttling interval to prevent
+						// Reject errors based on per-source-line throttling window to prevent
 						// repetitive logging caused by loops or recurring errors in each frame.
 						// Last log time is tracked for each source line that produced an error.
 						SourceLine src_line{ file_part, line };
@@ -288,7 +291,6 @@ void SentryLogger::_setup() {
 	log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
 	log_file.open(log_path.utf8(), std::ios::in);
 	set_process(log_file.is_open());
-	trim_timer->start();
 	ERR_FAIL_COND_MSG(!log_file.is_open(), "Sentry: Error logger failure - couldn't open the log file: " + log_path);
 }
 
@@ -299,6 +301,6 @@ SentryLogger::SentryLogger() {
 	trim_timer = memnew(Timer);
 	trim_timer->set_one_shot(false);
 	trim_timer->set_wait_time(300); // 5 minutes
-	trim_timer->set_autostart(false);
+	trim_timer->set_autostart(true);
 	add_child(trim_timer);
 }
