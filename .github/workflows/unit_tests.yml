@@ -1,0 +1,71 @@
+name: 🧪 Unit tests
+
+on:
+  workflow_call:
+    inputs:
+      godot-version:
+        description: Godot Engine version to use for testing.
+        type: string
+        default: "4.3-stable"
+
+  workflow_dispatch:
+    inputs:
+      godot-version:
+        description: Godot Engine version to use for testing.
+        type: string
+        default: "4.3-stable"
+
+jobs:
+  unit-tests:
+    name: Test on ${{matrix.runner}}
+    runs-on: ${{matrix.runner}}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            bin-suffix: win64.exe
+          - runner: ubuntu-latest
+            bin-suffix: linux.x86_64
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sentry-godot-gdextension
+
+      - name: Set up Godot
+        shell: bash
+        run: |
+          version=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1-stable/p' addons/sentrysdk/bin/sentrysdk.gdextension)
+          bin=Godot_v${version}_${{matrix.bin-suffix}}
+          url=https://github.com/godotengine/godot/releases/download/${version}/${bin}.zip
+          mkdir godot/
+          cd godot/
+          curl -L -o godot.zip "${url}"
+          unzip godot.zip
+          rm godot.zip
+          chmod u+x ${bin}
+          ls -l
+          ./${bin} --version
+          echo "GODOT_BIN=${GITHUB_WORKSPACE}/godot/${bin}" >> $GITHUB_ENV
+
+      - name: Diagnostic info
+        shell: bash
+        run: |
+          ls -lR
+
+      - name: Prepare artifact
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          chmod +x ./addons/sentrysdk/bin/crashpad_handler
+          ${GODOT_BIN} --headless --path . --import
+
+      - name: Run gdUnit tests
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          ${GODOT_BIN} --headless --path . -s -d "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" --ignoreHeadlessMode -a test
+          exit_code=$?
+          echo "Run tests finished with code ${exit_code}"
+          exit ${exit_code}
