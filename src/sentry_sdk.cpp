@@ -48,12 +48,9 @@ void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
 
 	// Initialize user ID if not supplied.
 	if (p_user->get_id().is_empty()) {
-		// Take user ID from the runtime config or generate a new one if it's empty.
-		String user_id = get_user()->get_id();
-		if (user_id.is_empty()) {
-			user_id = sentry::uuid::make_uuid();
+		if (get_user()->get_id().is_empty() && SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
+			p_user->generate_new_id();
 		}
-		p_user->set_id(user_id);
 	}
 
 	// Save user in a runtime conf-file.

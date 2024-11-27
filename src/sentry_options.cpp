@@ -22,6 +22,7 @@ void SentryOptions::_load_project_settings() {
 	sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/config/sample_rate", sample_rate);
 	attach_log = ProjectSettings::get_singleton()->get_setting("sentry/config/attach_log", attach_log);
 	max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/config/max_breadcrumbs", max_breadcrumbs);
+	send_default_pii = ProjectSettings::get_singleton()->get_setting("sentry/config/send_default_pii", send_default_pii);
 
 	error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/enabled", error_logger_enabled);
 	error_logger_max_lines = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/max_lines", error_logger_max_lines);
@@ -64,6 +65,7 @@ void SentryOptions::_define_project_settings() {
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/config/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), sample_rate);
 	_define_setting("sentry/config/attach_log", attach_log);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), max_breadcrumbs);
+	_define_setting("sentry/config/send_default_pii", send_default_pii);
 
 	_define_setting("sentry/config/error_logger/enabled", error_logger_enabled);
 	_define_setting("sentry/config/error_logger/max_lines", error_logger_max_lines);

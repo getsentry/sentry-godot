@@ -25,6 +25,7 @@ private:
 	bool attach_log = true;
 	int32_t config_value_order = 0;
 	int max_breadcrumbs = 100;
+	bool send_default_pii = false;
 
 	bool error_logger_enabled = true;
 	int error_logger_max_lines = 30;
@@ -47,6 +48,7 @@ public:
 	double get_sample_rate() const { return sample_rate; }
 	bool is_attach_log_enabled() const { return attach_log; }
 	int get_max_breadcrumbs() const { return max_breadcrumbs; }
+	bool is_send_default_pii_enabled() const { return send_default_pii; }
 
 	bool is_error_logger_enabled() const { return error_logger_enabled; }
 	int get_error_logger_max_lines() const { return error_logger_max_lines; }
