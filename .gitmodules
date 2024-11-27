@@ -4,3 +4,6 @@
 [submodule "modules/gdUnit4"]
 	path = modules/gdUnit4
 	url = https://github.com/MikeSchulze/gdUnit4.git
+[submodule "modules/godot-cpp"]
+	path = modules/godot-cpp
+	url = https://github.com/godotengine/godot-cpp

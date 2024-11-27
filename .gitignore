@@ -5,9 +5,6 @@ project/.vscode
 
 .sentry-native
 
-# godot-cpp directory if not using submodules
-godot-cpp/
-
 # Godot auto generated files
 project/.godot/
 

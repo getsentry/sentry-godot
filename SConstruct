@@ -4,7 +4,6 @@ import sys
 import subprocess
 
 # Global Setting.
-GODOT_CPP_REF = "godot-4.3-stable"
 PROJECT_DIR = "project"
 EXTENSION_NAME = "sentrysdk"
 COMPATIBILITY_MINIMUM = "4.3"
@@ -13,19 +12,7 @@ BIN_DIR = "{project_dir}/addons/{extension_name}/bin".format(
     project_dir=PROJECT_DIR,
     extension_name=EXTENSION_NAME)
 
-# Checkout godot-cpp...
-if not os.path.exists("godot-cpp"):
-    print("Cloning godot-cpp repository...")
-    result = subprocess.run(
-        ["git", "clone", "-b", GODOT_CPP_REF, "https://github.com/godotengine/godot-cpp.git"],
-        check=True,
-    )
-    if result.returncode != 0:
-        print("Error: Cloning godot-cpp repository failed.")
-        Exit(1)
-    print("Finished cloning godot-cpp repository.")
-
-env = SConscript("godot-cpp/SConstruct")
+env = SConscript("modules/godot-cpp/SConstruct")
 
 # *** Build sentry-native.
 
@@ -70,7 +57,7 @@ elif env["platform"] == "windows":
             ),
         ],
     )
-Depends(sentry_native, "godot-cpp")  # Force sentry-native to be built sequential to godot-cpp (not in parallel)
+Depends(sentry_native, "modules/godot-cpp")  # Force sentry-native to be built sequential to godot-cpp (not in parallel)
 Default(sentry_native)
 Clean(sentry_native, ["sentry-native/build", "sentry-native/install"])
 
