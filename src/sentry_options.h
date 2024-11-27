@@ -16,10 +16,22 @@ class SentryOptions {
 
 public:
 	struct LoggerLimits {
-		int max_lines_parsed = 30;
-		int breadcrumbs_per_frame = 10;
-		int events_per_frame = 2;
-		int repeated_error_throttling_ms = 1000;
+		// TODO: Establish proper default limits with the Sentry team.
+
+		// Limit the number of lines that can be parsed per frame.
+		int parse_lines = 30;
+
+		// Protect frametime budget.
+		int breadcrumbs_per_frame = 5;
+		int events_per_frame = 1;
+
+		// Limit to 1 error captured per source line within T milliseconds window.
+		int repeated_error_window_ms = 1000;
+
+		// Limit to N events and M breadcrumbs within T milliseconds window.
+		int throttle_events = 4;
+		int throttle_breadcrumbs = 20;
+		int throttle_window_ms = 10000;
 	};
 
 private:

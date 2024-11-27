@@ -53,20 +53,37 @@ void SentryLogger::_process_log_file() {
 		return;
 	}
 
-	num_breadcrumbs_captured = 0;
-	num_events_captured = 0;
+	// Reset frame counters.
+	frame_crumbs = 0;
+	frame_events = 0;
+
+	// Get limits.
+	SentryOptions::LoggerLimits limits = SentryOptions::get_singleton()->get_error_logger_limits();
+	auto repeated_error_window = std::chrono::milliseconds{ limits.repeated_error_window_ms };
+	auto throttle_window = std::chrono::milliseconds{ limits.throttle_window_ms };
+
+	{
+		// Throttling: Remove time points outside of the throttling window.
+		auto now = std::chrono::high_resolution_clock::now();
+		while (event_times.size() && now - event_times.front() >= throttle_window) {
+			event_times.pop_front();
+		}
+		while (crumb_times.size() && now - crumb_times.front() >= throttle_window) {
+			crumb_times.pop_front();
+		}
+	}
 
 	log_file.clear(); // Remove eof flag, so that we can read the next line.
-
-	SentryOptions::LoggerLimits limits = SentryOptions::get_singleton()->get_error_logger_limits();
-	auto throttle_interval = std::chrono::milliseconds{ limits.repeated_error_throttling_ms };
 
 	int num_lines_read = 0;
 	char first_line[MAX_LINE_LENGTH];
 	char second_line[MAX_LINE_LENGTH];
 
-	while (num_lines_read < limits.max_lines_parsed && log_file.getline(first_line, MAX_LINE_LENGTH) &&
-			(num_breadcrumbs_captured < limits.breadcrumbs_per_frame || num_events_captured < limits.events_per_frame)) {
+	// Note: We use a sliding window approach to throttle error logging. If we reach the limit of events or breadcrumbs
+	// within the window, we stop logging errors until the window opens up.
+	while (num_lines_read < limits.parse_lines && log_file.getline(first_line, MAX_LINE_LENGTH) &&
+			(frame_crumbs < limits.breadcrumbs_per_frame || frame_events < limits.events_per_frame) &&
+			(event_times.size() < limits.throttle_events || crumb_times.size() < limits.throttle_breadcrumbs)) {
 		num_lines_read++;
 
 		for (int i = 0; i < num_error_types; i++) {
@@ -90,15 +107,15 @@ void SentryLogger::_process_log_file() {
 						*last_colon = '\0';
 						int line = atoi(last_colon + 1);
 
-						// Log errors based on throttle interval to prevent repetitive logging
-						// caused by loops or recurring errors in each frame.
+						// Reject errors based on per-source-line throttling interval to prevent
+						// repetitive logging caused by loops or recurring errors in each frame.
 						// Last log time is tracked for each source line that produced an error.
 						SourceLine src_line{ file_part, line };
 						TimePoint now = std::chrono::high_resolution_clock::now();
-						auto it = last_logged.find(src_line);
-						if (it == last_logged.end() || now - it->second >= throttle_interval) {
+						auto it = source_line_times.find(src_line);
+						if (it == source_line_times.end() || now - it->second >= repeated_error_window) {
 							_log_error(func, file_part, line, rationale, err_type);
-							last_logged[src_line] = now;
+							source_line_times[src_line] = now;
 						} else {
 							sentry::util::print_debug("error capture was canceled due to throttling for ",
 									file_part, " at line ", line, ".");
@@ -118,9 +135,11 @@ void SentryLogger::_process_log_file() {
 void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType p_error_type) {
 	SentryOptions::LoggerLimits limits = SentryOptions::get_singleton()->get_error_logger_limits();
 	bool as_breadcrumb = SentryOptions::get_singleton()->is_error_logger_breadcrumb_enabled(p_error_type) &&
-			num_breadcrumbs_captured < limits.breadcrumbs_per_frame;
+			frame_crumbs < limits.breadcrumbs_per_frame &&
+			crumb_times.size() < limits.throttle_breadcrumbs;
 	bool as_event = SentryOptions::get_singleton()->is_error_logger_event_enabled(p_error_type) &&
-			num_events_captured < limits.events_per_frame;
+			frame_events < limits.events_per_frame &&
+			event_times.size() < limits.throttle_events;
 
 	if (!as_breadcrumb && !as_event) {
 		// Bail out if capture is disabled for this error type.
@@ -136,6 +155,8 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		printf("   Rationale: \"%s\"\n", p_rationale);
 		printf("   Error Type: %s\n", error_types[int(p_error_type)]);
 	}
+
+	TimePoint now = std::chrono::high_resolution_clock::now();
 
 	// Capture error as event.
 	if (as_event) {
@@ -161,7 +182,10 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 				p_rationale,
 				sentry::get_sentry_level_for_godot_error_type(p_error_type),
 				{ stack_frame });
-		num_events_captured++;
+
+		// For throttling
+		frame_events++;
+		event_times.push_back(now);
 	}
 
 	// Capture error as breadcrumb.
@@ -178,7 +202,10 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 				sentry::get_sentry_level_for_godot_error_type(p_error_type),
 				"error",
 				data);
-		num_breadcrumbs_captured++;
+
+		// For throttling
+		frame_crumbs++;
+		crumb_times.push_back(now);
 	}
 }
 

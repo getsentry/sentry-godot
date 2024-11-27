@@ -5,6 +5,7 @@
 #include "sentry/level.h"
 
 #include <chrono>
+#include <deque>
 #include <fstream>
 #include <godot_cpp/classes/node.hpp>
 #include <unordered_map>
@@ -25,14 +26,22 @@ private:
 		}
 	};
 
-	// Stores the last time an error was logged for each source line.
-	std::unordered_map<SourceLine, TimePoint, SourceLineHash> last_logged;
+	// Stores the last time an error was logged for each source line that generated an error.
+	std::unordered_map<SourceLine, TimePoint, SourceLineHash> source_line_times;
+	// TODO: Needs to be trimmed periodically or it might get huge (unlikely but still possible).
+
+	// Time points for events captured within throttling window.
+	std::deque<TimePoint> event_times;
+	// Time points for breadcrumbs captured within throttling window.
+	std::deque<TimePoint> crumb_times;
+
+	// Number of breadcrumbs captured during this frame.
+	int frame_crumbs = 0;
+	// Number of events captured during this frame.
+	int frame_events = 0;
 
 	Callable process_log;
 	std::ifstream log_file;
-
-	int num_breadcrumbs_captured = 0;
-	int num_events_captured = 0;
 
 	void _setup();
 	void _process_log_file();
