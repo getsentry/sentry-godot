@@ -32,7 +32,6 @@ enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
 
 [gdunit4]
 
-settings/test/test_discovery=true
 ui/toolbar/run_overall=true
 
 [sentry]
