@@ -11,6 +11,11 @@ using namespace godot;
 namespace sentry::contexts {
 
 Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config);
+
+// Returns smaller device context dictionary that only includes values that are
+// dynamic and need to be updated right before the event is sent.
+Dictionary make_device_context_update();
+
 Dictionary make_app_context();
 Dictionary make_gpu_context();
 Dictionary make_culture_context();
