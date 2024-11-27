@@ -66,7 +66,7 @@ elif env["platform"] == "windows":
             build_sentry_native,
             Copy(
                 BIN_DIR + "/crashpad_handler.exe",
-                "sentry-native/install/bin/crashpad_handler.exe",
+                "modules/sentry-native/install/bin/crashpad_handler.exe",
             ),
         ],
     )
