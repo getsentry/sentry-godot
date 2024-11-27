@@ -1,0 +1,105 @@
+name: 🔌 Build GDExtension libs
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        default: ''
+        description: 'The branch, tag or SHA to checkout (leave empty for event SHA)'
+
+  workflow_dispatch:
+    inputs:
+      ref:
+        type: string
+        default: ''
+        description: 'The branch, tag or SHA to checkout (leave empty for event SHA)'
+
+env:
+  # Default SCons flags applied to each build.
+  SCONSFLAGS: verbose=yes debug_symbols=yes symbols_visibility=visible
+
+jobs:
+  build:
+    name: ${{matrix.name}}
+    runs-on: ${{matrix.runner}}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 🐧 Linux (x86_64, release)
+            runner: ubuntu-22.04
+            platform: linux
+            target: template_release
+            arch: x86_64
+
+          - name: 🐧 Linux (x86_64, debug)
+            runner: ubuntu-22.04
+            platform: linux
+            target: editor
+            arch: x86_64
+
+          - name: 🪟 Windows (x86_64, release)
+            runner: windows-latest
+            platform: windows
+            target: template_release
+            arch: x86_64
+
+          - name: 🪟 Windows (x86_64, debug)
+            runner: windows-latest
+            platform: windows
+            target: editor
+            arch: x86_64
+
+    steps:
+      - name: Checkout repo and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ref: ${{inputs.ref}}
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt update
+          sudo apt install libcurl4-openssl-dev
+
+      - name: Install SCons
+        run: |
+          python -m pip install scons
+          python --version
+          scons --version
+
+      - name: Compile GDExtension library
+        shell: bash
+        run: |
+          scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}}
+
+      - name: Separate debug symbols on Linux
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          pushd project/addons/sentrysdk/bin/
+          libname=libsentrysdk.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}.so
+          objcopy --only-keep-debug ${libname} ${libname}.debug
+          objcopy --add-gnu-debuglink ${libname}.debug ${libname}
+          strip --strip-debug ${libname}
+          popd
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libsentrysdk.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}
+          path: project/
+
+  package:
+    name: 📦 Package GDExtension
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - name: Merge artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: sentry-godot-gdextension
+          pattern: libsentrysdk.*
+          delete-merged: true

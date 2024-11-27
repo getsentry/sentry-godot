@@ -1,0 +1,22 @@
+name: ⚙️ CI
+
+on:
+  push:
+    branches:
+      - "main"
+    paths-ignore:
+      - "*.md"
+
+  pull_request:
+    paths-ignore:
+      - "*.md"
+
+# Cancel in-progress runs on PR update and on push.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-extension:
+    name: 🔌 Build GDExtension
+    uses: ./.github/workflows/build_gdextension.yml
