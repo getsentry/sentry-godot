@@ -209,6 +209,13 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 	}
 }
 
+void SentryLogger::_trim_error_timepoints() {
+	// Clearing the map if it gets too big. Cheap and efficient.
+	if (source_line_times.size() > 100) {
+		source_line_times.clear();
+	}
+}
+
 bool SentryLogger::_get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) const {
 	if (p_file.is_empty()) {
 		return true;
@@ -245,6 +252,10 @@ void SentryLogger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			sentry::util::print_debug("starting logger");
+
+			// Periodically remove old error time points to free up memory, if it gets too big.
+			trim_timer->connect("timeout", callable_mp(this, &SentryLogger::_trim_error_timepoints));
+
 			_setup();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -277,10 +288,17 @@ void SentryLogger::_setup() {
 	log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
 	log_file.open(log_path.utf8(), std::ios::in);
 	set_process(log_file.is_open());
+	trim_timer->start();
 	ERR_FAIL_COND_MSG(!log_file.is_open(), "Sentry: Error logger failure - couldn't open the log file: " + log_path);
 }
 
 SentryLogger::SentryLogger() {
 	set_process(false);
 	process_log = callable_mp(this, &SentryLogger::_process_log_file);
+
+	trim_timer = memnew(Timer);
+	trim_timer->set_one_shot(false);
+	trim_timer->set_wait_time(300); // 5 minutes
+	trim_timer->set_autostart(false);
+	add_child(trim_timer);
 }
