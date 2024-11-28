@@ -2,18 +2,6 @@ name: 🧪 Unit tests
 
 on:
   workflow_call:
-    inputs:
-      godot-version:
-        description: Godot Engine version to use for testing.
-        type: string
-        default: "4.3-stable"
-
-  workflow_dispatch:
-    inputs:
-      godot-version:
-        description: Godot Engine version to use for testing.
-        type: string
-        default: "4.3-stable"
 
 jobs:
   unit-tests:
@@ -24,20 +12,37 @@ jobs:
       matrix:
         include:
           - runner: windows-latest
-            bin-suffix: win64.exe
+            godot-suffix: win64.exe
           - runner: ubuntu-latest
-            bin-suffix: linux.x86_64
+            godot-suffix: linux.x86_64
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: false # don't initialize submodules automatically
+
+      - name: Checkout required submodules
+        run: |
+          git submodule update --init --depth 1 modules/gdUnit4
+          git submodule update --init --depth 1 modules/godot-cpp
+
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: sentry-godot-gdextension
+          path: project/
+
+      - name: Install SCons
+        run: |
+          python -m pip install scons
+          python --version
+          scons --version
 
       - name: Set up Godot
         shell: bash
         run: |
-          version=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1-stable/p' addons/sentrysdk/bin/sentrysdk.gdextension)
-          bin=Godot_v${version}_${{matrix.bin-suffix}}
+          version=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1-stable/p' project/addons/sentrysdk/bin/sentrysdk.gdextension)
+          bin=Godot_v${version}_${{matrix.godot-suffix}}
           url=https://github.com/godotengine/godot/releases/download/${version}/${bin}.zip
           mkdir godot/
           cd godot/
@@ -52,20 +57,27 @@ jobs:
       - name: Diagnostic info
         shell: bash
         run: |
-          ls -lR
+          ls -lR project/
 
-      - name: Prepare artifact
+      - name: Prepare project
         shell: bash
         timeout-minutes: 5
         run: |
-          chmod +x ./addons/sentrysdk/bin/crashpad_handler
-          ${GODOT_BIN} --headless --path . --import
+          scons project/addons/gdUnit4
+          chmod +x project/addons/sentrysdk/bin/crashpad_handler
+          echo "--- Rebuilding import cache.."
+          ${GODOT_BIN} --headless --editor --path project/ --quit-after 2000 || true
+          echo "--- Finished rebuilding import cache."
 
-      - name: Run gdUnit tests
+      - name: Run tests
         shell: bash
         timeout-minutes: 5
         run: |
-          ${GODOT_BIN} --headless --path . -s -d "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" --ignoreHeadlessMode -a test
-          exit_code=$?
-          echo "Run tests finished with code ${exit_code}"
-          exit ${exit_code}
+          ${GODOT_BIN} --headless --path project/ -s -d "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" --ignoreHeadlessMode -c -a test
+
+      - name: Upload results
+        if: always() # do this step even if the tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{matrix.runner}}
+          path: project/reports

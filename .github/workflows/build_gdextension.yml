@@ -93,7 +93,7 @@ jobs:
           path: |
             project/
             !project/addons/gdUnit4
-            !test
+            !project/test/
 
   package:
     name: 📦 Package GDExtension
