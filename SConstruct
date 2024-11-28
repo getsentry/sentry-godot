@@ -40,13 +40,13 @@ if env["platform"] in ["linux", "macos"]:
         return result.returncode
 
     sentry_native = env.Command(
-        ["sentry-native/install/lib/libsentry.a", BIN_DIR + "/crashpad_handler"],
-        ["sentry-native/src"],
+        ["modules/sentry-native/install/lib/libsentry.a", BIN_DIR + "/crashpad_handler"],
+        ["modules/sentry-native/src"],
         [
             build_sentry_native,
             Copy(
                 BIN_DIR + "/crashpad_handler",
-                "sentry-native/install/bin/crashpad_handler",
+                "modules/sentry-native/install/bin/crashpad_handler",
             ),
         ],
     )
@@ -60,19 +60,19 @@ elif env["platform"] == "windows":
         return result.returncode
 
     sentry_native = env.Command(
-        ["sentry-native/install/lib/sentry.lib", BIN_DIR + "/crashpad_handler.exe"],
-        ["sentry-native/src/"],
+        ["modules/sentry-native/install/lib/sentry.lib", BIN_DIR + "/crashpad_handler.exe"],
+        ["modules/sentry-native/src/"],
         [
             build_sentry_native,
             Copy(
                 BIN_DIR + "/crashpad_handler.exe",
-                "sentry-native/install/bin/crashpad_handler.exe",
+                "modules/sentry-native/install/bin/crashpad_handler.exe",
             ),
         ],
     )
 Depends(sentry_native, "godot-cpp")  # Force sentry-native to be built sequential to godot-cpp (not in parallel)
 Default(sentry_native)
-Clean(sentry_native, ["sentry-native/build", "sentry-native/install"])
+Clean(sentry_native, ["modules/sentry-native/build", "modules/sentry-native/install"])
 
 # Include relative to project source root.
 env.Append(CPPPATH=["src/"])
@@ -80,8 +80,8 @@ env.Append(CPPPATH=["src/"])
 # Include sentry-native libs (static).
 if env["platform"] in ["linux", "macos", "windows"]:
     env.Append(CPPDEFINES=["SENTRY_BUILD_STATIC", "NATIVE_SDK"])
-    env.Append(CPPPATH=["sentry-native/include"])
-    env.Append(LIBPATH=["sentry-native/install/lib/"])
+    env.Append(CPPPATH=["modules/sentry-native/include"])
+    env.Append(LIBPATH=["modules/sentry-native/install/lib/"])
     env.Append(
         LIBS=[
             "sentry",
