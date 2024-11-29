@@ -55,7 +55,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		memdelete(SentrySDK::get_singleton());
 		delete SentryOptions::get_singleton();
 	}
