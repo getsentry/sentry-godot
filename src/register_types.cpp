@@ -18,10 +18,9 @@ void _init_logger() {
 		return;
 	}
 	// Add experimental logger to scene tree.
-	SentryLogger *logger = memnew(SentryLogger);
 	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-	if (sml) {
-		sml->get_root()->add_child(logger);
+	if (sml && sml->get_root()) {
+		sml->get_root()->add_child(memnew(SentryLogger));
 	} else {
 		ERR_FAIL_MSG("Sentry: Internal error: SceneTree is null.");
 	}
@@ -56,8 +55,12 @@ void initialize_module(ModuleInitializationLevel p_level) {
 
 void uninitialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		memdelete(SentrySDK::get_singleton());
-		delete SentryOptions::get_singleton();
+		if (SentrySDK::get_singleton()) {
+			memdelete(SentrySDK::get_singleton());
+		}
+		if (SentryOptions::get_singleton()) {
+			delete SentryOptions::get_singleton();
+		}
 	}
 }
 
