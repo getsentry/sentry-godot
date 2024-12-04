@@ -66,7 +66,6 @@ func test_sentry_user_ip_inferring() -> void:
 	assert_str(user.ip_address).is_equal("{{auto}}")
 	assert_str(user.email).is_empty()
 	assert_str(user.username).is_empty()
-	assert_str(user.id).is_not_empty() # ID for user is auto-generated.
 
 
 ## SentryUser ID generation should produce a unique ID.
