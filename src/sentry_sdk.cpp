@@ -70,6 +70,7 @@ void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary 
 }
 
 void SentrySDK::_init_contexts() {
+	sentry::util::print_debug("initializing contexts");
 	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
 	internal_sdk->set_context("app", sentry::contexts::make_app_context());
 	internal_sdk->set_context("gpu", sentry::contexts::make_gpu_context());
@@ -121,6 +122,7 @@ SentrySDK::SentrySDK() {
 
 	enabled = enabled && SentryOptions::get_singleton()->is_enabled();
 	if (!enabled) {
+		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
 		internal_sdk = std::make_shared<DisabledSDK>();
 		return;
 	}
