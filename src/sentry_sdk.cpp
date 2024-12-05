@@ -6,6 +6,7 @@
 #include "sentry/uuid.h"
 #include "sentry_options.h"
 
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -121,6 +122,10 @@ SentrySDK::SentrySDK() {
 #endif
 
 	enabled = enabled && SentryOptions::get_singleton()->is_enabled();
+	if (enabled && Engine::get_singleton()->is_editor_hint() && SentryOptions::get_singleton()->is_disabled_in_editor()) {
+		sentry::util::print_debug("Sentry SDK is disabled in the editor. Tip: This can be changed in the project settings.");
+		enabled = false;
+	}
 	if (!enabled) {
 		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
 		internal_sdk = std::make_shared<DisabledSDK>();
