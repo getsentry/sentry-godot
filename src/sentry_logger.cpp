@@ -300,7 +300,7 @@ SentryLogger::SentryLogger() {
 
 	trim_timer = memnew(Timer);
 	trim_timer->set_one_shot(false);
-	trim_timer->set_wait_time(300); // 5 minutes
+	trim_timer->set_wait_time(60); // 1 minute
 	trim_timer->set_autostart(true);
 	add_child(trim_timer);
 }
