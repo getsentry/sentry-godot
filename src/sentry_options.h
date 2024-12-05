@@ -19,7 +19,7 @@ public:
 		// TODO: Establish proper default limits with the Sentry team.
 
 		// Limit the number of lines that can be parsed per frame.
-		int parse_lines = 30;
+		int parse_lines = 100;
 
 		// Protect frametime budget.
 		int breadcrumbs_per_frame = 5;
