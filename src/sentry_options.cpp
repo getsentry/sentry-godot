@@ -31,9 +31,10 @@ void SentryOptions::_load_project_settings() {
 	error_logger_breadcrumb_mask = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/breadcrumbs", error_logger_breadcrumb_mask);
 
 	error_logger_limits.parse_lines = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/parse_lines", error_logger_limits.parse_lines);
-	error_logger_limits.breadcrumbs_per_frame = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/breadcrumbs_per_frame", error_logger_limits.breadcrumbs_per_frame);
 	error_logger_limits.events_per_frame = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/events_per_frame", error_logger_limits.events_per_frame);
 	error_logger_limits.repeated_error_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/repeated_error_window_ms", error_logger_limits.repeated_error_window_ms);
+	error_logger_limits.throttle_events = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/throttle_events", error_logger_limits.throttle_events);
+	error_logger_limits.throttle_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/throttle_window_ms", error_logger_limits.throttle_window_ms);
 }
 
 void SentryOptions::_define_setting(const String &p_setting, const Variant &p_default, bool p_basic) {
@@ -79,9 +80,10 @@ void SentryOptions::_define_project_settings() {
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), error_logger_breadcrumb_mask);
 
 	_define_setting("sentry/config/error_logger/limits/parse_lines", error_logger_limits.parse_lines);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/breadcrumbs_per_frame", PROPERTY_HINT_RANGE, "0,20"), error_logger_limits.breadcrumbs_per_frame);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), error_logger_limits.events_per_frame);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), error_logger_limits.repeated_error_window_ms);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), error_logger_limits.throttle_events);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), error_logger_limits.throttle_window_ms);
 }
 
 SentryOptions::SentryOptions() {
