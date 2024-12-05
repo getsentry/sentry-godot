@@ -32,11 +32,7 @@ private:
 
 	// Time points for events captured within throttling window.
 	std::deque<TimePoint> event_times;
-	// Time points for breadcrumbs captured within throttling window.
-	std::deque<TimePoint> crumb_times;
 
-	// Number of breadcrumbs captured during this frame.
-	int frame_crumbs = 0;
 	// Number of events captured during this frame.
 	int frame_events = 0;
 

@@ -53,8 +53,7 @@ void SentryLogger::_process_log_file() {
 		return;
 	}
 
-	// Reset per-frame counters.
-	frame_crumbs = 0;
+	// Reset per-frame counter.
 	frame_events = 0;
 
 	// Get limits.
@@ -68,9 +67,6 @@ void SentryLogger::_process_log_file() {
 		while (event_times.size() && now - event_times.front() >= throttle_window) {
 			event_times.pop_front();
 		}
-		while (crumb_times.size() && now - crumb_times.front() >= throttle_window) {
-			crumb_times.pop_front();
-		}
 	}
 
 	log_file.clear(); // Remove eof flag, so that we can read the next line.
@@ -80,13 +76,12 @@ void SentryLogger::_process_log_file() {
 	char second_line[MAX_LINE_LENGTH];
 
 	// Throttling:
-	// - For throttling, we use a sliding window approach. If we reach the limit of events and breadcrumbs
-	//   within the throttling window, we stop logging errors until the window opens up again.
-	// - We also have a limit on events and breadcrumbs per frame, and on the number of lines
-	//   that can be parsed in each frame.
-	while (num_lines_read < limits.parse_lines && log_file.getline(first_line, MAX_LINE_LENGTH) &&
-			(frame_crumbs < limits.breadcrumbs_per_frame || frame_events < limits.events_per_frame) &&
-			(event_times.size() < limits.throttle_events || crumb_times.size() < limits.throttle_breadcrumbs)) {
+	// - For throttling, we use a sliding window approach. If we reach the limit of events
+	//   within the throttling window, we stop registering events until the window opens up again,
+	//   while still registering them as breadcrumbs.
+	// - We also have a limit on events per frame, and on the number of lines that can be parsed
+	//   in each frame. These limits are mainly here to protect the frametime budget.
+	while (num_lines_read < limits.parse_lines && log_file.getline(first_line, MAX_LINE_LENGTH)) {
 		num_lines_read++;
 
 		for (int i = 0; i < num_error_types; i++) {
@@ -137,9 +132,7 @@ void SentryLogger::_process_log_file() {
 
 void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType p_error_type) {
 	SentryOptions::LoggerLimits limits = SentryOptions::get_singleton()->get_error_logger_limits();
-	bool as_breadcrumb = SentryOptions::get_singleton()->is_error_logger_breadcrumb_enabled(p_error_type) &&
-			frame_crumbs < limits.breadcrumbs_per_frame &&
-			crumb_times.size() < limits.throttle_breadcrumbs;
+	bool as_breadcrumb = SentryOptions::get_singleton()->is_error_logger_breadcrumb_enabled(p_error_type);
 	bool as_event = SentryOptions::get_singleton()->is_error_logger_event_enabled(p_error_type) &&
 			frame_events < limits.events_per_frame &&
 			event_times.size() < limits.throttle_events;
@@ -205,10 +198,6 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 				sentry::get_sentry_level_for_godot_error_type(p_error_type),
 				"error",
 				data);
-
-		// For throttling
-		frame_crumbs++;
-		crumb_times.push_back(now);
 	}
 }
 
