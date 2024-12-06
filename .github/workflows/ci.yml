@@ -20,3 +20,8 @@ jobs:
   build-extension:
     name: 🔌 Build GDExtension
     uses: ./.github/workflows/build_gdextension.yml
+
+  unit-tests:
+    name: 🧪 Unit tests
+    needs: build-extension
+    uses: ./.github/workflows/unit_tests.yml
