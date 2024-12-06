@@ -18,6 +18,7 @@ private:
 	static SentryOptions *singleton;
 
 	bool enabled = true;
+	bool disabled_in_editor = true;
 	CharString dsn = "";
 	CharString release = "{app_name}@{app_version}";
 	bool debug = false;
@@ -42,6 +43,7 @@ public:
 	_FORCE_INLINE_ static SentryOptions *get_singleton() { return singleton; }
 
 	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
+	_FORCE_INLINE_ bool is_disabled_in_editor() const { return disabled_in_editor; }
 	CharString get_dsn() const { return dsn; }
 	CharString get_release() const { return release; }
 	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }

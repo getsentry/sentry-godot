@@ -17,6 +17,7 @@ void SentryOptions::_load_project_settings() {
 	release = release_str.format(format_params).utf8();
 
 	enabled = ProjectSettings::get_singleton()->get_setting("sentry/config/enabled", enabled);
+	disabled_in_editor = ProjectSettings::get_singleton()->get_setting("sentry/config/disabled_in_editor", disabled_in_editor);
 	dsn = String(ProjectSettings::get_singleton()->get_setting("sentry/config/dsn", String(dsn))).utf8();
 	debug = ProjectSettings::get_singleton()->get_setting("sentry/config/debug", debug);
 	sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/config/sample_rate", sample_rate);
@@ -59,6 +60,7 @@ void SentryOptions::_define_setting(const godot::PropertyInfo &p_info, const god
 
 void SentryOptions::_define_project_settings() {
 	_define_setting("sentry/config/enabled", enabled);
+	_define_setting("sentry/config/disabled_in_editor", disabled_in_editor);
 	_define_setting("sentry/config/dsn", String(dsn));
 	_define_setting("sentry/config/release", String(release));
 	_define_setting("sentry/config/debug", debug);
