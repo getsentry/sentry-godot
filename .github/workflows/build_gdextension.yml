@@ -91,12 +91,11 @@ jobs:
         if: matrix.platform == 'linux'
         shell: bash
         run: |
-          pushd project/addons/sentrysdk/bin/
+          cd project/addons/sentrysdk/bin/linux/
           libname=libsentrysdk.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}.so
           objcopy --only-keep-debug ${libname} ${libname}.debug
           objcopy --add-gnu-debuglink ${libname}.debug ${libname}
           strip --strip-debug ${libname}
-          popd
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
