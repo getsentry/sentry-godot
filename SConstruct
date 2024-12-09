@@ -122,24 +122,27 @@ sources += Glob("src/sentry/*.cpp")
 if env["platform"] in ["linux", "windows", "macos"]:
     sources += Glob("src/sentry/native/*.cpp")
 
+build_type = "release" if env["target"] == "template_release" else "debug"
+
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        "{bin}/{platform}/lib{name}.{platform}.{target}.framework/lib{name}.{platform}.{target}".format(
+        "{bin}/{platform}/lib{name}.{platform}.{build_type}.framework/lib{name}.{platform}.{build_type}".format(
             bin=BIN_DIR,
             name=EXTENSION_NAME,
             platform=env["platform"],
-            target=env["target"],
+            build_type=build_type,
         ),
         source=sources,
     )
 else:
     library = env.SharedLibrary(
-        "{bin}/{platform}/lib{name}{suffix}{shlib_suffix}".format(
+        "{bin}/{platform}/lib{name}.{platform}.{build_type}.{arch}{shlib_suffix}".format(
             bin=BIN_DIR,
             name=EXTENSION_NAME,
             platform=env["platform"],
-            suffix=env["suffix"],
-            shlib_suffix=env["SHLIBSUFFIX"],
+            build_type=build_type,
+            arch=env["arch"],
+            shlib_suffix=env["SHLIBSUFFIX"]
         ),
         source=sources,
     )
