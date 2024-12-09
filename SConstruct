@@ -26,13 +26,20 @@ if env["platform"] in ["linux", "macos"]:
         )
         return result.returncode
 
+    crashpad_handler_target = "{bin}/{platform}/crashpad_handler".format(
+        bin=BIN_DIR,
+        platform=env["platform"]
+    )
     sentry_native = env.Command(
-        ["modules/sentry-native/install/lib/libsentry.a", BIN_DIR + "/crashpad_handler"],
+        [
+            "modules/sentry-native/install/lib/libsentry.a",
+            crashpad_handler_target,
+        ],
         ["modules/sentry-native/src"],
         [
             build_sentry_native,
             Copy(
-                BIN_DIR + "/crashpad_handler",
+                crashpad_handler_target,
                 "modules/sentry-native/install/bin/crashpad_handler",
             ),
         ],
@@ -47,12 +54,12 @@ elif env["platform"] == "windows":
         return result.returncode
 
     sentry_native = env.Command(
-        ["modules/sentry-native/install/lib/sentry.lib", BIN_DIR + "/crashpad_handler.exe"],
+        ["modules/sentry-native/install/lib/sentry.lib", BIN_DIR + "/windows/crashpad_handler.exe"],
         ["modules/sentry-native/src/"],
         [
             build_sentry_native,
             Copy(
-                BIN_DIR + "/crashpad_handler.exe",
+                BIN_DIR + "/windows/crashpad_handler.exe",
                 "modules/sentry-native/install/bin/crashpad_handler.exe",
             ),
         ],
@@ -117,8 +124,8 @@ if env["platform"] in ["linux", "windows", "macos"]:
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        "{bin_dir}/lib{name}.{platform}.{target}.framework/lib{name}.{platform}.{target}".format(
-            bin_dir=BIN_DIR,
+        "{bin}/{platform}/lib{name}.{platform}.{target}.framework/lib{name}.{platform}.{target}".format(
+            bin=BIN_DIR,
             name=EXTENSION_NAME,
             platform=env["platform"],
             target=env["target"],
@@ -127,9 +134,10 @@ if env["platform"] == "macos":
     )
 else:
     library = env.SharedLibrary(
-        "{bin_dir}/lib{name}{suffix}{shlib_suffix}".format(
-            bin_dir=BIN_DIR,
+        "{bin}/{platform}/lib{name}{suffix}{shlib_suffix}".format(
+            bin=BIN_DIR,
             name=EXTENSION_NAME,
+            platform=env["platform"],
             suffix=env["suffix"],
             shlib_suffix=env["SHLIBSUFFIX"],
         ),
@@ -141,8 +149,8 @@ Default(library)
 # *** Deploy extension manifest.
 
 manifest = env.Substfile(
-    target="{bin_dir}/{name}.gdextension".format(
-        bin_dir=BIN_DIR,
+    target="{bin}/{name}.gdextension".format(
+        bin=BIN_DIR,
         name=EXTENSION_NAME,
     ),
     source="src/manifest.gdextension",
