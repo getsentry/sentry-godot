@@ -73,7 +73,6 @@ if env["platform"] in ["linux", "macos", "windows"]:
         LIBS=[
             "sentry",
             "crashpad_client",
-            "crashpad_compat",
             "crashpad_handler_lib",
             "crashpad_minidump",
             "crashpad_snapshot",
@@ -86,6 +85,7 @@ if env["platform"] in ["linux", "macos", "windows"]:
 if env["platform"] == "windows":
     env.Append(
         LIBS=[
+            "crashpad_compat",
             "winhttp",
             "advapi32",
             "DbgHelp",
@@ -93,6 +93,13 @@ if env["platform"] == "windows":
         ]
     )
 elif env["platform"] == "linux":
+    env.Append(
+        LIBS=[
+            "crashpad_compat",
+            "curl",
+        ]
+    )
+elif env["platform"] == "macos":
     env.Append(
         LIBS=[
             "curl",
