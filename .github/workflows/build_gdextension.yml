@@ -89,13 +89,15 @@ jobs:
 
       - name: Separate debug symbols on Linux
         if: matrix.platform == 'linux'
+        env:
+          BUILD_TYPE: ${{matrix.target == 'template_release' && 'release' || 'debug'}}
         shell: bash
         run: |
           cd project/addons/sentrysdk/bin/linux/
-          libname=libsentrysdk.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}.so
-          objcopy --only-keep-debug ${libname} ${libname}.debug
-          objcopy --add-gnu-debuglink ${libname}.debug ${libname}
-          strip --strip-debug ${libname}
+          lib=libsentrysdk.${{matrix.platform}}.${BUILD_TYPE}.${{matrix.arch}}.so
+          objcopy --only-keep-debug ${lib} ${lib}.debug
+          objcopy --add-gnu-debuglink ${lib}.debug ${lib}
+          strip --strip-debug ${lib}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
