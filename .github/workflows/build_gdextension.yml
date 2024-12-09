@@ -51,6 +51,18 @@ jobs:
             target: editor
             arch: x86_64
 
+          - name: 🍎 macOS (universal, release)
+            runner: macos-latest
+            platform: macos
+            target: template_release
+            arch: universal
+
+          - name: 🍎 macOS (universal, debug)
+            runner: macos-latest
+            platform: macos
+            target: editor
+            arch: universal
+
     steps:
       - name: Checkout repo and submodules
         uses: actions/checkout@v4
