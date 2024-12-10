@@ -4,6 +4,7 @@
 #include "sentry.h"
 #include "sentry/contexts.h"
 #include "sentry/environment.h"
+#include "sentry/level.h"
 #include "sentry/native/native_util.h"
 #include "sentry_options.h"
 
@@ -65,6 +66,23 @@ inline String _uuid_as_string(sentry_uuid_t p_uuid) {
 	char str[37];
 	sentry_uuid_as_string(&p_uuid, str);
 	return str;
+}
+
+sentry_level_t _level_as_native(sentry::Level p_level) {
+	switch (p_level) {
+		case sentry::Level::LEVEL_DEBUG:
+			return SENTRY_LEVEL_DEBUG;
+		case sentry::Level::LEVEL_INFO:
+			return SENTRY_LEVEL_INFO;
+		case sentry::Level::LEVEL_WARNING:
+			return SENTRY_LEVEL_WARNING;
+		case sentry::Level::LEVEL_ERROR:
+			return SENTRY_LEVEL_ERROR;
+		case sentry::Level::LEVEL_FATAL:
+			return SENTRY_LEVEL_FATAL;
+		default:
+			ERR_FAIL_V_MSG(SENTRY_LEVEL_ERROR, "SentrySDK: Internal error - unexpected level value. Please open an issue.");
+	}
 }
 
 } // unnamed namespace
@@ -130,7 +148,7 @@ void NativeSDK::add_breadcrumb(const String &p_message, const String &p_category
 
 String NativeSDK::capture_message(const String &p_message, Level p_level, const String &p_logger) {
 	sentry_value_t event = sentry_value_new_message_event(
-			(sentry_level_t)p_level,
+			_level_as_native(p_level),
 			p_logger.utf8().get_data(),
 			p_message.utf8().get_data());
 	last_uuid = sentry_capture_event(event);
