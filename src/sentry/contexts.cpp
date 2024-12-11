@@ -1,5 +1,6 @@
 #include "contexts.h"
 
+#include "sdk_version.gen.h"
 #include "sentry/environment.h"
 #include "sentry/uuid.h"
 #include "sentry_options.h"
@@ -269,6 +270,7 @@ Dictionary make_godot_engine_context() {
 	godot_context["command_line_arguments"] = OS::get_singleton()->get_cmdline_args();
 	godot_context["mode"] = String(sentry::environment::get_environment());
 	godot_context["editor_build"] = OS::get_singleton()->has_feature("editor");
+	godot_context["godot_sdk_version"] = String(SENTRY_GODOT_SDK_VERSION);
 
 	return godot_context;
 }
