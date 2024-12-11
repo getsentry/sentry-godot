@@ -40,6 +40,7 @@ with open("src/sdk_version.gen.h", "w") as f:
 
 # *** Build godot-cpp.
 
+print("Reading godot-cpp build configuration...")
 env = SConscript("modules/godot-cpp/SConstruct")
 
 # *** Build sentry-native.
