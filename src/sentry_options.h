@@ -14,6 +14,24 @@ class SentryOptions {
 	using GodotErrorType = sentry::GodotErrorType;
 	using GodotErrorMask = sentry::GodotErrorMask;
 
+public:
+	struct LoggerLimits {
+		// TODO: Establish proper default limits with the Sentry team.
+
+		// Limit the number of lines that can be parsed per frame.
+		int parse_lines = 100;
+
+		// Protect frametime budget.
+		int events_per_frame = 5;
+
+		// Limit to 1 error captured per source line within T milliseconds window.
+		int repeated_error_window_ms = 1000;
+
+		// Limit to N events within T milliseconds window.
+		int throttle_events = 20;
+		int throttle_window_ms = 10000;
+	};
+
 private:
 	static SentryOptions *singleton;
 
@@ -29,10 +47,10 @@ private:
 	bool send_default_pii = false;
 
 	bool error_logger_enabled = true;
-	int error_logger_max_lines = 30;
 	bool error_logger_include_source = true;
 	int error_logger_event_mask = int(GodotErrorMask::MASK_ALL_EXCEPT_WARNING);
 	int error_logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
+	LoggerLimits error_logger_limits;
 
 	void _define_setting(const String &p_setting, const Variant &p_default, bool p_basic = true);
 	void _define_setting(const PropertyInfo &p_info, const Variant &p_default, bool p_basic = true);
@@ -53,10 +71,10 @@ public:
 	bool is_send_default_pii_enabled() const { return send_default_pii; }
 
 	bool is_error_logger_enabled() const { return error_logger_enabled; }
-	int get_error_logger_max_lines() const { return error_logger_max_lines; }
 	bool is_error_logger_include_source_enabled() const { return error_logger_include_source; }
 	bool is_error_logger_event_enabled(GodotErrorType p_error_type) { return error_logger_event_mask & sentry::godot_error_type_as_mask(p_error_type); }
 	bool is_error_logger_breadcrumb_enabled(GodotErrorType p_error_type) { return error_logger_breadcrumb_mask & sentry::godot_error_type_as_mask(p_error_type); }
+	LoggerLimits get_error_logger_limits() const { return error_logger_limits; }
 
 	SentryOptions();
 	~SentryOptions();
