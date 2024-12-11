@@ -1,5 +1,6 @@
 #include "sentry_sdk.h"
 
+#include "sdk_version.gen.h"
 #include "sentry/contexts.h"
 #include "sentry/disabled_sdk.h"
 #include "sentry/util.h"
@@ -106,6 +107,8 @@ SentrySDK::SentrySDK() {
 	ERR_FAIL_NULL(SentryOptions::get_singleton());
 
 	singleton = this;
+
+	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
 	// Load the runtime configuration from the user's data directory.
 	runtime_config.instantiate();
