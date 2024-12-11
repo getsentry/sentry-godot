@@ -26,13 +26,20 @@ if env["platform"] in ["linux", "macos"]:
         )
         return result.returncode
 
+    crashpad_handler_target = "{bin}/{platform}/crashpad_handler".format(
+        bin=BIN_DIR,
+        platform=env["platform"]
+    )
     sentry_native = env.Command(
-        ["modules/sentry-native/install/lib/libsentry.a", BIN_DIR + "/crashpad_handler"],
+        [
+            "modules/sentry-native/install/lib/libsentry.a",
+            crashpad_handler_target,
+        ],
         ["modules/sentry-native/src"],
         [
             build_sentry_native,
             Copy(
-                BIN_DIR + "/crashpad_handler",
+                crashpad_handler_target,
                 "modules/sentry-native/install/bin/crashpad_handler",
             ),
         ],
@@ -47,12 +54,12 @@ elif env["platform"] == "windows":
         return result.returncode
 
     sentry_native = env.Command(
-        ["modules/sentry-native/install/lib/sentry.lib", BIN_DIR + "/crashpad_handler.exe"],
+        ["modules/sentry-native/install/lib/sentry.lib", BIN_DIR + "/windows/crashpad_handler.exe"],
         ["modules/sentry-native/src/"],
         [
             build_sentry_native,
             Copy(
-                BIN_DIR + "/crashpad_handler.exe",
+                BIN_DIR + "/windows/crashpad_handler.exe",
                 "modules/sentry-native/install/bin/crashpad_handler.exe",
             ),
         ],
@@ -73,7 +80,6 @@ if env["platform"] in ["linux", "macos", "windows"]:
         LIBS=[
             "sentry",
             "crashpad_client",
-            "crashpad_compat",
             "crashpad_handler_lib",
             "crashpad_minidump",
             "crashpad_snapshot",
@@ -86,6 +92,7 @@ if env["platform"] in ["linux", "macos", "windows"]:
 if env["platform"] == "windows":
     env.Append(
         LIBS=[
+            "crashpad_compat",
             "winhttp",
             "advapi32",
             "DbgHelp",
@@ -93,6 +100,13 @@ if env["platform"] == "windows":
         ]
     )
 elif env["platform"] == "linux":
+    env.Append(
+        LIBS=[
+            "crashpad_compat",
+            "curl",
+        ]
+    )
+elif env["platform"] == "macos":
     env.Append(
         LIBS=[
             "curl",
@@ -108,23 +122,27 @@ sources += Glob("src/sentry/*.cpp")
 if env["platform"] in ["linux", "windows", "macos"]:
     sources += Glob("src/sentry/native/*.cpp")
 
+build_type = "release" if env["target"] == "template_release" else "debug"
+
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        "{bin_dir}/lib{name}.{platform}.{target}.framework/lib{name}.{platform}.{target}".format(
-            bin_dir=BIN_DIR,
+        "{bin}/{platform}/lib{name}.{platform}.{build_type}.framework/lib{name}.{platform}.{build_type}".format(
+            bin=BIN_DIR,
             name=EXTENSION_NAME,
             platform=env["platform"],
-            target=env["target"],
+            build_type=build_type,
         ),
         source=sources,
     )
 else:
     library = env.SharedLibrary(
-        "{bin_dir}/lib{name}{suffix}{shlib_suffix}".format(
-            bin_dir=BIN_DIR,
+        "{bin}/{platform}/lib{name}.{platform}.{build_type}.{arch}{shlib_suffix}".format(
+            bin=BIN_DIR,
             name=EXTENSION_NAME,
-            suffix=env["suffix"],
-            shlib_suffix=env["SHLIBSUFFIX"],
+            platform=env["platform"],
+            build_type=build_type,
+            arch=env["arch"],
+            shlib_suffix=env["SHLIBSUFFIX"]
         ),
         source=sources,
     )
@@ -134,8 +152,8 @@ Default(library)
 # *** Deploy extension manifest.
 
 manifest = env.Substfile(
-    target="{bin_dir}/{name}.gdextension".format(
-        bin_dir=BIN_DIR,
+    target="{bin}/{name}.gdextension".format(
+        bin=BIN_DIR,
         name=EXTENSION_NAME,
     ),
     source="src/manifest.gdextension",

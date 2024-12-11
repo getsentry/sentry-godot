@@ -39,7 +39,7 @@ brew install scons
     # run from the repository root dir
     scons target=editor debug_symbols=yes
     ```
-    The build process should produce a GDExtension library file for the ***editor target*** at `project/addons/sentrysdk/bin/libsentrysdk.*.editor.*`.
+    The build process should produce a GDExtension library file for the ***editor target*** at `project/addons/sentrysdk/bin/...`.
 
     To export a project in Godot that uses this extension, you'll also need the libraries for the export templates:
     ```bash

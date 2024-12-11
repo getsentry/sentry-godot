@@ -64,7 +64,7 @@ jobs:
         timeout-minutes: 5
         run: |
           scons project/addons/gdUnit4
-          chmod +x project/addons/sentrysdk/bin/crashpad_handler
+          chmod +x project/addons/sentrysdk/bin/{linux,macos}/crashpad_handler
           echo "--- Rebuilding import cache.."
           ${GODOT_BIN} --headless --editor --path project/ --quit-after 2000 || true
           echo "--- Finished rebuilding import cache."
