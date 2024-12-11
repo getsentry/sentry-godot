@@ -24,13 +24,13 @@ func _ready() -> void:
 
 func _init_level_choice_popup() -> void:
 	var popup: PopupMenu = level_choice.get_popup()
-	popup.add_item("DEBUG", SentrySDK.LEVEL_DEBUG + 1)
-	popup.add_item("INFO", SentrySDK.LEVEL_INFO + 1)
-	popup.add_item("WARNING", SentrySDK.LEVEL_WARNING + 1)
-	popup.add_item("ERROR", SentrySDK.LEVEL_ERROR + 1)
-	popup.add_item("FATAL", SentrySDK.LEVEL_FATAL + 1)
+	popup.add_item("DEBUG", SentrySDK.LEVEL_DEBUG)
+	popup.add_item("INFO", SentrySDK.LEVEL_INFO)
+	popup.add_item("WARNING", SentrySDK.LEVEL_WARNING)
+	popup.add_item("ERROR", SentrySDK.LEVEL_ERROR)
+	popup.add_item("FATAL", SentrySDK.LEVEL_FATAL)
 
-	_on_level_choice_id_pressed(SentrySDK.LEVEL_INFO + 1)
+	_on_level_choice_id_pressed(SentrySDK.LEVEL_INFO)
 
 
 func _update_user_info() -> void:
@@ -43,7 +43,7 @@ func _update_user_info() -> void:
 
 
 func _on_level_choice_id_pressed(id: int) -> void:
-	_event_level = (id - 1) as SentrySDK.Level
+	_event_level = id as SentrySDK.Level
 	match _event_level:
 		SentrySDK.LEVEL_DEBUG:
 			level_choice.text = "DEBUG"
