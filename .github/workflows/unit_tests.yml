@@ -1,0 +1,84 @@
+name: 🧪 Unit tests
+
+on:
+  workflow_call:
+
+jobs:
+  unit-tests:
+    name: Test on ${{matrix.runner}}
+    runs-on: ${{matrix.runner}}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            godot-suffix: win64.exe
+          - runner: ubuntu-latest
+            godot-suffix: linux.x86_64
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: false # don't initialize submodules automatically
+
+      - name: Checkout required submodules
+        run: |
+          git submodule update --init --depth 1 modules/gdUnit4
+          git submodule update --init --depth 1 modules/godot-cpp
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sentry-godot-gdextension
+          path: project/
+
+      - name: Install SCons
+        run: |
+          python -m pip install scons
+          python --version
+          scons --version
+
+      - name: Set up Godot
+        shell: bash
+        run: |
+          version=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1-stable/p' project/addons/sentrysdk/bin/sentrysdk.gdextension)
+          bin=Godot_v${version}_${{matrix.godot-suffix}}
+          url=https://github.com/godotengine/godot/releases/download/${version}/${bin}.zip
+          mkdir godot/
+          cd godot/
+          curl -L -o godot.zip "${url}"
+          unzip godot.zip
+          rm godot.zip
+          chmod u+x ${bin}
+          ls -l
+          ./${bin} --version
+          echo "GODOT_BIN=${GITHUB_WORKSPACE}/godot/${bin}" >> $GITHUB_ENV
+
+      - name: Diagnostic info
+        shell: bash
+        run: |
+          ls -lR project/
+
+      - name: Prepare project
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          scons project/addons/gdUnit4
+          chmod +x project/addons/sentrysdk/bin/crashpad_handler
+          echo "--- Rebuilding import cache.."
+          ${GODOT_BIN} --headless --editor --path project/ --quit-after 2000 || true
+          echo "--- Finished rebuilding import cache."
+
+      - name: Run tests
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          # Exit status codes: 0 - success, 100 - ends with test failures, 101 - ends with test warnings.
+          ${GODOT_BIN} --headless --path project/ -s -d "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" --ignoreHeadlessMode -c -a test
+
+      - name: Upload results
+        if: always() # do this step even if the tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{matrix.runner}}
+          path: project/reports
