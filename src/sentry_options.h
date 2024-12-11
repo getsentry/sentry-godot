@@ -22,13 +22,13 @@ public:
 		int parse_lines = 100;
 
 		// Protect frametime budget.
-		int events_per_frame = 1;
+		int events_per_frame = 5;
 
 		// Limit to 1 error captured per source line within T milliseconds window.
 		int repeated_error_window_ms = 1000;
 
 		// Limit to N events within T milliseconds window.
-		int throttle_events = 4;
+		int throttle_events = 20;
 		int throttle_window_ms = 10000;
 	};
 
