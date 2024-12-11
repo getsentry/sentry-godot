@@ -73,6 +73,7 @@ jobs:
         shell: bash
         timeout-minutes: 5
         run: |
+          # Exit status codes: 0 - success, 100 - ends with test failures, 101 - ends with test warnings.
           ${GODOT_BIN} --headless --path project/ -s -d "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" --ignoreHeadlessMode -c -a test
 
       - name: Upload results
