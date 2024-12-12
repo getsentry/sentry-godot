@@ -51,6 +51,18 @@ jobs:
             target: editor
             arch: x86_64
 
+          - name: 🍎 macOS (universal, release)
+            runner: macos-latest
+            platform: macos
+            target: template_release
+            arch: universal
+
+          - name: 🍎 macOS (universal, debug)
+            runner: macos-latest
+            platform: macos
+            target: editor
+            arch: universal
+
     steps:
       - name: Checkout repo and submodules
         uses: actions/checkout@v4
@@ -77,14 +89,15 @@ jobs:
 
       - name: Separate debug symbols on Linux
         if: matrix.platform == 'linux'
+        env:
+          BUILD_TYPE: ${{matrix.target == 'template_release' && 'release' || 'debug'}}
         shell: bash
         run: |
-          pushd project/addons/sentrysdk/bin/
-          libname=libsentrysdk.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}.so
-          objcopy --only-keep-debug ${libname} ${libname}.debug
-          objcopy --add-gnu-debuglink ${libname}.debug ${libname}
-          strip --strip-debug ${libname}
-          popd
+          cd project/addons/sentrysdk/bin/linux/
+          lib=libsentrysdk.${{matrix.platform}}.${BUILD_TYPE}.${{matrix.arch}}.so
+          objcopy --only-keep-debug ${lib} ${lib}.debug
+          objcopy --add-gnu-debuglink ${lib}.debug ${lib}
+          strip --strip-debug ${lib}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
