@@ -3,7 +3,7 @@ project/addons
 project/export_presets.cfg
 project/.vscode
 
-.sentry-native
+src/sdk_version.gen.h
 
 # Godot auto generated files
 project/.godot/
