@@ -1,0 +1,36 @@
+name: 📦 Package
+
+on:
+  workflow_call:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sentry-godot-gdextension
+          path: artifact/
+
+      - name: Prepare artifact
+        shell: bash
+        run: |
+          # * Fix crashpad_handler permissions, workaround for https://github.com/actions/upload-artifact/issues/38
+          chmod +x artifact/addons/sentrysdk/bin/{linux,macos}/crashpad_handler
+          # * Create release archive
+          version=$(grep 'VERSION =' SConstruct | cut -d '"' -f 2)
+          git_short_sha=$(git rev-parse --short HEAD)
+          archive_file="sentry-godot-gdextension-${version}+${git_short_sha}.zip"
+          cd artifact/
+          mkdir ${GITHUB_WORKSPACE}/out/
+          zip -r ${GITHUB_WORKSPACE}/out/${archive_file} ./*
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{github.sha}}
+          path: out/*
