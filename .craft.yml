@@ -1,0 +1,4 @@
+changelogPolicy: auto
+preReleaseCommand: pwsh scripts/bump-version.ps1
+targets:
+  - name: github

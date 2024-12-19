@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "main"
+      - "release/**"
     paths-ignore:
       - "*.md"
 
@@ -25,3 +26,8 @@ jobs:
     name: 🧪 Unit tests
     needs: build-extension
     uses: ./.github/workflows/unit_tests.yml
+
+  package:
+    name: 📦 Package
+    needs: build-extension
+    uses: ./.github/workflows/package.yml
