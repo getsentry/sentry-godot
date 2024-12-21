@@ -31,3 +31,16 @@ jobs:
     name: 📦 Package
     needs: build-extension
     uses: ./.github/workflows/package.yml
+
+  # Deleting "sentry-godot-gdextension" artifact due to broken file permissions.
+  # This encourages using the artifact from the "package" job instead which has correct permissions.
+  # See issue: https://github.com/getsentry/sentry-godot/issues/41
+  cleanup:
+    name: 🗑️ Cleanup
+    needs: [package, unit-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete sentry-godot-gdextension artifact
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
+        with:
+          name: sentry-godot-gdextension
