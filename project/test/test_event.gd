@@ -2,11 +2,13 @@ class_name TestEvent
 extends GdUnitTestSuite
 
 
+## SentryEvent.id should be empty on event creation.
 func test_event_id() -> void:
 	var event := SentrySDK.create_event()
 	assert_str(event.id).is_empty()
 
 
+## SentryEvent.message should be set to the specified value, and should be empty on event creation.
 func test_event_message() -> void:
 	var event := SentrySDK.create_event()
 	assert_str(event.message).is_empty()
@@ -14,6 +16,7 @@ func test_event_message() -> void:
 	assert_str(event.message).is_equal("Hello, World!")
 
 
+## SentryEvent.level should be set to the specified value.
 func test_event_level() -> void:
 	var event := SentrySDK.create_event()
 	for l in [SentrySDK.LEVEL_INFO, SentrySDK.LEVEL_WARNING, SentrySDK.LEVEL_ERROR, SentrySDK.LEVEL_FATAL]:
@@ -21,6 +24,7 @@ func test_event_level() -> void:
 		assert_int(event.level).is_equal(l)
 
 
+## SentryEvent.timestamp should not be empty on event creation, and setter should update it.
 func test_event_timestamp() -> void:
 	var event := SentrySDK.create_event()
 	assert_str(event.timestamp).is_not_empty()
