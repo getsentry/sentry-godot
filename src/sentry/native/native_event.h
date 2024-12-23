@@ -15,6 +15,8 @@ protected:
 	static void _bind_methods() {}
 
 public:
+	sentry_value_t get_native_value() const { return native_event; }
+
 	virtual String get_id() const override;
 
 	virtual void set_timestamp(const String &p_timestamp) override;

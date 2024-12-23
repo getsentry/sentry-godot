@@ -24,7 +24,8 @@ class DisabledSDK : public InternalSDK {
 	virtual String capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) override { return ""; }
 
 	// TODO: This should not return nullptr.
-	virtual Ref<SentryEvent> create_event() override { return nullptr; };
+	virtual Ref<SentryEvent> create_event() override { return nullptr; }
+	virtual String capture_event(const Ref<SentryEvent> &p_event) override { return ""; }
 
 	virtual void initialize() override {}
 };

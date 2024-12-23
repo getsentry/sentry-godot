@@ -58,6 +58,7 @@ public:
 	String get_last_event_id() const;
 
 	Ref<SentryEvent> create_event() const;
+	String capture_event(const Ref<SentryEvent> &p_event);
 
 	SentrySDK();
 	~SentrySDK();

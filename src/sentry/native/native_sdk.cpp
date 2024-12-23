@@ -1,6 +1,5 @@
 #include "native_sdk.h"
 
-#include "godot_cpp/core/error_macros.hpp"
 #include "sentry.h"
 #include "sentry/contexts.h"
 #include "sentry/environment.h"
@@ -177,6 +176,13 @@ Ref<SentryEvent> NativeSDK::create_event() {
 	Ref<SentryEvent> event = memnew(NativeEvent(event_value));
 	sentry_value_decref(event_value);
 	return event;
+}
+
+String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
+	NativeEvent *native_event = Object::cast_to<NativeEvent>(p_event.ptr());
+	ERR_FAIL_NULL_V(native_event, "");
+	last_uuid = sentry_capture_event(native_event->get_native_value());
+	return _uuid_as_string(last_uuid);
 }
 
 void NativeSDK::initialize() {
