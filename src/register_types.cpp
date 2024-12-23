@@ -1,4 +1,6 @@
 #include "runtime_config.h"
+#include "sentry/native/native_event.h"
+#include "sentry_event.h"
 #include "sentry_logger.h"
 #include "sentry_options.h"
 #include "sentry_sdk.h"
@@ -38,6 +40,8 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 		GDREGISTER_CLASS(SentryUser);
 		GDREGISTER_CLASS(SentrySDK);
+		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
+		GDREGISTER_INTERNAL_CLASS(NativeEvent);
 		SentrySDK *sentry_singleton = memnew(SentrySDK);
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
 

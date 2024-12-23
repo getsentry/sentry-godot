@@ -4,6 +4,7 @@
 #include "runtime_config.h"
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
+#include "sentry_event.h"
 
 #include <godot_cpp/core/object.hpp>
 #include <memory>
@@ -14,6 +15,12 @@ using namespace godot;
 // This singleton class exposes the public API of the Sentry SDK for the Godot Engine.
 class SentrySDK : public Object {
 	GDCLASS(SentrySDK, Object);
+
+public:
+	// SentrySDK.Level is actually defined in sentry/level.h.
+	// In Godot API, extensions can't expose global enums - it must belong to a class.
+	// This structure is needed to avoid circular dependencies between this and other headers that use Level enum.
+	using Level = sentry::Level;
 
 private:
 	static SentrySDK *singleton;
@@ -50,8 +57,12 @@ public:
 	String capture_message(const String &p_message, sentry::Level p_level, const String &p_logger = "");
 	String get_last_event_id() const;
 
+	Ref<SentryEvent> create_event() const;
+
 	SentrySDK();
 	~SentrySDK();
 };
+
+VARIANT_ENUM_CAST(SentrySDK::Level);
 
 #endif // SENTRY_SINGLETON_H

@@ -2,6 +2,7 @@
 #define INTERNAL_SDK_H
 
 #include "sentry/level.h"
+#include "sentry_event.h"
 #include "sentry_user.h"
 
 #include <godot_cpp/variant/dictionary.hpp>
@@ -43,6 +44,8 @@ public:
 	virtual String capture_message(const String &p_message, Level p_level, const String &p_logger = "") = 0;
 	virtual String get_last_event_id() = 0;
 	virtual String capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) = 0;
+
+	virtual Ref<SentryEvent> create_event() = 0;
 
 	virtual void initialize() = 0;
 	virtual ~InternalSDK() = default;

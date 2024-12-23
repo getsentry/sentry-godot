@@ -20,8 +20,6 @@ using namespace sentry;
 
 SentrySDK *SentrySDK::singleton = nullptr;
 
-VARIANT_ENUM_CAST(Level);
-
 String SentrySDK::capture_message(const String &p_message, Level p_level, const String &p_logger) {
 	return internal_sdk->capture_message(p_message, p_level, p_logger);
 }
@@ -33,6 +31,10 @@ void SentrySDK::add_breadcrumb(const String &p_message, const String &p_category
 
 String SentrySDK::get_last_event_id() const {
 	return internal_sdk->get_last_event_id();
+}
+
+Ref<SentryEvent> SentrySDK::create_event() const {
+	return internal_sdk->create_event();
 }
 
 void SentrySDK::set_tag(const String &p_key, const String &p_value) {
@@ -100,6 +102,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_user", "user"), &SentrySDK::set_user);
 	ClassDB::bind_method(D_METHOD("get_user"), &SentrySDK::get_user);
 	ClassDB::bind_method(D_METHOD("remove_user"), &SentrySDK::remove_user);
+	ClassDB::bind_method(D_METHOD("create_event"), &SentrySDK::create_event);
 }
 
 SentrySDK::SentrySDK() {
