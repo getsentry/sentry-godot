@@ -5,14 +5,34 @@
 
 #include <sentry.h>
 
+namespace {
+
+inline void _sentry_value_set_or_remove_key(sentry_value_t p_value, const char *p_key, const String &p_string) {
+	if (p_string.is_empty()) {
+		sentry_value_remove_by_key(p_value, p_key);
+	} else {
+		sentry_value_set_by_key(p_value, p_key, sentry_value_new_string(p_string.utf8()));
+	}
+}
+
+} // unnamed namespace
+
 String NativeEvent::get_id() const {
 	sentry_value_t id = sentry_value_get_by_key(native_event, "id");
 	return sentry_value_as_string(id);
 }
 
+void NativeEvent::set_message(const String &p_message) {
+	_sentry_value_set_or_remove_key(native_event, "message", p_message);
+}
+
+String NativeEvent::get_message() const {
+	sentry_value_t message = sentry_value_get_by_key(native_event, "message");
+	return sentry_value_as_string(message);
+}
+
 void NativeEvent::set_timestamp(const String &p_timestamp) {
-	sentry_value_set_by_key(native_event, "timestamp",
-			sentry_value_new_string(p_timestamp.utf8()));
+	_sentry_value_set_or_remove_key(native_event, "message", p_timestamp);
 }
 
 String NativeEvent::get_timestamp() const {

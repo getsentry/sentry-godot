@@ -19,6 +19,9 @@ public:
 
 	virtual String get_id() const override;
 
+	virtual void set_message(const String &p_message) override;
+	virtual String get_message() const override;
+
 	virtual void set_timestamp(const String &p_timestamp) override;
 	virtual String get_timestamp() const override;
 

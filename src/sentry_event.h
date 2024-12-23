@@ -18,6 +18,9 @@ protected:
 public:
 	virtual String get_id() const = 0;
 
+	virtual void set_message(const String &p_message) = 0;
+	virtual String get_message() const = 0;
+
 	virtual void set_timestamp(const String &p_timestamp) = 0;
 	virtual String get_timestamp() const = 0;
 
