@@ -7,3 +7,12 @@ func test_capture_message() -> void:
 	assert_str(event_id).is_not_empty()
 	assert_str(SentrySDK.get_last_event_id()).is_not_empty()
 	assert_str(event_id).is_equal(SentrySDK.get_last_event_id())
+
+
+## SentrySDK.capture_event() should return a non-empty event ID, which must match the ID returned by the get_last_event_id() call.
+func test_capture_event() -> void:
+	var event := SentrySDK.create_event()
+	var event_id := SentrySDK.capture_event(event)
+	assert_str(event_id).is_not_empty()
+	assert_str(SentrySDK.get_last_event_id()).is_not_empty()
+	assert_str(event_id).is_equal(SentrySDK.get_last_event_id())
