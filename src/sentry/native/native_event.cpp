@@ -32,7 +32,7 @@ String NativeEvent::get_message() const {
 }
 
 void NativeEvent::set_timestamp(const String &p_timestamp) {
-	_sentry_value_set_or_remove_string_by_key(native_event, "message", p_timestamp);
+	_sentry_value_set_or_remove_string_by_key(native_event, "timestamp", p_timestamp);
 }
 
 String NativeEvent::get_timestamp() const {
@@ -47,8 +47,7 @@ void NativeEvent::set_level(sentry::Level p_level) {
 
 sentry::Level NativeEvent::get_level() const {
 	sentry_value_t value = sentry_value_get_by_key(native_event, "level");
-	sentry_level_t level = (sentry_level_t)sentry_value_as_int32(value);
-	return sentry::native::native_to_level(level);
+	return sentry::native::cstring_to_level(sentry_value_as_string(value));
 }
 
 NativeEvent::NativeEvent(sentry_value_t p_native_event) {

@@ -125,15 +125,15 @@ CharString level_to_cstring(Level level) {
 }
 
 Level cstring_to_level(const CharString &p_cstring) {
-	if (strcmp(p_cstring, "debug")) {
+	if (strcmp(p_cstring, "debug") == 0) {
 		return Level::LEVEL_DEBUG;
-	} else if (strcmp(p_cstring, "info")) {
+	} else if (strcmp(p_cstring, "info") == 0) {
 		return Level::LEVEL_INFO;
-	} else if (strcmp(p_cstring, "warning")) {
+	} else if (strcmp(p_cstring, "warning") == 0) {
 		return Level::LEVEL_WARNING;
-	} else if (strcmp(p_cstring, "error")) {
+	} else if (strcmp(p_cstring, "error") == 0) {
 		return Level::LEVEL_ERROR;
-	} else if (strcmp(p_cstring, "fatal")) {
+	} else if (strcmp(p_cstring, "fatal") == 0) {
 		return Level::LEVEL_FATAL;
 	} else {
 		ERR_FAIL_V_MSG(Level::LEVEL_ERROR, "SentrySDK: Internal error - unexpected level value. Please open an issue.");
