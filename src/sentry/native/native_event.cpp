@@ -7,11 +7,11 @@
 
 namespace {
 
-inline void _sentry_value_set_or_remove_key(sentry_value_t p_value, const char *p_key, const String &p_string) {
-	if (p_string.is_empty()) {
-		sentry_value_remove_by_key(p_value, p_key);
+inline void _sentry_value_set_or_remove_string_by_key(sentry_value_t value, const char *k, const String &v) {
+	if (v.is_empty()) {
+		sentry_value_remove_by_key(value, k);
 	} else {
-		sentry_value_set_by_key(p_value, p_key, sentry_value_new_string(p_string.utf8()));
+		sentry_value_set_by_key(value, k, sentry_value_new_string(v.utf8()));
 	}
 }
 
@@ -23,7 +23,7 @@ String NativeEvent::get_id() const {
 }
 
 void NativeEvent::set_message(const String &p_message) {
-	_sentry_value_set_or_remove_key(native_event, "message", p_message);
+	_sentry_value_set_or_remove_string_by_key(native_event, "message", p_message);
 }
 
 String NativeEvent::get_message() const {
@@ -32,7 +32,7 @@ String NativeEvent::get_message() const {
 }
 
 void NativeEvent::set_timestamp(const String &p_timestamp) {
-	_sentry_value_set_or_remove_key(native_event, "message", p_timestamp);
+	_sentry_value_set_or_remove_string_by_key(native_event, "message", p_timestamp);
 }
 
 String NativeEvent::get_timestamp() const {
