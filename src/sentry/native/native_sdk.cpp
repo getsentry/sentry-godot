@@ -179,8 +179,10 @@ Ref<SentryEvent> NativeSDK::create_event() {
 }
 
 String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
+	last_uuid = sentry_uuid_nil();
+	ERR_FAIL_COND_V_MSG(p_event.is_null(), _uuid_as_string(last_uuid), "Sentry: Can't capture event - event object is null.");
 	NativeEvent *native_event = Object::cast_to<NativeEvent>(p_event.ptr());
-	ERR_FAIL_NULL_V(native_event, "");
+	ERR_FAIL_NULL_V(native_event, _uuid_as_string(last_uuid)); // Sanity check - this should never happen.
 	last_uuid = sentry_capture_event(native_event->get_native_value());
 	return _uuid_as_string(last_uuid);
 }
