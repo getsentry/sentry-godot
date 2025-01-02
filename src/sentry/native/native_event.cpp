@@ -52,12 +52,10 @@ sentry::Level NativeEvent::get_level() const {
 
 NativeEvent::NativeEvent(sentry_value_t p_native_event) {
 	native_event = p_native_event;
-	sentry_value_incref(p_native_event);
 }
 
 NativeEvent::NativeEvent() :
 		NativeEvent(sentry_value_new_event()) {
-	sentry_value_decref(native_event);
 }
 
 NativeEvent::~NativeEvent() {

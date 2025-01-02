@@ -174,7 +174,6 @@ String NativeSDK::capture_error(const String &p_type, const String &p_value, Lev
 Ref<SentryEvent> NativeSDK::create_event() {
 	sentry_value_t event_value = sentry_value_new_event();
 	Ref<SentryEvent> event = memnew(NativeEvent(event_value));
-	sentry_value_decref(event_value);
 	return event;
 }
 
@@ -183,7 +182,9 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), _uuid_as_string(last_uuid), "Sentry: Can't capture event - event object is null.");
 	NativeEvent *native_event = Object::cast_to<NativeEvent>(p_event.ptr());
 	ERR_FAIL_NULL_V(native_event, _uuid_as_string(last_uuid)); // Sanity check - this should never happen.
-	last_uuid = sentry_capture_event(native_event->get_native_value());
+	sentry_value_t event = native_event->get_native_value();
+	sentry_value_incref(event); // Keep ownership.
+	last_uuid = sentry_capture_event(event);
 	return _uuid_as_string(last_uuid);
 }
 
