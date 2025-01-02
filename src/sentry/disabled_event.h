@@ -12,6 +12,9 @@ private:
 	String timestamp;
 	sentry::Level level = sentry::Level::LEVEL_INFO;
 
+protected:
+	static void _bind_methods() {}
+
 public:
 	virtual String get_id() const override { return ""; }
 
