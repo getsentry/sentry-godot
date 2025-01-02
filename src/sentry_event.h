@@ -32,6 +32,9 @@ public:
 	virtual void set_logger(const String &p_logger) = 0;
 	virtual String get_logger() const = 0;
 
+	virtual void set_release(const String &p_release) = 0;
+	virtual String get_release() const = 0;
+
 	virtual ~SentryEvent() = default;
 };
 

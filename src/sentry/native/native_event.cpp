@@ -64,6 +64,15 @@ String NativeEvent::get_logger() const {
 	return sentry_value_as_string(logger);
 }
 
+void NativeEvent::set_release(const String &p_release) {
+	_sentry_value_set_or_remove_string_by_key(native_event, "release", p_release);
+}
+
+String NativeEvent::get_release() const {
+	sentry_value_t release = sentry_value_get_by_key(native_event, "release");
+	return sentry_value_as_string(release);
+}
+
 NativeEvent::NativeEvent(sentry_value_t p_native_event) {
 	native_event = p_native_event;
 }

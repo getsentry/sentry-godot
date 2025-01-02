@@ -12,6 +12,7 @@ private:
 	String timestamp;
 	String logger;
 	sentry::Level level = sentry::Level::LEVEL_INFO;
+	String release;
 
 protected:
 	static void _bind_methods() {}
@@ -32,6 +33,9 @@ public:
 
 	virtual void set_logger(const String &p_logger) override { logger = p_logger; }
 	virtual String get_logger() const override { return logger; }
+
+	virtual void set_release(const String &p_release) override { release = p_release; }
+	virtual String get_release() const override { return release; }
 };
 
 #endif // DISABLED_EVENT_H
