@@ -55,6 +55,14 @@ func test_event_release() -> void:
 	assert_str(event.release).is_equal("custom-release")
 
 
+## SentryEvent.dist should be set to the specified value, and empty on event creation.
+func test_event_dist() -> void:
+	var event := SentrySDK.create_event()
+	assert_str(event.dist).is_empty()
+	event.dist = "custom-dist"
+	assert_str(event.dist).is_equal("custom-dist")
+
+
 ## SentrySDK.capture_event() should return a non-empty event ID, which must match the ID returned by the get_last_event_id() call.
 func test_capture_event() -> void:
 	var event := SentrySDK.create_event()

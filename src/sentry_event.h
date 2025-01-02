@@ -35,6 +35,9 @@ public:
 	virtual void set_release(const String &p_release) = 0;
 	virtual String get_release() const = 0;
 
+	virtual void set_dist(const String &p_dist) = 0;
+	virtual String get_dist() const = 0;
+
 	virtual ~SentryEvent() = default;
 };
 

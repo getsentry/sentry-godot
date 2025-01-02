@@ -36,6 +36,9 @@ public:
 	virtual void set_release(const String &p_release) override;
 	virtual String get_release() const override;
 
+	virtual void set_dist(const String &p_dist) override;
+	virtual String get_dist() const override;
+
 	NativeEvent(sentry_value_t p_event);
 	NativeEvent();
 	virtual ~NativeEvent() override;
