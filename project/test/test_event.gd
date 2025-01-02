@@ -33,6 +33,12 @@ func test_event_timestamp() -> void:
 	assert_str(event.timestamp).is_equal(ts)
 
 
+## SentryEvent.platform should not be empty.
+func test_event_platform() -> void:
+	var event := SentrySDK.create_event()
+	assert_str(event.platform).is_not_empty()
+
+
 ## SentrySDK.capture_event() should return a non-empty event ID, which must match the ID returned by the get_last_event_id() call.
 func test_capture_event() -> void:
 	var event := SentrySDK.create_event()

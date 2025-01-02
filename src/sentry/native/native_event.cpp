@@ -40,6 +40,11 @@ String NativeEvent::get_timestamp() const {
 	return sentry_value_as_string(timestamp);
 }
 
+String NativeEvent::get_platform() const {
+	sentry_value_t platform = sentry_value_get_by_key(native_event, "platform");
+	return sentry_value_as_string(platform);
+}
+
 void NativeEvent::set_level(sentry::Level p_level) {
 	sentry_value_set_by_key(native_event, "level",
 			sentry_value_new_string(sentry::native::level_to_cstring(p_level)));

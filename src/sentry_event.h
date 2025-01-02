@@ -24,6 +24,8 @@ public:
 	virtual void set_timestamp(const String &p_timestamp) = 0;
 	virtual String get_timestamp() const = 0;
 
+	virtual String get_platform() const = 0;
+
 	virtual void set_level(sentry::Level p_level) = 0;
 	virtual sentry::Level get_level() const = 0;
 

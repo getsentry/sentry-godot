@@ -24,6 +24,8 @@ public:
 	virtual void set_timestamp(const String &p_timestamp) override { timestamp = p_timestamp; }
 	virtual String get_timestamp() const override { return timestamp; }
 
+	virtual String get_platform() const override { return ""; }
+
 	virtual void set_level(sentry::Level p_level) override { level = p_level; }
 	virtual sentry::Level get_level() const override { return level; }
 };
