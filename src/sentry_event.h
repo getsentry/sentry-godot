@@ -29,8 +29,8 @@ public:
 	virtual void set_level(sentry::Level p_level) = 0;
 	virtual sentry::Level get_level() const = 0;
 
-	// virtual void set_tag(const String &p_tag, const String &p_value) = 0;
-	// virtual String get_tag(const String &p_tag) const = 0;
+	virtual void set_logger(const String &p_logger) = 0;
+	virtual String get_logger() const = 0;
 
 	virtual ~SentryEvent() = default;
 };

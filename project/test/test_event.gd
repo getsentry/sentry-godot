@@ -39,6 +39,14 @@ func test_event_platform() -> void:
 	assert_str(event.platform).is_not_empty()
 
 
+## SentryEvent.logger should be set to the specified value, and empty on event creation.
+func test_event_logger() -> void:
+	var event := SentrySDK.create_event()
+	assert_str(event.logger).is_empty()
+	event.logger = "custom-logger"
+	assert_str(event.logger).is_equal("custom-logger")
+
+
 ## SentrySDK.capture_event() should return a non-empty event ID, which must match the ID returned by the get_last_event_id() call.
 func test_capture_event() -> void:
 	var event := SentrySDK.create_event()

@@ -10,6 +10,7 @@ class DisabledEvent : public SentryEvent {
 private:
 	String message;
 	String timestamp;
+	String logger;
 	sentry::Level level = sentry::Level::LEVEL_INFO;
 
 protected:
@@ -28,6 +29,9 @@ public:
 
 	virtual void set_level(sentry::Level p_level) override { level = p_level; }
 	virtual sentry::Level get_level() const override { return level; }
+
+	virtual void set_logger(const String &p_logger) override { logger = p_logger; }
+	virtual String get_logger() const override { return logger; }
 };
 
 #endif // DISABLED_EVENT_H

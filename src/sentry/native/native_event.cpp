@@ -55,6 +55,15 @@ sentry::Level NativeEvent::get_level() const {
 	return sentry::native::cstring_to_level(sentry_value_as_string(value));
 }
 
+void NativeEvent::set_logger(const String &p_logger) {
+	_sentry_value_set_or_remove_string_by_key(native_event, "logger", p_logger);
+}
+
+String NativeEvent::get_logger() const {
+	sentry_value_t logger = sentry_value_get_by_key(native_event, "logger");
+	return sentry_value_as_string(logger);
+}
+
 NativeEvent::NativeEvent(sentry_value_t p_native_event) {
 	native_event = p_native_event;
 }

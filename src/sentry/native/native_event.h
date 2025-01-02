@@ -30,6 +30,9 @@ public:
 	virtual void set_level(sentry::Level p_level) override;
 	virtual sentry::Level get_level() const override;
 
+	virtual void set_logger(const String &p_logger) override;
+	virtual String get_logger() const override;
+
 	NativeEvent(sentry_value_t p_event);
 	NativeEvent();
 	virtual ~NativeEvent() override;
