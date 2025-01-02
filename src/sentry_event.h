@@ -38,6 +38,9 @@ public:
 	virtual void set_dist(const String &p_dist) = 0;
 	virtual String get_dist() const = 0;
 
+	virtual void set_environment(const String &p_environment) = 0;
+	virtual String get_environment() const = 0;
+
 	virtual ~SentryEvent() = default;
 };
 

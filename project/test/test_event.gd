@@ -63,6 +63,14 @@ func test_event_dist() -> void:
 	assert_str(event.dist).is_equal("custom-dist")
 
 
+## SentryEvent.environment should be set to the specified value, and empty on event creation.
+func test_event_environment() -> void:
+	var event := SentrySDK.create_event()
+	assert_str(event.environment).is_empty()
+	event.environment = "custom-environment"
+	assert_str(event.environment).is_equal("custom-environment")
+
+
 ## SentrySDK.capture_event() should return a non-empty event ID, which must match the ID returned by the get_last_event_id() call.
 func test_capture_event() -> void:
 	var event := SentrySDK.create_event()

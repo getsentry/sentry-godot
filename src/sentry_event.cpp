@@ -19,6 +19,8 @@ void SentryEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_release"), &SentryEvent::get_release);
 	ClassDB::bind_method(D_METHOD("set_dist", "dist"), &SentryEvent::set_dist);
 	ClassDB::bind_method(D_METHOD("get_dist"), &SentryEvent::get_dist);
+	ClassDB::bind_method(D_METHOD("set_environment", "environment"), &SentryEvent::set_environment);
+	ClassDB::bind_method(D_METHOD("get_environment"), &SentryEvent::get_environment);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "id"), "", "get_id");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "message"), "set_message", "get_message");
@@ -28,4 +30,5 @@ void SentryEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "logger"), "set_logger", "get_logger");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "release"), "set_release", "get_release");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dist"), "set_dist", "get_dist");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "environment"), "set_environment", "get_environment");
 }

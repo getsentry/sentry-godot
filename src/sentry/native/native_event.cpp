@@ -82,6 +82,15 @@ String NativeEvent::get_dist() const {
 	return sentry_value_as_string(dist);
 }
 
+void NativeEvent::set_environment(const String &p_environment) {
+	_sentry_value_set_or_remove_string_by_key(native_event, "environment", p_environment);
+}
+
+String NativeEvent::get_environment() const {
+	sentry_value_t environment = sentry_value_get_by_key(native_event, "environment");
+	return sentry_value_as_string(environment);
+}
+
 NativeEvent::NativeEvent(sentry_value_t p_native_event) {
 	native_event = p_native_event;
 }

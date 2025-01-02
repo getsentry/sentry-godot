@@ -14,6 +14,7 @@ private:
 	sentry::Level level = sentry::Level::LEVEL_INFO;
 	String release;
 	String dist;
+	String environment;
 
 protected:
 	static void _bind_methods() {}
@@ -40,6 +41,9 @@ public:
 
 	virtual void set_dist(const String &p_dist) override { dist = p_dist; }
 	virtual String get_dist() const override { return dist; }
+
+	virtual void set_environment(const String &p_environment) override { environment = p_environment; }
+	virtual String get_environment() const override { return environment; }
 };
 
 #endif // DISABLED_EVENT_H
