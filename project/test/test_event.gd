@@ -19,7 +19,7 @@ func test_event_message() -> void:
 ## SentryEvent.level should be set to the specified value.
 func test_event_level() -> void:
 	var event := SentrySDK.create_event()
-	for l in [SentrySDK.LEVEL_INFO, SentrySDK.LEVEL_WARNING, SentrySDK.LEVEL_ERROR, SentrySDK.LEVEL_FATAL]:
+	for l in [SentrySDK.LEVEL_DEBUG, SentrySDK.LEVEL_INFO, SentrySDK.LEVEL_WARNING, SentrySDK.LEVEL_ERROR, SentrySDK.LEVEL_FATAL]:
 		event.level = l
 		assert_int(event.level).is_equal(l)
 
