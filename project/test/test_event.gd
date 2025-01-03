@@ -2,10 +2,10 @@ class_name TestEvent
 extends GdUnitTestSuite
 
 
-## SentryEvent.id should be empty on event creation.
+## SentryEvent.id should not be empty on event creation.
 func test_event_id() -> void:
 	var event := SentrySDK.create_event()
-	assert_str(event.id).is_empty()
+	assert_str(event.id).is_not_empty()
 
 
 ## SentryEvent.message should be set to the specified value, and should be empty on event creation.
