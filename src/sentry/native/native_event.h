@@ -5,6 +5,7 @@
 
 #include <sentry.h>
 
+// Event class that is used with the NativeSDK.
 class NativeEvent : public SentryEvent {
 	GDCLASS(NativeEvent, SentryEvent);
 
