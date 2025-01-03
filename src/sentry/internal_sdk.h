@@ -46,6 +46,7 @@ public:
 	virtual String capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) = 0;
 
 	virtual Ref<SentryEvent> create_event() = 0;
+	virtual Ref<SentryEvent> create_message_event(const String &p_message, sentry::Level p_level, const String &p_logger = "") = 0;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) = 0;
 
 	virtual void initialize() = 0;
