@@ -23,12 +23,22 @@ String NativeEvent::get_id() const {
 }
 
 void NativeEvent::set_message(const String &p_message) {
-	_sentry_value_set_or_remove_string_by_key(native_event, "message", p_message);
+	if (p_message.is_empty()) {
+		sentry_value_remove_by_key(native_event, "message");
+	} else {
+		sentry_value_t message = sentry_value_get_by_key(native_event, "message");
+		if (sentry_value_is_null(message)) {
+			message = sentry_value_new_object();
+			sentry_value_set_by_key(native_event, "message", message);
+		}
+		sentry_value_set_by_key(message, "formatted", sentry_value_new_string(p_message.utf8()));
+	}
 }
 
 String NativeEvent::get_message() const {
 	sentry_value_t message = sentry_value_get_by_key(native_event, "message");
-	return sentry_value_as_string(message);
+	sentry_value_t formatted = sentry_value_get_by_key(message, "formatted");
+	return sentry_value_as_string(formatted);
 }
 
 void NativeEvent::set_timestamp(const String &p_timestamp) {
