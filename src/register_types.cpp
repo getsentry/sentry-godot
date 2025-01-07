@@ -34,7 +34,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		GDREGISTER_CLASS(SentryLoggerLimits);
 		GDREGISTER_CLASS(SentryOptions);
-		SentryOptions *options = memnew(SentryOptions);
+		SentryOptions::create_singleton();
 
 		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 		GDREGISTER_CLASS(SentryUser);
@@ -59,9 +59,7 @@ void uninitialize_module(ModuleInitializationLevel p_level) {
 		if (SentrySDK::get_singleton()) {
 			memdelete(SentrySDK::get_singleton());
 		}
-		if (SentryOptions::get_singleton()) {
-			memdelete(SentryOptions::get_singleton());
-		}
+		SentryOptions::destroy_singleton();
 	}
 }
 

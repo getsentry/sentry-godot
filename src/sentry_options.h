@@ -37,9 +37,7 @@ class SentryOptions : public RefCounted {
 	using GodotErrorMask = sentry::GodotErrorMask;
 
 private:
-	static SentryOptions *singleton;
-
-	int32_t config_value_order = 0;
+	static Ref<SentryOptions> singleton;
 
 	bool enabled = true;
 	bool disabled_in_editor = true;
@@ -57,16 +55,16 @@ private:
 	int error_logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
 	Ref<SentryLoggerLimits> error_logger_limits;
 
-	void _define_setting(const String &p_setting, const Variant &p_default, bool p_basic = true);
-	void _define_setting(const PropertyInfo &p_info, const Variant &p_default, bool p_basic = true);
-	void _define_project_settings();
-	void _load_project_settings();
+	static void _define_project_settings(const Ref<SentryOptions> &p_options);
+	static void _load_project_settings(const Ref<SentryOptions> &p_options);
 
 protected:
 	static void _bind_methods();
 
 public:
-	_FORCE_INLINE_ static SentryOptions *get_singleton() { return singleton; }
+	static void create_singleton();
+	static void destroy_singleton();
+	_FORCE_INLINE_ static Ref<SentryOptions> get_singleton() { return singleton; }
 
 	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
 	_FORCE_INLINE_ void set_enabled(bool p_enabled) { enabled = p_enabled; }
