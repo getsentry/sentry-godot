@@ -32,7 +32,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
 	} else if (p_level == godot::MODULE_INITIALIZATION_LEVEL_SERVERS) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		// Note: Godot singletons are only available at higher initialization levels.
+		GDREGISTER_CLASS(SentryLoggerLimits);
 		GDREGISTER_CLASS(SentryOptions);
 		SentryOptions *options = memnew(SentryOptions);
 

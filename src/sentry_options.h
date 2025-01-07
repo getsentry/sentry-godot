@@ -2,33 +2,39 @@
 #define SENTRY_OPTIONS_H
 
 #include "sentry/godot_error_types.h"
+#include "sentry/simple_bind.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
 using namespace godot;
 
+class SentryLoggerLimits : public RefCounted {
+	GDCLASS(SentryLoggerLimits, RefCounted);
+
+public:
+	// Limit the number of lines that can be parsed per frame.
+	SIMPLE_PROPERTY(int, parse_lines, 100);
+
+	// Protect frametime budget.
+	SIMPLE_PROPERTY(int, events_per_frame, 5);
+
+	// Limit to 1 error captured per source line within T milliseconds window.
+	SIMPLE_PROPERTY(int, repeated_error_window_ms, 1000);
+
+	// Limit to N events within T milliseconds window.
+	SIMPLE_PROPERTY(int, throttle_events, 20);
+	SIMPLE_PROPERTY(int, throttle_window_ms, 10000);
+
+protected:
+	static void _bind_methods();
+};
+
 class SentryOptions : public RefCounted {
 	GDCLASS(SentryOptions, RefCounted);
 
 	using GodotErrorType = sentry::GodotErrorType;
 	using GodotErrorMask = sentry::GodotErrorMask;
-
-public:
-	struct LoggerLimits {
-		// Limit the number of lines that can be parsed per frame.
-		int parse_lines = 100;
-
-		// Protect frametime budget.
-		int events_per_frame = 5;
-
-		// Limit to 1 error captured per source line within T milliseconds window.
-		int repeated_error_window_ms = 1000;
-
-		// Limit to N events within T milliseconds window.
-		int throttle_events = 20;
-		int throttle_window_ms = 10000;
-	};
 
 private:
 	static SentryOptions *singleton;
@@ -49,7 +55,7 @@ private:
 	bool error_logger_include_source = true;
 	int error_logger_event_mask = int(GodotErrorMask::MASK_ALL_EXCEPT_WARNING);
 	int error_logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
-	LoggerLimits error_logger_limits;
+	Ref<SentryLoggerLimits> error_logger_limits;
 
 	void _define_setting(const String &p_setting, const Variant &p_default, bool p_basic = true);
 	void _define_setting(const PropertyInfo &p_info, const Variant &p_default, bool p_basic = true);
@@ -104,7 +110,8 @@ public:
 	_FORCE_INLINE_ bool is_error_logger_event_enabled(GodotErrorType p_error_type) { return error_logger_event_mask & sentry::godot_error_type_as_mask(p_error_type); }
 	_FORCE_INLINE_ bool is_error_logger_breadcrumb_enabled(GodotErrorType p_error_type) { return error_logger_breadcrumb_mask & sentry::godot_error_type_as_mask(p_error_type); }
 
-	LoggerLimits get_error_logger_limits() const { return error_logger_limits; }
+	_FORCE_INLINE_ Ref<SentryLoggerLimits> get_error_logger_limits() const { return error_logger_limits; }
+	void set_error_logger_limits(const Ref<SentryLoggerLimits> &p_limits);
 
 	SentryOptions();
 	~SentryOptions();
