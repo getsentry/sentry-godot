@@ -1,4 +1,5 @@
 #include "sentry_options.h"
+#include "sentry/simple_bind.h"
 
 #include <godot_cpp/classes/project_settings.hpp>
 
@@ -84,6 +85,23 @@ void SentryOptions::_define_project_settings() {
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), error_logger_limits.repeated_error_window_ms);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), error_logger_limits.throttle_events);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), error_logger_limits.throttle_window_ms);
+}
+
+void SentryOptions::_bind_methods() {
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enabled"), set_enabled, is_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "disabled_in_editor"), set_disabled_in_editor, is_disabled_in_editor);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dsn"), set_dsn, get_dsn);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "release"), set_release, get_release);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "debug"), set_debug_enabled, is_debug_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "sample_rate"), set_sample_rate, get_sample_rate);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_log"), set_attach_log, is_attach_log_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "max_breadcrumbs"), set_max_breadcrumbs, get_max_breadcrumbs);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "send_default_pii"), set_send_default_pii, is_send_default_pii_enabled);
+
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "error_logger_enabled"), set_error_logger_enabled, is_error_logger_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "error_logger_include_source"), set_error_logger_include_source, is_error_logger_include_source_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "error_logger_event_mask"), set_error_logger_event_mask, get_error_logger_event_mask);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "error_logger_breadcrumb_mask"), set_error_logger_breadcrumb_mask, get_error_logger_breadcrumb_mask);
 }
 
 SentryOptions::SentryOptions() {

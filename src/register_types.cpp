@@ -33,7 +33,8 @@ void initialize_module(ModuleInitializationLevel p_level) {
 	} else if (p_level == godot::MODULE_INITIALIZATION_LEVEL_SERVERS) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		// Note: Godot singletons are only available at higher initialization levels.
-		SentryOptions *options = new SentryOptions();
+		GDREGISTER_CLASS(SentryOptions);
+		SentryOptions *options = memnew(SentryOptions);
 
 		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 		GDREGISTER_CLASS(SentryUser);
@@ -59,7 +60,7 @@ void uninitialize_module(ModuleInitializationLevel p_level) {
 			memdelete(SentrySDK::get_singleton());
 		}
 		if (SentryOptions::get_singleton()) {
-			delete SentryOptions::get_singleton();
+			memdelete(SentryOptions::get_singleton());
 		}
 	}
 }
