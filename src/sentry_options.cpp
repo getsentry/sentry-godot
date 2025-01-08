@@ -45,6 +45,7 @@ Ref<SentryOptions> SentryOptions::singleton = nullptr;
 
 void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options) {
 	ERR_FAIL_COND(p_options.is_null());
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	_define_setting("sentry/config/enabled", p_options->enabled);
 	_define_setting("sentry/config/disabled_in_editor", p_options->disabled_in_editor);

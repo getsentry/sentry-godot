@@ -1,8 +1,6 @@
 #ifndef SIMPLE_BIND_H
 #define SIMPLE_BIND_H
 
-#include "godot_cpp/core/property_info.hpp"
-#include "godot_cpp/variant/string.hpp"
 #include <godot_cpp/core/class_db.hpp>
 
 // This file contains macros to simplify the binding of properties from a C++ class to the Godot ClassDB,
