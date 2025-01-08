@@ -2,3 +2,6 @@ changelogPolicy: auto
 preReleaseCommand: pwsh scripts/bump-version.ps1
 targets:
   - name: github
+  - name: registry
+    sdks:
+      github:getsentry/sentry-godot:
