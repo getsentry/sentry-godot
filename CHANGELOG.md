@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.3
+
+### Various fixes & improvements
+
+- add release registry (cae6ce4c) by @bruno-garcia
+
 ## 0.0.2
 
 ### Dependencies
