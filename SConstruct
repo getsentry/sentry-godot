@@ -5,7 +5,7 @@ import subprocess
 
 # *** Setting.
 
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 PROJECT_DIR = "project"
 EXTENSION_NAME = "sentrysdk"
 COMPATIBILITY_MINIMUM = "4.3"
