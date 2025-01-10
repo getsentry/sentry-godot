@@ -33,6 +33,7 @@ protected:
 class SentryOptions : public RefCounted {
 	GDCLASS(SentryOptions, RefCounted);
 
+public:
 	using GodotErrorType = sentry::GodotErrorType;
 	using GodotErrorMask = sentry::GodotErrorMask;
 
@@ -51,8 +52,8 @@ private:
 
 	bool error_logger_enabled = true;
 	bool error_logger_include_source = true;
-	int error_logger_event_mask = int(GodotErrorMask::MASK_ALL_EXCEPT_WARNING);
-	int error_logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
+	BitField<GodotErrorMask> error_logger_event_mask = int(GodotErrorMask::MASK_ALL_EXCEPT_WARNING);
+	BitField<GodotErrorMask> error_logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
 	Ref<SentryLoggerLimits> error_logger_limits;
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
@@ -99,14 +100,14 @@ public:
 	_FORCE_INLINE_ bool is_error_logger_include_source_enabled() const { return error_logger_include_source; }
 	_FORCE_INLINE_ void set_error_logger_include_source(bool p_error_logger_include_source) { error_logger_include_source = p_error_logger_include_source; }
 
-	_FORCE_INLINE_ bool get_error_logger_event_mask() const { return error_logger_event_mask; }
-	_FORCE_INLINE_ void set_error_logger_event_mask(int p_error_logger_event_mask) { error_logger_event_mask = p_error_logger_event_mask; }
+	_FORCE_INLINE_ BitField<GodotErrorMask> get_error_logger_event_mask() const { return error_logger_event_mask; }
+	_FORCE_INLINE_ void set_error_logger_event_mask(BitField<GodotErrorMask> p_error_logger_event_mask) { error_logger_event_mask = p_error_logger_event_mask; }
 
-	_FORCE_INLINE_ int get_error_logger_breadcrumb_mask() const { return error_logger_breadcrumb_mask; }
-	_FORCE_INLINE_ void set_error_logger_breadcrumb_mask(int p_error_logger_breadcrumb_mask) { error_logger_breadcrumb_mask = p_error_logger_breadcrumb_mask; }
+	_FORCE_INLINE_ BitField<GodotErrorMask> get_error_logger_breadcrumb_mask() const { return error_logger_breadcrumb_mask; }
+	_FORCE_INLINE_ void set_error_logger_breadcrumb_mask(BitField<GodotErrorMask> p_error_logger_breadcrumb_mask) { error_logger_breadcrumb_mask = p_error_logger_breadcrumb_mask; }
 
-	_FORCE_INLINE_ bool is_error_logger_event_enabled(GodotErrorType p_error_type) { return error_logger_event_mask & sentry::godot_error_type_as_mask(p_error_type); }
-	_FORCE_INLINE_ bool is_error_logger_breadcrumb_enabled(GodotErrorType p_error_type) { return error_logger_breadcrumb_mask & sentry::godot_error_type_as_mask(p_error_type); }
+	_FORCE_INLINE_ bool is_error_logger_event_enabled(GodotErrorType p_error_type) { return error_logger_event_mask.has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
+	_FORCE_INLINE_ bool is_error_logger_breadcrumb_enabled(GodotErrorType p_error_type) { return error_logger_breadcrumb_mask.has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
 
 	_FORCE_INLINE_ Ref<SentryLoggerLimits> get_error_logger_limits() const { return error_logger_limits; }
 	void set_error_logger_limits(const Ref<SentryLoggerLimits> &p_limits);
@@ -114,5 +115,7 @@ public:
 	SentryOptions();
 	~SentryOptions();
 };
+
+VARIANT_BITFIELD_CAST(SentryOptions::GodotErrorMask);
 
 #endif // SENTRY_OPTIONS_H

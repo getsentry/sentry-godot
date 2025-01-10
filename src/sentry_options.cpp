@@ -92,8 +92,8 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/enabled", p_options->error_logger_enabled);
 	p_options->error_logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/include_source", p_options->error_logger_include_source);
-	p_options->error_logger_event_mask = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/events", p_options->error_logger_event_mask);
-	p_options->error_logger_breadcrumb_mask = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/breadcrumbs", p_options->error_logger_breadcrumb_mask);
+	p_options->error_logger_event_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/events", p_options->error_logger_event_mask);
+	p_options->error_logger_breadcrumb_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/breadcrumbs", p_options->error_logger_breadcrumb_mask);
 
 	p_options->error_logger_limits->parse_lines = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/parse_lines", p_options->error_logger_limits->parse_lines);
 	p_options->error_logger_limits->events_per_frame = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/events_per_frame", p_options->error_logger_limits->events_per_frame);
@@ -143,6 +143,15 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "error_logger_breadcrumb_mask"), set_error_logger_breadcrumb_mask, get_error_logger_breadcrumb_mask);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::OBJECT, "error_logger_limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), set_error_logger_limits, get_error_logger_limits);
+
+	{
+		using namespace sentry;
+		BIND_BITFIELD_FLAG(MASK_NONE);
+		BIND_BITFIELD_FLAG(MASK_ERROR);
+		BIND_BITFIELD_FLAG(MASK_WARNING);
+		BIND_BITFIELD_FLAG(MASK_SCRIPT);
+		BIND_BITFIELD_FLAG(MASK_SHADER);
+	}
 }
 
 SentryOptions::SentryOptions() {
