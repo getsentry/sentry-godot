@@ -12,12 +12,12 @@ if ($newVersion -match '^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?<status>.*
     $patch = [int]$matches['patch']
     $status = $matches['status']
 
-    if ($status -match "^-(?<prereleaseName>[a-zA-Z]+)\.?(?<prereleaseVersion>\d+)?$") {
+    if ($status -match "^-(?<prerelease>[a-zA-Z]+)\.?(?<prereleaseNum>\d+)?$") {
         # Increment prerelease version
-        $prereleaseName = $matches['prereleaseName']
-        $prereleaseVersion = [int]$matches['prereleaseVersion']
-        $prereleaseVersion += 1
-        $status = "-$prereleaseName.$prereleaseVersion"
+        $prerelease = $matches['prerelease']
+        $prereleaseNum = [int]$matches['prereleaseNum']
+        $prereleaseNum += 1
+        $status = "-$prerelease.$prereleaseNum"
     } else {
         # Increment minor version, reset patch version, and add -dev prerelease status
         $minor += 1
