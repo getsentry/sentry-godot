@@ -20,8 +20,6 @@ using namespace sentry;
 
 SentrySDK *SentrySDK::singleton = nullptr;
 
-VARIANT_ENUM_CAST(Level);
-
 String SentrySDK::capture_message(const String &p_message, Level p_level, const String &p_logger) {
 	return internal_sdk->capture_message(p_message, p_level, p_logger);
 }
@@ -33,6 +31,15 @@ void SentrySDK::add_breadcrumb(const String &p_message, const String &p_category
 
 String SentrySDK::get_last_event_id() const {
 	return internal_sdk->get_last_event_id();
+}
+
+Ref<SentryEvent> SentrySDK::create_event() const {
+	return internal_sdk->create_event();
+}
+
+String SentrySDK::capture_event(const Ref<SentryEvent> &p_event) {
+	ERR_FAIL_COND_V_MSG(p_event.is_null(), "", "Sentry: Can't capture event - event object is null.");
+	return internal_sdk->capture_event(p_event);
 }
 
 void SentrySDK::set_tag(const String &p_key, const String &p_value) {
@@ -100,6 +107,8 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_user", "user"), &SentrySDK::set_user);
 	ClassDB::bind_method(D_METHOD("get_user"), &SentrySDK::get_user);
 	ClassDB::bind_method(D_METHOD("remove_user"), &SentrySDK::remove_user);
+	ClassDB::bind_method(D_METHOD("create_event"), &SentrySDK::create_event);
+	ClassDB::bind_method(D_METHOD("capture_event", "event"), &SentrySDK::capture_event);
 }
 
 SentrySDK::SentrySDK() {

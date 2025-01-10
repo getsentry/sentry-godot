@@ -2,7 +2,7 @@
 
 namespace sentry {
 
-CharString level_as_cstring(Level level) {
+godot::CharString level_as_cstring(Level level) {
 	switch (level) {
 		case Level::LEVEL_DEBUG:
 			return "debug";
@@ -17,6 +17,10 @@ CharString level_as_cstring(Level level) {
 		default:
 			return "unknown";
 	}
+}
+
+godot::PropertyInfo make_level_enum_property(const godot::String &p_name) {
+	return godot::PropertyInfo(godot::Variant::INT, p_name, godot::PROPERTY_HINT_ENUM, "Debug,Info,Warning,Error,Fatal");
 }
 
 } // namespace sentry
