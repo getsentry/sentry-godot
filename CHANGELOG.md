@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Improve & expose `SentryOptions` class ([#56](https://github.com/getsentry/sentry-godot/pull/56))
+
 ## 0.0.3
 
 ### Various fixes & improvements

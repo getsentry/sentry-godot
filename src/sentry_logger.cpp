@@ -57,9 +57,9 @@ void SentryLogger::_process_log_file() {
 	frame_events = 0;
 
 	// Get limits.
-	SentryOptions::LoggerLimits limits = SentryOptions::get_singleton()->get_error_logger_limits();
-	auto repeated_error_window = std::chrono::milliseconds{ limits.repeated_error_window_ms };
-	auto throttle_window = std::chrono::milliseconds{ limits.throttle_window_ms };
+	Ref<SentryLoggerLimits> limits = SentryOptions::get_singleton()->get_error_logger_limits();
+	auto repeated_error_window = std::chrono::milliseconds{ limits->repeated_error_window_ms };
+	auto throttle_window = std::chrono::milliseconds{ limits->throttle_window_ms };
 
 	{
 		// Throttling: Remove time points outside of the throttling window.
@@ -81,7 +81,7 @@ void SentryLogger::_process_log_file() {
 	//   while still registering them as breadcrumbs.
 	// - We also have a limit on events per frame, and on the number of lines that can be parsed
 	//   in each frame. These limits are mainly here to protect the frametime budget.
-	while (num_lines_read < limits.parse_lines && log_file.getline(first_line, MAX_LINE_LENGTH)) {
+	while (num_lines_read < limits->parse_lines && log_file.getline(first_line, MAX_LINE_LENGTH)) {
 		num_lines_read++;
 
 		for (int i = 0; i < num_error_types; i++) {
@@ -131,11 +131,11 @@ void SentryLogger::_process_log_file() {
 }
 
 void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType p_error_type) {
-	SentryOptions::LoggerLimits limits = SentryOptions::get_singleton()->get_error_logger_limits();
+	Ref<SentryLoggerLimits> limits = SentryOptions::get_singleton()->get_error_logger_limits();
 	bool as_breadcrumb = SentryOptions::get_singleton()->is_error_logger_breadcrumb_enabled(p_error_type);
 	bool as_event = SentryOptions::get_singleton()->is_error_logger_event_enabled(p_error_type) &&
-			frame_events < limits.events_per_frame &&
-			event_times.size() < limits.throttle_events;
+			frame_events < limits->events_per_frame &&
+			event_times.size() < limits->throttle_events;
 
 	if (!as_breadcrumb && !as_event) {
 		// Bail out if capture is disabled for this error type.
