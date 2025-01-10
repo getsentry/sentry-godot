@@ -30,7 +30,6 @@ public:
 	virtual String capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) override;
 
 	virtual Ref<SentryEvent> create_event() override;
-	virtual Ref<SentryEvent> create_message_event(const String &p_message, Level p_level = sentry::LEVEL_INFO, const String &p_logger = "") override;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) override;
 
 	virtual void initialize() override;

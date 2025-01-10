@@ -58,7 +58,6 @@ public:
 	String get_last_event_id() const;
 
 	Ref<SentryEvent> create_event() const;
-	Ref<SentryEvent> create_message_event(const String &p_message, sentry::Level p_level = sentry::LEVEL_INFO, const String &p_logger = "");
 	String capture_event(const Ref<SentryEvent> &p_event);
 
 	SentrySDK();

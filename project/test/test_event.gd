@@ -79,16 +79,3 @@ func test_capture_event() -> void:
 	assert_str(event_id).is_equal(event.id)
 	assert_str(SentrySDK.get_last_event_id()).is_not_empty()
 	assert_str(event_id).is_equal(SentrySDK.get_last_event_id())
-
-
-## SentrySDK.create_message_event() should return a SentryEvent instance with the specified message and level, and should be able to be captured.
-func test_create_message_event_and_capture() -> void:
-	var event := SentrySDK.create_message_event("Test message", SentrySDK.LEVEL_DEBUG, "custom-logger")
-	assert_str(event.message).is_equal("Test message")
-	assert_str(event.id).is_not_empty()
-	assert_int(event.level).is_equal(SentrySDK.LEVEL_DEBUG)
-	assert_str(event.logger).is_equal("custom-logger")
-	var event_id := SentrySDK.capture_event(event)
-	assert_str(event_id).is_not_empty()
-	assert_str(event_id).is_equal(event.id)
-	assert_str(event_id).is_equal(SentrySDK.get_last_event_id())
