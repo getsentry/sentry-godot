@@ -12,7 +12,7 @@ if ($newVersion -match '^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?<status>.*
     $patch = [int]$matches['patch']
     $status = $matches['status']
 
-    if ($status -match "^-(?<prerelease>[a-zA-Z]+)\.?(?<prereleaseNum>\d+)?$") {
+    if ($status -match '^-(?<prerelease>[a-zA-Z]+)\.?(?<prereleaseNum>\d+)?$') {
         # Increment prerelease version
         $prerelease = $matches['prerelease']
         $prereleaseNum = [int]$matches['prereleaseNum']
@@ -22,12 +22,12 @@ if ($newVersion -match '^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?<status>.*
         # Increment minor version, reset patch version, and add -dev prerelease status
         $minor += 1
         $patch = 0
-        $status = "-dev"
+        $status = '-dev'
     }
 
     $nextVersion = "$major.$minor.$patch$status"
 
-    & ".\scripts\bump-version.ps1" -prevVersion $newVersion -newVersion $nextVersion
+    & 'pwsh.\scripts\bump-version.ps1' -prevVersion $newVersion -newVersion $nextVersion
 
     git diff --quiet
     if ($LASTEXITCODE -ne 0) {
