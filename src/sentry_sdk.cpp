@@ -5,10 +5,13 @@
 #include "sentry/disabled_sdk.h"
 #include "sentry/util.h"
 #include "sentry/uuid.h"
+#include "sentry_configuration.h"
 #include "sentry_options.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #ifdef NATIVE_SDK
@@ -91,6 +94,22 @@ void SentrySDK::_init_contexts() {
 	internal_sdk->set_context("environment", sentry::contexts::make_environment_context());
 }
 
+void SentrySDK::_init_user_configuration() {
+	const String &path = SentryOptions::get_singleton()->get_configuration_script();
+	if (path.is_empty()) {
+		return;
+	}
+	sentry::util::print_debug("initializing configuration script");
+	Ref<Script> script = ResourceLoader::get_singleton()->load(path);
+	ERR_FAIL_COND_MSG(script.is_null(), "Sentry: Failed to load configuration script: " + path);
+	ERR_FAIL_COND_MSG(script->get_instance_base_type() != SentryConfiguration::get_class_static(), "Sentry: Configuration script must inherit from SentryConfiguration");
+	Variant instance = ClassDB::instantiate(script->get_instance_base_type());
+	SentryConfiguration *configuration = Object::cast_to<SentryConfiguration>(instance);
+	ERR_FAIL_NULL(configuration); // sanity check
+	configuration->set_script(script);
+	configuration->_call_initialize();
+}
+
 void SentrySDK::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_DEBUG);
 	BIND_ENUM_CONSTANT(LEVEL_INFO);
@@ -109,6 +128,8 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_user"), &SentrySDK::remove_user);
 	ClassDB::bind_method(D_METHOD("create_event"), &SentrySDK::create_event);
 	ClassDB::bind_method(D_METHOD("capture_event", "event"), &SentrySDK::capture_event);
+	ClassDB::bind_method(D_METHOD("set_before_send", "callable"), &SentrySDK::set_before_send);
+	ClassDB::bind_method(D_METHOD("unset_before_send"), &SentrySDK::unset_before_send);
 }
 
 SentrySDK::SentrySDK() {
@@ -143,6 +164,8 @@ SentrySDK::SentrySDK() {
 		internal_sdk = std::make_shared<DisabledSDK>();
 		return;
 	}
+
+	callable_mp(this, &SentrySDK::_init_user_configuration).call_deferred();
 
 	internal_sdk->initialize();
 

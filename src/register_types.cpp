@@ -1,6 +1,7 @@
 #include "runtime_config.h"
 #include "sentry/disabled_event.h"
 #include "sentry/native/native_event.h"
+#include "sentry_configuration.h"
 #include "sentry_event.h"
 #include "sentry_logger.h"
 #include "sentry_options.h"
@@ -39,6 +40,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		SentryOptions *options = new SentryOptions();
 
 		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
+		GDREGISTER_CLASS(SentryConfiguration);
 		GDREGISTER_CLASS(SentryUser);
 		GDREGISTER_CLASS(SentrySDK);
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);

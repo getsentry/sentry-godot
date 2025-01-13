@@ -15,6 +15,9 @@ namespace sentry {
 
 // Interface for SDKs used internally.
 class InternalSDK {
+private:
+	Callable before_send;
+
 public:
 	// Represents a frame of a stack trace.
 	struct StackFrame {
@@ -26,7 +29,6 @@ public:
 		PackedStringArray post_context;
 	};
 
-public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) = 0;
 	virtual void remove_context(const String &p_key) = 0;
 
@@ -47,6 +49,10 @@ public:
 
 	virtual Ref<SentryEvent> create_event() = 0;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) = 0;
+
+	void set_before_send(Callable p_callable) { before_send = p_callable; }
+	void unset_before_send() { before_send = Callable(); }
+	Callable get_before_send() const { return before_send; }
 
 	virtual void initialize() = 0;
 	virtual ~InternalSDK() = default;

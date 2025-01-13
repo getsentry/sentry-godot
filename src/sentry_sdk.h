@@ -30,6 +30,7 @@ private:
 	bool enabled = false;
 
 	void _init_contexts();
+	void _init_user_configuration();
 
 protected:
 	static void _bind_methods();
@@ -59,6 +60,9 @@ public:
 
 	Ref<SentryEvent> create_event() const;
 	String capture_event(const Ref<SentryEvent> &p_event);
+
+	void set_before_send(Callable p_callable) { internal_sdk->set_before_send(p_callable); }
+	void unset_before_send() { internal_sdk->unset_before_send(); }
 
 	SentrySDK();
 	~SentrySDK();

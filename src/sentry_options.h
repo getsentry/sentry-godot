@@ -52,6 +52,8 @@ private:
 	int error_logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
 	LoggerLimits error_logger_limits;
 
+	String configuration_script;
+
 	void _define_setting(const String &p_setting, const Variant &p_default, bool p_basic = true);
 	void _define_setting(const PropertyInfo &p_info, const Variant &p_default, bool p_basic = true);
 	void _define_project_settings();
@@ -75,6 +77,8 @@ public:
 	bool is_error_logger_event_enabled(GodotErrorType p_error_type) { return error_logger_event_mask & sentry::godot_error_type_as_mask(p_error_type); }
 	bool is_error_logger_breadcrumb_enabled(GodotErrorType p_error_type) { return error_logger_breadcrumb_mask & sentry::godot_error_type_as_mask(p_error_type); }
 	LoggerLimits get_error_logger_limits() const { return error_logger_limits; }
+
+	String get_configuration_script() const { return configuration_script; }
 
 	SentryOptions();
 	~SentryOptions();

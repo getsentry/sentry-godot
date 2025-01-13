@@ -35,6 +35,8 @@ void SentryOptions::_load_project_settings() {
 	error_logger_limits.repeated_error_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/repeated_error_window_ms", error_logger_limits.repeated_error_window_ms);
 	error_logger_limits.throttle_events = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/throttle_events", error_logger_limits.throttle_events);
 	error_logger_limits.throttle_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/throttle_window_ms", error_logger_limits.throttle_window_ms);
+
+	configuration_script = ProjectSettings::get_singleton()->get_setting("sentry/config/configuration_script", configuration_script);
 }
 
 void SentryOptions::_define_setting(const String &p_setting, const Variant &p_default, bool p_basic) {
@@ -84,6 +86,8 @@ void SentryOptions::_define_project_settings() {
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), error_logger_limits.repeated_error_window_ms);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), error_logger_limits.throttle_events);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), error_logger_limits.throttle_window_ms);
+
+	_define_setting(PropertyInfo(Variant::STRING, "sentry/config/configuration_script", PROPERTY_HINT_FILE, "*.gd"), String(configuration_script));
 }
 
 SentryOptions::SentryOptions() {

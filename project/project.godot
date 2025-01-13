@@ -38,3 +38,4 @@ ui/toolbar/run_overall=true
 
 config/dsn="https://3f1e095cf2e14598a0bd5b4ff324f712@o447951.ingest.us.sentry.io/6680910"
 config/debug=true
+config/configuration_script="res://test_configuration.gd"

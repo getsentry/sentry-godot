@@ -6,6 +6,7 @@
 #include "sentry/level.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
+#include "sentry/util.h"
 #include "sentry_options.h"
 
 #include <godot_cpp/classes/file_access.hpp>
@@ -53,7 +54,23 @@ inline void inject_contexts(sentry_value_t p_event) {
 }
 
 sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closure) {
+	sentry::util::print_debug("handling before_send");
 	inject_contexts(event);
+	using NativeSDK = sentry::NativeSDK;
+	NativeSDK *sdk = static_cast<NativeSDK *>(closure);
+	if (const Callable &before_send = sdk->get_before_send(); before_send.is_valid()) {
+		sentry_value_incref(event); // Maintain ownership.
+		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+		Ref<NativeEvent> processed = before_send.call(event_obj);
+		ERR_FAIL_COND_V_MSG(processed.is_valid() && processed != event_obj, event, "Sentry: before_send callback must return the same event object or null.");
+		if (processed.is_null()) {
+			sentry::util::print_debug("event discarded by before_send callback: ", event_obj->get_id());
+			sentry_value_decref(event);
+			return sentry_value_new_null();
+		}
+		sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
+		sentry::util::print_debug("REFCOUNT: ", sentry_value_refcount(event));
+	}
 	return event;
 }
 
@@ -242,8 +259,8 @@ void NativeSDK::initialize() {
 	}
 
 	// Hooks.
-	sentry_options_set_before_send(options, handle_before_send, NULL);
-	sentry_options_set_on_crash(options, handle_before_crash, NULL);
+	sentry_options_set_before_send(options, handle_before_send, this);
+	sentry_options_set_on_crash(options, handle_before_crash, this);
 
 	sentry_init(options);
 }
