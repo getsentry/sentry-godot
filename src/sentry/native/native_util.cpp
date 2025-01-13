@@ -73,4 +73,71 @@ String make_uuid() {
 	return String(cstr);
 }
 
+sentry_level_t level_to_native(sentry::Level p_level) {
+	switch (p_level) {
+		case sentry::Level::LEVEL_DEBUG:
+			return SENTRY_LEVEL_DEBUG;
+		case sentry::Level::LEVEL_INFO:
+			return SENTRY_LEVEL_INFO;
+		case sentry::Level::LEVEL_WARNING:
+			return SENTRY_LEVEL_WARNING;
+		case sentry::Level::LEVEL_ERROR:
+			return SENTRY_LEVEL_ERROR;
+		case sentry::Level::LEVEL_FATAL:
+			return SENTRY_LEVEL_FATAL;
+		default:
+			ERR_FAIL_V_MSG(SENTRY_LEVEL_ERROR, "SentrySDK: Internal error - unexpected level value. Please open an issue.");
+	}
+}
+
+sentry::Level native_to_level(sentry_level_t p_native_level) {
+	switch (p_native_level) {
+		case SENTRY_LEVEL_DEBUG:
+			return sentry::Level::LEVEL_DEBUG;
+		case SENTRY_LEVEL_INFO:
+			return sentry::Level::LEVEL_INFO;
+		case SENTRY_LEVEL_WARNING:
+			return sentry::Level::LEVEL_WARNING;
+		case SENTRY_LEVEL_ERROR:
+			return sentry::Level::LEVEL_ERROR;
+		case SENTRY_LEVEL_FATAL:
+			return sentry::Level::LEVEL_FATAL;
+		default:
+			ERR_FAIL_V_MSG(sentry::Level::LEVEL_ERROR, "SentrySDK: Internal error - unexpected level value. Please open an issue.");
+	}
+}
+
+CharString level_to_cstring(Level level) {
+	switch (level) {
+		case Level::LEVEL_DEBUG:
+			return "debug";
+		case Level::LEVEL_INFO:
+			return "info";
+		case Level::LEVEL_WARNING:
+			return "warning";
+		case Level::LEVEL_ERROR:
+			return "error";
+		case Level::LEVEL_FATAL:
+			return "fatal";
+		default:
+			ERR_FAIL_V_MSG("error", "SentrySDK: Internal error - unexpected level value. Please open an issue.");
+	}
+}
+
+Level cstring_to_level(const CharString &p_cstring) {
+	if (strcmp(p_cstring, "debug") == 0) {
+		return Level::LEVEL_DEBUG;
+	} else if (strcmp(p_cstring, "info") == 0) {
+		return Level::LEVEL_INFO;
+	} else if (strcmp(p_cstring, "warning") == 0) {
+		return Level::LEVEL_WARNING;
+	} else if (strcmp(p_cstring, "error") == 0) {
+		return Level::LEVEL_ERROR;
+	} else if (strcmp(p_cstring, "fatal") == 0) {
+		return Level::LEVEL_FATAL;
+	} else {
+		ERR_FAIL_V_MSG(Level::LEVEL_ERROR, "SentrySDK: Internal error - unexpected level value. Please open an issue.");
+	}
+}
+
 } // namespace sentry::native

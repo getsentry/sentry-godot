@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+### Features
+
 - Improve & expose `SentryOptions` class ([#56](https://github.com/getsentry/sentry-godot/pull/56))
+- Create or modify events using `SentryEvent` objects and new SDK methods: `SentrySDK.create_event()`, `SentrySDK.capture_event(event)` ([#51](https://github.com/getsentry/sentry-godot/pull/51))
 
 ## 0.0.3
 

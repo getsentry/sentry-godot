@@ -1,6 +1,7 @@
 #ifndef DISABLED_SDK_H
 #define DISABLED_SDK_H
 
+#include "sentry/disabled_event.h"
 #include "sentry/internal_sdk.h"
 
 namespace sentry {
@@ -18,12 +19,13 @@ class DisabledSDK : public InternalSDK {
 
 	virtual void add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary()) override {}
-	// TODO: Consider adding the following function.
-	// virtual void clear_breadcrumbs() = 0;
 
-	virtual String capture_message(const String &p_message, Level p_level, const String &p_logger = "") override { return ""; }
+	virtual String capture_message(const String &p_message, Level p_level = sentry::LEVEL_INFO, const String &p_logger = "") override { return ""; }
 	virtual String get_last_event_id() override { return ""; }
 	virtual String capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) override { return ""; }
+
+	virtual Ref<SentryEvent> create_event() override { return memnew(DisabledEvent); }
+	virtual String capture_event(const Ref<SentryEvent> &p_event) override { return ""; }
 
 	virtual void initialize() override {}
 };
