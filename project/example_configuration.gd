@@ -1,17 +1,18 @@
 extends SentryConfiguration
 
-## Setting up filtering
+## Sets up filtering
 func _initialize() -> void:
-	# before-send example:
-	SentrySDK.set_before_send(
-		func(ev: SentryEvent) -> SentryEvent:
-			print("Processing event: ", ev.id)
-			return ev
-	)
+	SentrySDK.set_before_send(_before_send)
+	SentrySDK.set_on_crash(_on_crash)
 
-	# on-crash example:
-	SentrySDK.set_on_crash(
-		func(ev: SentryEvent) -> SentryEvent:
-			print("Crashing with event: ", ev.id)
-			return ev
-	)
+
+## before_send example
+func _before_send(ev: SentryEvent) -> SentryEvent:
+	print("Processing event: ", ev.id)
+	return ev
+
+
+## on_crash example
+func _on_crash(ev: SentryEvent) -> SentryEvent:
+	print("Crashing with event: ", ev.id)
+	return ev
