@@ -61,8 +61,11 @@ public:
 	Ref<SentryEvent> create_event() const;
 	String capture_event(const Ref<SentryEvent> &p_event);
 
-	void set_before_send(Callable p_callable) { internal_sdk->set_before_send(p_callable); }
+	void set_before_send(const Callable &p_callable) { internal_sdk->set_before_send(p_callable); }
 	void unset_before_send() { internal_sdk->unset_before_send(); }
+
+	void set_on_crash(const Callable &p_callable) { internal_sdk->set_on_crash(p_callable); }
+	void unset_on_crash() { internal_sdk->unset_on_crash(); }
 
 	SentrySDK();
 	~SentrySDK();

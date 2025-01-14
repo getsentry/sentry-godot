@@ -17,6 +17,7 @@ namespace sentry {
 class InternalSDK {
 private:
 	Callable before_send;
+	Callable on_crash;
 
 public:
 	// Represents a frame of a stack trace.
@@ -50,9 +51,13 @@ public:
 	virtual Ref<SentryEvent> create_event() = 0;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) = 0;
 
-	void set_before_send(Callable p_callable) { before_send = p_callable; }
+	void set_before_send(const Callable &p_callable) { before_send = p_callable; }
 	void unset_before_send() { before_send = Callable(); }
 	Callable get_before_send() const { return before_send; }
+
+	void set_on_crash(const Callable &p_callable) { on_crash = p_callable; }
+	void unset_on_crash() { on_crash = Callable(); }
+	Callable get_on_crash() const { return on_crash; }
 
 	virtual void initialize() = 0;
 	virtual ~InternalSDK() = default;

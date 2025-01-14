@@ -26,7 +26,7 @@ func test_event_integrity(timeout := 10000) -> void:
 	created_id = event.id
 
 	var captured_id := SentrySDK.capture_event(event)
-	assert_signal(self).wait_until(2000).is_emitted("callback_processed")
+	assert_signal(self).is_emitted("callback_processed")
 
 	assert_str(captured_id).is_not_empty()
 	assert_str(captured_id).is_not_equal(created_id) # event was discarded

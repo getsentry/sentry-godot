@@ -130,6 +130,8 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("capture_event", "event"), &SentrySDK::capture_event);
 	ClassDB::bind_method(D_METHOD("set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("unset_before_send"), &SentrySDK::unset_before_send);
+	ClassDB::bind_method(D_METHOD("set_on_crash", "callable"), &SentrySDK::set_on_crash);
+	ClassDB::bind_method(D_METHOD("unset_on_crash"), &SentrySDK::unset_on_crash);
 }
 
 SentrySDK::SentrySDK() {

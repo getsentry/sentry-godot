@@ -73,8 +73,22 @@ sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closur
 	return event;
 }
 
-sentry_value_t handle_before_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
+sentry_value_t handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
 	inject_contexts(event);
+	using NativeSDK = sentry::NativeSDK;
+	NativeSDK *sdk = static_cast<NativeSDK *>(closure);
+	if (const Callable &on_crash = sdk->get_on_crash(); on_crash.is_valid()) {
+		sentry_value_incref(event); // Maintain ownership.
+		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+		Ref<NativeEvent> processed = on_crash.call(event_obj);
+		ERR_FAIL_COND_V_MSG(processed.is_valid() && processed != event_obj, event, "Sentry: on_crash callback must return the same event object or null.");
+		if (processed.is_null()) {
+			sentry::util::print_debug("event discarded by on_crash callback: ", event_obj->get_id());
+			sentry_value_decref(event);
+			return sentry_value_new_null();
+		}
+		sentry::util::print_debug("event processed by on_crash callback: ", event_obj->get_id());
+	}
 	return event;
 }
 
@@ -259,7 +273,7 @@ void NativeSDK::initialize() {
 
 	// Hooks.
 	sentry_options_set_before_send(options, handle_before_send, this);
-	sentry_options_set_on_crash(options, handle_before_crash, this);
+	sentry_options_set_on_crash(options, handle_on_crash, this);
 
 	sentry_init(options);
 }
