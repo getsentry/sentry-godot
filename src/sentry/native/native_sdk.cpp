@@ -69,7 +69,6 @@ sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closur
 			return sentry_value_new_null();
 		}
 		sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
-		sentry::util::print_debug("REFCOUNT: ", sentry_value_refcount(event));
 	}
 	return event;
 }
