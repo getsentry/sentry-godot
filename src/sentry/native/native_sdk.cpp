@@ -56,9 +56,7 @@ inline void inject_contexts(sentry_value_t p_event) {
 sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	sentry::util::print_debug("handling before_send");
 	inject_contexts(event);
-	using NativeSDK = sentry::NativeSDK;
-	NativeSDK *sdk = static_cast<NativeSDK *>(closure);
-	if (const Callable &before_send = sdk->get_before_send(); before_send.is_valid()) {
+	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
 		sentry_value_incref(event); // Maintain ownership.
 		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
 		Ref<NativeEvent> processed = before_send.call(event_obj);
@@ -75,9 +73,7 @@ sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closur
 
 sentry_value_t handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
 	inject_contexts(event);
-	using NativeSDK = sentry::NativeSDK;
-	NativeSDK *sdk = static_cast<NativeSDK *>(closure);
-	if (const Callable &on_crash = sdk->get_on_crash(); on_crash.is_valid()) {
+	if (const Callable &on_crash = SentryOptions::get_singleton()->get_on_crash(); on_crash.is_valid()) {
 		sentry_value_incref(event); // Maintain ownership.
 		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
 		Ref<NativeEvent> processed = on_crash.call(event_obj);
@@ -272,8 +268,8 @@ void NativeSDK::initialize() {
 	}
 
 	// Hooks.
-	sentry_options_set_before_send(options, handle_before_send, this);
-	sentry_options_set_on_crash(options, handle_on_crash, this);
+	sentry_options_set_before_send(options, handle_before_send, NULL);
+	sentry_options_set_on_crash(options, handle_on_crash, NULL);
 
 	sentry_init(options);
 }

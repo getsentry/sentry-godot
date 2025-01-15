@@ -6,6 +6,7 @@
 #include "sentry/level.h"
 #include "sentry_configuration.h"
 #include "sentry_event.h"
+#include "sentry_options.h"
 
 #include <godot_cpp/core/object.hpp>
 #include <memory>
@@ -63,11 +64,11 @@ public:
 	Ref<SentryEvent> create_event() const;
 	String capture_event(const Ref<SentryEvent> &p_event);
 
-	void set_before_send(const Callable &p_callable) { internal_sdk->set_before_send(p_callable); }
-	void unset_before_send() { internal_sdk->unset_before_send(); }
+	void set_before_send(const Callable &p_callable) { SentryOptions::get_singleton()->set_before_send(p_callable); }
+	void unset_before_send() { SentryOptions::get_singleton()->set_before_send(Callable()); }
 
-	void set_on_crash(const Callable &p_callable) { internal_sdk->set_on_crash(p_callable); }
-	void unset_on_crash() { internal_sdk->unset_on_crash(); }
+	void set_on_crash(const Callable &p_callable) { SentryOptions::get_singleton()->set_on_crash(p_callable); }
+	void unset_on_crash() { SentryOptions::get_singleton()->set_on_crash(Callable()); }
 
 	SentrySDK();
 	~SentrySDK();

@@ -6,9 +6,10 @@ extends SentryConfiguration
 
 ## Initialize filtering
 func _initialize(options: SentryOptions) -> void:
+	options.debug = false
 	# Set up before_send and on_crash callbacks
-	SentrySDK.set_before_send(_before_send)
-	SentrySDK.set_on_crash(_on_crash)
+	options.before_send = _before_send
+	options.on_crash = _on_crash
 
 
 ## before_send callback example
