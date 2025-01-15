@@ -37,6 +37,9 @@ void NativeEvent::set_message(const String &p_message) {
 
 String NativeEvent::get_message() const {
 	sentry_value_t message = sentry_value_get_by_key(native_event, "message");
+	if (sentry_value_is_null(message)) {
+		return String();
+	}
 	sentry_value_t formatted = sentry_value_get_by_key(message, "formatted");
 	return sentry_value_as_string(formatted);
 }
@@ -62,6 +65,12 @@ void NativeEvent::set_level(sentry::Level p_level) {
 
 sentry::Level NativeEvent::get_level() const {
 	sentry_value_t value = sentry_value_get_by_key(native_event, "level");
+	if (sentry_value_is_null(value)) {
+		// The "level" is not set for new events by default, and GDScript lacks optional types,
+		// so we need a default return value. Given that Sentry categorizes events with an error level
+		// by default, that is what we return.
+		return sentry::Level::LEVEL_ERROR;
+	}
 	return sentry::native::cstring_to_level(sentry_value_as_string(value));
 }
 

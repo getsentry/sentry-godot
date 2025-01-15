@@ -146,21 +146,27 @@ SentrySDK::SentrySDK() {
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
-#ifdef NATIVE_SDK
-	internal_sdk = std::make_shared<NativeSDK>();
-	enabled = true;
-#else
-	// Unsupported platform
-	sentry::util::print_debug("This is an unsupported platform. Operations with Sentry SDK will result in no-ops.");
-	internal_sdk = std::make_shared<DisabledSDK>();
-	return;
-#endif
+	enabled = SentryOptions::get_singleton()->is_enabled();
 
-	enabled = enabled && SentryOptions::get_singleton()->is_enabled();
+	if (!enabled) {
+		sentry::util::print_debug("Sentry SDK is disabled in the project settings.");
+	}
+
 	if (enabled && Engine::get_singleton()->is_editor_hint() && SentryOptions::get_singleton()->is_disabled_in_editor()) {
 		sentry::util::print_debug("Sentry SDK is disabled in the editor. Tip: This can be changed in the project settings.");
 		enabled = false;
 	}
+
+	if (enabled) {
+#ifdef NATIVE_SDK
+		internal_sdk = std::make_shared<NativeSDK>();
+#else
+		// Unsupported platform
+		sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
+		enabled = false;
+#endif
+	}
+
 	if (!enabled) {
 		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
 		internal_sdk = std::make_shared<DisabledSDK>();
