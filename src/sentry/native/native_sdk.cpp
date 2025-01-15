@@ -193,7 +193,7 @@ void NativeSDK::initialize() {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	sentry_options_t *options = sentry_options_new();
-	sentry_options_set_dsn(options, SentryOptions::get_singleton()->get_dsn());
+	sentry_options_set_dsn(options, SentryOptions::get_singleton()->get_dsn().utf8());
 
 	// Establish handler path.
 	String handler_fn;
@@ -223,7 +223,7 @@ void NativeSDK::initialize() {
 
 	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
 	sentry_options_set_sample_rate(options, SentryOptions::get_singleton()->get_sample_rate());
-	sentry_options_set_release(options, SentryOptions::get_singleton()->get_release());
+	sentry_options_set_release(options, SentryOptions::get_singleton()->get_release().utf8());
 	sentry_options_set_debug(options, SentryOptions::get_singleton()->is_debug_enabled());
 	sentry_options_set_environment(options, sentry::environment::get_environment());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
