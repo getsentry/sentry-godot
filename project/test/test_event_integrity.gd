@@ -7,11 +7,11 @@ var created_id: String
 
 
 func before_test() -> void:
-	SentrySDK.set_before_send(_before_send)
+	SentrySDK._set_before_send(_before_send)
 
 
 func after_test() -> void:
-	SentrySDK.unset_before_send()
+	SentrySDK._unset_before_send()
 
 
 @warning_ignore("unused_parameter")

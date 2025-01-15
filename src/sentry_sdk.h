@@ -64,6 +64,8 @@ public:
 	Ref<SentryEvent> create_event() const;
 	String capture_event(const Ref<SentryEvent> &p_event);
 
+	// * Hidden API methods -- used in testing
+
 	void set_before_send(const Callable &p_callable) { SentryOptions::get_singleton()->set_before_send(p_callable); }
 	void unset_before_send() { SentryOptions::get_singleton()->set_before_send(Callable()); }
 
