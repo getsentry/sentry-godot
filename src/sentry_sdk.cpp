@@ -5,7 +5,6 @@
 #include "sentry/disabled_sdk.h"
 #include "sentry/util.h"
 #include "sentry/uuid.h"
-#include "sentry_configuration.h"
 #include "sentry_options.h"
 
 #include <godot_cpp/classes/engine.hpp>
@@ -104,10 +103,11 @@ void SentrySDK::_init_user_configuration() {
 	ERR_FAIL_COND_MSG(script.is_null(), "Sentry: Failed to load configuration script: " + path);
 	ERR_FAIL_COND_MSG(script->get_instance_base_type() != SentryConfiguration::get_class_static(), "Sentry: Configuration script must inherit from SentryConfiguration");
 	Variant instance = ClassDB::instantiate(script->get_instance_base_type());
-	SentryConfiguration *configuration = Object::cast_to<SentryConfiguration>(instance);
-	ERR_FAIL_NULL(configuration); // sanity check
+	SentryConfiguration *conf_ptr = Object::cast_to<SentryConfiguration>(instance);
+	ERR_FAIL_NULL(conf_ptr); // sanity check
+	configuration = Ref(conf_ptr); // take ownership
 	configuration->set_script(script);
-	configuration->_call_initialize();
+	configuration->_call_initialize(SentryOptions::get_singleton());
 }
 
 void SentrySDK::_bind_methods() {

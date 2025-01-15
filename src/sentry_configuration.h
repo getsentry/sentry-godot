@@ -1,6 +1,8 @@
 #ifndef SENTRY_CONFIGURATION_H
 #define SENTRY_CONFIGURATION_H
 
+#include "sentry_options.h"
+
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/core/gdvirtual.gen.inc>
 
@@ -14,9 +16,9 @@ protected:
 
 	static void _bind_methods();
 
-	GDVIRTUAL0(_initialize);
+	GDVIRTUAL1(_initialize, Ref<SentryOptions>);
 
-	void _call_initialize();
+	void _call_initialize(const Ref<SentryOptions> &p_options);
 };
 
 #endif // SENTRY_CONFIGURATION_H
