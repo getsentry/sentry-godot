@@ -1,4 +1,8 @@
 extends SentryConfiguration
+## Example Sentry configuration script.
+##
+## Tip: You can assign configuration script in the project settings.
+
 
 ## Initialize filtering
 func _initialize() -> void:
