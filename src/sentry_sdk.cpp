@@ -175,8 +175,10 @@ SentrySDK::SentrySDK() {
 		return;
 	}
 
+	// ! BROKEN: Unable to initialize with user configuration script at this point,
+	// ! because ScriptServer languages like GDScript are not initialized yet.
 	// _init_user_configuration();
-	callable_mp(this, &SentrySDK::_init_user_configuration).call_deferred();
+	callable_mp(this, &SentrySDK::_init_user_configuration).call_deferred(); // ! deferred
 
 	internal_sdk->initialize();
 
