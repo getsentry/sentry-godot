@@ -38,8 +38,6 @@ void initialize_module(ModuleInitializationLevel p_level) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		GDREGISTER_CLASS(SentryLoggerLimits);
 		GDREGISTER_CLASS(SentryOptions);
-		SentryOptions::create_singleton();
-
 		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 		GDREGISTER_CLASS(SentryConfiguration);
 		GDREGISTER_CLASS(SentryUser);
@@ -47,19 +45,17 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 		GDREGISTER_INTERNAL_CLASS(NativeEvent);
 		GDREGISTER_INTERNAL_CLASS(DisabledEvent);
+		GDREGISTER_INTERNAL_CLASS(SentryLogger);
+
+		SentryOptions::create_singleton();
+
 		SentrySDK *sentry_singleton = memnew(SentrySDK);
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
 
 		if (!Engine::get_singleton()->is_editor_hint() && sentry_singleton->is_enabled()) {
-			GDREGISTER_INTERNAL_CLASS(SentryLogger);
 			callable_mp_static(_init_logger).call_deferred();
 		}
 	}
-
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-	}
-#endif // TOOLS_ENABLED
 }
 
 void uninitialize_module(ModuleInitializationLevel p_level) {
