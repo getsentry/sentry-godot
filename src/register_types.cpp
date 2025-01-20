@@ -1,6 +1,5 @@
 #include "runtime_config.h"
 #include "sentry/disabled_event.h"
-#include "sentry/native/native_event.h"
 #include "sentry_event.h"
 #include "sentry_logger.h"
 #include "sentry_options.h"
@@ -10,6 +9,10 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/window.hpp>
+
+#ifdef NATIVE_SDK
+#include "sentry/native/native_event.h"
+#endif // NATIVE_SDK
 
 using namespace godot;
 
@@ -37,14 +40,17 @@ void initialize_module(ModuleInitializationLevel p_level) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		GDREGISTER_CLASS(SentryLoggerLimits);
 		GDREGISTER_CLASS(SentryOptions);
-		SentryOptions::create_singleton();
-
 		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 		GDREGISTER_CLASS(SentryUser);
 		GDREGISTER_CLASS(SentrySDK);
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
-		GDREGISTER_INTERNAL_CLASS(NativeEvent);
 		GDREGISTER_INTERNAL_CLASS(DisabledEvent);
+#ifdef NATIVE_SDK
+		GDREGISTER_INTERNAL_CLASS(NativeEvent);
+#endif // NATIVE_SDK
+
+		SentryOptions::create_singleton();
+
 		SentrySDK *sentry_singleton = memnew(SentrySDK);
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
 

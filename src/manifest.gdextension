@@ -25,8 +25,8 @@ android.debug.x86_64 = "res://addons/{name}/bin/android/lib{name}.android.debug.
 android.release.x86_64 = "res://addons/{name}/bin/android/lib{name}.android.release.x86_64.so"
 android.debug.x86_32 = "res://addons/{name}/bin/android/lib{name}.android.debug.x86_32.so"
 android.release.x86_32 = "res://addons/{name}/bin/android/lib{name}.android.release.x86_32.so"
-web.debug.wasm32 = "res://addons/{name}/bin/web/lib{name}.web.debug.wasm32.wasm"
-web.release.wasm32 = "res://addons/{name}/bin/web/lib{name}.web.release.wasm32.wasm"
+;web.debug.wasm32 = "res://addons/{name}/bin/web/lib{name}.web.debug.wasm32.wasm"
+;web.release.wasm32 = "res://addons/{name}/bin/web/lib{name}.web.release.wasm32.wasm"
 
 [dependencies]
 
