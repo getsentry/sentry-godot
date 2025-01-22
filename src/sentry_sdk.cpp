@@ -118,8 +118,19 @@ void SentrySDK::_initialize() {
 	set_user(runtime_config->get_user());
 }
 
+void SentrySDK::_check_if_configuration_succeeded() {
+	if (!configuration_succeeded) {
+		// Push error and initialize anyway.
+		ERR_PRINT("Sentry: Configuration via user script failed. Will try to initialize SDK anyway.");
+		sentry::util::print_error("initializing late because configuration via user script failed");
+		_initialize();
+		SentrySDK::_init_contexts();
+	}
+}
+
 void SentrySDK::notify_options_configured() {
 	sentry::util::print_debug("finished configuring options via user script");
+	configuration_succeeded = true;
 	_initialize();
 	SentrySDK::_init_contexts();
 }
@@ -180,10 +191,12 @@ SentrySDK::SentrySDK() {
 			// Add user configuration autoload at runtime (not in the editor).
 			// We opt to avoid exposing the singleton in the editor (project settings),
 			// so users don't have to worry about it.
-			ERR_FAIL_NULL(ProjectSettings::get_singleton());
+			internal_sdk = std::make_shared<DisabledSDK>(); // just in case
 			sentry::util::print_debug("waiting for user configuration autoload");
+			ERR_FAIL_NULL(ProjectSettings::get_singleton());
 			ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
 					SentryOptions::get_singleton()->get_configuration_script());
+			callable_mp(this, &SentrySDK::_check_if_configuration_succeeded).call_deferred();
 		}
 	}
 }

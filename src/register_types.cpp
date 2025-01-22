@@ -1,6 +1,7 @@
 #include "runtime_config.h"
 #include "sentry/disabled_event.h"
 #include "sentry/native/native_event.h"
+#include "sentry/util.h"
 #include "sentry_configuration.h"
 #include "sentry_event.h"
 #include "sentry_logger.h"
@@ -19,6 +20,11 @@ namespace {
 void _init_logger() {
 	if (!SentryOptions::get_singleton()->is_error_logger_enabled()) {
 		// If error logger is disabled, don't add it to the scene tree.
+		sentry::util::print_debug("error logger is disabled in options");
+		return;
+	}
+	if (!SentrySDK::get_singleton()->is_initialized()) {
+		sentry::util::print_debug("error logger is not started because SDK is not initialized");
 		return;
 	}
 	// Add experimental logger to scene tree.
@@ -52,7 +58,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		SentrySDK *sentry_singleton = memnew(SentrySDK);
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
 
-		if (!Engine::get_singleton()->is_editor_hint() && sentry_singleton->is_enabled()) {
+		if (!Engine::get_singleton()->is_editor_hint()) {
 			callable_mp_static(_init_logger).call_deferred();
 		}
 	}

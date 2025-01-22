@@ -30,9 +30,11 @@ private:
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
 	bool enabled = false;
+	bool configuration_succeeded = false;
 
 	void _init_contexts();
 	void _initialize();
+	void _check_if_configuration_succeeded();
 
 protected:
 	static void _bind_methods();
@@ -47,6 +49,7 @@ public:
 	// * Exported API
 
 	bool is_enabled() const { return enabled; }
+	bool is_initialized() const { return internal_sdk->is_initialized(); }
 
 	void add_breadcrumb(const String &p_message, const String &p_category, sentry::Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary());

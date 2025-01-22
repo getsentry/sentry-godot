@@ -271,7 +271,8 @@ void NativeSDK::initialize() {
 	sentry_options_set_before_send(options, handle_before_send, NULL);
 	sentry_options_set_on_crash(options, handle_on_crash, NULL);
 
-	sentry_init(options);
+	int err = sentry_init(options);
+	initialized = (err == 0);
 }
 
 NativeSDK::~NativeSDK() {
