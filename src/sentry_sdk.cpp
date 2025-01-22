@@ -171,16 +171,20 @@ SentrySDK::SentrySDK() {
 		enabled = false;
 	}
 
-	if (SentryOptions::get_singleton()->get_configuration_script().is_empty()) {
-		_initialize();
-		// Delay contexts initialization until the engine singletons are ready.
-		callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
-	} else {
-		// Add user configuration autoload.
-		ERR_FAIL_NULL(ProjectSettings::get_singleton());
-		sentry::util::print_debug("waiting for user configuration autoload");
-		ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
-				SentryOptions::get_singleton()->get_configuration_script());
+	if (enabled) {
+		if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
+			_initialize();
+			// Delay contexts initialization until the engine singletons are ready.
+			callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
+		} else {
+			// Add user configuration autoload at runtime (not in the editor).
+			// We opt to avoid exposing the singleton in the editor (project settings),
+			// so users don't have to worry about it.
+			ERR_FAIL_NULL(ProjectSettings::get_singleton());
+			sentry::util::print_debug("waiting for user configuration autoload");
+			ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
+					SentryOptions::get_singleton()->get_configuration_script());
+		}
 	}
 }
 
