@@ -18,10 +18,9 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	GDVIRTUAL1(_initialize, Ref<SentryOptions>);
+	GDVIRTUAL1(_configure, Ref<SentryOptions>);
 
-	// SentrySDK should call this method upon initialization.
-	void _call_initialize(const Ref<SentryOptions> &p_options);
+	void _call_configure(const Ref<SentryOptions> &p_options);
 
 public:
 	SentryConfiguration() {}

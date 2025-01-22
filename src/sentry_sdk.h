@@ -42,7 +42,7 @@ public:
 
 	_FORCE_INLINE_ std::shared_ptr<sentry::InternalSDK> get_internal_sdk() const { return internal_sdk; }
 
-	void notify_options_initialized();
+	void notify_options_configured();
 
 	// * Exported API
 

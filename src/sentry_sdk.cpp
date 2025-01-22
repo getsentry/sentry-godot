@@ -118,8 +118,8 @@ void SentrySDK::_initialize() {
 	set_user(runtime_config->get_user());
 }
 
-void SentrySDK::notify_options_initialized() {
-	sentry::util::print_debug("user options initialized");
+void SentrySDK::notify_options_configured() {
+	sentry::util::print_debug("finished configuring options via user script");
 	_initialize();
 	SentrySDK::_init_contexts();
 }
