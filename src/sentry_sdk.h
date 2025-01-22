@@ -29,11 +29,10 @@ private:
 
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
-	Ref<SentryConfiguration> configuration;
 	bool enabled = false;
 
 	void _init_contexts();
-	void _init_user_configuration();
+	void _initialize();
 
 protected:
 	static void _bind_methods();
@@ -42,6 +41,8 @@ public:
 	static SentrySDK *get_singleton() { return singleton; }
 
 	_FORCE_INLINE_ std::shared_ptr<sentry::InternalSDK> get_internal_sdk() const { return internal_sdk; }
+
+	void notify_options_initialized();
 
 	// * Exported API
 

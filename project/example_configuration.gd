@@ -4,9 +4,10 @@ extends SentryConfiguration
 ## Tip: You can assign configuration script in the project settings.
 
 
-## Initialize filtering
+## Initialize Sentry SDK
 func _initialize(options: SentryOptions) -> void:
-	options.debug = false
+	print("example_configuration.gd: Initializing SDK options via GDScript")
+	options.debug = true
 	# Set up before_send and on_crash callbacks
 	options.before_send = _before_send
 	options.on_crash = _on_crash

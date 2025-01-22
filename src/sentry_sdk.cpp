@@ -8,6 +8,7 @@
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -92,22 +93,35 @@ void SentrySDK::_init_contexts() {
 	internal_sdk->set_context("environment", sentry::contexts::make_environment_context());
 }
 
-void SentrySDK::_init_user_configuration() {
-	const String &path = SentryOptions::get_singleton()->get_configuration_script();
-	if (path.is_empty()) {
+void SentrySDK::_initialize() {
+	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
+
+	if (enabled) {
+#ifdef NATIVE_SDK
+		internal_sdk = std::make_shared<NativeSDK>();
+#else
+		// Unsupported platform
+		sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
+		enabled = false;
+#endif
+	}
+
+	if (!enabled) {
+		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
+		internal_sdk = std::make_shared<DisabledSDK>();
 		return;
 	}
-	sentry::util::print_debug("initializing configuration script");
-	ERR_FAIL_COND_MSG(!ResourceLoader::get_singleton()->exists(path), "Sentry: Configuration script not found: " + path);
-	Ref<Script> script = ResourceLoader::get_singleton()->load(path);
-	ERR_FAIL_COND_MSG(script.is_null(), "Sentry: Failed to load configuration script: " + path);
-	ERR_FAIL_COND_MSG(script->get_instance_base_type() != SentryConfiguration::get_class_static(), "Sentry: Configuration script must inherit from SentryConfiguration");
-	Variant instance = ClassDB::instantiate(script->get_instance_base_type());
-	SentryConfiguration *conf_ptr = Object::cast_to<SentryConfiguration>(instance);
-	ERR_FAIL_NULL(conf_ptr); // sanity check
-	configuration = Ref(conf_ptr); // take ownership
-	configuration->set_script(script);
-	configuration->_call_initialize(SentryOptions::get_singleton());
+
+	internal_sdk->initialize();
+
+	// Initialize user.
+	set_user(runtime_config->get_user());
+}
+
+void SentrySDK::notify_options_initialized() {
+	sentry::util::print_debug("user options initialized");
+	_initialize();
+	SentrySDK::_init_contexts();
 }
 
 void SentrySDK::_bind_methods() {
@@ -142,8 +156,6 @@ SentrySDK::SentrySDK() {
 
 	singleton = this;
 
-	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
-
 	// Load the runtime configuration from the user's data directory.
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
@@ -159,34 +171,17 @@ SentrySDK::SentrySDK() {
 		enabled = false;
 	}
 
-	if (enabled) {
-#ifdef NATIVE_SDK
-		internal_sdk = std::make_shared<NativeSDK>();
-#else
-		// Unsupported platform
-		sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
-		enabled = false;
-#endif
+	if (SentryOptions::get_singleton()->get_configuration_script().is_empty()) {
+		_initialize();
+		// Delay contexts initialization until the engine singletons are ready.
+		callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
+	} else {
+		// Add user configuration autoload.
+		ERR_FAIL_NULL(ProjectSettings::get_singleton());
+		sentry::util::print_debug("waiting for user configuration autoload");
+		ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
+				SentryOptions::get_singleton()->get_configuration_script());
 	}
-
-	if (!enabled) {
-		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
-		internal_sdk = std::make_shared<DisabledSDK>();
-		return;
-	}
-
-	// ! BROKEN: Unable to initialize with user configuration script at this point,
-	// ! because ScriptServer languages like GDScript are not initialized yet.
-	// _init_user_configuration();
-	callable_mp(this, &SentrySDK::_init_user_configuration).call_deferred(); // ! deferred
-
-	internal_sdk->initialize();
-
-	// Delay the contexts initialization until the engine singletons are ready.
-	callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
-
-	// Initialize user.
-	set_user(runtime_config->get_user());
 }
 
 SentrySDK::~SentrySDK() {
