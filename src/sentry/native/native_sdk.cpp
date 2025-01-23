@@ -57,11 +57,11 @@ sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closur
 	sentry::util::print_debug("handling before_send");
 	inject_contexts(event);
 	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
-		sentry_value_incref(event); // Maintain ownership.
 		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
 		Ref<NativeEvent> processed = before_send.call(event_obj);
 		ERR_FAIL_COND_V_MSG(processed.is_valid() && processed != event_obj, event, "Sentry: before_send callback must return the same event object or null.");
 		if (processed.is_null()) {
+			// Discard event.
 			sentry::util::print_debug("event discarded by before_send callback: ", event_obj->get_id());
 			sentry_value_decref(event);
 			return sentry_value_new_null();
@@ -74,11 +74,11 @@ sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closur
 sentry_value_t handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
 	inject_contexts(event);
 	if (const Callable &on_crash = SentryOptions::get_singleton()->get_on_crash(); on_crash.is_valid()) {
-		sentry_value_incref(event); // Maintain ownership.
 		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
 		Ref<NativeEvent> processed = on_crash.call(event_obj);
 		ERR_FAIL_COND_V_MSG(processed.is_valid() && processed != event_obj, event, "Sentry: on_crash callback must return the same event object or null.");
 		if (processed.is_null()) {
+			// Discard event.
 			sentry::util::print_debug("event discarded by on_crash callback: ", event_obj->get_id());
 			sentry_value_decref(event);
 			return sentry_value_new_null();
