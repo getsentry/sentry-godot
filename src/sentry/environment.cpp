@@ -5,7 +5,7 @@
 
 namespace sentry::environment {
 
-CharString get_environment() {
+String detect_godot_environment() {
 	ERR_FAIL_NULL_V(Engine::get_singleton(), "production");
 	ERR_FAIL_NULL_V(OS::get_singleton(), "production");
 
@@ -14,11 +14,11 @@ CharString get_environment() {
 	} else if (Engine::get_singleton()->is_editor_hint()) {
 		return "editor";
 	} else if (OS::get_singleton()->has_feature("editor")) {
-		return "editor-run";
+		return "editor_run";
 	} else if (OS::get_singleton()->is_debug_build()) {
-		return "export-debug";
+		return "export_debug";
 	} else {
-		return "export-release";
+		return "export_release";
 	}
 }
 
