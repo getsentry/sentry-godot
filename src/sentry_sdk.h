@@ -4,7 +4,6 @@
 #include "runtime_config.h"
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
-#include "sentry_configuration.h"
 #include "sentry_event.h"
 #include "sentry_options.h"
 

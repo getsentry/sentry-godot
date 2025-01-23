@@ -5,12 +5,11 @@
 #include "sentry/disabled_sdk.h"
 #include "sentry/util.h"
 #include "sentry/uuid.h"
+#include "sentry_configuration.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/resource_loader.hpp>
-#include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #ifdef NATIVE_SDK
