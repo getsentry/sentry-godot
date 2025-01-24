@@ -6,7 +6,7 @@
 
 - Improve & expose `SentryOptions` class ([#56](https://github.com/getsentry/sentry-godot/pull/56))
 - Create or modify events using `SentryEvent` objects and new SDK methods: `SentrySDK.create_event()`, `SentrySDK.capture_event(event)` ([#51](https://github.com/getsentry/sentry-godot/pull/51))
-- New `environment` property in `SentryOptions` ([#66](https://github.com/getsentry/sentry-godot/pull/66))
+- New `environment` property in `SentryOptions` and better auto-naming to prioritize development environments ([#66](https://github.com/getsentry/sentry-godot/pull/66))
 
 ### Dependencies
 
