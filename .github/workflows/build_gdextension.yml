@@ -82,8 +82,23 @@ jobs:
           python --version
           scons --version
 
+      # Cache PR builds to reduce build time and speed up iteration.
+      - name: Set up SCons cache for PR builds
+        if: github.event_name == 'pull_request'
+        uses: actions/cache@v4
+        env:
+          KEY_BASE: ${{matrix.platform}}-${{matrix.target}}-${{matrix.arch}}
+        with:
+          path: ${{github.workspace}}/.scons_cache/
+          key: ${{env.KEY_BASE}}-${{github.sha}}
+          restore-keys: |
+            ${{env.KEY_BASE}}-${{github.sha}}
+            ${{env.KEY_BASE}}
+
       - name: Compile GDExtension library
         shell: bash
+        env:
+          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
           scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}}
 
