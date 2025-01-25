@@ -44,6 +44,7 @@ private:
 	bool disabled_in_editor = true;
 	String dsn = "";
 	String release = "{app_name}@{app_version}";
+	String environment;
 	bool debug = false;
 	double sample_rate = 1.0;
 	bool attach_log = true;
@@ -78,6 +79,9 @@ public:
 
 	_FORCE_INLINE_ String get_release() const { return release; }
 	_FORCE_INLINE_ void set_release(const String &p_release) { release = p_release; }
+
+	_FORCE_INLINE_ String get_environment() const { return environment; }
+	_FORCE_INLINE_ void set_environment(const String &p_environment) { environment = p_environment; }
 
 	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }
 	_FORCE_INLINE_ void set_debug_enabled(bool p_debug) { debug = p_debug; }

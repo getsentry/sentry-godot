@@ -4,6 +4,6 @@ using namespace godot;
 
 namespace sentry::environment {
 
-CharString get_environment();
+String detect_godot_environment();
 
 }
