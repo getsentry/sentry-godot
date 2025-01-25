@@ -129,6 +129,16 @@ void NativeEvent::remove_tag(const String &p_key) {
 	}
 }
 
+String NativeEvent::get_tag(const String &p_key) {
+	ERR_FAIL_COND_V_MSG(p_key.is_empty(), String(), "Sentry: Can't get tag with an empty key.");
+	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
+	if (!sentry_value_is_null(tags)) {
+		sentry_value_t value = sentry_value_get_by_key(tags, p_key.utf8());
+		return String(sentry_value_as_string(value));
+	}
+	return String();
+}
+
 NativeEvent::NativeEvent(sentry_value_t p_native_event) {
 	native_event = p_native_event;
 }

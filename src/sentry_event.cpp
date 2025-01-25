@@ -23,6 +23,7 @@ void SentryEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_environment"), &SentryEvent::get_environment);
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &SentryEvent::set_tag);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &SentryEvent::remove_tag);
+	ClassDB::bind_method(D_METHOD("get_tag", "key"), &SentryEvent::get_tag);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "id"), "", "get_id");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "message"), "set_message", "get_message");
