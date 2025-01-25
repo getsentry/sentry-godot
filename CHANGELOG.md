@@ -9,7 +9,7 @@
 
 ### Improvements
 
-- Improve sentry-native build process and specify all targets ([#71](https://github.com/getsentry/sentry-godot/pull/71))
+- Improve sentry-native build process and define all targets ([#71](https://github.com/getsentry/sentry-godot/pull/71))
 
 ### Dependencies
 
