@@ -26,7 +26,6 @@ public:
 		PackedStringArray post_context;
 	};
 
-public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) = 0;
 	virtual void remove_context(const String &p_key) = 0;
 
@@ -48,7 +47,9 @@ public:
 	virtual Ref<SentryEvent> create_event() = 0;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) = 0;
 
+	virtual bool is_initialized() = 0;
 	virtual void initialize() = 0;
+
 	virtual ~InternalSDK() = default;
 };
 

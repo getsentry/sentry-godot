@@ -11,6 +11,7 @@ namespace sentry {
 class NativeSDK : public InternalSDK {
 private:
 	sentry_uuid_t last_uuid;
+	bool initialized = false;
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
@@ -33,6 +34,7 @@ public:
 	virtual String capture_event(const Ref<SentryEvent> &p_event) override;
 
 	virtual void initialize() override;
+	virtual bool is_initialized() override { return initialized; }
 
 	virtual ~NativeSDK() override;
 };
