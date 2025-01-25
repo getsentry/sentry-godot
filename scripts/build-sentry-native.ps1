@@ -20,8 +20,8 @@ if (!(Test-Path -Path $libInstallDir)) {
     Throw "Directory $libInstallDir does not exist."
     exit
 }
-if (!(Test-Path -Path $buildDir)) {
-    Throw "Directory $buildDir does not exist."
+if (!(Test-Path -Path $pdbSourceDir)) {
+    Throw "Directory $pdbSourceDir does not exist."
     exit
 }
 
