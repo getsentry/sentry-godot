@@ -7,6 +7,10 @@
 - Improve & expose `SentryOptions` class ([#56](https://github.com/getsentry/sentry-godot/pull/56))
 - Create or modify events using `SentryEvent` objects and new SDK methods: `SentrySDK.create_event()`, `SentrySDK.capture_event(event)` ([#51](https://github.com/getsentry/sentry-godot/pull/51))
 
+### Improvements
+
+- Improve sentry-native build process and specify all targets ([#71](https://github.com/getsentry/sentry-godot/pull/71))
+
 ### Dependencies
 
 - Bump Native SDK from v0.7.17 to v0.7.18 ([#61](https://github.com/getsentry/sentry-godot/pull/61))
