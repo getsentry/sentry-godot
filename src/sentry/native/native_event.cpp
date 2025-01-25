@@ -1,5 +1,6 @@
 #include "native_event.h"
 
+#include "godot_cpp/core/error_macros.hpp"
 #include "sentry/level.h"
 #include "sentry/native/native_util.h"
 
@@ -111,6 +112,7 @@ String NativeEvent::get_environment() const {
 }
 
 void NativeEvent::set_tag(const String &p_key, const String &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set tag with an empty key.");
 	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
 	if (sentry_value_is_null(tags)) {
 		tags = sentry_value_new_object();
@@ -120,6 +122,7 @@ void NativeEvent::set_tag(const String &p_key, const String &p_value) {
 }
 
 void NativeEvent::remove_tag(const String &p_key) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't remove tag with an empty key.");
 	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
 	if (!sentry_value_is_null(tags)) {
 		sentry_value_remove_by_key(tags, p_key.utf8());
