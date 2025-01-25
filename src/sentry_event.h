@@ -41,6 +41,9 @@ public:
 	virtual void set_environment(const String &p_environment) = 0;
 	virtual String get_environment() const = 0;
 
+	virtual void set_tag(const String &p_key, const String &p_value) = 0;
+	virtual void remove_tag(const String &p_key) = 0;
+
 	virtual ~SentryEvent() = default;
 };
 
