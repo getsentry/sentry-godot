@@ -1,5 +1,6 @@
 #include "native_event.h"
 
+#include "godot_cpp/core/error_macros.hpp"
 #include "sentry/level.h"
 #include "sentry/native/native_util.h"
 
@@ -108,6 +109,34 @@ void NativeEvent::set_environment(const String &p_environment) {
 String NativeEvent::get_environment() const {
 	sentry_value_t environment = sentry_value_get_by_key(native_event, "environment");
 	return sentry_value_as_string(environment);
+}
+
+void NativeEvent::set_tag(const String &p_key, const String &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set tag with an empty key.");
+	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
+	if (sentry_value_is_null(tags)) {
+		tags = sentry_value_new_object();
+		sentry_value_set_by_key(native_event, "tags", tags);
+	}
+	sentry_value_set_by_key(tags, p_key.utf8(), sentry_value_new_string(p_value.utf8()));
+}
+
+void NativeEvent::remove_tag(const String &p_key) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't remove tag with an empty key.");
+	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
+	if (!sentry_value_is_null(tags)) {
+		sentry_value_remove_by_key(tags, p_key.utf8());
+	}
+}
+
+String NativeEvent::get_tag(const String &p_key) {
+	ERR_FAIL_COND_V_MSG(p_key.is_empty(), String(), "Sentry: Can't get tag with an empty key.");
+	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
+	if (!sentry_value_is_null(tags)) {
+		sentry_value_t value = sentry_value_get_by_key(tags, p_key.utf8());
+		return String(sentry_value_as_string(value));
+	}
+	return String();
 }
 
 NativeEvent::NativeEvent(sentry_value_t p_native_event) {

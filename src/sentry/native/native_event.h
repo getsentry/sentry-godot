@@ -43,6 +43,10 @@ public:
 	virtual void set_environment(const String &p_environment) override;
 	virtual String get_environment() const override;
 
+	virtual void set_tag(const String &p_key, const String &p_value) override;
+	virtual void remove_tag(const String &p_key) override;
+	virtual String get_tag(const String &p_key) override;
+
 	NativeEvent(sentry_value_t p_event);
 	NativeEvent();
 	virtual ~NativeEvent() override;
