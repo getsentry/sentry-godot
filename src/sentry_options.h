@@ -37,6 +37,12 @@ public:
 	using GodotErrorType = sentry::GodotErrorType;
 	using GodotErrorMask = sentry::GodotErrorMask;
 
+	enum DebugMode {
+		DEBUG_OFF = 0,
+		DEBUG_ON = 1,
+		DEBUG_AUTO = 2,
+	};
+
 private:
 	static Ref<SentryOptions> singleton;
 
@@ -44,7 +50,8 @@ private:
 	bool disabled_in_editor = true;
 	String dsn = "";
 	String release = "{app_name}@{app_version}";
-	bool debug = false;
+	DebugMode debug_mode = DEBUG_AUTO;
+	bool debug_enabled = false;
 	double sample_rate = 1.0;
 	bool attach_log = true;
 	int max_breadcrumbs = 100;
@@ -79,8 +86,9 @@ public:
 	_FORCE_INLINE_ String get_release() const { return release; }
 	_FORCE_INLINE_ void set_release(const String &p_release) { release = p_release; }
 
-	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }
-	_FORCE_INLINE_ void set_debug_enabled(bool p_debug) { debug = p_debug; }
+	_FORCE_INLINE_ DebugMode get_debug_mode() const { return debug_mode; }
+	void set_debug_mode(DebugMode p_debug);
+	_FORCE_INLINE_ bool is_debug_enabled() const { return debug_enabled; }
 
 	_FORCE_INLINE_ double get_sample_rate() const { return sample_rate; }
 	_FORCE_INLINE_ void set_sample_rate(double p_sample_rate) { sample_rate = p_sample_rate; }
@@ -117,5 +125,6 @@ public:
 };
 
 VARIANT_BITFIELD_CAST(SentryOptions::GodotErrorMask);
+VARIANT_ENUM_CAST(SentryOptions::DebugMode);
 
 #endif // SENTRY_OPTIONS_H
