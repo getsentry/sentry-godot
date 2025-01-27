@@ -102,7 +102,7 @@ if env["platform"] in ["linux", "macos", "windows"]:
     dest_dir = BIN_DIR + "/" + env["platform"]
 
     if env["platform"] == "windows":
-        build_actions.append("pwsh scripts/build-sentry-native.ps1")
+        build_actions.append("powershell scripts/build-sentry-native.ps1")
         build_actions.append(
             Copy(
                 dest_dir + "/crashpad_handler.exe",
