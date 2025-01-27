@@ -99,33 +99,34 @@ if env["platform"] in ["linux", "macos", "windows"]:
         )
 
     build_actions = []
+    dest_dir = BIN_DIR + "/" + env["platform"]
 
     if env["platform"] == "windows":
         build_actions.append("pwsh scripts/build-sentry-native.ps1")
         build_actions.append(
             Copy(
-                os.path.join(BIN_DIR, env["platform"], "crashpad_handler.exe"),
+                dest_dir + "/crashpad_handler.exe",
                 "modules/sentry-native/install/bin/crashpad_handler.exe",
             )
         )
         build_actions.append(
             Copy(
-                os.path.join(BIN_DIR, env["platform"], "crashpad_handler.pdb"),
+                dest_dir + "/crashpad_handler.pdb",
                 "modules/sentry-native/install/bin/crashpad_handler.pdb",
             )
         )
-        sn_targets.append("modules/sentry-native/install/bin/crashpad_handler.exe")
-        sn_targets.append("modules/sentry-native/install/bin/crashpad_handler.pdb")
+        sn_targets.append(dest_dir + "/crashpad_handler.exe")
+        sn_targets.append(dest_dir + "/crashpad_handler.pdb")
     else:
         # TODO: macOS needs to use a different SDK.
         build_actions.append("sh scripts/build-sentry-native.sh")
         build_actions.append(
             Copy(
-                os.path.join(BIN_DIR, env["platform"], "crashpad_handler"),
+                dest_dir + "/crashpad_handler",
                 "modules/sentry-native/install/bin/crashpad_handler",
             )
         )
-        sn_targets.append("modules/sentry-native/install/bin/crashpad_handler")
+        sn_targets.append(dest_dir + "/crashpad_handler")
 
     sentry_native = env.Command(sn_targets, sn_sources, build_actions)
 
