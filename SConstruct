@@ -11,8 +11,8 @@ EXTENSION_NAME = "sentrysdk"
 COMPATIBILITY_MINIMUM = "4.3"
 
 BIN_DIR = "{project_dir}/addons/{extension_name}/bin".format(
-    project_dir=PROJECT_DIR,
-    extension_name=EXTENSION_NAME)
+    project_dir=PROJECT_DIR, extension_name=EXTENSION_NAME
+)
 
 
 # *** Generate version header.
@@ -53,16 +53,16 @@ if env["platform"] in ["linux", "macos", "windows"]:
     env.Append(CPPPATH=["modules/sentry-native/include"])
     env.Append(LIBPATH=["modules/sentry-native/install/lib/"])
 
-    sentry_targets = []
-    sentry_sources = ["modules/sentry-native/src/"]
+    sn_targets = []
+    sn_sources = ["modules/sentry-native/src/"]
 
     def add_target(lib_name):
         env.Append(LIBS=[lib_name])
         if env["platform"] == "windows":
-            sentry_targets.append("modules/sentry-native/install/lib/" + lib_name + ".lib")
-            sentry_targets.append("modules/sentry-native/install/lib/" + lib_name + ".pdb")
+            sn_targets.append("modules/sentry-native/install/lib/" + lib_name + ".lib")
+            sn_targets.append("modules/sentry-native/install/lib/" + lib_name + ".pdb")
         else:
-            sentry_targets.append("modules/sentry-native/install/lib/lib" + lib_name + ".a")
+            sn_targets.append("modules/sentry-native/install/lib/lib" + lib_name + ".a")
 
     add_target("sentry")
     add_target("crashpad_client")
@@ -98,39 +98,40 @@ if env["platform"] in ["linux", "macos", "windows"]:
             ]
         )
 
-    # TODO: macOS needs to use a different SDK.
+    build_actions = []
+
     if env["platform"] == "windows":
-        crashpad_handler_bin = "crashpad_handler.exe"
-        build_command = ["powershell", "scripts/build-sentry-native.ps1"]
-    else:
-        crashpad_handler_bin = "crashpad_handler"
-        build_command = ["sh", "scripts/build-sentry-native.sh"]
-
-    crashpad_handler_target = "{bin}/{platform}/{handler_bin}".format(
-        bin=BIN_DIR,
-        platform=env["platform"],
-        handler_bin=crashpad_handler_bin,
-    )
-    crashpad_handler_source = "modules/sentry-native/install/bin/" + crashpad_handler_bin
-    sentry_targets.append(crashpad_handler_target)
-
-    def build_sentry_native(target, source, env):
-        result = subprocess.run(
-            build_command,
-            check=True,
+        build_actions.append("pwsh scripts/build-sentry-native.ps1")
+        build_actions.append(
+            Copy(
+                os.path.join(BIN_DIR, env["platform"], "crashpad_handler.exe"),
+                "modules/sentry-native/install/bin/crashpad_handler.exe",
+            )
         )
-        return result.returncode
+        build_actions.append(
+            Copy(
+                os.path.join(BIN_DIR, env["platform"], "crashpad_handler.pdb"),
+                "modules/sentry-native/install/bin/crashpad_handler.pdb",
+            )
+        )
+        sn_targets.append("modules/sentry-native/install/bin/crashpad_handler.exe")
+        sn_targets.append("modules/sentry-native/install/bin/crashpad_handler.pdb")
+    else:
+        # TODO: macOS needs to use a different SDK.
+        build_actions.append("sh scripts/build-sentry-native.sh")
+        build_actions.append(
+            Copy(
+                os.path.join(BIN_DIR, env["platform"], "crashpad_handler"),
+                "modules/sentry-native/install/bin/crashpad_handler",
+            )
+        )
+        sn_targets.append("modules/sentry-native/install/bin/crashpad_handler")
 
-    sentry_native = env.Command(
-        sentry_targets,
-        sentry_sources,
-        [
-            build_sentry_native,
-            Copy(crashpad_handler_target, crashpad_handler_source),
-        ],
-    )
+    sentry_native = env.Command(sn_targets, sn_sources, build_actions)
 
-    Depends(sentry_native, "modules/godot-cpp")  # Force sentry-native to be built sequential to godot-cpp (not in parallel)
+    # Force sentry-native to be built sequential to godot-cpp (not in parallel).
+    Depends(sentry_native, "modules/godot-cpp")
+
     Default(sentry_native)
     Clean(sentry_native, ["modules/sentry-native/build", "modules/sentry-native/install"])
 
@@ -167,7 +168,7 @@ else:
             platform=env["platform"],
             build_type=build_type,
             arch=env["arch"],
-            shlib_suffix=env["SHLIBSUFFIX"]
+            shlib_suffix=env["SHLIBSUFFIX"],
         ),
         source=sources,
     )
@@ -196,8 +197,8 @@ Default(manifest)
 
 def symlink(target, source, env):
     # Note: parameter `target` is a list of build targets.
-    assert(len(target) == 1)
-    assert(len(source) == 1)
+    assert len(target) == 1
+    assert len(source) == 1
     dst = str(target[0])
     src = str(source[0])
     if env["platform"] == "windows":
@@ -208,12 +209,13 @@ def symlink(target, source, env):
             _winapi.CreateJunction(src, dst)
         except Exception as e:
             # Don't fail the build if this step fails.
-            print("WARNING: Failed to create an NTFS junction for gdUnit4 testing framework: ", str(e))
+            print("WARNING: Failed to create NTFS junction for gdUnit4: ", str(e))
     else:
         # Create symlink.
         src = os.path.relpath(src, os.path.dirname(dst))
         os.symlink(src, dst)
     return 0
+
 
 gdunit_symlink = env.Command(
     PROJECT_DIR + "/addons/gdUnit4",
