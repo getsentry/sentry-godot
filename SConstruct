@@ -2,6 +2,7 @@
 import os
 import sys
 import subprocess
+from functools import partial
 
 # *** Setting.
 
@@ -13,6 +14,15 @@ COMPATIBILITY_MINIMUM = "4.3"
 BIN_DIR = "{project_dir}/addons/{extension_name}/bin".format(
     project_dir=PROJECT_DIR, extension_name=EXTENSION_NAME
 )
+
+
+def run_cmd(**kwargs):
+    """Run command in a subprocess and return its exit code."""
+    result = subprocess.run(
+        kwargs["args"],
+        check=True,
+    )
+    return result.returncode
 
 
 # *** Generate version header.
@@ -102,7 +112,9 @@ if env["platform"] in ["linux", "macos", "windows"]:
     dest_dir = BIN_DIR + "/" + env["platform"]
 
     if env["platform"] == "windows":
-        build_actions.append("powershell scripts/build-sentry-native.ps1")
+        build_actions.append(
+            partial(run_cmd, args=["powershell", "scripts/build-sentry-native.ps1"])
+        ),
         build_actions.append(
             Copy(
                 dest_dir + "/crashpad_handler.exe",
@@ -119,7 +131,9 @@ if env["platform"] in ["linux", "macos", "windows"]:
         sn_targets.append(dest_dir + "/crashpad_handler.pdb")
     else:
         # TODO: macOS needs to use a different SDK.
-        build_actions.append("sh scripts/build-sentry-native.sh")
+        build_actions.append(
+            partial(run_cmd, args=["sh", "scripts/build-sentry-native.sh"])
+        ),
         build_actions.append(
             Copy(
                 dest_dir + "/crashpad_handler",
