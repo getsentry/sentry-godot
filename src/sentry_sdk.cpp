@@ -187,14 +187,20 @@ SentrySDK::SentrySDK() {
 			// Delay contexts initialization until the engine singletons are ready.
 			callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
 		} else {
-			// Add user configuration autoload at runtime (not in the editor).
-			// We opt to avoid exposing the singleton in the editor (project settings),
-			// so users don't have to worry about it.
+			// Register an autoload singleton, which is a user script extending the
+			// `SentryConfiguration` class. It will be instantiated and added to the
+			// scene tree by the engine shortly after ScriptServer is initialized.
+			// When this happens, the `SentryConfiguration` instance receives
+			// `NOTIFICATION_READY`, triggering our notification processing code in
+			// C++, which calls `_configure()` on the user script and then invokes
+			// `notify_options_configured()` in `SentrySDK`. This, in turn, initializes
+			// the internal SDK.
 			internal_sdk = std::make_shared<DisabledSDK>(); // just in case
 			sentry::util::print_debug("waiting for user configuration autoload");
 			ERR_FAIL_NULL(ProjectSettings::get_singleton());
 			ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
 					SentryOptions::get_singleton()->get_configuration_script());
+			// Ensure issues with the configuration script are detected.
 			callable_mp(this, &SentrySDK::_check_if_configuration_succeeded).call_deferred();
 		}
 	}
