@@ -58,6 +58,64 @@ env = SConscript("modules/godot-cpp/SConstruct")
 
 # *** Build sentry-native.
 
+# TODO: macOS needs to use a different SDK.
+if env["platform"] in ["linux", "macos"]:
+
+    def build_sentry_native(target, source, env):
+        result = subprocess.run(
+            ["sh", "scripts/build-sentry-native.sh"],
+            check=True,
+        )
+        return result.returncode
+
+    crashpad_handler_target = "{bin}/{platform}/crashpad_handler".format(
+        bin=BIN_DIR,
+        platform=env["platform"]
+    )
+    sentry_native = env.Command(
+        [
+            "modules/sentry-native/install/lib/libsentry.a",
+            crashpad_handler_target,
+        ],
+        ["modules/sentry-native/src"],
+        [
+            build_sentry_native,
+            Copy(
+                crashpad_handler_target,
+                "modules/sentry-native/install/bin/crashpad_handler",
+            ),
+        ],
+    )
+elif env["platform"] == "windows":
+
+    def build_sentry_native(target, source, env):
+        result = subprocess.run(
+            ["powershell", "scripts/build-sentry-native.ps1"],
+            check=True,
+        )
+        return result.returncode
+
+    sentry_native = env.Command(
+        ["modules/sentry-native/install/lib/sentry.lib", BIN_DIR + "/windows/crashpad_handler.exe"],
+        ["modules/sentry-native/src/"],
+        [
+            build_sentry_native,
+            Copy(
+                BIN_DIR + "/windows/crashpad_handler.exe",
+                "modules/sentry-native/install/bin/crashpad_handler.exe",
+            ),
+        ],
+    )
+
+if env["platform"] in ["linux", "macos", "windows"]:
+    Depends(sentry_native, "modules/godot-cpp")  # Force sentry-native to be built sequential to godot-cpp (not in parallel)
+    Default(sentry_native)
+    Clean(sentry_native, ["modules/sentry-native/build", "modules/sentry-native/install"])
+
+# Include relative to project source root.
+env.Append(CPPPATH=["src/"])
+
+# Include sentry-native libs (static).
 if env["platform"] in ["linux", "macos", "windows"]:
     env.Append(CPPDEFINES=["SENTRY_BUILD_STATIC", "NATIVE_SDK"])
     env.Append(CPPPATH=["modules/sentry-native/include"])
