@@ -18,11 +18,9 @@ Write-Host "Installing PDB files"
 
 if (!(Test-Path -Path $libInstallDir)) {
     Throw "Directory $libInstallDir does not exist."
-    exit
 }
 if (!(Test-Path -Path $pdbSourceDir)) {
     Throw "Directory $pdbSourceDir does not exist."
-    exit
 }
 
 Get-ChildItem -Path $pdbSourceDir -Filter "*.pdb" -Recurse | ForEach-Object {
