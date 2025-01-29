@@ -69,6 +69,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->repeated_error_window_ms);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), p_options->error_logger_limits->throttle_events);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->throttle_window_ms);
+
+	_define_setting(PropertyInfo(Variant::STRING, "sentry/config/configuration_script", PROPERTY_HINT_FILE, "*.gd"), String(p_options->configuration_script));
 }
 
 void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) {
@@ -102,6 +104,8 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->error_logger_limits->repeated_error_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/repeated_error_window_ms", p_options->error_logger_limits->repeated_error_window_ms);
 	p_options->error_logger_limits->throttle_events = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/throttle_events", p_options->error_logger_limits->throttle_events);
 	p_options->error_logger_limits->throttle_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/throttle_window_ms", p_options->error_logger_limits->throttle_window_ms);
+
+	p_options->configuration_script = ProjectSettings::get_singleton()->get_setting("sentry/config/configuration_script", p_options->configuration_script);
 }
 
 void SentryOptions::create_singleton() {
@@ -146,6 +150,9 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "error_logger_breadcrumb_mask"), set_error_logger_breadcrumb_mask, get_error_logger_breadcrumb_mask);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::OBJECT, "error_logger_limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), set_error_logger_limits, get_error_logger_limits);
+
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "before_send"), set_before_send, get_before_send);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "on_crash"), set_on_crash, get_on_crash);
 
 	{
 		using namespace sentry;

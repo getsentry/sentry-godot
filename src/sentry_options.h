@@ -57,6 +57,10 @@ private:
 	BitField<GodotErrorMask> error_logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
 	Ref<SentryLoggerLimits> error_logger_limits;
 
+	String configuration_script;
+	Callable before_send;
+	Callable on_crash;
+
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
 
@@ -115,6 +119,14 @@ public:
 
 	_FORCE_INLINE_ Ref<SentryLoggerLimits> get_error_logger_limits() const { return error_logger_limits; }
 	void set_error_logger_limits(const Ref<SentryLoggerLimits> &p_limits);
+
+	_FORCE_INLINE_ String get_configuration_script() const { return configuration_script; }
+
+	_FORCE_INLINE_ Callable get_before_send() const { return before_send; }
+	_FORCE_INLINE_ void set_before_send(const Callable &p_before_send) { before_send = p_before_send; }
+
+	_FORCE_INLINE_ Callable get_on_crash() const { return on_crash; }
+	_FORCE_INLINE_ void set_on_crash(const Callable &p_on_crash) { on_crash = p_on_crash; }
 
 	SentryOptions();
 	~SentryOptions();
