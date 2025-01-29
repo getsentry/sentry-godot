@@ -37,21 +37,21 @@ public:
 	using GodotErrorType = sentry::GodotErrorType;
 	using GodotErrorMask = sentry::GodotErrorMask;
 
-	enum DebugMode {
+private:
+	static Ref<SentryOptions> singleton;
+
+	enum class DebugMode {
 		DEBUG_OFF = 0,
 		DEBUG_ON = 1,
 		DEBUG_AUTO = 2,
 	};
-
-private:
-	static Ref<SentryOptions> singleton;
+	static constexpr DebugMode DEBUG_DEFAULT = DebugMode::DEBUG_AUTO;
 
 	bool enabled = true;
 	bool disabled_in_editor = true;
 	String dsn = "";
 	String release = "{app_name}@{app_version}";
-	DebugMode debug_mode = DEBUG_AUTO;
-	bool debug_enabled = false;
+	bool debug = false;
 	String environment;
 	double sample_rate = 1.0;
 	bool attach_log = true;
@@ -70,6 +70,8 @@ private:
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
+
+	void _init_debug_option(DebugMode p_debug_mode);
 
 protected:
 	static void _bind_methods();
@@ -91,9 +93,8 @@ public:
 	_FORCE_INLINE_ String get_release() const { return release; }
 	_FORCE_INLINE_ void set_release(const String &p_release) { release = p_release; }
 
-	_FORCE_INLINE_ DebugMode get_debug_mode() const { return debug_mode; }
-	void set_debug_mode(DebugMode p_debug);
-	_FORCE_INLINE_ bool is_debug_enabled() const { return debug_enabled; }
+	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }
+	_FORCE_INLINE_ void set_debug_enabled(bool p_enabled) { debug = p_enabled; }
 
 	_FORCE_INLINE_ String get_environment() const { return environment; }
 	_FORCE_INLINE_ void set_environment(const String &p_environment) { environment = p_environment; }
@@ -141,6 +142,5 @@ public:
 };
 
 VARIANT_BITFIELD_CAST(SentryOptions::GodotErrorMask);
-VARIANT_ENUM_CAST(SentryOptions::DebugMode);
 
 #endif // SENTRY_OPTIONS_H

@@ -8,7 +8,7 @@ extends SentryConfiguration
 func _configure(options: SentryOptions) -> void:
 	print("[example_configuration.gd] Configuring SDK options via GDScript")
 
-	options.debug = SentryOptions.DEBUG_ON
+	options.debug = true
 	options.release = "sentry-godot-demo@" + ProjectSettings.get_setting("application/config/version")
 	options.environment = "demo"
 
