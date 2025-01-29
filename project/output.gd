@@ -25,8 +25,6 @@ func _init() -> void:
 func _ready() -> void:
 	msg_copied.modulate = Color.TRANSPARENT
 
-	prints(_regex.search(r"[example_configuration.gd] Processing event: c32cf0d5-4da3-4d9a-c502-c5f4007fc686"))
-
 
 func _read_log() -> void:
 	while _log_file.get_position() < _log_file.get_length():
