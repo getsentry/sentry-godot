@@ -37,7 +37,7 @@ func _linkify_uuids(line: String) -> String:
 	return line
 
 
-func _pop_copied_message():
+func _pop_copied_toast():
 	if _tween and _tween.is_valid():
 		_tween.kill()
 	_tween = create_tween()
@@ -48,4 +48,4 @@ func _pop_copied_message():
 
 func _on_meta_clicked(meta: Variant) -> void:
 	DisplayServer.clipboard_set(str(meta))
-	_pop_copied_message()
+	_pop_copied_toast()
