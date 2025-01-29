@@ -268,7 +268,7 @@ Dictionary make_godot_engine_context() {
 	godot_context["version_commit"] = version_info.get("hash", "");
 	godot_context["debug_build"] = OS::get_singleton()->is_debug_build();
 	godot_context["command_line_arguments"] = OS::get_singleton()->get_cmdline_args();
-	godot_context["mode"] = String(sentry::environment::get_environment());
+	godot_context["mode"] = sentry::environment::detect_godot_environment();
 	godot_context["editor_build"] = OS::get_singleton()->has_feature("editor");
 	godot_context["godot_sdk_version"] = String(SENTRY_GODOT_SDK_VERSION);
 

@@ -52,6 +52,7 @@ private:
 	String release = "{app_name}@{app_version}";
 	DebugMode debug_mode = DEBUG_AUTO;
 	bool debug_enabled = false;
+	String environment;
 	double sample_rate = 1.0;
 	bool attach_log = true;
 	int max_breadcrumbs = 100;
@@ -62,6 +63,10 @@ private:
 	BitField<GodotErrorMask> error_logger_event_mask = int(GodotErrorMask::MASK_ALL_EXCEPT_WARNING);
 	BitField<GodotErrorMask> error_logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
 	Ref<SentryLoggerLimits> error_logger_limits;
+
+	String configuration_script;
+	Callable before_send;
+	Callable on_crash;
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
@@ -89,6 +94,9 @@ public:
 	_FORCE_INLINE_ DebugMode get_debug_mode() const { return debug_mode; }
 	void set_debug_mode(DebugMode p_debug);
 	_FORCE_INLINE_ bool is_debug_enabled() const { return debug_enabled; }
+
+	_FORCE_INLINE_ String get_environment() const { return environment; }
+	_FORCE_INLINE_ void set_environment(const String &p_environment) { environment = p_environment; }
 
 	_FORCE_INLINE_ double get_sample_rate() const { return sample_rate; }
 	_FORCE_INLINE_ void set_sample_rate(double p_sample_rate) { sample_rate = p_sample_rate; }
@@ -119,6 +127,14 @@ public:
 
 	_FORCE_INLINE_ Ref<SentryLoggerLimits> get_error_logger_limits() const { return error_logger_limits; }
 	void set_error_logger_limits(const Ref<SentryLoggerLimits> &p_limits);
+
+	_FORCE_INLINE_ String get_configuration_script() const { return configuration_script; }
+
+	_FORCE_INLINE_ Callable get_before_send() const { return before_send; }
+	_FORCE_INLINE_ void set_before_send(const Callable &p_before_send) { before_send = p_before_send; }
+
+	_FORCE_INLINE_ Callable get_on_crash() const { return on_crash; }
+	_FORCE_INLINE_ void set_on_crash(const Callable &p_on_crash) { on_crash = p_on_crash; }
 
 	SentryOptions();
 	~SentryOptions();
