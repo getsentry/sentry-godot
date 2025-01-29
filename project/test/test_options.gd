@@ -9,6 +9,8 @@ func test_enabled() -> void:
 	assert_bool(options.enabled).is_true()
 	options.enabled = false
 	assert_bool(options.enabled).is_false()
+
+	## TODO
 	#await get_tree().process_frame
 	#assert_bool(SentrySDK.is_enabled()).is_false()
 
@@ -83,3 +85,47 @@ func test_send_default_pii() -> void:
 	assert_bool(options.send_default_pii).is_true()
 	options.send_default_pii = false
 	assert_bool(options.send_default_pii).is_false()
+
+
+## SentryOptions.error_logger_enabled should be set to the specified value.
+func test_error_logger_enabled() -> void:
+	var options := SentryOptions.new()
+	options.error_logger_enabled = true
+	assert_bool(options.error_logger_enabled).is_true()
+	options.error_logger_enabled = false
+	assert_bool(options.error_logger_enabled).is_false()
+
+
+## SentryOptions.error_logger_include_source should be set to the specified value.
+func test_error_logger_include_source() -> void:
+	var options := SentryOptions.new()
+	options.error_logger_include_source = true
+	assert_bool(options.error_logger_include_source).is_true()
+	options.error_logger_include_source = false
+	assert_bool(options.error_logger_include_source).is_false()
+
+
+## SentryOptions.error_logger_event_mask should be set to the specified value.
+func test_error_logger_event_mask() -> void:
+	var options := SentryOptions.new()
+	var mask := SentryOptions.MASK_SCRIPT | SentryOptions.MASK_SHADER
+	options.error_logger_event_mask = mask
+	assert_int(options.error_logger_event_mask).is_equal(mask)
+
+
+## TODO
+#func test_error_logger_event_mask_integrity() -> void:
+	#pass
+
+
+## SentryOptions.error_logger_breadcrumb_mask should be set to the specified value.
+func test_error_logger_breadcrumb_mask() -> void:
+	var options := SentryOptions.new()
+	var mask := SentryOptions.MASK_SCRIPT | SentryOptions.MASK_SHADER
+	options.error_logger_breadcrumb_mask = mask
+	assert_int(options.error_logger_breadcrumb_mask).is_equal(mask)
+
+
+## TODO
+#func test_error_logger_breadcrumb_mask_integrity() -> void:
+	#pass
