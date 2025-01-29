@@ -93,11 +93,11 @@ public:
 	_FORCE_INLINE_ String get_release() const { return release; }
 	_FORCE_INLINE_ void set_release(const String &p_release) { release = p_release; }
 
-	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }
-	_FORCE_INLINE_ void set_debug_enabled(bool p_enabled) { debug = p_enabled; }
-
 	_FORCE_INLINE_ String get_environment() const { return environment; }
 	_FORCE_INLINE_ void set_environment(const String &p_environment) { environment = p_environment; }
+
+	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }
+	_FORCE_INLINE_ void set_debug_enabled(bool p_enabled) { debug = p_enabled; }
 
 	_FORCE_INLINE_ double get_sample_rate() const { return sample_rate; }
 	_FORCE_INLINE_ void set_sample_rate(double p_sample_rate) { sample_rate = p_sample_rate; }
