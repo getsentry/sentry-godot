@@ -10,6 +10,7 @@ func _configure(options: SentryOptions) -> void:
 
 	options.debug = true
 	options.release = "sentry-godot-demo@" + ProjectSettings.get_setting("application/config/version")
+	options.environment = "demo"
 
 	# Set up event callbacks
 	options.before_send = _before_send
