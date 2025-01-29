@@ -12,6 +12,7 @@ extends CanvasLayer
 @onready var username: LineEdit = %Username
 @onready var email: LineEdit = %Email
 @onready var infer_ip: CheckBox = %InferIP
+@onready var msg_copied: PanelContainer = %MsgCopied
 
 var _event_level: SentrySDK.Level
 
@@ -20,6 +21,7 @@ func _ready() -> void:
 	level_choice.get_popup().id_pressed.connect(_on_level_choice_id_pressed)
 	_init_level_choice_popup()
 	_update_user_info()
+	msg_copied.hide()
 
 
 func _init_level_choice_popup() -> void:
@@ -59,7 +61,7 @@ func _on_level_choice_id_pressed(id: int) -> void:
 
 func _on_capture_button_pressed() -> void:
 	var event_id := SentrySDK.capture_message(message_edit.text, _event_level)
-	print("Captured message event. Event ID: " + event_id)
+	print("Captured message event. Event ID: " + _format_uuid_link(event_id))
 
 
 func _on_add_breadcrumb_button_pressed() -> void:
@@ -126,3 +128,20 @@ func _on_gen_script_error_pressed() -> void:
 func _on_gen_native_error_pressed() -> void:
 	print("Generating native Godot error (in C++ unit)...")
 	load("res://file_does_not_exist")
+
+
+var _tween: Tween
+func _on_output_meta_clicked(meta: Variant) -> void:
+	DisplayServer.clipboard_set(str(meta))
+	msg_copied.modulate = Color.TRANSPARENT
+	if _tween and _tween.is_valid():
+		_tween.kill()
+	_tween = create_tween()
+	_tween.tween_property(msg_copied, "modulate", Color.WHITE, 0.1)
+	_tween.tween_interval(3.0)
+	_tween.tween_property(msg_copied, "modulate", Color.TRANSPARENT, 0.1)
+	msg_copied.show()
+
+
+func _format_uuid_link(uuid: String) -> String:
+	return "[url]%s[/url]" % [uuid]
