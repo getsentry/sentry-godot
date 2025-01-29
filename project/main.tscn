@@ -309,4 +309,4 @@ text = "Copied to clipboard"
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/GenerateErrors/GenNativeError" to="." method="_on_gen_native_error_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/Crash2/CrashButton" to="." method="_on_crash_button_pressed"]
-[connection signal="meta_clicked" from="VBoxContainer/OutputPane/Output" to="." method="_on_output_meta_clicked"]
+[connection signal="meta_clicked" from="VBoxContainer/OutputPane/Output" to="VBoxContainer/OutputPane/Output" method="_on_meta_clicked"]
