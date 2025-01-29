@@ -2,7 +2,6 @@
 
 #include "sentry.h"
 #include "sentry/contexts.h"
-#include "sentry/environment.h"
 #include "sentry/level.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
@@ -219,7 +218,16 @@ void NativeSDK::initialize() {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	sentry_options_t *options = sentry_options_new();
+
 	sentry_options_set_dsn(options, SentryOptions::get_singleton()->get_dsn().utf8());
+	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
+	sentry_options_set_debug(options, SentryOptions::get_singleton()->is_debug_enabled());
+	sentry_options_set_release(options, SentryOptions::get_singleton()->get_release().utf8());
+	sentry_options_set_environment(options, SentryOptions::get_singleton()->get_environment().utf8());
+	// TODO: add dist
+	sentry_options_set_sample_rate(options, SentryOptions::get_singleton()->get_sample_rate());
+	sentry_options_set_max_breadcrumbs(options, SentryOptions::get_singleton()->get_max_breadcrumbs());
+	sentry_options_set_sdk_name(options, "sentry.native.godot");
 
 	// Establish handler path.
 	String handler_fn;
@@ -246,14 +254,6 @@ void NativeSDK::initialize() {
 		ERR_PRINT(vformat("Sentry: Failed to locate crash handler (crashpad) - backend disabled (%s)", handler_path));
 		sentry_options_set_backend(options, NULL);
 	}
-
-	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
-	sentry_options_set_sample_rate(options, SentryOptions::get_singleton()->get_sample_rate());
-	sentry_options_set_release(options, SentryOptions::get_singleton()->get_release().utf8());
-	sentry_options_set_debug(options, SentryOptions::get_singleton()->is_debug_enabled());
-	sentry_options_set_environment(options, sentry::environment::get_environment());
-	sentry_options_set_sdk_name(options, "sentry.native.godot");
-	sentry_options_set_max_breadcrumbs(options, SentryOptions::get_singleton()->get_max_breadcrumbs());
 
 	// Attach LOG file.
 	// TODO: Decide whether log-file must be trimmed before send.
