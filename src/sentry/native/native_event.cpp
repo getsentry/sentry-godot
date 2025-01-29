@@ -140,13 +140,20 @@ String NativeEvent::get_tag(const String &p_key) {
 }
 
 NativeEvent::NativeEvent(sentry_value_t p_native_event) {
-	native_event = p_native_event;
+	if (sentry_value_refcount(p_native_event) > 0) {
+		sentry_value_incref(p_native_event); // acquire ownership
+		native_event = p_native_event;
+	} else {
+		// Shouldn't happen in healthy code.
+		native_event = sentry_value_new_event();
+		ERR_PRINT("Sentry: Internal error: Event refcount is zero.");
+	}
 }
 
-NativeEvent::NativeEvent() :
-		NativeEvent(sentry_value_new_event()) {
+NativeEvent::NativeEvent() {
+	native_event = sentry_value_new_event();
 }
 
 NativeEvent::~NativeEvent() {
-	sentry_value_decref(native_event);
+	sentry_value_decref(native_event); // release ownership
 }
