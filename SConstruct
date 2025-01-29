@@ -93,9 +93,11 @@ elif env["platform"] == "windows":
             ),
         ],
     )
-Depends(sentry_native, "modules/godot-cpp")  # Force sentry-native to be built sequential to godot-cpp (not in parallel)
-Default(sentry_native)
-Clean(sentry_native, ["modules/sentry-native/build", "modules/sentry-native/install"])
+
+if env["platform"] in ["linux", "macos", "windows"]:
+    Depends(sentry_native, "modules/godot-cpp")  # Force sentry-native to be built sequential to godot-cpp (not in parallel)
+    Default(sentry_native)
+    Clean(sentry_native, ["modules/sentry-native/build", "modules/sentry-native/install"])
 
 # Include relative to project source root.
 env.Append(CPPPATH=["src/"])
