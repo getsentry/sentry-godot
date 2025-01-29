@@ -2,10 +2,10 @@
 
 #include "sentry.h"
 #include "sentry/contexts.h"
-#include "sentry/environment.h"
 #include "sentry/level.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
+#include "sentry/util.h"
 #include "sentry_options.h"
 
 #include <godot_cpp/classes/file_access.hpp>
@@ -53,12 +53,37 @@ inline void inject_contexts(sentry_value_t p_event) {
 }
 
 sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closure) {
+	sentry::util::print_debug("handling before_send");
 	inject_contexts(event);
+	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
+		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+		Ref<NativeEvent> processed = before_send.call(event_obj);
+		ERR_FAIL_COND_V_MSG(processed.is_valid() && processed != event_obj, event, "Sentry: before_send callback must return the same event object or null.");
+		if (processed.is_null()) {
+			// Discard event.
+			sentry::util::print_debug("event discarded by before_send callback: ", event_obj->get_id());
+			sentry_value_decref(event);
+			return sentry_value_new_null();
+		}
+		sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
+	}
 	return event;
 }
 
-sentry_value_t handle_before_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
+sentry_value_t handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
 	inject_contexts(event);
+	if (const Callable &on_crash = SentryOptions::get_singleton()->get_on_crash(); on_crash.is_valid()) {
+		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+		Ref<NativeEvent> processed = on_crash.call(event_obj);
+		ERR_FAIL_COND_V_MSG(processed.is_valid() && processed != event_obj, event, "Sentry: on_crash callback must return the same event object or null.");
+		if (processed.is_null()) {
+			// Discard event.
+			sentry::util::print_debug("event discarded by on_crash callback: ", event_obj->get_id());
+			sentry_value_decref(event);
+			return sentry_value_new_null();
+		}
+		sentry::util::print_debug("event processed by on_crash callback: ", event_obj->get_id());
+	}
 	return event;
 }
 
@@ -193,7 +218,16 @@ void NativeSDK::initialize() {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	sentry_options_t *options = sentry_options_new();
+
 	sentry_options_set_dsn(options, SentryOptions::get_singleton()->get_dsn().utf8());
+	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
+	sentry_options_set_debug(options, SentryOptions::get_singleton()->is_debug_enabled());
+	sentry_options_set_release(options, SentryOptions::get_singleton()->get_release().utf8());
+	sentry_options_set_environment(options, SentryOptions::get_singleton()->get_environment().utf8());
+	// TODO: add dist
+	sentry_options_set_sample_rate(options, SentryOptions::get_singleton()->get_sample_rate());
+	sentry_options_set_max_breadcrumbs(options, SentryOptions::get_singleton()->get_max_breadcrumbs());
+	sentry_options_set_sdk_name(options, "sentry.native.godot");
 
 	// Establish handler path.
 	String handler_fn;
@@ -221,14 +255,6 @@ void NativeSDK::initialize() {
 		sentry_options_set_backend(options, NULL);
 	}
 
-	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
-	sentry_options_set_sample_rate(options, SentryOptions::get_singleton()->get_sample_rate());
-	sentry_options_set_release(options, SentryOptions::get_singleton()->get_release().utf8());
-	sentry_options_set_debug(options, SentryOptions::get_singleton()->is_debug_enabled());
-	sentry_options_set_environment(options, sentry::environment::get_environment());
-	sentry_options_set_sdk_name(options, "sentry.native.godot");
-	sentry_options_set_max_breadcrumbs(options, SentryOptions::get_singleton()->get_max_breadcrumbs());
-
 	// Attach LOG file.
 	// TODO: Decide whether log-file must be trimmed before send.
 	if (SentryOptions::get_singleton()->is_attach_log_enabled()) {
@@ -243,9 +269,10 @@ void NativeSDK::initialize() {
 
 	// Hooks.
 	sentry_options_set_before_send(options, handle_before_send, NULL);
-	sentry_options_set_on_crash(options, handle_before_crash, NULL);
+	sentry_options_set_on_crash(options, handle_on_crash, NULL);
 
-	sentry_init(options);
+	int err = sentry_init(options);
+	initialized = (err == 0);
 }
 
 NativeSDK::~NativeSDK() {
