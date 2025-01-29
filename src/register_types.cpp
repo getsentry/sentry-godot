@@ -1,6 +1,5 @@
 #include "runtime_config.h"
 #include "sentry/disabled_event.h"
-#include "sentry/native/native_event.h"
 #include "sentry/util.h"
 #include "sentry_configuration.h"
 #include "sentry_event.h"
