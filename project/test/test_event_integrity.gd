@@ -23,6 +23,7 @@ func test_event_integrity(timeout := 10000) -> void:
 	event.release = "custom-release"
 	event.dist = "custom-dist"
 	event.environment = "custom-environment"
+	event.set_tag("custom-tag", "custom-tag-value")
 	created_id = event.id
 
 	var captured_id := SentrySDK.capture_event(event)
@@ -42,6 +43,7 @@ func _before_send(event: SentryEvent) -> SentryEvent:
 	assert_str(event.release).is_equal("custom-release")
 	assert_str(event.dist).is_equal("custom-dist")
 	assert_str(event.environment).is_equal("custom-environment")
+	assert_str(event.get_tag("custom-tag")).is_equal("custom-tag-value")
 	assert_str(event.id).is_equal(created_id)
 	callback_processed.emit()
 	return null # discard event
