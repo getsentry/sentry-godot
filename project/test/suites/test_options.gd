@@ -30,6 +30,7 @@ func test_bool_properties(property: String, test_parameters := [
 func test_string_properties(property: String, test_parameters := [
 		["dsn"],
 		["release"],
+		["dist"],
 		["environment"],
 ]) -> void:
 	options.set(property, "test-value")

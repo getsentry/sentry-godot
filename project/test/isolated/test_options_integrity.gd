@@ -1,6 +1,5 @@
 extends GdUnitTestSuite
-## Verify that the options are correctly set in a configuration callback
-## and are reflected in event objects.
+## Verify that the options set in a configuration callback are correctly reflected in event objects.
 
 
 signal callback_processed
