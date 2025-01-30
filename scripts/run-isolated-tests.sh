@@ -1,12 +1,11 @@
 #!/bin/sh
 
-
 if [[ -z "$GODOT" ]]; then
-    echo "GODOT variable is not set. Defaulting to \"godot\"."
+    echo "GODOT environment variable is not set. Defaulting to \"godot\"."
     GODOT=godot
 fi
 
-run_dir=$(pwd)
+start_dir=$(pwd)
 script_dir=$(dirname $(readlink -f "$0"))
 cd "$script_dir/../project"
 
@@ -27,7 +26,7 @@ for file in test/isolated/test_*; do
     fi
 done
 
-cd "$run_dir"
+cd "$start_dir"
 
 echo "--------------------------------------------------------------------------------"
 echo "Results: $num_passed passed, $num_failed failed."
