@@ -26,9 +26,9 @@ for file in test/isolated/test_*; do
     err=$?
     if [ $err -ne 0 ]; then
         exit_code=$err
-        ((num_failed++))
+        num_failed=$(expr "$num_failed" + 1)
     else
-        ((num_passed++))
+        num_passed=$(expr "$num_passed" + 1)
     fi
 done
 
