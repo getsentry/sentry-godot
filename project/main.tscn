@@ -264,7 +264,10 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 400)
 layout_mode = 2
 size_flags_vertical = 3
+focus_mode = 2
+bbcode_enabled = true
 scroll_following = true
+selection_enabled = true
 script = ExtResource("2_ibxrb")
 
 [node name="BG" type="Panel" parent="VBoxContainer/OutputPane/Output"]
@@ -275,6 +278,28 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+
+[node name="MsgCopied" type="PanelContainer" parent="VBoxContainer/OutputPane/Output"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(190.651, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -75.5
+offset_top = -20.0
+offset_right = 75.5
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/OutputPane/Output/MsgCopied"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Copied to clipboard"
 
 [connection signal="pressed" from="VBoxContainer/Columns/Column1/Breadcrumb/AddBreadcrumbButton" to="." method="_on_add_breadcrumb_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column1/Tags/AddTagButton" to="." method="_on_add_tag_button_pressed"]
@@ -284,3 +309,4 @@ grow_vertical = 2
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/GenerateErrors/GenNativeError" to="." method="_on_gen_native_error_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column2/Crash2/CrashButton" to="." method="_on_crash_button_pressed"]
+[connection signal="meta_clicked" from="VBoxContainer/OutputPane/Output" to="VBoxContainer/OutputPane/Output" method="_on_meta_clicked"]
