@@ -2,8 +2,11 @@
 # Run tests that require isolation.
 # Such tests are located in the "project/test/isolated" directory.
 
+light_cyan_color='\033[1;36m'
+no_color='\033[0m'
+
 highlight() {
-    echo -e "\033[1;36m$*\033[0m"
+    echo -e "${light_cyan_color}$*${no_color}"
 }
 
 if [[ -z "$GODOT" ]]; then
