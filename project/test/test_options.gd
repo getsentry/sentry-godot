@@ -129,3 +129,34 @@ func test_error_logger_breadcrumb_mask() -> void:
 ## TODO
 #func test_error_logger_breadcrumb_mask_integrity() -> void:
 	#pass
+
+
+## SentryLoggerLimits.events_per_frame should be set to the specified value.
+func test_error_logger_limits_events_per_frame() -> void:
+	var options := SentryOptions.new()
+	options.error_logger_limits.events_per_frame = 42
+	assert_int(options.error_logger_limits.events_per_frame).is_equal(42)
+
+
+## SentryLoggerLimits.repeated_error_window_ms should be set to the specified value.
+func test_error_logger_limits_repeated_error_window_ms() -> void:
+	var options := SentryOptions.new()
+	options.error_logger_limits.repeated_error_window_ms = 777
+	assert_int(options.error_logger_limits.repeated_error_window_ms).is_equal(777)
+
+
+## SentryLoggerLimits.throttle_events should be set to the specified value.
+func test_error_logger_limits_throttle_events() -> void:
+	var options := SentryOptions.new()
+	options.error_logger_limits.throttle_events = 111
+	assert_int(options.error_logger_limits.throttle_events).is_equal(111)
+
+
+## SentryLoggerLimits.throttle_window_ms should be set to the specified value.
+func test_error_logger_limits_throttle_window_ms() -> void:
+	var options := SentryOptions.new()
+	options.error_logger_limits.throttle_window_ms = 888
+	assert_int(options.error_logger_limits.throttle_window_ms).is_equal(888)
+
+
+## TODO logger limits integrity tests
