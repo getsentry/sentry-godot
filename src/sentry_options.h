@@ -51,6 +51,8 @@ private:
 	bool disabled_in_editor = true;
 	String dsn = "";
 	String release = "{app_name}@{app_version}";
+	String dist = "";
+	String environment;
 	bool debug = false;
 	String environment;
 	double sample_rate = 1.0;
@@ -92,6 +94,9 @@ public:
 
 	_FORCE_INLINE_ String get_release() const { return release; }
 	_FORCE_INLINE_ void set_release(const String &p_release) { release = p_release; }
+
+	_FORCE_INLINE_ void set_dist(const String &p_dist) { dist = p_dist; }
+	_FORCE_INLINE_ String get_dist() const { return dist; }
 
 	_FORCE_INLINE_ String get_environment() const { return environment; }
 	_FORCE_INLINE_ void set_environment(const String &p_environment) { environment = p_environment; }
