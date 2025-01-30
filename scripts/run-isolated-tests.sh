@@ -2,6 +2,10 @@
 # Run tests that require isolation.
 # Such tests are located in the "project/test/isolated" directory.
 
+highlight() {
+    echo -e "\033[1;36m$*\033[0m"
+}
+
 if [[ -z "$GODOT" ]]; then
     echo "GODOT environment variable is not set. Defaulting to \"godot\"."
     GODOT=godot
@@ -16,7 +20,7 @@ num_failed=0
 num_passed=0
 
 for file in test/isolated/test_*; do
-    echo "Running isolated test for $file"
+    highlight "Running isolated test: $file"
     ${GODOT} --headless --path . -s "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" --ignoreHeadlessMode -c -a "$file"
 
     err=$?
@@ -31,7 +35,8 @@ done
 cd "$start_dir"
 
 echo "--------------------------------------------------------------------------------"
-echo "Results: $num_passed passed, $num_failed failed."
+highlight "Tests finished."
+echo "Summary: $num_passed passed, $num_failed failed."
 if [ $exit_code -eq 0 ]; then
     echo "All isolated test suites passed."
 else
