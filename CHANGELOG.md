@@ -12,6 +12,10 @@
 - Click to copy UUIDs in the demo project ([#78](https://github.com/getsentry/sentry-godot/pull/78))
 - Customize `SentryEvent` tags ([#72](https://github.com/getsentry/sentry-godot/pull/72))
 
+### Improvements
+
+- Refine sentry-native build step and improve tracking of build artifacts ([#71](https://github.com/getsentry/sentry-godot/pull/71))
+
 ### Dependencies
 
 - Bump Native SDK from v0.7.17 to v0.7.19 ([#61](https://github.com/getsentry/sentry-godot/pull/61), [#63](https://github.com/getsentry/sentry-godot/pull/63))
