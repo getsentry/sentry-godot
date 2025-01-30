@@ -2,9 +2,9 @@ class_name TestingConfiguration
 extends RefCounted
 
 
-## When running a single test suite (a single GDScript file), invoke its static
-## `configure_options()` method if it exists.
-## Options can only be configured once, so such test suites must be executed separately.
+## Detects whether an isolated test suite is running and calls its static `configure_options()` method.
+## - Since SentryOptions can be configured only once, such test suites must be executed separately.
+## - This method is called from "example_configuration.gd".
 static func configure_options(options: SentryOptions):
 	var args: PackedStringArray = OS.get_cmdline_args()
 	var idx := args.find("-a")
