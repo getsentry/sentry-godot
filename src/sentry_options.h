@@ -52,7 +52,6 @@ private:
 	String dsn = "";
 	String release = "{app_name}@{app_version}";
 	String dist = "";
-	String environment;
 	bool debug = false;
 	String environment;
 	double sample_rate = 1.0;
