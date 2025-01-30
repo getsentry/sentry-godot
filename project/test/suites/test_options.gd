@@ -37,7 +37,6 @@ func test_release() -> void:
 	var options := SentryOptions.new()
 	options.release = "1.2.3"
 	assert_str(options.release).is_equal("1.2.3")
-	# TODO: integrity test with SentryEvent
 
 
 ## SentryOptions.debug should be set to the specified value.
@@ -158,5 +157,3 @@ func test_error_logger_limits_throttle_window_ms() -> void:
 	var options := SentryOptions.new()
 	options.error_logger_limits.throttle_window_ms = 888
 	assert_int(options.error_logger_limits.throttle_window_ms).is_equal(888)
-
-## TODO logger limits integrity tests
