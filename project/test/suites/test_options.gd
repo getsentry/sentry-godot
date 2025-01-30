@@ -63,17 +63,9 @@ func test_error_logger_breadcrumb_mask() -> void:
 	assert_int(options.error_logger_breadcrumb_mask).is_equal(mask)
 
 
-## TODO
-#func test_error_logger_event_mask_integrity() -> void:
-	#pass
-## TODO
-#func test_error_logger_breadcrumb_mask_integrity() -> void:
-	#pass
-
-
-## Test error logger integer limits.
+## Test integer error logger limit properties.
 @warning_ignore("unused_parameter")
-func test_error_logger_limits(property: String, test_parameters := [
+func test_error_logger_limit_properties(property: String, test_parameters := [
 		["events_per_frame"],
 		["repeated_error_window_ms"],
 		["throttle_events"],
