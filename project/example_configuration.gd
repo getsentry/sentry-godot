@@ -6,7 +6,7 @@ extends SentryConfiguration
 
 ## Configure Sentry SDK options
 func _configure(options: SentryOptions) -> void:
-	print("[example_configuration.gd] Configuring SDK options via GDScript")
+	print("[example_configuration.gd] Configuring SDK options via GDScript: ", options.get_instance_id())
 
 	options.debug = true
 	options.release = "sentry-godot-demo@" + ProjectSettings.get_setting("application/config/version")
@@ -15,6 +15,9 @@ func _configure(options: SentryOptions) -> void:
 	# Set up event callbacks
 	options.before_send = _before_send
 	options.on_crash = _on_crash
+
+	# Unit testing hooks (if you're exploring the demo project, pretend the following line doesn't exist).
+	TestingConfiguration.configure_options(options)
 
 
 ## before_send callback example
