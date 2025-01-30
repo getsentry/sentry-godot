@@ -1,4 +1,6 @@
 #!/bin/sh
+# Run tests that require isolation.
+# Such tests are located in the "project/test/isolated" directory.
 
 if [[ -z "$GODOT" ]]; then
     echo "GODOT environment variable is not set. Defaulting to \"godot\"."
