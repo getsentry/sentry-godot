@@ -1,5 +1,7 @@
 class_name TestOptionsIntegrity
 extends GdUnitTestSuite
+## Verify that the options are correctly set in a configuration callback
+## and are reflected in event objects.
 
 
 static func configure_options(options: SentryOptions) -> void:
