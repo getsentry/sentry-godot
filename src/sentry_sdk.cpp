@@ -45,6 +45,11 @@ void SentrySDK::add_breadcrumb(const String &p_message, const String &p_category
 	internal_sdk->capture_breadcrumb(crumb);
 }
 
+void SentrySDK::capture_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
+	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Sentry: Can't capture breadcrumb - breadcrumb object is null.");
+	internal_sdk->capture_breadcrumb(p_breadcrumb);
+}
+
 String SentrySDK::get_last_event_id() const {
 	return internal_sdk->get_last_event_id();
 }
@@ -158,6 +163,8 @@ void SentrySDK::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("capture_message", "message", "level", "logger"), &SentrySDK::capture_message, DEFVAL(LEVEL_INFO), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "message", "category", "level", "type", "data"), &SentrySDK::add_breadcrumb, DEFVAL(LEVEL_INFO), DEFVAL("default"), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("create_breadcrumb"), &SentrySDK::create_breadcrumb);
+	ClassDB::bind_method(D_METHOD("capture_breadcrumb", "breadcrumb"), &SentrySDK::capture_breadcrumb);
 	ClassDB::bind_method(D_METHOD("get_last_event_id"), &SentrySDK::get_last_event_id);
 	ClassDB::bind_method(D_METHOD("set_context", "key", "value"), &SentrySDK::set_context);
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &SentrySDK::set_tag);
