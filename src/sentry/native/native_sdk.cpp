@@ -3,6 +3,7 @@
 #include "sentry.h"
 #include "sentry/common_defs.h"
 #include "sentry/level.h"
+#include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
 #include "sentry/processing/process_event.h"
@@ -176,6 +177,10 @@ void NativeSDK::add_breadcrumb(const String &p_message, const String &p_category
 	sentry_value_set_by_key(crumb, "level", sentry_value_new_string(sentry::level_as_cstring(p_level)));
 	sentry_value_set_by_key(crumb, "data", sentry::native::variant_to_sentry_value(p_data));
 	sentry_add_breadcrumb(crumb);
+}
+
+Ref<SentryBreadcrumb> NativeSDK::create_breadcrumb() {
+	return memnew(NativeBreadcrumb);
 }
 
 String NativeSDK::capture_message(const String &p_message, Level p_level) {

@@ -3,6 +3,7 @@
 
 #include "sentry/level.h"
 #include "sentry/sentry_attachment.h"
+#include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
 #include "sentry/sentry_user.h"
 
@@ -27,6 +28,9 @@ public:
 
 	virtual void add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary()) = 0;
+	virtual Ref<SentryBreadcrumb> create_breadcrumb() = 0;
+	// TODO: Consider adding the following function.
+	// virtual void clear_breadcrumbs() = 0;
 
 	virtual String capture_message(const String &p_message, Level p_level) = 0;
 	virtual String get_last_event_id() = 0;
