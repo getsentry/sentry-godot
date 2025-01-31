@@ -29,7 +29,12 @@ String SentrySDK::capture_message(const String &p_message, Level p_level, const 
 void SentrySDK::add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
 		const String &p_type, const Dictionary &p_data) {
 	Ref<SentryBreadcrumb> crumb = internal_sdk->create_breadcrumb(p_message, p_category, p_level, p_type, p_data);
+	capture_breadcrumb(crumb);
+}
 
+void SentrySDK::capture_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
+	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Sentry: Can't capture breadcrumb - breadcrumb object is null.");
+	Ref<SentryBreadcrumb> crumb = p_breadcrumb;
 	if (SentryOptions::get_singleton()->get_before_breadcrumb().is_valid()) {
 		Ref<SentryBreadcrumb> processed = SentryOptions::get_singleton()->get_before_breadcrumb().call(crumb);
 		ERR_FAIL_COND_MSG(processed.is_valid() && processed != crumb, "Sentry: before_breadcrumb callback must return the same breadcrumb object or null.");
@@ -41,13 +46,7 @@ void SentrySDK::add_breadcrumb(const String &p_message, const String &p_category
 		sentry::util::print_debug("breadcrumb processed by before_breadcrumb callback");
 		crumb = processed;
 	}
-
 	internal_sdk->capture_breadcrumb(crumb);
-}
-
-void SentrySDK::capture_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
-	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Sentry: Can't capture breadcrumb - breadcrumb object is null.");
-	internal_sdk->capture_breadcrumb(p_breadcrumb);
 }
 
 String SentrySDK::get_last_event_id() const {
