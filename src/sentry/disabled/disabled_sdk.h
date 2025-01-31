@@ -1,7 +1,7 @@
 #ifndef DISABLED_SDK_H
 #define DISABLED_SDK_H
 
-#include "sentry/disabled_event.h"
+#include "disabled_event.h"
 #include "sentry/internal_sdk.h"
 
 namespace sentry {

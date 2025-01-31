@@ -1,6 +1,7 @@
 #include "runtime_config.h"
-#include "sentry/disabled_event.h"
+#include "sentry/disabled/disabled_event.h"
 #include "sentry/util.h"
+#include "sentry_breadcrumb.h"
 #include "sentry_configuration.h"
 #include "sentry_event.h"
 #include "sentry_logger.h"
@@ -53,6 +54,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(SentrySDK);
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 		GDREGISTER_INTERNAL_CLASS(DisabledEvent);
+		GDREGISTER_ABSTRACT_CLASS(SentryBreadcrumb);
 		GDREGISTER_INTERNAL_CLASS(SentryLogger);
 #ifdef NATIVE_SDK
 		GDREGISTER_INTERNAL_CLASS(NativeEvent);
