@@ -1,6 +1,5 @@
 #include "native_event.h"
 
-#include "godot_cpp/core/error_macros.hpp"
 #include "sentry/level.h"
 #include "sentry/native/native_util.h"
 

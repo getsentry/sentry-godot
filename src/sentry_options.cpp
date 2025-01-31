@@ -156,6 +156,7 @@ void SentryOptions::_bind_methods() {
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "before_send"), set_before_send, get_before_send);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "on_crash"), set_on_crash, get_on_crash);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "before_breadcrumb"), set_before_breadcrumb, get_before_breadcrumb);
 
 	{
 		using namespace sentry;
