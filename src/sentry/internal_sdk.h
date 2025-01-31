@@ -2,6 +2,7 @@
 #define INTERNAL_SDK_H
 
 #include "sentry/level.h"
+#include "sentry_breadcrumb.h"
 #include "sentry_event.h"
 #include "sentry_user.h"
 
@@ -37,6 +38,7 @@ public:
 
 	virtual void add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary()) = 0;
+	virtual Ref<SentryBreadcrumb> create_breadcrumb() = 0;
 	// TODO: Consider adding the following function.
 	// virtual void clear_breadcrumbs() = 0;
 
