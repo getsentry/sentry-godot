@@ -28,9 +28,9 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 
 
 func test_event_and_breadcrumb_masks() -> void:
+    var monitor := monitor_signals(self, false)
     push_error("dummy-error")
     push_warning("dummy-warning")
-
-    await assert_signal(self).is_not_emitted("callback_processed")
+    await assert_signal(monitor).is_not_emitted("callback_processed")
 
     assert_int(_num_events).is_equal(0)

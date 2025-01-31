@@ -27,8 +27,9 @@ func test_event_integrity(timeout := 10000) -> void:
 	event.set_tag("custom-tag", "custom-tag-value")
 	created_id = event.id
 
+	var monitor := monitor_signals(self, false)
 	var captured_id := SentrySDK.capture_event(event)
-	assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(monitor).is_emitted("callback_processed")
 
 	assert_str(captured_id).is_not_empty()
 	assert_str(captured_id).is_not_equal(created_id) # event was discarded

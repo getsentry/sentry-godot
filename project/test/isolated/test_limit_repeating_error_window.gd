@@ -27,9 +27,10 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 
 ## Only one error should be logged within 1 second time window, and another one after 1 second passes.
 func test_repeating_error_window_limit() -> void:
+	var monitor := monitor_signals(self, false)
 	push_error("dummy-error")
 	push_error("dummy-error")
-	await assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(monitor).is_emitted("callback_processed")
 	assert_int(_num_events).is_equal(1)
 
 	# Wait for 1 second window to expire.
@@ -37,5 +38,5 @@ func test_repeating_error_window_limit() -> void:
 
 	push_error("dummy-error")
 	push_error("dummy-error")
-	await assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(monitor).is_emitted("callback_processed")
 	assert_int(_num_events).is_equal(2)

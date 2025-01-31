@@ -33,9 +33,10 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 ## Both events or breadcrumbs should be logged for error and warning.
 ## TODO: can't verify breadcrumbs yet, maybe later.
 func test_event_and_breadcrumb_masks() -> void:
+    var monitor := monitor_signals(self, false)
     push_error("dummy-error")
     push_warning("dummy-warning")
-    await assert_signal(self).is_emitted("callback_processed")
+    await assert_signal(monitor).is_emitted("callback_processed")
 
     await get_tree().create_timer(0.1).timeout
     assert_int(_num_events).is_equal(2)

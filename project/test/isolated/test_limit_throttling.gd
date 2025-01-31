@@ -28,11 +28,12 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 
 ## Only two errors should be logged within the assigned time window.
 func test_throttling_limits() -> void:
+	var monitor := monitor_signals(self, false)
 	push_error("dummy-error")
 	push_error("dummy-error")
 	push_error("dummy-error")
-	await assert_signal(self).is_emitted("callback_processed")
-	await assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(monitor).is_emitted("callback_processed")
+	await assert_signal(monitor).is_emitted("callback_processed")
 	await get_tree().create_timer(0.1).timeout
 	assert_int(_num_events).is_equal(2)
 
@@ -42,7 +43,7 @@ func test_throttling_limits() -> void:
 	push_error("dummy-error")
 	push_error("dummy-error")
 	push_error("dummy-error")
-	await assert_signal(self).is_emitted("callback_processed")
-	await assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(monitor).is_emitted("callback_processed")
+	await assert_signal(monitor).is_emitted("callback_processed")
 	await get_tree().create_timer(0.1).timeout
 	assert_int(_num_events).is_equal(4)

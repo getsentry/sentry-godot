@@ -22,8 +22,10 @@ func test_set_tag() -> void:
 			return null)
 
 	SentrySDK.set_tag("custom-tag", "custom-tag-value")
+
+	var monitor := monitor_signals(self, false)
 	SentrySDK.capture_message("test-tags")
-	assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(monitor).is_emitted("callback_processed")
 
 	SentrySDK._unset_before_send()
 
@@ -38,7 +40,9 @@ func test_remove_tag() -> void:
 
 	SentrySDK.set_tag("custom-tag", "custom-tag-value")
 	SentrySDK.remove_tag("custom-tag")
+
+	var monitor := monitor_signals(self, false)
 	SentrySDK.capture_message("test-tags")
-	assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(monitor).is_emitted("callback_processed")
 
 	SentrySDK._unset_before_send()

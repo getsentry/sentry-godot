@@ -27,9 +27,10 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 
 ## Only one error should be logged within 1 processed frame.
 func test_events_per_frame_limit() -> void:
+	var monitor := monitor_signals(self, false)
 	push_error("dummy-error")
 	push_error("dummy-error")
 	push_error("dummy-error")
-	assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(monitor).is_emitted("callback_processed")
 	await get_tree().create_timer(0.1).timeout
 	assert_int(_num_events).is_equal(1)
