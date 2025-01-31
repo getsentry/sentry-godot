@@ -11,6 +11,9 @@ class NativeBreadcrumb : public SentryBreadcrumb {
 private:
 	sentry_value_t native_crumb;
 
+protected:
+	static void _bind_methods() {}
+
 public:
 	virtual void set_message(const String &p_message) override;
 	virtual String get_message() const override;
