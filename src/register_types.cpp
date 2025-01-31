@@ -1,7 +1,6 @@
 #include "runtime_config.h"
 #include "sentry/disabled/disabled_breadcrumb.h"
 #include "sentry/disabled/disabled_event.h"
-#include "sentry/native/native_breadcrumb.h"
 #include "sentry/util.h"
 #include "sentry_breadcrumb.h"
 #include "sentry_configuration.h"
@@ -16,6 +15,7 @@
 #include <godot_cpp/classes/window.hpp>
 
 #ifdef NATIVE_SDK
+#include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
 #endif // NATIVE_SDK
 
