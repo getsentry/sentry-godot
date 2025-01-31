@@ -92,7 +92,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/config/dsn", p_options->dsn);
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/config/dist", p_options->dist);
 
-  // DebugMode is only used to represent the debug option in the project settings.
+	// DebugMode is only used to represent the debug option in the project settings.
 	// The user may also set the `debug` option explicitly in a configuration script.
 	DebugMode mode = (DebugMode)(int)ProjectSettings::get_singleton()->get_setting("sentry/config/debug", (int)SentryOptions::DEBUG_DEFAULT);
 	p_options->_init_debug_option(mode);
@@ -151,7 +151,6 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dsn"), set_dsn, get_dsn);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "release"), set_release, get_release);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dist"), set_dist, get_dist);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "environment"), set_environment, get_environment);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "debug"), set_debug_enabled, is_debug_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "environment"), set_environment, get_environment);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "sample_rate"), set_sample_rate, get_sample_rate);
