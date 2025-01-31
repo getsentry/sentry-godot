@@ -173,6 +173,8 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
 	ClassDB::bind_method(D_METHOD("_set_on_crash", "callable"), &SentrySDK::set_on_crash);
 	ClassDB::bind_method(D_METHOD("_unset_on_crash"), &SentrySDK::unset_on_crash);
+	ClassDB::bind_method(D_METHOD("_set_before_breadcrumb", "callable"), &SentrySDK::set_before_breadcrumb);
+	ClassDB::bind_method(D_METHOD("_unset_before_breadcrumb"), &SentrySDK::unset_before_breadcrumb);
 }
 
 SentrySDK::SentrySDK() {

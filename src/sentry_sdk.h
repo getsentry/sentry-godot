@@ -78,6 +78,9 @@ public:
 	void set_on_crash(const Callable &p_callable) { SentryOptions::get_singleton()->set_on_crash(p_callable); }
 	void unset_on_crash() { SentryOptions::get_singleton()->set_on_crash(Callable()); }
 
+	void set_before_breadcrumb(const Callable &p_callable) { SentryOptions::get_singleton()->set_before_breadcrumb(p_callable); }
+	void unset_before_breadcrumb() { SentryOptions::get_singleton()->set_before_breadcrumb(Callable()); }
+
 	SentrySDK();
 	~SentrySDK();
 };
