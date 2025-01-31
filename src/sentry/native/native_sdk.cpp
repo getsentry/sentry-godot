@@ -155,6 +155,14 @@ Ref<SentryBreadcrumb> NativeSDK::create_breadcrumb(const String &p_message, cons
 	return memnew(NativeBreadcrumb(p_message, p_category, p_level, p_type, p_data));
 }
 
+void NativeSDK::capture_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
+	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Sentry: Can't capture breadcrumb - breadcrumb object is null.");
+	NativeBreadcrumb *native_crumb = Object::cast_to<NativeBreadcrumb>(p_breadcrumb.ptr());
+	ERR_FAIL_NULL(native_crumb); // shouldn't happen
+	sentry_value_incref(native_crumb->get_native_value()); // keep ownership
+	sentry_add_breadcrumb(native_crumb->get_native_value());
+}
+
 String NativeSDK::capture_message(const String &p_message, Level p_level, const String &p_logger) {
 	sentry_value_t event = sentry_value_new_message_event(
 			native::level_to_native(p_level),

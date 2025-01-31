@@ -15,6 +15,8 @@ protected:
 	static void _bind_methods() {}
 
 public:
+	_FORCE_INLINE_ sentry_value_t get_native_value() const { return native_crumb; }
+
 	virtual void set_message(const String &p_message) override;
 	virtual String get_message() const override;
 
