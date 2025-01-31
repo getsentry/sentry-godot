@@ -31,7 +31,7 @@ func test_breadcrumb_type() -> void:
 	assert_str(crumb.type).is_equal("test-type")
 
 
-func test_breadcrumb_callback() -> void:
+func test_with_before_breadcrumb() -> void:
 	SentrySDK._set_before_breadcrumb(
 		func(b: SentryBreadcrumb):
 			assert_str(b.message).is_equal("test-message")
@@ -40,7 +40,10 @@ func test_breadcrumb_callback() -> void:
 			assert_str(b.type).is_equal("test-type")
 			# assert_dict(b.data).is_equal({"test": "data"})
 			callback_processed.emit()
-			return null)
+			return null # discard breadcrumb
+	)
+
+	var monitor := monitor_signals(self, false)
 
 	crumb.message = "test-message"
 	crumb.category = "test-category"
@@ -49,7 +52,9 @@ func test_breadcrumb_callback() -> void:
 	# crumb.data = {"test": "data"}
 	SentrySDK.capture_breadcrumb(crumb)
 
-	assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(monitor).is_emitted("callback_processed")
+
+	SentrySDK._unset_before_breadcrumb()
 
 
 # TODO: implement data!
