@@ -1,6 +1,7 @@
 #ifndef NATIVE_UTIL_H
 #define NATIVE_UTIL_H
 
+#include "godot_cpp/core/defs.hpp"
 #include "sentry/level.h"
 
 #include <sentry.h>
@@ -25,8 +26,17 @@ String make_uuid();
 sentry_level_t level_to_native(Level p_level);
 Level native_to_level(sentry_level_t p_native_level);
 
+// TODO: move this to level.h
 CharString level_to_cstring(Level p_level);
 Level cstring_to_level(const CharString &p_cstring);
+
+_FORCE_INLINE_ void sentry_value_set_or_remove_string_by_key(sentry_value_t value, const char *k, const String &v) {
+	if (v.is_empty()) {
+		sentry_value_remove_by_key(value, k);
+	} else {
+		sentry_value_set_by_key(value, k, sentry_value_new_string(v.utf8()));
+	}
+}
 
 } //namespace sentry::native
 
