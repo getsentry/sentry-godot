@@ -8,10 +8,10 @@ var _num_events: int = 0
 
 
 static func configure_options(options: SentryOptions) -> void:
-	# Allow only two errors to be logged as events within 2 second time window.
+	# Allow only two errors to be logged as events within 1 second time window.
 	options.error_logger_limits.throttle_events = 2
-	options.error_logger_limits.throttle_window_ms = 10000
-	# Make sure other limits are not applied.
+	options.error_logger_limits.throttle_window_ms = 1000
+	# Make sure other limits are not interfering.
 	options.error_logger_limits.events_per_frame = 88
 	options.error_logger_limits.repeated_error_window_ms = 0
 
@@ -26,7 +26,7 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 	return null
 
 
-## Only two errors should be logged within the same time window.
+## Only two errors should be logged within the assigned time window.
 func test_throttling_limits() -> void:
 	push_error("dummy-error")
 	push_error("dummy-error")
@@ -35,3 +35,14 @@ func test_throttling_limits() -> void:
 	await assert_signal(self).is_emitted("callback_processed")
 	await get_tree().create_timer(0.1).timeout
 	assert_int(_num_events).is_equal(2)
+
+	# Wait for throttling window to expire.
+	await get_tree().create_timer(1.0).timeout
+
+	push_error("dummy-error")
+	push_error("dummy-error")
+	push_error("dummy-error")
+	await assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(self).is_emitted("callback_processed")
+	await get_tree().create_timer(0.1).timeout
+	assert_int(_num_events).is_equal(4)

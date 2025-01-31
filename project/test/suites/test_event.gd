@@ -1,5 +1,5 @@
-class_name TestEvent
 extends GdUnitTestSuite
+## Basic tests for the SentryEvent class.
 
 
 ## SentryEvent.id should not be empty on event creation.

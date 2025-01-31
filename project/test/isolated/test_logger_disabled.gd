@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Events shouldn't be logged for errors when logger is disabled.
+## Events should not be logged for errors when the logger is disabled.
 
 
 signal callback_processed
@@ -10,7 +10,7 @@ var _num_events: int = 0
 static func configure_options(options: SentryOptions) -> void:
     options.error_logger_enabled = false
 
-    ## Ensure no interference from logger limits.
+    # Make sure other limits are not interfering.
     options.error_logger_limits.events_per_frame = 88
     options.error_logger_limits.throttle_events = 88
     options.error_logger_limits.repeated_error_window_ms = 0

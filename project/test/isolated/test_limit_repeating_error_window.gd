@@ -10,7 +10,7 @@ var _num_events: int = 0
 static func configure_options(options: SentryOptions) -> void:
 	# Ignore duplicate errors within 1 second window.
 	options.error_logger_limits.repeated_error_window_ms = 1000
-	# Make sure other limits are not applied.
+	# Make sure other limits are not interfering.
 	options.error_logger_limits.events_per_frame = 88
 	options.error_logger_limits.throttle_events = 88
 

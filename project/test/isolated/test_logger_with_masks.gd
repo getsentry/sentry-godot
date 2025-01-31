@@ -13,7 +13,7 @@ static func configure_options(options: SentryOptions) -> void:
     options.error_logger_event_mask = mask
     options.error_logger_breadcrumb_mask = mask
 
-    ## Ensure no interference from logger limits.
+    # Make sure other limits are not interfering.
     options.error_logger_limits.events_per_frame = 88
     options.error_logger_limits.throttle_events = 88
     options.error_logger_limits.repeated_error_window_ms = 0

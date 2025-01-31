@@ -1,5 +1,6 @@
-class_name TestOptions
 extends GdUnitTestSuite
+## Basic tests for the SentryOptions class.
+
 
 var options: SentryOptions
 

@@ -1,5 +1,6 @@
-class_name TestEventIntegrity
 extends GdUnitTestSuite
+## Verify that event properties are preserved through the SDK flow.
+
 
 signal callback_processed
 
