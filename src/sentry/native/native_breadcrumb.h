@@ -30,6 +30,7 @@ public:
 	virtual void set_data(const Dictionary &p_data) override;
 	virtual Dictionary get_data() const override;
 
+	NativeBreadcrumb(const String &p_message, const String &p_category, sentry::Level p_level, const String &p_type, const Dictionary &p_data);
 	NativeBreadcrumb(sentry_value_t p_native_crumb);
 	NativeBreadcrumb();
 	virtual ~NativeBreadcrumb() override;

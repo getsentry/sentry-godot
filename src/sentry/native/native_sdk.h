@@ -23,9 +23,10 @@ public:
 	virtual void set_user(const Ref<SentryUser> &p_user) override;
 	virtual void remove_user() override;
 
-	virtual void add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
-			const String &p_type = "default", const Dictionary &p_data = Dictionary()) override;
 	virtual Ref<SentryBreadcrumb> create_breadcrumb() override;
+	virtual Ref<SentryBreadcrumb> create_breadcrumb(const String &p_message, const String &p_category, Level p_level,
+			const String &p_type = "default", const Dictionary &p_data = Dictionary()) override;
+	virtual void capture_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) override;
 
 	virtual String capture_message(const String &p_message, Level p_level = sentry::LEVEL_INFO, const String &p_logger = "") override;
 	virtual String get_last_event_id() override;

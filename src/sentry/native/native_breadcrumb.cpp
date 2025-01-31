@@ -56,6 +56,33 @@ Dictionary NativeBreadcrumb::get_data() const {
 	return Dictionary();
 }
 
+NativeBreadcrumb::NativeBreadcrumb(const String &p_message, const String &p_category, sentry::Level p_level, const String &p_type, const Dictionary &p_data) {
+	native_crumb = sentry_value_new_object();
+
+	if (!p_message.is_empty()) {
+		sentry_value_set_by_key(native_crumb, "message",
+				sentry_value_new_string(p_message.utf8()));
+	}
+
+	if (!p_category.is_empty()) {
+		sentry_value_set_by_key(native_crumb, "category",
+				sentry_value_new_string(p_category.utf8()));
+	}
+
+	sentry_value_set_by_key(native_crumb, "level",
+			sentry_value_new_string(sentry::native::level_to_cstring(p_level)));
+
+	if (!p_type.is_empty()) {
+		sentry_value_set_by_key(native_crumb, "type",
+				sentry_value_new_string(p_type.utf8()));
+	}
+
+	if (!p_data.is_empty()) {
+		sentry_value_set_by_key(native_crumb, "data",
+				sentry::native::variant_to_sentry_value(p_data));
+	}
+}
+
 NativeBreadcrumb::NativeBreadcrumb(sentry_value_t p_native_crumb) {
 	if (sentry_value_refcount(p_native_crumb) > 0) {
 		sentry_value_incref(p_native_crumb); // acquire ownership
