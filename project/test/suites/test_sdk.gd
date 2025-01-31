@@ -1,5 +1,5 @@
-class_name TestSDK
 extends GdUnitTestSuite
+## Test SentrySDK methods.
 
 
 signal callback_processed
@@ -13,7 +13,7 @@ func test_capture_message() -> void:
 	assert_str(event_id).is_equal(SentrySDK.get_last_event_id())
 
 
-## SentrySDK.set_tag() should set the tag on the event object.
+## SentrySDK.set_tag() should assign a tag to the event object.
 func test_set_tag() -> void:
 	SentrySDK._set_before_send(
 		func(ev: SentryEvent):
@@ -22,6 +22,22 @@ func test_set_tag() -> void:
 			return null)
 
 	SentrySDK.set_tag("custom-tag", "custom-tag-value")
+	SentrySDK.capture_message("test-tags")
+	assert_signal(self).is_emitted("callback_processed")
+
+	SentrySDK._unset_before_send()
+
+
+## SentrySDK.remove_tag() should remove a tag from the event object.
+func test_remove_tag() -> void:
+	SentrySDK._set_before_send(
+		func(ev: SentryEvent):
+			assert_str(ev.get_tag("custom-tag")).is_empty()
+			callback_processed.emit()
+			return null)
+
+	SentrySDK.set_tag("custom-tag", "custom-tag-value")
+	SentrySDK.remove_tag("custom-tag")
 	SentrySDK.capture_message("test-tags")
 	assert_signal(self).is_emitted("callback_processed")
 
