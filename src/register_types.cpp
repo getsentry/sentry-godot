@@ -1,5 +1,7 @@
 #include "runtime_config.h"
+#include "sentry/disabled/disabled_breadcrumb.h"
 #include "sentry/disabled/disabled_event.h"
+#include "sentry/native/native_breadcrumb.h"
 #include "sentry/util.h"
 #include "sentry_breadcrumb.h"
 #include "sentry_configuration.h"
@@ -55,9 +57,11 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 		GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 		GDREGISTER_ABSTRACT_CLASS(SentryBreadcrumb);
+		GDREGISTER_INTERNAL_CLASS(DisabledBreadcrumb);
 		GDREGISTER_INTERNAL_CLASS(SentryLogger);
 #ifdef NATIVE_SDK
 		GDREGISTER_INTERNAL_CLASS(NativeEvent);
+		GDREGISTER_INTERNAL_CLASS(NativeBreadcrumb);
 #endif // NATIVE_SDK
 
 		SentryOptions::create_singleton();
