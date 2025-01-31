@@ -4,6 +4,7 @@
 #include "runtime_config.h"
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
+#include "sentry_breadcrumb.h"
 #include "sentry_event.h"
 #include "sentry_options.h"
 
@@ -52,6 +53,8 @@ public:
 
 	void add_breadcrumb(const String &p_message, const String &p_category, sentry::Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary());
+	Ref<SentryBreadcrumb> create_breadcrumb() { return internal_sdk->create_breadcrumb(); }
+
 	void set_context(const String &p_key, const Dictionary &p_value);
 
 	void set_tag(const String &p_key, const String &p_value);
