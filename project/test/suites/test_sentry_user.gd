@@ -1,5 +1,6 @@
-class_name TestSentryUser
 extends GdUnitTestSuite
+## Test SentryUser class.
+
 
 ## Make a SentryUser instance with pre-filled test data.
 func _make_test_user() -> SentryUser:
