@@ -28,7 +28,6 @@ class DisabledSDK : public InternalSDK {
 	virtual String capture_event(const Ref<SentryEvent> &p_event) override { return ""; }
 
 	virtual void initialize() override {}
-	virtual bool is_initialized() override { return false; }
 };
 
 } // namespace sentry

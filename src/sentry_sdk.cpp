@@ -95,15 +95,14 @@ void SentrySDK::_init_contexts() {
 void SentrySDK::_initialize() {
 	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
-	if (enabled) {
 #ifdef NATIVE_SDK
-		internal_sdk = std::make_shared<NativeSDK>();
+	internal_sdk = std::make_shared<NativeSDK>();
+	enabled = true;
 #else
-		// Unsupported platform
-		sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
-		enabled = false;
+	// Unsupported platform
+	sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
+	enabled = false;
 #endif
-	}
 
 	if (!enabled) {
 		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
@@ -141,6 +140,7 @@ void SentrySDK::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_ERROR);
 	BIND_ENUM_CONSTANT(LEVEL_FATAL);
 
+	ClassDB::bind_method(D_METHOD("is_enabled"), &SentrySDK::is_enabled);
 	ClassDB::bind_method(D_METHOD("capture_message", "message", "level", "logger"), &SentrySDK::capture_message, DEFVAL(LEVEL_INFO), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "message", "category", "level", "type", "data"), &SentrySDK::add_breadcrumb, DEFVAL(LEVEL_INFO), DEFVAL("default"), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("get_last_event_id"), &SentrySDK::get_last_event_id);
@@ -170,18 +170,18 @@ SentrySDK::SentrySDK() {
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
-	enabled = SentryOptions::get_singleton()->is_enabled();
+	bool should_enable = SentryOptions::get_singleton()->is_enabled();
 
-	if (!enabled) {
+	if (!should_enable) {
 		sentry::util::print_debug("Sentry SDK is disabled in the project settings.");
 	}
 
-	if (enabled && Engine::get_singleton()->is_editor_hint() && SentryOptions::get_singleton()->is_disabled_in_editor()) {
+	if (should_enable && Engine::get_singleton()->is_editor_hint() && SentryOptions::get_singleton()->is_disabled_in_editor()) {
 		sentry::util::print_debug("Sentry SDK is disabled in the editor. Tip: This can be changed in the project settings.");
-		enabled = false;
+		should_enable = false;
 	}
 
-	if (enabled) {
+	if (should_enable) {
 		if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
 			_initialize();
 			// Delay contexts initialization until the engine singletons are ready.
