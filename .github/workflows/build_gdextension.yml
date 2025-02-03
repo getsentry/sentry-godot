@@ -17,7 +17,7 @@ on:
 
 env:
   # Default SCons flags applied to each build.
-  SCONSFLAGS: verbose=yes debug_symbols=yes symbols_visibility=visible
+  SCONSFLAGS: verbose=yes debug_symbols=yes
   EM_VERSION: 3.1.45
 
 jobs:
