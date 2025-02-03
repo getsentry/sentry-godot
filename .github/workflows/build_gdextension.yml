@@ -17,7 +17,7 @@ on:
 
 env:
   # Default SCons flags applied to each build.
-  SCONSFLAGS: verbose=yes debug_symbols=yes symbols_visibility=visible
+  SCONSFLAGS: verbose=yes debug_symbols=yes symbols_visibility=visible macos_deployment_target=11.0
   EM_VERSION: 3.1.45
   XCODE_VERSION: 16.2
 
