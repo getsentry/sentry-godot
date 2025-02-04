@@ -13,6 +13,7 @@ private:
 	sentry::Level level = sentry::Level::LEVEL_INFO;
 	String type;
 	Dictionary data;
+	String timestamp;
 
 protected:
 	static void _bind_methods() {}
@@ -32,6 +33,9 @@ public:
 
 	virtual void set_data(const Dictionary &p_data) override { data = p_data; }
 	virtual Dictionary get_data() const override { return data; }
+
+	virtual void set_timestamp(const String &p_timestamp) override { timestamp = p_timestamp; }
+	virtual String get_timestamp() const override { return timestamp; }
 };
 
 #endif // DISABLED_BREADCRUMB_H

@@ -50,7 +50,17 @@ void NativeBreadcrumb::set_data(const Dictionary &p_data) {
 }
 
 Dictionary NativeBreadcrumb::get_data() const {
-	return sentry::native::sentry_value_to_variant(sentry_value_get_by_key(native_crumb, "data"));
+	sentry_value_t data = sentry_value_get_by_key(native_crumb, "data");
+	return sentry::native::sentry_value_to_variant(data);
+}
+
+void NativeBreadcrumb::set_timestamp(const String &p_timestamp) {
+	sentry::native::sentry_value_set_or_remove_string_by_key(native_crumb, "timestamp", p_timestamp);
+}
+
+String NativeBreadcrumb::get_timestamp() const {
+	sentry_value_t timestamp = sentry_value_get_by_key(native_crumb, "timestamp");
+	return sentry_value_as_string(timestamp);
 }
 
 NativeBreadcrumb::NativeBreadcrumb(const String &p_message, const String &p_category, sentry::Level p_level, const String &p_type, const Dictionary &p_data) {

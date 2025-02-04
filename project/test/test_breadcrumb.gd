@@ -39,6 +39,7 @@ func test_with_before_breadcrumb() -> void:
 			assert_int(b.level).is_equal(SentrySDK.LEVEL_DEBUG)
 			assert_str(b.type).is_equal("test-type")
 			assert_dict(b.get_data()).is_equal({"test": "data"})
+			assert_str(b.timestamp).is_equal("2025-01-01T20:00:00+00:00")
 			callback_processed.emit()
 			return null # discard breadcrumb
 	)
@@ -50,6 +51,7 @@ func test_with_before_breadcrumb() -> void:
 	crumb.level = SentrySDK.LEVEL_DEBUG
 	crumb.type = "test-type"
 	crumb.set_data({"test": "data"})
+	crumb.timestamp = "2025-01-01T20:00:00+00:00"
 	SentrySDK.capture_breadcrumb(crumb)
 
 	await assert_signal(monitor).is_emitted("callback_processed")
@@ -62,7 +64,6 @@ func test_breadcrumb_data() -> void:
 	assert_dict(crumb.get_data()).is_equal({"str": "text", "int": 42})
 
 
-# TODO: implement timestamp!
-# func test_breadcrumb_timestamp() -> void:
-# 	crumb.timestamp = 123.456
-# 	assert_float(crumb.timestamp).is_equal(123.456)
+func test_breadcrumb_timestamp() -> void:
+	crumb.timestamp = "2025-01-01T20:00:00+00:00"
+	assert_str(crumb.timestamp).is_equal("2025-01-01T20:00:00+00:00")
