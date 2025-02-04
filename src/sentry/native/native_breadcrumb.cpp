@@ -50,10 +50,7 @@ void NativeBreadcrumb::set_data(const Dictionary &p_data) {
 }
 
 Dictionary NativeBreadcrumb::get_data() const {
-	// TODO: implement sentry_value_to_variant()
-	// return sentry::native::sentry_value_to_variant(sentry_value_get_by_key(native_crumb, "data"));
-	WARN_PRINT("Not implemented.");
-	return Dictionary();
+	return sentry::native::sentry_value_to_variant(sentry_value_get_by_key(native_crumb, "data"));
 }
 
 NativeBreadcrumb::NativeBreadcrumb(const String &p_message, const String &p_category, sentry::Level p_level, const String &p_type, const Dictionary &p_data) {

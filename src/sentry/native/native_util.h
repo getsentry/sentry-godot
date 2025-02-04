@@ -16,6 +16,9 @@ namespace sentry::native {
 // Convert Godot Variant to sentry_value_t.
 sentry_value_t variant_to_sentry_value(const Variant &p_variant);
 
+// Convert sentry_value_t to Godot Variant.
+Variant sentry_value_to_variant(sentry_value_t p_value);
+
 // Convert PackedStringArray to sentry_value_t (as a list).
 sentry_value_t strings_to_sentry_list(const PackedStringArray &p_strings);
 
