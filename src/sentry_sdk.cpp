@@ -8,6 +8,7 @@
 #include "sentry_configuration.h"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -18,6 +19,36 @@
 
 using namespace godot;
 using namespace sentry;
+
+namespace {
+
+void _fix_unix_executable_permissions(const String &p_path) {
+	if (!FileAccess::file_exists(p_path)) {
+		return;
+	}
+
+	BitField<FileAccess::UnixPermissionFlags> perm = FileAccess::get_unix_permissions(p_path);
+	BitField<FileAccess::UnixPermissionFlags> new_perm = perm;
+
+	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_OWNER)) {
+		new_perm.set_flag(FileAccess::UNIX_EXECUTE_OWNER);
+	}
+	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_GROUP)) {
+		new_perm.set_flag(FileAccess::UNIX_EXECUTE_GROUP);
+	}
+	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_OTHER)) {
+		new_perm.set_flag(FileAccess::UNIX_EXECUTE_OTHER);
+	}
+
+	if (perm != new_perm) {
+		godot::Error err = FileAccess::set_unix_permissions(p_path, new_perm);
+		if (err != OK) {
+			sentry::util::print_error("Failed to set executable permissions for %s: %s", p_path.utf8().get_data(), err);
+		}
+	}
+}
+
+} // unnamed namespace
 
 SentrySDK *SentrySDK::singleton = nullptr;
 
@@ -169,6 +200,12 @@ SentrySDK::SentrySDK() {
 	// Load the runtime configuration from the user's data directory.
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
+
+	// Fix crashpad handler permissions.
+	if (OS::get_singleton()->has_feature("editor")) {
+		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/macos/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/linux/crashpad_handler");
+	}
 
 	enabled = SentryOptions::get_singleton()->is_enabled();
 
