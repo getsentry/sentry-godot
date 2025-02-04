@@ -5,18 +5,6 @@
 
 #include <sentry.h>
 
-namespace {
-
-inline void _sentry_value_set_or_remove_string_by_key(sentry_value_t value, const char *k, const String &v) {
-	if (v.is_empty()) {
-		sentry_value_remove_by_key(value, k);
-	} else {
-		sentry_value_set_by_key(value, k, sentry_value_new_string(v.utf8()));
-	}
-}
-
-} // unnamed namespace
-
 String NativeEvent::get_id() const {
 	sentry_value_t id = sentry_value_get_by_key(native_event, "event_id");
 	return sentry_value_as_string(id);
@@ -45,7 +33,8 @@ String NativeEvent::get_message() const {
 }
 
 void NativeEvent::set_timestamp(const String &p_timestamp) {
-	_sentry_value_set_or_remove_string_by_key(native_event, "timestamp", p_timestamp);
+	sentry::native::sentry_value_set_or_remove_string_by_key(
+			native_event, "timestamp", p_timestamp);
 }
 
 String NativeEvent::get_timestamp() const {
@@ -75,7 +64,8 @@ sentry::Level NativeEvent::get_level() const {
 }
 
 void NativeEvent::set_logger(const String &p_logger) {
-	_sentry_value_set_or_remove_string_by_key(native_event, "logger", p_logger);
+	sentry::native::sentry_value_set_or_remove_string_by_key(
+			native_event, "logger", p_logger);
 }
 
 String NativeEvent::get_logger() const {
@@ -84,7 +74,8 @@ String NativeEvent::get_logger() const {
 }
 
 void NativeEvent::set_release(const String &p_release) {
-	_sentry_value_set_or_remove_string_by_key(native_event, "release", p_release);
+	sentry::native::sentry_value_set_or_remove_string_by_key(
+			native_event, "release", p_release);
 }
 
 String NativeEvent::get_release() const {
@@ -93,7 +84,8 @@ String NativeEvent::get_release() const {
 }
 
 void NativeEvent::set_dist(const String &p_dist) {
-	_sentry_value_set_or_remove_string_by_key(native_event, "dist", p_dist);
+	sentry::native::sentry_value_set_or_remove_string_by_key(
+			native_event, "dist", p_dist);
 }
 
 String NativeEvent::get_dist() const {
@@ -102,7 +94,8 @@ String NativeEvent::get_dist() const {
 }
 
 void NativeEvent::set_environment(const String &p_environment) {
-	_sentry_value_set_or_remove_string_by_key(native_event, "environment", p_environment);
+	sentry::native::sentry_value_set_or_remove_string_by_key(
+			native_event, "environment", p_environment);
 }
 
 String NativeEvent::get_environment() const {
