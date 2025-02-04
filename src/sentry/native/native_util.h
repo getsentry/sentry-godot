@@ -1,7 +1,6 @@
 #ifndef NATIVE_UTIL_H
 #define NATIVE_UTIL_H
 
-#include "godot_cpp/core/defs.hpp"
 #include "sentry/level.h"
 
 #include <sentry.h>
