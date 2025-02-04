@@ -38,7 +38,7 @@ func test_with_before_breadcrumb() -> void:
 			assert_str(b.category).is_equal("test-category")
 			assert_int(b.level).is_equal(SentrySDK.LEVEL_DEBUG)
 			assert_str(b.type).is_equal("test-type")
-			assert_dict(b.data).is_equal({"test": "data"})
+			assert_dict(b.get_data()).is_equal({"test": "data"})
 			callback_processed.emit()
 			return null # discard breadcrumb
 	)
@@ -49,7 +49,7 @@ func test_with_before_breadcrumb() -> void:
 	crumb.category = "test-category"
 	crumb.level = SentrySDK.LEVEL_DEBUG
 	crumb.type = "test-type"
-	crumb.data = {"test": "data"}
+	crumb.set_data({"test": "data"})
 	SentrySDK.capture_breadcrumb(crumb)
 
 	await assert_signal(monitor).is_emitted("callback_processed")
@@ -58,8 +58,8 @@ func test_with_before_breadcrumb() -> void:
 
 
 func test_breadcrumb_data() -> void:
-	crumb.data = {"str": "text", "int": 42 }
-	assert_dict(crumb.data).is_equal({"str": "text", "int": 42 })
+	crumb.set_data({"str": "text", "int": 42})
+	assert_dict(crumb.get_data()).is_equal({"str": "text", "int": 42})
 
 
 # TODO: implement timestamp!
