@@ -61,6 +61,7 @@ private:
 	String configuration_script;
 	Callable before_send;
 	Callable on_crash;
+	Callable before_breadcrumb;
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
@@ -131,6 +132,9 @@ public:
 
 	_FORCE_INLINE_ Callable get_on_crash() const { return on_crash; }
 	_FORCE_INLINE_ void set_on_crash(const Callable &p_on_crash) { on_crash = p_on_crash; }
+
+	_FORCE_INLINE_ Callable get_before_breadcrumb() const { return before_breadcrumb; }
+	_FORCE_INLINE_ void set_before_breadcrumb(const Callable &p_before_breadcrumb) { before_breadcrumb = p_before_breadcrumb; }
 
 	SentryOptions();
 	~SentryOptions();
