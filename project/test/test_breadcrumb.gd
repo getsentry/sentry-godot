@@ -65,5 +65,6 @@ func test_breadcrumb_data() -> void:
 
 
 func test_breadcrumb_timestamp() -> void:
-	crumb.timestamp = "2025-01-01T20:00:00+00:00"
-	assert_str(crumb.timestamp).is_equal("2025-01-01T20:00:00+00:00")
+	var ts = Time.get_datetime_string_from_system()
+	crumb.timestamp = ts
+	assert_str(crumb.timestamp).is_equal(ts)
