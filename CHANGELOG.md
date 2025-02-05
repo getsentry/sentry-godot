@@ -5,6 +5,7 @@
 ### Breaking changes
 
 - The SDK no longer automatically persists user data on disk. If you want to persist user data, make sure to save it manually.
+- `SentryUser.is_user_valid()` was replaces in favor of `SentryUser.is_empty()`.
 
 ### Features
 

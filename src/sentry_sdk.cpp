@@ -54,10 +54,17 @@ void SentrySDK::remove_tag(const String &p_key) {
 }
 
 void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
-	ERR_FAIL_NULL_MSG(p_user, "Sentry: Setting user failed - user object is null. Please, use Sentry.remove_user() to clear user info.");
-
 	user = p_user;
-	internal_sdk->set_user(p_user);
+
+	if (user.is_null()) {
+		user.instantiate();
+	}
+
+	if (user->is_empty()) {
+		internal_sdk->remove_user();
+	} else {
+		internal_sdk->set_user(p_user);
+	}
 }
 
 void SentrySDK::remove_user() {
@@ -107,8 +114,8 @@ void SentrySDK::_initialize() {
 		user.instantiate();
 		user->generate_new_id();
 		user->infer_ip_address();
-		set_user(user);
 	}
+	set_user(user);
 
 	internal_sdk->initialize();
 }
