@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- The SDK no longer automatically persists user data on disk. If you want to persist user data, make sure to save it manually.
+
 ### Features
 
-- Explicitly set `user.ip_address` to "{{auto}}" if `options.send_default_pii` is enabled and the user data is not set in a configuration script.
+- Explicitly set `user.ip_address` to "{{auto}}" if `options.send_default_pii` is enabled and the user data is not set in a configuration script ([#101](https://github.com/getsentry/sentry-godot/pull/101))
 
 ## 0.1.0
 
