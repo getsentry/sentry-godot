@@ -17,8 +17,9 @@ on:
 
 env:
   # Default SCons flags applied to each build.
-  SCONSFLAGS: verbose=yes debug_symbols=yes
+  SCONSFLAGS: verbose=yes debug_symbols=yes macos_deployment_target=11.0
   EM_VERSION: 3.1.45
+  XCODE_VERSION: 16.2
 
 jobs:
   build:
@@ -98,6 +99,13 @@ jobs:
         with:
           version: ${{env.EM_VERSION}}
           no-cache: true
+
+      - name: Select Xcode version
+        if: matrix.platform == 'macos'
+        run: |
+          sudo xcode-select -s /Applications/Xcode_${{env.XCODE_VERSION}}.app/Contents/Developer
+          xcodebuild -version
+          clang --version
 
       - name: Compile GDExtension library
         shell: bash
