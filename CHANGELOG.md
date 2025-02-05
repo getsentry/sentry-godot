@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add auto debug mode ([#73](https://github.com/getsentry/sentry-godot/pull/73))
+
 ## 0.1.1
 
 ### Fixes
