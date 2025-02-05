@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Explicitly set `user.ip_address` to "{{auto}}" if `options.send_default_pii` is enabled and the user data is not set in a configuration script.
+
 ## 0.1.0
 
 ### Features
