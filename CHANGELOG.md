@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add auto debug mode ([#73](https://github.com/getsentry/sentry-godot/pull/73))
+
 ## 0.1.1
 
 ### Fixes
@@ -19,7 +23,6 @@
 - New `dist` property in `SentryOptions` ([#74](https://github.com/getsentry/sentry-godot/pull/74))
 - Click to copy UUIDs in the demo project ([#78](https://github.com/getsentry/sentry-godot/pull/78))
 - Customize `SentryEvent` tags ([#72](https://github.com/getsentry/sentry-godot/pull/72))
-- Add auto debug mode ([#73](https://github.com/getsentry/sentry-godot/pull/73))
 
 ### Improvements
 
