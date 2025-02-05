@@ -61,6 +61,7 @@ void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
 }
 
 void SentrySDK::remove_user() {
+	user.instantiate();
 	internal_sdk->remove_user();
 }
 
