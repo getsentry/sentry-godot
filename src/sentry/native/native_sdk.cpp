@@ -273,6 +273,10 @@ void NativeSDK::initialize() {
 
 	int err = sentry_init(options);
 	initialized = (err == 0);
+
+	if (err != 0) {
+		ERR_PRINT("Sentry: Failed to initialize native SDK. Error code: " + itos(err));
+	}
 }
 
 NativeSDK::~NativeSDK() {

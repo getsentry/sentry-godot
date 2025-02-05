@@ -6,7 +6,7 @@ from functools import partial
 
 # *** Setting.
 
-VERSION = "0.1.0-dev"
+VERSION = "0.1.1"
 PROJECT_DIR = "project"
 EXTENSION_NAME = "sentrysdk"
 COMPATIBILITY_MINIMUM = "4.3"
@@ -190,7 +190,10 @@ if env["platform"] in ["linux", "macos", "windows"]:
     else:
         # TODO: macOS needs to use a different SDK.
         build_actions.append(
-            partial(run_cmd, args=["sh", "scripts/build-sentry-native.sh"])
+            partial(run_cmd, args=[
+                "sh", "scripts/build-sentry-native.sh",
+                "--macos-deployment-target", env["macos_deployment_target"]
+            ])
         ),
         build_actions.append(
             Copy(
