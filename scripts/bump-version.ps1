@@ -1,5 +1,5 @@
 Param(
-    [Parameter(Mandatory = $true)][String]$prevVersion,
+    [Parameter(Mandatory = $false)][String]$oldVersion,
     [Parameter(Mandatory = $true)][String]$newVersion
 )
 Set-StrictMode -Version latest
