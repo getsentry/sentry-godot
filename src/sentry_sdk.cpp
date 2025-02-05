@@ -8,6 +8,7 @@
 #include "sentry_configuration.h"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -18,6 +19,36 @@
 
 using namespace godot;
 using namespace sentry;
+
+namespace {
+
+void _fix_unix_executable_permissions(const String &p_path) {
+	if (!FileAccess::file_exists(p_path)) {
+		return;
+	}
+
+	BitField<FileAccess::UnixPermissionFlags> perm = FileAccess::get_unix_permissions(p_path);
+	BitField<FileAccess::UnixPermissionFlags> new_perm = perm;
+
+	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_OWNER)) {
+		new_perm.set_flag(FileAccess::UNIX_EXECUTE_OWNER);
+	}
+	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_GROUP)) {
+		new_perm.set_flag(FileAccess::UNIX_EXECUTE_GROUP);
+	}
+	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_OTHER)) {
+		new_perm.set_flag(FileAccess::UNIX_EXECUTE_OTHER);
+	}
+
+	if (perm != new_perm) {
+		godot::Error err = FileAccess::set_unix_permissions(p_path, new_perm);
+		if (err != OK) {
+			sentry::util::print_error("Failed to set executable permissions for %s: %s", p_path.utf8().get_data(), err);
+		}
+	}
+}
+
+} // unnamed namespace
 
 SentrySDK *SentrySDK::singleton = nullptr;
 
@@ -93,15 +124,14 @@ void SentrySDK::_init_contexts() {
 void SentrySDK::_initialize() {
 	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
-	if (enabled) {
 #ifdef NATIVE_SDK
-		internal_sdk = std::make_shared<NativeSDK>();
+	internal_sdk = std::make_shared<NativeSDK>();
+	enabled = true;
 #else
-		// Unsupported platform
-		sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
-		enabled = false;
+	// Unsupported platform
+	sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
+	enabled = false;
 #endif
-	}
 
 	if (!enabled) {
 		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
@@ -144,6 +174,7 @@ void SentrySDK::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_ERROR);
 	BIND_ENUM_CONSTANT(LEVEL_FATAL);
 
+	ClassDB::bind_method(D_METHOD("is_enabled"), &SentrySDK::is_enabled);
 	ClassDB::bind_method(D_METHOD("capture_message", "message", "level", "logger"), &SentrySDK::capture_message, DEFVAL(LEVEL_INFO), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "message", "category", "level", "type", "data"), &SentrySDK::add_breadcrumb, DEFVAL(LEVEL_INFO), DEFVAL("default"), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("get_last_event_id"), &SentrySDK::get_last_event_id);
@@ -173,18 +204,25 @@ SentrySDK::SentrySDK() {
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
-	enabled = SentryOptions::get_singleton()->is_enabled();
+	// Fix crashpad handler executable bit permissions on Unix platforms if the
+	// user extracts the distribution archive without preserving such permissions.
+	if (OS::get_singleton()->is_debug_build()) {
+		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/macos/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/linux/crashpad_handler");
+	}
 
-	if (!enabled) {
+  bool should_enable = SentryOptions::get_singleton()->is_enabled();
+
+	if (!should_enable) {
 		sentry::util::print_debug("Sentry SDK is disabled in the project settings.");
 	}
 
-	if (enabled && Engine::get_singleton()->is_editor_hint() && SentryOptions::get_singleton()->is_disabled_in_editor()) {
+	if (should_enable && Engine::get_singleton()->is_editor_hint() && SentryOptions::get_singleton()->is_disabled_in_editor()) {
 		sentry::util::print_debug("Sentry SDK is disabled in the editor. Tip: This can be changed in the project settings.");
-		enabled = false;
+		should_enable = false;
 	}
 
-	if (enabled) {
+	if (should_enable) {
 		if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
 			_initialize();
 			// Delay contexts initialization until the engine singletons are ready.
