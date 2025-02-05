@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+### Features
+
 - Add auto debug mode ([#73](https://github.com/getsentry/sentry-godot/pull/73))
+- New method `SentrySDK.is_enabled()` ([#82](https://github.com/getsentry/sentry-godot/pull/82))
 
 ## 0.1.1
 
@@ -29,7 +32,6 @@
 - New `dist` property in `SentryOptions` ([#74](https://github.com/getsentry/sentry-godot/pull/74))
 - Click to copy UUIDs in the demo project ([#78](https://github.com/getsentry/sentry-godot/pull/78))
 - Customize `SentryEvent` tags ([#72](https://github.com/getsentry/sentry-godot/pull/72))
-- New method `SentrySDK.is_enabled()` ([#82](https://github.com/getsentry/sentry-godot/pull/82))
 
 ### Improvements
 
