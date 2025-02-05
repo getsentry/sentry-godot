@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+### Features
+
 - Add auto debug mode ([#73](https://github.com/getsentry/sentry-godot/pull/73))
+- New method `SentrySDK.is_enabled()` ([#82](https://github.com/getsentry/sentry-godot/pull/82))
 
 ## 0.1.1
 
