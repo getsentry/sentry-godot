@@ -1,7 +1,5 @@
 #include "runtime_config.h"
 
-#include "sentry_options.h"
-
 namespace {
 
 inline String _ensure_string(const Variant &p_value, const String &p_fallback) {
