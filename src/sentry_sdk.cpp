@@ -85,24 +85,22 @@ void SentrySDK::remove_tag(const String &p_key) {
 }
 
 void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
-	ERR_FAIL_NULL_MSG(p_user, "Sentry: Setting user failed - user object is null. Please, use Sentry.remove_user() to clear user info.");
+	user = p_user;
 
-	// Initialize user ID if not supplied.
-	if (p_user->get_id().is_empty()) {
-		if (get_user()->get_id().is_empty() && SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
-			p_user->generate_new_id();
-		}
+	if (user.is_null()) {
+		user.instantiate();
 	}
 
-	// Save user in a runtime conf-file.
-	// TODO: Make saving optional?
-	runtime_config->set_user(p_user);
-	internal_sdk->set_user(p_user);
+	if (user->is_empty()) {
+		internal_sdk->remove_user();
+	} else {
+		internal_sdk->set_user(p_user);
+	}
 }
 
 void SentrySDK::remove_user() {
+	user.instantiate();
 	internal_sdk->remove_user();
-	runtime_config->set_user(memnew(SentryUser));
 }
 
 void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary &p_value) {
@@ -141,10 +139,15 @@ void SentrySDK::_initialize() {
 		return;
 	}
 
-	internal_sdk->initialize();
+	// Initialize user if it wasn't set explicitly in the configuration script.
+	if (user.is_null() && SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
+		user.instantiate();
+		user->generate_new_id();
+		user->infer_ip_address();
+	}
+	set_user(user);
 
-	// Initialize user.
-	set_user(runtime_config->get_user());
+	internal_sdk->initialize();
 }
 
 void SentrySDK::_check_if_configuration_succeeded() {
