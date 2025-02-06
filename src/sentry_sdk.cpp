@@ -9,6 +9,7 @@
 #include "sentry_configuration.h"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -19,6 +20,36 @@
 
 using namespace godot;
 using namespace sentry;
+
+namespace {
+
+void _fix_unix_executable_permissions(const String &p_path) {
+	if (!FileAccess::file_exists(p_path)) {
+		return;
+	}
+
+	BitField<FileAccess::UnixPermissionFlags> perm = FileAccess::get_unix_permissions(p_path);
+	BitField<FileAccess::UnixPermissionFlags> new_perm = perm;
+
+	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_OWNER)) {
+		new_perm.set_flag(FileAccess::UNIX_EXECUTE_OWNER);
+	}
+	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_GROUP)) {
+		new_perm.set_flag(FileAccess::UNIX_EXECUTE_GROUP);
+	}
+	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_OTHER)) {
+		new_perm.set_flag(FileAccess::UNIX_EXECUTE_OTHER);
+	}
+
+	if (perm != new_perm) {
+		godot::Error err = FileAccess::set_unix_permissions(p_path, new_perm);
+		if (err != OK) {
+			sentry::util::print_error("Failed to set executable permissions for %s: %s", p_path.utf8().get_data(), err);
+		}
+	}
+}
+
+} // unnamed namespace
 
 SentrySDK *SentrySDK::singleton = nullptr;
 
@@ -73,24 +104,22 @@ void SentrySDK::remove_tag(const String &p_key) {
 }
 
 void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
-	ERR_FAIL_NULL_MSG(p_user, "Sentry: Setting user failed - user object is null. Please, use Sentry.remove_user() to clear user info.");
+	user = p_user;
 
-	// Initialize user ID if not supplied.
-	if (p_user->get_id().is_empty()) {
-		if (get_user()->get_id().is_empty() && SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
-			p_user->generate_new_id();
-		}
+	if (user.is_null()) {
+		user.instantiate();
 	}
 
-	// Save user in a runtime conf-file.
-	// TODO: Make saving optional?
-	runtime_config->set_user(p_user);
-	internal_sdk->set_user(p_user);
+	if (user->is_empty()) {
+		internal_sdk->remove_user();
+	} else {
+		internal_sdk->set_user(p_user);
+	}
 }
 
 void SentrySDK::remove_user() {
+	user.instantiate();
 	internal_sdk->remove_user();
-	runtime_config->set_user(memnew(SentryUser));
 }
 
 void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary &p_value) {
@@ -114,15 +143,14 @@ void SentrySDK::_init_contexts() {
 void SentrySDK::_initialize() {
 	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
-	if (enabled) {
 #ifdef NATIVE_SDK
-		internal_sdk = std::make_shared<NativeSDK>();
+	internal_sdk = std::make_shared<NativeSDK>();
+	enabled = true;
 #else
-		// Unsupported platform
-		sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
-		enabled = false;
+	// Unsupported platform
+	sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
+	enabled = false;
 #endif
-	}
 
 	if (!enabled) {
 		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
@@ -130,10 +158,15 @@ void SentrySDK::_initialize() {
 		return;
 	}
 
-	internal_sdk->initialize();
+	// Initialize user if it wasn't set explicitly in the configuration script.
+	if (user.is_null() && SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
+		user.instantiate();
+		user->generate_new_id();
+		user->infer_ip_address();
+	}
+	set_user(user);
 
-	// Initialize user.
-	set_user(runtime_config->get_user());
+	internal_sdk->initialize();
 }
 
 void SentrySDK::_check_if_configuration_succeeded() {
@@ -160,6 +193,7 @@ void SentrySDK::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_ERROR);
 	BIND_ENUM_CONSTANT(LEVEL_FATAL);
 
+	ClassDB::bind_method(D_METHOD("is_enabled"), &SentrySDK::is_enabled);
 	ClassDB::bind_method(D_METHOD("capture_message", "message", "level", "logger"), &SentrySDK::capture_message, DEFVAL(LEVEL_INFO), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "message", "category", "level", "type", "data"), &SentrySDK::add_breadcrumb, DEFVAL(LEVEL_INFO), DEFVAL("default"), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("create_breadcrumb"), &SentrySDK::create_breadcrumb);
@@ -193,18 +227,25 @@ SentrySDK::SentrySDK() {
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
-	enabled = SentryOptions::get_singleton()->is_enabled();
+	// Fix crashpad handler executable bit permissions on Unix platforms if the
+	// user extracts the distribution archive without preserving such permissions.
+	if (OS::get_singleton()->is_debug_build()) {
+		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/macos/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/linux/crashpad_handler");
+	}
 
-	if (!enabled) {
+  bool should_enable = SentryOptions::get_singleton()->is_enabled();
+
+	if (!should_enable) {
 		sentry::util::print_debug("Sentry SDK is disabled in the project settings.");
 	}
 
-	if (enabled && Engine::get_singleton()->is_editor_hint() && SentryOptions::get_singleton()->is_disabled_in_editor()) {
+	if (should_enable && Engine::get_singleton()->is_editor_hint() && SentryOptions::get_singleton()->is_disabled_in_editor()) {
 		sentry::util::print_debug("Sentry SDK is disabled in the editor. Tip: This can be changed in the project settings.");
-		enabled = false;
+		should_enable = false;
 	}
 
-	if (enabled) {
+	if (should_enable) {
 		if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
 			_initialize();
 			// Delay contexts initialization until the engine singletons are ready.

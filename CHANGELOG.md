@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+
+- The SDK no longer automatically persists user data on disk. If you want to persist user data, make sure to save it manually.
+- `SentryUser.is_user_valid()` was replaces in favor of `SentryUser.is_empty()`.
+
+### Features
+
+- Add auto debug mode ([#73](https://github.com/getsentry/sentry-godot/pull/73))
+- New method `SentrySDK.is_enabled()` ([#82](https://github.com/getsentry/sentry-godot/pull/82))
+- Explicitly set `user.ip_address` to "{{auto}}" if `options.send_default_pii` is enabled and the user data is not set in a configuration script ([#101](https://github.com/getsentry/sentry-godot/pull/101))
+
+### Dependencies
+
+- Bump Native SDK from v0.7.19 to v0.7.20 ([#84](https://github.com/getsentry/sentry-godot/pull/84))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0720)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.19...0.7.20)
+
+## 0.1.1
+
+### Fixes
+
+- Fix crashes on macOS with GodotSteam in the same project ([#92](https://github.com/getsentry/sentry-godot/pull/92))
+- Autofix crashpad handler executable bit permissions on macOS and Linux ([#96](https://github.com/getsentry/sentry-godot/pull/96))
+- Fix build warnings on macOS, use newer Xcode & synchronize macOS deployment target for better compatibility with older OS versions ([#93](https://github.com/getsentry/sentry-godot/pull/93))
+
 ## 0.1.0
 
 ### Features

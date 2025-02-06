@@ -29,7 +29,7 @@ void _init_logger() {
 		sentry::util::print_debug("error logger is disabled in options");
 		return;
 	}
-	if (!SentrySDK::get_singleton()->is_initialized()) {
+	if (!SentrySDK::get_singleton()->is_enabled()) {
 		sentry::util::print_debug("error logger is not started because SDK is not initialized");
 		return;
 	}

@@ -40,13 +40,20 @@ public:
 private:
 	static Ref<SentryOptions> singleton;
 
+	enum class DebugMode {
+		DEBUG_OFF = 0,
+		DEBUG_ON = 1,
+		DEBUG_AUTO = 2,
+	};
+	static constexpr DebugMode DEBUG_DEFAULT = DebugMode::DEBUG_AUTO;
+
 	bool enabled = true;
 	bool disabled_in_editor = true;
 	String dsn = "";
 	String release = "{app_name}@{app_version}";
 	String dist = "";
-	String environment;
 	bool debug = false;
+	String environment;
 	double sample_rate = 1.0;
 	bool attach_log = true;
 	int max_breadcrumbs = 100;
@@ -65,6 +72,8 @@ private:
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
+
+	void _init_debug_option(DebugMode p_debug_mode);
 
 protected:
 	static void _bind_methods();
@@ -93,7 +102,7 @@ public:
 	_FORCE_INLINE_ void set_environment(const String &p_environment) { environment = p_environment; }
 
 	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }
-	_FORCE_INLINE_ void set_debug_enabled(bool p_debug) { debug = p_debug; }
+	_FORCE_INLINE_ void set_debug_enabled(bool p_enabled) { debug = p_enabled; }
 
 	_FORCE_INLINE_ double get_sample_rate() const { return sample_rate; }
 	_FORCE_INLINE_ void set_sample_rate(double p_sample_rate) { sample_rate = p_sample_rate; }

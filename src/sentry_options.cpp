@@ -3,6 +3,7 @@
 #include "sentry/environment.h"
 #include "sentry/simple_bind.h"
 
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 
 namespace {
@@ -54,7 +55,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/config/dsn", p_options->dsn);
 	_define_setting("sentry/config/release", p_options->release);
 	_define_setting("sentry/config/dist", p_options->dist);
-	_define_setting("sentry/config/debug", p_options->debug);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/config/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/config/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate);
 	_define_setting("sentry/config/attach_log", p_options->attach_log);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/config/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs);
@@ -90,7 +91,12 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->disabled_in_editor = ProjectSettings::get_singleton()->get_setting("sentry/config/disabled_in_editor", p_options->disabled_in_editor);
 	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/config/dsn", p_options->dsn);
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/config/dist", p_options->dist);
-	p_options->debug = ProjectSettings::get_singleton()->get_setting("sentry/config/debug", p_options->debug);
+
+	// DebugMode is only used to represent the debug option in the project settings.
+	// The user may also set the `debug` option explicitly in a configuration script.
+	DebugMode mode = (DebugMode)(int)ProjectSettings::get_singleton()->get_setting("sentry/config/debug_printing", (int)SentryOptions::DEBUG_DEFAULT);
+	p_options->_init_debug_option(mode);
+
 	p_options->sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/config/sample_rate", p_options->sample_rate);
 	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/config/attach_log", p_options->attach_log);
 	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/config/max_breadcrumbs", p_options->max_breadcrumbs);
@@ -108,6 +114,11 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->error_logger_limits->throttle_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/throttle_window_ms", p_options->error_logger_limits->throttle_window_ms);
 
 	p_options->configuration_script = ProjectSettings::get_singleton()->get_setting("sentry/config/configuration_script", p_options->configuration_script);
+}
+
+void SentryOptions::_init_debug_option(DebugMode p_mode) {
+	ERR_FAIL_NULL(OS::get_singleton());
+	debug = (p_mode == DebugMode::DEBUG_ON) || (p_mode == DebugMode::DEBUG_AUTO && OS::get_singleton()->is_debug_build());
 }
 
 void SentryOptions::create_singleton() {
@@ -140,8 +151,8 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dsn"), set_dsn, get_dsn);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "release"), set_release, get_release);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dist"), set_dist, get_dist);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "environment"), set_environment, get_environment);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "debug"), set_debug_enabled, is_debug_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "environment"), set_environment, get_environment);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "sample_rate"), set_sample_rate, get_sample_rate);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_log"), set_attach_log, is_attach_log_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "max_breadcrumbs"), set_max_breadcrumbs, get_max_breadcrumbs);
@@ -171,6 +182,7 @@ void SentryOptions::_bind_methods() {
 SentryOptions::SentryOptions() {
 	error_logger_limits.instantiate(); // Ensure limits are initialized.
 	environment = sentry::environment::detect_godot_environment();
+	_init_debug_option(DEBUG_DEFAULT);
 }
 
 SentryOptions::~SentryOptions() {

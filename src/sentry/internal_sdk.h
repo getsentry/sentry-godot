@@ -50,7 +50,6 @@ public:
 	virtual Ref<SentryEvent> create_event() = 0;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) = 0;
 
-	virtual bool is_initialized() = 0;
 	virtual void initialize() = 0;
 
 	virtual ~InternalSDK() = default;
