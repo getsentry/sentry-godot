@@ -9,6 +9,7 @@
 #include "sentry/util.h"
 #include "sentry_options.h"
 
+#include <chrono>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -53,9 +54,22 @@ inline void inject_contexts(sentry_value_t p_event) {
 	}
 }
 
+void test_performance(sentry_value_t ev) {
+	sentry_value_t contexts = sentry_value_get_by_key(ev, "contexts");
+	auto start = std::chrono::high_resolution_clock::now();
+	const Dictionary context_dic = sentry::native::sentry_value_to_variant(contexts);
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> duration = end - start;
+	std::cout << "!!!!!!!!!!!!!!!!!!!!! [MEASUREMENTS] Time took: "
+			  << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+			  << " ns" << std::endl;
+	sentry::util::print_debug(context_dic);
+}
+
 sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	sentry::util::print_debug("handling before_send");
 	inject_contexts(event);
+	test_performance(event);
 	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
 		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
 		Ref<NativeEvent> processed = before_send.call(event_obj);

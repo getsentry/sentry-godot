@@ -84,13 +84,14 @@ Variant sentry_value_to_variant(sentry_value_t p_value) {
 		} break;
 		case SENTRY_VALUE_TYPE_OBJECT: {
 			Dictionary dictionary;
-			for (int i = 0; i < sentry_value_get_length(p_value); i++) {
-				const char *ckey = sentry_value_get_key(p_value, i);
-				const String key{ ckey };
-				Variant value{ sentry_value_to_variant(
-						sentry_value_get_by_key(p_value, ckey)) };
-				dictionary[key] = value;
+			sentry_item_iter_t *it = sentry_value_new_item_iter(p_value);
+			while (sentry_value_item_iter_valid(it)) {
+				const char *key = sentry_value_item_iter_get_key(it);
+				sentry_value_t item_value = sentry_value_item_iter_get_value(it);
+				dictionary[String{ key }] = sentry_value_to_variant(item_value);
+				sentry_value_item_iter_next(it);
 			}
+			sentry_free(it);
 			return dictionary;
 		} break;
 		case SENTRY_VALUE_TYPE_NULL:
