@@ -10,7 +10,7 @@ static func configure_options(options: SentryOptions):
 	var idx := args.find("-a")
 	if idx == -1 or args.size() == idx + 1:
 		return
-	var path := "res://" + args[idx + 1]
+	var path := args[idx + 1]
 	if not path.ends_with(".gd"):
 		return
 	if not FileAccess.file_exists(path):
