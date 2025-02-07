@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="attach_log" type="bool" setter="set_attach_log" getter="is_attach_log_enabled" default="true">
+		</member>
+		<member name="before_send" type="Callable" setter="set_before_send" getter="get_before_send" default="Callable()">
+		</member>
+		<member name="debug" type="bool" setter="set_debug_enabled" getter="is_debug_enabled" default="true">
+		</member>
+		<member name="disabled_in_editor" type="bool" setter="set_disabled_in_editor" getter="is_disabled_in_editor" default="true">
+		</member>
+		<member name="dist" type="String" setter="set_dist" getter="get_dist" default="&quot;&quot;">
+		</member>
+		<member name="dsn" type="String" setter="set_dsn" getter="get_dsn" default="&quot;&quot;">
+		</member>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+		</member>
+		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;editor_dev&quot;">
+		</member>
+		<member name="error_logger_breadcrumb_mask" type="int" setter="set_error_logger_breadcrumb_mask" getter="get_error_logger_breadcrumb_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="15">
+		</member>
+		<member name="error_logger_enabled" type="bool" setter="set_error_logger_enabled" getter="is_error_logger_enabled" default="true">
+		</member>
+		<member name="error_logger_event_mask" type="int" setter="set_error_logger_event_mask" getter="get_error_logger_event_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="13">
+		</member>
+		<member name="error_logger_include_source" type="bool" setter="set_error_logger_include_source" getter="is_error_logger_include_source_enabled" default="true">
+		</member>
+		<member name="error_logger_limits" type="SentryLoggerLimits" setter="set_error_logger_limits" getter="get_error_logger_limits">
+		</member>
+		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">
+		</member>
+		<member name="on_crash" type="Callable" setter="set_on_crash" getter="get_on_crash" default="Callable()">
+		</member>
+		<member name="release" type="String" setter="set_release" getter="get_release" default="&quot;{app_name}@{app_version}&quot;">
+		</member>
+		<member name="sample_rate" type="float" setter="set_sample_rate" getter="get_sample_rate" default="1.0">
+		</member>
+		<member name="send_default_pii" type="bool" setter="set_send_default_pii" getter="is_send_default_pii_enabled" default="false">
+		</member>
+	</members>
+	<constants>
+		<constant name="MASK_NONE" value="0" enum="GodotErrorMask" is_bitfield="true">
+		</constant>
+		<constant name="MASK_ERROR" value="1" enum="GodotErrorMask" is_bitfield="true">
+		</constant>
+		<constant name="MASK_WARNING" value="2" enum="GodotErrorMask" is_bitfield="true">
+		</constant>
+		<constant name="MASK_SCRIPT" value="4" enum="GodotErrorMask" is_bitfield="true">
+		</constant>
+		<constant name="MASK_SHADER" value="8" enum="GodotErrorMask" is_bitfield="true">
+		</constant>
+	</constants>
+</class>

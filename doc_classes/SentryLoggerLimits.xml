@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryLoggerLimits" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="events_per_frame" type="int" setter="set_events_per_frame" getter="get_events_per_frame" default="5">
+		</member>
+		<member name="repeated_error_window_ms" type="int" setter="set_repeated_error_window_ms" getter="get_repeated_error_window_ms" default="1000">
+		</member>
+		<member name="throttle_events" type="int" setter="set_throttle_events" getter="get_throttle_events" default="20">
+		</member>
+		<member name="throttle_window_ms" type="int" setter="set_throttle_window_ms" getter="get_throttle_window_ms" default="10000">
+		</member>
+	</members>
+</class>

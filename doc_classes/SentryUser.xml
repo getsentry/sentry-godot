@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryUser" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="generate_new_id">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="infer_ip_address">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="email" type="String" setter="set_email" getter="get_email" default="&quot;&quot;">
+		</member>
+		<member name="id" type="String" setter="set_id" getter="get_id" default="&quot;&quot;">
+		</member>
+		<member name="ip_address" type="String" setter="set_ip_address" getter="get_ip_address" default="&quot;&quot;">
+		</member>
+		<member name="username" type="String" setter="set_username" getter="get_username" default="&quot;&quot;">
+		</member>
+	</members>
+</class>

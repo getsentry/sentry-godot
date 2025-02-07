@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentrySDK" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Entry point to Sentry SDK for Godot Engine.
+	</brief_description>
+	<description>
+		Provides a set of functions to log errors and events to Sentry and enrich them with tags, breadcrumbs and arbitrary context.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_breadcrumb">
+			<return type="void" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="category" type="String" />
+			<param index="2" name="level" type="int" enum="SentrySDK.Level" default="1" />
+			<param index="3" name="type" type="String" default="&quot;default&quot;" />
+			<param index="4" name="data" type="Dictionary" default="{}" />
+			<description>
+				Adds a breadcrumb to the next event.
+				TODO: explain breadcrumb.
+			</description>
+		</method>
+		<method name="capture_event">
+			<return type="String" />
+			<param index="0" name="event" type="SentryEvent" />
+			<description>
+				Captures [param event] and sends it to Sentry, returning the event ID. You can create an event with [method SentrySDK.create_event].
+			</description>
+		</method>
+		<method name="capture_message">
+			<return type="String" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="level" type="int" enum="SentrySDK.Level" default="1" />
+			<param index="2" name="logger" type="String" default="&quot;&quot;" />
+			<description>
+				Captures an event with [param message] and sends it to Sentry, returning the event ID.
+			</description>
+		</method>
+		<method name="create_event" qualifiers="const">
+			<return type="SentryEvent" />
+			<description>
+				Creates a new [SentryEvent] object. You can capture the event with [method SentrySDK.capture_event].
+			</description>
+		</method>
+		<method name="get_last_event_id" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the ID of the last captured event.
+			</description>
+		</method>
+		<method name="get_user" qualifiers="const">
+			<return type="SentryUser" />
+			<description>
+				Returns the current user. See [SentryUser].
+			</description>
+		</method>
+		<method name="is_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the SDK is enabled, i.e. whether the SDK is initialized and active.
+			</description>
+		</method>
+		<method name="remove_tag">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<description>
+				Removes a tag with the specified [param key].
+			</description>
+		</method>
+		<method name="remove_user">
+			<return type="void" />
+			<description>
+				Removes user data previously set with [method SentrySDK.set_user].
+			</description>
+		</method>
+		<method name="set_context">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<param index="1" name="value" type="Dictionary" />
+			<description>
+				Adds a custom context with the specified [param key] and [param value]. [param value] should be a dictionary with String keys. It can have multiple levels of nesting.
+			</description>
+		</method>
+		<method name="set_tag">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<param index="1" name="value" type="String" />
+			<description>
+				Assigns a tag with the specified [param key] and [param value].
+			</description>
+		</method>
+		<method name="set_user">
+			<return type="void" />
+			<param index="0" name="user" type="SentryUser" />
+			<description>
+				Assigns user data. See [SentryUser].
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="LEVEL_DEBUG" value="0" enum="Level">
+		</constant>
+		<constant name="LEVEL_INFO" value="1" enum="Level">
+		</constant>
+		<constant name="LEVEL_WARNING" value="2" enum="Level">
+		</constant>
+		<constant name="LEVEL_ERROR" value="3" enum="Level">
+		</constant>
+		<constant name="LEVEL_FATAL" value="4" enum="Level">
+			This is the highest level and is used for events that led to the application crashing.
+		</constant>
+	</constants>
+</class>
