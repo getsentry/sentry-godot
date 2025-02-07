@@ -4,8 +4,8 @@
 
 #include <godot_cpp/variant/packed_string_array.hpp>
 
-bool SentryUser::is_user_valid() const {
-	return !id.is_empty() || !username.is_empty() || !email.is_empty() || !ip_address.is_empty();
+bool SentryUser::is_empty() const {
+	return id.is_empty() && username.is_empty() && email.is_empty() && ip_address.is_empty();
 }
 
 String SentryUser::_to_string() const {
@@ -47,6 +47,6 @@ void SentryUser::_bind_methods() {
 
 	// Other methods
 	ClassDB::bind_method(D_METHOD("infer_ip_address"), &SentryUser::infer_ip_address);
-	ClassDB::bind_method(D_METHOD("is_user_valid"), &SentryUser::is_user_valid);
+	ClassDB::bind_method(D_METHOD("is_empty"), &SentryUser::is_empty);
 	ClassDB::bind_method(D_METHOD("generate_new_id"), &SentryUser::generate_new_id);
 }

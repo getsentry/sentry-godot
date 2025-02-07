@@ -28,6 +28,7 @@ private:
 
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
+	Ref<SentryUser> user;
 	bool enabled = false;
 	bool configuration_succeeded = false;
 
@@ -48,7 +49,6 @@ public:
 	// * Exported API
 
 	bool is_enabled() const { return enabled; }
-	bool is_initialized() const { return internal_sdk->is_initialized(); }
 
 	void add_breadcrumb(const String &p_message, const String &p_category, sentry::Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary());
@@ -58,7 +58,7 @@ public:
 	void remove_tag(const String &p_key);
 
 	void set_user(const Ref<SentryUser> &p_user);
-	Ref<SentryUser> get_user() const { return runtime_config->get_user(); }
+	Ref<SentryUser> get_user() const { return user; }
 	void remove_user();
 
 	String capture_message(const String &p_message, sentry::Level p_level = sentry::LEVEL_INFO, const String &p_logger = "");

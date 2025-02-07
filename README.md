@@ -1,10 +1,10 @@
 # Sentry for Godot Engine
 
-This SDK is a work in progress
+This SDK is actively evolving and may still be incomplete. Documentation is on the way, but in the meantime, feel free to explore the demo `project/` for usage examples.
 
 ## Building Sentry Godot SDK
 
-Godot Sentry SDK can currently be built for Windows and Linux platforms.
+Godot Sentry SDK can be built for Windows, Linux, and macOS platforms. Pre-built extension libraries with the demo project are available in [**Releases**](https://github.com/getsentry/sentry-godot/releases).
 
 ### Setting up SCons
 

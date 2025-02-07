@@ -23,8 +23,8 @@ func _assert_users_are_equal(user1: SentryUser, user2: SentryUser) -> void:
 ## SentryUser data should be correctly saved.
 func test_sentry_user_assignment() -> void:
 	SentrySDK.set_user(_make_test_user())
+	assert_bool(SentrySDK.get_user().is_empty()).is_false()
 	_assert_users_are_equal(SentrySDK.get_user(), _make_test_user())
-	assert_bool(SentrySDK.get_user().is_user_valid()).is_true()
 
 
 ## SentryUser data should be properly removed.
@@ -37,7 +37,7 @@ func test_sentry_user_remove() -> void:
 	assert_str(user.username).is_empty()
 	assert_str(user.ip_address).is_empty()
 	assert_str(user.id).is_empty()
-	assert_bool(user.is_user_valid()).is_false()
+	assert_bool(user.is_empty()).is_true()
 
 
 ## Setting new user data should not contain leftovers from previous data.

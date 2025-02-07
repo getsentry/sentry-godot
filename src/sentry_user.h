@@ -35,7 +35,7 @@ public:
 
 	void infer_ip_address() { ip_address = "{{auto}}"; }
 
-	bool is_user_valid() const;
+	bool is_empty() const;
 
 	void generate_new_id();
 };
