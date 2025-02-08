@@ -49,7 +49,7 @@ Write-Host "--------------------------------------------------------------------
 Highlight "Tests finished."
 Write-Host "Summary: $numPassed passed, $numFailed failed."
 if ($exitCode -eq 0) {
-    Write-Host "All isolated test suites passed."
+    Write-Host "SUCCESS: All isolated tests suites passed." -ForegroundColor Green
 } else {
     Write-Warning "Some isolated test suites failed!"
 }
