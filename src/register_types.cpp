@@ -31,6 +31,7 @@ void _init_logger() {
 		return;
 	}
 	// Add experimental logger to scene tree.
+	sentry::util::print_debug("starting error logger");
 	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	if (sml && sml->get_root()) {
 		sml->get_root()->add_child(memnew(SentryLogger));
@@ -63,9 +64,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		SentrySDK *sentry_singleton = memnew(SentrySDK);
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
 
-		if (!Engine::get_singleton()->is_editor_hint() && sentry_singleton->is_enabled()) {
-			callable_mp_static(_init_logger).call_deferred();
-		}
+		callable_mp_static(_init_logger).call_deferred();
 	}
 }
 
