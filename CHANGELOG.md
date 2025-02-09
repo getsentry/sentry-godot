@@ -13,6 +13,10 @@
 - New method `SentrySDK.is_enabled()` ([#82](https://github.com/getsentry/sentry-godot/pull/82))
 - Explicitly set `user.ip_address` to "{{auto}}" if `options.send_default_pii` is enabled and the user data is not set in a configuration script ([#101](https://github.com/getsentry/sentry-godot/pull/101))
 
+### Fixes
+
+- Fix issues with exporting crashpad_handler dependency and resolving path to crashpad_handler on macOS in exported projects ([#108](https://github.com/getsentry/sentry-godot/pull/108))
+
 ### Dependencies
 
 - Bump Native SDK from v0.7.19 to v0.7.20 ([#84](https://github.com/getsentry/sentry-godot/pull/84))
