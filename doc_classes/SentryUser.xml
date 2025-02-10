@@ -19,7 +19,7 @@
 		<method name="infer_ip_address">
 			<return type="void" />
 			<description>
-				Infer the IP address of the user. This method sets [member ip_address] to [code]{{auto}}[/code].
+				Infers the user's IP address. This method sets [member ip_address] to [code]{{auto}}[/code].
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
