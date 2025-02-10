@@ -17,8 +17,7 @@
 			<param index="3" name="type" type="String" default="&quot;default&quot;" />
 			<param index="4" name="data" type="Dictionary" default="{}" />
 			<description>
-				Adds a breadcrumb to the next event.
-				TODO: explain breadcrumb.
+				Adds a breadcrumb to the next event. Sentry uses breadcrumbs to create a trail of events that happened prior to an issue.
 			</description>
 		</method>
 		<method name="capture_event">
@@ -52,26 +51,26 @@
 		<method name="get_user" qualifiers="const">
 			<return type="SentryUser" />
 			<description>
-				Returns the current user. See [SentryUser].
+				Returns the currently set user. See [SentryUser].
 			</description>
 		</method>
 		<method name="is_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns whether the SDK is enabled, i.e. whether the SDK is initialized and active.
+				Returns whether the SDK is enabled, i.e. whether it is initialized and active.
 			</description>
 		</method>
 		<method name="remove_tag">
 			<return type="void" />
 			<param index="0" name="key" type="String" />
 			<description>
-				Removes a tag with the specified [param key].
+				Removes the tag with the specified [param key].
 			</description>
 		</method>
 		<method name="remove_user">
 			<return type="void" />
 			<description>
-				Removes user data previously set with [method SentrySDK.set_user].
+				Removes the user data previously set with [method SentrySDK.set_user].
 			</description>
 		</method>
 		<method name="set_context">
@@ -79,7 +78,7 @@
 			<param index="0" name="key" type="String" />
 			<param index="1" name="value" type="Dictionary" />
 			<description>
-				Adds a custom context with the specified [param key] and [param value]. [param value] should be a dictionary with String keys. It can have multiple levels of nesting.
+				Adds a custom context with the specified [parameter key] and [parameter value]. The [parameter value] should be a dictionary with string keys and can have multiple levels of nesting.
 			</description>
 		</method>
 		<method name="set_tag">
