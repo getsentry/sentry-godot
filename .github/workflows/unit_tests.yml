@@ -78,10 +78,9 @@ jobs:
 
       - name: Run isolated tests
         if: success() || failure()
-        shell: bash
+        shell: pwsh
         timeout-minutes: 5
-        run: |
-          ./scripts/run-isolated-tests.sh
+        run: ./scripts/run-isolated-tests.ps1
 
       - name: Upload results
         if: always() # do this step even if the tests fail
