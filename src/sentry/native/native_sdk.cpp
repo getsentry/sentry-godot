@@ -239,7 +239,7 @@ void NativeSDK::initialize() {
 #elif MACOS_ENABLED
 	handler_fn = "crashpad_handler";
 	platform_dir = "macos";
-	export_subdir = "Contents/Frameworks";
+	export_subdir = "../Frameworks";
 #elif WINDOWS_ENABLED
 	handler_fn = "crashpad_handler.exe";
 	platform_dir = "windows";
