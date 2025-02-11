@@ -1,59 +1,93 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SentryOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		Contains Sentry SDK options.
 	</brief_description>
 	<description>
+		Defines options for the Sentry SDK. These options can be modified in the Project Settings under the [b]Sentry[/b] category or through a user configuration script. See [SentryConfiguration] for details on creating such a script.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="attach_log" type="bool" setter="set_attach_log" getter="is_attach_log_enabled" default="true">
+			If [code]true[/code], the SDK will attach the log file to the event.
 		</member>
 		<member name="before_send" type="Callable" setter="set_before_send" getter="get_before_send" default="Callable()">
+			If assigned, this callback will be called before the event is sent to Sentry. You can set it in a [SentryConfiguration] script.
+			The callback must return either the same event object, with or without modifications, or [code]null[/code]. If [code]null[/code] is returned, the event will be discarded.
+			TODO: add example code
 		</member>
 		<member name="debug" type="bool" setter="set_debug_enabled" getter="is_debug_enabled" default="true">
+			If [code]true[/code], the SDK prints debug messages to standard output. These messages do not appear in the Godot console but can be seen when launching Godot from a terminal.
 		</member>
 		<member name="disabled_in_editor" type="bool" setter="set_disabled_in_editor" getter="is_disabled_in_editor" default="true">
+			If [code]true[/code], the SDK will not initialize in the Godot editor.
 		</member>
 		<member name="dist" type="String" setter="set_dist" getter="get_dist" default="&quot;&quot;">
+			The application's distribution.
+			TODO: explain it
 		</member>
 		<member name="dsn" type="String" setter="set_dsn" getter="get_dsn" default="&quot;&quot;">
+			Sentry DSN.
+			TODO: explain it
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			If [code]false[/code], the SDK will not initialize. This is useful for temporarily disabling the SDK in Project Settings, or in a [SentryConfiguration] script.
 		</member>
 		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;editor_dev&quot;">
+			Environment for the event. Environment is automatically detected by the SDK. But you can also assign it in a [SentryConfiguration] script.
+			TODO: define environment
 		</member>
 		<member name="error_logger_breadcrumb_mask" type="int" setter="set_error_logger_breadcrumb_mask" getter="get_error_logger_breadcrumb_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="15">
+			Specifies which types of errors are captured as breadcrumbs.
 		</member>
 		<member name="error_logger_enabled" type="bool" setter="set_error_logger_enabled" getter="is_error_logger_enabled" default="true">
+			If [code]true[/code], the SDK will capture logged errors as events and/or breadcrumbs. Crashes are always captured.
 		</member>
 		<member name="error_logger_event_mask" type="int" setter="set_error_logger_event_mask" getter="get_error_logger_event_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="13">
+			Specifies which types of errors are captured as events.
 		</member>
 		<member name="error_logger_include_source" type="bool" setter="set_error_logger_include_source" getter="is_error_logger_include_source_enabled" default="true">
+			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available.
 		</member>
 		<member name="error_logger_limits" type="SentryLoggerLimits" setter="set_error_logger_limits" getter="get_error_logger_limits">
+			Defines reporting limits for the error logger. These limits are used to prevent the SDK from sending too many non-critical error events. See [SentryLoggerLimits].
 		</member>
 		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">
+			Maximum number of breadcrumbs to send with an event.
 		</member>
 		<member name="on_crash" type="Callable" setter="set_on_crash" getter="get_on_crash" default="Callable()">
+			If assigned, this callback will be called before the crash event is sent to Sentry. You can set it in a [SentryConfiguration] script.
+			The callback must return either the same event object, with or without modifications, or [code]null[/code]. If [code]null[/code] is returned, the event will be discarded.
+			TODO: add example code
 		</member>
 		<member name="release" type="String" setter="set_release" getter="get_release" default="&quot;{app_name}@{app_version}&quot;">
+			Release version of the application. This value must be unique across all projects in your organization. Suggested format is [code]my-game@1.0.0[/code].
+			You can use the [code]{app_name}[/code] and [code]{app_version}[/code] placeholders to insert the application name and version from the Project Settings.
 		</member>
 		<member name="sample_rate" type="float" setter="set_sample_rate" getter="get_sample_rate" default="1.0">
+			Sample rate for the SDK.
+			TODO: explain it
 		</member>
 		<member name="send_default_pii" type="bool" setter="set_send_default_pii" getter="is_send_default_pii_enabled" default="false">
+			If [code]true[/code], the SDK will include PII (Personally Identifiable Information) with the events.
 		</member>
 	</members>
 	<constants>
 		<constant name="MASK_NONE" value="0" enum="GodotErrorMask" is_bitfield="true">
+			No logger errors will be captured.
 		</constant>
 		<constant name="MASK_ERROR" value="1" enum="GodotErrorMask" is_bitfield="true">
+			Native errors will be captured. These are typically C++ errors, which may also originate from a script.
 		</constant>
 		<constant name="MASK_WARNING" value="2" enum="GodotErrorMask" is_bitfield="true">
+			Warnings will be captured.
 		</constant>
 		<constant name="MASK_SCRIPT" value="4" enum="GodotErrorMask" is_bitfield="true">
+			Script errors will be captured.
 		</constant>
 		<constant name="MASK_SHADER" value="8" enum="GodotErrorMask" is_bitfield="true">
+			Shader errors will be captured.
 		</constant>
 	</constants>
 </class>

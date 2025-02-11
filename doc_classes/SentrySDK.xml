@@ -8,7 +8,7 @@
 		Sentry SDK hooks into Godot's logging and automatically reports errors. An [b]event[/b] is one instance of sending data to Sentry. Generally, this data is an error or exception.
 		While capturing an event, you can also record the [b]breadcrumbs[/b] that lead up to that event. Breadcrumbs are different from events: they will not create an event in Sentry, but will be buffered until the next event is sent. Breadcrumbs can be captured with [method SentrySDK.add_breadcrumb] method. Learn more about breadcrumbs in our [url=https://docs.sentry.io/platforms/godot/enriching-events/breadcrumbs/]Godot SDK documentation[/url].
 		Another common operation is to capture a bare message. A [b]message[/b] is textual information that should be sent to Sentry. Typically, our SDKs don't automatically capture messages, but you can capture them manually. Messages show up as issues on your issue stream, with the message as the issue name. To simplify creating events, there are shorthand functions that construct and capture prepopulated event objects. The most important one is [method SentrySDK.capture_message].
-		For more information, see [url=https://docs.sentry.io/platforms/godot/]Godot SDK documentation[/url].
+		For more information, consult the [url=https://docs.sentry.io/platforms/godot/]Godot SDK documentation[/url].
 	</description>
 	<tutorials>
 	</tutorials>
