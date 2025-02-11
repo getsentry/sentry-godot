@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SentryConfiguration" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		Base class for user configuration script in Sentry SDK.
 	</brief_description>
 	<description>
+		Allows configuring Sentry SDK from GDScript. The [method _configure] method is called just before Sentry SDK initializes.
+		To define a configuration script, create a new script that extends the [SentryConfiguration] class. Then, assign your configuration script in the Project Settings under the [b]Sentry[/b] category.
+		[b]Important[/b]: If a user configuration script is assigned, SDK initialization will be delayed until [b]ScriptServer[/b] becomes available during game startup.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -11,6 +15,7 @@
 			<return type="void" />
 			<param index="0" name="options" type="SentryOptions" />
 			<description>
+				Called just before the Sentry SDK initializes. You can override SDK [param options] here and register [member SentryOptions.before_send] and [member SentryOptions.on_crash] callbacks if needed.
 			</description>
 		</method>
 	</methods>
