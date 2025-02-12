@@ -5,13 +5,13 @@
 	</brief_description>
 	<description>
 		Defines options for the Sentry SDK. These options can be modified in the Project Settings under the [b]Sentry[/b] category or through a user configuration script. See [SentryConfiguration] for details on creating such a script.
-		For more information, consult [url=https://docs.sentry.io/platforms/godot/configuration/options/]Godto SDK Options[/url] in the official documentation.
+		To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/options/]Options in the Sentry SDK documentation[/url].
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="attach_log" type="bool" setter="set_attach_log" getter="is_attach_log_enabled" default="true">
-			If [code]true[/code], the SDK will attach the log file to the event.
+			If [code]true[/code], the SDK will attach the Godot log file to the event.
 		</member>
 		<member name="before_send" type="Callable" setter="set_before_send" getter="get_before_send" default="Callable()">
 			If assigned, this callback will be called before the event is sent to Sentry. You can set it in a [SentryConfiguration] script.
@@ -28,7 +28,7 @@
 			[/codeblock]
 		</member>
 		<member name="debug" type="bool" setter="set_debug_enabled" getter="is_debug_enabled" default="true">
-			If [code]true[/code], the SDK prints debug messages to standard output. These messages do not appear in the Godot console but can be seen when launching Godot from a terminal.
+			If [code]true[/code], the SDK will print useful debugging information to standard output. These messages do not appear in the Godot console but can be seen when launching Godot from a terminal.
 		</member>
 		<member name="disabled_in_editor" type="bool" setter="set_disabled_in_editor" getter="is_disabled_in_editor" default="true">
 			If [code]true[/code], the SDK will not initialize in the Godot editor.
@@ -40,11 +40,11 @@
 			Data Source Name (DSN): Specifies where the SDK should send the events. If this value is not provided, the SDK will try to read it from the [code]SENTRY_DSN[/code] environment variable. If that variable also does not exist, the SDK will just not send any events.
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
-			If [code]false[/code], the SDK will not initialize. This is useful for temporarily disabling the SDK in Project Settings, or in a [SentryConfiguration] script.
+			If [code]false[/code], the SDK will not initialize. This is useful for temporarily disabling the SDK in the Project Settings, or in a [SentryConfiguration] script.
 		</member>
 		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;editor_dev&quot;">
-			Environment for the event. Environment is automatically detected by the SDK. But you can also assign it in a [SentryConfiguration] script.
-			TODO: define environment
+			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a [SentryConfiguration] script.
+			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/environments/]Environments in the Sentry SDK documentation[/url].
 		</member>
 		<member name="error_logger_breadcrumb_mask" type="int" setter="set_error_logger_breadcrumb_mask" getter="get_error_logger_breadcrumb_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="15">
 			Specifies which types of errors are captured as breadcrumbs.
