@@ -7,6 +7,26 @@
 		Allows configuring Sentry SDK from GDScript. The [method _configure] method is called just before Sentry SDK initializes.
 		To define a configuration script, create a new script that extends the [SentryConfiguration] class. Then, assign your configuration script in the Project Settings under the [b]Sentry[/b] category.
 		[b]Important[/b]: If a user configuration script is assigned, SDK initialization will be delayed until [b]ScriptServer[/b] becomes available during game startup.
+		[codeblock]
+		extends SentryConfiguration
+
+		func _configure(options: SentryOptions):
+		    if OS.is_debug_build():
+		        options.environment = "debug"
+		        options.debug = true
+		    options.release = "mygame@1.0.0"
+		    options.before_send = _process_event
+		    options.on_crash = _process_event
+
+		func _process_event(event: SentryEvent) -> SentryEvent:
+		    if event.environment == "debug":
+		        # Discard event if running in a debug build.
+		        return null
+		    if event.message.contains("Bruno"):
+		        # Remove sensitive information from the event.
+		        event.message = event.message.replace("Bruno", "REDACTED")
+		    return event
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
