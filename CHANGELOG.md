@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- In-editor class reference documentation ([#104](https://github.com/getsentry/sentry-godot/pull/104))
+
 ## 0.1.2
 
 ### Breaking changes
