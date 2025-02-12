@@ -11,7 +11,7 @@ if (-not $godot) {
     $godot = "godot"
 }
 
-if (-not (Get-Command $env:GODOT -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command $godot -ErrorAction SilentlyContinue)) {
     Write-Error "Godot executable not found. Please set the GODOT environment variable." -CategoryActivity "ERROR"
     exit 1
 }
