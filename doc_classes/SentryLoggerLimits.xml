@@ -4,6 +4,7 @@
 		Defines reporting limits for the error logger.
 	</brief_description>
 	<description>
+		These limits are used to prevent the SDK from sending too many non-critical error events.
 	</description>
 	<tutorials>
 	</tutorials>
