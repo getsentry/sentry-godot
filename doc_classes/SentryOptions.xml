@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Defines options for the Sentry SDK. These options can be modified in the Project Settings under the [b]Sentry[/b] category or through a user configuration script. See [SentryConfiguration] for details on creating such a script.
+		For more information, consult [url=https://docs.sentry.io/platforms/godot/configuration/options/]Godto SDK Options[/url] in the official documentation.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -33,12 +34,10 @@
 			If [code]true[/code], the SDK will not initialize in the Godot editor.
 		</member>
 		<member name="dist" type="String" setter="set_dist" getter="get_dist" default="&quot;&quot;">
-			The application's distribution.
-			TODO: explain it
+			The application's distribution. Distributions are used to disambiguate build or deployment variants of the same release of an application.
 		</member>
 		<member name="dsn" type="String" setter="set_dsn" getter="get_dsn" default="&quot;&quot;">
-			Sentry DSN.
-			TODO: explain it
+			Data Source Name (DSN): Specifies where the SDK should send the events. If this value is not provided, the SDK will try to read it from the [code]SENTRY_DSN[/code] environment variable. If that variable also does not exist, the SDK will just not send any events.
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			If [code]false[/code], the SDK will not initialize. This is useful for temporarily disabling the SDK in Project Settings, or in a [SentryConfiguration] script.
