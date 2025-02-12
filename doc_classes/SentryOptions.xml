@@ -17,13 +17,13 @@
 			If assigned, this callback will be called before the event is sent to Sentry. You can set it in a [SentryConfiguration] script.
 			The callback must accept [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code]. If [code]null[/code] is returned, the event will be discarded.
 			[codeblock]
-			func _before_send(event: SentryEvent) -> SentryEvent:
+			func _before_send(event: SentryEvent) -&gt; SentryEvent:
+			    if event.environment == "editor_dev_run":
+			        # Discard event if running from the editor.
+			        return null
 			    if event.message.contains("Bruno"):
 			        # Remove sensitive information from the event.
 			        event.message = event.message.replace("Bruno", "REDACTED")
-			    elif event.environment == "editor_dev_run":
-			        # Discard event if running from the editor.
-			        return null
 			    return event
 			[/codeblock]
 		</member>
@@ -68,15 +68,16 @@
 			If assigned, this callback will be called before the crash event is sent to Sentry. You can set it in a [SentryConfiguration] script.
 			The callback must accept [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code]. If [code]null[/code] is returned, the event will be discarded.
 			[codeblock]
-			func _on_crash(event: SentryEvent) -> SentryEvent:
+			func _on_crash(event: SentryEvent) -&gt; SentryEvent:
+			    if event.environment == "editor_dev_run":
+			        # Discard event if running from the editor.
+			        return null
 			    if event.message.contains("Bruno"):
 			        # Remove sensitive information from the event.
 			        event.message = event.message.replace("Bruno", "REDACTED")
-			    elif event.environment == "editor_dev_run":
-			        # Discard event if running from the editor.
-			        return null
 			    return event
-			[/codeblock]		</member>
+			[/codeblock]
+		</member>
 		<member name="release" type="String" setter="set_release" getter="get_release" default="&quot;{app_name}@{app_version}&quot;">
 			Release version of the application. This value must be unique across all projects in your organization. Suggested format is [code]my-game@1.0.0[/code].
 			You can use the [code]{app_name}[/code] and [code]{app_version}[/code] placeholders to insert the application name and version from the Project Settings.

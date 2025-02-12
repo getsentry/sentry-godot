@@ -20,7 +20,10 @@ func _configure(options: SentryOptions) -> void:
 ## before_send callback example
 func _before_send(ev: SentryEvent) -> SentryEvent:
 	print("[example_configuration.gd] Processing event: ", ev.id)
-	if ev.message == "junk":
+	if ev.message.contains("Bruno"):
+		print("[example_configuration.gd] Removing sensitive information from the event")
+		ev.message = ev.message.replace("Bruno", "REDACTED")
+	elif ev.message == "junk":
 		print("[example_configuration.gd] Discarding event with message 'junk'")
 		return null
 	return ev
