@@ -47,13 +47,13 @@
 			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/environments/]Environments in the Sentry SDK documentation[/url].
 		</member>
 		<member name="error_logger_breadcrumb_mask" type="int" setter="set_error_logger_breadcrumb_mask" getter="get_error_logger_breadcrumb_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="15">
-			Specifies which types of errors are captured as breadcrumbs.
+			Specifies the types of errors captured as breadcrumbs. Accepts a single value or a bitwise combination of [enum GodotErrorMask] masks.
 		</member>
 		<member name="error_logger_enabled" type="bool" setter="set_error_logger_enabled" getter="is_error_logger_enabled" default="true">
-			If [code]true[/code], the SDK will capture logged errors as events and/or breadcrumbs. Crashes are always captured.
+			If [code]true[/code], the SDK will capture logged errors as events and/or breadcrumbs, as defined by [member error_logger_event_mask] and [member error_logger_breadcrumb_mask]. Crashes are always captured.
 		</member>
 		<member name="error_logger_event_mask" type="int" setter="set_error_logger_event_mask" getter="get_error_logger_event_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="13">
-			Specifies which types of errors are captured as events.
+			Specifies the types of errors captured as events. Accepts a single value or a bitwise combination of [enum GodotErrorMask] masks.
 		</member>
 		<member name="error_logger_include_source" type="bool" setter="set_error_logger_include_source" getter="is_error_logger_include_source_enabled" default="true">
 			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available.
@@ -62,7 +62,7 @@
 			Defines reporting limits for the error logger. These limits are used to prevent the SDK from sending too many non-critical error events. See [SentryLoggerLimits].
 		</member>
 		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">
-			Maximum number of breadcrumbs to send with an event.
+			Maximum number of breadcrumbs to send with an event. You should be aware that Sentry has a maximum payload size and any events exceeding that payload size will be dropped.
 		</member>
 		<member name="on_crash" type="Callable" setter="set_on_crash" getter="get_on_crash" default="Callable()">
 			If assigned, this callback will be called before the crash event is sent to Sentry. You can set it in a [SentryConfiguration] script.
@@ -83,8 +83,7 @@
 			You can use the [code]{app_name}[/code] and [code]{app_version}[/code] placeholders to insert the application name and version from the Project Settings.
 		</member>
 		<member name="sample_rate" type="float" setter="set_sample_rate" getter="get_sample_rate" default="1.0">
-			Sample rate for the SDK.
-			TODO: explain it
+			Configures the sample rate for error events, in the range of 0.0 to 1.0. The default is 1.0, which means that 100% of error events will be sent. If set to 0.1, only 10% of error events will be sent. Events are picked randomly.
 		</member>
 		<member name="send_default_pii" type="bool" setter="set_send_default_pii" getter="is_send_default_pii_enabled" default="false">
 			If [code]true[/code], the SDK will include PII (Personally Identifiable Information) with the events.
