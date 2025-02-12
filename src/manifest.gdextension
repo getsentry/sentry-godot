@@ -31,9 +31,13 @@ linux.release.x86_64 = "res://addons/{name}/bin/linux/lib{name}.linux.release.x8
 [dependencies]
 
 linux.x86_64 = {
-	"res://addons/{name}/bin/crashpad_handler" : ""
+	"res://addons/{name}/bin/linux/crashpad_handler" : ""
 }
 
 windows.x86_64 = {
-	"res://addons/{name}/bin/crashpad_handler.exe" : ""
+	"res://addons/{name}/bin/windows/crashpad_handler.exe" : ""
+}
+
+macos = {
+	"res://addons/{name}/bin/macos/crashpad_handler" : ""
 }
