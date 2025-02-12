@@ -38,6 +38,7 @@
 			Distributions are used to disambiguate build or deployment variants of the same release of an application.
 		</member>
 		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;&quot;">
+			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. See [member SentryOptions.environment].
 		</member>
 		<member name="id" type="String" setter="" getter="get_id" default="&quot;&quot;">
 			Hexadecimal string representing a UUID version 4 value. Automatically set by the SDK.

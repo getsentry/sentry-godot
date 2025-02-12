@@ -68,7 +68,7 @@
 			<return type="void" />
 			<param index="0" name="key" type="String" />
 			<description>
-				Removes the tag with the specified [param key].
+				Removes the tag with the given [param key].
 			</description>
 		</method>
 		<method name="remove_user">

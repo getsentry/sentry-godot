@@ -25,7 +25,7 @@
 		<method name="is_empty" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the user data is empty.
+				Returns [code]true[/code] if the user data is empty (including ID).
 			</description>
 		</method>
 	</methods>
