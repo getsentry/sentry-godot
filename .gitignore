@@ -1,10 +1,9 @@
 # Project-related
-project/addons
+project/addons/
 project/export_presets.cfg
-project/.vscode
+project/.vscode/
 
-src/sdk_version.gen.h
-src/gen/doc_data.gen.cpp
+src/gen/
 
 # Godot auto generated files
 project/.godot/
