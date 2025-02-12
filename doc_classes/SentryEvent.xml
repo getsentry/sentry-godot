@@ -4,7 +4,7 @@
 	</brief_description>
 	<description>
 		Events are the core data sent by SDKs to the Sentry server. An event consists of simple data properties that capture key details about an occurrence. Typically, an event represents an error or exception and corresponds to a single transmission of data to the Sentry server. Events show up as issues on your issue stream, with the [member message] as the issue name.
-		[SentryEvent] can be created with the [method SentrySDK.create_event] method.
+		[SentryEvent] can be created with the [method SentrySDK.create_event] method, and then captured with [method SentrySDK.capture_event].
 	</description>
 	<tutorials>
 	</tutorials>
