@@ -2,6 +2,7 @@
 project/addons/
 project/export_presets.cfg
 project/.vscode/
+project/reports/
 
 src/gen/
 
