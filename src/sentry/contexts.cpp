@@ -1,6 +1,6 @@
 #include "contexts.h"
 
-#include "sdk_version.gen.h"
+#include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
 #include "sentry/uuid.h"
 #include "sentry_options.h"

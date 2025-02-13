@@ -1,6 +1,6 @@
 #include "sentry_sdk.h"
 
-#include "sdk_version.gen.h"
+#include "gen/sdk_version.gen.h"
 #include "sentry/contexts.h"
 #include "sentry/disabled_sdk.h"
 #include "sentry/util.h"
@@ -211,7 +211,7 @@ SentrySDK::SentrySDK() {
 		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/linux/crashpad_handler");
 	}
 
-  bool should_enable = SentryOptions::get_singleton()->is_enabled();
+	bool should_enable = SentryOptions::get_singleton()->is_enabled();
 
 	if (!should_enable) {
 		sentry::util::print_debug("Sentry SDK is disabled in the project settings.");
