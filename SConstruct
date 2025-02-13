@@ -6,7 +6,7 @@ from functools import partial
 
 # *** Setting.
 
-VERSION = "0.1.1"
+VERSION = "0.2.0-dev"
 PROJECT_DIR = "project"
 EXTENSION_NAME = "sentrysdk"
 COMPATIBILITY_MINIMUM = "4.3"
