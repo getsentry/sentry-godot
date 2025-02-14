@@ -4,6 +4,7 @@
 #include "runtime_config.h"
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
+#include "sentry_breadcrumb.h"
 #include "sentry_event.h"
 #include "sentry_options.h"
 
@@ -52,6 +53,9 @@ public:
 
 	void add_breadcrumb(const String &p_message, const String &p_category, sentry::Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary());
+	Ref<SentryBreadcrumb> create_breadcrumb() { return internal_sdk->create_breadcrumb(); }
+	void capture_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb);
+
 	void set_context(const String &p_key, const Dictionary &p_value);
 
 	void set_tag(const String &p_key, const String &p_value);
@@ -74,6 +78,9 @@ public:
 
 	void set_on_crash(const Callable &p_callable) { SentryOptions::get_singleton()->set_on_crash(p_callable); }
 	void unset_on_crash() { SentryOptions::get_singleton()->set_on_crash(Callable()); }
+
+	void set_before_breadcrumb(const Callable &p_callable) { SentryOptions::get_singleton()->set_before_breadcrumb(p_callable); }
+	void unset_before_breadcrumb() { SentryOptions::get_singleton()->set_before_breadcrumb(Callable()); }
 
 	SentrySDK();
 	~SentrySDK();

@@ -3,11 +3,13 @@
 #include "sentry.h"
 #include "sentry/contexts.h"
 #include "sentry/level.h"
+#include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
 #include "sentry/util.h"
 #include "sentry_options.h"
 
+#include <chrono>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -52,9 +54,22 @@ inline void inject_contexts(sentry_value_t p_event) {
 	}
 }
 
+void test_performance(sentry_value_t ev) {
+	sentry_value_t contexts = sentry_value_get_by_key(ev, "contexts");
+	auto start = std::chrono::high_resolution_clock::now();
+	const Dictionary context_dic = sentry::native::sentry_value_to_variant(contexts);
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> duration = end - start;
+	std::cout << "!!!!!!!!!!!!!!!!!!!!! [MEASUREMENTS] Time took: "
+			  << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+			  << " ns" << std::endl;
+	sentry::util::print_debug(context_dic);
+}
+
 sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	sentry::util::print_debug("handling before_send");
 	inject_contexts(event);
+	test_performance(event);
 	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
 		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
 		Ref<NativeEvent> processed = before_send.call(event_obj);
@@ -145,13 +160,21 @@ void NativeSDK::remove_user() {
 	sentry_remove_user();
 }
 
-void NativeSDK::add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
+Ref<SentryBreadcrumb> NativeSDK::create_breadcrumb() {
+	return memnew(NativeBreadcrumb);
+}
+
+Ref<SentryBreadcrumb> NativeSDK::create_breadcrumb(const String &p_message, const String &p_category, Level p_level,
 		const String &p_type, const Dictionary &p_data) {
-	sentry_value_t crumb = sentry_value_new_breadcrumb(p_type.utf8().ptr(), p_message.utf8().ptr());
-	sentry_value_set_by_key(crumb, "category", sentry_value_new_string(p_category.utf8().ptr()));
-	sentry_value_set_by_key(crumb, "level", sentry_value_new_string(sentry::level_as_cstring(p_level)));
-	sentry_value_set_by_key(crumb, "data", sentry::native::variant_to_sentry_value(p_data));
-	sentry_add_breadcrumb(crumb);
+	return memnew(NativeBreadcrumb(p_message, p_category, p_level, p_type, p_data));
+}
+
+void NativeSDK::capture_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
+	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Sentry: Can't capture breadcrumb - breadcrumb object is null.");
+	NativeBreadcrumb *native_crumb = Object::cast_to<NativeBreadcrumb>(p_breadcrumb.ptr());
+	ERR_FAIL_NULL(native_crumb); // shouldn't happen
+	sentry_value_incref(native_crumb->get_native_value()); // keep ownership
+	sentry_add_breadcrumb(native_crumb->get_native_value());
 }
 
 String NativeSDK::capture_message(const String &p_message, Level p_level, const String &p_logger) {
