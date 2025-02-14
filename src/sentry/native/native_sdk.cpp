@@ -255,21 +255,26 @@ void NativeSDK::initialize() {
 	// Establish handler path.
 	String handler_fn;
 	String platform_dir;
+	String export_subdir;
 #ifdef LINUX_ENABLED
 	handler_fn = "crashpad_handler";
 	platform_dir = "linux";
 #elif MACOS_ENABLED
 	handler_fn = "crashpad_handler";
 	platform_dir = "macos";
+	export_subdir = "../Frameworks";
 #elif WINDOWS_ENABLED
 	handler_fn = "crashpad_handler.exe";
 	platform_dir = "windows";
 #else
 	ERR_PRINT("Sentry: Internal Error: NativeSDK should not be initialized on an unsupported platform (this should not happen).");
 #endif
-	String handler_path = OS::get_singleton()->get_executable_path().get_base_dir() + "/" + handler_fn;
+	String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
+	String handler_path = exe_dir.path_join(export_subdir).path_join(handler_fn);
 	if (!FileAccess::file_exists(handler_path)) {
-		handler_path = ProjectSettings::get_singleton()->globalize_path("res://addons/sentrysdk/bin/" + platform_dir + "/" + handler_fn);
+		const String addon_bin_dir = "res://addons/sentrysdk/bin/";
+		handler_path = ProjectSettings::get_singleton()->globalize_path(
+				addon_bin_dir.path_join(platform_dir).path_join(handler_fn));
 	}
 	if (FileAccess::file_exists(handler_path)) {
 		sentry_options_set_handler_path(options, handler_path.utf8());
