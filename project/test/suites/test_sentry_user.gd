@@ -20,6 +20,13 @@ func _assert_users_are_equal(user1: SentryUser, user2: SentryUser) -> void:
 	assert_str(user1.ip_address).is_equal(user2.ip_address)
 
 
+## Default SentryUser should have non-empty ID initialized to installation_id.
+func test_default_user() -> void:
+	var user := SentrySDK.get_user()
+	assert_str(user.id).is_not_empty()
+	assert_bool(user.is_empty()).is_false()
+
+
 ## SentryUser data should be correctly saved.
 func test_sentry_user_assignment() -> void:
 	SentrySDK.set_user(_make_test_user())
