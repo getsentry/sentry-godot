@@ -140,10 +140,12 @@ void SentrySDK::_initialize() {
 	}
 
 	// Initialize user if it wasn't set explicitly in the configuration script.
-	if (user.is_null() && SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
+	if (user.is_null()) {
 		user.instantiate();
-		user->generate_new_id();
-		user->infer_ip_address();
+		user->set_id(runtime_config->get_installation_id());
+		if (SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
+			user->infer_ip_address();
+		}
 	}
 	set_user(user);
 
