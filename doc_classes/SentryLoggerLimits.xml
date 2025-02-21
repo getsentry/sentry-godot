@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SentryLoggerLimits" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		Defines reporting limits for the error logger.
+		Specifies throttling limits for the error logger.
 	</brief_description>
 	<description>
-		These limits are used to prevent the SDK from sending too many non-critical error events.
+		These limits govern the behavior of throttling and are used to prevent the SDK from sending too many non-critical and repeating error events.
 	</description>
 	<tutorials>
 	</tutorials>

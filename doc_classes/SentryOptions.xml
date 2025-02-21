@@ -14,8 +14,7 @@
 			If [code]true[/code], the SDK will attach the Godot log file to the event.
 		</member>
 		<member name="before_send" type="Callable" setter="set_before_send" getter="get_before_send" default="Callable()">
-			If assigned, this callback will be called before the event is sent to Sentry. You can set it in a [SentryConfiguration] script.
-			The callback must accept [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code]. If [code]null[/code] is returned, the event will be discarded.
+			If assigned, this callback runs before a message or error event is sent to Sentry. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a [SentryConfiguration] script.
 			[codeblock]
 			func _before_send(event: SentryEvent) -&gt; SentryEvent:
 			    if event.environment == "editor_dev_run":
@@ -26,6 +25,7 @@
 			        event.message = event.message.replace("Bruno", "REDACTED")
 			    return event
 			[/codeblock]
+			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/filtering/]Filtering in the Sentry SDK documentation[/url].
 		</member>
 		<member name="debug" type="bool" setter="set_debug_enabled" getter="is_debug_enabled" default="true">
 			If [code]true[/code], the SDK will print useful debugging information to standard output. These messages do not appear in the Godot console but can be seen when launching Godot from a terminal.
@@ -56,17 +56,16 @@
 			Specifies the types of errors captured as events. Accepts a single value or a bitwise combination of [enum GodotErrorMask] masks.
 		</member>
 		<member name="error_logger_include_source" type="bool" setter="set_error_logger_include_source" getter="is_error_logger_include_source_enabled" default="true">
-			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available.
+			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available in the exported project.
 		</member>
 		<member name="error_logger_limits" type="SentryLoggerLimits" setter="set_error_logger_limits" getter="get_error_logger_limits">
-			Defines reporting limits for the error logger. These limits are used to prevent the SDK from sending too many non-critical error events. See [SentryLoggerLimits].
+			Defines throttling limits for the error logger. These limits are used to prevent the SDK from sending too many non-critical and repeating error events. See [SentryLoggerLimits].
 		</member>
 		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">
 			Maximum number of breadcrumbs to send with an event. You should be aware that Sentry has a maximum payload size and any events exceeding that payload size will be dropped.
 		</member>
 		<member name="on_crash" type="Callable" setter="set_on_crash" getter="get_on_crash" default="Callable()">
-			If assigned, this callback will be called before the crash event is sent to Sentry. You can set it in a [SentryConfiguration] script.
-			The callback must accept [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code]. If [code]null[/code] is returned, the event will be discarded.
+			If assigned, this callback runs before a crash event is sent to Sentry. In contrast to [member before_send], it is only called when a crash occurred. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a [SentryConfiguration] script.
 			[codeblock]
 			func _on_crash(event: SentryEvent) -&gt; SentryEvent:
 			    if event.environment == "editor_dev_run":
@@ -77,6 +76,7 @@
 			        event.message = event.message.replace("Bruno", "REDACTED")
 			    return event
 			[/codeblock]
+			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/filtering/]Filtering in the Sentry SDK documentation[/url].
 		</member>
 		<member name="release" type="String" setter="set_release" getter="get_release" default="&quot;{app_name}@{app_version}&quot;">
 			Release version of the application. This value must be unique across all projects in your organization. Suggested format is [code]my-game@1.0.0[/code].
