@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Renamed the **Sentry/Config** category in Project Settings to **Sentry/Options** ([#119](https://github.com/getsentry/sentry-godot/pull/119)). This change invalidates all previously set options in project settings. To migrate, open your `project.godot` file in a text editor and replace all instances of "sentry/config" with "sentry/options".
+
 ### Features
 
 - In-editor class reference documentation ([#104](https://github.com/getsentry/sentry-godot/pull/104))
