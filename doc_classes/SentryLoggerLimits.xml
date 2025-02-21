@@ -4,7 +4,7 @@
 		Specifies throttling limits for the error logger.
 	</brief_description>
 	<description>
-		These limits govern the behavior of throttling and are used to prevent the SDK from sending too many non-critical and repeating error events.
+		These limits govern the behavior of throttling and are used to prevent the SDK from sending too many non-critical and repeating error events. See also [SentryOptions].
 	</description>
 	<tutorials>
 	</tutorials>

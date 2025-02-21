@@ -8,7 +8,7 @@
 		Sentry SDK hooks into Godot's logging and automatically reports errors. An [b]event[/b] is one instance of sending data to Sentry. Generally, this data is an error or exception.
 		While capturing an event, you can also record the [b]breadcrumbs[/b] that lead up to that event. Breadcrumbs are different from events: they will not create an event in Sentry, but will be buffered until the next event is sent. Breadcrumbs can be captured with [method SentrySDK.add_breadcrumb] method. Learn more about [url=https://docs.sentry.io/platforms/godot/enriching-events/breadcrumbs/]Breadcrumbs in the Sentry SDK documentation[/url].
 		Another common operation is to capture a bare message. A [b]message[/b] is textual information that should be sent to Sentry. Typically, our SDKs don't automatically capture messages, but you can capture them manually. Messages show up as issues on your issue stream, with the message as the issue name. To simplify creating events, there are shorthand functions that construct and capture prepopulated event objects. The most important one is [method SentrySDK.capture_message].
-		To learn more, visit the [url=https://docs.sentry.io/platforms/godot/]Sentry SDK documentation[/url].
+		To learn more, visit [url=https://docs.sentry.io/platforms/godot/]Sentry SDK documentation[/url].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -21,7 +21,8 @@
 			<param index="3" name="type" type="String" default="&quot;default&quot;" />
 			<param index="4" name="data" type="Dictionary" default="{}" />
 			<description>
-				Adds a breadcrumb to the next event. Sentry uses breadcrumbs to create a trail of events that happened prior to an issue. To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/breadcrumbs/]Breadcrumbs in the Sentry SDK documentation[/url].
+				Adds a breadcrumb to the next event. Sentry uses breadcrumbs to create a trail of events that happened prior to an issue.
+				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/breadcrumbs/]Breadcrumbs documentation[/url].
 			</description>
 		</method>
 		<method name="capture_event">
@@ -83,7 +84,7 @@
 			<param index="1" name="value" type="Dictionary" />
 			<description>
 				Adds a custom context with the specified [param key] and [param value]. The [param value] should be a dictionary with string keys and can have multiple levels of nesting.
-				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/context/]Context in the Sentry SDK documentation[/url].
+				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/context/]Context documentation[/url].
 			</description>
 		</method>
 		<method name="set_tag">
@@ -92,7 +93,7 @@
 			<param index="1" name="value" type="String" />
 			<description>
 				Assigns a tag with the specified [param key] and [param value].
-				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/tags/]Tags in the Sentry SDK documentation[/url].
+				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/tags/]Tags documentation[/url].
 			</description>
 		</method>
 		<method name="set_user">
