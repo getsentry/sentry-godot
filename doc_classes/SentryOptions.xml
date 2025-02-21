@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Contains Sentry SDK options.
+	</brief_description>
+	<description>
+		Defines options for the Sentry SDK. These options can be modified in the Project Settings under the [b]Sentry[/b] category or through a user configuration script. See [SentryConfiguration] for details on creating such a script.
+		To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/options/]Options documentation[/url].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="attach_log" type="bool" setter="set_attach_log" getter="is_attach_log_enabled" default="true">
+			If [code]true[/code], the SDK will attach the Godot log file to the event.
+		</member>
+		<member name="before_send" type="Callable" setter="set_before_send" getter="get_before_send" default="Callable()">
+			If assigned, this callback runs before a message or error event is sent to Sentry. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a [SentryConfiguration] script.
+			[codeblock]
+			func _before_send(event: SentryEvent) -&gt; SentryEvent:
+			    if event.environment == "editor_dev_run":
+			        # Discard event if running from the editor.
+			        return null
+			    if event.message.contains("Bruno"):
+			        # Remove sensitive information from the event.
+			        event.message = event.message.replace("Bruno", "REDACTED")
+			    return event
+			[/codeblock]
+			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/filtering/]Filtering documentation[/url]. Also, check out [url=https://docs.sentry.io/platforms/godot/data-management/sensitive-data/]Scrubbing Sensitive Data[/url].
+		</member>
+		<member name="debug" type="bool" setter="set_debug_enabled" getter="is_debug_enabled" default="true">
+			If [code]true[/code], the SDK will print useful debugging information to standard output. These messages do not appear in the Godot console but can be seen when launching Godot from a terminal.
+		</member>
+		<member name="disabled_in_editor" type="bool" setter="set_disabled_in_editor" getter="is_disabled_in_editor" default="true">
+			If [code]true[/code], the SDK will not initialize in the Godot editor.
+		</member>
+		<member name="dist" type="String" setter="set_dist" getter="get_dist" default="&quot;&quot;">
+			The application's distribution. Distributions are used to disambiguate build or deployment variants of the same release of an application.
+		</member>
+		<member name="dsn" type="String" setter="set_dsn" getter="get_dsn" default="&quot;&quot;">
+			Data Source Name (DSN): Specifies where the SDK should send the events. If this value is not provided, the SDK will try to read it from the [code]SENTRY_DSN[/code] environment variable. If that variable also does not exist, the SDK will just not send any events.
+		</member>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			If [code]false[/code], the SDK will not initialize. This is useful for temporarily disabling the SDK in the Project Settings, or in a [SentryConfiguration] script.
+		</member>
+		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;editor_dev&quot;">
+			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a [SentryConfiguration] script.
+			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/environments/]Environments documentation[/url].
+		</member>
+		<member name="error_logger_breadcrumb_mask" type="int" setter="set_error_logger_breadcrumb_mask" getter="get_error_logger_breadcrumb_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="15">
+			Specifies the types of errors captured as breadcrumbs. Accepts a single value or a bitwise combination of [enum GodotErrorMask] masks.
+		</member>
+		<member name="error_logger_enabled" type="bool" setter="set_error_logger_enabled" getter="is_error_logger_enabled" default="true">
+			If [code]true[/code], the SDK will capture logged errors as events and/or breadcrumbs, as defined by [member error_logger_event_mask] and [member error_logger_breadcrumb_mask]. Crashes are always captured.
+		</member>
+		<member name="error_logger_event_mask" type="int" setter="set_error_logger_event_mask" getter="get_error_logger_event_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="13">
+			Specifies the types of errors captured as events. Accepts a single value or a bitwise combination of [enum GodotErrorMask] masks.
+		</member>
+		<member name="error_logger_include_source" type="bool" setter="set_error_logger_include_source" getter="is_error_logger_include_source_enabled" default="true">
+			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available in the exported project.
+		</member>
+		<member name="error_logger_limits" type="SentryLoggerLimits" setter="set_error_logger_limits" getter="get_error_logger_limits">
+			Defines throttling limits for the error logger. These limits are used to prevent the SDK from sending too many non-critical and repeating error events. See [SentryLoggerLimits].
+		</member>
+		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">
+			Maximum number of breadcrumbs to send with an event. You should be aware that Sentry has a maximum payload size and any events exceeding that payload size will be dropped.
+		</member>
+		<member name="on_crash" type="Callable" setter="set_on_crash" getter="get_on_crash" default="Callable()">
+			If assigned, this callback runs before a crash event is sent to Sentry. In contrast to [member before_send], it is only called when a crash occurred. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a [SentryConfiguration] script.
+			[codeblock]
+			func _on_crash(event: SentryEvent) -&gt; SentryEvent:
+			    if event.environment == "editor_dev_run":
+			        # Discard event if running from the editor.
+			        return null
+			    if event.message.contains("Bruno"):
+			        # Remove sensitive information from the event.
+			        event.message = event.message.replace("Bruno", "REDACTED")
+			    return event
+			[/codeblock]
+			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/filtering/]Filtering documentation[/url].
+		</member>
+		<member name="release" type="String" setter="set_release" getter="get_release" default="&quot;{app_name}@{app_version}&quot;">
+			Release version of the application. This value must be unique across all projects in your organization. Suggested format is [code]my-game@1.0.0[/code].
+			You can use the [code]{app_name}[/code] and [code]{app_version}[/code] placeholders to insert the application name and version from the Project Settings.
+		</member>
+		<member name="sample_rate" type="float" setter="set_sample_rate" getter="get_sample_rate" default="1.0">
+			Configures the sample rate for error events, in the range of 0.0 to 1.0. The default is 1.0, which means that 100% of error events will be sent. If set to 0.1, only 10% of error events will be sent. Events are picked randomly.
+		</member>
+		<member name="send_default_pii" type="bool" setter="set_send_default_pii" getter="is_send_default_pii_enabled" default="false">
+			If [code]true[/code], the SDK will include PII (Personally Identifiable Information) with the events.
+		</member>
+	</members>
+	<constants>
+		<constant name="MASK_NONE" value="0" enum="GodotErrorMask" is_bitfield="true">
+			No logger errors will be captured.
+		</constant>
+		<constant name="MASK_ERROR" value="1" enum="GodotErrorMask" is_bitfield="true">
+			Native errors will be captured. These are typically C++ errors, which may also originate from a script.
+		</constant>
+		<constant name="MASK_WARNING" value="2" enum="GodotErrorMask" is_bitfield="true">
+			Warnings will be captured.
+		</constant>
+		<constant name="MASK_SCRIPT" value="4" enum="GodotErrorMask" is_bitfield="true">
+			Script errors will be captured.
+		</constant>
+		<constant name="MASK_SHADER" value="8" enum="GodotErrorMask" is_bitfield="true">
+			Shader errors will be captured.
+		</constant>
+	</constants>
+</class>

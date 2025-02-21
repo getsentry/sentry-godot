@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryEvent" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+		Events are the core data sent by SDKs to the Sentry server. An event consists of simple data properties that capture key details about an occurrence. Typically, an event represents an error or exception and corresponds to a single transmission of data to the Sentry server. Events show up as issues on your issue stream, with the [member message] as the issue name.
+		[SentryEvent] can be created with the [method SentrySDK.create_event] method, and then captured with [method SentrySDK.capture_event].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_tag">
+			<return type="String" />
+			<param index="0" name="key" type="String" />
+			<description>
+				Returns the value of the tag with the specified [param key].
+			</description>
+		</method>
+		<method name="remove_tag">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<description>
+				Removes the tag with the specified [param key].
+			</description>
+		</method>
+		<method name="set_tag">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<param index="1" name="value" type="String" />
+			<description>
+				Sets a tag with the specified [param key] to the given [param value].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="dist" type="String" setter="set_dist" getter="get_dist" default="&quot;&quot;">
+			The application's distribution. Defaults to the value set in [member SentryOptions.dist].
+			Distributions are used to disambiguate build or deployment variants of the same release of an application.
+		</member>
+		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;&quot;">
+			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. See [member SentryOptions.environment].
+		</member>
+		<member name="id" type="String" setter="" getter="get_id" default="&quot;&quot;">
+			Hexadecimal string representing a UUID version 4 value. Automatically set by the SDK.
+		</member>
+		<member name="level" type="int" setter="set_level" getter="get_level" enum="SentrySDK.Level" default="1">
+			The record severity level of the event. Defaults to [code]LEVEL_ERROR[/code]. See [enum SentrySDK.Level].
+		</member>
+		<member name="logger" type="String" setter="set_logger" getter="get_logger" default="&quot;&quot;">
+			The name of the logger which created the record.
+		</member>
+		<member name="message" type="String" setter="set_message" getter="get_message" default="&quot;&quot;">
+			The log message that describes an event or error.
+		</member>
+		<member name="platform" type="String" setter="" getter="get_platform" default="&quot;&quot;">
+			Represents the platform the SDK is submitting from. Automatically set by the SDK.
+		</member>
+		<member name="release" type="String" setter="set_release" getter="get_release" default="&quot;&quot;">
+			The release version of the application. Defaults to a value based on [member SentryOptions.release] option.
+			Release versions must be unique across all projects in your organization. This value can be the Git SHA for the given project, or a product identifier with a semantic version (suggested format my-game@1.0.0).
+		</member>
+		<member name="timestamp" type="String" setter="set_timestamp" getter="get_timestamp" default="&quot;&quot;">
+			Indicates when the event was created in the Sentry SDK. Automatically set by the SDK.
+		</member>
+	</members>
+</class>
