@@ -9,7 +9,7 @@ Sentry SDK for Godot Engine can be built for Windows x86_64, Linux x86_64, and m
 - C/C++ compiler
 - SCons build tool and Python
 - CMake -- to build sentry-native SDK
-- clang-format -- for style checks
+- clang-format & pre-commit -- for style checks
 
 On Windows, if you have `scoop` installed, you can easily install most of the required packages with the following command:
 ```
@@ -67,7 +67,10 @@ In the Godot editor, you can adjust the Sentry SDK settings by going to `Project
 
 ## Formatting Code
 
-Please run `clang-format` before submitting a PR to adhere to our code style.
+Please run `clang-format` before submitting a PR to adhere to our code style. You can also install [pre-commit](https://pre-commit.com/) hooks for automatic formatting on commit:
+```sh
+pre-commit install
+```
 
 ## Documentation
 
