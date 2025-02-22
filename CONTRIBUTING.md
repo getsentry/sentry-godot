@@ -55,6 +55,16 @@ brew install scons
 
 In the Godot editor, you can adjust the Sentry SDK settings by going to `Project Settings -> Sentry -> Config`.
 
+## Project Structure
+
+- `src/` -- Godot extension source code
+- `modules/` -- various submodules, such as `godot-cpp` and other SDKs like `sentry-native`
+- `project/` -- example Godot project
+- `project/addons/sentrysdk/` -- where build artifacts are placed
+- `project/test/` -- unit tests
+- `scripts/` -- various scripts used mostly for maintenance
+- `doc_classes/` -- built-in Godot documentation (class reference)
+
 ## Documentation
 
 ### Sentry documentation
