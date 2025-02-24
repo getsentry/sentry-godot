@@ -1,0 +1,5 @@
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: f9a52e87b6cdcb01b0a62b8611d9ba9f2dad0067 # v19.1.7
+    hooks:
+      - id: clang-format
