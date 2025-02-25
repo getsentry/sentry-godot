@@ -14,6 +14,12 @@
 
 - Fix `user.id` not assigned to `installation_id` by default ([#118](https://github.com/getsentry/sentry-godot/pull/118))
 
+### Dependencies
+
+- Bump Native SDK from v0.7.20 to v0.8.0 ([#126](https://github.com/getsentry/sentry-godot/pull/126))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#080)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.20...0.8.0)
+
 ## 0.1.2
 
 ### Breaking changes
