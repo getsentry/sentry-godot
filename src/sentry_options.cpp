@@ -158,9 +158,11 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "debug"), set_debug_enabled, is_debug_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "environment"), set_environment, get_environment);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "sample_rate"), set_sample_rate, get_sample_rate);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_log"), set_attach_log, is_attach_log_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "max_breadcrumbs"), set_max_breadcrumbs, get_max_breadcrumbs);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "send_default_pii"), set_send_default_pii, is_send_default_pii_enabled);
+
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_log"), set_attach_log, is_attach_log_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_screenshot"), set_attach_screenshot, is_attach_screenshot_enabled);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "error_logger_enabled"), set_error_logger_enabled, is_error_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "error_logger_include_source"), set_error_logger_include_source, is_error_logger_include_source_enabled);
