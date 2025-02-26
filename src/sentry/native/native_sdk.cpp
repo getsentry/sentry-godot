@@ -9,6 +9,8 @@
 #include "sentry/util/screenshot.h"
 #include "sentry_options.h"
 
+#include <godot_cpp/classes/dir_access.hpp>
+#include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -47,8 +49,15 @@ void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name
 }
 
 inline void _save_screenshot() {
+	String screenshot_fn = "user://" _SCREENSHOT_FN;
+	DirAccess::remove_absolute(screenshot_fn);
+
+	if (!DisplayServer::get_singleton() || DisplayServer::get_singleton()->get_name() == "headless") {
+		return;
+	}
+
 	PackedByteArray buffer = sentry::util::take_screenshot();
-	Ref<FileAccess> f = FileAccess::open("user://" _SCREENSHOT_FN, FileAccess::WRITE);
+	Ref<FileAccess> f = FileAccess::open(screenshot_fn, FileAccess::WRITE);
 	f->store_buffer(buffer);
 	f->close();
 }
