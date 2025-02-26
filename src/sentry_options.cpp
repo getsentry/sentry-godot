@@ -57,9 +57,11 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/dist", p_options->dist);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate);
-	_define_setting("sentry/options/attach_log", p_options->attach_log);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs);
 	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
+
+	_define_setting("sentry/options/attach_log", p_options->attach_log);
+	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
 
 	_define_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
 	_define_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source);
@@ -98,9 +100,11 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->_init_debug_option(mode);
 
 	p_options->sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/sample_rate", p_options->sample_rate);
-	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
 	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/options/max_breadcrumbs", p_options->max_breadcrumbs);
 	p_options->send_default_pii = ProjectSettings::get_singleton()->get_setting("sentry/options/send_default_pii", p_options->send_default_pii);
+
+	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
+	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
 
 	p_options->error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
 	p_options->error_logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source);
