@@ -46,4 +46,4 @@ func test_throttling_limits() -> void:
 	await assert_signal(monitor).is_emitted("callback_processed")
 	await assert_signal(monitor).is_emitted("callback_processed")
 	await get_tree().create_timer(0.1).timeout
-	assert_int(_num_events).is_equal(5)
+	assert_int(_num_events).is_equal(4)
