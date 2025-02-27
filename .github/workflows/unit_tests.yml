@@ -78,7 +78,7 @@ jobs:
 
       - name: Run isolated tests
         if: success() || failure()
-        shell: bash
+        shell: pwsh
         timeout-minutes: 5
         run: ./scripts/run-isolated-tests.ps1
 
