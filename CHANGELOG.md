@@ -9,6 +9,7 @@
 ### Features
 
 - In-editor class reference documentation ([#104](https://github.com/getsentry/sentry-godot/pull/104))
+- Capture screenshots ([#128](https://github.com/getsentry/sentry-godot/pull/128))
 
 ### Fixes
 
