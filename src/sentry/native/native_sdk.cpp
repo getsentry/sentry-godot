@@ -49,15 +49,15 @@ void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name
 }
 
 inline void _save_screenshot() {
-	String screenshot_fn = "user://" _SCREENSHOT_FN;
-	DirAccess::remove_absolute(screenshot_fn);
+	String screenshot_path = "user://" _SCREENSHOT_FN;
+	DirAccess::remove_absolute(screenshot_path);
 
 	if (!DisplayServer::get_singleton() || DisplayServer::get_singleton()->get_name() == "headless") {
 		return;
 	}
 
 	PackedByteArray buffer = sentry::util::take_screenshot();
-	Ref<FileAccess> f = FileAccess::open(screenshot_fn, FileAccess::WRITE);
+	Ref<FileAccess> f = FileAccess::open(screenshot_path, FileAccess::WRITE);
 	f->store_buffer(buffer);
 	f->close();
 }
