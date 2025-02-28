@@ -2,9 +2,10 @@
 
 #include "gen/sdk_version.gen.h"
 #include "sentry/contexts.h"
-#include "sentry/disabled_sdk.h"
+#include "sentry/disabled/disabled_sdk.h"
 #include "sentry/util.h"
 #include "sentry/uuid.h"
+#include "sentry_breadcrumb.h"
 #include "sentry_configuration.h"
 
 #include <godot_cpp/classes/engine.hpp>
@@ -58,7 +59,25 @@ String SentrySDK::capture_message(const String &p_message, Level p_level, const 
 
 void SentrySDK::add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
 		const String &p_type, const Dictionary &p_data) {
-	internal_sdk->add_breadcrumb(p_message, p_category, p_level, p_type, p_data);
+	Ref<SentryBreadcrumb> crumb = internal_sdk->create_breadcrumb(p_message, p_category, p_level, p_type, p_data);
+	capture_breadcrumb(crumb);
+}
+
+void SentrySDK::capture_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
+	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Sentry: Can't capture breadcrumb - breadcrumb object is null.");
+	Ref<SentryBreadcrumb> crumb = p_breadcrumb;
+	if (SentryOptions::get_singleton()->get_before_breadcrumb().is_valid()) {
+		Ref<SentryBreadcrumb> processed = SentryOptions::get_singleton()->get_before_breadcrumb().call(crumb);
+		ERR_FAIL_COND_MSG(processed.is_valid() && processed != crumb, "Sentry: before_breadcrumb callback must return the same breadcrumb object or null.");
+		if (processed.is_null()) {
+			// Discard breadcrumb.
+			sentry::util::print_debug("breadcrumb discarded by before_breadcrumb callback");
+			return;
+		}
+		sentry::util::print_debug("breadcrumb processed by before_breadcrumb callback");
+		crumb = processed;
+	}
+	internal_sdk->capture_breadcrumb(crumb);
 }
 
 String SentrySDK::get_last_event_id() const {
@@ -179,6 +198,8 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_enabled"), &SentrySDK::is_enabled);
 	ClassDB::bind_method(D_METHOD("capture_message", "message", "level", "logger"), &SentrySDK::capture_message, DEFVAL(LEVEL_INFO), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "message", "category", "level", "type", "data"), &SentrySDK::add_breadcrumb, DEFVAL(LEVEL_INFO), DEFVAL("default"), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("create_breadcrumb"), &SentrySDK::create_breadcrumb);
+	ClassDB::bind_method(D_METHOD("capture_breadcrumb", "breadcrumb"), &SentrySDK::capture_breadcrumb);
 	ClassDB::bind_method(D_METHOD("get_last_event_id"), &SentrySDK::get_last_event_id);
 	ClassDB::bind_method(D_METHOD("set_context", "key", "value"), &SentrySDK::set_context);
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &SentrySDK::set_tag);
@@ -194,6 +215,8 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
 	ClassDB::bind_method(D_METHOD("_set_on_crash", "callable"), &SentrySDK::set_on_crash);
 	ClassDB::bind_method(D_METHOD("_unset_on_crash"), &SentrySDK::unset_on_crash);
+	ClassDB::bind_method(D_METHOD("_set_before_breadcrumb", "callable"), &SentrySDK::set_before_breadcrumb);
+	ClassDB::bind_method(D_METHOD("_unset_before_breadcrumb"), &SentrySDK::unset_before_breadcrumb);
 }
 
 SentrySDK::SentrySDK() {

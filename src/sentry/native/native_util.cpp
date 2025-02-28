@@ -1,4 +1,5 @@
 #include "native_util.h"
+#include "sentry.h"
 
 namespace sentry::native {
 
@@ -54,6 +55,48 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant) {
 		} break;
 		default: {
 			return sentry_value_new_string(p_variant.stringify().utf8());
+		} break;
+	}
+}
+
+Variant sentry_value_to_variant(sentry_value_t p_value) {
+	switch (sentry_value_get_type(p_value)) {
+		case SENTRY_VALUE_TYPE_BOOL: {
+			return bool(sentry_value_as_int32(p_value));
+		} break;
+		case SENTRY_VALUE_TYPE_INT32: {
+			return sentry_value_as_int32(p_value);
+		} break;
+		case SENTRY_VALUE_TYPE_DOUBLE: {
+			return sentry_value_as_double(p_value);
+		} break;
+		case SENTRY_VALUE_TYPE_STRING: {
+			return sentry_value_as_string(p_value);
+		} break;
+		case SENTRY_VALUE_TYPE_LIST: {
+			Array array;
+			for (int i = 0; i < sentry_value_get_length(p_value); i++) {
+				array.append(
+						sentry_value_to_variant(
+								sentry_value_get_by_index(p_value, i)));
+			}
+			return array;
+		} break;
+		case SENTRY_VALUE_TYPE_OBJECT: {
+			Dictionary dictionary;
+			sentry_item_iter_t *it = sentry_value_new_item_iter(p_value);
+			while (sentry_value_item_iter_valid(it)) {
+				const char *key = sentry_value_item_iter_get_key(it);
+				sentry_value_t item_value = sentry_value_item_iter_get_value(it);
+				dictionary[String{ key }] = sentry_value_to_variant(item_value);
+				sentry_value_item_iter_next(it);
+			}
+			sentry_free(it);
+			return dictionary;
+		} break;
+		case SENTRY_VALUE_TYPE_NULL:
+		default: {
+			return Variant();
 		} break;
 	}
 }
