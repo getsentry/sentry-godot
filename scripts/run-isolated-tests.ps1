@@ -10,12 +10,14 @@ function Highlight {
     Write-Host $Message -ForegroundColor Cyan
 }
 
-if (-not $env:GODOT) {
+$godot = $env:GODOT
+
+if (-not $godot) {
     Write-Host "GODOT environment variable is not set. Defaulting to `"godot`"."
-    $env:GODOT = "godot"
+    $godot = "godot"
 }
 
-if (-not (Get-Command $env:GODOT -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command $godot -ErrorAction SilentlyContinue)) {
     Write-Error "Godot executable not found. Please set the GODOT environment variable." -CategoryActivity "ERROR"
     exit 1
 }
@@ -32,9 +34,12 @@ Get-ChildItem -Path "test/isolated" -Filter "test_*" | ForEach-Object {
     $file = $_.FullName
     Highlight "Running isolated test: $file"
 
-    & $env:GODOT --headless --path . -s "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" --ignoreHeadlessMode -c -a "$file"
+    $args = "--headless --path . -s `"res://addons/gdUnit4/bin/GdUnitCmdTool.gd`" --ignoreHeadlessMode -c -a `"$file`""
+    $process = Start-Process $godot -ArgumentList $args -PassThru -Wait -NoNewWindow
+    $err = $process.ExitCode
 
-    $err = $LASTEXITCODE
+    Highlight "Finished with exit code: $err" 
+
     if ($err -ne 0) {
         $exitCode = $err
         $numFailed++
