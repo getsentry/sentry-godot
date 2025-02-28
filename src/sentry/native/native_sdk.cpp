@@ -6,11 +6,16 @@
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
 #include "sentry/util.h"
+#include "sentry/util/screenshot.h"
 #include "sentry_options.h"
 
+#include <godot_cpp/classes/dir_access.hpp>
+#include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+
+#define _SCREENSHOT_FN "screenshot.png"
 
 namespace {
 
@@ -43,7 +48,21 @@ void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name
 	}
 }
 
-inline void inject_contexts(sentry_value_t p_event) {
+inline void _save_screenshot() {
+	String screenshot_path = "user://" _SCREENSHOT_FN;
+	DirAccess::remove_absolute(screenshot_path);
+
+	if (!DisplayServer::get_singleton() || DisplayServer::get_singleton()->get_name() == "headless") {
+		return;
+	}
+
+	PackedByteArray buffer = sentry::util::take_screenshot();
+	Ref<FileAccess> f = FileAccess::open(screenshot_path, FileAccess::WRITE);
+	f->store_buffer(buffer);
+	f->close();
+}
+
+inline void _inject_contexts(sentry_value_t p_event) {
 	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
 
 	HashMap<String, Dictionary> contexts = sentry::contexts::make_event_contexts();
@@ -52,9 +71,10 @@ inline void inject_contexts(sentry_value_t p_event) {
 	}
 }
 
-sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closure) {
+sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	sentry::util::print_debug("handling before_send");
-	inject_contexts(event);
+	_save_screenshot();
+	_inject_contexts(event);
 	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
 		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
 		Ref<NativeEvent> processed = before_send.call(event_obj);
@@ -70,8 +90,10 @@ sentry_value_t handle_before_send(sentry_value_t event, void *hint, void *closur
 	return event;
 }
 
-sentry_value_t handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
-	inject_contexts(event);
+sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
+	sentry::util::print_debug("handling on_crash");
+	_save_screenshot();
+	_inject_contexts(event);
 	if (const Callable &on_crash = SentryOptions::get_singleton()->get_on_crash(); on_crash.is_valid()) {
 		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
 		Ref<NativeEvent> processed = on_crash.call(event_obj);
@@ -272,9 +294,15 @@ void NativeSDK::initialize() {
 		}
 	}
 
+	// Attach screenshot.
+	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
+		String screenshot_path = OS::get_singleton()->get_user_data_dir().path_join(_SCREENSHOT_FN);
+		sentry_options_add_attachment(options, screenshot_path.utf8());
+	}
+
 	// Hooks.
-	sentry_options_set_before_send(options, handle_before_send, NULL);
-	sentry_options_set_on_crash(options, handle_on_crash, NULL);
+	sentry_options_set_before_send(options, _handle_before_send, NULL);
+	sentry_options_set_on_crash(options, _handle_on_crash, NULL);
 
 	int err = sentry_init(options);
 	initialized = (err == 0);
