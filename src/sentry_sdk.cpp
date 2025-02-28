@@ -4,8 +4,6 @@
 #include "sentry/contexts.h"
 #include "sentry/disabled_sdk.h"
 #include "sentry/util.h"
-#include "sentry/uuid.h"
-#include "sentry_configuration.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
@@ -43,7 +41,7 @@ void _fix_unix_executable_permissions(const String &p_path) {
 	if (perm != new_perm) {
 		godot::Error err = FileAccess::set_unix_permissions(p_path, new_perm);
 		if (err != OK) {
-			sentry::util::print_error("Failed to set executable permissions for %s: %s", p_path.utf8().get_data(), err);
+			sentry::util::print_error(vformat("Failed to set executable permissions for %s (%d)", p_path.utf8().get_data(), err));
 		}
 	}
 }
