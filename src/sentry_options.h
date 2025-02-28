@@ -55,9 +55,11 @@ private:
 	bool debug = false;
 	String environment;
 	double sample_rate = 1.0;
-	bool attach_log = true;
 	int max_breadcrumbs = 100;
 	bool send_default_pii = false;
+
+	bool attach_log = true;
+	bool attach_screenshot = false;
 
 	bool error_logger_enabled = true;
 	bool error_logger_include_source = true;
@@ -107,14 +109,17 @@ public:
 	_FORCE_INLINE_ double get_sample_rate() const { return sample_rate; }
 	_FORCE_INLINE_ void set_sample_rate(double p_sample_rate) { sample_rate = p_sample_rate; }
 
-	_FORCE_INLINE_ bool is_attach_log_enabled() const { return attach_log; }
-	_FORCE_INLINE_ void set_attach_log(bool p_enabled) { attach_log = p_enabled; }
-
 	_FORCE_INLINE_ int get_max_breadcrumbs() const { return max_breadcrumbs; }
 	_FORCE_INLINE_ void set_max_breadcrumbs(int p_max_breadcrumbs) { max_breadcrumbs = p_max_breadcrumbs; }
 
 	_FORCE_INLINE_ bool is_send_default_pii_enabled() const { return send_default_pii; }
 	_FORCE_INLINE_ void set_send_default_pii(bool p_enabled) { send_default_pii = p_enabled; }
+
+	_FORCE_INLINE_ bool is_attach_log_enabled() const { return attach_log; }
+	_FORCE_INLINE_ void set_attach_log(bool p_enabled) { attach_log = p_enabled; }
+
+	_FORCE_INLINE_ bool is_attach_screenshot_enabled() const { return attach_screenshot; }
+	_FORCE_INLINE_ void set_attach_screenshot(bool p_attach_screenshot) { attach_screenshot = p_attach_screenshot; }
 
 	_FORCE_INLINE_ bool is_error_logger_enabled() const { return error_logger_enabled; }
 	_FORCE_INLINE_ void set_error_logger_enabled(bool p_enabled) { error_logger_enabled = p_enabled; }
