@@ -1,10 +1,15 @@
 # Sentry for Godot Engine
 
-This SDK is actively evolving and may still be incomplete. Documentation is on the way, but in the meantime, feel free to explore the demo `project/` for usage examples.
+This SDK is actively evolving and may still be incomplete. It is developed as a C++ GDExtension library, building on top of existing Sentry SDKs, such as [sentry-native](https://github.com/getsentry/sentry-native). We are also considering adding support for compilation as a [custom module](https://docs.godotengine.org/en/stable/contributing/development/core_and_modules/custom_modules_in_cpp.html). [Let us know](https://github.com/getsentry/sentry-godot/discussions) what you think!
+
+## Getting started
+
+Check the official [Sentry SDK documentation](https://docs.sentry.io/platforms/godot/) to get started.
+Feel free to explore the demo `project/` for usage examples.
 
 ## Building Sentry Godot SDK
 
-Godot Sentry SDK can be built for Windows, Linux, and macOS platforms. Pre-built extension libraries with the demo project are available in [**Releases**](https://github.com/getsentry/sentry-godot/releases).
+Godot Sentry SDK can be built for Windows, Linux, and macOS platforms (x86_64 for PC, and universal `arch` for Mac). Pre-built extension libraries with the demo project are available in [**Releases**](https://github.com/getsentry/sentry-godot/releases).
 
 ### Setting up SCons
 
@@ -53,3 +58,9 @@ brew install scons
     ```
 
 In the Godot editor, you can adjust the Sentry SDK settings by going to `Project Settings -> Sentry -> Config`.
+
+## Contributing
+
+We appreciate your contributions! Feel free to open issues for feature requests and ask questions in [**Discussions**](https://github.com/getsentry/sentry-godot/discussions). Your feedback is very much welcome!
+
+Check out our [**Contributing Guide**](https://github.com/getsentry/sentry-native/blob/master/CONTRIBUTING.md).

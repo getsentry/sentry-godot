@@ -50,29 +50,29 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	_define_setting("sentry/config/enabled", p_options->enabled);
-	_define_setting("sentry/config/disabled_in_editor", p_options->disabled_in_editor);
-	_define_setting("sentry/config/dsn", p_options->dsn);
-	_define_setting("sentry/config/release", p_options->release);
-	_define_setting("sentry/config/dist", p_options->dist);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
-	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/config/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate);
-	_define_setting("sentry/config/attach_log", p_options->attach_log);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs);
-	_define_setting("sentry/config/send_default_pii", p_options->send_default_pii);
+	_define_setting("sentry/options/enabled", p_options->enabled);
+	_define_setting("sentry/options/disabled_in_editor", p_options->disabled_in_editor);
+	_define_setting("sentry/options/dsn", p_options->dsn);
+	_define_setting("sentry/options/release", p_options->release);
+	_define_setting("sentry/options/dist", p_options->dist);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate);
+	_define_setting("sentry/options/attach_log", p_options->attach_log);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs);
+	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
 
-	_define_setting("sentry/config/error_logger/enabled", p_options->error_logger_enabled);
-	_define_setting("sentry/config/error_logger/include_source", p_options->error_logger_include_source);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->error_logger_event_mask);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->error_logger_breadcrumb_mask);
+	_define_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
+	_define_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->error_logger_event_mask);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->error_logger_breadcrumb_mask);
 
-	_define_setting("sentry/config/error_logger/limits/parse_lines", p_options->error_logger_limits->parse_lines);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), p_options->error_logger_limits->events_per_frame);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->repeated_error_window_ms);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), p_options->error_logger_limits->throttle_events);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/config/error_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->throttle_window_ms);
+	_define_setting("sentry/options/error_logger/limits/parse_lines", p_options->error_logger_limits->parse_lines);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), p_options->error_logger_limits->events_per_frame);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->repeated_error_window_ms);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), p_options->error_logger_limits->throttle_events);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->throttle_window_ms);
 
-	_define_setting(PropertyInfo(Variant::STRING, "sentry/config/configuration_script", PROPERTY_HINT_FILE, "*.gd"), p_options->configuration_script);
+	_define_setting(PropertyInfo(Variant::STRING, "sentry/options/configuration_script", PROPERTY_HINT_FILE, "*.gd"), p_options->configuration_script);
 }
 
 void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) {
@@ -87,33 +87,33 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	format_params["app_version"] = app_version;
 	p_options->release = release_str.format(format_params).utf8();
 
-	p_options->enabled = ProjectSettings::get_singleton()->get_setting("sentry/config/enabled", p_options->enabled);
-	p_options->disabled_in_editor = ProjectSettings::get_singleton()->get_setting("sentry/config/disabled_in_editor", p_options->disabled_in_editor);
-	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/config/dsn", p_options->dsn);
-	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/config/dist", p_options->dist);
+	p_options->enabled = ProjectSettings::get_singleton()->get_setting("sentry/options/enabled", p_options->enabled);
+	p_options->disabled_in_editor = ProjectSettings::get_singleton()->get_setting("sentry/options/disabled_in_editor", p_options->disabled_in_editor);
+	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
+	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/options/dist", p_options->dist);
 
 	// DebugMode is only used to represent the debug option in the project settings.
 	// The user may also set the `debug` option explicitly in a configuration script.
-	DebugMode mode = (DebugMode)(int)ProjectSettings::get_singleton()->get_setting("sentry/config/debug_printing", (int)SentryOptions::DEBUG_DEFAULT);
+	DebugMode mode = (DebugMode)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/debug_printing", (int)SentryOptions::DEBUG_DEFAULT);
 	p_options->_init_debug_option(mode);
 
-	p_options->sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/config/sample_rate", p_options->sample_rate);
-	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/config/attach_log", p_options->attach_log);
-	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/config/max_breadcrumbs", p_options->max_breadcrumbs);
-	p_options->send_default_pii = ProjectSettings::get_singleton()->get_setting("sentry/config/send_default_pii", p_options->send_default_pii);
+	p_options->sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/sample_rate", p_options->sample_rate);
+	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
+	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/options/max_breadcrumbs", p_options->max_breadcrumbs);
+	p_options->send_default_pii = ProjectSettings::get_singleton()->get_setting("sentry/options/send_default_pii", p_options->send_default_pii);
 
-	p_options->error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/enabled", p_options->error_logger_enabled);
-	p_options->error_logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/include_source", p_options->error_logger_include_source);
-	p_options->error_logger_event_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/events", p_options->error_logger_event_mask);
-	p_options->error_logger_breadcrumb_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/breadcrumbs", p_options->error_logger_breadcrumb_mask);
+	p_options->error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
+	p_options->error_logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source);
+	p_options->error_logger_event_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/events", p_options->error_logger_event_mask);
+	p_options->error_logger_breadcrumb_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/breadcrumbs", p_options->error_logger_breadcrumb_mask);
 
-	p_options->error_logger_limits->parse_lines = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/parse_lines", p_options->error_logger_limits->parse_lines);
-	p_options->error_logger_limits->events_per_frame = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/events_per_frame", p_options->error_logger_limits->events_per_frame);
-	p_options->error_logger_limits->repeated_error_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/repeated_error_window_ms", p_options->error_logger_limits->repeated_error_window_ms);
-	p_options->error_logger_limits->throttle_events = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/throttle_events", p_options->error_logger_limits->throttle_events);
-	p_options->error_logger_limits->throttle_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/config/error_logger/limits/throttle_window_ms", p_options->error_logger_limits->throttle_window_ms);
+	p_options->error_logger_limits->parse_lines = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/limits/parse_lines", p_options->error_logger_limits->parse_lines);
+	p_options->error_logger_limits->events_per_frame = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/limits/events_per_frame", p_options->error_logger_limits->events_per_frame);
+	p_options->error_logger_limits->repeated_error_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/limits/repeated_error_window_ms", p_options->error_logger_limits->repeated_error_window_ms);
+	p_options->error_logger_limits->throttle_events = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/limits/throttle_events", p_options->error_logger_limits->throttle_events);
+	p_options->error_logger_limits->throttle_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/limits/throttle_window_ms", p_options->error_logger_limits->throttle_window_ms);
 
-	p_options->configuration_script = ProjectSettings::get_singleton()->get_setting("sentry/config/configuration_script", p_options->configuration_script);
+	p_options->configuration_script = ProjectSettings::get_singleton()->get_setting("sentry/options/configuration_script", p_options->configuration_script);
 }
 
 void SentryOptions::_init_debug_option(DebugMode p_mode) {

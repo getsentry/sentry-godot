@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+
+- Renamed the **Sentry/Config** category in Project Settings to **Sentry/Options** ([#119](https://github.com/getsentry/sentry-godot/pull/119)). This change invalidates all previously set options in project settings. To migrate, open your `project.godot` file in a text editor and replace all instances of "sentry/config" with "sentry/options".
+
+### Features
+
+- In-editor class reference documentation ([#104](https://github.com/getsentry/sentry-godot/pull/104))
+
+### Fixes
+
+- Fix `user.id` not assigned to `installation_id` by default ([#118](https://github.com/getsentry/sentry-godot/pull/118))
+
+### Dependencies
+
+- Bump Native SDK from v0.7.20 to v0.8.0 ([#126](https://github.com/getsentry/sentry-godot/pull/126))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#080)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.20...0.8.0)
+
 ## 0.1.2
 
 ### Breaking changes

@@ -1,6 +1,6 @@
 #include "contexts.h"
 
-#include "sdk_version.gen.h"
+#include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
 #include "sentry/uuid.h"
 #include "sentry_options.h"
@@ -101,10 +101,6 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 
 	// Read/initialize installation id.
 	String installation_id = p_runtime_config->get_installation_id();
-	if (installation_id.length() == 0) {
-		installation_id = sentry::uuid::make_uuid();
-		p_runtime_config->set_installation_id(installation_id);
-	}
 	device_context["device_unique_identifier"] = installation_id;
 
 	return device_context;

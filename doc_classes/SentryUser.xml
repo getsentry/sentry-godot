@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryUser" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Represents user data in Sentry.
+	</brief_description>
+	<description>
+		Users consist of a few critical pieces of information that construct a unique identity in Sentry. Each of the properties is optional, but one [b]must[/b] be present for the Sentry SDK to capture the user.
+		If no user data is set using [method SentrySDK.set_user], the SDK falls back to a generated ID, which the SDK randomly generates once for each installation. Additionally, if [member SentryOptions.send_default_pii] is [code]true[/code], Sentry will infer the IP address from the connection between your game and Sentry's server.
+		To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/identify-user/]Users documentation[/url].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="generate_new_id">
+			<return type="void" />
+			<description>
+				Generates a new ID for the user.
+			</description>
+		</method>
+		<method name="infer_ip_address">
+			<return type="void" />
+			<description>
+				Infers the user's IP address. This method sets [member ip_address] to [code]{{auto}}[/code].
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the user data is empty (including ID).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="email" type="String" setter="set_email" getter="get_email" default="&quot;&quot;">
+			An alternative, or addition, to the username. Sentry is aware of email addresses and can display things such as Gravatars and unlock messaging capabilities.
+		</member>
+		<member name="id" type="String" setter="set_id" getter="get_id" default="&quot;&quot;">
+			Your internal identifier for the user. Can be generated with [method generate_new_id].
+			If you don't provide an ID, the SDK falls back to installation ID, which the SDK randomly generates once for each installation.
+		</member>
+		<member name="ip_address" type="String" setter="set_ip_address" getter="get_ip_address" default="&quot;&quot;">
+			User IP address. If set to [code]{{auto}}[/code], Sentry will infer the IP address from the connection between your app and Sentry's server.
+		</member>
+		<member name="username" type="String" setter="set_username" getter="get_username" default="&quot;&quot;">
+			The username. Typically used as a better label than the internal ID.
+		</member>
+	</members>
+</class>
