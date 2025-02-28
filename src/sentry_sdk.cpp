@@ -204,12 +204,14 @@ SentrySDK::SentrySDK() {
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
+#if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED)
 	// Fix crashpad handler executable bit permissions on Unix platforms if the
 	// user extracts the distribution archive without preserving such permissions.
 	if (OS::get_singleton()->is_debug_build()) {
 		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/macos/crashpad_handler");
 		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/linux/crashpad_handler");
 	}
+#endif
 
 	bool should_enable = SentryOptions::get_singleton()->is_enabled();
 
