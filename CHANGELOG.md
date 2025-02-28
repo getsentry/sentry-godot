@@ -14,6 +14,7 @@
 ### Fixes
 
 - Fix `user.id` not assigned to `installation_id` by default ([#118](https://github.com/getsentry/sentry-godot/pull/118))
+- Don't try to fix crashpad_handler Unix permissions on Windows ([#132](https://github.com/getsentry/sentry-godot/pull/132))
 
 ### Dependencies
 
