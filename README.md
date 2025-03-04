@@ -63,4 +63,4 @@ In the Godot editor, you can adjust the Sentry SDK settings by going to `Project
 
 We appreciate your contributions! Feel free to open issues for feature requests and ask questions in [**Discussions**](https://github.com/getsentry/sentry-godot/discussions). Your feedback is very much welcome!
 
-Check out our [**Contributing Guide**](https://github.com/getsentry/sentry-native/blob/master/CONTRIBUTING.md).
+Check out our [**Contributing Guide**](https://github.com/getsentry/sentry-godot/blob/master/CONTRIBUTING.md).
