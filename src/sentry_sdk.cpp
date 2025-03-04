@@ -4,8 +4,6 @@
 #include "sentry/contexts.h"
 #include "sentry/disabled_sdk.h"
 #include "sentry/util.h"
-#include "sentry/uuid.h"
-#include "sentry_configuration.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
@@ -42,8 +40,8 @@ void _fix_unix_executable_permissions(const String &p_path) {
 
 	if (perm != new_perm) {
 		godot::Error err = FileAccess::set_unix_permissions(p_path, new_perm);
-		if (err != OK) {
-			sentry::util::print_error("Failed to set executable permissions for %s: %s", p_path.utf8().get_data(), err);
+		if (err != OK && err != ERR_UNAVAILABLE) {
+			sentry::util::print_error(vformat("Failed to set executable permissions for %s (error code %d)", p_path, err));
 		}
 	}
 }
@@ -206,12 +204,14 @@ SentrySDK::SentrySDK() {
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
+#if defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
 	// Fix crashpad handler executable bit permissions on Unix platforms if the
 	// user extracts the distribution archive without preserving such permissions.
 	if (OS::get_singleton()->is_debug_build()) {
 		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/macos/crashpad_handler");
 		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/linux/crashpad_handler");
 	}
+#endif
 
 	bool should_enable = SentryOptions::get_singleton()->is_enabled();
 
