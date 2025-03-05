@@ -14,6 +14,7 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 
 #define _SCREENSHOT_FN "screenshot.png"
 
@@ -107,6 +108,58 @@ sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t ev
 		sentry::util::print_debug("event processed by on_crash callback: ", event_obj->get_id());
 	}
 	return event;
+}
+
+void _log_native_message(sentry_level_t level, const char *message, va_list args, void *userdata) {
+	char initial_buffer[512];
+	va_list args_copy;
+	va_copy(args_copy, args);
+
+	int required = vsnprintf(initial_buffer, sizeof(initial_buffer), message, args);
+	if (required < 0) {
+		va_end(args_copy);
+		ERR_FAIL_MSG("Sentry: Error fomatting message");
+	}
+
+	char *buffer = initial_buffer;
+	if (required >= sizeof(initial_buffer)) {
+		buffer = (char *)malloc(required + 1);
+		if (buffer) {
+			int new_required = vsnprintf(buffer, required + 1, message, args_copy);
+			if (new_required < 0) {
+				free(buffer);
+				buffer = initial_buffer;
+			}
+		} else {
+			buffer = initial_buffer;
+		}
+	}
+	va_end(args_copy);
+
+	switch (level) {
+		case SENTRY_LEVEL_DEBUG: {
+			UtilityFunctions::print("[sentry] DEBUG ", buffer);
+		} break;
+		case SENTRY_LEVEL_INFO: {
+			UtilityFunctions::print("[sentry] INFO ", buffer);
+		} break;
+		case SENTRY_LEVEL_WARNING: {
+			UtilityFunctions::printerr("[sentry] WARNING ", buffer);
+		} break;
+		case SENTRY_LEVEL_ERROR: {
+			UtilityFunctions::printerr("[sentry] ERROR ", buffer);
+		} break;
+		case SENTRY_LEVEL_FATAL: {
+			UtilityFunctions::printerr("[sentry] FATAL ", buffer);
+		} break;
+		default: {
+			UtilityFunctions::print("[sentry] ", buffer);
+		} break;
+	}
+
+	if (buffer != initial_buffer) {
+		free(buffer);
+	}
 }
 
 inline String _uuid_as_string(sentry_uuid_t p_uuid) {
@@ -303,6 +356,7 @@ void NativeSDK::initialize() {
 	// Hooks.
 	sentry_options_set_before_send(options, _handle_before_send, NULL);
 	sentry_options_set_on_crash(options, _handle_on_crash, NULL);
+	sentry_options_set_logger(options, _log_native_message, NULL);
 
 	int err = sentry_init(options);
 	initialized = (err == 0);
