@@ -5,7 +5,7 @@
 #include "sentry/level.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
-#include "sentry/util.h"
+#include "sentry/util/print.h"
 #include "sentry/util/screenshot.h"
 #include "sentry_options.h"
 
@@ -136,26 +136,7 @@ void _log_native_message(sentry_level_t level, const char *message, va_list args
 	}
 	va_end(args_copy);
 
-	switch (level) {
-		case SENTRY_LEVEL_DEBUG: {
-			UtilityFunctions::print("[sentry] DEBUG ", buffer);
-		} break;
-		case SENTRY_LEVEL_INFO: {
-			UtilityFunctions::print("[sentry] INFO ", buffer);
-		} break;
-		case SENTRY_LEVEL_WARNING: {
-			UtilityFunctions::printerr("[sentry] WARNING ", buffer);
-		} break;
-		case SENTRY_LEVEL_ERROR: {
-			UtilityFunctions::printerr("[sentry] ERROR ", buffer);
-		} break;
-		case SENTRY_LEVEL_FATAL: {
-			UtilityFunctions::printerr("[sentry] FATAL ", buffer);
-		} break;
-		default: {
-			UtilityFunctions::print("[sentry] ", buffer);
-		} break;
-	}
+	sentry::util::print(sentry::native::native_to_level(level), String(buffer));
 
 	if (buffer != initial_buffer) {
 		free(buffer);

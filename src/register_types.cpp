@@ -1,6 +1,6 @@
 #include "runtime_config.h"
 #include "sentry/disabled_event.h"
-#include "sentry/util.h"
+#include "sentry/util/print.h"
 #include "sentry_configuration.h"
 #include "sentry_event.h"
 #include "sentry_logger.h"
