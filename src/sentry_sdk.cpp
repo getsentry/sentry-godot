@@ -3,7 +3,7 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/contexts.h"
 #include "sentry/disabled_sdk.h"
-#include "sentry/util.h"
+#include "sentry/util/print.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>

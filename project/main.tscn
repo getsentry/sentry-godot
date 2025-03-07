@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://cqiowj0jydds1"]
+[gd_scene load_steps=4 format=3 uid="uid://cqiowj0jydds1"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_p65em"]
 [ext_resource type="Script" path="res://output.gd" id="2_ibxrb"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_owcwq"]
 
 [node name="Main" type="CanvasLayer"]
 script = ExtResource("1_p65em")
@@ -300,6 +302,30 @@ grow_vertical = 2
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Copied to clipboard"
+
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/OutputPane/Output"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -124.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = 55.0
+grow_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_owcwq")
+
+[node name="Verbosity" type="HBoxContainer" parent="VBoxContainer/OutputPane/Output/PanelContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="VerbosityMenu" type="MenuButton" parent="VBoxContainer/OutputPane/Output/PanelContainer/Verbosity"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "WARNING"
+flat = false
 
 [connection signal="pressed" from="VBoxContainer/Columns/Column1/Breadcrumb/AddBreadcrumbButton" to="." method="_on_add_breadcrumb_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Columns/Column1/Tags/AddTagButton" to="." method="_on_add_tag_button_pressed"]

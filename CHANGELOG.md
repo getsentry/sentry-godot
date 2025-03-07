@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Show debug messages in Godot Output panel ([#135](https://github.com/getsentry/sentry-godot/pull/135))
+
 ## 0.2.0
 
 ### Breaking changes
