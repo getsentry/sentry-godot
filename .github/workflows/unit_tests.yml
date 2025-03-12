@@ -15,6 +15,8 @@ jobs:
             godot-suffix: win64.exe
           - runner: ubuntu-latest
             godot-suffix: linux.x86_64
+          - runner: macos-latest
+            godot-suffix: macos.universal
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -42,8 +44,13 @@ jobs:
         shell: bash
         run: |
           version=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1-stable/p' project/addons/sentrysdk/bin/sentrysdk.gdextension)
-          bin=Godot_v${version}_${{matrix.godot-suffix}}
-          url=https://github.com/godotengine/godot/releases/download/${version}/${bin}.zip
+          archive_file=Godot_v${version}_${{matrix.godot-suffix}}.zip
+          url=https://github.com/godotengine/godot/releases/download/${version}/${archive_file}
+          if [[ "${{matrix.runner}}" == "macos-latest" ]]; then
+            bin=${GITHUB_WORKSPACE}/godot/Godot.app/Contents/MacOS/Godot
+          else
+            bin=${GITHUB_WORKSPACE}/godot/Godot_v${version}_${{matrix.godot-suffix}}
+          fi
           mkdir godot/
           cd godot/
           curl -L -o godot.zip "${url}"
@@ -51,8 +58,8 @@ jobs:
           rm godot.zip
           chmod u+x ${bin}
           ls -l
-          ./${bin} --version
-          echo "GODOT=${GITHUB_WORKSPACE}/godot/${bin}" >> $GITHUB_ENV
+          ${bin} --version
+          echo "GODOT=${bin}" >> $GITHUB_ENV
 
       - name: Diagnostic info
         shell: bash

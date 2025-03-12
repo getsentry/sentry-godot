@@ -33,8 +33,8 @@ func test_repeating_error_window_limit() -> void:
 	await assert_signal(monitor).is_emitted("callback_processed")
 	assert_int(_num_events).is_equal(1)
 
-	# Wait for 1 second window to expire.
-	await get_tree().create_timer(1.0).timeout
+	# Wait for window to expire.
+	await get_tree().create_timer(1.5).timeout
 
 	push_error("dummy-error")
 	push_error("dummy-error")
