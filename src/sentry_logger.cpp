@@ -70,6 +70,7 @@ void SentryLogger::_process_log_file() {
 	}
 
 	log_file.clear(); // Remove eof flag, so that we can read the next line.
+	log_file.seekg(last_pos);
 
 	int num_lines_read = 0;
 	char first_line[MAX_LINE_LENGTH];
@@ -124,6 +125,7 @@ void SentryLogger::_process_log_file() {
 				break;
 			}
 		}
+		last_pos = log_file.tellg();
 	}
 
 	// Seek to the end of file - don't process the rest of the lines.
@@ -144,12 +146,13 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 
 	// Debug output.
 	if (SentryOptions::get_singleton()->is_debug_enabled()) {
-		printf("[sentry] DEBUG GODOTSDK error logged:\n");
-		printf("   Function: \"%s\"\n", p_func);
-		printf("   File: \"%s\"\n", p_file);
-		printf("   Line: %d\n", p_line);
-		printf("   Rationale: \"%s\"\n", p_rationale);
-		printf("   Error Type: %s\n", error_types[int(p_error_type)]);
+		sentry::util::print_debug(
+				"Error logged:\n",
+				"   Function: \"", p_func, "\"\n",
+				"   File: ", p_file, "\n",
+				"   Line: ", p_line, "\n",
+				"   Rationale: ", p_rationale, "\n",
+				"   Error Type: ", error_types[int(p_error_type)]);
 	}
 
 	TimePoint now = std::chrono::high_resolution_clock::now();
@@ -278,6 +281,7 @@ void SentryLogger::_setup() {
 	String log_path = ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path");
 	ERR_FAIL_COND_MSG(log_path.is_empty(), "Sentry: Error logger failure - project settings \"debug/file_logging/log_path\" is not set. Please, assign a valid file path in the project settings.");
 	log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
+	sentry::util::print_debug("opening ", log_path);
 	log_file.open(log_path.utf8(), std::ios::in);
 	set_process(log_file.is_open());
 	ERR_FAIL_COND_MSG(!log_file.is_open(), "Sentry: Error logger failure - couldn't open the log file: " + log_path);

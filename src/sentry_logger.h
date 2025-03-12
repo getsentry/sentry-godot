@@ -2,7 +2,6 @@
 #define SENTRY_LOGGER_H
 
 #include "sentry/godot_error_types.h"
-#include "sentry/level.h"
 
 #include <chrono>
 #include <deque>
@@ -38,6 +37,7 @@ private:
 
 	Callable process_log;
 	std::ifstream log_file;
+	std::streampos last_pos = 0;
 	Timer *trim_timer = nullptr;
 
 	void _setup();

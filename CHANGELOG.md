@@ -6,6 +6,10 @@
 
 - Show debug messages in Godot Output panel ([#135](https://github.com/getsentry/sentry-godot/pull/135))
 
+### Fixes
+
+- Fixed error logger not working properly on macOS and not showing debug output in the Output panel ([#138](https://github.com/getsentry/sentry-godot/pull/138))
+
 ## 0.2.0
 
 ### Breaking changes
