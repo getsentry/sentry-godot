@@ -144,12 +144,13 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 
 	// Debug output.
 	if (SentryOptions::get_singleton()->is_debug_enabled()) {
-		printf("[sentry] DEBUG GODOTSDK error logged:\n");
-		printf("   Function: \"%s\"\n", p_func);
-		printf("   File: \"%s\"\n", p_file);
-		printf("   Line: %d\n", p_line);
-		printf("   Rationale: \"%s\"\n", p_rationale);
-		printf("   Error Type: %s\n", error_types[int(p_error_type)]);
+		sentry::util::print_debug(
+				"Error logged:\n",
+				"   Function: \"", p_func, "\"\n",
+				"   File: ", p_file, "\n",
+				"   Line: ", p_line, "\n",
+				"   Rationale: ", p_rationale, "\n",
+				"   Error Type: ", error_types[int(p_error_type)]);
 	}
 
 	TimePoint now = std::chrono::high_resolution_clock::now();
