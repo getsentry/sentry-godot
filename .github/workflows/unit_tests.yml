@@ -48,7 +48,7 @@ jobs:
           url=https://github.com/godotengine/godot/releases/download/${version}/${archive_file}
           if [[ "${{matrix.runner}}" == "macos-latest" ]]; then
             bin=${GITHUB_WORKSPACE}/godot/Godot.app/Contents/MacOS/Godot
-          else:
+          else
             bin=${GITHUB_WORKSPACE}/godot/Godot_v${version}_${{matrix.godot-suffix}}
           fi
           mkdir godot/
