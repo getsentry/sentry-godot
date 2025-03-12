@@ -1,6 +1,6 @@
 #include "sentry_logger.h"
 
-#include "sentry/util.h"
+#include "sentry/util/print.h"
 #include "sentry_options.h"
 #include "sentry_sdk.h"
 

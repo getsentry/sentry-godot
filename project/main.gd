@@ -42,6 +42,14 @@ func _update_user_info() -> void:
 	user_id.text = user.id
 
 
+func _print_info(msg: String) -> void:
+	print("INFO: ", msg)
+
+
+func _print_error(msg: String) -> void:
+	printerr("ERROR: ", msg)
+
+
 func _on_level_choice_id_pressed(id: int) -> void:
 	_event_level = id as SentrySDK.Level
 	match _event_level:
@@ -59,18 +67,18 @@ func _on_level_choice_id_pressed(id: int) -> void:
 
 func _on_capture_button_pressed() -> void:
 	var event_id := SentrySDK.capture_message(message_edit.text, _event_level)
-	print("Captured message event. Event ID: " + event_id)
+	_print_info("Captured message event. Event ID: " + event_id)
 
 
 func _on_add_breadcrumb_button_pressed() -> void:
 	SentrySDK.add_breadcrumb(breadcrumb_message.text, breadcrumb_category.text, SentrySDK.LEVEL_ERROR, "default")
-	print("Breadcrumb added.")
+	_print_info("Breadcrumb added.")
 
 
 func _on_add_tag_button_pressed() -> void:
 	SentrySDK.set_tag(tag_key.text, tag_value.text)
 	if not tag_key.text.is_empty():
-		print("Tag added.")
+		_print_info("Tag added.")
 
 
 func _on_crash_button_pressed() -> void:
@@ -79,7 +87,7 @@ func _on_crash_button_pressed() -> void:
 
 func _on_set_context_pressed() -> void:
 	if context_name.text.is_empty():
-		print("Please provide a name for the context.")
+		_print_info("Please provide a name for the context.")
 		return
 
 	# Filter out comments because Expression doesn't support them.
@@ -95,15 +103,15 @@ func _on_set_context_pressed() -> void:
 		if typeof(result) == TYPE_DICTIONARY:
 			# Adding context.
 			SentrySDK.set_context(context_name.text, result)
-			print("Context added.")
+			_print_info("Context added.")
 		else:
-			print("Failed set context: Dictionary is expected, but found: ", type_string(typeof(result)))
+			_print_error("Failed set context: Dictionary is expected, but found: " + type_string(typeof(result)))
 	else:
-		print("Failed to parse expression: ", expr.get_error_text())
+		_print_error("Failed to parse expression: " + expr.get_error_text())
 
 
 func _on_set_user_button_pressed() -> void:
-	print("Setting user info...")
+	_print_info("Setting user info...")
 	var sentry_user := SentryUser.new()
 	sentry_user.id = user_id.text
 	sentry_user.username = username.text
@@ -116,7 +124,7 @@ func _on_set_user_button_pressed() -> void:
 
 
 func _on_gen_script_error_pressed() -> void:
-	print("Generating GDScript error...")
+	_print_info("Generating GDScript error...")
 	# The following line should generate 2 errors:
 	# script parse error and failed to load script.
 	@warning_ignore("unused_variable")
@@ -124,5 +132,5 @@ func _on_gen_script_error_pressed() -> void:
 
 
 func _on_gen_native_error_pressed() -> void:
-	print("Generating native Godot error (in C++ unit)...")
+	_print_info("Generating native Godot error (in C++ unit)...")
 	load("res://file_does_not_exist")
