@@ -17,7 +17,7 @@ func _configure(options: SentryOptions) -> void:
 	options.on_crash = _on_crash
 
 	# Unit testing hooks (if you're exploring the demo project, pretend the following line doesn't exist).
-	TestingConfiguration.configure_options(options)
+	load("res://testing_configuration.gd").configure_options(options)
 
 
 ## before_send callback example

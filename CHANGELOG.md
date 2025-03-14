@@ -9,6 +9,7 @@
 ### Fixes
 
 - Fixed error logger not working properly on macOS and not showing debug output in the Output panel ([#138](https://github.com/getsentry/sentry-godot/pull/138))
+- Fixed demo project failing to initialize in exported environment ([#141](https://github.com/getsentry/sentry-godot/pull/141))
 - Fixed demo output not updating in exported project ([#142](https://github.com/getsentry/sentry-godot/pull/142))
 
 ## 0.2.0
