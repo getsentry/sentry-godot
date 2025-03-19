@@ -7,6 +7,6 @@ namespace sentry {
 
 godot::String build_view_hierarchy_json();
 
-}
+} //namespace sentry
 
 #endif // SENTRY_VIEW_HIERARCHY_H
