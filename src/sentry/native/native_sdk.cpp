@@ -18,7 +18,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #define _SCREENSHOT_FN "screenshot.png"
-#define _SCENE_TREE_FN "view-hierarchy.json"
+#define _VIEW_HIERARCHY_FN "view-hierarchy.json"
 
 namespace {
 
@@ -71,7 +71,11 @@ inline void _save_screenshot() {
 }
 
 inline void _save_view_hierarchy() {
-	String path = "user://" _SCENE_TREE_FN;
+	if (!SentryOptions::get_singleton()->is_attach_scene_tree_info_enabled()) {
+		return;
+	}
+
+	String path = "user://" _VIEW_HIERARCHY_FN;
 	DirAccess::remove_absolute(path);
 	String json_content = sentry::build_view_hierarchy_json();
 	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
@@ -357,9 +361,11 @@ void NativeSDK::initialize() {
 		sentry_options_add_attachment(options, screenshot_path.utf8());
 	}
 
-	// Attach scene tree JSON.
-	String scene_tree_json_path = OS::get_singleton()->get_user_data_dir().path_join(_SCENE_TREE_FN);
-	sentry_options_add_attachment(options, scene_tree_json_path.utf8());
+	// Attach view hierarchy (aka scene tree info).
+	if (SentryOptions::get_singleton()->is_attach_scene_tree_info_enabled()) {
+		String scene_tree_json_path = OS::get_singleton()->get_user_data_dir().path_join(_VIEW_HIERARCHY_FN);
+		sentry_options_add_attachment(options, scene_tree_json_path.utf8());
+	}
 
 	// Hooks.
 	sentry_options_set_before_send(options, _handle_before_send, NULL);
