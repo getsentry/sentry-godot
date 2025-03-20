@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Don't process screenshot when `attach_screenshot` option is disabled ([#145](https://github.com/getsentry/sentry-godot/pull/145))
+
 ### Dependencies
 
 - Bump Native SDK from v0.8.1 to v0.8.2 ([#144](https://github.com/getsentry/sentry-godot/pull/144))
