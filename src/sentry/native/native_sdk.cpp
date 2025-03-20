@@ -54,9 +54,14 @@ void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name
 }
 
 inline void _save_screenshot() {
+	if (!SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
+		return;
+	}
+
 #ifdef DEBUG_ENABLED
 	auto start = Time::get_singleton()->get_ticks_usec();
 #endif
+
 	String screenshot_path = "user://" _SCREENSHOT_FN;
 	DirAccess::remove_absolute(screenshot_path);
 
@@ -69,6 +74,7 @@ inline void _save_screenshot() {
 	f->store_buffer(buffer);
 	f->flush();
 	f->close();
+
 #ifdef DEBUG_ENABLED
 	auto end = Time::get_singleton()->get_ticks_usec();
 	sentry::util::print_debug("Saving screenshot took ", end - start, " usec");
