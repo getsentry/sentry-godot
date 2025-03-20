@@ -17,6 +17,10 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#ifdef DEBUG_ENABLED
+#include <godot_cpp/classes/time.hpp>
+#endif
+
 #define _SCREENSHOT_FN "screenshot.png"
 #define _VIEW_HIERARCHY_FN "view-hierarchy.json"
 
@@ -75,9 +79,14 @@ inline void _save_view_hierarchy() {
 		return;
 	}
 
+#ifdef DEBUG_ENABLED
+	uint64_t start = Time::get_singleton()->get_ticks_usec();
+#endif
+
 	String path = "user://" _VIEW_HIERARCHY_FN;
 	DirAccess::remove_absolute(path);
-	String json_content = sentry::build_view_hierarchy_json();
+	String json_content = sentry::build_view_hierarchy_json(
+			SentryOptions::get_singleton()->get_scene_tree_extra_properties());
 	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
 	if (f.is_valid()) {
 		f->store_string(json_content);
@@ -86,6 +95,11 @@ inline void _save_view_hierarchy() {
 	} else {
 		sentry::util::print_error("Failed to save view hierarchy to file");
 	}
+
+#ifdef DEBUG_ENABLED
+	uint64_t end = Time::get_singleton()->get_ticks_usec();
+	sentry::util::print_debug("Gathering scene tree data took ", end - start, " usec");
+#endif
 }
 
 inline void _inject_contexts(sentry_value_t p_event) {

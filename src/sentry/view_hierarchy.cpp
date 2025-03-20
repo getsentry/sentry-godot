@@ -1,6 +1,7 @@
 #include "view_hierarchy.h"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/script.hpp>
@@ -12,18 +13,22 @@ using namespace godot;
 namespace {
 
 inline void _start_name_value_pair(String &p_arr, const String &p_name, const String &p_value) {
-	p_arr += "\"" + p_name + "\":\"" + p_value.json_escape() + "\"";
+	p_arr += "\"" + p_name + "\":\"" + p_value + "\"";
 }
 
 inline void _next_name_value_pair(String &p_arr, const String &p_name, const String &p_value) {
-	p_arr += ",\"" + p_name + "\":\"" + p_value.json_escape() + "\"";
+	p_arr += ",\"" + p_name + "\":\"" + p_value + "\"";
+}
+
+inline void _next_name_value_pair_raw(String &p_arr, const String &p_name, const String &p_value) {
+	p_arr += ",\"" + p_name + "\":" + p_value;
 }
 
 } // unnamed namespace
 
 namespace sentry {
 
-String build_view_hierarchy_json() {
+String build_view_hierarchy_json(const Vector<StringName> &p_extra_properties) {
 	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	ERR_FAIL_NULL_V(sml, String());
 
@@ -56,6 +61,16 @@ String build_view_hierarchy_json() {
 		const Ref<Script> &scr = node->get_script();
 		if (scr.is_valid()) {
 			_next_name_value_pair(json, "script", scr.is_valid() ? scr->get_path() : String());
+		}
+
+		for (const StringName &prop_name : p_extra_properties) {
+			Variant value = node->get(prop_name);
+			Variant::Type value_type = value.get_type();
+			if (value_type != Variant::NIL && value_type < Variant::DICTIONARY) {
+				_next_name_value_pair_raw(json, prop_name, JSON::stringify(value));
+			} else if (value_type >= Variant::DICTIONARY) {
+				_next_name_value_pair(json, prop_name, value.operator String().json_escape());
+			}
 		}
 
 		if (node->get_child_count()) {
