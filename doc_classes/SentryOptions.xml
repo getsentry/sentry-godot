@@ -13,6 +13,9 @@
 		<member name="attach_log" type="bool" setter="set_attach_log" getter="is_attach_log_enabled" default="true">
 			If [code]true[/code], the SDK will attach the Godot log file to the event.
 		</member>
+		<member name="attach_scene_tree_info" type="bool" setter="set_attach_scene_tree_info" getter="is_attach_scene_tree_info_enabled" default="false">
+			If [code]true[/code], the SDK will attach scene tree information to the event. You can specify additional node properties to be included via [member scene_tree_extra_properties].
+		</member>
 		<member name="attach_screenshot" type="bool" setter="set_attach_screenshot" getter="is_attach_screenshot_enabled" default="false">
 			If [code]true[/code], the SDK will try to capture and attach a screenshot to the event.
 		</member>
@@ -87,6 +90,9 @@
 		</member>
 		<member name="sample_rate" type="float" setter="set_sample_rate" getter="get_sample_rate" default="1.0">
 			Configures the sample rate for error events, in the range of 0.0 to 1.0. The default is 1.0, which means that 100% of error events will be sent. If set to 0.1, only 10% of error events will be sent. Events are picked randomly.
+		</member>
+		<member name="scene_tree_extra_properties" type="PackedStringArray" setter="_set_scene_tree_extra_properties" getter="_get_scene_tree_extra_properties" default="PackedStringArray()">
+			Specifies additional node properties to be included in the scene tree data if [member attach_scene_tree_info] is enabled.
 		</member>
 		<member name="send_default_pii" type="bool" setter="set_send_default_pii" getter="is_send_default_pii_enabled" default="false">
 			If [code]true[/code], the SDK will include PII (Personally Identifiable Information) with the events.

@@ -7,6 +7,7 @@
 #include "sentry/native/native_util.h"
 #include "sentry/util/print.h"
 #include "sentry/util/screenshot.h"
+#include "sentry/view_hierarchy.h"
 #include "sentry_options.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
@@ -16,7 +17,12 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#ifdef DEBUG_ENABLED
+#include <godot_cpp/classes/time.hpp>
+#endif
+
 #define _SCREENSHOT_FN "screenshot.png"
+#define _VIEW_HIERARCHY_FN "view-hierarchy.json"
 
 namespace {
 
@@ -59,8 +65,41 @@ inline void _save_screenshot() {
 
 	PackedByteArray buffer = sentry::util::take_screenshot();
 	Ref<FileAccess> f = FileAccess::open(screenshot_path, FileAccess::WRITE);
-	f->store_buffer(buffer);
-	f->close();
+	if (f.is_valid()) {
+		f->store_buffer(buffer);
+		f->flush();
+		f->close();
+	} else {
+		sentry::util::print_error("Failed to save screenshot to file");
+	}
+}
+
+inline void _save_view_hierarchy() {
+	if (!SentryOptions::get_singleton()->is_attach_scene_tree_info_enabled()) {
+		return;
+	}
+
+#ifdef DEBUG_ENABLED
+	uint64_t start = Time::get_singleton()->get_ticks_usec();
+#endif
+
+	String path = "user://" _VIEW_HIERARCHY_FN;
+	DirAccess::remove_absolute(path);
+	String json_content = sentry::build_view_hierarchy_json(
+			SentryOptions::get_singleton()->get_scene_tree_extra_properties());
+	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
+	if (f.is_valid()) {
+		f->store_string(json_content);
+		f->flush();
+		f->close();
+	} else {
+		sentry::util::print_error("Failed to save view hierarchy to file");
+	}
+
+#ifdef DEBUG_ENABLED
+	uint64_t end = Time::get_singleton()->get_ticks_usec();
+	sentry::util::print_debug("Gathering scene tree data took ", end - start, " usec");
+#endif
 }
 
 inline void _inject_contexts(sentry_value_t p_event) {
@@ -75,6 +114,7 @@ inline void _inject_contexts(sentry_value_t p_event) {
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	sentry::util::print_debug("handling before_send");
 	_save_screenshot();
+	_save_view_hierarchy();
 	_inject_contexts(event);
 	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
 		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
@@ -94,6 +134,7 @@ sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closu
 sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
 	sentry::util::print_debug("handling on_crash");
 	_save_screenshot();
+	_save_view_hierarchy();
 	_inject_contexts(event);
 	if (const Callable &on_crash = SentryOptions::get_singleton()->get_on_crash(); on_crash.is_valid()) {
 		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
@@ -332,6 +373,12 @@ void NativeSDK::initialize() {
 	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
 		String screenshot_path = OS::get_singleton()->get_user_data_dir().path_join(_SCREENSHOT_FN);
 		sentry_options_add_attachment(options, screenshot_path.utf8());
+	}
+
+	// Attach view hierarchy (aka scene tree info).
+	if (SentryOptions::get_singleton()->is_attach_scene_tree_info_enabled()) {
+		String scene_tree_json_path = OS::get_singleton()->get_user_data_dir().path_join(_VIEW_HIERARCHY_FN);
+		sentry_options_add_attachment(options, scene_tree_json_path.utf8());
 	}
 
 	// Hooks.
