@@ -1,4 +1,4 @@
-name: ☑️ Static checks
+name: 🔎 Static checks
 
 on:
   workflow_call:
