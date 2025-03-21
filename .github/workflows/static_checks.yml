@@ -6,8 +6,7 @@ on:
 jobs:
   static-checks:
     runs-on: ubuntu-latest
-    env:
-      GODOT_SUFFIX: linux.x86_64
+    timeout-minutes: 15
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -36,7 +35,6 @@ jobs:
       - name: Check built-in documentation
         if: success() || failure()
         shell: bash
-        timeout-minutes: 5
         run: |
           pwsh ./scripts/update-doc-classes.ps1
           changed=$(git diff --name-only doc_classes/)
