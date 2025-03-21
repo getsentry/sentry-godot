@@ -39,10 +39,9 @@ jobs:
           pwsh ./scripts/update-doc-classes.ps1
           changed=$(git diff --name-only doc_classes/)
           if [[ -n $changed ]]; then
-            echo "Documentation needs to be updated:"
-            echo $changed
-            echo "Tip: Run ./scripts/update-doc-classes.ps1 to update XML files in doc_classes directory."
+            echo "::error title=Built-in docs needs to be updated::$changed"
+            echo "::notice::Tip: Run ./scripts/update-doc-classes.ps1 to update XML files in doc_classes directory."
             exit 1
           else
-            echo "Documentation is up-to-date."
+            echo "::notice::Documentation is up-to-date."
           fi
