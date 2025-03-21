@@ -22,7 +22,7 @@ jobs:
         timeout-minutes: 5
         run: |
           pwsh ./scripts/update-doc-classes.ps1
-          changed=$(git diff --porcelain doc_classes/)
+          changed=$(git diff --name-only doc_classes/)
           if [[ -n $changed ]]; then
             echo "Documentation needs to be updated:"
             echo $changed
