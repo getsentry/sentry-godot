@@ -26,8 +26,10 @@ jobs:
           pwsh ./scripts/update-doc-classes.ps1
           changed=$(git diff --name-only doc_classes/)
           if [[ -n $changed ]]; then
-            echo -e "::error title=Built-in documentation update needed::Outdated doc files:\n$changed"
-            echo "::notice title=Tip::Run ./scripts/update-doc-classes.ps1 to update XML files in doc_classes directory before inputing corrections."
+            for file in $changed; do
+              echo "::error file=$file::Class documentation is outdated and needs updating."
+            done
+            echo "::notice title=Tip::Run ./scripts/update-doc-classes.ps1 to update XML files in doc_classes directory before adding corrections."
             exit 1
           else
             echo "Documentation is up-to-date."
