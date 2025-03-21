@@ -16,21 +16,8 @@ jobs:
       - name: Prepare testing
         uses: ./.github/actions/prepare-testing
 
-      - name: Get changed files
-        shell: bash
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            # On PR:
-            echo "CHANGED_FILES=$(gh pr diff --name-only)" >> $GITHUB_ENV
-          else
-            # On Push:
-            echo "CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)" >> $GITHUB_ENV
-          fi
-
       - name: Check code style
         uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
-        with:
-          extra_args: --files ${{ env.CHANGED_FILES }}
 
       - name: Check built-in documentation
         if: success() || failure()
@@ -39,8 +26,8 @@ jobs:
           pwsh ./scripts/update-doc-classes.ps1
           changed=$(git diff --name-only doc_classes/)
           if [[ -n $changed ]]; then
-            echo "::error title=Built-in docs update needed::Outdated doc files:\n$changed"
-            echo "::notice title=Tip::Tip: Run ./scripts/update-doc-classes.ps1 to update XML files in doc_classes directory before inputing corrections."
+            echo -e "::error title=Built-in documentation update needed::Outdated doc files:\n$changed"
+            echo "::notice title=Tip::Run ./scripts/update-doc-classes.ps1 to update XML files in doc_classes directory before inputing corrections."
             exit 1
           else
             echo "Documentation is up-to-date."
