@@ -17,7 +17,24 @@ jobs:
       - name: Prepare testing
         uses: ./.github/actions/prepare-testing
 
+      - name: Get changed files
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # On PR:
+            echo "CHANGED_FILES=$(gh pr diff --name-only)" >> $GITHUB_ENV
+          else
+            # On Push:
+            echo "CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)" >> $GITHUB_ENV
+          fi
+
+      - name: Check code style
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --files ${{ env.CHANGED_FILES }}
+
       - name: Check built-in documentation
+        if: success() || failure()
         shell: bash
         timeout-minutes: 5
         run: |
