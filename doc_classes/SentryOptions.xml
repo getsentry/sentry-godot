@@ -33,6 +33,9 @@
 		<member name="debug" type="bool" setter="set_debug_enabled" getter="is_debug_enabled" default="true">
 			If [code]true[/code], the SDK will print useful debugging information to standard output. These messages do not appear in the Godot console but can be seen when launching Godot from a terminal.
 		</member>
+		<member name="debug_verbosity" type="int" setter="set_debug_verbosity" getter="get_debug_verbosity" enum="SentrySDK.Level" default="0">
+			Specifies the minimum level of messages to be printed if [member debug] is enabled.
+		</member>
 		<member name="disabled_in_editor" type="bool" setter="set_disabled_in_editor" getter="is_disabled_in_editor" default="true">
 			If [code]true[/code], the SDK will not initialize in the Godot editor.
 		</member>

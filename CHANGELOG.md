@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Add missing documentation for `debug_verbosity` option ([#147](https://github.com/getsentry/sentry-godot/pull/147))
+
 ### Dependencies
 
 - Bump Native SDK from v0.8.1 to v0.8.2 ([#144](https://github.com/getsentry/sentry-godot/pull/144))
