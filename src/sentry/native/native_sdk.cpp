@@ -16,7 +16,11 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
-#define _SCREENSHOT_FN "screenshot.png"
+#ifdef DEBUG_ENABLED
+#include <godot_cpp/classes/time.hpp>
+#endif
+
+#define _SCREENSHOT_FN "screenshot.jpg"
 
 namespace {
 
@@ -50,6 +54,9 @@ void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name
 }
 
 inline void _save_screenshot() {
+#ifdef DEBUG_ENABLED
+	auto start = Time::get_singleton()->get_ticks_usec();
+#endif
 	String screenshot_path = "user://" _SCREENSHOT_FN;
 	DirAccess::remove_absolute(screenshot_path);
 
@@ -60,7 +67,12 @@ inline void _save_screenshot() {
 	PackedByteArray buffer = sentry::util::take_screenshot();
 	Ref<FileAccess> f = FileAccess::open(screenshot_path, FileAccess::WRITE);
 	f->store_buffer(buffer);
+	f->flush();
 	f->close();
+#ifdef DEBUG_ENABLED
+	auto end = Time::get_singleton()->get_ticks_usec();
+	sentry::util::print_debug("Saving screenshot took ", end - start, " usec");
+#endif
 }
 
 inline void _inject_contexts(sentry_value_t p_event) {
