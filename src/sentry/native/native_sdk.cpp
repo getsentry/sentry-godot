@@ -17,7 +17,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #ifdef DEBUG_ENABLED
-#include <godot_cpp/classes/time.hpp>
+#include <chrono>
 #endif
 
 #define _SCREENSHOT_FN "screenshot.jpg"
@@ -59,7 +59,7 @@ inline void _save_screenshot() {
 	}
 
 #ifdef DEBUG_ENABLED
-	auto start = Time::get_singleton()->get_ticks_usec();
+	auto start = std::chrono::high_resolution_clock::now();
 #endif
 
 	String screenshot_path = "user://" _SCREENSHOT_FN;
@@ -76,21 +76,34 @@ inline void _save_screenshot() {
 	f->close();
 
 #ifdef DEBUG_ENABLED
-	auto end = Time::get_singleton()->get_ticks_usec();
-	sentry::util::print_debug("Saving screenshot took ", end - start, " usec");
+	auto end = std::chrono::high_resolution_clock::now();
+	sentry::util::print_debug("Saving screenshot took ", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(), " usec");
 #endif
 }
 
 inline void _inject_contexts(sentry_value_t p_event) {
 	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
 
+#ifdef DEBUG_ENABLED
+	auto start = std::chrono::high_resolution_clock::now();
+#endif
+
 	HashMap<String, Dictionary> contexts = sentry::contexts::make_event_contexts();
 	for (const auto &kv : contexts) {
 		sentry_event_set_context(p_event, kv.key.utf8(), kv.value);
 	}
+
+#ifdef DEBUG_ENABLED
+	auto end = std::chrono::high_resolution_clock::now();
+	sentry::util::print_debug("Injecting contexts took ", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(), " usec");
+#endif
 }
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
+#ifdef DEBUG_ENABLED
+	auto start = std::chrono::high_resolution_clock::now();
+#endif
+
 	sentry::util::print_debug("handling before_send");
 
 	// Note: Saving image from the root viewport is too slow: ~20 ms for JPG, 40 ms for PNG.
@@ -99,6 +112,9 @@ sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closu
 
 	_inject_contexts(event);
 	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
+#ifdef DEBUG_ENABLED
+		auto cb_start = std::chrono::high_resolution_clock::now();
+#endif
 		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
 		Ref<NativeEvent> processed = before_send.call(event_obj);
 		ERR_FAIL_COND_V_MSG(processed.is_valid() && processed != event_obj, event, "Sentry: before_send callback must return the same event object or null.");
@@ -109,7 +125,17 @@ sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closu
 			return sentry_value_new_null();
 		}
 		sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
+#ifdef DEBUG_ENABLED
+		auto cb_end = std::chrono::high_resolution_clock::now();
+		sentry::util::print_debug("before_send callback took ", std::chrono::duration_cast<std::chrono::microseconds>(cb_end - cb_start).count(), " usec");
+#endif
 	}
+
+#ifdef DEBUG_ENABLED
+	auto end = std::chrono::high_resolution_clock::now();
+	sentry::util::print_debug("event processed by before_send handler in ", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(), " usec");
+#endif
+
 	return event;
 }
 
@@ -246,6 +272,10 @@ String NativeSDK::get_last_event_id() {
 }
 
 String NativeSDK::capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) {
+#ifdef DEBUG_ENABLED
+	auto start = std::chrono::high_resolution_clock::now();
+#endif
+
 	sentry_value_t event = sentry_value_new_event();
 	sentry_value_set_by_key(event, "level",
 			sentry_value_new_string(sentry::level_as_cstring(p_level)));
@@ -270,7 +300,23 @@ String NativeSDK::capture_error(const String &p_type, const String &p_value, Lev
 	sentry_value_set_by_key(stack_trace, "frames", frames);
 	sentry_value_set_by_key(exception, "stacktrace", stack_trace);
 	sentry_event_add_exception(event, exception);
+
+#ifdef DEBUG_ENABLED
+	auto s2 = std::chrono::high_resolution_clock::now();
+#endif
 	last_uuid = sentry_capture_event(event);
+#ifdef DEBUG_ENABLED
+	auto e2 = std::chrono::high_resolution_clock::now();
+	auto d2 = std::chrono::duration_cast<std::chrono::microseconds>(e2 - s2).count();
+	sentry::util::print_debug("Sentry: sentry_capture_event() took ", d2, " usec");
+#endif
+
+#ifdef DEBUG_ENABLED
+	auto end = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	sentry::util::print_debug("Sentry: NativeSDK::capture_error() took ", duration, " usec");
+#endif
+
 	return _uuid_as_string(last_uuid);
 }
 
