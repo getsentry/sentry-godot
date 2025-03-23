@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Disable screenshot for non-crash events to address logger stutters ([#148](https://github.com/getsentry/sentry-godot/pull/148))
+
 ### Dependencies
 
 - Bump Native SDK from v0.8.1 to v0.8.2 ([#144](https://github.com/getsentry/sentry-godot/pull/144))
