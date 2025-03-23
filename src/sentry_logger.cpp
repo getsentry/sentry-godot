@@ -53,11 +53,6 @@ void SentryLogger::_process_log_file() {
 		return;
 	}
 
-#ifdef DEBUG_ENABLED
-	auto start = std::chrono::high_resolution_clock::now();
-	bool found_error = false;
-#endif
-
 	// Reset per-frame counter.
 	frame_events = 0;
 
@@ -110,9 +105,6 @@ void SentryLogger::_process_log_file() {
 					if (last_colon != NULL) {
 						*last_colon = '\0';
 						int line = atoi(last_colon + 1);
-#ifdef DEBUG_ENABLED
-						found_error = true;
-#endif
 
 						// Reject errors based on per-source-line throttling window to prevent
 						// repetitive logging caused by loops or recurring errors in each frame.
@@ -138,20 +130,9 @@ void SentryLogger::_process_log_file() {
 
 	// Seek to the end of file - don't process the rest of the lines.
 	log_file.seekg(0, std::ios::end);
-
-#ifdef DEBUG_ENABLED
-	if (found_error) {
-		auto end = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-		sentry::util::print_debug("!!!!!! Log processed in ", duration, " usec.");
-	}
-#endif
 }
 
 void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType p_error_type) {
-#ifdef DEBUG_ENABLED
-	auto start = std::chrono::high_resolution_clock::now();
-#endif
 	Ref<SentryLoggerLimits> limits = SentryOptions::get_singleton()->get_error_logger_limits();
 	bool as_breadcrumb = SentryOptions::get_singleton()->is_error_logger_breadcrumb_enabled(p_error_type);
 	bool as_event = SentryOptions::get_singleton()->is_error_logger_event_enabled(p_error_type) &&
@@ -221,11 +202,6 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 				"error",
 				data);
 	}
-#ifdef DEBUG_ENABLED
-	auto end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-	sentry::util::print_debug("Error processed in ", duration, " usec");
-#endif
 }
 
 void SentryLogger::_trim_error_timepoints() {
