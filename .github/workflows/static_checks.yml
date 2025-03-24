@@ -1,0 +1,39 @@
+name: 🔎 Static checks
+
+on:
+  workflow_call:
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: false # don't initialize submodules automatically
+
+      - name: Prepare testing
+        uses: ./.github/actions/prepare-testing
+
+      - name: Check code style
+        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+
+      - name: Check class documentation
+        if: success() || failure()
+        shell: bash
+        run: |
+          pwsh ./scripts/update-doc-classes.ps1
+          changed=$(git diff --name-only doc_classes/)
+          if [[ -n $changed ]]; then
+            for file in $changed; do
+              echo "::error file=$file::Class documentation needs to be updated."
+              echo "::group::Diff"
+              git diff $file
+              echo "::endgroup::"
+            done
+            echo "::notice title=Tip::Run ./scripts/update-doc-classes.ps1 to update XML files in doc_classes directory before adding corrections."
+            exit 1
+          else
+            echo "::notice::Class documentation is up-to-date."
+          fi
