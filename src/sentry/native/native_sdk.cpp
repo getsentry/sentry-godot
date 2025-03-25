@@ -11,6 +11,7 @@
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -49,7 +50,15 @@ void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name
 	}
 }
 
-inline void _save_screenshot() {
+void _save_screenshot() {
+	static int32_t last_screenshot_frame = 0;
+	int32_t current_frame = Engine::get_singleton()->get_frames_drawn();
+	if (current_frame == last_screenshot_frame) {
+		// Screenshot already taken in this frame.
+		return;
+	}
+	last_screenshot_frame = current_frame;
+
 	String screenshot_path = "user://" _SCREENSHOT_FN;
 	DirAccess::remove_absolute(screenshot_path);
 
