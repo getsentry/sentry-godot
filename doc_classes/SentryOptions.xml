@@ -14,7 +14,7 @@
 			If [code]true[/code], the SDK will attach the Godot log file to the event.
 		</member>
 		<member name="attach_screenshot" type="bool" setter="set_attach_screenshot" getter="is_attach_screenshot_enabled" default="false">
-			If [code]true[/code], the SDK will try to capture and attach a screenshot to the event.
+			If [code]true[/code], the SDK will try to capture and attach a screenshot to the event. This may impact performance in the same frame the screenshot is taken.
 		</member>
 		<member name="before_send" type="Callable" setter="set_before_send" getter="get_before_send" default="Callable()">
 			If assigned, this callback runs before a message or error event is sent to Sentry. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a [SentryConfiguration] script.
