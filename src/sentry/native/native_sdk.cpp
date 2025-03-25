@@ -51,6 +51,10 @@ void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name
 }
 
 void _save_screenshot() {
+	if (!SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
+		return;
+	}
+
 	static int32_t last_screenshot_frame = 0;
 	int32_t current_frame = Engine::get_singleton()->get_frames_drawn();
 	if (current_frame == last_screenshot_frame) {
