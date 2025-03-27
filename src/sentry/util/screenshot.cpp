@@ -18,9 +18,7 @@ PackedByteArray take_screenshot() {
 	ERR_FAIL_NULL_V_MSG(main_window, PackedByteArray(), "Sentry: Failed to capture screenshot - couldn't get main window.");
 
 	Ref<ViewportTexture> tex = main_window->get_texture();
-	Ref<Image> img = tex->get_image();
-	PackedByteArray bytes = img->save_png_to_buffer();
-	return bytes;
+	return tex->get_image()->save_jpg_to_buffer();
 }
 
 } //namespace sentry::util

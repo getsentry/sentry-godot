@@ -22,6 +22,11 @@ jobs:
     name: 🔌 Build GDExtension
     uses: ./.github/workflows/build_gdextension.yml
 
+  static-checks:
+    name: 🔎 Static checks
+    needs: build-extension
+    uses: ./.github/workflows/static_checks.yml
+
   unit-tests:
     name: 🧪 Unit tests
     needs: build-extension

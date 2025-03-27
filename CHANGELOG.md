@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Optimize screenshot feature to reduce stutters ([#148](https://github.com/getsentry/sentry-godot/pull/148))
+- Don't process screenshot when `attach_screenshot` option is disabled ([#145](https://github.com/getsentry/sentry-godot/pull/145))
+- Add missing documentation for `debug_verbosity` option ([#147](https://github.com/getsentry/sentry-godot/pull/147))
+
+### Dependencies
+
+- Bump Native SDK from v0.8.1 to v0.8.2 ([#144](https://github.com/getsentry/sentry-godot/pull/144))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#082)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.1...0.8.2)
+
 ## 0.3.0
 
 ### Features
