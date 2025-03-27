@@ -58,7 +58,7 @@ void _save_screenshot() {
 	static int32_t last_screenshot_frame = 0;
 	int32_t current_frame = Engine::get_singleton()->get_frames_drawn();
 	if (current_frame == last_screenshot_frame) {
-		// Screenshot already taken in this frame.
+		// Screenshot already exists for this frame — nothing to do.
 		return;
 	}
 	last_screenshot_frame = current_frame;
