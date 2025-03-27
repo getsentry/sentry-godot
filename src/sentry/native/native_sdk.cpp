@@ -83,7 +83,7 @@ void _save_screenshot() {
 		f->flush();
 		f->close();
 	} else {
-		sentry::util::print_error("Failed to save screenshot to file");
+		sentry::util::print_error("failed to save ", screenshot_path);
 	}
 }
 
@@ -106,12 +106,12 @@ inline void _save_view_hierarchy() {
 		f->flush();
 		f->close();
 	} else {
-		sentry::util::print_error("Failed to save view hierarchy to file");
+		sentry::util::print_error("failed to save ", path);
 	}
 
 #ifdef DEBUG_ENABLED
 	uint64_t end = Time::get_singleton()->get_ticks_usec();
-	sentry::util::print_debug("Gathering scene tree data took ", end - start, " usec");
+	sentry::util::print_debug("gathering scene tree info took ", end - start, " usec");
 #endif
 }
 
