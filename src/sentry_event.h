@@ -12,8 +12,20 @@ using namespace godot;
 class SentryEvent : public RefCounted {
 	GDCLASS(SentryEvent, RefCounted);
 
+public:
+	enum EventType {
+		EVENT_CUSTOM,
+		EVENT_CRASH,
+		EVENT_ERROR
+	};
+
+private:
+	EventType event_type = EVENT_CUSTOM;
+
 protected:
 	static void _bind_methods();
+
+	_FORCE_INLINE_ void _set_event_type(EventType p_type) { event_type = p_type; }
 
 public:
 	virtual String get_id() const = 0;
@@ -45,7 +57,11 @@ public:
 	virtual void remove_tag(const String &p_key) = 0;
 	virtual String get_tag(const String &p_key) = 0;
 
+	_FORCE_INLINE_ EventType get_event_type() const { return event_type; }
+
 	virtual ~SentryEvent() = default;
 };
+
+VARIANT_ENUM_CAST(SentryEvent::EventType);
 
 #endif // SENTRY_EVENT_H

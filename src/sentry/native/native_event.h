@@ -47,7 +47,7 @@ public:
 	virtual void remove_tag(const String &p_key) override;
 	virtual String get_tag(const String &p_key) override;
 
-	NativeEvent(sentry_value_t p_event);
+	NativeEvent(sentry_value_t p_event, EventType p_type = EVENT_CUSTOM);
 	NativeEvent();
 	virtual ~NativeEvent() override;
 };

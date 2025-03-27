@@ -24,6 +24,7 @@ void SentryEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &SentryEvent::set_tag);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &SentryEvent::remove_tag);
 	ClassDB::bind_method(D_METHOD("get_tag", "key"), &SentryEvent::get_tag);
+	ClassDB::bind_method(D_METHOD("get_event_type"), &SentryEvent::get_event_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "id"), "", "get_id");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "message"), "set_message", "get_message");
@@ -34,4 +35,8 @@ void SentryEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "release"), "set_release", "get_release");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dist"), "set_dist", "get_dist");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "environment"), "set_environment", "get_environment");
+
+	BIND_ENUM_CONSTANT(EVENT_CUSTOM);
+	BIND_ENUM_CONSTANT(EVENT_CRASH);
+	BIND_ENUM_CONSTANT(EVENT_ERROR);
 }

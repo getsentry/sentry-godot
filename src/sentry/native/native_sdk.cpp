@@ -88,10 +88,17 @@ inline void _inject_contexts(sentry_value_t p_event) {
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	sentry::util::print_debug("handling before_send");
+
+	SentryEvent::EventType event_type = SentryEvent::EVENT_CUSTOM;
+	if (!sentry_value_is_null(sentry_value_get_by_key(event, "is_error"))) {
+		event_type = SentryEvent::EVENT_ERROR;
+		sentry_value_remove_by_key(event, "is_error");
+	}
+
 	_save_screenshot();
 	_inject_contexts(event);
 	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
-		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+		Ref<NativeEvent> event_obj = memnew(NativeEvent(event, event_type));
 		Ref<NativeEvent> processed = before_send.call(event_obj);
 		ERR_FAIL_COND_V_MSG(processed.is_valid() && processed != event_obj, event, "Sentry: before_send callback must return the same event object or null.");
 		if (processed.is_null()) {
@@ -110,7 +117,7 @@ sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t ev
 	_save_screenshot();
 	_inject_contexts(event);
 	if (const Callable &on_crash = SentryOptions::get_singleton()->get_on_crash(); on_crash.is_valid()) {
-		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+		Ref<NativeEvent> event_obj = memnew(NativeEvent(event, SentryEvent::EVENT_CRASH));
 		Ref<NativeEvent> processed = on_crash.call(event_obj);
 		ERR_FAIL_COND_V_MSG(processed.is_valid() && processed != event_obj, event, "Sentry: on_crash callback must return the same event object or null.");
 		if (processed.is_null()) {
@@ -261,6 +268,7 @@ String NativeSDK::capture_error(const String &p_type, const String &p_value, Lev
 
 	sentry_value_set_by_key(stack_trace, "frames", frames);
 	sentry_value_set_by_key(exception, "stacktrace", stack_trace);
+	sentry_value_set_by_key(event, "is_error", sentry_value_new_bool(true)); // Mark it as error for later processing.
 	sentry_event_add_exception(event, exception);
 	last_uuid = sentry_capture_event(event);
 	return _uuid_as_string(last_uuid);
