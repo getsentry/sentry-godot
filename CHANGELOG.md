@@ -6,6 +6,7 @@
 
 - Optimize screenshot feature to reduce stutters ([#148](https://github.com/getsentry/sentry-godot/pull/148))
 - Don't process screenshot when `attach_screenshot` option is disabled ([#145](https://github.com/getsentry/sentry-godot/pull/145))
+- Add missing documentation for `debug_verbosity` option ([#147](https://github.com/getsentry/sentry-godot/pull/147))
 
 ### Dependencies
 
