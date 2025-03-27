@@ -14,13 +14,23 @@ class SentryEvent : public RefCounted {
 
 public:
 	enum EventType {
-		EVENT_CUSTOM,
-		EVENT_CRASH,
-		EVENT_ERROR
+		EVENT_TYPE_CUSTOM,
+		EVENT_TYPE_CRASH,
+		EVENT_TYPE_ERROR
 	};
 
+	enum EventMask {
+		EVENT_MASK_NONE = 0,
+		EVENT_MASK_CUSTOM_EVENTS = (1 << EVENT_TYPE_CUSTOM),
+		EVENT_MASK_CRASH_EVENTS = (1 << EVENT_TYPE_CRASH),
+		EVENT_MASK_ERROR_EVENTS = (1 << EVENT_TYPE_ERROR),
+		EVENT_MASK_ALL_EVENTS = int(EVENT_MASK_CUSTOM_EVENTS) | int(EVENT_MASK_CRASH_EVENTS) | int(EVENT_MASK_ERROR_EVENTS)
+	};
+
+	constexpr static EventMask event_type_as_mask(EventType p_type) { return (EventMask)(1 << p_type); }
+
 private:
-	EventType event_type = EVENT_CUSTOM;
+	EventType event_type = EVENT_TYPE_CUSTOM;
 
 protected:
 	static void _bind_methods();
@@ -63,5 +73,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(SentryEvent::EventType);
+VARIANT_BITFIELD_CAST(SentryEvent::EventMask);
 
 #endif // SENTRY_EVENT_H
