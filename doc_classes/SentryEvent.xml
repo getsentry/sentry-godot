@@ -71,7 +71,7 @@
 	</members>
 	<constants>
 		<constant name="EVENT_TYPE_CUSTOM" value="0" enum="EventType">
-			An event created manually by the user, for example, by calling [member SentrySDK.create_message].
+			An event created manually by the user, for example, by calling [method SentrySDK.capture_message].
 		</constant>
 		<constant name="EVENT_TYPE_CRASH" value="1" enum="EventType">
 			An event generated automatically when a run session crashes.
@@ -83,7 +83,7 @@
 			Excludes all events.
 		</constant>
 		<constant name="EVENT_MASK_CUSTOM_EVENTS" value="1" enum="EventMask" is_bitfield="true">
-			Includes custom events.
+			Includes manual events created by the user.
 		</constant>
 		<constant name="EVENT_MASK_CRASH_EVENTS" value="2" enum="EventMask" is_bitfield="true">
 			Includes crash events.
