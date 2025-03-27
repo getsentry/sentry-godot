@@ -11,12 +11,13 @@
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
-#define _SCREENSHOT_FN "screenshot.png"
+#define _SCREENSHOT_FN "screenshot.jpg"
 
 namespace {
 
@@ -49,10 +50,18 @@ void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name
 	}
 }
 
-inline void _save_screenshot() {
+void _save_screenshot() {
 	if (!SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
 		return;
 	}
+
+	static int32_t last_screenshot_frame = 0;
+	int32_t current_frame = Engine::get_singleton()->get_frames_drawn();
+	if (current_frame == last_screenshot_frame) {
+		// Screenshot already exists for this frame — nothing to do.
+		return;
+	}
+	last_screenshot_frame = current_frame;
 
 	String screenshot_path = "user://" _SCREENSHOT_FN;
 	DirAccess::remove_absolute(screenshot_path);
@@ -64,6 +73,7 @@ inline void _save_screenshot() {
 	PackedByteArray buffer = sentry::util::take_screenshot();
 	Ref<FileAccess> f = FileAccess::open(screenshot_path, FileAccess::WRITE);
 	f->store_buffer(buffer);
+	f->flush();
 	f->close();
 }
 
