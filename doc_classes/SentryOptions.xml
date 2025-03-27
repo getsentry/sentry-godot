@@ -14,7 +14,7 @@
 			If [code]true[/code], the SDK will attach the Godot log file to the event.
 		</member>
 		<member name="attach_screenshot" type="bool" setter="set_attach_screenshot" getter="is_attach_screenshot_enabled" default="false">
-			If [code]true[/code], the SDK will try to capture and attach a screenshot to the event. This may impact performance in the same frame the screenshot is taken.
+			If [code]true[/code], the SDK will try to capture and attach a screenshot to the event. This may impact performance in the same frame the screenshot is taken. See also [member screenshot_event_types].
 		</member>
 		<member name="before_send" type="Callable" setter="set_before_send" getter="get_before_send" default="Callable()">
 			If assigned, this callback runs before a message or error event is sent to Sentry. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a [SentryConfiguration] script.
@@ -91,7 +91,7 @@
 		<member name="sample_rate" type="float" setter="set_sample_rate" getter="get_sample_rate" default="1.0">
 			Configures the sample rate for error events, in the range of 0.0 to 1.0. The default is 1.0, which means that 100% of error events will be sent. If set to 0.1, only 10% of error events will be sent. Events are picked randomly.
 		</member>
-		<member name="screenshot_event_mask" type="int" setter="set_screenshot_event_mask" getter="get_screenshot_event_mask" enum="SentryEvent.EventMask" is_bitfield="true" default="7">
+		<member name="screenshot_event_types" type="int" setter="set_screenshot_event_types" getter="get_screenshot_event_types" enum="SentryEvent.EventMask" is_bitfield="true" default="7">
 			Defines the event types for which screenshots will be captured if [member attach_screenshot] is enabled. See [enum SentryEvent.EventMask] for details.
 		</member>
 		<member name="send_default_pii" type="bool" setter="set_send_default_pii" getter="is_send_default_pii_enabled" default="false">

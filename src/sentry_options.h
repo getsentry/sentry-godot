@@ -63,7 +63,7 @@ private:
 
 	bool attach_log = true;
 	bool attach_screenshot = false;
-	BitField<SentryEvent::EventMask> screenshot_event_mask = SentryEvent::EVENT_MASK_ALL_EVENTS;
+	BitField<SentryEvent::EventMask> screenshot_event_types = SentryEvent::EVENT_MASK_ALL_EVENTS;
 
 	bool error_logger_enabled = true;
 	bool error_logger_include_source = true;
@@ -127,8 +127,8 @@ public:
 	_FORCE_INLINE_ bool is_attach_screenshot_enabled() const { return attach_screenshot; }
 	_FORCE_INLINE_ void set_attach_screenshot(bool p_attach_screenshot) { attach_screenshot = p_attach_screenshot; }
 
-	_FORCE_INLINE_ BitField<SentryEvent::EventMask> get_screenshot_event_mask() const { return screenshot_event_mask; }
-	_FORCE_INLINE_ void set_screenshot_event_mask(BitField<SentryEvent::EventMask> p_events) { screenshot_event_mask = p_events; }
+	_FORCE_INLINE_ BitField<SentryEvent::EventMask> get_screenshot_event_types() const { return screenshot_event_types; }
+	_FORCE_INLINE_ void set_screenshot_event_types(BitField<SentryEvent::EventMask> p_events) { screenshot_event_types = p_events; }
 
 	_FORCE_INLINE_ bool is_error_logger_enabled() const { return error_logger_enabled; }
 	_FORCE_INLINE_ void set_error_logger_enabled(bool p_enabled) { error_logger_enabled = p_enabled; }

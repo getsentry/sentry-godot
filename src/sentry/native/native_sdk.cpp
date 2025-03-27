@@ -70,7 +70,7 @@ void _save_screenshot(SentryEvent::EventType p_event_type) {
 		return;
 	}
 
-	if (!SentryOptions::get_singleton()->get_screenshot_event_mask().has_flag(SentryEvent::event_type_as_mask(p_event_type))) {
+	if (!SentryOptions::get_singleton()->get_screenshot_event_types().has_flag(SentryEvent::event_type_as_mask(p_event_type))) {
 		// This check needs to happen after we remove the outdated screenshot file from the drive.
 		return;
 	}
