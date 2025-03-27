@@ -378,7 +378,7 @@ void NativeSDK::initialize() {
 	// Attach view hierarchy (aka scene tree info).
 	if (SentryOptions::get_singleton()->is_attach_scene_tree_info_enabled()) {
 		String scene_tree_json_path = OS::get_singleton()->get_user_data_dir().path_join(_VIEW_HIERARCHY_FN);
-		sentry_options_add_attachment(options, scene_tree_json_path.utf8());
+		sentry_options_add_typed_attachment(options, scene_tree_json_path.utf8(), VIEW_HIERARCHY, "application/json");
 	}
 
 	// Hooks.
