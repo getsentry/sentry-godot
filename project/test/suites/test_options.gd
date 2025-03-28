@@ -16,6 +16,7 @@ func test_bool_properties(property: String, test_parameters := [
 		["disabled_in_editor"],
 		["debug"],
 		["attach_log"],
+		["attach_screenshot"],
 		["send_default_pii"],
 		["error_logger_enabled"],
 		["error_logger_include_source"],
