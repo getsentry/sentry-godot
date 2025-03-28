@@ -64,7 +64,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/options/attach_log", p_options->attach_log);
 	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/options/screenshot_event_types", godot::PROPERTY_HINT_FLAGS, "Custom events,Crash events,Error events"), p_options->screenshot_event_types);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/screenshot_event_types", PROPERTY_HINT_FLAGS, "Custom events,Crash events,Error events"), p_options->screenshot_event_types);
 
 	_define_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
 	_define_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source);
