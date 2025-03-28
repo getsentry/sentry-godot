@@ -384,14 +384,14 @@ void NativeSDK::initialize() {
 
 	// Attach screenshot.
 	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
-		String screenshot_path = OS::get_singleton()->get_user_data_dir().path_join(_SCREENSHOT_FN);
-		sentry_options_add_attachment(options, screenshot_path.utf8());
+		String path = OS::get_singleton()->get_user_data_dir().path_join(_SCREENSHOT_FN);
+		sentry_options_add_attachment(options, path.utf8());
 	}
 
 	// Attach view hierarchy (aka scene tree info).
 	if (SentryOptions::get_singleton()->is_attach_scene_tree_info_enabled()) {
-		String scene_tree_json_path = OS::get_singleton()->get_user_data_dir().path_join(_VIEW_HIERARCHY_FN);
-		sentry_options_add_typed_attachment(options, scene_tree_json_path.utf8(), VIEW_HIERARCHY, "application/json");
+		String path = OS::get_singleton()->get_user_data_dir().path_join(_VIEW_HIERARCHY_FN);
+		sentry_options_add_typed_attachment(options, path.utf8(), VIEW_HIERARCHY, "application/json");
 	}
 
 	// Hooks.
