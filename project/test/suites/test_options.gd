@@ -50,6 +50,14 @@ func test_max_breadcrumbs() -> void:
 	assert_int(options.max_breadcrumbs).is_equal(42)
 
 
+## SentryOptions.screenshot_event_types must be set to the specified value.
+func test_screenshot_event_types() -> void:
+	options.screenshot_event_types = SentryEvent.EVENT_MASK_CRASH_EVENTS | SentryEvent.EVENT_MASK_CUSTOM_EVENTS
+	assert_int(options.screenshot_event_types & SentryEvent.EVENT_MASK_CRASH_EVENTS).is_not_zero()
+	assert_int(options.screenshot_event_types & SentryEvent.EVENT_MASK_CUSTOM_EVENTS).is_not_zero()
+	assert_int(options.screenshot_event_types & SentryEvent.EVENT_MASK_ERROR_EVENTS).is_zero()
+
+
 ## SentryOptions.error_logger_event_mask should be set to the specified value.
 func test_error_logger_event_mask() -> void:
 	var mask := SentryOptions.MASK_SCRIPT | SentryOptions.MASK_SHADER
