@@ -12,8 +12,30 @@ using namespace godot;
 class SentryEvent : public RefCounted {
 	GDCLASS(SentryEvent, RefCounted);
 
+public:
+	enum EventType {
+		EVENT_TYPE_CUSTOM,
+		EVENT_TYPE_CRASH,
+		EVENT_TYPE_ERROR
+	};
+
+	enum EventMask {
+		EVENT_MASK_NONE = 0,
+		EVENT_MASK_CUSTOM_EVENTS = (1 << EVENT_TYPE_CUSTOM),
+		EVENT_MASK_CRASH_EVENTS = (1 << EVENT_TYPE_CRASH),
+		EVENT_MASK_ERROR_EVENTS = (1 << EVENT_TYPE_ERROR),
+		EVENT_MASK_ALL_EVENTS = int(EVENT_MASK_CUSTOM_EVENTS) | int(EVENT_MASK_CRASH_EVENTS) | int(EVENT_MASK_ERROR_EVENTS)
+	};
+
+	constexpr static EventMask event_type_as_mask(EventType p_type) { return (EventMask)(1 << p_type); }
+
+private:
+	EventType event_type = EVENT_TYPE_CUSTOM;
+
 protected:
 	static void _bind_methods();
+
+	_FORCE_INLINE_ void _set_event_type(EventType p_type) { event_type = p_type; }
 
 public:
 	virtual String get_id() const = 0;
@@ -45,7 +67,12 @@ public:
 	virtual void remove_tag(const String &p_key) = 0;
 	virtual String get_tag(const String &p_key) = 0;
 
+	_FORCE_INLINE_ EventType get_event_type() const { return event_type; }
+
 	virtual ~SentryEvent() = default;
 };
+
+VARIANT_ENUM_CAST(SentryEvent::EventType);
+VARIANT_BITFIELD_CAST(SentryEvent::EventMask);
 
 #endif // SENTRY_EVENT_H

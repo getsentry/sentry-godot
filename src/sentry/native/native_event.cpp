@@ -139,7 +139,8 @@ String NativeEvent::get_tag(const String &p_key) {
 	return String();
 }
 
-NativeEvent::NativeEvent(sentry_value_t p_native_event) {
+NativeEvent::NativeEvent(sentry_value_t p_native_event, EventType p_type) {
+	_set_event_type(p_type);
 	if (sentry_value_refcount(p_native_event) > 0) {
 		sentry_value_incref(p_native_event); // acquire ownership
 		native_event = p_native_event;

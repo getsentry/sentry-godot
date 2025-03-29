@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Allow enabling screenshots for specific event types ([#151](https://github.com/getsentry/sentry-godot/pull/151))
+
 ### Fixes
 
 - Optimize screenshot feature to reduce stutters ([#148](https://github.com/getsentry/sentry-godot/pull/148))
