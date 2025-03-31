@@ -19,7 +19,7 @@
 		<member name="before_capture_screenshot" type="Callable" setter="set_before_capture_screenshot" getter="get_before_capture_screenshot" default="Callable()">
 			If assigned, this callback runs before a screenshot is captured. It takes [SentryEvent] as a parameter and returns [code]false[/code] to skip capturing the screenshot, or [code]true[/code] to capture the screenshot.
 			[codeblock]
-			func _before_capture_screenshot(event: SentryEvent) -> bool:
+			func _before_capture_screenshot(event: SentryEvent) -&gt; bool:
 			    if is_showing_sensitive_info():
 			        return false
 			    return true
