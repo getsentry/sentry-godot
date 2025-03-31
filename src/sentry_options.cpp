@@ -64,6 +64,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/options/attach_log", p_options->attach_log);
 	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
+	_define_setting(sentry::make_level_enum_property("sentry/options/screenshot_level"), p_options->screenshot_level);
 
 	_define_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
 	_define_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source);
@@ -108,6 +109,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
+	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/screenshot_level", p_options->screenshot_level);
 
 	p_options->error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
 	p_options->error_logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source);
@@ -167,6 +169,7 @@ void SentryOptions::_bind_methods() {
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_log"), set_attach_log, is_attach_log_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_screenshot"), set_attach_screenshot, is_attach_screenshot_enabled);
+	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("screenshot_level"), set_screenshot_level, get_screenshot_level);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "error_logger_enabled"), set_error_logger_enabled, is_error_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "error_logger_include_source"), set_error_logger_include_source, is_error_logger_include_source_enabled);
