@@ -62,7 +62,7 @@ private:
 
 	bool attach_log = true;
 	bool attach_screenshot = false;
-	sentry::Level screenshot_level = sentry::Level::LEVEL_FATAL;
+	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
 
 	bool error_logger_enabled = true;
 	bool error_logger_include_source = true;
