@@ -75,6 +75,20 @@ void _save_screenshot(const Ref<SentryEvent> &p_event) {
 		return;
 	}
 
+	if (SentryOptions::get_singleton()->get_before_capture_screenshot().is_valid()) {
+		Variant result = SentryOptions::get_singleton()->get_before_capture_screenshot().call(p_event);
+		if (result.get_type() != Variant::BOOL) {
+			ERR_PRINT_ONCE("before_capture_screenshot callback failed: expected a boolean return value");
+			return;
+		}
+		if (result.operator bool() == false) {
+			sentry::util::print_debug("cancelled screenshot: before_capture_screenshot returned false");
+			return;
+		}
+	}
+
+	sentry::util::print_debug("taking screenshot");
+
 	PackedByteArray buffer = sentry::util::take_screenshot();
 	Ref<FileAccess> f = FileAccess::open(screenshot_path, FileAccess::WRITE);
 	f->store_buffer(buffer);

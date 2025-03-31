@@ -178,8 +178,9 @@ void SentryOptions::_bind_methods() {
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::OBJECT, "error_logger_limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), set_error_logger_limits, get_error_logger_limits);
 
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "before_send"), set_before_send, get_before_send);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "on_crash"), set_on_crash, get_on_crash);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send"), set_before_send, get_before_send);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "on_crash"), set_on_crash, get_on_crash);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_capture_screenshot"), set_before_capture_screenshot, get_before_capture_screenshot);
 
 	{
 		using namespace sentry;

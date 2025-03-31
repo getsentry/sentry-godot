@@ -73,6 +73,7 @@ private:
 	String configuration_script;
 	Callable before_send;
 	Callable on_crash;
+	Callable before_capture_screenshot;
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
@@ -154,6 +155,9 @@ public:
 
 	_FORCE_INLINE_ Callable get_on_crash() const { return on_crash; }
 	_FORCE_INLINE_ void set_on_crash(const Callable &p_on_crash) { on_crash = p_on_crash; }
+
+	_FORCE_INLINE_ Callable get_before_capture_screenshot() const { return before_capture_screenshot; }
+	_FORCE_INLINE_ void set_before_capture_screenshot(const Callable &p_before_capture_screenshot) { before_capture_screenshot = p_before_capture_screenshot; }
 
 	SentryOptions();
 	~SentryOptions();
