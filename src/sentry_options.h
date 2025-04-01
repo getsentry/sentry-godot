@@ -107,7 +107,7 @@ public:
 	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }
 	_FORCE_INLINE_ void set_debug_enabled(bool p_enabled) { debug = p_enabled; }
 
-	_FORCE_INLINE_ void set_diagnostic_level(sentry::Level p_debug_verbosity) { diagnostic_level = p_debug_verbosity; }
+	_FORCE_INLINE_ void set_diagnostic_level(sentry::Level p_level) { diagnostic_level = p_level; }
 	_FORCE_INLINE_ sentry::Level get_diagnostic_level() const { return diagnostic_level; }
 
 	_FORCE_INLINE_ double get_sample_rate() const { return sample_rate; }

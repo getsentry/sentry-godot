@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+
+- Renamed `debug_verbosity` => `diagnostic_level` to better align with established Sentry features ([#154](https://github.com/getsentry/sentry-godot/pull/154))
+
 ## 0.3.1
 
 ### Fixes
