@@ -6,3 +6,15 @@ targets:
   - name: registry
     sdks:
       github:getsentry/sentry-godot:
+  - name: symbol-collector
+    includeNames: /addons/sentrysdk/bin/macos/libsentrysdk\.macos\.(release|debug)\.framework/libsentrysdk\.macos\.(release|debug)
+    batchType: macos
+    bundleIdPrefix: sentry-godot-macos
+  - name: symbol-collector
+    includeNames: /addons/sentrysdk/bin/windows/libsentrysdk\.windows\.(release|debug)\.([a-zA-Z0-9_]+)\.dll
+    batchType: windows
+    bundleIdPrefix: sentry-godot-windows
+  - name: symbol-collector
+    includeNames: /addons/sentrysdk/bin/linux/libsentrysdk\.linux\.(release|debug)\.([a-zA-Z0-9_]+)\.so
+    batchType: linux
+    bundleIdPrefix: sentry-godot-linux
