@@ -74,3 +74,12 @@ func test_error_logger_limit_properties(property: String, test_parameters := [
 ]) -> void:
 	options.error_logger_limits.set(property, 42)
 	assert_int(options.error_logger_limits.get(property)).is_equal(42)
+
+
+## SentryOptions.diagnostic_level should be set to the specified value.
+func test_diagnostic_level() -> void:
+	var prev := options.diagnostic_level
+	options.diagnostic_level = SentrySDK.LEVEL_ERROR
+	assert_int(options.diagnostic_level).is_equal(SentrySDK.LEVEL_ERROR)
+	options.diagnostic_level = prev
+	assert_int(options.diagnostic_level).is_equal(prev)
