@@ -77,7 +77,7 @@ func test_error_logger_limit_properties(property: String, test_parameters := [
 	assert_int(options.error_logger_limits.get(property)).is_equal(42)
 
 
-## Test various callback properties.
+## Test assigning various callback properties.
 @warning_ignore("unused_parameter")
 func test_callback_properties(property: String, test_parameters := [
 	["before_send"],
