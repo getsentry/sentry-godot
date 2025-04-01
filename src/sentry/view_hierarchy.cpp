@@ -74,7 +74,7 @@ String build_view_hierarchy_json(const Vector<StringName> &p_extra_properties) {
 		}
 
 		if (node->get_child_count()) {
-			json += R"(,"children":[)";
+			json += ",\"children\":[";
 			for (int i = node->get_child_count() - 1; i >= 0; i--) {
 				stack.push_back(node->get_child(i));
 			}
