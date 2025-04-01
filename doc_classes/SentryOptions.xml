@@ -14,7 +14,7 @@
 			If [code]true[/code], the SDK will attach the Godot log file to the event.
 		</member>
 		<member name="attach_screenshot" type="bool" setter="set_attach_screenshot" getter="is_attach_screenshot_enabled" default="false">
-			If [code]true[/code], enables automatic screenshot capture for events meeting or exceeding the [member screenshot_level] threshold. By default, only fatal events trigger screenshots. Setting a lower [member screenshot_level] threshold may affect performance in the frames the screenshots are captured.
+			If [code]true[/code], enables automatic screenshot capture for events meeting or exceeding the [member screenshot_level] threshold. By default, only fatal events trigger screenshots. Setting a lower [member screenshot_level] threshold may impact performance in the frames the screenshots are taken.
 		</member>
 		<member name="before_capture_screenshot" type="Callable" setter="set_before_capture_screenshot" getter="get_before_capture_screenshot" default="Callable()">
 			If assigned, this callback runs before a screenshot is captured. It takes [SentryEvent] as a parameter and returns [code]false[/code] to skip capturing the screenshot, or [code]true[/code] to capture the screenshot.
@@ -101,7 +101,7 @@
 			Configures the sample rate for error events, in the range of 0.0 to 1.0. The default is 1.0, which means that 100% of error events will be sent. If set to 0.1, only 10% of error events will be sent. Events are picked randomly.
 		</member>
 		<member name="screenshot_level" type="int" setter="set_screenshot_level" getter="get_screenshot_level" enum="SentrySDK.Level" default="4">
-			Configures the level of events for which screenshots will be captured. By default, screenshots are captured for fatal events. Changing this option may impact performance in the frames the screenshots are taken.
+			Specifies the minimum level of events for which screenshots will be captured. By default, screenshots are captured for fatal events. Changing this option may impact performance in the frames the screenshots are taken.
 		</member>
 		<member name="send_default_pii" type="bool" setter="set_send_default_pii" getter="is_send_default_pii_enabled" default="false">
 			If [code]true[/code], the SDK will include PII (Personally Identifiable Information) with the events.
