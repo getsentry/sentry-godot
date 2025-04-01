@@ -54,7 +54,7 @@ private:
 	String release = "{app_name}@{app_version}";
 	String dist = "";
 	bool debug = false;
-	sentry::Level debug_verbosity = sentry::LEVEL_DEBUG;
+	sentry::Level diagnostic_level = sentry::LEVEL_DEBUG;
 	String environment;
 	double sample_rate = 1.0;
 	int max_breadcrumbs = 100;
@@ -107,8 +107,8 @@ public:
 	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }
 	_FORCE_INLINE_ void set_debug_enabled(bool p_enabled) { debug = p_enabled; }
 
-	_FORCE_INLINE_ void set_debug_verbosity(sentry::Level p_debug_verbosity) { debug_verbosity = p_debug_verbosity; }
-	_FORCE_INLINE_ sentry::Level get_debug_verbosity() const { return debug_verbosity; }
+	_FORCE_INLINE_ void set_diagnostic_level(sentry::Level p_debug_verbosity) { diagnostic_level = p_debug_verbosity; }
+	_FORCE_INLINE_ sentry::Level get_diagnostic_level() const { return diagnostic_level; }
 
 	_FORCE_INLINE_ double get_sample_rate() const { return sample_rate; }
 	_FORCE_INLINE_ void set_sample_rate(double p_sample_rate) { sample_rate = p_sample_rate; }
