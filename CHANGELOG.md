@@ -6,6 +6,10 @@
 
 - Renamed `debug_verbosity` => `diagnostic_level` to better align with established Sentry features ([#154](https://github.com/getsentry/sentry-godot/pull/154))
 
+### Features
+
+- Introduce `screenshot_level` option and `before_capture_screenshot` hook to provide fine-grained control over when screenshots are taken. ([#153](https://github.com/getsentry/sentry-godot/pull/153))
+
 ## 0.3.1
 
 ### Fixes
