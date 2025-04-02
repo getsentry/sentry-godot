@@ -62,6 +62,7 @@ private:
 
 	bool attach_log = true;
 	bool attach_screenshot = false;
+	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
 
 	bool error_logger_enabled = true;
 	bool error_logger_include_source = true;
@@ -72,6 +73,7 @@ private:
 	String configuration_script;
 	Callable before_send;
 	Callable on_crash;
+	Callable before_capture_screenshot;
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
@@ -125,6 +127,9 @@ public:
 	_FORCE_INLINE_ bool is_attach_screenshot_enabled() const { return attach_screenshot; }
 	_FORCE_INLINE_ void set_attach_screenshot(bool p_attach_screenshot) { attach_screenshot = p_attach_screenshot; }
 
+	_FORCE_INLINE_ sentry::Level get_screenshot_level() const { return screenshot_level; }
+	_FORCE_INLINE_ void set_screenshot_level(sentry::Level p_level) { screenshot_level = p_level; }
+
 	_FORCE_INLINE_ bool is_error_logger_enabled() const { return error_logger_enabled; }
 	_FORCE_INLINE_ void set_error_logger_enabled(bool p_enabled) { error_logger_enabled = p_enabled; }
 
@@ -150,6 +155,9 @@ public:
 
 	_FORCE_INLINE_ Callable get_on_crash() const { return on_crash; }
 	_FORCE_INLINE_ void set_on_crash(const Callable &p_on_crash) { on_crash = p_on_crash; }
+
+	_FORCE_INLINE_ Callable get_before_capture_screenshot() const { return before_capture_screenshot; }
+	_FORCE_INLINE_ void set_before_capture_screenshot(const Callable &p_before_capture_screenshot) { before_capture_screenshot = p_before_capture_screenshot; }
 
 	SentryOptions();
 	~SentryOptions();

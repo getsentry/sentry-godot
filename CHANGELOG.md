@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Introduce `screenshot_level` option and `before_capture_screenshot` hook to provide fine-grained control over when screenshots are taken. ([#153](https://github.com/getsentry/sentry-godot/pull/153))
+
 ## 0.3.1
 
 ### Fixes
