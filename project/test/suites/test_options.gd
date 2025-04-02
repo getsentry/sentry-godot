@@ -77,6 +77,19 @@ func test_error_logger_limit_properties(property: String, test_parameters := [
 	assert_int(options.error_logger_limits.get(property)).is_equal(42)
 
 
+## Test properties with SentrySDK.Level type.
+@warning_ignore("unused_parameter")
+func test_level_properties(property: String, test_parameters := [
+	["diagnostic_level"],
+	["screenshot_level"]
+]) -> void:
+	var prev: SentrySDK.Level = options.get(property)
+	options.set(property, SentrySDK.LEVEL_WARNING)
+	assert_int(options.get(property)).is_equal(SentrySDK.LEVEL_WARNING)
+	options.set(property, prev)
+	assert_int(options.get(property)).is_equal(prev)
+
+
 ## Test assigning various callback properties.
 @warning_ignore("unused_parameter")
 func test_callback_properties(property: String, test_parameters := [
@@ -89,12 +102,3 @@ func test_callback_properties(property: String, test_parameters := [
 	options.set(property, callback)
 	assert_that(options.get(property)).is_equal(callback)
 	options.set(property, prev)
-
-
-## Screenshot level should be set to specified level.
-func test_screenshot_level() -> void:
-	var prev := options.screenshot_level
-	options.screenshot_level = SentrySDK.LEVEL_DEBUG
-	assert_int(options.screenshot_level).is_equal(SentrySDK.LEVEL_DEBUG)
-	options.screenshot_level = prev
-	assert_int(options.screenshot_level).is_equal(prev)

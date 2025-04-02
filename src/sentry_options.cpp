@@ -57,7 +57,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/release", p_options->release);
 	_define_setting("sentry/options/dist", p_options->dist);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
-	_define_setting(sentry::make_level_enum_property("sentry/options/debug_verbosity"), p_options->debug_verbosity);
+	_define_setting(sentry::make_level_enum_property("sentry/options/diagnostic_level"), p_options->diagnostic_level);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs);
 	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
@@ -101,7 +101,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	// The user may also set the `debug` option explicitly in a configuration script.
 	DebugMode mode = (DebugMode)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/debug_printing", (int)SentryOptions::DEBUG_DEFAULT);
 	p_options->_init_debug_option(mode);
-	p_options->debug_verbosity = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/debug_verbosity", p_options->debug_verbosity);
+	p_options->diagnostic_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/diagnostic_level", p_options->diagnostic_level);
 
 	p_options->sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/sample_rate", p_options->sample_rate);
 	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/options/max_breadcrumbs", p_options->max_breadcrumbs);
@@ -161,7 +161,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "release"), set_release, get_release);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dist"), set_dist, get_dist);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "debug"), set_debug_enabled, is_debug_enabled);
-	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("debug_verbosity"), set_debug_verbosity, get_debug_verbosity);
+	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("diagnostic_level"), set_diagnostic_level, get_diagnostic_level);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "environment"), set_environment, get_environment);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "sample_rate"), set_sample_rate, get_sample_rate);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "max_breadcrumbs"), set_max_breadcrumbs, get_max_breadcrumbs);
