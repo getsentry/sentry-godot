@@ -52,32 +52,32 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	_define_setting("sentry/options/enabled", p_options->enabled);
-	_define_setting("sentry/options/disabled_in_editor", p_options->disabled_in_editor);
+	_define_setting("sentry/options/disabled_in_editor", p_options->disabled_in_editor, false);
 	_define_setting("sentry/options/dsn", p_options->dsn);
-	_define_setting("sentry/options/release", p_options->release);
-	_define_setting("sentry/options/dist", p_options->dist);
+	_define_setting("sentry/options/release", p_options->release, false);
+	_define_setting("sentry/options/dist", p_options->dist, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
 	_define_setting(sentry::make_level_enum_property("sentry/options/diagnostic_level"), p_options->diagnostic_level);
-	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs);
-	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs, false);
+	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii, false);
 
-	_define_setting("sentry/options/attach_log", p_options->attach_log);
-	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
-	_define_setting(sentry::make_level_enum_property("sentry/options/screenshot_level"), p_options->screenshot_level);
+	_define_setting("sentry/options/attach_log", p_options->attach_log, false);
+	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot, false);
+	_define_setting(sentry::make_level_enum_property("sentry/options/screenshot_level"), p_options->screenshot_level, false);
 
-	_define_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
-	_define_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->error_logger_event_mask);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->error_logger_breadcrumb_mask);
+	_define_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled, false);
+	_define_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->error_logger_event_mask, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->error_logger_breadcrumb_mask, false);
 
-	_define_setting("sentry/options/error_logger/limits/parse_lines", p_options->error_logger_limits->parse_lines);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), p_options->error_logger_limits->events_per_frame);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->repeated_error_window_ms);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), p_options->error_logger_limits->throttle_events);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->throttle_window_ms);
+	_define_setting("sentry/options/error_logger/limits/parse_lines", p_options->error_logger_limits->parse_lines, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), p_options->error_logger_limits->events_per_frame, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->repeated_error_window_ms, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), p_options->error_logger_limits->throttle_events, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/error_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->throttle_window_ms, false);
 
-	_define_setting(PropertyInfo(Variant::STRING, "sentry/options/configuration_script", PROPERTY_HINT_FILE, "*.gd"), p_options->configuration_script);
+	_define_setting(PropertyInfo(Variant::STRING, "sentry/options/configuration_script", PROPERTY_HINT_FILE, "*.gd"), p_options->configuration_script, false);
 }
 
 void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) {
