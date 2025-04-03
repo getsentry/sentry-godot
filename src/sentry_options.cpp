@@ -65,8 +65,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/attach_log", p_options->attach_log);
 	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/options/screenshot_level"), p_options->screenshot_level);
-	_define_setting("sentry/options/attach_scene_tree_info", p_options->attach_scene_tree_info);
-	_define_setting("sentry/options/scene_tree_extra_properties", p_options->_get_scene_tree_extra_properties());
+	_define_setting("sentry/options/attach_scene_tree_info", p_options->attach_scene_tree_info, false);
+	_define_setting("sentry/options/scene_tree_extra_properties", p_options->_get_scene_tree_extra_properties(), false);
 
 	_define_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
 	_define_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source);
