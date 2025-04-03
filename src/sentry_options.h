@@ -64,7 +64,6 @@ private:
 	bool attach_screenshot = false;
 	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
 	bool attach_scene_tree = false;
-	Vector<StringName> scene_tree_extra_properties;
 
 	bool error_logger_enabled = true;
 	bool error_logger_include_source = true;
@@ -81,9 +80,6 @@ private:
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
 
 	void _init_debug_option(DebugMode p_debug_mode);
-
-	void _set_scene_tree_extra_properties(const PackedStringArray &p_scene_tree_extra_properties);
-	PackedStringArray _get_scene_tree_extra_properties() const;
 
 protected:
 	static void _bind_methods();
@@ -137,8 +133,6 @@ public:
 
 	_FORCE_INLINE_ void set_attach_scene_tree(bool p_enable) { attach_scene_tree = p_enable; }
 	_FORCE_INLINE_ bool is_attach_scene_tree_enabled() const { return attach_scene_tree; }
-
-	_FORCE_INLINE_ Vector<StringName> get_scene_tree_extra_properties() const { return scene_tree_extra_properties; }
 
 	_FORCE_INLINE_ bool is_error_logger_enabled() const { return error_logger_enabled; }
 	_FORCE_INLINE_ void set_error_logger_enabled(bool p_enabled) { error_logger_enabled = p_enabled; }

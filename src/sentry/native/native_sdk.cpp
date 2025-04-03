@@ -118,8 +118,7 @@ inline void _save_view_hierarchy() {
 
 	String path = "user://" _VIEW_HIERARCHY_FN;
 	DirAccess::remove_absolute(path);
-	String json_content = sentry::build_view_hierarchy_json(
-			SentryOptions::get_singleton()->get_scene_tree_extra_properties());
+	String json_content = sentry::build_view_hierarchy_json();
 	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
 	if (f.is_valid()) {
 		f->store_string(json_content);

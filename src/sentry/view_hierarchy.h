@@ -7,7 +7,7 @@
 
 namespace sentry {
 
-godot::String build_view_hierarchy_json(const godot::Vector<godot::StringName> &p_extra_properties);
+godot::String build_view_hierarchy_json();
 
 } //namespace sentry
 

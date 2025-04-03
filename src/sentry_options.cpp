@@ -66,7 +66,6 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/options/screenshot_level"), p_options->screenshot_level);
 	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree, false);
-	_define_setting("sentry/options/scene_tree_extra_properties", p_options->_get_scene_tree_extra_properties(), false);
 
 	_define_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
 	_define_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source);
@@ -113,7 +112,6 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/screenshot_level", p_options->screenshot_level);
 	p_options->attach_scene_tree = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
-	p_options->_set_scene_tree_extra_properties(ProjectSettings::get_singleton()->get_setting("sentry/options/scene_tree_extra_properties", p_options->_get_scene_tree_extra_properties()));
 
 	p_options->error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
 	p_options->error_logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/include_source", p_options->error_logger_include_source);
@@ -132,21 +130,6 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 void SentryOptions::_init_debug_option(DebugMode p_mode) {
 	ERR_FAIL_NULL(OS::get_singleton());
 	debug = (p_mode == DebugMode::DEBUG_ON) || (p_mode == DebugMode::DEBUG_AUTO && OS::get_singleton()->is_debug_build());
-}
-
-void SentryOptions::_set_scene_tree_extra_properties(const PackedStringArray &p_scene_tree_extra_properties) {
-	scene_tree_extra_properties.clear();
-	for (const String &prop : p_scene_tree_extra_properties) {
-		scene_tree_extra_properties.push_back(StringName(prop));
-	}
-}
-
-PackedStringArray SentryOptions::_get_scene_tree_extra_properties() const {
-	PackedStringArray properties;
-	for (const StringName &prop : scene_tree_extra_properties) {
-		properties.push_back(prop);
-	}
-	return properties;
 }
 
 void SentryOptions::create_singleton() {
@@ -190,7 +173,6 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_screenshot"), set_attach_screenshot, is_attach_screenshot_enabled);
 	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("screenshot_level"), set_screenshot_level, get_screenshot_level);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_scene_tree"), set_attach_scene_tree, is_attach_scene_tree_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::PACKED_STRING_ARRAY, "scene_tree_extra_properties"), _set_scene_tree_extra_properties, _get_scene_tree_extra_properties);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "error_logger_enabled"), set_error_logger_enabled, is_error_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "error_logger_include_source"), set_error_logger_include_source, is_error_logger_include_source_enabled);
