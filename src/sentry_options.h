@@ -63,6 +63,7 @@ private:
 	bool attach_log = true;
 	bool attach_screenshot = false;
 	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
+	bool attach_scene_tree = false;
 
 	bool error_logger_enabled = true;
 	bool error_logger_include_source = true;
@@ -129,6 +130,9 @@ public:
 
 	_FORCE_INLINE_ sentry::Level get_screenshot_level() const { return screenshot_level; }
 	_FORCE_INLINE_ void set_screenshot_level(sentry::Level p_level) { screenshot_level = p_level; }
+
+	_FORCE_INLINE_ void set_attach_scene_tree(bool p_enable) { attach_scene_tree = p_enable; }
+	_FORCE_INLINE_ bool is_attach_scene_tree_enabled() const { return attach_scene_tree; }
 
 	_FORCE_INLINE_ bool is_error_logger_enabled() const { return error_logger_enabled; }
 	_FORCE_INLINE_ void set_error_logger_enabled(bool p_enabled) { error_logger_enabled = p_enabled; }
