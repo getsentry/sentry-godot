@@ -130,7 +130,7 @@ inline void _save_view_hierarchy() {
 
 #ifdef DEBUG_ENABLED
 	uint64_t end = Time::get_singleton()->get_ticks_usec();
-	sentry::util::print_debug("gathering scene tree info took ", end - start, " usec");
+	sentry::util::print_debug("gathering scene tree hierarchy data took ", end - start, " usec");
 #endif
 }
 
