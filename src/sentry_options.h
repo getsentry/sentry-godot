@@ -63,7 +63,7 @@ private:
 	bool attach_log = true;
 	bool attach_screenshot = false;
 	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
-	bool attach_scene_tree_info = false;
+	bool attach_scene_tree = false;
 	Vector<StringName> scene_tree_extra_properties;
 
 	bool error_logger_enabled = true;
@@ -135,8 +135,8 @@ public:
 	_FORCE_INLINE_ sentry::Level get_screenshot_level() const { return screenshot_level; }
 	_FORCE_INLINE_ void set_screenshot_level(sentry::Level p_level) { screenshot_level = p_level; }
 
-	_FORCE_INLINE_ void set_attach_scene_tree_info(bool p_attach_scene_tree_info) { attach_scene_tree_info = p_attach_scene_tree_info; }
-	_FORCE_INLINE_ bool is_attach_scene_tree_info_enabled() const { return attach_scene_tree_info; }
+	_FORCE_INLINE_ void set_attach_scene_tree(bool p_enable) { attach_scene_tree = p_enable; }
+	_FORCE_INLINE_ bool is_attach_scene_tree_enabled() const { return attach_scene_tree; }
 
 	_FORCE_INLINE_ Vector<StringName> get_scene_tree_extra_properties() const { return scene_tree_extra_properties; }
 

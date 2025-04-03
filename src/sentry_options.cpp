@@ -65,7 +65,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/attach_log", p_options->attach_log);
 	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/options/screenshot_level"), p_options->screenshot_level);
-	_define_setting("sentry/options/attach_scene_tree_info", p_options->attach_scene_tree_info, false);
+	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree, false);
 	_define_setting("sentry/options/scene_tree_extra_properties", p_options->_get_scene_tree_extra_properties(), false);
 
 	_define_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
@@ -112,7 +112,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/screenshot_level", p_options->screenshot_level);
-	p_options->attach_scene_tree_info = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_scene_tree_info", p_options->attach_scene_tree_info);
+	p_options->attach_scene_tree = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
 	p_options->_set_scene_tree_extra_properties(ProjectSettings::get_singleton()->get_setting("sentry/options/scene_tree_extra_properties", p_options->_get_scene_tree_extra_properties()));
 
 	p_options->error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/options/error_logger/enabled", p_options->error_logger_enabled);
@@ -189,7 +189,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_log"), set_attach_log, is_attach_log_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_screenshot"), set_attach_screenshot, is_attach_screenshot_enabled);
 	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("screenshot_level"), set_screenshot_level, get_screenshot_level);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_scene_tree_info"), set_attach_scene_tree_info, is_attach_scene_tree_info_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_scene_tree"), set_attach_scene_tree, is_attach_scene_tree_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::PACKED_STRING_ARRAY, "scene_tree_extra_properties"), _set_scene_tree_extra_properties, _get_scene_tree_extra_properties);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "error_logger_enabled"), set_error_logger_enabled, is_error_logger_enabled);
