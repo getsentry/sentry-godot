@@ -50,8 +50,8 @@ String build_view_hierarchy_json(const Vector<StringName> &p_extra_properties) {
 		Node *node = stack.back()->get();
 		stack.pop_back();
 
-		_start_name_value_pair(json, "identifier", node->get_name());
-		_next_name_value_pair(json, "type", node->get_class());
+		_start_name_value_pair(json, "name", node->get_name());
+		_next_name_value_pair(json, "class", node->get_class());
 
 		String scene_path = node->get_scene_file_path();
 		if (!scene_path.is_empty()) {
