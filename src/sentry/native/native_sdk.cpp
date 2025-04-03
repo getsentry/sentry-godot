@@ -56,7 +56,7 @@ void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name
 	}
 }
 
-void _save_screenshot() {
+void _save_screenshot(const Ref<SentryEvent> &p_event) {
 	if (!SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
 		return;
 	}
@@ -75,6 +75,26 @@ void _save_screenshot() {
 	if (!DisplayServer::get_singleton() || DisplayServer::get_singleton()->get_name() == "headless") {
 		return;
 	}
+
+	if (p_event->get_level() < SentryOptions::get_singleton()->get_screenshot_level()) {
+		// This check needs to happen after we remove the outdated screenshot file from the drive.
+		return;
+	}
+
+	if (SentryOptions::get_singleton()->get_before_capture_screenshot().is_valid()) {
+		Variant result = SentryOptions::get_singleton()->get_before_capture_screenshot().call(p_event);
+		if (result.get_type() != Variant::BOOL) {
+			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
+			ERR_PRINT_ONCE("Sentry: before_capture_screenshot callback failed: expected a boolean return value");
+			return;
+		}
+		if (result.operator bool() == false) {
+			sentry::util::print_debug("cancelled screenshot: before_capture_screenshot returned false");
+			return;
+		}
+	}
+
+	sentry::util::print_debug("taking screenshot");
 
 	PackedByteArray buffer = sentry::util::take_screenshot();
 	Ref<FileAccess> f = FileAccess::open(screenshot_path, FileAccess::WRITE);
@@ -116,8 +136,6 @@ inline void _save_view_hierarchy() {
 }
 
 inline void _inject_contexts(sentry_value_t p_event) {
-	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
-
 	HashMap<String, Dictionary> contexts = sentry::contexts::make_event_contexts();
 	for (const auto &kv : contexts) {
 		sentry_event_set_context(p_event, kv.key.utf8(), kv.value);
@@ -126,13 +144,17 @@ inline void _inject_contexts(sentry_value_t p_event) {
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	sentry::util::print_debug("handling before_send");
-	_save_screenshot();
+	Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+	_save_screenshot(event_obj);
 	_save_view_hierarchy();
 	_inject_contexts(event);
 	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
-		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
 		Ref<NativeEvent> processed = before_send.call(event_obj);
-		ERR_FAIL_COND_V_MSG(processed.is_valid() && processed != event_obj, event, "Sentry: before_send callback must return the same event object or null.");
+		if (processed.is_valid() && processed != event_obj) {
+			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
+			ERR_PRINT_ONCE("Sentry: before_send callback must return the same event object or null.");
+			return event;
+		}
 		if (processed.is_null()) {
 			// Discard event.
 			sentry::util::print_debug("event discarded by before_send callback: ", event_obj->get_id());
@@ -146,13 +168,17 @@ sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closu
 
 sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
 	sentry::util::print_debug("handling on_crash");
-	_save_screenshot();
+	Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+	_save_screenshot(event_obj);
 	_save_view_hierarchy();
 	_inject_contexts(event);
 	if (const Callable &on_crash = SentryOptions::get_singleton()->get_on_crash(); on_crash.is_valid()) {
-		Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
 		Ref<NativeEvent> processed = on_crash.call(event_obj);
-		ERR_FAIL_COND_V_MSG(processed.is_valid() && processed != event_obj, event, "Sentry: on_crash callback must return the same event object or null.");
+		if (processed.is_valid() && processed != event_obj) {
+			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
+			ERR_PRINT_ONCE("Sentry: on_crash callback must return the same event object or null.");
+			return event;
+		}
 		if (processed.is_null()) {
 			// Discard event.
 			sentry::util::print_debug("event discarded by on_crash callback: ", event_obj->get_id());

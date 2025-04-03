@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Renamed `debug_verbosity` => `diagnostic_level` to better align with established Sentry features ([#154](https://github.com/getsentry/sentry-godot/pull/154))
+
+### Features
+
+- Introduce `screenshot_level` option and `before_capture_screenshot` hook to provide fine-grained control over when screenshots are taken. ([#153](https://github.com/getsentry/sentry-godot/pull/153))
+
+## 0.3.1
+
 ### Fixes
 
 - Optimize screenshot feature to reduce stutters ([#148](https://github.com/getsentry/sentry-godot/pull/148))
@@ -10,9 +20,9 @@
 
 ### Dependencies
 
-- Bump Native SDK from v0.8.1 to v0.8.2 ([#144](https://github.com/getsentry/sentry-godot/pull/144))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#082)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.1...0.8.2)
+- Bump Native SDK from v0.8.1 to v0.8.3 ([#144](https://github.com/getsentry/sentry-godot/pull/144), [#152](https://github.com/getsentry/sentry-godot/pull/152))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#083)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.1...0.8.3)
 
 ## 0.3.0
 

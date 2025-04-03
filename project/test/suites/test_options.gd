@@ -16,6 +16,7 @@ func test_bool_properties(property: String, test_parameters := [
 		["disabled_in_editor"],
 		["debug"],
 		["attach_log"],
+		["attach_screenshot"],
 		["send_default_pii"],
 		["error_logger_enabled"],
 		["error_logger_include_source"],
@@ -74,3 +75,30 @@ func test_error_logger_limit_properties(property: String, test_parameters := [
 ]) -> void:
 	options.error_logger_limits.set(property, 42)
 	assert_int(options.error_logger_limits.get(property)).is_equal(42)
+
+
+## Test properties with SentrySDK.Level type.
+@warning_ignore("unused_parameter")
+func test_level_properties(property: String, test_parameters := [
+	["diagnostic_level"],
+	["screenshot_level"]
+]) -> void:
+	var prev: SentrySDK.Level = options.get(property)
+	options.set(property, SentrySDK.LEVEL_WARNING)
+	assert_int(options.get(property)).is_equal(SentrySDK.LEVEL_WARNING)
+	options.set(property, prev)
+	assert_int(options.get(property)).is_equal(prev)
+
+
+## Test assigning various callback properties.
+@warning_ignore("unused_parameter")
+func test_callback_properties(property: String, test_parameters := [
+	["before_send"],
+	["on_crash"],
+	["before_capture_screenshot"]
+]) -> void:
+	var callback := func(a1): pass
+	var prev: Callable = options.get(property)
+	options.set(property, callback)
+	assert_that(options.get(property)).is_equal(callback)
+	options.set(property, prev)
