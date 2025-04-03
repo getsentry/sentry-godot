@@ -17,7 +17,16 @@
 			If [code]true[/code], the SDK will attach scene tree information to the event. You can specify additional node properties to be included via [member scene_tree_extra_properties].
 		</member>
 		<member name="attach_screenshot" type="bool" setter="set_attach_screenshot" getter="is_attach_screenshot_enabled" default="false">
-			If [code]true[/code], the SDK will try to capture and attach a screenshot to the event. This may impact performance in the same frame the screenshot is taken.
+			If [code]true[/code], enables automatic screenshot capture for events meeting or exceeding the [member screenshot_level] threshold. By default, only fatal events trigger screenshots. Setting a lower [member screenshot_level] threshold may impact performance in the frames the screenshots are taken.
+		</member>
+		<member name="before_capture_screenshot" type="Callable" setter="set_before_capture_screenshot" getter="get_before_capture_screenshot" default="Callable()">
+			If assigned, this callback runs before a screenshot is captured. It takes [SentryEvent] as a parameter and returns [code]false[/code] to skip capturing the screenshot, or [code]true[/code] to capture the screenshot.
+			[codeblock]
+			func _before_capture_screenshot(event: SentryEvent) -&gt; bool:
+			    if is_showing_sensitive_info():
+			        return false
+			    return true
+			[/codeblock]
 		</member>
 		<member name="before_send" type="Callable" setter="set_before_send" getter="get_before_send" default="Callable()">
 			If assigned, this callback runs before a message or error event is sent to Sentry. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a [SentryConfiguration] script.
@@ -35,8 +44,9 @@
 		</member>
 		<member name="debug" type="bool" setter="set_debug_enabled" getter="is_debug_enabled" default="true">
 			If [code]true[/code], the SDK will print useful debugging information to standard output. These messages do not appear in the Godot console but can be seen when launching Godot from a terminal.
+			You can control the verbosity using the [member diagnostic_level] option.
 		</member>
-		<member name="debug_verbosity" type="int" setter="set_debug_verbosity" getter="get_debug_verbosity" enum="SentrySDK.Level" default="0">
+		<member name="diagnostic_level" type="int" setter="set_diagnostic_level" getter="get_diagnostic_level" enum="SentrySDK.Level" default="0">
 			Specifies the minimum level of messages to be printed if [member debug] is enabled.
 		</member>
 		<member name="disabled_in_editor" type="bool" setter="set_disabled_in_editor" getter="is_disabled_in_editor" default="true">
@@ -96,6 +106,9 @@
 		</member>
 		<member name="scene_tree_extra_properties" type="PackedStringArray" setter="_set_scene_tree_extra_properties" getter="_get_scene_tree_extra_properties" default="PackedStringArray()">
 			Specifies additional node properties to be included in the scene tree data if [member attach_scene_tree_info] is enabled.
+		</member>
+		<member name="screenshot_level" type="int" setter="set_screenshot_level" getter="get_screenshot_level" enum="SentrySDK.Level" default="4">
+			Specifies the minimum level of events for which screenshots will be captured. By default, screenshots are captured for fatal events. Changing this option may impact performance in the frames the screenshots are taken.
 		</member>
 		<member name="send_default_pii" type="bool" setter="set_send_default_pii" getter="is_send_default_pii_enabled" default="false">
 			If [code]true[/code], the SDK will include PII (Personally Identifiable Information) with the events.
