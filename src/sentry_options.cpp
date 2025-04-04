@@ -67,16 +67,16 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot, false);
 	_define_setting(sentry::make_level_enum_property("sentry/options/screenshot_level"), p_options->screenshot_level, false);
 
-	_define_setting("sentry/error_logger/enabled", p_options->error_logger_enabled);
-	_define_setting("sentry/error_logger/include_source", p_options->error_logger_include_source, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/error_logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->error_logger_event_mask, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/error_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->error_logger_breadcrumb_mask, false);
+	_define_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
+	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_event_mask, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_breadcrumb_mask, false);
 
-	_define_setting("sentry/error_logger/limits/parse_lines", p_options->error_logger_limits->parse_lines, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/error_logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), p_options->error_logger_limits->events_per_frame, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/error_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->repeated_error_window_ms, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/error_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), p_options->error_logger_limits->throttle_events, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/error_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->error_logger_limits->throttle_window_ms, false);
+	_define_setting("sentry/logger/limits/parse_lines", p_options->logger_limits->parse_lines, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), p_options->logger_limits->events_per_frame, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->logger_limits->repeated_error_window_ms, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), p_options->logger_limits->throttle_events, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->logger_limits->throttle_window_ms, false);
 }
 
 void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) {
@@ -111,16 +111,16 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/screenshot_level", p_options->screenshot_level);
 
-	p_options->error_logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/error_logger/enabled", p_options->error_logger_enabled);
-	p_options->error_logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/error_logger/include_source", p_options->error_logger_include_source);
-	p_options->error_logger_event_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/error_logger/events", p_options->error_logger_event_mask);
-	p_options->error_logger_breadcrumb_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/error_logger/breadcrumbs", p_options->error_logger_breadcrumb_mask);
+	p_options->logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
+	p_options->logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", p_options->logger_include_source);
+	p_options->logger_event_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/events", p_options->logger_event_mask);
+	p_options->logger_breadcrumb_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/breadcrumbs", p_options->logger_breadcrumb_mask);
 
-	p_options->error_logger_limits->parse_lines = ProjectSettings::get_singleton()->get_setting("sentry/error_logger/limits/parse_lines", p_options->error_logger_limits->parse_lines);
-	p_options->error_logger_limits->events_per_frame = ProjectSettings::get_singleton()->get_setting("sentry/error_logger/limits/events_per_frame", p_options->error_logger_limits->events_per_frame);
-	p_options->error_logger_limits->repeated_error_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/error_logger/limits/repeated_error_window_ms", p_options->error_logger_limits->repeated_error_window_ms);
-	p_options->error_logger_limits->throttle_events = ProjectSettings::get_singleton()->get_setting("sentry/error_logger/limits/throttle_events", p_options->error_logger_limits->throttle_events);
-	p_options->error_logger_limits->throttle_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/error_logger/limits/throttle_window_ms", p_options->error_logger_limits->throttle_window_ms);
+	p_options->logger_limits->parse_lines = ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/parse_lines", p_options->logger_limits->parse_lines);
+	p_options->logger_limits->events_per_frame = ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/events_per_frame", p_options->logger_limits->events_per_frame);
+	p_options->logger_limits->repeated_error_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/repeated_error_window_ms", p_options->logger_limits->repeated_error_window_ms);
+	p_options->logger_limits->throttle_events = ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_events", p_options->logger_limits->throttle_events);
+	p_options->logger_limits->throttle_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_window_ms", p_options->logger_limits->throttle_window_ms);
 }
 
 void SentryOptions::_init_debug_option(DebugMode p_mode) {
@@ -144,11 +144,11 @@ void SentryOptions::destroy_singleton() {
 	singleton = Ref<SentryOptions>();
 }
 
-void SentryOptions::set_error_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
-	error_logger_limits = p_limits;
+void SentryOptions::set_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
+	logger_limits = p_limits;
 	// Ensure limits are initialized.
-	if (error_logger_limits.is_null()) {
-		error_logger_limits.instantiate();
+	if (logger_limits.is_null()) {
+		logger_limits.instantiate();
 	}
 }
 
@@ -169,12 +169,11 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_screenshot"), set_attach_screenshot, is_attach_screenshot_enabled);
 	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("screenshot_level"), set_screenshot_level, get_screenshot_level);
 
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "error_logger_enabled"), set_error_logger_enabled, is_error_logger_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "error_logger_include_source"), set_error_logger_include_source, is_error_logger_include_source_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "error_logger_event_mask"), set_error_logger_event_mask, get_error_logger_event_mask);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "error_logger_breadcrumb_mask"), set_error_logger_breadcrumb_mask, get_error_logger_breadcrumb_mask);
-
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::OBJECT, "error_logger_limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), set_error_logger_limits, get_error_logger_limits);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, should_logger_include_source);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_event_mask"), set_logger_event_mask, get_logger_event_mask);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_breadcrumb_mask"), set_logger_breadcrumb_mask, get_logger_breadcrumb_mask);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::OBJECT, "logger_limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), set_logger_limits, get_logger_limits);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send"), set_before_send, get_before_send);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "on_crash"), set_on_crash, get_on_crash);
@@ -191,7 +190,7 @@ void SentryOptions::_bind_methods() {
 }
 
 SentryOptions::SentryOptions() {
-	error_logger_limits.instantiate(); // Ensure limits are initialized.
+	logger_limits.instantiate(); // Ensure limits are initialized.
 	environment = sentry::environment::detect_godot_environment();
 	_init_debug_option(DEBUG_DEFAULT);
 }

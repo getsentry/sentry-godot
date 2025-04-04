@@ -62,19 +62,19 @@
 			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a [SentryConfiguration] script.
 			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/environments/]Environments documentation[/url].
 		</member>
-		<member name="error_logger_breadcrumb_mask" type="int" setter="set_error_logger_breadcrumb_mask" getter="get_error_logger_breadcrumb_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="15">
+		<member name="logger_breadcrumb_mask" type="int" setter="set_logger_breadcrumb_mask" getter="get_logger_breadcrumb_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="15">
 			Specifies the types of errors captured as breadcrumbs. Accepts a single value or a bitwise combination of [enum GodotErrorMask] masks.
 		</member>
-		<member name="error_logger_enabled" type="bool" setter="set_error_logger_enabled" getter="is_error_logger_enabled" default="true">
-			If [code]true[/code], the SDK will capture logged errors as events and/or breadcrumbs, as defined by [member error_logger_event_mask] and [member error_logger_breadcrumb_mask]. Crashes are always captured.
+		<member name="logger_enabled" type="bool" setter="set_logger_enabled" getter="is_logger_enabled" default="true">
+			If [code]true[/code], the SDK will capture logged errors as events and/or breadcrumbs, as defined by [member logger_event_mask] and [member logger_breadcrumb_mask]. Crashes are always captured.
 		</member>
-		<member name="error_logger_event_mask" type="int" setter="set_error_logger_event_mask" getter="get_error_logger_event_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="13">
+		<member name="logger_event_mask" type="int" setter="set_logger_event_mask" getter="get_logger_event_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="13">
 			Specifies the types of errors captured as events. Accepts a single value or a bitwise combination of [enum GodotErrorMask] masks.
 		</member>
-		<member name="error_logger_include_source" type="bool" setter="set_error_logger_include_source" getter="is_error_logger_include_source_enabled" default="true">
+		<member name="logger_include_source" type="bool" setter="set_logger_include_source" getter="should_logger_include_source" default="true">
 			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available in the exported project.
 		</member>
-		<member name="error_logger_limits" type="SentryLoggerLimits" setter="set_error_logger_limits" getter="get_error_logger_limits">
+		<member name="logger_limits" type="SentryLoggerLimits" setter="set_logger_limits" getter="get_logger_limits">
 			Defines throttling limits for the error logger. These limits are used to prevent the SDK from sending too many non-critical and repeating error events. See [SentryLoggerLimits].
 		</member>
 		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">

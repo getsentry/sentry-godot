@@ -57,7 +57,7 @@ void SentryLogger::_process_log_file() {
 	frame_events = 0;
 
 	// Get limits.
-	Ref<SentryLoggerLimits> limits = SentryOptions::get_singleton()->get_error_logger_limits();
+	Ref<SentryLoggerLimits> limits = SentryOptions::get_singleton()->get_logger_limits();
 	auto repeated_error_window = std::chrono::milliseconds{ limits->repeated_error_window_ms };
 	auto throttle_window = std::chrono::milliseconds{ limits->throttle_window_ms };
 
@@ -133,9 +133,9 @@ void SentryLogger::_process_log_file() {
 }
 
 void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType p_error_type) {
-	Ref<SentryLoggerLimits> limits = SentryOptions::get_singleton()->get_error_logger_limits();
-	bool as_breadcrumb = SentryOptions::get_singleton()->is_error_logger_breadcrumb_enabled(p_error_type);
-	bool as_event = SentryOptions::get_singleton()->is_error_logger_event_enabled(p_error_type) &&
+	Ref<SentryLoggerLimits> limits = SentryOptions::get_singleton()->get_logger_limits();
+	bool as_breadcrumb = SentryOptions::get_singleton()->should_capture_breadcrumb(p_error_type);
+	bool as_event = SentryOptions::get_singleton()->should_capture_event(p_error_type) &&
 			frame_events < limits->events_per_frame &&
 			event_times.size() < limits->throttle_events;
 
@@ -162,7 +162,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		sentry::InternalSDK::StackFrame stack_frame{ p_file, p_func, p_line };
 
 		// Provide script source code context for script errors if available.
-		if (p_error_type == GodotErrorType::ERROR_TYPE_SCRIPT && SentryOptions::get_singleton()->is_error_logger_include_source_enabled()) {
+		if (p_error_type == GodotErrorType::ERROR_TYPE_SCRIPT && SentryOptions::get_singleton()->should_logger_include_source()) {
 			// Provide script source code context for script errors if available.
 			// TODO: Should it be optional?
 			String context_line;
