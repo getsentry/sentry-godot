@@ -5,6 +5,7 @@
 ### Breaking changes
 
 - Renamed `debug_verbosity` => `diagnostic_level` to better align with established Sentry features ([#154](https://github.com/getsentry/sentry-godot/pull/154))
+- Mark options as basic and advanced to have a cleaner interface, and move error logger tunables into their own sub-page. This is a BREAKING change so make sure to reapply those error logger values if you're changing the defaults. ([#155](https://github.com/getsentry/sentry-godot/pull/155))
 
 ### Features
 

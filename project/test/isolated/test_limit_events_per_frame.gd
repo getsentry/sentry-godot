@@ -9,10 +9,10 @@ var _num_events: int = 0
 
 static func configure_options(options: SentryOptions) -> void:
 	# Only one error is allowed to be logged as event per processed frame.
-	options.error_logger_limits.events_per_frame = 1
+	options.logger_limits.events_per_frame = 1
 	# Make sure other limits are not interfering.
-	options.error_logger_limits.repeated_error_window_ms = 0
-	options.error_logger_limits.throttle_events = 88
+	options.logger_limits.repeated_error_window_ms = 0
+	options.logger_limits.throttle_events = 88
 
 
 func before_test() -> void:

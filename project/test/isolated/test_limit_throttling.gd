@@ -9,11 +9,11 @@ var _num_events: int = 0
 
 static func configure_options(options: SentryOptions) -> void:
 	# Allow only two errors to be logged as events within 1 second time window.
-	options.error_logger_limits.throttle_events = 2
-	options.error_logger_limits.throttle_window_ms = 1000
+	options.logger_limits.throttle_events = 2
+	options.logger_limits.throttle_window_ms = 1000
 	# Make sure other limits are not interfering.
-	options.error_logger_limits.events_per_frame = 88
-	options.error_logger_limits.repeated_error_window_ms = 0
+	options.logger_limits.events_per_frame = 88
+	options.logger_limits.repeated_error_window_ms = 0
 
 
 func before_test() -> void:
