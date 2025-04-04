@@ -162,9 +162,8 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 		sentry::InternalSDK::StackFrame stack_frame{ p_file, p_func, p_line };
 
 		// Provide script source code context for script errors if available.
-		if (p_error_type == GodotErrorType::ERROR_TYPE_SCRIPT && SentryOptions::get_singleton()->should_logger_include_source()) {
+		if (p_error_type == GodotErrorType::ERROR_TYPE_SCRIPT && SentryOptions::get_singleton()->is_logger_include_source_enabled()) {
 			// Provide script source code context for script errors if available.
-			// TODO: Should it be optional?
 			String context_line;
 			PackedStringArray pre_context;
 			PackedStringArray post_context;

@@ -133,7 +133,7 @@ public:
 	_FORCE_INLINE_ bool is_logger_enabled() const { return logger_enabled; }
 	_FORCE_INLINE_ void set_logger_enabled(bool p_enabled) { logger_enabled = p_enabled; }
 
-	_FORCE_INLINE_ bool should_logger_include_source() const { return logger_include_source; }
+	_FORCE_INLINE_ bool is_logger_include_source_enabled() const { return logger_include_source; }
 	_FORCE_INLINE_ void set_logger_include_source(bool p_enable) { logger_include_source = p_enable; }
 
 	_FORCE_INLINE_ BitField<GodotErrorMask> get_logger_event_mask() const { return logger_event_mask; }

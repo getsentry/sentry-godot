@@ -170,7 +170,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("screenshot_level"), set_screenshot_level, get_screenshot_level);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, should_logger_include_source);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, is_logger_include_source_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_event_mask"), set_logger_event_mask, get_logger_event_mask);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_breadcrumb_mask"), set_logger_breadcrumb_mask, get_logger_breadcrumb_mask);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::OBJECT, "logger_limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), set_logger_limits, get_logger_limits);
