@@ -32,9 +32,14 @@ jobs:
     needs: build-extension
     uses: ./.github/workflows/unit_tests.yml
 
+  codesign:
+    name: ✍️ Sign macOS builds
+    needs: build-extension
+    uses: ./.github/workflows/codesign.yml
+
   package:
     name: 📦 Package
-    needs: build-extension
+    needs: codesign
     uses: ./.github/workflows/package.yml
 
   # Deleting "sentry-godot-gdextension" artifact due to broken file permissions.
