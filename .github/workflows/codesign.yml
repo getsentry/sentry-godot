@@ -41,15 +41,17 @@ jobs:
 
       - name: Sign binaries
         run: |
-          sign_cmd=rcodesign sign \
-            --for-notarization \
-            # --entitlements-xml-path entitlements.plist \
-            --p12-file ${{ env.APPLE_CERT_PATH }} \
-            --p12-password ${{ secrets.APPLE_CERT_PASSWORD }}
+          rcodesign sign --for-notarization \
+            --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
+            artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
+          rcodesign sign --for-notarization \
+            --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
+            artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
+          rcodesign sign --for-notarization \
+            --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
+            artifact/addons/sentrysdk/bin/macos/crashpad_handler
 
-          ${sign_cmd} artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
-          ${sign_cmd} artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
-          ${sign_cmd} artifact/addons/sentrysdk/bin/macos/crashpad_handler
+          # --entitlements-xml-path entitlements.plist
 
       # - name: Notarize binaries
       #   run: |
