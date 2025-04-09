@@ -4,7 +4,7 @@ on:
   workflow_call:
 
 jobs:
-  sing-macos-builds:
+  sign-macos-builds:
     runs-on: ubuntu-latest
 
     environment: restricted
