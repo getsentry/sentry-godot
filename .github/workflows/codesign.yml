@@ -59,14 +59,14 @@ jobs:
             artifact/addons/sentrysdk/bin/macos/crashpad_handler
 
       - name: Notarize binaries
+        if: false # disable for now
         run: |
-          # notarize_cmd=rcodesign notary-submit \
-          #   --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
-          #   --wait
-
-          # ${notarize_cmd} artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
-          # ${notarize_cmd} artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
-          # ${notarize_cmd} artifact/addons/sentrysdk/bin/macos/crashpad_handler
+          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
+            artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
+          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
+            artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
+          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
+            artifact/addons/sentrysdk/bin/macos/crashpad_handler
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
