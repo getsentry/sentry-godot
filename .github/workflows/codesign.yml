@@ -30,16 +30,23 @@ jobs:
           APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
         run: |
-          echo "$APPLE_CERT_DATA" | base64 --decode > ${{ env.APPLE_CERT_PATH }}
-          echo "$APPLE_API_KEY" | base64 --decode > ${{ env.APPLE_API_KEY_PATH }}
+          if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_API_KEY" ]; then
+            echo "::notice:Skipped signing - missing Apple signing certificate or API key."
+          else
+            echo "$APPLE_CERT_DATA" | base64 --decode > ${{ env.APPLE_CERT_PATH }}
+            echo "$APPLE_API_KEY" | base64 --decode > ${{ env.APPLE_API_KEY_PATH }}
+            echo "PROCEED=1" >> $GITHUB_ENV
+          fi
 
       - name: Download artifact
+        if: env.PROCEED
         uses: actions/download-artifact@v4
         with:
           name: sentry-godot-gdextension
           path: artifact/
 
       - name: Sign binaries
+        if: env.PROCEED
         run: |
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
@@ -49,21 +56,22 @@ jobs:
             artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
+            # --entitlements-xml-path entitlements.plist \
             artifact/addons/sentrysdk/bin/macos/crashpad_handler
 
-          # --entitlements-xml-path entitlements.plist
+      - name: Notarize binaries
+        if: env.PROCEED
+        run: |
+          # notarize_cmd=rcodesign notary-submit \
+          #   --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
+          #   --wait
 
-      # - name: Notarize binaries
-      #   run: |
-      #     notarize_cmd=rcodesign notary-submit \
-      #       --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
-      #       --wait
-
-      #     ${notarize_cmd} artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
-      #     ${notarize_cmd} artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
-      #     ${notarize_cmd} artifact/addons/sentrysdk/bin/macos/crashpad_handler
+          # ${notarize_cmd} artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
+          # ${notarize_cmd} artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
+          # ${notarize_cmd} artifact/addons/sentrysdk/bin/macos/crashpad_handler
 
       - name: Upload artifact
+        if: env.PROCEED
         uses: actions/upload-artifact@v4
         with:
           name: sentry-godot-gdextension
