@@ -35,10 +35,10 @@ jobs:
         run: |
           if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_API_KEY" ]; then
             if [[ "${GITHUB_REF}" == refs/heads/release/* ]]; then
-              echo "::error::Codesign failed - missing Apple signing certificate or API key."
+              echo "::error title=Codesign failed::Missing Apple signing certificate or API key."
               exit 1
             else
-              echo "::notice::Codesign skipped - missing Apple signing certificate or API key."
+              echo "::notice title=Codesign skipped::Missing Apple signing certificate or API key."
               echo "DO_CODESIGN=0" >> $GITHUB_ENV
             fi
           else
