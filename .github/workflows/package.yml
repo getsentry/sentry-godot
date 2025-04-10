@@ -48,7 +48,7 @@ jobs:
           fi
 
       - name: Install rcodesign
-        if: env.DO_CODESIGN
+        if: env.DO_CODESIGN == '1'
         env:
           CODESIGN_VERSION: 0.29.0
           CODESIGN_CHECKSUM: dbe85cedd8ee4217b64e9a0e4c2aef92ab8bcaaa41f20bde99781ff02e600002
@@ -61,7 +61,7 @@ jobs:
           rm rcodesign.tar.gz
 
       - name: Sign macOS binaries
-        if: env.DO_CODESIGN
+        if: env.DO_CODESIGN == '1'
         run: |
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
@@ -75,7 +75,7 @@ jobs:
             artifact/addons/sentrysdk/bin/macos/crashpad_handler
 
       - name: Notarize macOS binaries
-        if: env.DO_CODESIGN
+        if: env.DO_CODESIGN == '1'
         run: |
           rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
             artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
