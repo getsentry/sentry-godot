@@ -46,7 +46,7 @@ jobs:
   # See issue: https://github.com/getsentry/sentry-godot/issues/41
   cleanup:
     name: 🗑️ Cleanup
-    needs: [package, unit-tests]
+    needs: [package, unit-tests, static-checks]
     runs-on: ubuntu-latest
     steps:
       - name: Delete sentry-godot-gdextension artifact
