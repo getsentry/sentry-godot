@@ -36,6 +36,10 @@ jobs:
     name: 📦 Package
     needs: build-extension
     uses: ./.github/workflows/package.yml
+    secrets:
+      APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+      APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
 
   # Deleting "sentry-godot-gdextension" artifact due to broken file permissions.
   # This encourages using the artifact from the "package" job instead which has correct permissions.

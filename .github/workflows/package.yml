@@ -2,6 +2,13 @@ name: 📦 Package
 
 on:
   workflow_call:
+    secrets:
+      APPLE_CERT_DATA:
+        required: false
+      APPLE_CERT_PASSWORD:
+        required: false
+      APPLE_API_KEY:
+        required: false
 
 jobs:
   package:
