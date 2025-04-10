@@ -15,8 +15,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CODESIGN_VERSION: 0.29.0
-      CODESIGN_CHECKSUM: dbe85cedd8ee4217b64e9a0e4c2aef92ab8bcaaa41f20bde99781ff02e600002
       APPLE_CERT_PATH: /tmp/certs.p12
       APPLE_API_KEY_PATH: /tmp/apple_key.json
 
@@ -30,7 +28,30 @@ jobs:
           name: sentry-godot-gdextension
           path: artifact/
 
+      - name: Decode Apple signing certificate and API key
+        env:
+          APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_API_KEY" ]; then
+            if [[ "${GITHUB_REF}" == refs/heads/release/* ]]; then
+              echo "::error::Codesign failed - missing Apple signing certificate or API key."
+              exit 1
+            else
+              echo "::notice::Codesign skipped - missing Apple signing certificate or API key."
+              echo "DO_CODESIGN=0" >> $GITHUB_ENV
+            fi
+          else
+            echo "$APPLE_CERT_DATA" | base64 --decode > ${{ env.APPLE_CERT_PATH }}
+            echo "$APPLE_API_KEY" | base64 --decode > ${{ env.APPLE_API_KEY_PATH }}
+            echo "DO_CODESIGN=1" >> $GITHUB_ENV
+          fi
+
       - name: Install rcodesign
+        if: env.DO_CODESIGN
+        env:
+          CODESIGN_VERSION: 0.29.0
+          CODESIGN_CHECKSUM: dbe85cedd8ee4217b64e9a0e4c2aef92ab8bcaaa41f20bde99781ff02e600002
         run: |
           curl -L https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign/${CODESIGN_VERSION}/apple-codesign-${CODESIGN_VERSION}-x86_64-unknown-linux-musl.tar.gz \
             -o rcodesign.tar.gz
@@ -39,20 +60,8 @@ jobs:
           mv rcodesign /usr/local/bin/rcodesign
           rm rcodesign.tar.gz
 
-      - name: Decode Apple signing certificate and API key
-        env:
-          APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
-          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-        run: |
-          if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_API_KEY" ]; then
-            echo "::error::Codesign failed - missing Apple signing certificate or API key."
-            exit 1
-          else
-            echo "$APPLE_CERT_DATA" | base64 --decode > ${{ env.APPLE_CERT_PATH }}
-            echo "$APPLE_API_KEY" | base64 --decode > ${{ env.APPLE_API_KEY_PATH }}
-          fi
-
       - name: Sign macOS binaries
+        if: env.DO_CODESIGN
         run: |
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
@@ -66,7 +75,7 @@ jobs:
             artifact/addons/sentrysdk/bin/macos/crashpad_handler
 
       - name: Notarize macOS binaries
-        if: false # disable for now
+        if: env.DO_CODESIGN
         run: |
           rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
             artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
