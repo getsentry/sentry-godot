@@ -77,15 +77,15 @@ jobs:
         if: env.DO_CODESIGN == '1'
         run: |
           zip libsentrysdk.macos.debug.zip artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
-          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
+          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentrysdk.macos.debug.zip
 
           zip libsentrysdk.macos.release.zip artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
-          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
+          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentrysdk.macos.release.zip
 
           zip crashpad_handler.zip artifact/addons/sentrysdk/bin/macos/crashpad_handler
-          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
+          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             crashpad_handler.zip
 
       - name: Prepare artifact
