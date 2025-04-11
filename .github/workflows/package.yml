@@ -73,15 +73,15 @@ jobs:
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
             artifact/addons/sentrysdk/bin/macos/crashpad_handler
 
-      - name: Notarize macOS binaries
-        if: env.DO_CODESIGN == '1'
-        run: |
-          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
-            artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
-          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
-            artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
-          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
-            artifact/addons/sentrysdk/bin/macos/crashpad_handler
+      # - name: Notarize macOS binaries
+      #   if: env.DO_CODESIGN == '1'
+      #   run: |
+      #     rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
+      #       artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
+      #     rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
+      #       artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
+      #     rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} --wait \
+      #       artifact/addons/sentrysdk/bin/macos/crashpad_handler
 
       - name: Prepare artifact
         shell: bash
