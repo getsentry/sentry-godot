@@ -4,12 +4,15 @@ This SDK is actively evolving and may still be incomplete. It is developed as a 
 
 ## Getting started
 
+Pre-built extension libraries with the demo project are available in [**Releases**](https://github.com/getsentry/sentry-godot/releases).
+
 Check the official [Sentry SDK documentation](https://docs.sentry.io/platforms/godot/) to get started.
-Feel free to explore the demo `project/` for usage examples.
+
+In the Godot editor, you can adjust options by going to `Project Settings -> Sentry -> Options`. Feel free to explore the demo `project/` for usage examples.
 
 ## Building Sentry Godot SDK
 
-Godot Sentry SDK can be built for Windows, Linux, and macOS platforms (x86_64 for PC, and universal `arch` for Mac). Pre-built extension libraries with the demo project are available in [**Releases**](https://github.com/getsentry/sentry-godot/releases).
+Godot Sentry SDK can be built for Windows, Linux, and macOS platforms (x86_64 for PC, and universal `arch` for Mac).
 
 ### Setting up SCons
 
@@ -56,8 +59,6 @@ brew install scons
     # open demo project in Godot 4.3
     godot project/project.godot
     ```
-
-In the Godot editor, you can adjust the Sentry SDK settings by going to `Project Settings -> Sentry -> Config`.
 
 ## Contributing
 
