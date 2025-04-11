@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
-## Events and breadcrumbs should be logged when "error_logger_event_mask" and
-## "error_logger_breadcrumb_mask" are configured to include all categories.
+## Events and breadcrumbs should be logged when "logger_event_mask" and
+## "logger_breadcrumb_mask" are configured to include all categories.
 
 
 signal callback_processed
@@ -10,14 +10,14 @@ var _num_events: int = 0
 
 static func configure_options(options: SentryOptions) -> void:
     var mask = SentryOptions.MASK_ERROR | SentryOptions.MASK_SCRIPT | SentryOptions.MASK_SHADER | SentryOptions.MASK_WARNING
-    options.error_logger_event_mask = mask
-    options.error_logger_breadcrumb_mask = mask
+    options.logger_event_mask = mask
+    options.logger_breadcrumb_mask = mask
 
     # Make sure other limits are not interfering.
-    options.error_logger_limits.events_per_frame = 88
-    options.error_logger_limits.throttle_events = 88
-    options.error_logger_limits.repeated_error_window_ms = 0
-    options.error_logger_limits.throttle_window_ms = 0
+    options.logger_limits.events_per_frame = 88
+    options.logger_limits.throttle_events = 88
+    options.logger_limits.repeated_error_window_ms = 0
+    options.logger_limits.throttle_window_ms = 0
 
 
 func before_test() -> void:

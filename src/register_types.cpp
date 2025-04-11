@@ -21,7 +21,7 @@ using namespace godot;
 namespace {
 
 void _init_logger() {
-	if (!SentryOptions::get_singleton()->is_error_logger_enabled()) {
+	if (!SentryOptions::get_singleton()->is_logger_enabled()) {
 		// If error logger is disabled, don't add it to the scene tree.
 		sentry::util::print_debug("error logger is disabled in options");
 		return;

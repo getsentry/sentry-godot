@@ -8,13 +8,13 @@ var _num_events: int = 0
 
 
 static func configure_options(options: SentryOptions) -> void:
-    options.error_logger_enabled = false
+    options.logger_enabled = false
 
     # Make sure other limits are not interfering.
-    options.error_logger_limits.events_per_frame = 88
-    options.error_logger_limits.throttle_events = 88
-    options.error_logger_limits.repeated_error_window_ms = 0
-    options.error_logger_limits.throttle_window_ms = 0
+    options.logger_limits.events_per_frame = 88
+    options.logger_limits.throttle_events = 88
+    options.logger_limits.repeated_error_window_ms = 0
+    options.logger_limits.throttle_window_ms = 0
 
 
 func before_test() -> void:
