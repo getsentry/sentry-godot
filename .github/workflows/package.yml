@@ -71,7 +71,6 @@ jobs:
             artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            # --entitlements-xml-path entitlements.plist \
             artifact/addons/sentrysdk/bin/macos/crashpad_handler
 
       - name: Notarize macOS binaries
