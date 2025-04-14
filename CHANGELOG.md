@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Capture scene tree hierarchy data by enabling `attach_scene_tree` option ([#143](https://github.com/getsentry/sentry-godot/pull/143))
+
 ## 0.4.0
 
 ### Breaking changes

@@ -13,6 +13,9 @@
 		<member name="attach_log" type="bool" setter="set_attach_log" getter="is_attach_log_enabled" default="true">
 			If [code]true[/code], the SDK will attach the Godot log file to the event.
 		</member>
+		<member name="attach_scene_tree" type="bool" setter="set_attach_scene_tree" getter="is_attach_scene_tree_enabled" default="false">
+			If [code]true[/code], enables automatic capture of scene tree hierarchy data with each event.
+		</member>
 		<member name="attach_screenshot" type="bool" setter="set_attach_screenshot" getter="is_attach_screenshot_enabled" default="false">
 			If [code]true[/code], enables automatic screenshot capture for events meeting or exceeding the [member screenshot_level] threshold. By default, only fatal events trigger screenshots. Setting a lower [member screenshot_level] threshold may impact performance in the frames the screenshots are taken.
 		</member>
