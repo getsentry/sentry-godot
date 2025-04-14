@@ -19,8 +19,8 @@ func test_bool_properties(property: String, test_parameters := [
 		["attach_screenshot"],
 		["attach_scene_tree"],
 		["send_default_pii"],
-		["error_logger_enabled"],
-		["error_logger_include_source"],
+		["logger_enabled"],
+		["logger_include_source"],
 ]) -> void:
 	options.set(property, true)
 	assert_bool(options.get(property)).is_true()
@@ -52,30 +52,30 @@ func test_max_breadcrumbs() -> void:
 	assert_int(options.max_breadcrumbs).is_equal(42)
 
 
-## SentryOptions.error_logger_event_mask should be set to the specified value.
-func test_error_logger_event_mask() -> void:
+## SentryOptions.logger_event_mask should be set to the specified value.
+func test_logger_event_mask() -> void:
 	var mask := SentryOptions.MASK_SCRIPT | SentryOptions.MASK_SHADER
-	options.error_logger_event_mask = mask
-	assert_int(options.error_logger_event_mask).is_equal(mask)
+	options.logger_event_mask = mask
+	assert_int(options.logger_event_mask).is_equal(mask)
 
 
-## SentryOptions.error_logger_breadcrumb_mask should be set to the specified value.
-func test_error_logger_breadcrumb_mask() -> void:
+## SentryOptions.logger_breadcrumb_mask should be set to the specified value.
+func test_logger_breadcrumb_mask() -> void:
 	var mask := SentryOptions.MASK_SCRIPT | SentryOptions.MASK_SHADER
-	options.error_logger_breadcrumb_mask = mask
-	assert_int(options.error_logger_breadcrumb_mask).is_equal(mask)
+	options.logger_breadcrumb_mask = mask
+	assert_int(options.logger_breadcrumb_mask).is_equal(mask)
 
 
 ## Test integer error logger limit properties.
 @warning_ignore("unused_parameter")
-func test_error_logger_limit_properties(property: String, test_parameters := [
+func test_logger_limit_properties(property: String, test_parameters := [
 		["events_per_frame"],
 		["repeated_error_window_ms"],
 		["throttle_events"],
 		["throttle_window_ms"],
 ]) -> void:
-	options.error_logger_limits.set(property, 42)
-	assert_int(options.error_logger_limits.get(property)).is_equal(42)
+	options.logger_limits.set(property, 42)
+	assert_int(options.logger_limits.get(property)).is_equal(42)
 
 
 ## Test properties with SentrySDK.Level type.
