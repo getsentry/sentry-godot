@@ -75,17 +75,21 @@ jobs:
 
       - name: Notarize macOS binaries
         if: env.DO_CODESIGN == '1'
+        env:
+          # Wait for notarization only on release branch.
+          # WAIT_OPTION: ${{ startsWith(github.ref, 'refs/heads/releases/') && '--wait' || '' }}
+          WAIT_OPTION: --wait
         run: |
           zip libsentrysdk.macos.debug.zip artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
-          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
+          rcodesign notary-submit ${{ env.WAIT_OPTION }} --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentrysdk.macos.debug.zip
 
           zip libsentrysdk.macos.release.zip artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
-          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
+          rcodesign notary-submit ${{ env.WAIT_OPTION }} --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentrysdk.macos.release.zip
 
           zip crashpad_handler.zip artifact/addons/sentrysdk/bin/macos/crashpad_handler
-          rcodesign notary-submit --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
+          rcodesign notary-submit ${{ env.WAIT_OPTION }} --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             crashpad_handler.zip
 
       - name: Prepare artifact
