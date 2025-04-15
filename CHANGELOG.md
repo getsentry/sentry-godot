@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2
+
+### Various fixes & improvements
+
+- Fix release branch ref in CI (#158) by @limbonaut
+
 ## 0.4.1
 
 ### Other improvements
