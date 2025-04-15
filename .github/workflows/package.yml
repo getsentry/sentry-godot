@@ -36,18 +36,11 @@ jobs:
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
         run: |
           if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_API_KEY" ]; then
-            if [[ "${GITHUB_REF}" == refs/heads/release/* ]]; then
-              echo "::error title=Codesign failed::Missing Apple signing certificate or API key."
-              exit 1
-            else
-              echo "::notice title=Codesign skipped::Missing Apple signing certificate or API key."
-              echo "DO_CODESIGN=0" >> $GITHUB_ENV
-            fi
-          else
-            echo "$APPLE_CERT_DATA" | base64 --decode > ${{ env.APPLE_CERT_PATH }}
-            echo "$APPLE_API_KEY" | base64 --decode > ${{ env.APPLE_API_KEY_PATH }}
-            echo "DO_CODESIGN=1" >> $GITHUB_ENV
+            echo "::error title=Codesign failed::Missing Apple signing certificate or API key."
+            exit 1
           fi
+          echo "$APPLE_CERT_DATA" | base64 --decode > ${{ env.APPLE_CERT_PATH }}
+          echo "$APPLE_API_KEY" | base64 --decode > ${{ env.APPLE_API_KEY_PATH }}
 
       - name: Install rcodesign
         if: env.DO_CODESIGN == '1'
