@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Other improvements
+
+- Distribute signed macOS binaries ([#156](https://github.com/getsentry/sentry-godot/pull/156))
+
 ## 0.4.0
 
 ### Breaking changes
@@ -10,10 +16,6 @@
 ### Features
 
 - Introduce `screenshot_level` option and `before_capture_screenshot` hook to provide fine-grained control over when screenshots are taken. ([#153](https://github.com/getsentry/sentry-godot/pull/153))
-
-### Other improvements
-
-- Distribute signed macOS binaries ([#156](https://github.com/getsentry/sentry-godot/pull/156))
 
 ## 0.3.1
 
