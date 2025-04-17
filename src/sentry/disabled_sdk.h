@@ -20,7 +20,7 @@ class DisabledSDK : public InternalSDK {
 	virtual void add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary()) override {}
 
-	virtual String capture_message(const String &p_message, Level p_level = sentry::LEVEL_INFO, const String &p_logger = "") override { return ""; }
+	virtual String capture_message(const String &p_message, Level p_level = sentry::LEVEL_INFO) override { return ""; }
 	virtual String get_last_event_id() override { return ""; }
 	virtual String capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) override { return ""; }
 

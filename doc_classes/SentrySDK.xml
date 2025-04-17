@@ -36,7 +36,6 @@
 			<return type="String" />
 			<param index="0" name="message" type="String" />
 			<param index="1" name="level" type="int" enum="SentrySDK.Level" default="1" />
-			<param index="2" name="logger" type="String" default="&quot;&quot;" />
 			<description>
 				Captures an event with [param message] and sends it to Sentry, returning the event ID.
 			</description>

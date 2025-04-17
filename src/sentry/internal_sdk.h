@@ -40,7 +40,7 @@ public:
 	// TODO: Consider adding the following function.
 	// virtual void clear_breadcrumbs() = 0;
 
-	virtual String capture_message(const String &p_message, Level p_level, const String &p_logger = "") = 0;
+	virtual String capture_message(const String &p_message, Level p_level) = 0;
 	virtual String get_last_event_id() = 0;
 	virtual String capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) = 0;
 
