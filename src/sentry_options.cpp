@@ -61,7 +61,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::STRING, "sentry/options/configuration_script", PROPERTY_HINT_FILE, "*.gd"), p_options->configuration_script, false);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs, false);
-	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii, false);
+	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
 
 	_define_setting("sentry/options/attach_log", p_options->attach_log);
 	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);

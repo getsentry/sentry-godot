@@ -289,10 +289,10 @@ void NativeSDK::add_breadcrumb(const String &p_message, const String &p_category
 	sentry_add_breadcrumb(crumb);
 }
 
-String NativeSDK::capture_message(const String &p_message, Level p_level, const String &p_logger) {
+String NativeSDK::capture_message(const String &p_message, Level p_level) {
 	sentry_value_t event = sentry_value_new_message_event(
 			native::level_to_native(p_level),
-			p_logger.utf8().get_data(),
+			"", // logger
 			p_message.utf8().get_data());
 	last_uuid = sentry_capture_event(event);
 	return _uuid_as_string(last_uuid);

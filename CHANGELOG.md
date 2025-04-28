@@ -2,9 +2,31 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Remove `logger` argument from `SentrySDK.capture_message(...)`. This shouldn't be disruptive as the logger argument is seldom used and it had a default value. ([#162](https://github.com/getsentry/sentry-godot/pull/162))
+
 ### Features
 
 - Capture scene tree hierarchy data by enabling `attach_scene_tree` option ([#143](https://github.com/getsentry/sentry-godot/pull/143))
+
+### Dependencies
+
+- Bump Native SDK from v0.8.3 to v0.8.4 ([#161](https://github.com/getsentry/sentry-godot/pull/161))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#084)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.3...0.8.4)
+
+## 0.4.2
+
+### Various fixes & improvements
+
+- Fix release branch ref in CI (#158) by @limbonaut
+
+## 0.4.1
+
+### Other improvements
+
+- Distribute signed macOS binaries ([#156](https://github.com/getsentry/sentry-godot/pull/156))
 
 ## 0.4.0
 

@@ -2,10 +2,23 @@ name: 📦 Package
 
 on:
   workflow_call:
+    secrets:
+      APPLE_CERT_DATA:
+        required: false
+      APPLE_CERT_PASSWORD:
+        required: false
+      APPLE_API_KEY:
+        required: false
 
 jobs:
   package:
     runs-on: ubuntu-latest
+
+    env:
+      APPLE_CERT_PATH: /tmp/certs.p12
+      APPLE_API_KEY_PATH: /tmp/apple_key.json
+      DO_CODESIGN: ${{ startsWith(github.ref, 'refs/heads/release/') && '1' || '0' }}
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -15,6 +28,60 @@ jobs:
         with:
           name: sentry-godot-gdextension
           path: artifact/
+
+      - name: Decode Apple signing certificate and API key
+        if: env.DO_CODESIGN == '1'
+        env:
+          APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          if [ -z "$APPLE_CERT_DATA" ] || [ -z "$APPLE_API_KEY" ]; then
+            echo "::error title=Codesign failed::Missing Apple signing certificate or API key."
+            exit 1
+          fi
+          echo "$APPLE_CERT_DATA" | base64 --decode > ${{ env.APPLE_CERT_PATH }}
+          echo "$APPLE_API_KEY" | base64 --decode > ${{ env.APPLE_API_KEY_PATH }}
+
+      - name: Install rcodesign
+        if: env.DO_CODESIGN == '1'
+        env:
+          CODESIGN_VERSION: 0.29.0
+          CODESIGN_CHECKSUM: dbe85cedd8ee4217b64e9a0e4c2aef92ab8bcaaa41f20bde99781ff02e600002
+        run: |
+          curl -L https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign/${CODESIGN_VERSION}/apple-codesign-${CODESIGN_VERSION}-x86_64-unknown-linux-musl.tar.gz \
+            -o rcodesign.tar.gz
+          echo "${CODESIGN_CHECKSUM}  rcodesign.tar.gz" | sha256sum -c -
+          tar -xz --strip-components=1 -f rcodesign.tar.gz
+          mv rcodesign /usr/local/bin/rcodesign
+          rm rcodesign.tar.gz
+
+      - name: Sign macOS binaries
+        if: env.DO_CODESIGN == '1'
+        run: |
+          rcodesign sign --for-notarization \
+            --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
+            artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
+          rcodesign sign --for-notarization \
+            --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
+            artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
+          rcodesign sign --for-notarization \
+            --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
+            artifact/addons/sentrysdk/bin/macos/crashpad_handler
+
+      - name: Notarize macOS binaries
+        if: env.DO_CODESIGN == '1'
+        run: |
+          zip libsentrysdk.macos.debug.zip artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
+          rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
+            libsentrysdk.macos.debug.zip
+
+          zip libsentrysdk.macos.release.zip artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
+          rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
+            libsentrysdk.macos.release.zip
+
+          zip crashpad_handler.zip artifact/addons/sentrysdk/bin/macos/crashpad_handler
+          rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
+            crashpad_handler.zip
 
       - name: Prepare artifact
         shell: bash
