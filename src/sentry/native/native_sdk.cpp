@@ -118,6 +118,12 @@ inline void _save_view_hierarchy() {
 
 	String path = "user://" _VIEW_HIERARCHY_FN;
 	DirAccess::remove_absolute(path);
+
+	if (OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id()) {
+		sentry::util::print_debug("skipping scene tree capture - can only be performed on the main thread");
+		return;
+	}
+
 	String json_content = sentry::build_view_hierarchy_json();
 	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
 	if (f.is_valid()) {
