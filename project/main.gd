@@ -20,6 +20,20 @@ func _ready() -> void:
 	level_choice.get_popup().id_pressed.connect(_on_level_choice_id_pressed)
 	_init_level_choice_popup()
 	_update_user_info()
+	
+	var thread := Thread.new()
+	thread.start(thread_message)
+	thread.wait_to_finish()
+
+
+func thread_message() -> void:
+	print("Capturing message from thread")
+	SentrySDK.capture_message("message from thread", SentrySDK.LEVEL_FATAL)
+
+
+func thread_crash() -> void:
+	print("Crashing from thread!")
+	OS.crash("crashing from thread")
 
 
 func _init_level_choice_popup() -> void:
