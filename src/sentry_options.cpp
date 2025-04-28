@@ -63,12 +63,9 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs, false);
 	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
 
-	_define_setting("sentry/options/attach_log", p_options->attach_log);
-	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
-	_define_setting(sentry::make_level_enum_property("sentry/options/screenshot_level"), p_options->screenshot_level);
-	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree, false);
 	_define_setting("sentry/options/attach_log", p_options->attach_log, false);
-	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot, false);
+	_define_setting("sentry/options/attach_screenshot", p_options->attach_screenshot);
+	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
 	_define_setting(sentry::make_level_enum_property("sentry/options/screenshot_level"), p_options->screenshot_level, false);
 
 	_define_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
