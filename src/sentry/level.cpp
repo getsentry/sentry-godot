@@ -38,7 +38,7 @@ Level int_to_level(int p_value) {
 		case 4:
 			return Level::LEVEL_FATAL;
 		default:
-			sentry::util::print_error("Internal Error -- unexpected level integer: " + godot::String::num_int64(p_value));
+			sentry::util::print_error("Internal Error: Unexpected SentryLevel integer value: " + godot::String::num_int64(p_value));
 			return Level::LEVEL_ERROR;
 	}
 }
