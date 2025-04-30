@@ -86,7 +86,14 @@ void AndroidSDK::initialize() {
 	ERR_FAIL_NULL(android_plugin);
 
 	sentry::util::print_debug("Initializing Sentry Android SDK");
-	android_plugin->call("initialize");
+	android_plugin->call("initialize",
+			SentryOptions::get_singleton()->get_dsn(),
+			SentryOptions::get_singleton()->is_debug_enabled(),
+			SentryOptions::get_singleton()->get_release(),
+			SentryOptions::get_singleton()->get_dist(),
+			SentryOptions::get_singleton()->get_environment(),
+			SentryOptions::get_singleton()->get_sample_rate(),
+			SentryOptions::get_singleton()->get_max_breadcrumbs());
 }
 
 AndroidSDK::AndroidSDK() {
