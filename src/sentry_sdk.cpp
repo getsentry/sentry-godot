@@ -13,6 +13,8 @@
 
 #ifdef NATIVE_SDK
 #include "sentry/native/native_sdk.h"
+#elif ANDROID_ENABLED
+#include "sentry/android/android_sdk.h"
 #endif
 
 using namespace godot;
@@ -124,6 +126,9 @@ void SentrySDK::_initialize() {
 
 #ifdef NATIVE_SDK
 	internal_sdk = std::make_shared<NativeSDK>();
+	enabled = true;
+#elif ANDROID_ENABLED
+	internal_sdk = std::make_shared<AndroidSDK>();
 	enabled = true;
 #else
 	// Unsupported platform
