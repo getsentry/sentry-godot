@@ -5,8 +5,6 @@
 
 using namespace godot;
 
-namespace sentry {
-
 // Event class that is used with the AndroidSDK.
 class AndroidEvent : public SentryEvent {
 	GDCLASS(AndroidEvent, SentryEvent);
@@ -48,10 +46,9 @@ public:
 	virtual void remove_tag(const String &p_key) override;
 	virtual String get_tag(const String &p_key) override;
 
+	AndroidEvent() {}
 	AndroidEvent(Object *android_plugin, String p_event_id);
 	virtual ~AndroidEvent() override;
 };
-
-} // namespace sentry
 
 #endif // SENTRY_ANDROID_EVENT_H

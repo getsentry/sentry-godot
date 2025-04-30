@@ -16,6 +16,10 @@
 #include "sentry/native/native_event.h"
 #endif // NATIVE_SDK
 
+#ifdef ANDROID_ENABLED
+#include "sentry/android/android_event.h"
+#endif // ANDROID_ENABLED
+
 using namespace godot;
 
 namespace {
@@ -55,9 +59,14 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 		GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 		GDREGISTER_INTERNAL_CLASS(SentryLogger);
+
 #ifdef NATIVE_SDK
 		GDREGISTER_INTERNAL_CLASS(NativeEvent);
 #endif // NATIVE_SDK
+
+#ifdef ANDROID_ENABLED
+		GDREGISTER_INTERNAL_CLASS(AndroidEvent);
+#endif
 
 		SentryOptions::create_singleton();
 

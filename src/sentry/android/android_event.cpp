@@ -2,11 +2,8 @@
 
 #include "android_string_names.h"
 
-namespace sentry {
-
 String AndroidEvent::get_id() const {
-	ERR_FAIL_NULL_V(android_plugin, String());
-	return android_plugin->call(ANDROID_SN(eventGetId));
+	return event_id;
 }
 
 void AndroidEvent::set_message(const String &p_message) {
@@ -113,5 +110,3 @@ AndroidEvent::~AndroidEvent() {
 		android_plugin->call(ANDROID_SN(releaseEvent), event_id);
 	}
 }
-
-} // namespace sentry
