@@ -28,7 +28,6 @@ public:
 
 	virtual String capture_message(const String &p_message, Level p_level = sentry::LEVEL_INFO) override;
 	virtual String get_last_event_id() override;
-	virtual String capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) override;
 
 	virtual Ref<SentryEvent> create_event() override;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) override;

@@ -12,6 +12,17 @@ using namespace godot;
 class SentryEvent : public RefCounted {
 	GDCLASS(SentryEvent, RefCounted);
 
+public:
+	// Represents a frame of a stack trace.
+	struct StackFrame {
+		String filename;
+		String function;
+		int lineno = -1;
+		String context_line;
+		PackedStringArray pre_context;
+		PackedStringArray post_context;
+	};
+
 protected:
 	static void _bind_methods();
 
@@ -44,6 +55,8 @@ public:
 	virtual void set_tag(const String &p_key, const String &p_value) = 0;
 	virtual void remove_tag(const String &p_key) = 0;
 	virtual String get_tag(const String &p_key) = 0;
+
+	virtual void add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &frames) = 0;
 
 	virtual ~SentryEvent() = default;
 };

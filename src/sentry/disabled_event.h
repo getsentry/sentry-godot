@@ -48,6 +48,8 @@ public:
 	virtual void set_tag(const String &p_key, const String &p_value) override {}
 	virtual void remove_tag(const String &p_key) override {}
 	virtual String get_tag(const String &p_key) override { return ""; }
+
+	virtual void add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &frames) override {}
 };
 
 #endif // DISABLED_EVENT_H

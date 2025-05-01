@@ -49,6 +49,12 @@ AndroidStringNames::AndroidStringNames() {
 	eventSetTag = StringName("eventSetTag");
 	eventRemoveTag = StringName("eventRemoveTag");
 	eventGetTag = StringName("eventGetTag");
+
+	// Exceptions.
+	createException = StringName("createException");
+	releaseException = StringName("releaseException");
+	exceptionAppendStackFrame = StringName("exceptionAppendStackFrame");
+	eventAddException = StringName("eventAddException");
 }
 
 } // namespace sentry

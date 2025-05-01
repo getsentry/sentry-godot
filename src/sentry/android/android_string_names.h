@@ -61,6 +61,12 @@ public:
 	StringName eventSetTag;
 	StringName eventRemoveTag;
 	StringName eventGetTag;
+
+	// Exceptions.
+	StringName createException;
+	StringName releaseException;
+	StringName exceptionAppendStackFrame;
+	StringName eventAddException;
 };
 
 } // namespace sentry

@@ -93,9 +93,29 @@ void AndroidEvent::remove_tag(const String &p_key) {
 	android_plugin->call(ANDROID_SN(eventRemoveTag), event_id, p_key);
 }
 
-godot::String AndroidEvent::get_tag(const String &p_key) {
+String AndroidEvent::get_tag(const String &p_key) {
 	ERR_FAIL_NULL_V(android_plugin, String());
 	return android_plugin->call(ANDROID_SN(eventGetTag), event_id, p_key);
+}
+
+void AndroidEvent::add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &p_frames) {
+	ERR_FAIL_NULL(android_plugin);
+
+	String exception_id = android_plugin->call(ANDROID_SN(createException), p_type, p_value);
+	ERR_FAIL_COND(exception_id.is_empty());
+
+	for (const StackFrame &frame : p_frames) {
+		Dictionary data;
+		data["filename"] = frame.filename;
+		data["function"] = frame.function;
+		data["lineno"] = frame.lineno;
+		data["context_line"] = frame.context_line;
+		// TODO: Add pre and post lines.
+		android_plugin->call(ANDROID_SN(exceptionAppendStackFrame), exception_id, data);
+	}
+
+	android_plugin->call(ANDROID_SN(eventAddException), event_id, exception_id);
+	android_plugin->call(ANDROID_SN(releaseException), exception_id);
 }
 
 AndroidEvent::AndroidEvent(Object *p_android_plugin, String p_event_id) {

@@ -58,13 +58,6 @@ String AndroidSDK::get_last_event_id() {
 	return android_plugin->call(ANDROID_SN(getLastEventId));
 }
 
-String AndroidSDK::capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) {
-	ERR_FAIL_NULL_V(android_plugin, String());
-	// TODO: implement!
-	WARN_PRINT_ONCE("capture_error not implemented for Android SDK.");
-	return String();
-}
-
 Ref<SentryEvent> AndroidSDK::create_event() {
 	ERR_FAIL_NULL_V(android_plugin, nullptr);
 	String event_id = android_plugin->call(ANDROID_SN(createEvent));

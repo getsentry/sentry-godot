@@ -139,6 +139,29 @@ String NativeEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void NativeEvent::add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &p_frames) {
+	sentry_value_t exception = sentry_value_new_exception(p_type.utf8(), p_value.utf8());
+	sentry_value_t stack_trace = sentry_value_new_object();
+	sentry_value_set_by_key(exception, "stacktrace", stack_trace);
+	sentry_value_t frames = sentry_value_new_list();
+	sentry_value_set_by_key(stack_trace, "frames", frames);
+
+	for (const StackFrame &frame : p_frames) {
+		sentry_value_t sentry_frame = sentry_value_new_object();
+		sentry_value_set_by_key(sentry_frame, "filename", sentry_value_new_string(frame.filename.utf8()));
+		sentry_value_set_by_key(sentry_frame, "function", sentry_value_new_string(frame.function.utf8()));
+		sentry_value_set_by_key(sentry_frame, "lineno", sentry_value_new_int32(frame.lineno));
+		if (!frame.context_line.is_empty()) {
+			sentry_value_set_by_key(sentry_frame, "context_line", sentry_value_new_string(frame.context_line.utf8()));
+			sentry_value_set_by_key(sentry_frame, "pre_context", sentry::native::strings_to_sentry_list(frame.pre_context));
+			sentry_value_set_by_key(sentry_frame, "post_context", sentry::native::strings_to_sentry_list(frame.post_context));
+		}
+		sentry_value_append(frames, sentry_frame);
+	}
+
+	sentry_event_add_exception(native_event, exception);
+}
+
 NativeEvent::NativeEvent(sentry_value_t p_native_event) {
 	if (sentry_value_refcount(p_native_event) > 0) {
 		sentry_value_incref(p_native_event); // acquire ownership

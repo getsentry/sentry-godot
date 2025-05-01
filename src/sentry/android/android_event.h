@@ -46,6 +46,8 @@ public:
 	virtual void remove_tag(const String &p_key) override;
 	virtual String get_tag(const String &p_key) override;
 
+	virtual void add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &frames) override;
+
 	AndroidEvent() {}
 	AndroidEvent(Object *android_plugin, String p_event_id);
 	virtual ~AndroidEvent() override;
