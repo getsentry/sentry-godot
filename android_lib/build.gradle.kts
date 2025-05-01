@@ -11,6 +11,8 @@ android {
         minSdk = 24
 
         consumerProguardFiles("consumer-rules.pro")
+
+        setProperty("archivesBaseName", "sentry_android_godot_plugin")
     }
 
     buildTypes {
@@ -35,4 +37,16 @@ dependencies {
     implementation("org.godotengine:godot:4.3.0.stable")
     implementation("io.sentry:sentry-android:8.11.1")
     implementation("com.jakewharton.threetenabp:threetenabp:1.4.9")
+}
+
+val copyLibraryToProject by tasks.registering(Copy::class) {
+    description = "Copies the generated debug AAR to the project"
+    from("build/outputs/aar")
+    include("sentry_android_godot_plugin-debug.aar")
+    into("../project/addons/sentrysdk/bin/android/")
+    rename("sentry_android_godot_plugin-debug.aar", "sentry_android_godot_plugin.aar")
+}
+
+tasks.named("assemble").configure {
+    finalizedBy(copyLibraryToProject)
 }
