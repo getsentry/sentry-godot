@@ -110,7 +110,8 @@ void AndroidEvent::add_exception(const String &p_type, const String &p_value, co
 		data["function"] = frame.function;
 		data["lineno"] = frame.lineno;
 		data["context_line"] = frame.context_line;
-		// TODO: Add pre and post lines.
+		data["pre_context"] = frame.pre_context;
+		data["post_context"] = frame.post_context;
 		android_plugin->call(ANDROID_SN(exceptionAppendStackFrame), exception_id, data);
 	}
 
