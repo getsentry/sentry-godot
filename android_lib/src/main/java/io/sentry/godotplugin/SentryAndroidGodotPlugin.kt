@@ -277,11 +277,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun eventPushFrame(eventId: String, frame: Dictionary) {
-        Log.v(TAG, frame.toString())
-    }
-
-    @UsedByGodot
     fun createException(type: String, value: String) : String {
         val exception = SentryException()
         exception.type = type
