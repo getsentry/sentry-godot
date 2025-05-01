@@ -3,7 +3,16 @@ extends Node2D
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	test_android()
+	test_this()
+
+
+func test_this():
+	if Engine.has_singleton("SentryAndroidGodotPlugin"):
+		print("ANDROID: Singleton found")
+		#var singleton = Engine.get_singleton("SentryAndroidGodotPlugin")
+		#var hello = singleton.testThis()
+		var cl = JavaClassWrapper.wrap("io.sentry.godotplugin.Hello")
+		print(cl)
 
 
 func test_android() -> void:
@@ -14,7 +23,7 @@ func test_android() -> void:
 		print("ANDROID: Sentry Android initialized")
 
 		test_message_capture(singleton)
-		test_event(singleton)
+		#test_event(singleton)
 
 	else:
 		print("ANDROID: No singleton")
