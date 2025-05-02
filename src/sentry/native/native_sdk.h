@@ -32,7 +32,7 @@ public:
 	virtual Ref<SentryEvent> create_event() override;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) override;
 
-	virtual void initialize() override;
+	virtual void initialize(const PackedStringArray &p_global_attachments) override;
 
 	virtual ~NativeSDK() override;
 };
