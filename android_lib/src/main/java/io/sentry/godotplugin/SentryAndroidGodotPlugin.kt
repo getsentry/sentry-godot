@@ -2,6 +2,7 @@ package io.sentry.godotplugin
 
 import android.util.Log
 import com.jakewharton.threetenabp.AndroidThreeTen
+import io.sentry.Attachment
 import io.sentry.Breadcrumb
 import io.sentry.Sentry
 import io.sentry.SentryEvent
@@ -75,6 +76,12 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             options.maxBreadcrumbs = maxBreadcrumbs
             options.sdkVersion!!.name = "sentry.java.android.godot"
         }
+    }
+
+    @UsedByGodot
+    fun addGlobalAttachment(path: String) {
+        val attachment = Attachment(path)
+        Sentry.getGlobalScope().addAttachment(attachment)
     }
 
     @UsedByGodot

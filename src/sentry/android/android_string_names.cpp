@@ -15,6 +15,7 @@ void AndroidStringNames::destroy_singleton() {
 
 AndroidStringNames::AndroidStringNames() {
 	// API methods.
+	addGlobalAttachment = StringName("addGlobalAttachment");
 	setContext = StringName("setContext");
 	removeContext = StringName("removeContext");
 	setTag = StringName("setTag");

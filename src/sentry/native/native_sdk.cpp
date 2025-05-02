@@ -6,6 +6,7 @@
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
 #include "sentry/util/print.h"
+#include "sentry/util/project_settings.h"
 #include "sentry/util/screenshot.h"
 #include "sentry/view_hierarchy.h"
 #include "sentry_options.h"
@@ -375,12 +376,9 @@ void NativeSDK::initialize() {
 	// Attach LOG file.
 	// TODO: Decide whether log-file must be trimmed before send.
 	if (SentryOptions::get_singleton()->is_attach_log_enabled()) {
-		String log_path = ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path");
-		if (FileAccess::file_exists(log_path)) {
-			log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
+		String log_path = sentry::util::get_engine_log_path();
+		if (!log_path.is_empty()) {
 			sentry_options_add_attachment(options, log_path.utf8());
-		} else {
-			WARN_PRINT("Sentry: Log file not found. Make sure \"debug/file_logging/enable_file_logging\" is turned ON in the Project Settings.");
 		}
 	}
 

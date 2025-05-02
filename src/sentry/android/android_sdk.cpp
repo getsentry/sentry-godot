@@ -3,6 +3,7 @@
 #include "android_event.h"
 #include "android_string_names.h"
 #include "sentry/util/print.h"
+#include "sentry/util/project_settings.h"
 
 #include <godot_cpp/classes/engine.hpp>
 
@@ -79,6 +80,14 @@ void AndroidSDK::initialize() {
 	ERR_FAIL_NULL(android_plugin);
 
 	sentry::util::print_debug("Initializing Sentry Android SDK");
+
+	if (SentryOptions::get_singleton()->is_attach_log_enabled()) {
+		String log_path = sentry::util::get_engine_log_path();
+		if (!log_path.is_empty()) {
+			android_plugin->call(ANDROID_SN(addGlobalAttachment), log_path);
+		}
+	}
+
 	android_plugin->call("initialize",
 			SentryOptions::get_singleton()->get_dsn(),
 			SentryOptions::get_singleton()->is_debug_enabled(),
