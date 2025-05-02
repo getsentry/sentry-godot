@@ -6,6 +6,10 @@
 
 - Remove `logger` argument from `SentrySDK.capture_message(...)`. This shouldn't be disruptive as the logger argument is seldom used and it had a default value. ([#162](https://github.com/getsentry/sentry-godot/pull/162))
 
+### Features
+
+- Capture scene tree hierarchy data by enabling `attach_scene_tree` option ([#143](https://github.com/getsentry/sentry-godot/pull/143))
+
 ### Dependencies
 
 - Bump Native SDK from v0.8.3 to v0.8.4 ([#161](https://github.com/getsentry/sentry-godot/pull/161))

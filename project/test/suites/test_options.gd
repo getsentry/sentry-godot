@@ -17,6 +17,7 @@ func test_bool_properties(property: String, test_parameters := [
 		["debug"],
 		["attach_log"],
 		["attach_screenshot"],
+		["attach_scene_tree"],
 		["send_default_pii"],
 		["logger_enabled"],
 		["logger_include_source"],
