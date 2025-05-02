@@ -1,24 +1,24 @@
 package io.sentry.godotplugin
 
+import android.util.Log
+import com.jakewharton.threetenabp.AndroidThreeTen
 import io.sentry.Breadcrumb
+import io.sentry.Sentry
+import io.sentry.SentryEvent
+import io.sentry.SentryLevel
+import io.sentry.android.core.SentryAndroid
+import io.sentry.protocol.Message
+import io.sentry.protocol.SentryException
+import io.sentry.protocol.SentryId
+import io.sentry.protocol.SentryStackFrame
+import io.sentry.protocol.SentryStackTrace
+import io.sentry.protocol.User
+import org.godotengine.godot.Dictionary
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.UsedByGodot
-import io.sentry.Sentry
-import io.sentry.SentryEvent
-import io.sentry.android.core.SentryAndroid
-import io.sentry.protocol.Message
-import io.sentry.protocol.SentryId
-import io.sentry.protocol.User
-import org.godotengine.godot.Dictionary
-import java.util.UUID
-import android.util.Log
-import com.jakewharton.threetenabp.AndroidThreeTen
-import io.sentry.SentryLevel
-import io.sentry.protocol.SentryException
-import io.sentry.protocol.SentryStackFrame
-import io.sentry.protocol.SentryStackTrace
 import org.threeten.bp.format.DateTimeParseException
+import java.util.UUID
 
 
 class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
@@ -64,7 +64,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         sampleRate: Float,
         maxBreadcrumbs: Int,
     ) {
-        Log.v(TAG,"Initializing Sentry Android")
+        Log.v(TAG, "Initializing Sentry Android")
         SentryAndroid.init(godot.getActivity()!!.applicationContext) { options ->
             options.dsn = dsn.ifEmpty { null }
             options.isDebug = debug
@@ -73,7 +73,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             options.environment = environment.ifEmpty { null }
             options.sampleRate = sampleRate.toDouble()
             options.maxBreadcrumbs = maxBreadcrumbs
-         }
+        }
     }
 
     @UsedByGodot
@@ -121,8 +121,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun addBreadcrumb(message: String, category: String, level: Int, type: String,
-                      data: Dictionary) {
+    fun addBreadcrumb(
+        message: String,
+        category: String,
+        level: Int,
+        type: String,
+        data: Dictionary
+    ) {
         val crumb = Breadcrumb()
         crumb.message = message
         crumb.category = category
@@ -130,7 +135,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         crumb.type = type
 
         val keys = data.keys.iterator()
-        while(keys.hasNext()) {
+        while (keys.hasNext()) {
             val k = keys.next()
             val v = data[k]
             crumb.data[k] = v
@@ -277,7 +282,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun createException(type: String, value: String) : String {
+    fun createException(type: String, value: String): String {
         val exception = SentryException()
         exception.type = type
         exception.value = value
@@ -290,7 +295,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun releaseException(exceptionId: String) {
-       exceptionsById.remove(exceptionId)
+        exceptionsById.remove(exceptionId)
     }
 
     @UsedByGodot

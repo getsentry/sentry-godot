@@ -20,7 +20,8 @@ PackedStringArray SentryEditorExportPlugin::_get_android_libraries(const Ref<Edi
 
 PackedStringArray SentryEditorExportPlugin::_get_android_dependencies(const Ref<EditorExportPlatform> &p_platform, bool p_debug) const {
 	PackedStringArray deps;
-	deps.append("io.sentry:sentry-android:8.8.0");
+	// Note: Must be also updated in build.gradle.kts.
+	deps.append("io.sentry:sentry-android:8.11.1");
 	deps.append("com.jakewharton.threetenabp:threetenabp:1.4.9");
 	return deps;
 }
