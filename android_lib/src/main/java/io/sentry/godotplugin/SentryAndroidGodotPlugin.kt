@@ -8,7 +8,6 @@ import io.sentry.SentryEvent
 import io.sentry.SentryLevel
 import io.sentry.android.core.SentryAndroid
 import io.sentry.protocol.Message
-import io.sentry.protocol.SdkVersion
 import io.sentry.protocol.SentryException
 import io.sentry.protocol.SentryId
 import io.sentry.protocol.SentryStackFrame
