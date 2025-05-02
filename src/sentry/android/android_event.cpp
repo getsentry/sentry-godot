@@ -1,6 +1,7 @@
 #include "android_event.h"
 
 #include "android_string_names.h"
+#include "sentry/util/timestamp.h"
 
 String AndroidEvent::get_id() const {
 	return event_id;
@@ -18,6 +19,7 @@ String AndroidEvent::get_message() const {
 
 void AndroidEvent::set_timestamp(const String &p_timestamp) {
 	ERR_FAIL_NULL(android_plugin);
+	ERR_FAIL_COND(!sentry::util::is_valid_timestamp(p_timestamp));
 	android_plugin->call(ANDROID_SN(eventSetTimestamp), event_id, p_timestamp);
 }
 
