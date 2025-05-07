@@ -20,6 +20,8 @@ func _ready() -> void:
 	level_choice.get_popup().id_pressed.connect(_on_level_choice_id_pressed)
 	_init_level_choice_popup()
 	_update_user_info()
+	
+	load("res://long_call_chain.gd").call("road_to_error_1")
 
 
 func _init_level_choice_popup() -> void:

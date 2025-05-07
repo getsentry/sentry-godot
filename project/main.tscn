@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://cqiowj0jydds1"]
 
-[ext_resource type="Script" path="res://main.gd" id="1_p65em"]
-[ext_resource type="Script" path="res://output.gd" id="2_ibxrb"]
+[ext_resource type="Script" uid="uid://7t770if2hx4l" path="res://main.gd" id="1_p65em"]
+[ext_resource type="Script" uid="uid://7pkoni236cwi" path="res://output.gd" id="2_ibxrb"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_owcwq"]
 
