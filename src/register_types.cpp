@@ -18,6 +18,7 @@
 
 #ifdef ANDROID_ENABLED
 #include "sentry/android/android_event.h"
+#include "sentry/android/android_sdk.h"
 #endif // ANDROID_ENABLED
 
 #ifdef TOOLS_ENABLED
@@ -72,6 +73,11 @@ void initialize_module(ModuleInitializationLevel p_level) {
 
 #ifdef ANDROID_ENABLED
 		GDREGISTER_INTERNAL_CLASS(AndroidEvent);
+
+		{
+			using namespace sentry;
+			GDREGISTER_INTERNAL_CLASS(SentryAndroidBeforeSendHandler);
+		}
 #endif
 
 		SentryOptions::create_singleton();

@@ -7,10 +7,26 @@ using namespace godot;
 
 namespace sentry {
 
+class SentryAndroidBeforeSendHandler : public Object {
+	GDCLASS(SentryAndroidBeforeSendHandler, Object);
+	friend class AndroidSDK;
+
+private:
+	Object *android_plugin = nullptr;
+
+	void _initialize(Object *p_android_plugin);
+
+	void _before_send(int32_t p_event_handle);
+
+protected:
+	static void _bind_methods() {}
+};
+
 // Internal SDK utilizing Sentry Android (sentry-java repo).
 class AndroidSDK : public InternalSDK {
 private:
 	Object *android_plugin = nullptr;
+	SentryAndroidBeforeSendHandler *before_send_handler = nullptr;
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;

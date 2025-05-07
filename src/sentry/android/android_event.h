@@ -11,12 +11,14 @@ class AndroidEvent : public SentryEvent {
 
 private:
 	Object *android_plugin = nullptr;
-	String event_id;
+	int32_t event_handle;
 
 protected:
 	static void _bind_methods() {}
 
 public:
+	int32_t get_handle() { return event_handle; }
+
 	virtual String get_id() const override;
 
 	virtual void set_message(const String &p_message) override;
@@ -49,7 +51,7 @@ public:
 	virtual void add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &frames) override;
 
 	AndroidEvent() {}
-	AndroidEvent(Object *android_plugin, String p_event_id);
+	AndroidEvent(Object *android_plugin, int32_t p_event_handle);
 	virtual ~AndroidEvent() override;
 };
 

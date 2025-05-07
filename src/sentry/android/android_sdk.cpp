@@ -5,8 +5,39 @@
 #include "sentry/util/print.h"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/variant/callable.hpp>
+
+using namespace godot;
 
 namespace sentry {
+
+void SentryAndroidBeforeSendHandler::_initialize(Object *p_android_plugin) {
+	sentry::util::print_debug("initializing before send handler");
+	android_plugin = p_android_plugin;
+	if (android_plugin) {
+		android_plugin->connect(ANDROID_SN(beforeSend), callable_mp(this, &SentryAndroidBeforeSendHandler::_before_send));
+	}
+	sentry::util::print_debug("finished initializing before send handler");
+}
+
+void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
+	sentry::util::print_debug("handling before_send: ", p_event_handle);
+	Ref<SentryEvent> event_obj = memnew(AndroidEvent(android_plugin, p_event_handle));
+	sentry::util::print_debug("STATE: ", event_obj->get_id());
+	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
+		Ref<SentryEvent> processed = before_send.call(event_obj);
+		if (processed.is_valid() && processed != event_obj) {
+			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
+			ERR_PRINT_ONCE("Sentry: before_send callback must return the same event object or null.");
+		}
+		if (processed.is_null()) {
+			// Discard event.
+			sentry::util::print_debug("event discarded by before_send callback: ", event_obj->get_id());
+			android_plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
+		}
+		sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
+	}
+}
 
 void AndroidSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_NULL(android_plugin);
@@ -60,19 +91,19 @@ String AndroidSDK::get_last_event_id() {
 
 Ref<SentryEvent> AndroidSDK::create_event() {
 	ERR_FAIL_NULL_V(android_plugin, nullptr);
-	String event_id = android_plugin->call(ANDROID_SN(createEvent));
-	ERR_FAIL_COND_V(event_id.is_empty(), nullptr);
-	Ref<AndroidEvent> event = memnew(AndroidEvent(android_plugin, event_id));
+	int32_t event_handle = android_plugin->call(ANDROID_SN(createEvent));
+	Ref<AndroidEvent> event = memnew(AndroidEvent(android_plugin, event_handle));
 	return event;
 }
 
 String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_NULL_V(android_plugin, String());
 	ERR_FAIL_COND_V(p_event.is_null(), String());
-	String event_id = p_event->get_id();
-	ERR_FAIL_COND_V(event_id.is_empty(), String());
-	android_plugin->call(ANDROID_SN(captureEvent), event_id);
-	return event_id;
+	Ref<AndroidEvent> android_event = p_event;
+	ERR_FAIL_COND_V(android_event.is_null(), String());
+	int32_t handle = android_event->get_handle();
+	android_plugin->call(ANDROID_SN(captureEvent), handle);
+	return android_event->get_id();
 }
 
 void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
@@ -95,12 +126,16 @@ void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
 }
 
 AndroidSDK::AndroidSDK() {
-	android_plugin = Engine::get_singleton()->get_singleton("SentryAndroidGodotPlugin");
 	AndroidStringNames::create_singleton();
+	android_plugin = Engine::get_singleton()->get_singleton("SentryAndroidGodotPlugin");
+	before_send_handler = memnew(SentryAndroidBeforeSendHandler);
+	before_send_handler->_initialize(android_plugin);
+	ERR_FAIL_NULL(android_plugin);
 }
 
 AndroidSDK::~AndroidSDK() {
 	AndroidStringNames::destroy_singleton();
+	memdelete(before_send_handler);
 }
 
 } //namespace sentry
