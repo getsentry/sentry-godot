@@ -1,5 +1,5 @@
-#ifndef SENTRY_LOGGER_H
-#define SENTRY_LOGGER_H
+#ifndef LEGACY_LOGGER_H
+#define LEGACY_LOGGER_H
 
 #include "sentry/godot_error_types.h"
 
@@ -56,4 +56,4 @@ public:
 	SentryLogger();
 };
 
-#endif // SENTRY_LOGGER_H
+#endif // LEGACY_LOGGER_H

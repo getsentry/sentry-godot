@@ -1,4 +1,4 @@
-#include "sentry_logger.h"
+#include "legacy_logger.h"
 
 #include "sentry/util/print.h"
 #include "sentry_options.h"
