@@ -5,7 +5,7 @@
 
 String AndroidEvent::get_id() const {
 	ERR_FAIL_NULL_V(android_plugin, String());
-	return android_plugin->call(ANDROID_SN(eventGetId));
+	return android_plugin->call(ANDROID_SN(eventGetId), event_handle);
 }
 
 void AndroidEvent::set_message(const String &p_message) {
