@@ -3,6 +3,7 @@
 
 #include "level.h"
 
+#include <godot_cpp/classes/logger.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 namespace sentry {
@@ -32,6 +33,8 @@ _FORCE_INLINE_ godot::String GODOT_ERROR_MASK_EXPORT_STRING() { return "Error,Wa
 
 _FORCE_INLINE_ Level get_sentry_level_for_godot_error_type(GodotErrorType p_error_type) { return p_error_type == GodotErrorType::ERROR_TYPE_WARNING ? LEVEL_WARNING : LEVEL_ERROR; }
 _FORCE_INLINE_ GodotErrorMask godot_error_type_as_mask(GodotErrorType p_error_type) { return (GodotErrorMask)(1 << int(p_error_type)); }
+
+_FORCE_INLINE_ GodotErrorType logger_error_to_godot_error(godot::Logger::ErrorType p_type) { return (GodotErrorType)p_type; }
 
 } //namespace sentry
 

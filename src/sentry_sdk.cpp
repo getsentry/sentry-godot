@@ -4,6 +4,7 @@
 #include "sentry/contexts.h"
 #include "sentry/disabled_sdk.h"
 #include "sentry/util/print.h"
+#include "sentry_logger.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
@@ -148,6 +149,8 @@ void SentrySDK::_initialize() {
 	set_user(user);
 
 	internal_sdk->initialize();
+
+	OS::get_singleton()->add_logger(memnew(SentryLogger));
 }
 
 void SentrySDK::_check_if_configuration_succeeded() {
