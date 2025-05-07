@@ -33,6 +33,7 @@ private:
 	bool configuration_succeeded = false;
 
 	void _init_contexts();
+	PackedStringArray _get_global_attachments();
 	void _initialize();
 	void _check_if_configuration_succeeded();
 

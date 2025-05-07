@@ -1,6 +1,7 @@
 #include "native_sdk.h"
 
 #include "sentry.h"
+#include "sentry/common_defs.h"
 #include "sentry/contexts.h"
 #include "sentry/level.h"
 #include "sentry/native/native_event.h"
@@ -21,9 +22,6 @@
 #ifdef DEBUG_ENABLED
 #include <godot_cpp/classes/time.hpp>
 #endif
-
-#define _SCREENSHOT_FN "screenshot.jpg"
-#define _VIEW_HIERARCHY_FN "view-hierarchy.json"
 
 namespace {
 
@@ -69,7 +67,7 @@ void _save_screenshot(const Ref<SentryEvent> &p_event) {
 	}
 	last_screenshot_frame = current_frame;
 
-	String screenshot_path = "user://" _SCREENSHOT_FN;
+	String screenshot_path = "user://" SENTRY_SCREENSHOT_FN;
 	DirAccess::remove_absolute(screenshot_path);
 
 	if (!DisplayServer::get_singleton() || DisplayServer::get_singleton()->get_name() == "headless") {
@@ -116,7 +114,7 @@ inline void _save_view_hierarchy() {
 	uint64_t start = Time::get_singleton()->get_ticks_usec();
 #endif
 
-	String path = "user://" _VIEW_HIERARCHY_FN;
+	String path = "user://" SENTRY_VIEW_HIERARCHY_FN;
 	DirAccess::remove_absolute(path);
 
 	if (OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id()) {
@@ -308,35 +306,6 @@ String NativeSDK::get_last_event_id() {
 	return _uuid_as_string(last_uuid);
 }
 
-String NativeSDK::capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) {
-	sentry_value_t event = sentry_value_new_event();
-	sentry_value_set_by_key(event, "level",
-			sentry_value_new_string(sentry::level_as_cstring(p_level)));
-
-	sentry_value_t exception = sentry_value_new_exception(p_type.utf8(), p_value.utf8());
-	sentry_value_t stack_trace = sentry_value_new_object();
-
-	sentry_value_t frames = sentry_value_new_list();
-	for (const StackFrame &frame : p_frames) {
-		sentry_value_t sentry_frame = sentry_value_new_object();
-		sentry_value_set_by_key(sentry_frame, "filename", sentry_value_new_string(frame.filename.utf8()));
-		sentry_value_set_by_key(sentry_frame, "function", sentry_value_new_string(frame.function.utf8()));
-		sentry_value_set_by_key(sentry_frame, "lineno", sentry_value_new_int32(frame.lineno));
-		if (!frame.context_line.is_empty()) {
-			sentry_value_set_by_key(sentry_frame, "context_line", sentry_value_new_string(frame.context_line.utf8()));
-			sentry_value_set_by_key(sentry_frame, "pre_context", sentry::native::strings_to_sentry_list(frame.pre_context));
-			sentry_value_set_by_key(sentry_frame, "post_context", sentry::native::strings_to_sentry_list(frame.post_context));
-		}
-		sentry_value_append(frames, sentry_frame);
-	}
-
-	sentry_value_set_by_key(stack_trace, "frames", frames);
-	sentry_value_set_by_key(exception, "stacktrace", stack_trace);
-	sentry_event_add_exception(event, exception);
-	last_uuid = sentry_capture_event(event);
-	return _uuid_as_string(last_uuid);
-}
-
 Ref<SentryEvent> NativeSDK::create_event() {
 	sentry_value_t event_value = sentry_value_new_event();
 	Ref<SentryEvent> event = memnew(NativeEvent(event_value));
@@ -354,7 +323,7 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	return _uuid_as_string(last_uuid);
 }
 
-void NativeSDK::initialize() {
+void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
@@ -401,30 +370,8 @@ void NativeSDK::initialize() {
 		sentry_options_set_backend(options, NULL);
 	}
 
-	// Attach LOG file.
-	// TODO: Decide whether log-file must be trimmed before send.
-	if (SentryOptions::get_singleton()->is_attach_log_enabled()) {
-		String log_path = ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path");
-		if (FileAccess::file_exists(log_path)) {
-			log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
-			sentry_options_add_attachment(options, log_path.utf8());
-		} else {
-			WARN_PRINT("Sentry: Log file not found. Make sure \"debug/file_logging/enable_file_logging\" is turned ON in the Project Settings.");
-		}
-	}
-
-	// Attach screenshot.
-	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
-		String path = OS::get_singleton()->get_user_data_dir().path_join(_SCREENSHOT_FN);
-		DirAccess::remove_absolute(path);
+	for (const String &path : p_global_attachments) {
 		sentry_options_add_attachment(options, path.utf8());
-	}
-
-	// Attach view hierarchy (aka scene tree info).
-	if (SentryOptions::get_singleton()->is_attach_scene_tree_enabled()) {
-		String path = OS::get_singleton()->get_user_data_dir().path_join(_VIEW_HIERARCHY_FN);
-		DirAccess::remove_absolute(path);
-		sentry_options_add_view_hierarchy(options, path.utf8());
 	}
 
 	// Hooks.

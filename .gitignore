@@ -3,11 +3,18 @@ project/addons/
 project/export_presets.cfg
 project/.vscode/
 project/reports/
+project/android/
+project/.godot/
 
+# Source tree
 src/gen/
 
-# Godot auto generated files
-project/.godot/
+# Android plugin
+.gradle/
+.idea/
+build/
+local.properties
+*.log
 
 # Objects
 *.o

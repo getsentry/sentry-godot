@@ -66,13 +66,6 @@ sentry_value_t strings_to_sentry_list(const PackedStringArray &p_strings) {
 	return sentry_list;
 }
 
-String make_uuid() {
-	sentry_uuid_t uuid = sentry_uuid_new_v4();
-	char cstr[37];
-	sentry_uuid_as_string(&uuid, cstr);
-	return String(cstr);
-}
-
 sentry_level_t level_to_native(sentry::Level p_level) {
 	switch (p_level) {
 		case sentry::Level::LEVEL_DEBUG:
