@@ -84,8 +84,22 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 	if (as_event) {
 		Vector<sentry::InternalSDK::StackFrame> frames;
 
-		for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
-			for (int i = backtrace->get_frame_count() - 1; i >= 0; i--) {
+		// Select script backtrace with the biggest number of frames (best-effort heuristic).
+		// Why: We can't reliably identify the backtrace that led to an error in the C++/native code,
+		// and we don't know the order of frames across all backtraces (only within each one).
+		int64_t selected_index = -1;
+		int64_t selected_num_frames = -1;
+		for (int i = 0; i < p_script_backtraces.size(); i++) {
+			const Ref<ScriptBacktrace> backtrace = p_script_backtraces[i];
+			if (backtrace->get_frame_count() > selected_num_frames) {
+				selected_index = i;
+				selected_num_frames = backtrace->get_frame_count();
+			}
+		}
+
+		if (selected_index >= 0) {
+			const Ref<ScriptBacktrace> backtrace = p_script_backtraces[selected_index];
+			for (int i = 0; i < backtrace->get_frame_count(); i++) {
 				sentry::InternalSDK::StackFrame stack_frame{
 					backtrace->get_frame_file(i),
 					backtrace->get_frame_function(i),
