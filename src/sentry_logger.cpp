@@ -163,8 +163,29 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
-	if (p_message.contains(" Sentry: ")) {
-		// Don't log Sentry messages.
+	std::string std_message{ p_message.ascii() };
+
+	// Patterns that are checked against each message (like Sentry debug printing).
+	for (auto pattern : filters) {
+		if (std::regex_search(std_message, pattern)) {
+			return;
+		}
+	}
+
+	// Godot prints three lines like these enclosing 2 tracebacks -- native and script.
+	// We filter all that output. One of these lines starts with a linebreak -- therefore 2 pattern checks.
+	if (p_message.begins_with(LINE_WITH_EQUAL_SIGNS_STARTER) ||
+			p_message.begins_with(LINE_WITH_EQUAL_SIGNS)) {
+		num_lines_with_equal_signs++;
+		if (num_lines_with_equal_signs > 2) {
+			num_lines_with_equal_signs = 0;
+			return;
+		}
+	}
+
+	bool is_printing_backtrace = (num_lines_with_equal_signs > 0);
+	if (is_printing_backtrace) {
+		// Don't log backtrace printing.
 		return;
 	}
 
@@ -173,4 +194,13 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 			"log",
 			p_error ? sentry::Level::LEVEL_ERROR : sentry::Level::LEVEL_INFO,
 			"debug");
+}
+
+SentryLogger::SentryLogger() {
+	LINE_WITH_EQUAL_SIGNS_STARTER = "\n================================================================";
+	LINE_WITH_EQUAL_SIGNS = "================================================================";
+
+	filters = {
+		std::regex{ "^[A-Z]+: Sentry:" }
+	};
 }

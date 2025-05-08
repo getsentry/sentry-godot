@@ -5,6 +5,7 @@
 
 #include <godot_cpp/classes/logger.hpp>
 #include <godot_cpp/classes/script_backtrace.hpp>
+#include <regex>
 
 using namespace godot;
 
@@ -28,12 +29,23 @@ private:
 	// Time points for events captured within throttling window.
 	std::deque<TimePoint> event_times;
 
+	// Patterns that are checked against each message.
+	// If matching, the message is not added as breadcrumb.
+	std::vector<std::regex> filters;
+
+	// Used for traceback print filtering.
+	int num_lines_with_equal_signs = 0;
+	String LINE_WITH_EQUAL_SIGNS_STARTER;
+	String LINE_WITH_EQUAL_SIGNS;
+
 protected:
 	static void _bind_methods() {}
 
 public:
 	virtual void _log_error(const String &p_function, const String &p_file, int32_t p_line, const String &p_code, const String &p_rationale, bool p_editor_notify, int32_t p_error_type, const TypedArray<ScriptBacktrace> &p_script_backtraces) override;
 	virtual void _log_message(const String &p_message, bool p_error) override;
+
+	SentryLogger();
 };
 
 #endif // SENTRY_LOGGER_H
