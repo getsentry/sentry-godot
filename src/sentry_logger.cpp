@@ -112,7 +112,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 					String context_line;
 					PackedStringArray pre_context;
 					PackedStringArray post_context;
-					bool err = _get_script_context(p_file, p_line, context_line, pre_context, post_context);
+					bool err = _get_script_context(backtrace->get_frame_file(i), backtrace->get_frame_line(i), context_line, pre_context, post_context);
 					if (!err) {
 						stack_frame.context_line = context_line;
 						stack_frame.pre_context = pre_context;
