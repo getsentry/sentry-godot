@@ -159,5 +159,9 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
-	SentrySDK::get_singleton()->add_breadcrumb(p_message, "log", sentry::Level::LEVEL_INFO, "debug");
+	SentrySDK::get_singleton()->add_breadcrumb(
+			p_message,
+			"log",
+			p_error ? sentry::Level::LEVEL_ERROR : sentry::Level::LEVEL_INFO,
+			"debug");
 }
