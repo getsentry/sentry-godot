@@ -99,11 +99,14 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 
 		if (selected_index >= 0) {
 			const Ref<ScriptBacktrace> backtrace = p_script_backtraces[selected_index];
-			for (int i = 0; i < backtrace->get_frame_count(); i++) {
+			String platform = backtrace->get_language_name().to_lower().remove_char(' ');
+			for (int i = backtrace->get_frame_count() - 1; i >= 0; i--) {
 				sentry::InternalSDK::StackFrame stack_frame{
 					backtrace->get_frame_file(i),
 					backtrace->get_frame_function(i),
-					backtrace->get_frame_line(i)
+					backtrace->get_frame_line(i),
+					true, // in_app
+					platform
 				};
 
 				// Provide script source code context for script errors if available.
@@ -126,7 +129,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 
 		if (p_error_type == ErrorType::ERROR_TYPE_ERROR) {
 			// Add native frame to the top so it is preserved as the source of error.
-			frames.append({ p_file, p_function, p_line });
+			frames.append({ p_file, p_function, p_line, false, "native" });
 		}
 
 		SentrySDK::get_singleton()->get_internal_sdk()->capture_error(
