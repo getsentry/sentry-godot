@@ -42,6 +42,6 @@ textures/vram_compression/import_etc2_astc=true
 [sentry]
 
 options/dsn="https://3f1e095cf2e14598a0bd5b4ff324f712@o447951.ingest.us.sentry.io/6680910"
-options/configuration_script="res://example_configuration.gd"
+options/configuration_script="uid://cwk3ffi3k3l3x"
 options/attach_screenshot=true
 options/attach_scene_tree=true
