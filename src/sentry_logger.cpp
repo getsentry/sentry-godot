@@ -159,6 +159,11 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
+	if (p_message.contains(" Sentry: ")) {
+		// Don't log Sentry messages.
+		return;
+	}
+
 	SentrySDK::get_singleton()->add_breadcrumb(
 			p_message,
 			"log",
