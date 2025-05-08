@@ -146,11 +146,12 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 	// Capture error as breadcrumb.
 	if (as_breadcrumb) {
 		Dictionary data;
-		data["function"] = String(p_function);
-		data["file"] = String(p_file);
+		data["function"] = p_function;
+		data["file"] = p_file;
 		data["line"] = p_line;
 		data["code"] = p_code;
-		data["godot_error_type"] = String(error_types[int(p_error_type)]);
+		data["rationale"] = p_rationale;
+		data["error_type"] = String(error_types[int(p_error_type)]);
 
 		SentrySDK::get_singleton()->add_breadcrumb(
 				p_rationale,

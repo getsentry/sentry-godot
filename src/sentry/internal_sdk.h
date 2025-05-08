@@ -21,7 +21,7 @@ public:
 		String filename;
 		String function;
 		int lineno = -1;
-		bool inapp = true;
+		bool in_app = true;
 		String platform;
 		String context_line;
 		PackedStringArray pre_context;
