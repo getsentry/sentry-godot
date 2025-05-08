@@ -12,8 +12,8 @@
 
 using namespace godot;
 
-class SentryLogger : public Node {
-	GDCLASS(SentryLogger, Node)
+class LegacyLogger : public Node {
+	GDCLASS(LegacyLogger, Node)
 
 private:
 	using GodotErrorType = sentry::GodotErrorType;
@@ -53,7 +53,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	SentryLogger();
+	LegacyLogger();
 };
 
 #endif // LEGACY_LOGGER_H

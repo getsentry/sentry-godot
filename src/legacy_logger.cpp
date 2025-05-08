@@ -46,7 +46,7 @@ const int num_error_types = sizeof(error_types) / sizeof(error_types[0]);
 
 } // unnamed namespace
 
-void SentryLogger::_process_log_file() {
+void LegacyLogger::_process_log_file() {
 	if (!log_file.is_open()) {
 		set_process(false);
 		ERR_PRINT_ONCE("Sentry: Internal error: Log file not open. Error logging stopped.");
@@ -132,7 +132,7 @@ void SentryLogger::_process_log_file() {
 	log_file.seekg(0, std::ios::end);
 }
 
-void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType p_error_type) {
+void LegacyLogger::_log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType p_error_type) {
 	Ref<SentryLoggerLimits> limits = SentryOptions::get_singleton()->get_logger_limits();
 	bool as_breadcrumb = SentryOptions::get_singleton()->should_capture_breadcrumb(p_error_type);
 	bool as_event = SentryOptions::get_singleton()->should_capture_event(p_error_type) &&
@@ -203,14 +203,14 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 	}
 }
 
-void SentryLogger::_trim_error_timepoints() {
+void LegacyLogger::_trim_error_timepoints() {
 	// Clearing the map if it gets too big. Cheap and efficient.
 	if (source_line_times.size() > 100) {
 		source_line_times.clear();
 	}
 }
 
-bool SentryLogger::_get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) const {
+bool LegacyLogger::_get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) const {
 	if (p_file.is_empty()) {
 		return true;
 	}
@@ -242,13 +242,13 @@ bool SentryLogger::_get_script_context(const String &p_file, int p_line, String 
 	return false;
 }
 
-void SentryLogger::_notification(int p_what) {
+void LegacyLogger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			sentry::util::print_debug("starting logger");
 
 			// Periodically remove old error time points to free up memory, if it gets too big.
-			trim_timer->connect("timeout", callable_mp(this, &SentryLogger::_trim_error_timepoints));
+			trim_timer->connect("timeout", callable_mp(this, &LegacyLogger::_trim_error_timepoints));
 
 			_setup();
 		} break;
@@ -263,7 +263,7 @@ void SentryLogger::_notification(int p_what) {
 	}
 }
 
-void SentryLogger::_setup() {
+void LegacyLogger::_setup() {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 	ERR_FAIL_NULL(OS::get_singleton());
 
@@ -286,9 +286,9 @@ void SentryLogger::_setup() {
 	ERR_FAIL_COND_MSG(!log_file.is_open(), "Sentry: Error logger failure - couldn't open the log file: " + log_path);
 }
 
-SentryLogger::SentryLogger() {
+LegacyLogger::LegacyLogger() {
 	set_process(false);
-	process_log = callable_mp(this, &SentryLogger::_process_log_file);
+	process_log = callable_mp(this, &LegacyLogger::_process_log_file);
 
 	trim_timer = memnew(Timer);
 	trim_timer->set_one_shot(false);
