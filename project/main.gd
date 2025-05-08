@@ -21,6 +21,7 @@ func _ready() -> void:
 	_init_level_choice_popup()
 	_update_user_info()
 	
+	print("Generating error...")
 	load("res://long_call_chain.gd").call("road_to_error_1")
 
 
