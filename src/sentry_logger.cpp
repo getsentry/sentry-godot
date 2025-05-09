@@ -235,6 +235,7 @@ SentryLogger::SentryLogger() {
 	LINE_WITH_EQUAL_SIGNS = "================================================================";
 
 	filters = {
-		std::regex{ "^[A-Z]+: Sentry:" }, // filter Sentry messages
+		// Filter Sentry messages
+		std::regex{ "^[A-Z]+: Sentry:" },
 	};
 }

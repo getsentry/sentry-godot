@@ -17,6 +17,7 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <regex>
 
 #ifdef DEBUG_ENABLED
 #include <godot_cpp/classes/time.hpp>
@@ -220,6 +221,14 @@ void _log_native_message(sentry_level_t level, const char *message, va_list args
 		}
 	}
 	va_end(args_copy);
+
+	// Filter out attachment warnings which are expected to be missing sometimes.
+	static auto pattern = std::regex{
+		R"(^failed to read envelope item from \".*(screenshot\.jpg|view-hierarchy\.json)\")"
+	};
+	if (std::regex_search(std::string(buffer), pattern)) {
+		return;
+	}
 
 	sentry::util::print(sentry::native::native_to_level(level), String(buffer));
 
