@@ -3,9 +3,12 @@
 
 #include "sentry/godot_error_types.h"
 
+#include <chrono>
+#include <deque>
 #include <godot_cpp/classes/logger.hpp>
 #include <godot_cpp/classes/script_backtrace.hpp>
 #include <regex>
+#include <unordered_map>
 
 using namespace godot;
 
