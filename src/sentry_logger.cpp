@@ -5,6 +5,7 @@
 #include "sentry_options.h"
 #include "sentry_sdk.h"
 
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/script.hpp>
 
@@ -84,13 +85,17 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 	if (as_event) {
 		Vector<sentry::InternalSDK::StackFrame> frames;
 
+		// Backtraces don't include variables by default, so if we need them, we must capture them separately.
+		bool include_variables = SentryOptions::get_singleton()->is_logger_include_variables_enabled();
+		TypedArray<ScriptBacktrace> script_backtraces = include_variables ? Engine::get_singleton()->capture_script_backtraces(true) : p_script_backtraces;
+
 		// Select script backtrace with the biggest number of frames (best-effort heuristic).
 		// Why: We don't know the order of frames across all backtraces (only within each one),
 		// so we must pick one.
 		int64_t selected_index = -1;
 		int64_t selected_num_frames = -1;
-		for (int i = 0; i < p_script_backtraces.size(); i++) {
-			const Ref<ScriptBacktrace> backtrace = p_script_backtraces[i];
+		for (int i = 0; i < script_backtraces.size(); i++) {
+			const Ref<ScriptBacktrace> backtrace = script_backtraces[i];
 			if (backtrace->get_frame_count() > selected_num_frames) {
 				selected_index = i;
 				selected_num_frames = backtrace->get_frame_count();
@@ -98,13 +103,13 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		}
 
 		if (selected_index >= 0) {
-			const Ref<ScriptBacktrace> backtrace = p_script_backtraces[selected_index];
+			const Ref<ScriptBacktrace> backtrace = script_backtraces[selected_index];
 			String platform = backtrace->get_language_name().to_lower().remove_char(' ');
-			for (int i = backtrace->get_frame_count() - 1; i >= 0; i--) {
+			for (int frame_idx = backtrace->get_frame_count() - 1; frame_idx >= 0; frame_idx--) {
 				sentry::InternalSDK::StackFrame stack_frame{
-					backtrace->get_frame_file(i),
-					backtrace->get_frame_function(i),
-					backtrace->get_frame_line(i),
+					backtrace->get_frame_file(frame_idx),
+					backtrace->get_frame_function(frame_idx),
+					backtrace->get_frame_line(frame_idx),
 					true, // in_app
 					platform
 				};
@@ -115,11 +120,40 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 					String context_line;
 					PackedStringArray pre_context;
 					PackedStringArray post_context;
-					bool err = _get_script_context(backtrace->get_frame_file(i), backtrace->get_frame_line(i), context_line, pre_context, post_context);
+					bool err = _get_script_context(backtrace->get_frame_file(frame_idx),
+							backtrace->get_frame_line(frame_idx), context_line, pre_context, post_context);
 					if (!err) {
 						stack_frame.context_line = context_line;
 						stack_frame.pre_context = pre_context;
 						stack_frame.post_context = post_context;
+					}
+				}
+
+				// Variables.
+				if (include_variables) {
+					int32_t num_locals = backtrace->get_local_variable_count(frame_idx);
+					int32_t num_members = backtrace->get_member_variable_count(frame_idx);
+					int32_t num_globals = backtrace->get_global_variable_count();
+					int32_t num_vars = num_locals + num_members + num_globals;
+					int32_t starting_index = 0;
+
+					stack_frame.vars.resize(num_vars);
+
+					for (int i = 0; i < num_locals; i++) {
+						stack_frame.vars.set(starting_index + i,
+								Pair(backtrace->get_local_variable_name(frame_idx, i), backtrace->get_local_variable_value(frame_idx, i)));
+					}
+					starting_index += num_locals;
+
+					for (int i = 0; i < num_members; i++) {
+						stack_frame.vars.set(starting_index + i,
+								Pair(backtrace->get_member_variable_name(frame_idx, i), backtrace->get_member_variable_value(frame_idx, i)));
+					}
+					starting_index += num_members;
+
+					for (int i = 0; i < num_globals; i++) {
+						stack_frame.vars.set(starting_index + i,
+								Pair(backtrace->get_global_variable_name(i), backtrace->get_global_variable_value(i)));
 					}
 				}
 

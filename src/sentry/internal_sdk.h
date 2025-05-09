@@ -5,6 +5,8 @@
 #include "sentry_event.h"
 #include "sentry_user.h"
 
+#include <godot_cpp/templates/pair.hpp>
+#include <godot_cpp/templates/vector.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/string.hpp>
@@ -24,6 +26,7 @@ public:
 		bool in_app = true;
 		String platform;
 		String context_line;
+		Vector<Pair<String, Variant>> vars;
 		PackedStringArray pre_context;
 		PackedStringArray post_context;
 	};

@@ -329,6 +329,13 @@ String NativeSDK::capture_error(const String &p_type, const String &p_value, Lev
 			sentry_value_set_by_key(sentry_frame, "pre_context", sentry::native::strings_to_sentry_list(frame.pre_context));
 			sentry_value_set_by_key(sentry_frame, "post_context", sentry::native::strings_to_sentry_list(frame.post_context));
 		}
+		if (frame.vars.size() > 0) {
+			sentry_value_t vars = sentry_value_new_object();
+			sentry_value_set_by_key(sentry_frame, "vars", vars);
+			for (auto pair : frame.vars) {
+				sentry_value_set_by_key(vars, pair.first.utf8(), sentry::native::variant_to_sentry_value(pair.second));
+			}
+		}
 		sentry_value_append(frames, sentry_frame);
 	}
 
