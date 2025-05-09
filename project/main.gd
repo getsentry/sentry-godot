@@ -20,7 +20,7 @@ func _ready() -> void:
 	level_choice.get_popup().id_pressed.connect(_on_level_choice_id_pressed)
 	_init_level_choice_popup()
 	_update_user_info()
-	
+
 	#print("Generating error...")
 	#load("res://long_call_chain.gd").call("road_to_error_1")
 
@@ -85,7 +85,7 @@ func _on_add_tag_button_pressed() -> void:
 
 
 func _on_crash_button_pressed() -> void:
-	OS.crash("Crashing on button press")
+	SentrySDK._demo_helper_crash_app()
 
 
 func _on_set_context_pressed() -> void:

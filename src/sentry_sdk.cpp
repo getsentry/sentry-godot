@@ -163,6 +163,11 @@ void SentrySDK::_check_if_configuration_succeeded() {
 	}
 }
 
+void SentrySDK::_demo_helper_crash_app() {
+	char *ptr = (char *)1;
+	sentry::util::print_debug("Crash by accessing ", ptr); // this is going to crash the app
+}
+
 void SentrySDK::notify_options_configured() {
 	sentry::util::print_debug("finished configuring options via user script");
 	configuration_succeeded = true;
@@ -195,6 +200,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
 	ClassDB::bind_method(D_METHOD("_set_on_crash", "callable"), &SentrySDK::set_on_crash);
 	ClassDB::bind_method(D_METHOD("_unset_on_crash"), &SentrySDK::unset_on_crash);
+	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 }
 
 SentrySDK::SentrySDK() {

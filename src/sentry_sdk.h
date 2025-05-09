@@ -35,6 +35,7 @@ private:
 	void _init_contexts();
 	void _initialize();
 	void _check_if_configuration_succeeded();
+	void _demo_helper_crash_app();
 
 protected:
 	static void _bind_methods();
