@@ -18,19 +18,6 @@ namespace sentry {
 // Interface for SDKs used internally.
 class InternalSDK {
 public:
-	// Represents a frame of a stack trace.
-	struct StackFrame {
-		String filename;
-		String function;
-		int lineno = -1;
-		bool in_app = true;
-		String platform;
-		String context_line;
-		Vector<Pair<String, Variant>> vars;
-		PackedStringArray pre_context;
-		PackedStringArray post_context;
-	};
-
 	virtual void set_context(const String &p_key, const Dictionary &p_value) = 0;
 	virtual void remove_context(const String &p_key) = 0;
 
@@ -47,7 +34,6 @@ public:
 
 	virtual String capture_message(const String &p_message, Level p_level) = 0;
 	virtual String get_last_event_id() = 0;
-	virtual String capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) = 0;
 
 	virtual Ref<SentryEvent> create_event() = 0;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) = 0;

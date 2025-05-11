@@ -4,6 +4,8 @@
 #include "sentry/level.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/templates/pair.hpp>
+#include <godot_cpp/templates/vector.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 using namespace godot;
@@ -11,6 +13,20 @@ using namespace godot;
 // Base class for event objects in the public API.
 class SentryEvent : public RefCounted {
 	GDCLASS(SentryEvent, RefCounted);
+
+public:
+	// Represents a frame of a stack trace.
+	struct StackFrame {
+		String filename;
+		String function;
+		int lineno = -1;
+		bool in_app = true;
+		String platform;
+		String context_line;
+		Vector<Pair<String, Variant>> vars;
+		PackedStringArray pre_context;
+		PackedStringArray post_context;
+	};
 
 protected:
 	static void _bind_methods();
@@ -44,6 +60,8 @@ public:
 	virtual void set_tag(const String &p_key, const String &p_value) = 0;
 	virtual void remove_tag(const String &p_key) = 0;
 	virtual String get_tag(const String &p_key) = 0;
+
+	virtual void add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &p_frames) = 0;
 
 	virtual ~SentryEvent() = default;
 };

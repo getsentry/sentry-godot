@@ -83,7 +83,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 
 	// Capture error as event.
 	if (as_event) {
-		Vector<sentry::InternalSDK::StackFrame> frames;
+		Vector<SentryEvent::StackFrame> frames;
 
 		// Backtraces don't include variables by default, so if we need them, we must capture them separately.
 		bool include_variables = SentryOptions::get_singleton()->is_logger_include_variables_enabled();
@@ -106,7 +106,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 			const Ref<ScriptBacktrace> backtrace = script_backtraces[selected_index];
 			String platform = backtrace->get_language_name().to_lower().remove_char(' ');
 			for (int frame_idx = backtrace->get_frame_count() - 1; frame_idx >= 0; frame_idx--) {
-				sentry::InternalSDK::StackFrame stack_frame{
+				SentryEvent::StackFrame stack_frame{
 					backtrace->get_frame_file(frame_idx),
 					backtrace->get_frame_function(frame_idx),
 					backtrace->get_frame_line(frame_idx),
@@ -166,11 +166,13 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 			frames.append({ p_file, p_function, p_line, false, "native" });
 		}
 
-		SentrySDK::get_singleton()->get_internal_sdk()->capture_error(
+		Ref<SentryEvent> ev = SentrySDK::get_singleton()->create_event();
+		ev->set_level(sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type));
+		ev->add_exception(
 				error_types[int(p_error_type)],
 				p_rationale.is_empty() ? p_code : p_rationale,
-				sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type),
 				frames);
+		SentrySDK::get_singleton()->capture_event(ev);
 
 		// For throttling
 		// frame_events++;
