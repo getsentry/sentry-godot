@@ -165,7 +165,7 @@ void SentrySDK::_check_if_configuration_succeeded() {
 
 void SentrySDK::_demo_helper_crash_app() {
 	char *ptr = (char *)1;
-	sentry::util::print_debug("Crash by access violation ", ptr); // this is going to crash the app
+	sentry::util::print_fatal("Crash by access violation ", ptr); // this is going to crash the app
 }
 
 void SentrySDK::notify_options_configured() {
