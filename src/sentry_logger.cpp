@@ -233,6 +233,7 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 }
 
 SentryLogger::SentryLogger() {
+	// Filtering setup.
 	LINE_WITH_EQUAL_SIGNS_STARTER = "\n================================================================";
 	LINE_WITH_EQUAL_SIGNS = "================================================================";
 

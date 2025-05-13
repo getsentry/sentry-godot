@@ -21,6 +21,27 @@ using namespace sentry;
 
 namespace {
 
+void _verify_project_settings() {
+	if (!ProjectSettings::get_singleton()->get_setting("settings/gdscript/always_track_call_stacks")) {
+		ERR_PRINT("Sentry: Please enable `settings/gdscript/always_track_call_stacks` in your Project Settings. This is required for supporting script stack traces.");
+	}
+	if (SentryOptions::get_singleton()->is_logger_include_variables_enabled() &&
+			!ProjectSettings::get_singleton()->get_setting("settings/gdscript/always_track_local_variables")) {
+		ERR_PRINT("Sentry: Please enable `settings/gdscript/always_track_local_variables` in your Project Settings. This is required to include local variables in backtraces.");
+	}
+
+	if (SentryOptions::get_singleton()->is_attach_log_enabled()) {
+#if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
+		if (!ProjectSettings::get_singleton()->get_setting("debug/file_logging/enable_file_logging.pc") &&
+				!ProjectSettings::get_singleton()->get_setting("debug/file_logging/enable_file_logging")) {
+#else
+		if (!ProjectSettings::get_singleton()->get_setting("debug/file_logging/enable_file_logging")) {
+#endif
+			ERR_PRINT("Sentry: Please enable File Logging in your Project Settings if you want to include log files with Sentry events or disable attaching logs in your Sentry options.");
+		}
+	}
+}
+
 void _fix_unix_executable_permissions(const String &p_path) {
 	if (!FileAccess::file_exists(p_path)) {
 		return;
@@ -208,6 +229,8 @@ SentrySDK::SentrySDK() {
 	ERR_FAIL_NULL(SentryOptions::get_singleton());
 
 	singleton = this;
+
+	_verify_project_settings();
 
 	// Load the runtime configuration from the user's data directory.
 	runtime_config.instantiate();
