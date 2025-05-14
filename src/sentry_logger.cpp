@@ -190,7 +190,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		data["error_type"] = String(error_types[int(p_error_type)]);
 
 		SentrySDK::get_singleton()->add_breadcrumb(
-				p_rationale,
+				p_rationale.is_empty() ? p_code : p_rationale,
 				"error",
 				sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type),
 				"error",
