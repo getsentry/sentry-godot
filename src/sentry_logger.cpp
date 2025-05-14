@@ -199,29 +199,33 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
-	std::string std_message{ p_message.ascii() };
+	// Filtering: Exact matches that are checked against each message.
+	for (const String &exact_match : filter_exact_matches) {
+		if (p_message == exact_match) {
+			return;
+		}
+	}
 
-	// Patterns that are checked against each message (like Sentry debug printing).
-	for (auto pattern : filters) {
+	// Filtering: Patterns that are checked against each message (like Sentry debug printing).
+	std::string std_message{ p_message.ascii() };
+	for (auto pattern : filter_patterns) {
 		if (std::regex_search(std_message, pattern)) {
 			return;
 		}
 	}
 
-	// Godot prints three lines like these enclosing 2 tracebacks -- native and script.
-	// We filter all that output. One of these lines starts with a linebreak -- therefore 2 pattern checks.
-	if (p_message.begins_with(LINE_WITH_EQUAL_SIGNS_STARTER) ||
-			p_message.begins_with(LINE_WITH_EQUAL_SIGNS)) {
-		num_lines_with_equal_signs++;
-		if (num_lines_with_equal_signs > 2) {
-			num_lines_with_equal_signs = 0;
-			return;
-		}
+	// Filtering: Backtrace printing.
+	if (!skip_logging_message &&
+			(p_message.begins_with(filter_native_trace_starter_begins) || std::regex_search(std_message, filter_script_trace_starter_pattern))) {
+		skip_logging_message = true;
+		sentry::util::print_debug("skipping log messages for backtrace printing");
+	} else if (skip_logging_message &&
+			(p_message == filter_script_trace_finisher_exact || p_message == filter_native_trace_finisher_exact)) {
+		skip_logging_message = false;
+		sentry::util::print_debug("backtrace printing ended");
 	}
 
-	bool is_printing_backtrace = (num_lines_with_equal_signs > 0);
-	if (is_printing_backtrace) {
-		// Don't log backtrace printing.
+	if (skip_logging_message) {
 		return;
 	}
 
@@ -234,11 +238,18 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 
 SentryLogger::SentryLogger() {
 	// Filtering setup.
-	LINE_WITH_EQUAL_SIGNS_STARTER = "\n================================================================";
-	LINE_WITH_EQUAL_SIGNS = "================================================================";
-
-	filters = {
-		// Filter Sentry messages
+	filter_patterns = {
+		// Sentry messages
 		std::regex{ "^[A-Z]+: Sentry:" },
 	};
+	filter_exact_matches = {
+		// Godot prints this line before printing backtrace
+		"\n================================================================\n",
+		// Godot prints this line during and after printing backtrace
+		"================================================================\n"
+	};
+	filter_native_trace_starter_begins = "handle_crash: ";
+	filter_native_trace_finisher_exact = "-- END OF C++ BACKTRACE --\n";
+	filter_script_trace_starter_pattern = "^[a-zA-Z0-9#+]+ backtrace \\(most recent call first\\):";
+	filter_script_trace_finisher_exact = "-- END OF GDSCRIPT BACKTRACE --\n";
 }

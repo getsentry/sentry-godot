@@ -34,12 +34,15 @@ private:
 
 	// Patterns that are checked against each message.
 	// If matching, the message is not added as breadcrumb.
-	std::vector<std::regex> filters;
+	std::vector<std::regex> filter_patterns;
+	std::vector<String> filter_exact_matches;
 
 	// Used for traceback print filtering.
-	int num_lines_with_equal_signs = 0;
-	String LINE_WITH_EQUAL_SIGNS_STARTER;
-	String LINE_WITH_EQUAL_SIGNS;
+	String filter_native_trace_starter_begins;
+	String filter_native_trace_finisher_exact;
+	std::regex filter_script_trace_starter_pattern;
+	String filter_script_trace_finisher_exact;
+	bool skip_logging_message = false; // Set by filtering until further condition unsets this.
 
 protected:
 	static void _bind_methods() {}
