@@ -29,6 +29,7 @@ void _define_setting(const String &p_setting, const Variant &p_default, bool p_b
 void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default, bool p_basic = true) {
 	_define_setting(p_info.name, p_default, p_basic);
 	Dictionary info = (Dictionary)p_info;
+	info.erase("usage"); // Fix "usage" not supported warning.
 	ProjectSettings::get_singleton()->add_property_info(info);
 }
 
