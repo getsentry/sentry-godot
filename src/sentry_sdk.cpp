@@ -22,12 +22,12 @@ using namespace sentry;
 namespace {
 
 void _verify_project_settings() {
-	if (!ProjectSettings::get_singleton()->get_setting("settings/gdscript/always_track_call_stacks")) {
-		ERR_PRINT("Sentry: Please enable `settings/gdscript/always_track_call_stacks` in your Project Settings. This is required for supporting script stack traces.");
+	if (!ProjectSettings::get_singleton()->get_setting("debug/settings/gdscript/always_track_call_stacks")) {
+		ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_call_stacks` in your Project Settings. This is required for supporting script stack traces.");
 	}
 	if (SentryOptions::get_singleton()->is_logger_include_variables_enabled() &&
-			!ProjectSettings::get_singleton()->get_setting("settings/gdscript/always_track_local_variables")) {
-		ERR_PRINT("Sentry: Please enable `settings/gdscript/always_track_local_variables` in your Project Settings. This is required to include local variables in backtraces.");
+			!ProjectSettings::get_singleton()->get_setting("debug/settings/gdscript/always_track_local_variables")) {
+		ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_local_variables` in your Project Settings. This is required to include local variables in backtraces.");
 	}
 
 	if (SentryOptions::get_singleton()->is_attach_log_enabled()) {
@@ -230,11 +230,12 @@ SentrySDK::SentrySDK() {
 
 	singleton = this;
 
-	_verify_project_settings();
-
 	// Load the runtime configuration from the user's data directory.
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
+
+	// Verify project settings and notify user via errors if there are any issues (deferred).
+	callable_mp_static(_verify_project_settings).call_deferred();
 
 #if defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
 	// Fix crashpad handler executable bit permissions on Unix platforms if the
