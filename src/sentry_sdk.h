@@ -5,6 +5,7 @@
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
 #include "sentry_event.h"
+#include "sentry_logger.h"
 #include "sentry_options.h"
 
 #include <godot_cpp/core/object.hpp>
@@ -29,6 +30,7 @@ private:
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
 	Ref<SentryUser> user;
+	Ref<SentryLogger> logger;
 	bool enabled = false;
 	bool configuration_succeeded = false;
 

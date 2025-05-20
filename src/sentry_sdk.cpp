@@ -4,7 +4,6 @@
 #include "sentry/contexts.h"
 #include "sentry/disabled_sdk.h"
 #include "sentry/util/print.h"
-#include "sentry_logger.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
@@ -171,7 +170,8 @@ void SentrySDK::_initialize() {
 
 	internal_sdk->initialize();
 
-	OS::get_singleton()->add_logger(memnew(SentryLogger));
+	logger.instantiate();
+	OS::get_singleton()->add_logger(logger);
 }
 
 void SentrySDK::_check_if_configuration_succeeded() {
@@ -284,4 +284,7 @@ SentrySDK::SentrySDK() {
 
 SentrySDK::~SentrySDK() {
 	singleton = nullptr;
+	if (logger.is_valid()) {
+		OS::get_singleton()->remove_logger(logger);
+	}
 }
