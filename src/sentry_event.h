@@ -8,6 +8,7 @@
 
 using namespace godot;
 
+namespace sentry {
 // Base class for event objects in the public API.
 class SentryEvent : public RefCounted {
 	GDCLASS(SentryEvent, RefCounted);
@@ -46,6 +47,8 @@ public:
 	virtual String get_tag(const String &p_key) = 0;
 
 	virtual ~SentryEvent() = default;
+};
+
 };
 
 #endif // SENTRY_EVENT_H

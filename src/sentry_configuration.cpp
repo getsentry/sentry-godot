@@ -2,6 +2,8 @@
 
 #include "sentry_sdk.h"
 
+namespace sentry {
+
 void SentryConfiguration::_call_configure(const Ref<SentryOptions> &p_options) {
 	ERR_FAIL_COND(p_options.is_null());
 	GDVIRTUAL_CALL(_configure, p_options);
@@ -18,3 +20,5 @@ void SentryConfiguration::_notification(int p_what) {
 void SentryConfiguration::_bind_methods() {
 	GDVIRTUAL_BIND(_configure, "options");
 }
+
+};

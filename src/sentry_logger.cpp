@@ -46,6 +46,8 @@ const int num_error_types = sizeof(error_types) / sizeof(error_types[0]);
 
 } // unnamed namespace
 
+namespace sentry {
+
 void SentryLogger::_process_log_file() {
 	if (!log_file.is_open()) {
 		set_process(false);
@@ -296,3 +298,5 @@ SentryLogger::SentryLogger() {
 	trim_timer->set_autostart(true);
 	add_child(trim_timer);
 }
+
+};

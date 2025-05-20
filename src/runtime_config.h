@@ -9,6 +9,8 @@
 
 using namespace godot;
 
+namespace sentry {
+
 class RuntimeConfig : public RefCounted {
 	GDCLASS(RuntimeConfig, RefCounted)
 private:
@@ -28,6 +30,8 @@ public:
 	void load_file(const String &p_conf_path);
 
 	RuntimeConfig();
+};
+
 };
 
 #endif // RUNTIME_CONFIG_H

@@ -3,6 +3,7 @@
 
 #include "sentry_event.h"
 
+namespace sentry {
 // Event class that is used when the SDK is disabled.
 class DisabledEvent : public SentryEvent {
 	GDCLASS(DisabledEvent, SentryEvent);
@@ -49,5 +50,6 @@ public:
 	virtual void remove_tag(const String &p_key) override {}
 	virtual String get_tag(const String &p_key) override { return ""; }
 };
+}
 
 #endif // DISABLED_EVENT_H

@@ -8,6 +8,7 @@
 
 using namespace godot;
 
+namespace sentry {
 class SentryConfiguration : public Node {
 	GDCLASS(SentryConfiguration, Node);
 
@@ -21,6 +22,8 @@ protected:
 
 public:
 	SentryConfiguration() {}
+};
+
 };
 
 #endif // SENTRY_CONFIGURATION_H

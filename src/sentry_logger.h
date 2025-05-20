@@ -12,6 +12,8 @@
 
 using namespace godot;
 
+namespace sentry {
+
 class SentryLogger : public Node {
 	GDCLASS(SentryLogger, Node)
 
@@ -54,6 +56,8 @@ protected:
 
 public:
 	SentryLogger();
+};
+
 };
 
 #endif // SENTRY_LOGGER_H

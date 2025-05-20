@@ -34,6 +34,8 @@ void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_
 
 } // unnamed namespace
 
+namespace sentry {
+
 // *** SentryLoggerLimits
 
 void SentryLoggerLimits::_bind_methods() {
@@ -200,3 +202,5 @@ SentryOptions::SentryOptions() {
 
 SentryOptions::~SentryOptions() {
 }
+
+};

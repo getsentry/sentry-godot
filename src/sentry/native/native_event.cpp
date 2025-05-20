@@ -18,6 +18,8 @@ inline void _sentry_value_set_or_remove_string_by_key(sentry_value_t value, cons
 
 } // unnamed namespace
 
+namespace sentry {
+
 String NativeEvent::get_id() const {
 	sentry_value_t id = sentry_value_get_by_key(native_event, "event_id");
 	return sentry_value_as_string(id);
@@ -157,3 +159,5 @@ NativeEvent::NativeEvent() {
 NativeEvent::~NativeEvent() {
 	sentry_value_decref(native_event); // release ownership
 }
+
+} // namespace sentry

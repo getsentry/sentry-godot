@@ -27,6 +27,8 @@
 
 namespace {
 
+using namespace sentry;
+
 void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name, const Dictionary &p_context) {
 	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
 	ERR_FAIL_COND(strlen(p_context_name) == 0);

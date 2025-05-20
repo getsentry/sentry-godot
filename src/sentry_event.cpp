@@ -4,6 +4,8 @@
 
 #include <godot_cpp/classes/global_constants.hpp>
 
+namespace sentry {
+
 void SentryEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id"), &SentryEvent::get_id);
 	ClassDB::bind_method(D_METHOD("set_message", "message"), &SentryEvent::set_message);
@@ -35,3 +37,5 @@ void SentryEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dist"), "set_dist", "get_dist");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "environment"), "set_environment", "get_environment");
 }
+
+};
