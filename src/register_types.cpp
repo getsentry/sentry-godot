@@ -17,6 +17,10 @@
 #include "sentry/native/native_event.h"
 #endif // NATIVE_SDK
 
+#ifdef COCOA_SDK
+#include "sentry/cocoa/cocoa_event.h"
+#endif // COCOA_SDK
+
 using namespace godot;
 
 namespace {
@@ -59,6 +63,9 @@ void sentry_godot_initialize_module(ModuleInitializationLevel p_level) {
 #ifdef NATIVE_SDK
 		GDREGISTER_INTERNAL_CLASS(sentry::NativeEvent);
 #endif // NATIVE_SDK
+#ifdef COCOA_SDK
+		GDREGISTER_INTERNAL_CLASS(sentry::CocoaEvent);
+#endif // COCOA_SDK
 
 		sentry::SentryOptions::create_singleton();
 
