@@ -29,9 +29,3 @@ func _before_send(ev: SentryEvent) -> SentryEvent:
 		print("INFO: [example_configuration.gd] Discarding event with message 'junk'")
 		return null
 	return ev
-
-
-## on_crash callback example
-func _on_crash(ev: SentryEvent) -> SentryEvent:
-	print("INFO: [example_configuration.gd] Crashing with event: ", ev.id)
-	return ev
