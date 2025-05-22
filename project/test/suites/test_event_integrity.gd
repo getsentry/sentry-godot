@@ -47,5 +47,6 @@ func _before_send(event: SentryEvent) -> SentryEvent:
 	assert_str(event.environment).is_equal("custom-environment")
 	assert_str(event.get_tag("custom-tag")).is_equal("custom-tag-value")
 	assert_str(event.id).is_equal(created_id)
+	assert_bool(event.is_crash()).is_false()
 	callback_processed.emit()
 	return null # discard event
