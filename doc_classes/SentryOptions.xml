@@ -83,20 +83,6 @@
 		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">
 			Maximum number of breadcrumbs to send with an event. You should be aware that Sentry has a maximum payload size and any events exceeding that payload size will be dropped.
 		</member>
-		<member name="on_crash" type="Callable" setter="set_on_crash" getter="get_on_crash" default="Callable()">
-			If assigned, this callback runs before a crash event is sent to Sentry. In contrast to [member before_send], it is only called when a crash occurred. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a [SentryConfiguration] script.
-			[codeblock]
-			func _on_crash(event: SentryEvent) -&gt; SentryEvent:
-			    if event.environment == "editor_dev_run":
-			        # Discard event if running from the editor.
-			        return null
-			    if event.message.contains("Bruno"):
-			        # Remove sensitive information from the event.
-			        event.message = event.message.replace("Bruno", "REDACTED")
-			    return event
-			[/codeblock]
-			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/filtering/]Filtering documentation[/url].
-		</member>
 		<member name="release" type="String" setter="set_release" getter="get_release" default="&quot;{app_name}@{app_version}&quot;">
 			Release version of the application. This value must be unique across all projects in your organization. Suggested format is [code]my-game@1.0.0[/code].
 			You can use the [code]{app_name}[/code] and [code]{app_version}[/code] placeholders to insert the application name and version from the Project Settings.
