@@ -7,13 +7,9 @@ from functools import partial
 # *** Setting.
 
 VERSION = "0.6.0-dev"
-PROJECT_DIR = "project"
-EXTENSION_NAME = "sentrysdk"
 COMPATIBILITY_MINIMUM = "4.3"
 
-BIN_DIR = "{project_dir}/addons/{extension_name}/bin".format(
-    project_dir=PROJECT_DIR, extension_name=EXTENSION_NAME
-)
+BIN_DIR = "project/addons/sentry/bin"
 
 
 def run_cmd(**kwargs):
@@ -239,9 +235,8 @@ build_type = "release" if env["target"] == "template_release" else "debug"
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        "{bin}/{platform}/lib{name}.{platform}.{build_type}.framework/lib{name}.{platform}.{build_type}".format(
+        "{bin}/{platform}/libsentry.{platform}.{build_type}.framework/libsentry.{platform}.{build_type}".format(
             bin=BIN_DIR,
-            name=EXTENSION_NAME,
             platform=env["platform"],
             build_type=build_type,
         ),
@@ -249,9 +244,8 @@ if env["platform"] == "macos":
     )
 else:
     library = env.SharedLibrary(
-        "{bin}/{platform}/lib{name}.{platform}.{build_type}.{arch}{shlib_suffix}".format(
+        "{bin}/{platform}/libsentry.{platform}.{build_type}.{arch}{shlib_suffix}".format(
             bin=BIN_DIR,
-            name=EXTENSION_NAME,
             platform=env["platform"],
             build_type=build_type,
             arch=env["arch"],
@@ -266,14 +260,12 @@ Default(library)
 # *** Deploy extension manifest.
 
 manifest = env.Substfile(
-    target="{bin}/{name}.gdextension".format(
+    target="{bin}/sentry.gdextension".format(
         bin=BIN_DIR,
-        name=EXTENSION_NAME,
     ),
     source="src/manifest.gdextension",
     SUBST_DICT={
-        "{name}": EXTENSION_NAME,
-        "{compatibility_minimum}": COMPATIBILITY_MINIMUM,
+        "{compatibility_minimum}": COMPATIBILITY_MINIMUM
     },
 )
 
@@ -305,7 +297,7 @@ def symlink(target, source, env):
 
 
 gdunit_symlink = env.Command(
-    PROJECT_DIR + "/addons/gdUnit4",
+    "project/addons/gdUnit4",
     "modules/gdUnit4/addons/gdUnit4",
     [
         symlink,
