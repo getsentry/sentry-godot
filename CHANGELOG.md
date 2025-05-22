@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Other changes
+
+- Rename "addons/sentrysdk" to "addons/sentry" ([#180](https://github.com/getsentry/sentry-godot/pull/180))
+
 ## 0.5.0
 
 ### Breaking changes
