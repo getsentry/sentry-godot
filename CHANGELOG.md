@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### Breaking changess
+### Breaking changes
 
 - Remove `on_crash` hook in favor of `SentryEvent.is_crash()`: `before_send` is now called for crash events too, and you can check if it's a crash event by calling `event.is_crash()` ([#181](https://github.com/getsentry/sentry-godot/pull/181))
 
