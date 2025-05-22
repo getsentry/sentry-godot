@@ -29,7 +29,7 @@
 			[/codeblock]
 		</member>
 		<member name="before_send" type="Callable" setter="set_before_send" getter="get_before_send" default="Callable()">
-			If assigned, this callback runs before a message or error event is sent to Sentry. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a [SentryConfiguration] script.
+			If assigned, this callback runs before an event is sent to Sentry. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a [SentryConfiguration] script. To check if the event is a crash, use [method SentryEvent.is_crash].
 			[codeblock]
 			func _before_send(event: SentryEvent) -&gt; SentryEvent:
 			    if event.environment == "editor_dev_run":
