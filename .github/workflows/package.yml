@@ -60,26 +60,26 @@ jobs:
         run: |
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
+            artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework/libsentry.macos.debug
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
+            artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/libsentry.macos.release
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentrysdk/bin/macos/crashpad_handler
+            artifact/addons/sentry/bin/macos/crashpad_handler
 
       - name: Notarize macOS binaries
         if: env.DO_CODESIGN == '1'
         run: |
-          zip libsentrysdk.macos.debug.zip artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.debug.framework/libsentrysdk.macos.debug
+          zip libsentry.macos.debug.zip artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework/libsentry.macos.debug
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
-            libsentrysdk.macos.debug.zip
+            libsentry.macos.debug.zip
 
-          zip libsentrysdk.macos.release.zip artifact/addons/sentrysdk/bin/macos/libsentrysdk.macos.release.framework/libsentrysdk.macos.release
+          zip libsentry.macos.release.zip artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/libsentry.macos.release
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
-            libsentrysdk.macos.release.zip
+            libsentry.macos.release.zip
 
-          zip crashpad_handler.zip artifact/addons/sentrysdk/bin/macos/crashpad_handler
+          zip crashpad_handler.zip artifact/addons/sentry/bin/macos/crashpad_handler
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             crashpad_handler.zip
 
@@ -87,7 +87,7 @@ jobs:
         shell: bash
         run: |
           # * Fix crashpad_handler permissions, workaround for https://github.com/actions/upload-artifact/issues/38
-          chmod +x artifact/addons/sentrysdk/bin/{linux,macos}/crashpad_handler
+          chmod +x artifact/addons/sentry/bin/{linux,macos}/crashpad_handler
           # * Create release archive
           version=$(grep 'VERSION =' SConstruct | cut -d '"' -f 2)
           git_short_sha=$(git rev-parse --short HEAD)
