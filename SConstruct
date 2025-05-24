@@ -221,11 +221,14 @@ env.Append(CPPPATH=["src/"])
 
 # Source files to compile.
 sources = Glob("src/*.cpp")
+sources += Glob("src/editor/*.cpp")
 sources += Glob("src/sentry/*.cpp")
 sources += Glob("src/sentry/util/*.cpp")
 # Compile sentry-native code only on respective platforms.
 if env["platform"] in ["linux", "windows", "macos"]:
     sources += Glob("src/sentry/native/*.cpp")
+elif env["platform"] == "android":
+	sources += Glob("src/sentry/android/*.cpp")
 
 # Generate documentation data.
 if env["target"] in ["editor", "template_debug"]:

@@ -1,22 +1,23 @@
-#ifndef NATIVE_EVENT_H
-#define NATIVE_EVENT_H
+#ifndef SENTRY_ANDROID_EVENT_H
+#define SENTRY_ANDROID_EVENT_H
 
 #include "sentry_event.h"
 
-#include <sentry.h>
+using namespace godot;
 
-// Event class that is used with the NativeSDK.
-class NativeEvent : public SentryEvent {
-	GDCLASS(NativeEvent, SentryEvent);
+// Event class that is used with the AndroidSDK.
+class AndroidEvent : public SentryEvent {
+	GDCLASS(AndroidEvent, SentryEvent);
 
 private:
-	sentry_value_t native_event;
+	Object *android_plugin = nullptr;
+	int32_t event_handle;
 
 protected:
 	static void _bind_methods() {}
 
 public:
-	sentry_value_t get_native_value() const { return native_event; }
+	int32_t get_handle() { return event_handle; }
 
 	virtual String get_id() const override;
 
@@ -49,9 +50,9 @@ public:
 
 	virtual void add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &frames) override;
 
-	NativeEvent(sentry_value_t p_event);
-	NativeEvent();
-	virtual ~NativeEvent() override;
+	AndroidEvent() {}
+	AndroidEvent(Object *android_plugin, int32_t p_event_handle);
+	virtual ~AndroidEvent() override;
 };
 
-#endif // NATIVE_EVENT_H
+#endif // SENTRY_ANDROID_EVENT_H

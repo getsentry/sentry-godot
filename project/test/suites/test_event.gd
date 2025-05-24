@@ -28,9 +28,18 @@ func test_event_level() -> void:
 func test_event_timestamp() -> void:
 	var event := SentrySDK.create_event()
 	assert_str(event.timestamp).is_not_empty()
-	var ts = Time.get_datetime_string_from_system()
-	event.timestamp = ts
-	assert_str(event.timestamp).is_equal(ts)
+
+	# Example of how to format a timestamp:
+	var unix_time: float = Time.get_unix_time_from_system()
+	var dt: Dictionary = Time.get_datetime_dict_from_unix_time(unix_time)
+	var date := "%04d-%02d-%02d" % [dt.year, dt.month, dt.day]
+	var time := "%02d:%02d:%02d" % [dt.hour, dt.minute, dt.second]
+	var fractional: float = unix_time - int(unix_time)
+	var micros := int(round(fractional * 1000000))
+	var timestamp := "%sT%s.%06dZ" % [date, time, micros]
+
+	event.timestamp = timestamp
+	assert_str(event.timestamp).is_equal(timestamp)
 
 
 ## SentryEvent.platform should not be empty.

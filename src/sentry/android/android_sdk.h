@@ -1,17 +1,32 @@
-#ifndef NATIVE_SDK_H
-#define NATIVE_SDK_H
+#ifndef SENTRY_ANDROID_SDK_H
+#define SENTRY_ANDROID_SDK_H
 
 #include "sentry/internal_sdk.h"
 
-#include <sentry.h>
+using namespace godot;
 
 namespace sentry {
 
-// Internal SDK utilizing sentry-native.
-class NativeSDK : public InternalSDK {
+class SentryAndroidBeforeSendHandler : public Object {
+	GDCLASS(SentryAndroidBeforeSendHandler, Object);
+	friend class AndroidSDK;
+
 private:
-	sentry_uuid_t last_uuid;
-	bool initialized = false;
+	Object *android_plugin = nullptr;
+
+	void _initialize(Object *p_android_plugin);
+
+	void _before_send(int32_t p_event_handle);
+
+protected:
+	static void _bind_methods() {}
+};
+
+// Internal SDK utilizing Sentry Android (sentry-java repo).
+class AndroidSDK : public InternalSDK {
+private:
+	Object *android_plugin = nullptr;
+	SentryAndroidBeforeSendHandler *before_send_handler = nullptr;
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
@@ -34,9 +49,10 @@ public:
 
 	virtual void initialize(const PackedStringArray &p_global_attachments) override;
 
-	virtual ~NativeSDK() override;
+	AndroidSDK();
+	virtual ~AndroidSDK() override;
 };
 
 } //namespace sentry
 
-#endif // NATIVE_SDK_H
+#endif // SENTRY_ANDROID_SDK_H
