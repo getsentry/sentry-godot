@@ -95,7 +95,6 @@ func test_level_properties(property: String, test_parameters := [
 @warning_ignore("unused_parameter")
 func test_callback_properties(property: String, test_parameters := [
 	["before_send"],
-	["on_crash"],
 	["before_capture_screenshot"]
 ]) -> void:
 	var callback := func(a1): pass

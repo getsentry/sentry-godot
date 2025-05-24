@@ -149,7 +149,7 @@ inline void _inject_contexts(sentry_value_t p_event) {
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	sentry::util::print_debug("handling before_send");
-	Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, false));
 	_save_screenshot(event_obj);
 	_save_view_hierarchy();
 	_inject_contexts(event);
@@ -173,24 +173,24 @@ sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closu
 
 sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
 	sentry::util::print_debug("handling on_crash");
-	Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, true));
 	_save_screenshot(event_obj);
 	_save_view_hierarchy();
 	_inject_contexts(event);
-	if (const Callable &on_crash = SentryOptions::get_singleton()->get_on_crash(); on_crash.is_valid()) {
-		Ref<NativeEvent> processed = on_crash.call(event_obj);
+	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
+		Ref<NativeEvent> processed = before_send.call(event_obj);
 		if (processed.is_valid() && processed != event_obj) {
 			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
-			ERR_PRINT_ONCE("Sentry: on_crash callback must return the same event object or null.");
+			ERR_PRINT_ONCE("Sentry: before_send callback must return the same event object or null.");
 			return event;
 		}
 		if (processed.is_null()) {
 			// Discard event.
-			sentry::util::print_debug("event discarded by on_crash callback: ", event_obj->get_id());
+			sentry::util::print_debug("event discarded by before_send callback: ", event_obj->get_id());
 			sentry_value_decref(event);
 			return sentry_value_new_null();
 		}
-		sentry::util::print_debug("event processed by on_crash callback: ", event_obj->get_id());
+		sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
 	}
 	return event;
 }
@@ -339,7 +339,7 @@ String NativeSDK::capture_error(const String &p_type, const String &p_value, Lev
 
 Ref<SentryEvent> NativeSDK::create_event() {
 	sentry_value_t event_value = sentry_value_new_event();
-	Ref<SentryEvent> event = memnew(NativeEvent(event_value));
+	Ref<SentryEvent> event = memnew(NativeEvent(event_value, false));
 	return event;
 }
 

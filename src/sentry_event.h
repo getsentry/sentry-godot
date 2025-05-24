@@ -45,6 +45,8 @@ public:
 	virtual void remove_tag(const String &p_key) = 0;
 	virtual String get_tag(const String &p_key) = 0;
 
+	virtual bool is_crash() const = 0;
+
 	virtual ~SentryEvent() = default;
 };
 
