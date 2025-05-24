@@ -26,7 +26,7 @@ runs:
     - name: Set up Godot
       shell: bash
       run: |
-        version=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1-stable/p' project/addons/sentrysdk/bin/sentrysdk.gdextension)
+        version=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1-stable/p' project/addons/sentry/bin/sentry.gdextension)
         if [[ "$RUNNER_OS" == "Windows" ]]; then
           suffix=win64.exe
         elif [[ "$RUNNER_OS" == "Linux" ]]; then
@@ -61,7 +61,7 @@ runs:
       # timeout-minutes: 5
       run: |
         scons project/addons/gdUnit4
-        chmod +x project/addons/sentrysdk/bin/{linux,macos}/crashpad_handler
+        chmod +x project/addons/sentry/bin/{linux,macos}/crashpad_handler
         echo "--- Rebuilding import cache.."
         ${GODOT} --headless --editor --path project/ --quit-after 2000 || true
         echo "--- Finished rebuilding import cache."

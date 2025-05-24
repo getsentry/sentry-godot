@@ -390,7 +390,7 @@ void NativeSDK::initialize() {
 	String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
 	String handler_path = exe_dir.path_join(export_subdir).path_join(handler_fn);
 	if (!FileAccess::file_exists(handler_path)) {
-		const String addon_bin_dir = "res://addons/sentrysdk/bin/";
+		const String addon_bin_dir = "res://addons/sentry/bin/";
 		handler_path = ProjectSettings::get_singleton()->globalize_path(
 				addon_bin_dir.path_join(platform_dir).path_join(handler_fn));
 	}

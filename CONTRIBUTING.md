@@ -40,7 +40,7 @@ brew install scons
     # run from the repository root dir
     scons target=editor debug_symbols=yes
     ```
-    The build process should produce a GDExtension library file for the ***editor target*** at `project/addons/sentrysdk/bin/...`.
+    The build process should produce a GDExtension library file for the ***editor target*** at `project/addons/sentry/bin/...`.
 
     To export a project in Godot that uses this extension, you'll also need the libraries for the export templates:
     ```bash
@@ -60,7 +60,7 @@ In the Godot editor, you can adjust the Sentry SDK settings by going to `Project
 - `src/` -- Godot extension source code
 - `modules/` -- various submodules, such as `godot-cpp` and other SDKs like `sentry-native`
 - `project/` -- example Godot project
-- `project/addons/sentrysdk/` -- where build artifacts are placed
+- `project/addons/sentry/` -- where build artifacts are placed
 - `project/test/` -- unit tests
 - `scripts/` -- various scripts used mostly for maintenance
 - `doc_classes/` -- built-in Godot documentation (class reference)
