@@ -5,15 +5,15 @@ on:
     inputs:
       ref:
         type: string
-        default: ''
-        description: 'The branch, tag or SHA to checkout (leave empty for event SHA)'
+        default: ""
+        description: "The branch, tag or SHA to checkout (leave empty for event SHA)"
 
   workflow_dispatch:
     inputs:
       ref:
         type: string
-        default: ''
-        description: 'The branch, tag or SHA to checkout (leave empty for event SHA)'
+        default: ""
+        description: "The branch, tag or SHA to checkout (leave empty for event SHA)"
 
 env:
   # Default SCons flags applied to each build.
@@ -118,8 +118,8 @@ jobs:
           BUILD_TYPE: ${{matrix.target == 'template_release' && 'release' || 'debug'}}
         shell: bash
         run: |
-          cd project/addons/sentrysdk/bin/linux/
-          lib=libsentrysdk.${{matrix.platform}}.${BUILD_TYPE}.${{matrix.arch}}.so
+          cd project/addons/sentry/bin/linux/
+          lib=libsentry.${{matrix.platform}}.${BUILD_TYPE}.${{matrix.arch}}.so
           objcopy --only-keep-debug ${lib} ${lib}.debug
           objcopy --add-gnu-debuglink ${lib}.debug ${lib}
           strip --strip-debug ${lib}
@@ -128,7 +128,7 @@ jobs:
         if: matrix.platform != 'web' # web is unsupported currently; it is used to test compilation with such platforms (ifdefs)
         uses: actions/upload-artifact@v4
         with:
-          name: libsentrysdk.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}
+          name: libsentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}
           path: |
             project/
             !project/addons/gdUnit4
@@ -143,5 +143,5 @@ jobs:
         uses: actions/upload-artifact/merge@v4
         with:
           name: sentry-godot-gdextension
-          pattern: libsentrysdk.*
+          pattern: libsentry.*
           delete-merged: true

@@ -208,8 +208,8 @@ SentrySDK::SentrySDK() {
 	// Fix crashpad handler executable bit permissions on Unix platforms if the
 	// user extracts the distribution archive without preserving such permissions.
 	if (OS::get_singleton()->is_debug_build()) {
-		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/macos/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/linux/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentry/bin/macos/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/crashpad_handler");
 	}
 #endif
 
