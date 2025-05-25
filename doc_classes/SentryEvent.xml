@@ -16,6 +16,13 @@
 				Returns the value of the tag with the specified [param key].
 			</description>
 		</method>
+		<method name="is_crash" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this event is considered terminal, meaning it was triggered by a crash or unrecoverable failure.
+				Useful for distinguishing crash reports from other event types such as logs or script errors.
+			</description>
+		</method>
 		<method name="remove_tag">
 			<return type="void" />
 			<param index="0" name="key" type="String" />

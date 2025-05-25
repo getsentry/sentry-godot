@@ -14,7 +14,6 @@ func _configure(options: SentryOptions) -> void:
 
 	# Set up event callbacks
 	options.before_send = _before_send
-	options.on_crash = _on_crash
 
 	# Unit testing hooks (if you're exploring the demo project, pretend the following line doesn't exist).
 	load("res://testing_configuration.gd").configure_options(options)
@@ -29,10 +28,4 @@ func _before_send(ev: SentryEvent) -> SentryEvent:
 	elif ev.message == "junk":
 		print("INFO: [example_configuration.gd] Discarding event with message 'junk'")
 		return null
-	return ev
-
-
-## on_crash callback example
-func _on_crash(ev: SentryEvent) -> SentryEvent:
-	print("INFO: [example_configuration.gd] Crashing with event: ", ev.id)
 	return ev
