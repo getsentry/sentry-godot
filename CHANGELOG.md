@@ -10,6 +10,12 @@
 
 - Rename "addons/sentrysdk" to "addons/sentry" ([#180](https://github.com/getsentry/sentry-godot/pull/180))
 
+### Dependencies
+
+- Bump Native SDK from v0.8.4 to v0.8.5 ([#175](https://github.com/getsentry/sentry-godot/pull/175))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#085)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.4...0.8.5)
+
 ## 0.5.0
 
 ### Breaking changes
