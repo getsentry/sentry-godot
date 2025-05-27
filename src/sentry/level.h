@@ -10,11 +10,12 @@ namespace sentry {
 // In the public API, it is exposed as SentrySDK.Level enum.
 // And as such, VariantCaster<SentrySDK::Level> is defined in sentry_sdk.h.
 enum Level {
-	LEVEL_DEBUG = 0,
-	LEVEL_INFO = 1,
-	LEVEL_WARNING = 2,
-	LEVEL_ERROR = 3,
-	LEVEL_FATAL = 4
+    LEVEL_NONE = 0,
+	LEVEL_DEBUG = 1,
+	LEVEL_INFO = 2,
+	LEVEL_WARNING = 3,
+	LEVEL_ERROR = 4,
+	LEVEL_FATAL = 5,
 };
 
 godot::CharString level_as_cstring(Level level);
