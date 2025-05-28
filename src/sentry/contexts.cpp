@@ -83,11 +83,12 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	device_context["screen_dpi"] = DisplayServer::get_singleton()->screen_get_dpi(
 			DisplayServer::get_singleton()->get_primary_screen());
 
-	Dictionary meminfo = OS::get_singleton()->get_memory_info();
+	// TODO: Make get_memory_info() work in release mode on iOS
+    // Dictionary meminfo = OS::get_singleton()->get_memory_info();
 	// Note: Using double since int32 can't handle size in bytes.
-	device_context["memory_size"] = double(meminfo["physical"]);
-	device_context["free_memory"] = double(meminfo["free"]);
-	device_context["usable_memory"] = double(meminfo["available"]);
+	// device_context["memory_size"] = double(meminfo["physical"]);
+	// device_context["free_memory"] = double(meminfo["free"]);
+	// device_context["usable_memory"] = double(meminfo["available"]);
 
 	auto dir = DirAccess::open("user://");
 	if (dir.is_valid()) {
