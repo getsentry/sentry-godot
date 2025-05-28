@@ -32,6 +32,13 @@ NSObject *variantToNSObject(Variant value) {
         case Variant::ARRAY:
             objectValue = sentry::cocoa::arrayToNSArray((Array) value);
             break;
+        case Variant::VECTOR2I:
+            {
+                Vector2i v = value;
+                String s = vformat("(%d, %d)", v.x, v.y);
+                objectValue = sentry::cocoa::stringToNSString(s);
+            }
+            break;
         // Add more cases as needed for other types.
         default:
             objectValue = nil;
