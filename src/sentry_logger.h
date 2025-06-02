@@ -6,6 +6,7 @@
 #include <chrono>
 #include <deque>
 #include <godot_cpp/classes/logger.hpp>
+#include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/classes/script_backtrace.hpp>
 #include <regex>
 #include <unordered_map>
@@ -25,6 +26,8 @@ private:
 			return std::hash<std::string>()(p_source_line.first) ^ std::hash<int>()(p_source_line.second);
 		}
 	};
+
+	Ref<Mutex> mutex;
 
 	// Stores the last time an error was logged for each source line that generated an error.
 	std::unordered_map<SourceLine, TimePoint, SourceLineHash> source_line_times;

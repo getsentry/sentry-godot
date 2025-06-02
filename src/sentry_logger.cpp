@@ -58,9 +58,12 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		const TypedArray<ScriptBacktrace> &p_script_backtraces) {
 	Ref<SentryLoggerLimits> limits = SentryOptions::get_singleton()->get_logger_limits();
 	bool as_breadcrumb = SentryOptions::get_singleton()->should_capture_breadcrumb((GodotErrorType)p_error_type);
+
+	mutex->lock();
 	bool as_event = SentryOptions::get_singleton()->should_capture_event((GodotErrorType)p_error_type) &&
 			// frame_events < limits->events_per_frame &&
 			event_times.size() < limits->throttle_events;
+	mutex->unlock();
 
 	if (!as_breadcrumb && !as_event) {
 		// Bail out if capture is disabled for this error type.
@@ -175,8 +178,10 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		SentrySDK::get_singleton()->capture_event(ev);
 
 		// For throttling
+		mutex->lock();
 		// frame_events++;
 		event_times.push_back(now);
+		mutex->unlock();
 	}
 
 	// Capture error as breadcrumb.
@@ -214,6 +219,8 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 		}
 	}
 
+	mutex->lock();
+
 	// Filtering: Backtrace printing.
 	if (!skip_logging_message &&
 			(p_message.begins_with(filter_native_trace_starter_begins) || std::regex_search(std_message, filter_script_trace_starter_pattern))) {
@@ -225,7 +232,11 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 		sentry::util::print_debug("backtrace printing ended");
 	}
 
-	if (skip_logging_message) {
+	bool skip_it = skip_logging_message;
+
+	mutex->unlock();
+
+	if (skip_it) {
 		return;
 	}
 
@@ -252,4 +263,6 @@ SentryLogger::SentryLogger() {
 	filter_native_trace_finisher_exact = "-- END OF C++ BACKTRACE --\n";
 	filter_script_trace_starter_pattern = "^[a-zA-Z0-9#+]+ backtrace \\(most recent call first\\):";
 	filter_script_trace_finisher_exact = "-- END OF GDSCRIPT BACKTRACE --\n";
+
+	mutex.instantiate();
 }
