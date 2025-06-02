@@ -309,7 +309,11 @@ String NativeSDK::capture_message(const String &p_message, Level p_level) {
 			native::level_to_native(p_level),
 			"", // logger
 			p_message.utf8().get_data());
+
+	mutex->lock();
 	last_uuid = sentry_capture_event(event);
+	mutex->unlock();
+
 	return _uuid_as_string(last_uuid);
 }
 
@@ -330,7 +334,11 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_NULL_V(native_event, _uuid_as_string(last_uuid)); // Sanity check - this should never happen.
 	sentry_value_t event = native_event->get_native_value();
 	sentry_value_incref(event); // Keep ownership.
+
+	mutex->lock();
 	last_uuid = sentry_capture_event(event);
+	mutex->unlock();
+
 	return _uuid_as_string(last_uuid);
 }
 
@@ -418,6 +426,10 @@ void NativeSDK::initialize() {
 	if (err != 0) {
 		ERR_PRINT("Sentry: Failed to initialize native SDK. Error code: " + itos(err));
 	}
+}
+
+NativeSDK::NativeSDK() {
+	mutex.instantiate();
 }
 
 NativeSDK::~NativeSDK() {
