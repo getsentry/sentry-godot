@@ -101,7 +101,7 @@ void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
 
 Ref<SentryUser> SentrySDK::get_user() const {
 	MutexLock lock(*user_mutex.ptr());
-	return user;
+	return user->duplicate();
 }
 
 void SentrySDK::remove_user() {

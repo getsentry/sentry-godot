@@ -29,6 +29,16 @@ void SentryUser::generate_new_id() {
 	id = sentry::uuid::make_uuid();
 }
 
+Ref<SentryUser> SentryUser::duplicate() {
+	Ref<SentryUser> copy;
+	copy.instantiate();
+	copy->set_id(id);
+	copy->set_username(username);
+	copy->set_email(email);
+	copy->set_ip_address(ip_address);
+	return copy;
+}
+
 void SentryUser::_bind_methods() {
 	// Setters / getters
 	ClassDB::bind_method(D_METHOD("set_id", "id"), &SentryUser::set_id);
@@ -49,4 +59,5 @@ void SentryUser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("infer_ip_address"), &SentryUser::infer_ip_address);
 	ClassDB::bind_method(D_METHOD("is_empty"), &SentryUser::is_empty);
 	ClassDB::bind_method(D_METHOD("generate_new_id"), &SentryUser::generate_new_id);
+	ClassDB::bind_method(D_METHOD("duplicate"), &SentryUser::duplicate);
 }
