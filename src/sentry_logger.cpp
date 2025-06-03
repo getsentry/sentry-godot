@@ -183,7 +183,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 
 		Ref<SentryEvent> ev = SentrySDK::get_singleton()->create_event();
 		ev->set_level(sentry::get_sentry_level_for_godot_error_type(p_error_type));
-		ev->add_exception(error_types[int(p_error_type)], p_rationale, { stack_frame });
+		ev->add_exception({ error_types[int(p_error_type)], p_rationale, { stack_frame } });
 		SentrySDK::get_singleton()->capture_event(ev);
 
 		// For throttling

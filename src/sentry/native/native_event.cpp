@@ -139,14 +139,14 @@ String NativeEvent::get_tag(const String &p_key) {
 	return String();
 }
 
-void NativeEvent::add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &p_frames) {
-	sentry_value_t exception = sentry_value_new_exception(p_type.utf8(), p_value.utf8());
+void NativeEvent::add_exception(const Exception &p_exception) {
+	sentry_value_t native_exception = sentry_value_new_exception(p_exception.type.utf8(), p_exception.value.utf8());
 	sentry_value_t stack_trace = sentry_value_new_object();
-	sentry_value_set_by_key(exception, "stacktrace", stack_trace);
+	sentry_value_set_by_key(native_exception, "stacktrace", stack_trace);
 	sentry_value_t frames = sentry_value_new_list();
 	sentry_value_set_by_key(stack_trace, "frames", frames);
 
-	for (const StackFrame &frame : p_frames) {
+	for (const StackFrame &frame : p_exception.frames) {
 		sentry_value_t sentry_frame = sentry_value_new_object();
 		sentry_value_set_by_key(sentry_frame, "filename", sentry_value_new_string(frame.filename.utf8()));
 		sentry_value_set_by_key(sentry_frame, "function", sentry_value_new_string(frame.function.utf8()));
@@ -161,7 +161,7 @@ void NativeEvent::add_exception(const String &p_type, const String &p_value, con
 		sentry_value_append(frames, sentry_frame);
 	}
 
-	sentry_event_add_exception(native_event, exception);
+	sentry_event_add_exception(native_event, native_exception);
 }
 
 bool NativeEvent::is_crash() const {
