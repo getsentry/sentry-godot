@@ -155,6 +155,7 @@ if env["platform"] in ["linux", "macos", "windows"]:
         env.Append(
             LIBS=[
                 "curl",
+                "atomic"
             ]
         )
     elif env["platform"] == "macos":

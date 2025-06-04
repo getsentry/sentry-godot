@@ -17,6 +17,21 @@ func after_test() -> void:
 
 @warning_ignore("unused_parameter")
 func test_event_integrity(timeout := 10000) -> void:
+	_capture_event()
+	var monitor := monitor_signals(self, false)
+	await assert_signal(monitor).is_emitted("callback_processed")
+
+
+@warning_ignore("unused_parameter")
+func test_threaded_event_capture(timeout := 10000) -> void:
+	var thread := Thread.new()
+	thread.start(_capture_event)
+	var monitor := monitor_signals(self, false)
+	await assert_signal(monitor).is_emitted("callback_processed")
+	thread.wait_to_finish()
+
+
+func _capture_event() ->  void:
 	var event := SentrySDK.create_event()
 	event.message = "integrity-check"
 	event.level = SentrySDK.LEVEL_DEBUG
@@ -27,10 +42,7 @@ func test_event_integrity(timeout := 10000) -> void:
 	event.set_tag("custom-tag", "custom-tag-value")
 	created_id = event.id
 
-	var monitor := monitor_signals(self, false)
 	var captured_id := SentrySDK.capture_event(event)
-	await assert_signal(monitor).is_emitted("callback_processed")
-
 	assert_str(captured_id).is_not_empty()
 	assert_str(captured_id).is_not_equal(created_id) # event was discarded
 	assert_str(SentrySDK.get_last_event_id()).is_not_empty()
@@ -48,5 +60,5 @@ func _before_send(event: SentryEvent) -> SentryEvent:
 	assert_str(event.get_tag("custom-tag")).is_equal("custom-tag-value")
 	assert_str(event.id).is_equal(created_id)
 	assert_bool(event.is_crash()).is_false()
-	callback_processed.emit()
+	callback_processed.emit.call_deferred()
 	return null # discard event

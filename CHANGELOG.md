@@ -9,6 +9,7 @@
 ### Other changes
 
 - Rename "addons/sentrysdk" to "addons/sentry" ([#180](https://github.com/getsentry/sentry-godot/pull/180))
+- Improve thread safety ([#186](https://github.com/getsentry/sentry-godot/pull/186))
 
 ### Dependencies
 

@@ -9,6 +9,7 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/core/mutex_lock.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #ifdef NATIVE_SDK
@@ -83,6 +84,8 @@ void SentrySDK::remove_tag(const String &p_key) {
 }
 
 void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
+	MutexLock lock(*user_mutex.ptr());
+
 	user = p_user;
 
 	if (user.is_null()) {
@@ -96,7 +99,13 @@ void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
 	}
 }
 
+Ref<SentryUser> SentrySDK::get_user() const {
+	MutexLock lock(*user_mutex.ptr());
+	return user->duplicate();
+}
+
 void SentrySDK::remove_user() {
+	MutexLock lock(*user_mutex.ptr());
 	user.instantiate();
 	internal_sdk->remove_user();
 }
@@ -195,6 +204,8 @@ void SentrySDK::_bind_methods() {
 SentrySDK::SentrySDK() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(SentryOptions::get_singleton());
+
+	user_mutex.instantiate();
 
 	singleton = this;
 
