@@ -270,11 +270,9 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 	if (!skip_logging_message &&
 			(p_message.begins_with(filter_native_trace_starter_begins) || std::regex_search(std_message, filter_script_trace_starter_pattern))) {
 		skip_logging_message = true;
-		sentry::util::print_debug("skipping log messages for backtrace printing");
 	} else if (skip_logging_message &&
 			(p_message == filter_script_trace_finisher_exact || p_message == filter_native_trace_finisher_exact)) {
 		skip_logging_message = false;
-		sentry::util::print_debug("backtrace printing ended");
 	}
 
 	bool skip_it = skip_logging_message;
