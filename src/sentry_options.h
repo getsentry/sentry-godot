@@ -14,9 +14,6 @@ class SentryLoggerLimits : public RefCounted {
 	GDCLASS(SentryLoggerLimits, RefCounted);
 
 public:
-	// Limit the number of lines that can be parsed per frame.
-	SIMPLE_PROPERTY(int, parse_lines, 100);
-
 	// Protect frametime budget.
 	SIMPLE_PROPERTY(int, events_per_frame, 5);
 
