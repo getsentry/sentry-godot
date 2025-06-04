@@ -1,6 +1,5 @@
 #include "sentry_logger.h"
 
-#include "sentry/internal_sdk.h"
 #include "sentry/util/print.h"
 #include "sentry_options.h"
 #include "sentry_sdk.h"
@@ -12,7 +11,7 @@
 namespace {
 
 // Error enum values as strings
-const char *error_types[] = {
+const char *error_type_as_string[] = {
 	"ERROR",
 	"WARNING",
 	"SCRIPT ERROR",
@@ -79,7 +78,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 				"   Line: ", p_line, "\n",
 				"   Code: ", p_code, "\n",
 				"   Rationale: ", p_rationale, "\n",
-				"   Error Type: ", error_types[int(p_error_type)]);
+				"   Error Type: ", error_type_as_string[int(p_error_type)]);
 	}
 
 	TimePoint now = std::chrono::high_resolution_clock::now();
@@ -132,7 +131,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 					}
 				}
 
-				// Variables.
+				// Local and member variables.
 				if (include_variables) {
 					int32_t num_locals = backtrace->get_local_variable_count(frame_idx);
 					int32_t num_members = backtrace->get_member_variable_count(frame_idx);
@@ -172,7 +171,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		Ref<SentryEvent> ev = SentrySDK::get_singleton()->create_event();
 		ev->set_level(sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type));
 		SentryEvent::Exception exception = {
-			error_types[int(p_error_type)],
+			error_type_as_string[int(p_error_type)],
 			p_rationale.is_empty() ? p_code : p_rationale,
 			frames
 		};
@@ -194,7 +193,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		data["line"] = p_line;
 		data["code"] = p_code;
 		data["rationale"] = p_rationale;
-		data["error_type"] = String(error_types[int(p_error_type)]);
+		data["error_type"] = String(error_type_as_string[int(p_error_type)]);
 
 		SentrySDK::get_singleton()->add_breadcrumb(
 				p_rationale.is_empty() ? p_code : p_rationale,

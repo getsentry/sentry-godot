@@ -53,6 +53,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static void init_logger();
+
 	LegacyLogger();
 };
 

@@ -422,9 +422,6 @@ void NativeSDK::initialize() {
 	}
 }
 
-NativeSDK::NativeSDK() {
-}
-
 NativeSDK::~NativeSDK() {
 	sentry_close();
 }

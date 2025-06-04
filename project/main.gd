@@ -21,9 +21,6 @@ func _ready() -> void:
 	_init_level_choice_popup()
 	_update_user_info()
 
-	#print("Generating error...")
-	#load("res://long_call_chain.gd").call("road_to_error_1")
-
 
 func _init_level_choice_popup() -> void:
 	var popup: PopupMenu = level_choice.get_popup()

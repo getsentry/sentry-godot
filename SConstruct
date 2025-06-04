@@ -165,7 +165,6 @@ if env["platform"] in ["linux", "macos", "windows"]:
                 "bsm"
             ],
             LINKFLAGS=[
-                "-framework", "CoreFoundation",
                 "-framework", "Foundation",
             ],
         )

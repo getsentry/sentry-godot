@@ -35,7 +35,6 @@ public:
 
 	virtual void initialize() override;
 
-	NativeSDK();
 	virtual ~NativeSDK() override;
 };
 

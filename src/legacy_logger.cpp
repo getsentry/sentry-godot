@@ -5,10 +5,13 @@
 #include "sentry_sdk.h"
 
 #include <cstring>
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/script.hpp>
+#include <godot_cpp/classes/window.hpp>
 
 namespace {
 
@@ -283,6 +286,26 @@ void LegacyLogger::_setup() {
 	log_file.open(log_path.utf8(), std::ios::in);
 	set_process(log_file.is_open());
 	ERR_FAIL_COND_MSG(!log_file.is_open(), "Sentry: Error logger failure - couldn't open the log file: " + log_path);
+}
+
+void LegacyLogger::init_logger() {
+	if (!SentryOptions::get_singleton()->is_logger_enabled()) {
+		// If error logger is disabled, don't add it to the scene tree.
+		sentry::util::print_debug("error logger is disabled in options");
+		return;
+	}
+	if (!SentrySDK::get_singleton()->is_enabled()) {
+		sentry::util::print_debug("error logger is not started because SDK is not initialized");
+		return;
+	}
+	// Add experimental logger to scene tree.
+	sentry::util::print_debug("starting error logger");
+	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+	if (sml && sml->get_root()) {
+		sml->get_root()->add_child(memnew(LegacyLogger));
+	} else {
+		ERR_FAIL_MSG("Sentry: Internal error: SceneTree is null.");
+	}
 }
 
 LegacyLogger::LegacyLogger() {
