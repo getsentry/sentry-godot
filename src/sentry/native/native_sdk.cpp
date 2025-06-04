@@ -310,36 +310,6 @@ String NativeSDK::get_last_event_id() {
 	return _uuid_as_string(last_uuid.load(std::memory_order_acquire));
 }
 
-String NativeSDK::capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) {
-	sentry_value_t event = sentry_value_new_event();
-	sentry_value_set_by_key(event, "level",
-			sentry_value_new_string(sentry::level_as_cstring(p_level)));
-
-	sentry_value_t exception = sentry_value_new_exception(p_type.utf8(), p_value.utf8());
-	sentry_value_t stack_trace = sentry_value_new_object();
-
-	sentry_value_t frames = sentry_value_new_list();
-	for (const StackFrame &frame : p_frames) {
-		sentry_value_t sentry_frame = sentry_value_new_object();
-		sentry_value_set_by_key(sentry_frame, "filename", sentry_value_new_string(frame.filename.utf8()));
-		sentry_value_set_by_key(sentry_frame, "function", sentry_value_new_string(frame.function.utf8()));
-		sentry_value_set_by_key(sentry_frame, "lineno", sentry_value_new_int32(frame.lineno));
-		if (!frame.context_line.is_empty()) {
-			sentry_value_set_by_key(sentry_frame, "context_line", sentry_value_new_string(frame.context_line.utf8()));
-			sentry_value_set_by_key(sentry_frame, "pre_context", sentry::native::strings_to_sentry_list(frame.pre_context));
-			sentry_value_set_by_key(sentry_frame, "post_context", sentry::native::strings_to_sentry_list(frame.post_context));
-		}
-		sentry_value_append(frames, sentry_frame);
-	}
-
-	sentry_value_set_by_key(stack_trace, "frames", frames);
-	sentry_value_set_by_key(exception, "stacktrace", stack_trace);
-	sentry_event_add_exception(event, exception);
-	sentry_uuid_t uuid = sentry_capture_event(event);
-	last_uuid.store(uuid, std::memory_order_release);
-	return _uuid_as_string(uuid);
-}
-
 Ref<SentryEvent> NativeSDK::create_event() {
 	sentry_value_t event_value = sentry_value_new_event();
 	Ref<SentryEvent> event = memnew(NativeEvent(event_value, false));
