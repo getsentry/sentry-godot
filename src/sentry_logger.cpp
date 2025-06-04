@@ -110,7 +110,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 
 	sentry::util::print_debug(
 			"Error logged:\n",
-			"   Function: \"", p_function, "\"\n",
+			"   Function: ", p_function, "\n",
 			"   File: ", p_file, "\n",
 			"   Line: ", p_line, "\n",
 			"   Code: ", p_code, "\n",
