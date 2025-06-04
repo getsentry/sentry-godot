@@ -8,14 +8,7 @@
 
 namespace sentry {
 
-// Godot Engine error types that we can detect.
-// As defined in: https://github.com/godotengine/godot/blob/04692d83cb8f61002f18ea1d954df8c558ee84f7/core/io/logger.h#L51-L56
-enum class GodotErrorType {
-	ERROR_TYPE_ERROR = 0,
-	ERROR_TYPE_WARNING = 1,
-	ERROR_TYPE_SCRIPT = 2,
-	ERROR_TYPE_SHADER = 3,
-};
+using GodotErrorType = godot::Logger::ErrorType;
 
 // Enum used with bitwise operations to represent the set of Godot error types that the Sentry logger should capture.
 enum GodotErrorMask {
