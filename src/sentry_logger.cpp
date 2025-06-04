@@ -116,16 +116,12 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		return;
 	}
 
+	String value = p_rationale.is_empty() ? p_code : p_rationale;
+
 	sentry::util::print_debug(
-			"Capturing error:",
-			"\n   Function: ", p_function,
-			"\n   File: ", p_file,
-			"\n   Line: ", p_line,
-			"\n   Code: ", p_code,
-			"\n   Rationale: ", p_rationale,
-			"\n   Error Type: ", error_type_as_string[int(p_error_type)],
-			"\n   As event: ", as_event,
-			"\n   As breadcrumb: ", as_breadcrumb);
+			"Capturing error: ", value,
+			"\n   at: ", p_function, " (", p_file, ":", p_line, ")",
+			"\n   event: ", as_event, "  breadcrumb: ", as_breadcrumb);
 
 	// Capture error as event.
 	if (as_event) {
