@@ -43,8 +43,7 @@ private:
 	} limits;
 
 	// Number of events captured during this frame.
-	// Note: Initialize to negative value to allow more events in first frame as it's likely to have more issues.
-	int frame_events = -10;
+	int frame_events = 0;
 
 	// Patterns that are checked against each message.
 	// If matching, the message is not added as breadcrumb.
