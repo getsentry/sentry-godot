@@ -300,12 +300,14 @@ String NativeSDK::capture_message(const String &p_message, Level p_level) {
 			native::level_to_native(p_level),
 			"", // logger
 			p_message.utf8().get_data());
-	last_uuid = sentry_capture_event(event);
-	return _uuid_as_string(last_uuid);
+
+	sentry_uuid_t uuid = sentry_capture_event(event);
+	last_uuid.store(uuid, std::memory_order_release);
+	return _uuid_as_string(uuid);
 }
 
 String NativeSDK::get_last_event_id() {
-	return _uuid_as_string(last_uuid);
+	return _uuid_as_string(last_uuid.load(std::memory_order_acquire));
 }
 
 Ref<SentryEvent> NativeSDK::create_event() {
@@ -315,14 +317,14 @@ Ref<SentryEvent> NativeSDK::create_event() {
 }
 
 String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
-	last_uuid = sentry_uuid_nil();
-	ERR_FAIL_COND_V_MSG(p_event.is_null(), _uuid_as_string(last_uuid), "Sentry: Can't capture event - event object is null.");
+	ERR_FAIL_COND_V_MSG(p_event.is_null(), _uuid_as_string(sentry_uuid_nil()), "Sentry: Can't capture event - event object is null.");
 	NativeEvent *native_event = Object::cast_to<NativeEvent>(p_event.ptr());
-	ERR_FAIL_NULL_V(native_event, _uuid_as_string(last_uuid)); // Sanity check - this should never happen.
+	ERR_FAIL_NULL_V(native_event, _uuid_as_string(sentry_uuid_nil())); // Sanity check - this should never happen.
 	sentry_value_t event = native_event->get_native_value();
 	sentry_value_incref(event); // Keep ownership.
-	last_uuid = sentry_capture_event(event);
-	return _uuid_as_string(last_uuid);
+	sentry_uuid_t uuid = sentry_capture_event(event);
+	last_uuid.store(uuid, std::memory_order_release);
+	return _uuid_as_string(uuid);
 }
 
 void NativeSDK::initialize() {
