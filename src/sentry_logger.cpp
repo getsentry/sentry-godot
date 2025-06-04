@@ -54,7 +54,7 @@ bool _get_script_context(const String &p_file, int p_line, String &r_context_lin
 } // unnamed namespace
 
 void SentryLogger::_process_frame() {
-	mutex->lock();
+	error_mutex->lock();
 
 	// Reset per-frame counter.
 	frame_events = 0;
@@ -70,7 +70,7 @@ void SentryLogger::_process_frame() {
 		source_line_times.clear();
 	}
 
-	mutex->unlock();
+	error_mutex->unlock();
 }
 
 void SentryLogger::_log_error(const String &p_function, const String &p_file, int32_t p_line,
@@ -79,7 +79,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 	TimePoint now = std::chrono::high_resolution_clock::now();
 	SourceLine source_line{ p_file.utf8(), p_line };
 
-	mutex->lock();
+	error_mutex->lock();
 
 	// Reject errors based on per-source-line throttling window to prevent
 	// repetitive logging caused by loops or errors recurring in each frame.
@@ -90,7 +90,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 	bool within_frame_limit = frame_events < limits.events_per_frame;
 	bool within_throttling_limit = event_times.size() < limits.throttle_events;
 
-	mutex->unlock();
+	error_mutex->unlock();
 
 	if (is_spammy_error) {
 		sentry::util::print_debug("error capture was canceled for spammy error in ",
@@ -213,10 +213,10 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		SentrySDK::get_singleton()->capture_event(ev);
 
 		// For throttling
-		mutex->lock();
+		error_mutex->lock();
 		frame_events++;
 		event_times.push_back(now);
-		mutex->unlock();
+		error_mutex->unlock();
 	} else if (!within_throttling_limit) {
 		sentry::util::print_debug("skipped capturing error as event due to throttling");
 	} else if (!within_frame_limit) {
@@ -243,9 +243,9 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 				data);
 	}
 
-	mutex->lock();
+	error_mutex->lock();
 	source_line_times[source_line] = now;
-	mutex->unlock();
+	error_mutex->unlock();
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
@@ -264,7 +264,7 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 		}
 	}
 
-	mutex->lock();
+	message_mutex->lock();
 
 	// Filtering: Backtrace printing.
 	if (!skip_logging_message &&
@@ -277,7 +277,7 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 
 	bool skip_it = skip_logging_message;
 
-	mutex->unlock();
+	message_mutex->unlock();
 
 	if (skip_it) {
 		return;
@@ -303,7 +303,8 @@ void SentryLogger::_notification(int p_what) {
 }
 
 SentryLogger::SentryLogger() {
-	mutex.instantiate();
+	error_mutex.instantiate();
+	message_mutex.instantiate();
 
 	// Filtering setup.
 	filter_patterns = {

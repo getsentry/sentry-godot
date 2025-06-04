@@ -24,7 +24,8 @@ private:
 		int throttle_events;
 	} limits;
 
-	Ref<Mutex> mutex;
+	Ref<Mutex> error_mutex;
+	Ref<Mutex> message_mutex;
 
 	using GodotErrorType = sentry::GodotErrorType;
 	using SourceLine = std::pair<std::string, int>;
@@ -55,6 +56,7 @@ private:
 	String filter_native_trace_finisher_exact;
 	std::regex filter_script_trace_starter_pattern;
 	String filter_script_trace_finisher_exact;
+
 	bool skip_logging_message = false; // Set by filtering until further condition unsets this.
 
 	void _process_frame();
