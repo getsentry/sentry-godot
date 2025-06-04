@@ -179,8 +179,10 @@ void SentrySDK::_initialize() {
 
 	internal_sdk->initialize();
 
-	logger.instantiate();
-	OS::get_singleton()->add_logger(logger);
+	if (SentryOptions::get_singleton()->is_logger_enabled()) {
+		logger.instantiate();
+		OS::get_singleton()->add_logger(logger);
+	}
 }
 
 void SentrySDK::_check_if_configuration_succeeded() {
