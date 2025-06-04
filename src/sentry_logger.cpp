@@ -116,10 +116,10 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		return;
 	}
 
-	String value = p_rationale.is_empty() ? p_code : p_rationale;
+	String error_value = p_rationale.is_empty() ? p_code : p_rationale;
 
 	sentry::util::print_debug(
-			"Capturing error: ", value,
+			"Capturing error: ", error_value,
 			"\n   at: ", p_function, " (", p_file, ":", p_line, ")",
 			"\n   event: ", as_event, "  breadcrumb: ", as_breadcrumb);
 
@@ -212,7 +212,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		ev->set_level(sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type));
 		SentryEvent::Exception exception = {
 			error_type_as_string[int(p_error_type)],
-			p_rationale.is_empty() ? p_code : p_rationale,
+			error_value,
 			frames
 		};
 		ev->add_exception(exception);
@@ -230,7 +230,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		data["error_type"] = String(error_type_as_string[int(p_error_type)]);
 
 		SentrySDK::get_singleton()->add_breadcrumb(
-				p_rationale.is_empty() ? p_code : p_rationale,
+				error_value,
 				"error",
 				sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type),
 				"error",
