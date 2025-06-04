@@ -17,6 +17,15 @@ class SentryLogger : public Logger {
 	GDCLASS(SentryLogger, Logger);
 
 private:
+	struct Limits {
+		int events_per_frame;
+		std::chrono::milliseconds repeated_error_window;
+		std::chrono::milliseconds throttle_window;
+		int throttle_events;
+	} limits;
+
+	Ref<Mutex> mutex;
+
 	using GodotErrorType = sentry::GodotErrorType;
 	using SourceLine = std::pair<std::string, int>;
 	using TimePoint = std::chrono::high_resolution_clock::time_point;
@@ -27,20 +36,11 @@ private:
 		}
 	};
 
-	Ref<Mutex> mutex;
-
 	// Stores the last time an error was logged for each source line that generated an error.
 	std::unordered_map<SourceLine, TimePoint, SourceLineHash> source_line_times;
 
 	// Time points for events captured within throttling window.
 	std::deque<TimePoint> event_times;
-
-	struct Limits {
-		int events_per_frame;
-		std::chrono::milliseconds repeated_error_window;
-		std::chrono::milliseconds throttle_window;
-		int throttle_events;
-	} limits;
 
 	// Number of events captured during this frame.
 	int frame_events = 0;
