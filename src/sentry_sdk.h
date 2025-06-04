@@ -8,6 +8,7 @@
 #include "sentry_logger.h"
 #include "sentry_options.h"
 
+#include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/core/object.hpp>
 #include <memory>
 
@@ -30,6 +31,7 @@ private:
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
 	Ref<SentryUser> user;
+	Ref<Mutex> user_mutex;
 	Ref<SentryLogger> logger;
 	bool enabled = false;
 	bool configuration_succeeded = false;
@@ -61,7 +63,7 @@ public:
 	void remove_tag(const String &p_key);
 
 	void set_user(const Ref<SentryUser> &p_user);
-	Ref<SentryUser> get_user() const { return user; }
+	Ref<SentryUser> get_user() const;
 	void remove_user();
 
 	String capture_message(const String &p_message, sentry::Level p_level = sentry::LEVEL_INFO);
@@ -74,9 +76,6 @@ public:
 
 	void set_before_send(const Callable &p_callable) { SentryOptions::get_singleton()->set_before_send(p_callable); }
 	void unset_before_send() { SentryOptions::get_singleton()->set_before_send(Callable()); }
-
-	void set_on_crash(const Callable &p_callable) { SentryOptions::get_singleton()->set_on_crash(p_callable); }
-	void unset_on_crash() { SentryOptions::get_singleton()->set_on_crash(Callable()); }
 
 	SentrySDK();
 	~SentrySDK();

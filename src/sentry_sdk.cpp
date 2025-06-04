@@ -9,6 +9,7 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/core/mutex_lock.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #ifdef NATIVE_SDK
@@ -104,6 +105,8 @@ void SentrySDK::remove_tag(const String &p_key) {
 }
 
 void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
+	MutexLock lock(*user_mutex.ptr());
+
 	user = p_user;
 
 	if (user.is_null()) {
@@ -117,7 +120,13 @@ void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
 	}
 }
 
+Ref<SentryUser> SentrySDK::get_user() const {
+	MutexLock lock(*user_mutex.ptr());
+	return user->duplicate();
+}
+
 void SentrySDK::remove_user() {
+	MutexLock lock(*user_mutex.ptr());
 	user.instantiate();
 	internal_sdk->remove_user();
 }
@@ -219,14 +228,14 @@ void SentrySDK::_bind_methods() {
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
-	ClassDB::bind_method(D_METHOD("_set_on_crash", "callable"), &SentrySDK::set_on_crash);
-	ClassDB::bind_method(D_METHOD("_unset_on_crash"), &SentrySDK::unset_on_crash);
 	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 }
 
 SentrySDK::SentrySDK() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(SentryOptions::get_singleton());
+
+	user_mutex.instantiate();
 
 	singleton = this;
 
@@ -241,8 +250,8 @@ SentrySDK::SentrySDK() {
 	// Fix crashpad handler executable bit permissions on Unix platforms if the
 	// user extracts the distribution archive without preserving such permissions.
 	if (OS::get_singleton()->is_debug_build()) {
-		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/macos/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentrysdk/bin/linux/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentry/bin/macos/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/crashpad_handler");
 	}
 #endif
 

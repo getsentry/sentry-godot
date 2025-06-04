@@ -28,6 +28,12 @@ public:
 		PackedStringArray post_context;
 	};
 
+	struct Exception {
+		String type;
+		String value;
+		Vector<StackFrame> frames;
+	};
+
 protected:
 	static void _bind_methods();
 
@@ -61,7 +67,9 @@ public:
 	virtual void remove_tag(const String &p_key) = 0;
 	virtual String get_tag(const String &p_key) = 0;
 
-	virtual void add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &p_frames) = 0;
+	virtual void add_exception(const Exception &p_exception) = 0;
+
+	virtual bool is_crash() const = 0;
 
 	virtual ~SentryEvent() = default;
 };

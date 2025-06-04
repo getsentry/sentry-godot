@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+
+- Remove `on_crash` hook in favor of `SentryEvent.is_crash()`: `before_send` is now called for crash events too, and you can check if it's a crash event by calling `event.is_crash()` ([#181](https://github.com/getsentry/sentry-godot/pull/181))
+
+### Other changes
+
+- Rename "addons/sentrysdk" to "addons/sentry" ([#180](https://github.com/getsentry/sentry-godot/pull/180))
+- Improve thread safety ([#186](https://github.com/getsentry/sentry-godot/pull/186))
+
+### Dependencies
+
+- Bump Native SDK from v0.8.4 to v0.8.5 ([#175](https://github.com/getsentry/sentry-godot/pull/175))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#085)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.4...0.8.5)
+- Bump gdUnit 4 from v4.5.0 to v5.0.0 ([#185](https://github.com/getsentry/sentry-godot/pull/185))
+  - [changelog](https://github.com/MikeSchulze/gdUnit4/blob/master/CHANGELOG.md#v500)
+  - [diff](https://github.com/MikeSchulze/gdUnit4/compare/v4.5.0...v5.0.0)
+
 ## 0.5.0
 
 ### Breaking changes

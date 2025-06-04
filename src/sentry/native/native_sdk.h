@@ -4,16 +4,15 @@
 #include "sentry/internal_sdk.h"
 
 #include <sentry.h>
-#include <godot_cpp/classes/mutex.hpp>
+#include <atomic>
 
 namespace sentry {
 
 // Internal SDK utilizing sentry-native.
 class NativeSDK : public InternalSDK {
 private:
-	sentry_uuid_t last_uuid;
+	std::atomic<sentry_uuid_t> last_uuid;
 	bool initialized = false;
-	Ref<Mutex> mutex;
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
