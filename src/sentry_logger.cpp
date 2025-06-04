@@ -292,6 +292,18 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 			"debug");
 }
 
+void SentryLogger::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			// Connect process function.
+			SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+			if (scene_tree) {
+				scene_tree->connect("process_frame", callable_mp(this, &SentryLogger::_process_frame));
+			}
+		} break;
+	}
+}
+
 SentryLogger::SentryLogger() {
 	mutex.instantiate();
 
@@ -317,12 +329,6 @@ SentryLogger::SentryLogger() {
 	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->repeated_error_window_ms };
 	limits.throttle_events = logger_limits->throttle_events;
 	limits.throttle_window = std::chrono::milliseconds{ logger_limits->throttle_window_ms };
-
-	// Connect process function.
-	SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-	if (scene_tree) {
-		scene_tree->connect("process_frame", callable_mp(this, &SentryLogger::_process_frame));
-	}
 }
 
 SentryLogger::~SentryLogger() {
