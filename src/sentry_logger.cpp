@@ -242,6 +242,10 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 				"error",
 				data);
 	}
+
+	mutex->lock();
+	source_line_times[source_line] = now;
+	mutex->unlock();
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
