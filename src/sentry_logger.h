@@ -35,6 +35,17 @@ private:
 	// Time points for events captured within throttling window.
 	std::deque<TimePoint> event_times;
 
+	struct Limits {
+		int events_per_frame;
+		std::chrono::milliseconds repeated_error_window;
+		std::chrono::milliseconds throttle_window;
+		int throttle_events;
+	} limits;
+
+	// Number of events captured during this frame.
+	// Note: Initialize to negative value to allow more events in first frame as it's likely to have more issues.
+	int frame_events = -10;
+
 	// Patterns that are checked against each message.
 	// If matching, the message is not added as breadcrumb.
 	std::vector<std::regex> filter_patterns;
@@ -47,6 +58,8 @@ private:
 	String filter_script_trace_finisher_exact;
 	bool skip_logging_message = false; // Set by filtering until further condition unsets this.
 
+	void _process_frame();
+
 protected:
 	static void _bind_methods() {}
 
@@ -55,6 +68,7 @@ public:
 	virtual void _log_message(const String &p_message, bool p_error) override;
 
 	SentryLogger();
+	~SentryLogger();
 };
 
 #endif // SENTRY_LOGGER_H
