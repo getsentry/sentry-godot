@@ -6,6 +6,10 @@
 
 - Remove `on_crash` hook in favor of `SentryEvent.is_crash()`: `before_send` is now called for crash events too, and you can check if it's a crash event by calling `event.is_crash()` ([#181](https://github.com/getsentry/sentry-godot/pull/181))
 
+### Fixes
+
+- Filter out warnings about missing attachment files that may not exist in some scenarios (screenshot.jpg and view-hierarchy.json) ([#189](https://github.com/getsentry/sentry-godot/pull/189))
+
 ### Other changes
 
 - Rename "addons/sentrysdk" to "addons/sentry" ([#180](https://github.com/getsentry/sentry-godot/pull/180))
