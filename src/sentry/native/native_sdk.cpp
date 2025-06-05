@@ -222,15 +222,19 @@ void _log_native_message(sentry_level_t level, const char *message, va_list args
 	}
 	va_end(args_copy);
 
+	bool accepted = true;
+
 	// Filter out warnings about missing attachment files that may not exist in some scenarios.
 	static auto pattern = std::regex{
 		R"(^failed to read envelope item from \".*(screenshot\.jpg|view-hierarchy\.json)\")"
 	};
 	if (std::regex_search(buffer, buffer + required, pattern)) {
-		return;
+		accepted = false;
 	}
 
-	sentry::util::print(sentry::native::native_to_level(level), String(buffer));
+	if (accepted) {
+		sentry::util::print(sentry::native::native_to_level(level), String(buffer));
+	}
 
 	if (buffer != initial_buffer) {
 		free(buffer);
