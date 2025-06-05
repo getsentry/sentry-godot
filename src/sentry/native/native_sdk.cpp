@@ -226,7 +226,7 @@ void _log_native_message(sentry_level_t level, const char *message, va_list args
 	static auto pattern = std::regex{
 		R"(^failed to read envelope item from \".*(screenshot\.jpg|view-hierarchy\.json)\")"
 	};
-	if (std::regex_search(std::string(buffer), pattern)) {
+	if (std::regex_search(buffer, buffer + required, pattern)) {
 		return;
 	}
 
