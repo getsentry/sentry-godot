@@ -101,12 +101,12 @@ String AndroidEvent::get_tag(const String &p_key) {
 	return android_plugin->call(ANDROID_SN(eventGetTag), event_handle, p_key);
 }
 
-void AndroidEvent::add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &p_frames) {
+void AndroidEvent::add_exception(const Exception &p_exception) {
 	ERR_FAIL_NULL(android_plugin);
 
-	int32_t exception_handle = android_plugin->call(ANDROID_SN(createException), p_type, p_value);
+	int32_t exception_handle = android_plugin->call(ANDROID_SN(createException), p_exception.type, p_exception.value);
 
-	for (const StackFrame &frame : p_frames) {
+	for (const StackFrame &frame : p_exception.frames) {
 		Dictionary data;
 		data["filename"] = frame.filename;
 		data["function"] = frame.function;
@@ -119,6 +119,11 @@ void AndroidEvent::add_exception(const String &p_type, const String &p_value, co
 
 	android_plugin->call(ANDROID_SN(eventAddException), event_handle, exception_handle);
 	android_plugin->call(ANDROID_SN(releaseException), exception_handle);
+}
+
+bool AndroidEvent::is_crash() const {
+	ERR_FAIL_NULL_V(android_plugin, false);
+	return android_plugin->call(ANDROID_SN(eventIsCrash), event_handle);
 }
 
 AndroidEvent::AndroidEvent(Object *p_android_plugin, int32_t p_event_handle) {

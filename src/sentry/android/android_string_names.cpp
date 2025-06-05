@@ -50,6 +50,7 @@ AndroidStringNames::AndroidStringNames() {
 	eventSetTag = StringName("eventSetTag");
 	eventRemoveTag = StringName("eventRemoveTag");
 	eventGetTag = StringName("eventGetTag");
+	eventIsCrash = StringName("eventIsCrash");
 
 	// Exceptions.
 	createException = StringName("createException");

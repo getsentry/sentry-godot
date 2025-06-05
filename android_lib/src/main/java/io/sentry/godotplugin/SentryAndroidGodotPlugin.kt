@@ -335,6 +335,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun eventIsCrash(eventHandle: Int): Boolean {
+        return getEvent(eventHandle)?.isCrashed ?: false
+    }
+
+    @UsedByGodot
     fun createException(type: String, value: String): Int {
         val exception = SentryException()
         exception.type = type
