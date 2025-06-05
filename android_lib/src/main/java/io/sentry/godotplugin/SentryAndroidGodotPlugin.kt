@@ -21,10 +21,10 @@ import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.SignalInfo
 import org.godotengine.godot.plugin.UsedByGodot
 import org.threeten.bp.format.DateTimeParseException
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
 
+@Suppress("unused")
 class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     companion object {
         private const val TAG = "sentry-godot"
@@ -32,11 +32,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         val BEFORE_SEND_SIGNAL = SignalInfo("beforeSend", Int::class.javaObjectType)
     }
 
-    private val eventsByHandle = ConcurrentHashMap<Int, SentryEvent>()
-    private val exceptionsByHandle = ConcurrentHashMap<Int, SentryException>()
+    private val eventsByHandle = ThreadLocal.withInitial { mutableMapOf<Int, SentryEvent>() }
+    private val exceptionsByHandle = ThreadLocal.withInitial { mutableMapOf<Int, SentryException>() }
 
     private fun getEvent(eventHandle: Int): SentryEvent? {
-        val event: SentryEvent? = eventsByHandle[eventHandle]
+        val event: SentryEvent? = eventsByHandle.get()!![eventHandle]
         if (event == null) {
             Log.e(TAG, "Internal Error -- SentryEvent not found: $eventHandle")
         }
@@ -44,7 +44,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     private fun getException(exceptionHandle: Int): SentryException? {
-        val exception: SentryException? = exceptionsByHandle[exceptionHandle]
+        val exception: SentryException? = exceptionsByHandle.get()!![exceptionHandle]
         if (exception == null) {
             Log.e(TAG, "Internal Error -- SentryException not found: $exceptionHandle")
         }
@@ -53,26 +53,28 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @Synchronized
     private fun registerEvent(event: SentryEvent): Int {
+        val eventsMap = eventsByHandle.get()!!
         var handle = Random.nextInt()
-        while (eventsByHandle.containsKey(handle)) {
+        while (eventsMap.containsKey(handle)) {
             handle = Random.nextInt()
         }
-        eventsByHandle[handle] = event
+        eventsMap[handle] = event
         return handle
     }
 
     @Synchronized
     private fun registerException(exception: SentryException): Int {
+        val exceptionsMap = exceptionsByHandle.get()!!
         var handle = Random.nextInt()
-        while (exceptionsByHandle.containsKey(handle)) {
+        while (exceptionsMap.containsKey(handle)) {
             handle = Random.nextInt()
         }
-        exceptionsByHandle[handle] = exception
+        exceptionsMap[handle] = exception
         return handle
     }
 
     override fun getPluginName(): String {
-        return "SentryAndroidGodotPlugin";
+        return "SentryAndroidGodotPlugin"
     }
 
     override fun onGodotSetupCompleted() {
@@ -105,13 +107,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             options.beforeSend =
                 SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
                     val handle: Int = registerEvent(event)
-                    Log.v(TAG,"beforeSend $handle")
-                    Log.v(TAG,"before beforeSend containsKey ${eventsByHandle.containsKey(handle)}")
-                    val isInst = Int::class.java.isInstance(handle)
-                    Log.v(TAG,"type $isInst")
+//                    Log.v(TAG,"beforeSend $handle")
+//                    Log.v(TAG,"before beforeSend containsKey ${eventsByHandle.get()!!.containsKey(handle)}")
                     emitSignal(BEFORE_SEND_SIGNAL.name, handle)
-                    Log.v(TAG,"after beforeSend containsKey ${eventsByHandle.containsKey(handle)}")
-                    eventsByHandle.getOrDefault(handle, null) // Returns null if event was discarded.
+//                    Log.v(TAG,"after beforeSend containsKey ${eventsByHandle.get()!!.containsKey(handle)}")
+                    eventsByHandle.get()!!.getOrDefault(handle, null) // Returns null if event was discarded.
                 }
             }
     }
@@ -212,8 +212,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun releaseEvent(eventHandle: Int) {
         Log.v(TAG, "Releasing event: $eventHandle")
-        // TODO: synchronize.
-        eventsByHandle.remove(eventHandle)
+        eventsByHandle.get()!!.remove(eventHandle)
     }
 
     @UsedByGodot
@@ -229,7 +228,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventGetId(eventHandle: Int): String {
-        Log.v(TAG,"Handle $eventHandle containsKey ${eventsByHandle.containsKey(eventHandle)}")
+        Log.v(TAG,"Handle $eventHandle containsKey ${eventsByHandle.get()!!.containsKey(eventHandle)}")
         return getEvent(eventHandle)?.eventId.toString()
     }
 
@@ -252,7 +251,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         val event: SentryEvent = getEvent(eventHandle) ?: return
         try {
             event.timestamp = timestamp.parseTimestamp()
-        } catch (e: DateTimeParseException) {
+        } catch (_: DateTimeParseException) {
             Log.e(TAG, "Failed to parse datetime: $timestamp")
         }
     }
@@ -336,7 +335,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventIsCrash(eventHandle: Int): Boolean {
-        return getEvent(eventHandle)?.isCrashed ?: false
+        return getEvent(eventHandle)?.isCrashed == true
     }
 
     @UsedByGodot
@@ -351,7 +350,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun releaseException(exceptionHandle: Int) {
-        exceptionsByHandle.remove(exceptionHandle)
+        exceptionsByHandle.get()!!.remove(exceptionHandle)
     }
 
     @UsedByGodot
