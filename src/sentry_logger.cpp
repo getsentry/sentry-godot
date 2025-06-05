@@ -159,7 +159,13 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 
 	// Capture error as event.
 	if (as_event) {
-		SentryEvent::StackFrame stack_frame{ p_file, p_func, p_line };
+		SentryEvent::StackFrame stack_frame{
+			p_file,
+			p_func,
+			p_line,
+			true, // in_app
+			"godot" // platform
+		};
 
 		// Provide script source code context for script errors if available.
 		if (p_error_type == GodotErrorType::ERROR_TYPE_SCRIPT && SentryOptions::get_singleton()->is_logger_include_source_enabled()) {
@@ -177,7 +183,7 @@ void SentryLogger::_log_error(const char *p_func, const char *p_file, int p_line
 
 		Ref<SentryEvent> ev = SentrySDK::get_singleton()->create_event();
 		ev->set_level(sentry::get_sentry_level_for_godot_error_type(p_error_type));
-		ev->add_exception(error_types[int(p_error_type)], p_rationale, { stack_frame });
+		ev->add_exception({ error_types[int(p_error_type)], p_rationale, { stack_frame } });
 		SentrySDK::get_singleton()->capture_event(ev);
 
 		// For throttling

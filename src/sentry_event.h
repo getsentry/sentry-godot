@@ -4,6 +4,7 @@
 #include "sentry/level.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/templates/pair.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 using namespace godot;
@@ -18,9 +19,17 @@ public:
 		String filename;
 		String function;
 		int lineno = -1;
+		bool in_app = true;
+		String platform;
 		String context_line;
 		PackedStringArray pre_context;
 		PackedStringArray post_context;
+	};
+
+	struct Exception {
+		String type;
+		String value;
+		Vector<StackFrame> frames;
 	};
 
 protected:
@@ -56,7 +65,9 @@ public:
 	virtual void remove_tag(const String &p_key) = 0;
 	virtual String get_tag(const String &p_key) = 0;
 
-	virtual void add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &frames) = 0;
+	virtual void add_exception(const Exception &p_exception) = 0;
+
+	virtual bool is_crash() const = 0;
 
 	virtual ~SentryEvent() = default;
 };

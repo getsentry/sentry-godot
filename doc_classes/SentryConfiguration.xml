@@ -16,7 +16,6 @@
 		        options.debug = true
 		    options.release = "mygame@1.0.0"
 		    options.before_send = _process_event
-		    options.on_crash = _process_event
 
 		func _process_event(event: SentryEvent) -&gt; SentryEvent:
 		    if event.environment == "debug":
@@ -35,7 +34,7 @@
 			<return type="void" />
 			<param index="0" name="options" type="SentryOptions" />
 			<description>
-				Called just before the Sentry SDK initializes. You can override SDK [param options] here and register [member SentryOptions.before_send] and [member SentryOptions.on_crash] callbacks if needed.
+				Called just before the Sentry SDK initializes. You can override SDK [param options] here and register [member SentryOptions.before_send] callback if needed.
 			</description>
 		</method>
 	</methods>

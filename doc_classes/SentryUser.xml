@@ -11,6 +11,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="duplicate">
+			<return type="SentryUser" />
+			<description>
+				Creates a copy of this user data, returning a new [SentryUser] instance.
+			</description>
+		</method>
 		<method name="generate_new_id">
 			<return type="void" />
 			<description>

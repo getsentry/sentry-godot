@@ -4,13 +4,14 @@
 #include "sentry/internal_sdk.h"
 
 #include <sentry.h>
+#include <atomic>
 
 namespace sentry {
 
 // Internal SDK utilizing sentry-native.
 class NativeSDK : public InternalSDK {
 private:
-	sentry_uuid_t last_uuid;
+	std::atomic<sentry_uuid_t> last_uuid;
 	bool initialized = false;
 
 public:

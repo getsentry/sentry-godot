@@ -38,6 +38,8 @@ public:
 	bool is_empty() const;
 
 	void generate_new_id();
+
+	Ref<SentryUser> duplicate();
 };
 
 #endif // SENTRY_USER_H

@@ -90,6 +90,12 @@ func test_event_tags() -> void:
 	assert_str(event.get_tag("test_tag")).is_empty()
 
 
+## SentryEvent.is_crash() should return false on a custom-created event.
+func test_event_is_crash() -> void:
+	var event := SentrySDK.create_event()
+	assert_bool(event.is_crash()).is_false()
+
+
 ## SentrySDK.capture_event() should return a non-empty event ID, which must match the ID returned by the get_last_event_id() call.
 func test_capture_event() -> void:
 	var event := SentrySDK.create_event()

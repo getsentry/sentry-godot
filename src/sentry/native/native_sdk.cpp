@@ -18,6 +18,7 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <regex>
 
 #ifdef DEBUG_ENABLED
 #include <godot_cpp/classes/time.hpp>
@@ -147,7 +148,7 @@ inline void _inject_contexts(sentry_value_t p_event) {
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	sentry::util::print_debug("handling before_send");
-	Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, false));
 	_save_screenshot(event_obj);
 	_save_view_hierarchy();
 	_inject_contexts(event);
@@ -171,24 +172,24 @@ sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closu
 
 sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
 	sentry::util::print_debug("handling on_crash");
-	Ref<NativeEvent> event_obj = memnew(NativeEvent(event));
+	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, true));
 	_save_screenshot(event_obj);
 	_save_view_hierarchy();
 	_inject_contexts(event);
-	if (const Callable &on_crash = SentryOptions::get_singleton()->get_on_crash(); on_crash.is_valid()) {
-		Ref<NativeEvent> processed = on_crash.call(event_obj);
+	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
+		Ref<NativeEvent> processed = before_send.call(event_obj);
 		if (processed.is_valid() && processed != event_obj) {
 			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
-			ERR_PRINT_ONCE("Sentry: on_crash callback must return the same event object or null.");
+			ERR_PRINT_ONCE("Sentry: before_send callback must return the same event object or null.");
 			return event;
 		}
 		if (processed.is_null()) {
 			// Discard event.
-			sentry::util::print_debug("event discarded by on_crash callback: ", event_obj->get_id());
+			sentry::util::print_debug("event discarded by before_send callback: ", event_obj->get_id());
 			sentry_value_decref(event);
 			return sentry_value_new_null();
 		}
-		sentry::util::print_debug("event processed by on_crash callback: ", event_obj->get_id());
+		sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
 	}
 	return event;
 }
@@ -219,7 +220,19 @@ void _log_native_message(sentry_level_t level, const char *message, va_list args
 	}
 	va_end(args_copy);
 
-	sentry::util::print(sentry::native::native_to_level(level), String(buffer));
+	bool accepted = true;
+
+	// Filter out warnings about missing attachment files that may not exist in some scenarios.
+	static auto pattern = std::regex{
+		R"(^failed to read envelope item from \".*?(screenshot\.jpg|view-hierarchy\.json)\")"
+	};
+	if (std::regex_search(buffer, buffer + required, pattern)) {
+		accepted = false;
+	}
+
+	if (accepted) {
+		sentry::util::print(sentry::native::native_to_level(level), String(buffer));
+	}
 
 	if (buffer != initial_buffer) {
 		free(buffer);
@@ -298,29 +311,31 @@ String NativeSDK::capture_message(const String &p_message, Level p_level) {
 			native::level_to_native(p_level),
 			"", // logger
 			p_message.utf8().get_data());
-	last_uuid = sentry_capture_event(event);
-	return _uuid_as_string(last_uuid);
+
+	sentry_uuid_t uuid = sentry_capture_event(event);
+	last_uuid.store(uuid, std::memory_order_release);
+	return _uuid_as_string(uuid);
 }
 
 String NativeSDK::get_last_event_id() {
-	return _uuid_as_string(last_uuid);
+	return _uuid_as_string(last_uuid.load(std::memory_order_acquire));
 }
 
 Ref<SentryEvent> NativeSDK::create_event() {
 	sentry_value_t event_value = sentry_value_new_event();
-	Ref<SentryEvent> event = memnew(NativeEvent(event_value));
+	Ref<SentryEvent> event = memnew(NativeEvent(event_value, false));
 	return event;
 }
 
 String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
-	last_uuid = sentry_uuid_nil();
-	ERR_FAIL_COND_V_MSG(p_event.is_null(), _uuid_as_string(last_uuid), "Sentry: Can't capture event - event object is null.");
+	ERR_FAIL_COND_V_MSG(p_event.is_null(), _uuid_as_string(sentry_uuid_nil()), "Sentry: Can't capture event - event object is null.");
 	NativeEvent *native_event = Object::cast_to<NativeEvent>(p_event.ptr());
-	ERR_FAIL_NULL_V(native_event, _uuid_as_string(last_uuid)); // Sanity check - this should never happen.
+	ERR_FAIL_NULL_V(native_event, _uuid_as_string(sentry_uuid_nil())); // Sanity check - this should never happen.
 	sentry_value_t event = native_event->get_native_value();
 	sentry_value_incref(event); // Keep ownership.
-	last_uuid = sentry_capture_event(event);
-	return _uuid_as_string(last_uuid);
+	sentry_uuid_t uuid = sentry_capture_event(event);
+	last_uuid.store(uuid, std::memory_order_release);
+	return _uuid_as_string(uuid);
 }
 
 void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
@@ -359,7 +374,7 @@ void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
 	String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
 	String handler_path = exe_dir.path_join(export_subdir).path_join(handler_fn);
 	if (!FileAccess::file_exists(handler_path)) {
-		const String addon_bin_dir = "res://addons/sentrysdk/bin/";
+		const String addon_bin_dir = "res://addons/sentry/bin/";
 		handler_path = ProjectSettings::get_singleton()->globalize_path(
 				addon_bin_dir.path_join(platform_dir).path_join(handler_fn));
 	}

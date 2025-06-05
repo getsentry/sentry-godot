@@ -11,6 +11,7 @@ class NativeEvent : public SentryEvent {
 
 private:
 	sentry_value_t native_event;
+	bool _is_crash = false;
 
 protected:
 	static void _bind_methods() {}
@@ -47,9 +48,11 @@ public:
 	virtual void remove_tag(const String &p_key) override;
 	virtual String get_tag(const String &p_key) override;
 
-	virtual void add_exception(const String &p_type, const String &p_value, const Vector<StackFrame> &frames) override;
+	virtual void add_exception(const Exception &p_exception) override;
 
-	NativeEvent(sentry_value_t p_event);
+	virtual bool is_crash() const override;
+
+	NativeEvent(sentry_value_t p_event, bool p_is_crash);
 	NativeEvent();
 	virtual ~NativeEvent() override;
 };
