@@ -51,7 +51,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         return exception
     }
 
-    @Synchronized
     private fun registerEvent(event: SentryEvent): Int {
         val eventsMap = eventsByHandle.get()!!
         var handle = Random.nextInt()
@@ -62,7 +61,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         return handle
     }
 
-    @Synchronized
     private fun registerException(exception: SentryException): Int {
         val exceptionsMap = exceptionsByHandle.get()!!
         var handle = Random.nextInt()
