@@ -12,12 +12,7 @@ using namespace godot;
 namespace sentry {
 
 void SentryAndroidBeforeSendHandler::_initialize(Object *p_android_plugin) {
-	sentry::util::print_debug("initializing before send handler");
 	android_plugin = p_android_plugin;
-	if (android_plugin) {
-		android_plugin->connect(ANDROID_SN(beforeSend), callable_mp(this, &SentryAndroidBeforeSendHandler::_before_send));
-	}
-	sentry::util::print_debug("finished initializing before send handler");
 }
 
 void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {

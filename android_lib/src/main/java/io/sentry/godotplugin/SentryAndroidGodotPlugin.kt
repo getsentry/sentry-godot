@@ -18,7 +18,6 @@ import io.sentry.protocol.User
 import org.godotengine.godot.Dictionary
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
-import org.godotengine.godot.plugin.SignalInfo
 import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.godot.variant.Callable
 import org.threeten.bp.format.DateTimeParseException
@@ -29,8 +28,6 @@ import kotlin.random.Random
 class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     companion object {
         private const val TAG = "sentry-godot"
-
-        val BEFORE_SEND_SIGNAL = SignalInfo("beforeSend", Int::class.javaObjectType)
     }
 
     private val eventsByHandle = ThreadLocal.withInitial { mutableMapOf<Int, SentryEvent>() }
@@ -80,8 +77,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         super.onGodotSetupCompleted()
         AndroidThreeTen.init(this.activity!!.application) // needed for date time zones
     }
-
-    override fun getPluginSignals() = setOf(BEFORE_SEND_SIGNAL)
 
     @UsedByGodot
     fun initialize(
