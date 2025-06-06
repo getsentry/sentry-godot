@@ -142,7 +142,6 @@ void SentrySDK::_initialize() {
 
 	if (!enabled) {
 		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
-		internal_sdk = std::make_shared<DisabledSDK>();
 		return;
 	}
 
@@ -207,6 +206,9 @@ SentrySDK::SentrySDK() {
 
 	user_mutex.instantiate();
 
+	// Prevent potential crashes if initialization is skipped (unsupported platform, script failure, etc.)
+	internal_sdk = std::make_shared<DisabledSDK>();
+
 	singleton = this;
 
 	// Load the runtime configuration from the user's data directory.
@@ -247,7 +249,6 @@ SentrySDK::SentrySDK() {
 			// C++, which calls `_configure()` on the user script and then invokes
 			// `notify_options_configured()` in `SentrySDK`. This, in turn, initializes
 			// the internal SDK.
-			internal_sdk = std::make_shared<DisabledSDK>(); // just in case
 			sentry::util::print_debug("waiting for user configuration autoload");
 			ERR_FAIL_NULL(ProjectSettings::get_singleton());
 			ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
