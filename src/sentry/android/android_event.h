@@ -12,6 +12,7 @@ class AndroidEvent : public SentryEvent {
 private:
 	Object *android_plugin = nullptr;
 	int32_t event_handle;
+	bool is_borrowed = false;
 
 protected:
 	static void _bind_methods() {}
@@ -51,6 +52,8 @@ public:
 	virtual void add_exception(const Exception &p_exception) override;
 
 	virtual bool is_crash() const override;
+
+	void set_as_borrowed() { is_borrowed = true; }
 
 	AndroidEvent() {}
 	AndroidEvent(Object *android_plugin, int32_t p_event_handle);

@@ -7,7 +7,7 @@ from functools import partial
 # *** Setting.
 
 VERSION = "0.7.0-dev"
-COMPATIBILITY_MINIMUM = "4.3"
+COMPATIBILITY_MINIMUM = "4.4"
 
 BIN_DIR = "project/addons/sentry/bin"
 

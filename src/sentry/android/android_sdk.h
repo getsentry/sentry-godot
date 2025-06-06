@@ -19,7 +19,7 @@ private:
 	void _before_send(int32_t p_event_handle);
 
 protected:
-	static void _bind_methods() {}
+	static void _bind_methods();
 };
 
 // Internal SDK utilizing Sentry Android (sentry-java repo).

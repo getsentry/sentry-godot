@@ -133,7 +133,7 @@ AndroidEvent::AndroidEvent(Object *p_android_plugin, int32_t p_event_handle) {
 }
 
 AndroidEvent::~AndroidEvent() {
-	if (android_plugin) {
+	if (android_plugin && !is_borrowed) {
 		android_plugin->call(ANDROID_SN(releaseEvent), event_handle);
 	}
 }

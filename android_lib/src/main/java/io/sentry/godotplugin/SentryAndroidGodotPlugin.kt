@@ -20,6 +20,7 @@ import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.SignalInfo
 import org.godotengine.godot.plugin.UsedByGodot
+import org.godotengine.godot.variant.Callable
 import org.threeten.bp.format.DateTimeParseException
 import kotlin.random.Random
 
@@ -84,6 +85,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun initialize(
+        beforeSendHandlerId: Long,
         dsn: String,
         debug: Boolean,
         release: String,
@@ -104,8 +106,9 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             options.sdkVersion!!.name = "sentry.java.android.godot"
             options.beforeSend =
                 SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
+                    Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
                     val handle: Int = registerEvent(event)
-                    emitSignal(BEFORE_SEND_SIGNAL.name, handle)
+                    Callable.call(beforeSendHandlerId, "before_send", handle)
                     eventsByHandle.get()!!.getOrDefault(handle, null) // Returns null if event was discarded.
                 }
             }

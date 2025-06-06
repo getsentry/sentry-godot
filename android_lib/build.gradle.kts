@@ -34,7 +34,7 @@ android {
 }
 
 dependencies {
-    implementation("org.godotengine:godot:4.3.0.stable")
+    implementation("org.godotengine:godot:4.4.0.stable")
 
     // Note: Must also be updated in sentry_editor_export_plugin.cpp.
     implementation("io.sentry:sentry-android:8.11.1")

@@ -22,10 +22,11 @@ void SentryAndroidBeforeSendHandler::_initialize(Object *p_android_plugin) {
 
 void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
 	sentry::util::print_debug("handling before_send: ", p_event_handle);
-	Ref<SentryEvent> event_obj = memnew(AndroidEvent(android_plugin, p_event_handle));
+	Ref<AndroidEvent> event_obj = memnew(AndroidEvent(android_plugin, p_event_handle));
+	event_obj->set_as_borrowed();
 	sentry::util::print_debug("STATE: ", event_obj->get_id());
 	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
-		Ref<SentryEvent> processed = before_send.call(event_obj);
+		Ref<AndroidEvent> processed = before_send.call(event_obj);
 		if (processed.is_valid() && processed != event_obj) {
 			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
 			ERR_PRINT_ONCE("Sentry: before_send callback must return the same event object or null.");
@@ -37,6 +38,10 @@ void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
 		}
 		sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
 	}
+}
+
+void SentryAndroidBeforeSendHandler::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("before_send"), &SentryAndroidBeforeSendHandler::_before_send);
 }
 
 void AndroidSDK::set_context(const String &p_key, const Dictionary &p_value) {
@@ -116,6 +121,7 @@ void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
 	}
 
 	android_plugin->call("initialize",
+			before_send_handler->get_instance_id(),
 			SentryOptions::get_singleton()->get_dsn(),
 			SentryOptions::get_singleton()->is_debug_enabled(),
 			SentryOptions::get_singleton()->get_release(),
