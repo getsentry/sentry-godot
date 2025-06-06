@@ -9,6 +9,7 @@
 ### Fixes
 
 - Filter out warnings about missing attachment files that may not exist in some scenarios (screenshot.jpg and view-hierarchy.json) ([#189](https://github.com/getsentry/sentry-godot/pull/189))
+- Fix crash in code editor when `disabled_in_editor` is ON ([#191](https://github.com/getsentry/sentry-godot/pull/191))
 
 ### Other changes
 
