@@ -137,7 +137,9 @@ AndroidSDK::AndroidSDK() {
 
 AndroidSDK::~AndroidSDK() {
 	AndroidStringNames::destroy_singleton();
-	memdelete(before_send_handler);
+	if (before_send_handler != nullptr) {
+		memdelete(before_send_handler);
+	}
 }
 
 } //namespace sentry

@@ -105,10 +105,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             options.beforeSend =
                 SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
                     val handle: Int = registerEvent(event)
-//                    Log.v(TAG,"beforeSend $handle")
-//                    Log.v(TAG,"before beforeSend containsKey ${eventsByHandle.get()!!.containsKey(handle)}")
                     emitSignal(BEFORE_SEND_SIGNAL.name, handle)
-//                    Log.v(TAG,"after beforeSend containsKey ${eventsByHandle.get()!!.containsKey(handle)}")
                     eventsByHandle.get()!!.getOrDefault(handle, null) // Returns null if event was discarded.
                 }
             }
@@ -127,7 +124,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun removeContext(key: String) {
-        // Q: Godot SDK has no notion of scopes, should we set it on the global scope?
+        // Q: Godot SDK doesn't expose scopes yet, should we set it on the global scope?
         Sentry.getGlobalScope().removeContexts(key)
     }
 
@@ -203,13 +200,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun createEvent(): Int {
         val event = SentryEvent()
         val handle = registerEvent(event)
-        Log.v(TAG,"Created event object: $handle") // REMOVE ME
         return handle
     }
 
     @UsedByGodot
     fun releaseEvent(eventHandle: Int) {
-        Log.v(TAG, "Releasing event: $eventHandle")
         eventsByHandle.get()!!.remove(eventHandle)
     }
 
@@ -226,7 +221,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventGetId(eventHandle: Int): String {
-        Log.v(TAG,"Handle $eventHandle containsKey ${eventsByHandle.get()!!.containsKey(eventHandle)}")
         return getEvent(eventHandle)?.eventId.toString()
     }
 
@@ -245,7 +239,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventSetTimestamp(eventHandle: Int, timestamp: String) {
-        // TODO: Revise how timestamps are handled.
         val event: SentryEvent = getEvent(eventHandle) ?: return
         try {
             event.timestamp = timestamp.parseTimestamp()

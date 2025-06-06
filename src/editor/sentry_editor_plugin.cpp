@@ -15,8 +15,8 @@ void SentryEditorPlugin::_notification(int p_what) {
 			add_export_plugin(export_plugin);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			remove_export_plugin(export_plugin);
 			if (export_plugin.is_valid()) {
+				remove_export_plugin(export_plugin);
 				export_plugin.unref();
 			}
 		} break;

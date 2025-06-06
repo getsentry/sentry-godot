@@ -6,6 +6,7 @@
 namespace sentry::util {
 
 bool is_valid_timestamp(const godot::String &p_timestamp);
+
 }
 
 #endif // SENTRY_TIMESTAMP_H
