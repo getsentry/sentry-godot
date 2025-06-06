@@ -170,8 +170,19 @@ void SentrySDK::_initialize() {
 	internal_sdk = std::make_shared<NativeSDK>();
 	enabled = true;
 #elif ANDROID_ENABLED
-	internal_sdk = std::make_shared<AndroidSDK>();
-	enabled = true;
+	if (unlikely(OS::get_singleton()->has_feature("editor"))) {
+		sentry::util::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
+		enabled = false;
+	} else {
+		auto sdk = std::make_shared<AndroidSDK>();
+		if (sdk->is_initialized()) {
+			internal_sdk = sdk;
+			enabled = true;
+		} else {
+			sentry::util::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
+			enabled = false;
+		}
+	}
 #else
 	// Unsupported platform
 	sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");

@@ -127,10 +127,12 @@ void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
 
 AndroidSDK::AndroidSDK() {
 	AndroidStringNames::create_singleton();
+
 	android_plugin = Engine::get_singleton()->get_singleton("SentryAndroidGodotPlugin");
+	ERR_FAIL_NULL_MSG(android_plugin, "Sentry: Unable to locate SentryAndroidGodotPlugin singleton.");
+
 	before_send_handler = memnew(SentryAndroidBeforeSendHandler);
 	before_send_handler->_initialize(android_plugin);
-	ERR_FAIL_NULL(android_plugin);
 }
 
 AndroidSDK::~AndroidSDK() {
