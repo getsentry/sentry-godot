@@ -45,7 +45,7 @@ val copyLibraryToProject by tasks.registering(Copy::class) {
     description = "Copies the generated debug AAR to the project"
     from("build/outputs/aar")
     include("sentry_android_godot_plugin-debug.aar")
-    into("../project/addons/sentrysdk/bin/android/")
+    into("../project/addons/sentry/bin/android/")
     rename("sentry_android_godot_plugin-debug.aar", "sentry_android_godot_plugin.aar")
 }
 

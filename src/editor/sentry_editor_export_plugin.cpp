@@ -14,7 +14,7 @@ bool SentryEditorExportPlugin::_supports_platform(const Ref<EditorExportPlatform
 
 PackedStringArray SentryEditorExportPlugin::_get_android_libraries(const Ref<EditorExportPlatform> &p_platform, bool p_debug) const {
 	PackedStringArray libs;
-	libs.append("sentrysdk/bin/android/sentry_android_godot_plugin.aar");
+	libs.append("sentry/bin/android/sentry_android_godot_plugin.aar");
 	return libs;
 }
 
