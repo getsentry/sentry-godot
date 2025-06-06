@@ -228,13 +228,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun eventSetMessage(eventHandle: Int, message: String) {
         val event: SentryEvent = getEvent(eventHandle) ?: return
         val sentryMessage = Message()
-        sentryMessage.message = message
+        sentryMessage.formatted = message
         event.message = sentryMessage
     }
 
     @UsedByGodot
     fun eventGetMessage(eventHandle: Int): String {
-        return getEvent(eventHandle)?.message?.message ?: return ""
+        return getEvent(eventHandle)?.message?.formatted ?: return ""
     }
 
     @UsedByGodot
