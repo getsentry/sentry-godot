@@ -3,6 +3,7 @@
 #include "godot_cpp/core/error_macros.hpp"
 #include "sentry/level.h"
 #include "sentry/native/native_util.h"
+#include "sentry/util/timestamp.h"
 
 #include <sentry.h>
 
@@ -46,6 +47,7 @@ String NativeEvent::get_message() const {
 }
 
 void NativeEvent::set_timestamp(const String &p_timestamp) {
+	ERR_FAIL_COND(!sentry::util::is_valid_timestamp(p_timestamp));
 	_sentry_value_set_or_remove_string_by_key(native_event, "timestamp", p_timestamp);
 }
 

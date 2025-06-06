@@ -26,7 +26,7 @@ class DisabledSDK : public InternalSDK {
 	virtual Ref<SentryEvent> create_event() override { return memnew(DisabledEvent); }
 	virtual String capture_event(const Ref<SentryEvent> &p_event) override { return ""; }
 
-	virtual void initialize() override {}
+	virtual void initialize(const PackedStringArray &p_global_attachments) override {}
 };
 
 } // namespace sentry

@@ -21,6 +21,11 @@ func _ready() -> void:
 	_init_level_choice_popup()
 	_update_user_info()
 
+	if OS.get_name() == "Android":
+		# Run basic Android tests
+		var android_tests = load("res://test/test_on_android.gd").new()
+		android_tests.run_tests()
+
 
 func _init_level_choice_popup() -> void:
 	var popup: PopupMenu = level_choice.get_popup()

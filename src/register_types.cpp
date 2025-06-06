@@ -16,6 +16,17 @@
 #include "sentry/native/native_event.h"
 #endif // NATIVE_SDK
 
+#ifdef ANDROID_ENABLED
+#include "sentry/android/android_event.h"
+#include "sentry/android/android_sdk.h"
+#endif // ANDROID_ENABLED
+
+#ifdef TOOLS_ENABLED
+#include "editor/sentry_editor_export_plugin.h"
+#include "editor/sentry_editor_plugin.h"
+#include <godot_cpp/classes/editor_plugin_registration.hpp>
+#endif // TOOLS_ENABLED
+
 using namespace godot;
 
 namespace {
@@ -55,9 +66,19 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 		GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 		GDREGISTER_INTERNAL_CLASS(SentryLogger);
+
 #ifdef NATIVE_SDK
 		GDREGISTER_INTERNAL_CLASS(NativeEvent);
-#endif // NATIVE_SDK
+#endif
+
+#ifdef ANDROID_ENABLED
+		GDREGISTER_INTERNAL_CLASS(AndroidEvent);
+
+		{
+			using namespace sentry;
+			GDREGISTER_INTERNAL_CLASS(SentryAndroidBeforeSendHandler);
+		}
+#endif
 
 		SentryOptions::create_singleton();
 
@@ -65,6 +86,12 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
 
 		callable_mp_static(_init_logger).call_deferred();
+	} else if (p_level == godot::MODULE_INITIALIZATION_LEVEL_EDITOR) {
+#ifdef TOOLS_ENABLED
+		GDREGISTER_INTERNAL_CLASS(SentryEditorPlugin);
+		GDREGISTER_INTERNAL_CLASS(SentryEditorExportPlugin);
+		EditorPlugins::add_by_type<SentryEditorPlugin>();
+#endif // TOOLS_ENABLED
 	}
 }
 
