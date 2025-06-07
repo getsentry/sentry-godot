@@ -2,6 +2,8 @@ package io.sentry.godotplugin
 
 import io.sentry.SentryLevel
 import org.threeten.bp.OffsetDateTime
+import org.threeten.bp.ZoneOffset
+import org.threeten.bp.format.DateTimeFormatter
 import java.util.Date
 
 fun Int.toSentryLevel(): SentryLevel =
@@ -26,4 +28,10 @@ fun SentryLevel.toInt(): Int =
 fun String.parseTimestamp(): Date {
     val offsetDateTime = OffsetDateTime.parse(this)
     return Date(offsetDateTime.toInstant().toEpochMilli())
+}
+
+fun Date.toRfc3339(): String {
+    val instant = org.threeten.bp.Instant.ofEpochMilli(this.time)
+    val offsetDateTime = OffsetDateTime.ofInstant(instant, ZoneOffset.UTC)
+    return offsetDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 }
