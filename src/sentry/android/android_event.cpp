@@ -20,7 +20,7 @@ String AndroidEvent::get_message() const {
 
 void AndroidEvent::set_timestamp(const String &p_timestamp) {
 	ERR_FAIL_NULL(android_plugin);
-	ERR_FAIL_COND(!sentry::util::is_valid_timestamp(p_timestamp));
+	ERR_FAIL_COND_MSG(!sentry::util::is_valid_timestamp(p_timestamp), "Invalid timestamp - expecting RFC 3339 format.");
 	android_plugin->call(ANDROID_SN(eventSetTimestamp), event_handle, p_timestamp);
 }
 

@@ -57,9 +57,6 @@ AndroidStringNames::AndroidStringNames() {
 	releaseException = StringName("releaseException");
 	exceptionAppendStackFrame = StringName("exceptionAppendStackFrame");
 	eventAddException = StringName("eventAddException");
-
-	// Signal.
-	beforeSend = StringName("beforeSend");
 }
 
 } // namespace sentry

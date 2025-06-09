@@ -47,7 +47,7 @@ String NativeEvent::get_message() const {
 }
 
 void NativeEvent::set_timestamp(const String &p_timestamp) {
-	ERR_FAIL_COND(!sentry::util::is_valid_timestamp(p_timestamp));
+	ERR_FAIL_COND_MSG(!sentry::util::is_valid_timestamp(p_timestamp), "Invalid timestamp - expecting RFC 3339 format.");
 	_sentry_value_set_or_remove_string_by_key(native_event, "timestamp", p_timestamp);
 }
 

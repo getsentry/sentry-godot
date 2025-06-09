@@ -19,12 +19,17 @@ void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
 	sentry::util::print_debug("handling before_send: ", p_event_handle);
 	Ref<AndroidEvent> event_obj = memnew(AndroidEvent(android_plugin, p_event_handle));
 	event_obj->set_as_borrowed();
-	sentry::util::print_debug("STATE: ", event_obj->get_id());
 	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
 		Ref<AndroidEvent> processed = before_send.call(event_obj);
 		if (processed.is_valid() && processed != event_obj) {
-			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
-			ERR_PRINT_ONCE("Sentry: before_send callback must return the same event object or null.");
+			static bool first_print = true;
+			if (unlikely(first_print)) {
+				// Note: Only push error once to avoid infinite feedback loop.
+				ERR_PRINT("Sentry: before_send callback must return the same event object or null.");
+				first_print = false;
+			} else {
+				sentry::util::print_error("before_send callback must return the same event object or null.");
+			}
 		}
 		if (processed.is_null()) {
 			// Discard event.

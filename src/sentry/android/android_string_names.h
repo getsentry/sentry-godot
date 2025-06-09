@@ -69,9 +69,6 @@ public:
 	StringName releaseException;
 	StringName exceptionAppendStackFrame;
 	StringName eventAddException;
-
-	// Signals.
-	StringName beforeSend;
 };
 
 } // namespace sentry
