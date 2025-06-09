@@ -111,9 +111,11 @@ void AndroidEvent::add_exception(const Exception &p_exception) {
 		data["filename"] = frame.filename;
 		data["function"] = frame.function;
 		data["lineno"] = frame.lineno;
-		data["context_line"] = frame.context_line;
-		data["pre_context"] = frame.pre_context;
-		data["post_context"] = frame.post_context;
+		if (!frame.context_line.is_empty()) {
+			data["context_line"] = frame.context_line;
+			data["pre_context"] = frame.pre_context;
+			data["post_context"] = frame.post_context;
+		}
 		android_plugin->call(ANDROID_SN(exceptionAppendStackFrame), exception_handle, data);
 	}
 

@@ -348,18 +348,15 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         frame.filename = frameData["filename"] as? String
         frame.function = frameData["function"] as? String
         frame.lineno = frameData["lineno"] as? Int
-        frame.contextLine = frameData["context_line"] as? String
 
-        @Suppress("UNCHECKED_CAST")
-        val preContext: Array<String> = frameData["pre_context"] as Array<String>
-        if (preContext.isNotEmpty()) {
-            frame.preContext = preContext.toList()
-        }
+        if (frameData.containsKey("context_line")) {
+            frame.contextLine = frameData["context_line"] as? String
 
-        @Suppress("UNCHECKED_CAST")
-        val postContext: Array<String> = frameData["post_context"] as Array<String>
-        if (postContext.isNotEmpty()) {
-            frame.postContext = postContext.toList()
+            val preContext: Array<*> = frameData["pre_context"] as Array<*>
+            frame.preContext = preContext.map { it as String }
+
+            val postContext: Array<*> = frameData["post_context"] as Array<*>
+            frame.postContext = postContext.map { it as String }
         }
 
         exception.stacktrace!!.frames!!.add(frame)
