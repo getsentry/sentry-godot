@@ -139,7 +139,7 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 	if (SentryOptions::get_singleton()->is_attach_log_enabled()) {
 		String log_path = ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path");
 		if (FileAccess::file_exists(log_path)) {
-			log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
+			log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
 			attachments.append(log_path);
 		} else {
 			ERR_PRINT("Sentry: Log file not found. Make sure \"debug/file_logging/enable_file_logging\" is turned ON in the Project Settings.");

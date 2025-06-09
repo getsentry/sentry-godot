@@ -386,7 +386,12 @@ void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
 	}
 
 	for (const String &path : p_global_attachments) {
-		sentry_options_add_attachment(options, path.utf8());
+		sentry::util::print_debug("adding attachment \"", path, "\"");
+		if (path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
+			sentry_options_add_view_hierarchy(options, path.utf8());
+		} else {
+			sentry_options_add_attachment(options, path.utf8());
+		}
 	}
 
 	// Hooks.
