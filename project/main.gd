@@ -22,8 +22,9 @@ func _ready() -> void:
 	_update_user_info()
 
 	# Run basic Android tests
-	var android_tests = load("res://test/test_on_android.gd").new()
-	android_tests.run_tests()
+	if OS.get_name() == "Android":
+		var tests = load("res://test/test_on_android.gd").new()
+		tests.run_tests()
 
 
 func _init_level_choice_popup() -> void:
