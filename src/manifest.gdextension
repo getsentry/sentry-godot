@@ -21,10 +21,8 @@ android.debug.arm64 = "res://addons/sentry/bin/android/libsentry.android.debug.a
 android.release.arm64 = "res://addons/sentry/bin/android/libsentry.android.release.arm64.so"
 android.debug.arm32 = "res://addons/sentry/bin/android/libsentry.android.debug.arm32.so"
 android.release.arm32 = "res://addons/sentry/bin/android/libsentry.android.release.arm32.so"
-;android.debug.x86_64 = "res://addons/sentry/bin/android/libsentry.android.debug.x86_64.so"
-;android.release.x86_64 = "res://addons/sentry/bin/android/libsentry.android.release.x86_64.so"
-;android.debug.x86_32 = "res://addons/sentry/bin/android/libsentry.android.debug.x86_32.so"
-;android.release.x86_32 = "res://addons/sentry/bin/android/libsentry.android.release.x86_32.so"
+android.debug.x86_64 = "res://addons/sentry/bin/android/libsentry.android.debug.x86_64.so"
+android.release.x86_64 = "res://addons/sentry/bin/android/libsentry.android.release.x86_64.so"
 ;web.debug.wasm32 = "res://addons/sentry/bin/web/libsentry.web.debug.wasm32.wasm"
 ;web.release.wasm32 = "res://addons/sentry/bin/web/libsentry.web.release.wasm32.wasm"
 
