@@ -41,14 +41,23 @@ dependencies {
     implementation("com.jakewharton.threetenabp:threetenabp:1.4.9")
 }
 
-val copyLibraryToProject by tasks.registering(Copy::class) {
-    description = "Copies the generated debug AAR to the project"
+val copyDebugAarToProject by tasks.registering(Copy::class) {
+    description = "Copies generated debug AAR to project"
     from("build/outputs/aar")
     include("sentry_android_godot_plugin-debug.aar")
     into("../project/addons/sentry/bin/android/")
-    rename("sentry_android_godot_plugin-debug.aar", "sentry_android_godot_plugin.aar")
+    rename("sentry_android_godot_plugin-debug.aar", "sentry_android_godot_plugin.debug.aar")
+}
+
+val copyReleaseAarToProject by tasks.registering(Copy::class) {
+    description = "Copies generated release AAR to project"
+    from("build/outputs/aar")
+    include("sentry_android_godot_plugin-release.aar")
+    into("../project/addons/sentry/bin/android/")
+    rename("sentry_android_godot_plugin-release.aar", "sentry_android_godot_plugin.release.aar")
 }
 
 tasks.named("assemble").configure {
-    finalizedBy(copyLibraryToProject)
+    finalizedBy(copyDebugAarToProject)
+    finalizedBy(copyReleaseAarToProject)
 }
