@@ -111,6 +111,8 @@ void AndroidEvent::add_exception(const Exception &p_exception) {
 		data["filename"] = frame.filename;
 		data["function"] = frame.function;
 		data["lineno"] = frame.lineno;
+		data["in_app"] = frame.in_app;
+		data["platform"] = frame.platform;
 		if (!frame.context_line.is_empty()) {
 			data["context_line"] = frame.context_line;
 			data["pre_context"] = frame.pre_context;

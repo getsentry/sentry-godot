@@ -348,6 +348,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         frame.filename = frameData["filename"] as? String
         frame.function = frameData["function"] as? String
         frame.lineno = frameData["lineno"] as? Int
+        frame.isInApp = frameData["in_app"] as? Boolean
+        frame.platform = frameData["platform"] as? String
 
         if (frameData.containsKey("context_line")) {
             frame.contextLine = frameData["context_line"] as? String
