@@ -104,7 +104,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                     Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
                     val handle: Int = registerEvent(event)
                     Callable.call(beforeSendHandlerId, "before_send", handle)
-                    eventsByHandle.get()!!.getOrDefault(handle, null) // Returns null if event was discarded.
+                    eventsByHandle.get()!!.remove(handle) // Returns the event or null if it was discarded.
                 }
             }
     }
