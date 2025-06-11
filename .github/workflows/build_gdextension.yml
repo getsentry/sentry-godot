@@ -186,7 +186,7 @@ jobs:
 
   package:
     name: 📦 Package GDExtension
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Merge artifacts
