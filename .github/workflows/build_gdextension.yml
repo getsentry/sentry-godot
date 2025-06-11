@@ -178,7 +178,7 @@ jobs:
         if: matrix.platform != 'web' # web is unsupported currently; it is used to test compilation with such platforms (ifdefs)
         uses: actions/upload-artifact@v4
         with:
-          name: libsentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}
+          name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}
           path: |
             project/
             !project/addons/gdUnit4
@@ -205,7 +205,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sentry-android-godot-plugin
+          name: sentry.android.godot_plugin
           path: |
             project/
             !project/
@@ -221,5 +221,5 @@ jobs:
         uses: actions/upload-artifact/merge@v4
         with:
           name: sentry-godot-gdextension
-          pattern: libsentry.*
+          pattern: sentry.*
           delete-merged: true
