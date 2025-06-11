@@ -247,6 +247,7 @@ void SentrySDK::_bind_methods() {
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
+	ClassDB::bind_method(D_METHOD("_get_before_send"), &SentrySDK::get_before_send);
 }
 
 SentrySDK::SentrySDK() {

@@ -8,10 +8,12 @@ func run_tests() -> void:
 	print("--------------------------------------------------------------------")
 	print("Running Android tests:")
 
+	var prev: Callable = SentrySDK._get_before_send()
+
 	test_capture_message()
 	test_capture_event()
 
-	SentrySDK._unset_before_send()
+	SentrySDK._set_before_send(prev)
 
 	print("Passed: ", num_passed, "  Failed: ", num_failed)
 	print("--------------------------------------------------------------------")
