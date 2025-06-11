@@ -22,7 +22,7 @@ func _ready() -> void:
 	_update_user_info()
 
 	# Run basic Android tests
-	if OS.get_name() == "Android":
+	if OS.get_name() == "Android" and ResourceLoader.exists("res://test/test_on_android.gd"):
 		var tests = load("res://test/test_on_android.gd").new()
 		tests.run_tests()
 
