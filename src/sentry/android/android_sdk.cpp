@@ -35,8 +35,9 @@ void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
 			// Discard event.
 			sentry::util::print_debug("event discarded by before_send callback: ", event_obj->get_id());
 			android_plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
+		} else {
+			sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
 		}
-		sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
 	}
 }
 
