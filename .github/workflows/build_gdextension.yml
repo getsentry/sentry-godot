@@ -65,6 +65,42 @@ jobs:
             target: editor
             arch: universal
 
+          - name: 🤖 Android (arm64, release)
+            runner: ubuntu-latest
+            platform: android
+            target: template_release
+            arch: arm64
+
+          - name: 🤖 Android (arm64, debug)
+            runner: ubuntu-latest
+            platform: android
+            target: editor
+            arch: arm64
+
+          - name: 🤖 Android (arm32, release)
+            runner: ubuntu-latest
+            platform: android
+            target: template_release
+            arch: arm32
+
+          - name: 🤖 Android (arm32, debug)
+            runner: ubuntu-latest
+            platform: android
+            target: editor
+            arch: arm32
+
+          - name: 🤖 Android (x86_64, release)
+            runner: ubuntu-latest
+            platform: android
+            target: template_release
+            arch: x86_64
+
+          - name: 🤖 Android (x86_64, debug)
+            runner: ubuntu-latest
+            platform: android
+            target: editor
+            arch: x86_64
+
           # Unsupported platform currently.
           # This entry is used to test compilation with such platforms.
           # It will help identify issues with preprocessor ifdefs and the build system.
@@ -106,6 +142,13 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_${{env.XCODE_VERSION}}.app/Contents/Developer
           xcodebuild -version
           clang --version
+
+      - name: Set up Java 17
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: 17
 
       - name: Compile GDExtension library
         shell: bash
