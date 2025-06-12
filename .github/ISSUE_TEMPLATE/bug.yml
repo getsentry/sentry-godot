@@ -1,0 +1,95 @@
+name: 🐞 Bug Report
+description: Report a bug in Sentry for Godot
+labels:
+  - Bug
+  - Godot
+body:
+  - type: markdown
+    attributes:
+      value: |
+        - Write a descriptive title above.
+
+  - type: input
+    attributes:
+      label: How do you use Sentry?
+      description: Sentry SaaS (sentry.io) or self-hosted/on-premise (which version?)
+      placeholder: Sentry SaaS
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Sentry SDK version
+      description: |
+        - Specify Sentry SDK version.
+        - You can check the version in the Godot Output panel or in the log file.
+      placeholder: 0.6.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: variant
+    attributes:
+      label: How did you install the SDK?
+      options:
+        - GitHub release
+        - AssetLib
+        - Built from source
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Godot version
+      description: |
+        - Specify the Godot version and hardware info if relevant.
+        - You can copy the version info by clicking on it in the Godot status bar.
+      placeholder: v4.4.1.stable.official [49a5bc7b6]
+    validations:
+      required: true
+
+  - type: dropdown
+    id: variant
+    attributes:
+      label: Which platform?
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Android
+        - iOS
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: How to reproduce
+      description: |
+        - Provide a list of steps or sample code that reproduces the issue.
+        - You can provide a small Godot project which reproduces the issue.
+          - Drag and drop a ZIP archive to upload it (10Mb limit).
+          - Don't include the `.godot` folder in the archive.
+          - Don't include the `addons/sentry` folder in the archive.
+          - Reproduction project helps us find the bug faster!
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: Expected result
+      description: |
+        - What you thought would happen.
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: Actual result
+      description: |
+        - What actually happened.
+        - Maybe a screenshot/recording?
+        - Maybe some logs?
+    validations:
+      required: false
