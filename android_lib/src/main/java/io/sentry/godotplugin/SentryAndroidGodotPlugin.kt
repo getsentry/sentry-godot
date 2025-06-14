@@ -34,7 +34,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     private val exceptionsByHandle = ThreadLocal.withInitial { mutableMapOf<Int, SentryException>() }
 
     private fun getEvent(eventHandle: Int): SentryEvent? {
-        val event: SentryEvent? = eventsByHandle.get()!![eventHandle]
+        val event: SentryEvent? = eventsByHandle.get()?.get(eventHandle)
         if (event == null) {
             Log.e(TAG, "Internal Error -- SentryEvent not found: $eventHandle")
         }
@@ -42,7 +42,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     private fun getException(exceptionHandle: Int): SentryException? {
-        val exception: SentryException? = exceptionsByHandle.get()!![exceptionHandle]
+        val exception: SentryException? = exceptionsByHandle.get()?.get(exceptionHandle)
         if (exception == null) {
             Log.e(TAG, "Internal Error -- SentryException not found: $exceptionHandle")
         }
@@ -50,21 +50,33 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     private fun registerEvent(event: SentryEvent): Int {
-        val eventsMap = eventsByHandle.get()!!
+        val eventsMap = eventsByHandle.get()
+        if (eventsMap == null) {
+            Log.e(TAG, "Internal Error -- eventsByHandle is null")
+            return 0
+        }
+
         var handle = Random.nextInt()
         while (eventsMap.containsKey(handle)) {
             handle = Random.nextInt()
         }
+
         eventsMap[handle] = event
         return handle
     }
 
     private fun registerException(exception: SentryException): Int {
-        val exceptionsMap = exceptionsByHandle.get()!!
+        val exceptionsMap = exceptionsByHandle.get()
+        if (exceptionsMap == null) {
+            Log.e(TAG, "Internal Error -- exceptionsByHandle is null")
+            return 0
+        }
+
         var handle = Random.nextInt()
         while (exceptionsMap.containsKey(handle)) {
             handle = Random.nextInt()
         }
+
         exceptionsMap[handle] = exception
         return handle
     }
@@ -75,7 +87,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     override fun onGodotSetupCompleted() {
         super.onGodotSetupCompleted()
-        AndroidThreeTen.init(this.activity!!.application) // needed for date time zones
+        AndroidThreeTen.init(godot.getActivity()?.application) // needed for date time zones
     }
 
     @UsedByGodot
@@ -98,13 +110,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             options.environment = environment.ifEmpty { null }
             options.sampleRate = sampleRate.toDouble()
             options.maxBreadcrumbs = maxBreadcrumbs
-            options.sdkVersion!!.name = "sentry.java.android.godot"
+            options.sdkVersion?.name = "sentry.java.android.godot"
             options.beforeSend =
                 SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
                     Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
                     val handle: Int = registerEvent(event)
                     Callable.call(beforeSendHandlerId, "before_send", handle)
-                    eventsByHandle.get()!!.remove(handle) // Returns the event or null if it was discarded.
+                    eventsByHandle.get()?.remove(handle) // Returns the event or null if it was discarded.
                 }
             }
     }
@@ -203,7 +215,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun releaseEvent(eventHandle: Int) {
-        eventsByHandle.get()!!.remove(eventHandle)
+        val eventsMap = eventsByHandle.get()
+        if (eventsMap == null) {
+            Log.e(TAG, "Internal Error -- eventsByHandle is null")
+            return
+        }
+
+        eventsMap.remove(eventHandle)
     }
 
     @UsedByGodot
@@ -332,13 +350,19 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         exception.type = type
         exception.value = value
         exception.stacktrace = SentryStackTrace()
-        exception.stacktrace!!.frames = mutableListOf()
+        exception.stacktrace?.frames = mutableListOf()
         return registerException(exception)
     }
 
     @UsedByGodot
     fun releaseException(exceptionHandle: Int) {
-        exceptionsByHandle.get()!!.remove(exceptionHandle)
+        val exceptionsMap = exceptionsByHandle.get()
+        if (exceptionsMap == null) {
+            Log.e(TAG, "Internal Error -- exceptionsByHandle is null")
+            return
+        }
+
+        exceptionsMap.remove(exceptionHandle)
     }
 
     @UsedByGodot
@@ -361,7 +385,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             frame.postContext = postContext.map { it as String }
         }
 
-        exception.stacktrace!!.frames!!.add(frame)
+        exception.stacktrace?.frames?.add(frame)
     }
 
     @UsedByGodot
@@ -371,6 +395,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         if (event.exceptions == null) {
             event.exceptions = mutableListOf()
         }
-        event.exceptions!!.add(exception)
+        event.exceptions?.add(exception)
     }
 }
