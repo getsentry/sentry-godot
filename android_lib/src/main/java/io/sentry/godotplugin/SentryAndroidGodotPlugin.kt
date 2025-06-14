@@ -1,7 +1,6 @@
 package io.sentry.godotplugin
 
 import android.util.Log
-import com.jakewharton.threetenabp.AndroidThreeTen
 import io.sentry.Attachment
 import io.sentry.Breadcrumb
 import io.sentry.Hint
@@ -20,7 +19,6 @@ import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.godot.variant.Callable
-import org.threeten.bp.format.DateTimeParseException
 import kotlin.random.Random
 
 
@@ -83,11 +81,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     override fun getPluginName(): String {
         return "SentryAndroidGodotPlugin"
-    }
-
-    override fun onGodotSetupCompleted() {
-        super.onGodotSetupCompleted()
-        AndroidThreeTen.init(godot.getActivity()?.application) // needed for date time zones
     }
 
     @UsedByGodot
@@ -258,7 +251,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         val event: SentryEvent = getEvent(eventHandle) ?: return
         try {
             event.timestamp = timestamp.parseTimestamp()
-        } catch (_: DateTimeParseException) {
+        } catch (_: Exception) {
             Log.e(TAG, "Failed to parse datetime: $timestamp")
         }
     }
