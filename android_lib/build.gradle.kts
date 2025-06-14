@@ -36,7 +36,7 @@ android {
 dependencies {
     implementation("org.godotengine:godot:4.4.0.stable")
 
-    // Note: Must also be updated in sentry_editor_export_plugin.cpp.
+    // NOTE: All dependencies below must be also updated in build.gradle.kts.
     implementation("io.sentry:sentry-android:8.13.2")
     implementation("com.jakewharton.threetenabp:threetenabp:1.4.9")
 }
