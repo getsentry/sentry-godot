@@ -48,8 +48,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     private fun registerEvent(event: SentryEvent): Int {
-        val eventsMap = eventsByHandle.get()
-        if (eventsMap == null) {
+        val eventsMap = eventsByHandle.get() ?: run {
             Log.e(TAG, "Internal Error -- eventsByHandle is null")
             return 0
         }
@@ -64,8 +63,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     private fun registerException(exception: SentryException): Int {
-        val exceptionsMap = exceptionsByHandle.get()
-        if (exceptionsMap == null) {
+        val exceptionsMap = exceptionsByHandle.get() ?: run {
             Log.e(TAG, "Internal Error -- exceptionsByHandle is null")
             return 0
         }
@@ -178,10 +176,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         crumb.level = level.toSentryLevel()
         crumb.type = type
 
-        val keys = data.keys.iterator()
-        while (keys.hasNext()) {
-            val k = keys.next()
-            val v = data[k]
+        for ((k, v) in data) {
             crumb.data[k] = v
         }
 
@@ -208,8 +203,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun releaseEvent(eventHandle: Int) {
-        val eventsMap = eventsByHandle.get()
-        if (eventsMap == null) {
+        val eventsMap = eventsByHandle.get() ?: run {
             Log.e(TAG, "Internal Error -- eventsByHandle is null")
             return
         }
@@ -219,8 +213,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun captureEvent(eventHandle: Int): String {
-        val event: SentryEvent? = getEvent(eventHandle)
-        if (event == null) {
+        val event: SentryEvent = getEvent(eventHandle) ?: run {
             Log.e(TAG, "Failed to capture event: $eventHandle")
             return ""
         }
@@ -230,7 +223,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventGetId(eventHandle: Int): String {
-        return getEvent(eventHandle)?.eventId.toString()
+        val id = getEvent(eventHandle)?.eventId ?: return ""
+        return id.toString()
     }
 
     @UsedByGodot
@@ -252,7 +246,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         try {
             event.timestamp = timestamp.parseTimestamp()
         } catch (_: Exception) {
-            Log.e(TAG, "Failed to parse datetime: $timestamp")
+            Log.e(TAG, "Failed to parse timestamp: $timestamp")
         }
     }
 
@@ -361,21 +355,18 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun exceptionAppendStackFrame(exceptionHandle: Int, frameData: Dictionary) {
         val exception = getException(exceptionHandle) ?: return
-        val frame = SentryStackFrame()
-        frame.filename = frameData["filename"] as? String
-        frame.function = frameData["function"] as? String
-        frame.lineno = frameData["lineno"] as? Int
-        frame.isInApp = frameData["in_app"] as? Boolean
-        frame.platform = frameData["platform"] as? String
+        val frame = SentryStackFrame().apply {
+            filename = frameData["filename"] as? String
+            function = frameData["function"] as? String
+            lineno = frameData["lineno"] as? Int
+            isInApp = frameData["in_app"] as? Boolean
+            platform = frameData["platform"] as? String
 
-        if (frameData.containsKey("context_line")) {
-            frame.contextLine = frameData["context_line"] as? String
-
-            val preContext: Array<*> = frameData["pre_context"] as Array<*>
-            frame.preContext = preContext.map { it as String }
-
-            val postContext: Array<*> = frameData["post_context"] as Array<*>
-            frame.postContext = postContext.map { it as String }
+            if (frameData.containsKey("context_line")) {
+                contextLine = frameData["context_line"] as? String
+                preContext = (frameData["pre_context"] as? Array<*>)?.map { it as String }
+                postContext = (frameData["post_context"] as? Array<*>)?.map { it as String }
+            }
         }
 
         exception.stacktrace?.frames?.add(frame)
