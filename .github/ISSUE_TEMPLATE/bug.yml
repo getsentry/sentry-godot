@@ -28,7 +28,6 @@ body:
       required: true
 
   - type: dropdown
-    id: variant
     attributes:
       label: How did you install the SDK?
       options:
@@ -50,7 +49,6 @@ body:
       required: true
 
   - type: dropdown
-    id: variant
     attributes:
       label: Which platform?
       options:
