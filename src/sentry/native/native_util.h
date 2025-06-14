@@ -18,10 +18,6 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant);
 // Convert PackedStringArray to sentry_value_t (as a list).
 sentry_value_t strings_to_sentry_list(const PackedStringArray &p_strings);
 
-// Create UUID as String using sentry-native.
-// Used by sentry::uuid::make_uuid().
-String make_uuid();
-
 sentry_level_t level_to_native(Level p_level);
 Level native_to_level(sentry_level_t p_native_level);
 
