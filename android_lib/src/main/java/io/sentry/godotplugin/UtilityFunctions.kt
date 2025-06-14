@@ -40,8 +40,8 @@ fun String.parseTimestamp(): Date {
 
     val offsetIndex = when {
         endsWith("Z") -> length - 1
-        lastIndexOf('+') > 19 -> lastIndexOf('+')
-        lastIndexOf('-') > 19 -> lastIndexOf('-')
+        lastIndexOf('+') > 18 -> lastIndexOf('+')
+        lastIndexOf('-') > 18 -> lastIndexOf('-')
         else -> throw IllegalArgumentException("Invalid timestamp format (expecting RFC 3339).")
     }
 
