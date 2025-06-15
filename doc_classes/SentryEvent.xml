@@ -68,6 +68,7 @@
 		</member>
 		<member name="timestamp" type="String" setter="set_timestamp" getter="get_timestamp" default="&quot;&quot;">
 			Indicates when the event was created in the Sentry SDK. Automatically set by the SDK.
+			The timestamp follows the [url=https://tools.ietf.org/html/rfc3339]RFC 3339[/url] standard, which uses the format [code]YYYY-MM-DDThh:mm:ss.sssZ[/code] (for example, [code]2025-05-02T02:09:40.376530Z[/code]).
 		</member>
 	</members>
 </class>

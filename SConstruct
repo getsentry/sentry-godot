@@ -7,7 +7,7 @@ from functools import partial
 # *** Setting.
 
 VERSION = "0.7.0-dev"
-COMPATIBILITY_MINIMUM = "4.3"
+COMPATIBILITY_MINIMUM = "4.4"
 
 BIN_DIR = "project/addons/sentry/bin"
 
@@ -218,11 +218,14 @@ env.Append(CPPPATH=["src/"])
 
 # Source files to compile.
 sources = Glob("src/*.cpp")
+sources += Glob("src/editor/*.cpp")
 sources += Glob("src/sentry/*.cpp")
 sources += Glob("src/sentry/util/*.cpp")
 # Compile sentry-native code only on respective platforms.
 if env["platform"] in ["linux", "windows", "macos"]:
     sources += Glob("src/sentry/native/*.cpp")
+elif env["platform"] == "android":
+	sources += Glob("src/sentry/android/*.cpp")
 
 # Generate documentation data.
 if env["target"] in ["editor", "template_debug"]:

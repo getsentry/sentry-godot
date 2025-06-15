@@ -34,7 +34,7 @@ public:
 	virtual Ref<SentryEvent> create_event() = 0;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) = 0;
 
-	virtual void initialize() = 0;
+	virtual void initialize(const PackedStringArray &p_global_attachments) = 0;
 
 	virtual ~InternalSDK() = default;
 };

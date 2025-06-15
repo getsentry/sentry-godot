@@ -2,6 +2,9 @@
 
 This SDK is actively evolving and may still be incomplete. It is developed as a C++ GDExtension library, building on top of existing Sentry SDKs, such as [sentry-native](https://github.com/getsentry/sentry-native). We are also considering adding support for compilation as a [custom module](https://docs.godotengine.org/en/stable/contributing/development/core_and_modules/custom_modules_in_cpp.html). [Let us know](https://github.com/getsentry/sentry-godot/discussions) what you think!
 
+> [!IMPORTANT]
+> Minimum Godot Engine version: **4.4** or higher
+
 ## Getting started
 
 Pre-built extension libraries with the demo project are available in [**Releases**](https://github.com/getsentry/sentry-godot/releases).
@@ -12,7 +15,7 @@ In the Godot editor, you can adjust options by going to `Project Settings -> Sen
 
 ## Building Sentry Godot SDK
 
-Godot Sentry SDK can be built for Windows, Linux, and macOS platforms (x86_64 for PC, and universal `arch` for Mac).
+Godot Sentry SDK can be built for Windows, Linux, macOS, and Android platforms (x86_64 for PC, universal for Mac, arm64/32 and x86_64 for Android).
 
 ### Setting up SCons
 
