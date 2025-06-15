@@ -1,0 +1,39 @@
+[gd_scene load_steps=4 format=3 uid="uid://uwd7dms6675q"]
+
+[ext_resource type="PackedScene" uid="uid://dyoaec2d7uung" path="res://views/enrich_events.tscn" id="1_uh226"]
+[ext_resource type="PackedScene" uid="uid://bxi26vu5tlqas" path="res://views/capture_events.tscn" id="2_qcmjx"]
+[ext_resource type="PackedScene" uid="uid://dllqhtd731wtc" path="res://views/output_pane.tscn" id="3_uh226"]
+
+[node name="Desktop" type="CanvasLayer"]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Columns" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Spacer" type="Control" parent="VBoxContainer/Columns"]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+
+[node name="EnrichEvents" parent="VBoxContainer/Columns" instance=ExtResource("1_uh226")]
+layout_mode = 2
+
+[node name="Spacer2" type="Control" parent="VBoxContainer/Columns"]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+
+[node name="CaptureEvents" parent="VBoxContainer/Columns" instance=ExtResource("2_qcmjx")]
+layout_mode = 2
+
+[node name="Spacer3" type="Control" parent="VBoxContainer/Columns"]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+
+[node name="OutputPane" parent="VBoxContainer" instance=ExtResource("3_uh226")]
+layout_mode = 2
