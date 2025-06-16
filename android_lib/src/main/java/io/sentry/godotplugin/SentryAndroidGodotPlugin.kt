@@ -28,8 +28,17 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         private const val TAG = "sentry-godot"
     }
 
-    private val eventsByHandle = ThreadLocal.withInitial { mutableMapOf<Int, SentryEvent>() }
-    private val exceptionsByHandle = ThreadLocal.withInitial { mutableMapOf<Int, SentryException>() }
+    private val eventsByHandle = object : ThreadLocal<MutableMap<Int, SentryEvent>>() {
+        override fun initialValue(): MutableMap<Int, SentryEvent> {
+            return mutableMapOf()
+        }
+    }
+
+    private val exceptionsByHandle = object : ThreadLocal<MutableMap<Int, SentryException>>() {
+        override fun initialValue(): MutableMap<Int, SentryException> {
+            return mutableMapOf()
+        }
+    }
 
     private fun getEvent(eventHandle: Int): SentryEvent? {
         val event: SentryEvent? = eventsByHandle.get()?.get(eventHandle)
