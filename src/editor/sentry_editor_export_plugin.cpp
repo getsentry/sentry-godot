@@ -22,7 +22,7 @@ PackedStringArray SentryEditorExportPlugin::_get_android_libraries(const Ref<Edi
 PackedStringArray SentryEditorExportPlugin::_get_android_dependencies(const Ref<EditorExportPlatform> &p_platform, bool p_debug) const {
 	PackedStringArray deps;
 	// NOTE: All dependencies below must be also updated in build.gradle.kts.
-	deps.append("io.sentry:sentry-android:8.13.2");
+	deps.append("io.sentry:sentry-android:8.13.3");
 	return deps;
 }
 
