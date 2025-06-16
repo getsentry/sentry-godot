@@ -102,6 +102,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             options.sampleRate = sampleRate.toDouble()
             options.maxBreadcrumbs = maxBreadcrumbs
             options.sdkVersion?.name = "sentry.java.android.godot"
+            options.nativeSdkName = "sentry.native.android.godot"
             options.beforeSend =
                 SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
                     Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
