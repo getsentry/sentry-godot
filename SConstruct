@@ -162,7 +162,11 @@ if env["platform"] in ["linux", "macos", "windows"]:
         env.Append(
             LIBS=[
                 "curl",
-            ]
+                "bsm"
+            ],
+            LINKFLAGS=[
+                "-framework", "Foundation",
+            ],
         )
 
     build_actions = []

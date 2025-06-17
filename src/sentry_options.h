@@ -14,9 +14,6 @@ class SentryLoggerLimits : public RefCounted {
 	GDCLASS(SentryLoggerLimits, RefCounted);
 
 public:
-	// Limit the number of lines that can be parsed per frame.
-	SIMPLE_PROPERTY(int, parse_lines, 100);
-
 	// Protect frametime budget.
 	SIMPLE_PROPERTY(int, events_per_frame, 5);
 
@@ -67,6 +64,7 @@ private:
 
 	bool logger_enabled = true;
 	bool logger_include_source = true;
+	bool logger_include_variables = false;
 	BitField<GodotErrorMask> logger_event_mask = int(GodotErrorMask::MASK_ALL_EXCEPT_WARNING);
 	BitField<GodotErrorMask> logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
 	Ref<SentryLoggerLimits> logger_limits;
@@ -138,6 +136,9 @@ public:
 
 	_FORCE_INLINE_ bool is_logger_include_source_enabled() const { return logger_include_source; }
 	_FORCE_INLINE_ void set_logger_include_source(bool p_enable) { logger_include_source = p_enable; }
+
+	_FORCE_INLINE_ int is_logger_include_variables_enabled() const { return logger_include_variables; }
+	_FORCE_INLINE_ void set_logger_include_variables(int p_logger_include_variables) { logger_include_variables = p_logger_include_variables; }
 
 	_FORCE_INLINE_ BitField<GodotErrorMask> get_logger_event_mask() const { return logger_event_mask; }
 	_FORCE_INLINE_ void set_logger_event_mask(BitField<GodotErrorMask> p_mask) { logger_event_mask = p_mask; }

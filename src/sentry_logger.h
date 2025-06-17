@@ -5,17 +5,28 @@
 
 #include <chrono>
 #include <deque>
-#include <fstream>
-#include <godot_cpp/classes/node.hpp>
-#include <godot_cpp/classes/timer.hpp>
+#include <godot_cpp/classes/logger.hpp>
+#include <godot_cpp/classes/mutex.hpp>
+#include <godot_cpp/classes/script_backtrace.hpp>
+#include <regex>
 #include <unordered_map>
 
 using namespace godot;
 
-class SentryLogger : public Node {
-	GDCLASS(SentryLogger, Node)
+class SentryLogger : public Logger {
+	GDCLASS(SentryLogger, Logger);
 
 private:
+	struct Limits {
+		int events_per_frame;
+		std::chrono::milliseconds repeated_error_window;
+		std::chrono::milliseconds throttle_window;
+		int throttle_events;
+	} limits;
+
+	Ref<Mutex> error_mutex;
+	Ref<Mutex> message_mutex;
+
 	using GodotErrorType = sentry::GodotErrorType;
 	using SourceLine = std::pair<std::string, int>;
 	using TimePoint = std::chrono::high_resolution_clock::time_point;
@@ -35,25 +46,32 @@ private:
 	// Number of events captured during this frame.
 	int frame_events = 0;
 
-	Callable process_log;
-	std::ifstream log_file;
-	std::streampos last_pos = 0;
-	Timer *trim_timer = nullptr;
+	// Patterns that are checked against each message.
+	// If matching, the message is not added as breadcrumb.
+	std::vector<std::regex> filter_patterns;
+	std::vector<String> filter_exact_matches;
 
-	void _setup();
-	void _process_log_file();
-	void _log_error(const char *p_func, const char *p_file, int p_line, const char *p_rationale, GodotErrorType error_type);
-	void _trim_error_timepoints();
+	// Used for traceback print filtering.
+	String filter_native_trace_starter_begins;
+	String filter_native_trace_finisher_exact;
+	std::regex filter_script_trace_starter_pattern;
+	String filter_script_trace_finisher_exact;
 
-	// Returns true if an error occurred. Populates the last three arguments passed by reference.
-	bool _get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) const;
+	bool skip_logging_message = false; // Set by filtering until further condition unsets this.
+
+	void _process_frame();
 
 protected:
 	static void _bind_methods() {}
+
 	void _notification(int p_what);
 
 public:
+	virtual void _log_error(const String &p_function, const String &p_file, int32_t p_line, const String &p_code, const String &p_rationale, bool p_editor_notify, int32_t p_error_type, const TypedArray<ScriptBacktrace> &p_script_backtraces) override;
+	virtual void _log_message(const String &p_message, bool p_error) override;
+
 	SentryLogger();
+	~SentryLogger();
 };
 
 #endif // SENTRY_LOGGER_H
