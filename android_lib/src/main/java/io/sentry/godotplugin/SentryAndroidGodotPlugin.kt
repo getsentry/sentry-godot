@@ -124,8 +124,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun addGlobalAttachment(path: String) {
-        val attachment = Attachment(path)
-        Sentry.getGlobalScope().addAttachment(attachment)
+        if (path.endsWith("view-hierarchy.json")) {
+            val attachment = Attachment(path, "view-hierarchy.json", "application/json", "event.view_hierarchy", true)
+            Sentry.getGlobalScope().addAttachment(attachment)
+        } else {
+            val attachment = Attachment(path)
+            Sentry.getGlobalScope().addAttachment(attachment)
+        }
     }
 
     @UsedByGodot
