@@ -17,7 +17,7 @@ inline void _sentry_value_set_or_remove_string_by_key(sentry_value_t value, cons
 	}
 }
 
-void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name, const Dictionary &p_context) {
+void sentry_event_merge_context(sentry_value_t p_event, const char *p_context_name, const Dictionary &p_context) {
 	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
 	ERR_FAIL_COND(strlen(p_context_name) == 0);
 
@@ -170,9 +170,9 @@ String NativeEvent::get_tag(const String &p_key) {
 	return String();
 }
 
-void NativeEvent::set_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
-	sentry_event_set_context(native_event, p_key.utf8(), p_value);
+void NativeEvent::merge_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
+	sentry_event_merge_context(native_event, p_key.utf8(), p_value);
 }
 
 void NativeEvent::add_exception(const Exception &p_exception) {
