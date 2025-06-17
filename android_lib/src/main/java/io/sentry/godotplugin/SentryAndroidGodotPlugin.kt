@@ -341,8 +341,16 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun eventSetContext(eventHandle: Int, key: String, value: Dictionary) {
-        getEvent(eventHandle)?.contexts?.put(key, value)
+    fun eventMergeContext(eventHandle: Int, key: String, value: Dictionary) {
+        val event = getEvent(eventHandle) ?: return
+        val existing = event.contexts[key] as? Map<*, *>
+        if (existing != null) {
+            for ((k, v) in existing) {
+                val key: String = k as? String ?: continue
+                value[key] = v
+            }
+        }
+        event.contexts[key] = value
     }
 
     @UsedByGodot

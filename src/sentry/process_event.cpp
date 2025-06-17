@@ -103,7 +103,7 @@ inline void _save_view_hierarchy() {
 inline void _inject_contexts(const Ref<SentryEvent> p_event) {
 	HashMap<String, Dictionary> contexts = sentry::contexts::make_event_contexts();
 	for (const auto &kv : contexts) {
-		p_event->set_context(kv.key, kv.value);
+		p_event->merge_context(kv.key, kv.value);
 	}
 }
 
