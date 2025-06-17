@@ -62,6 +62,7 @@ public:
 	StringName eventSetTag;
 	StringName eventRemoveTag;
 	StringName eventGetTag;
+	StringName eventSetContext;
 	StringName eventIsCrash;
 
 	// Exceptions.

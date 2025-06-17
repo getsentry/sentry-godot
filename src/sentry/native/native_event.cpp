@@ -17,6 +17,35 @@ inline void _sentry_value_set_or_remove_string_by_key(sentry_value_t value, cons
 	}
 }
 
+void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name, const Dictionary &p_context) {
+	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
+	ERR_FAIL_COND(strlen(p_context_name) == 0);
+
+	if (p_context.is_empty()) {
+		return;
+	}
+
+	sentry_value_t contexts = sentry_value_get_by_key(p_event, "contexts");
+	if (sentry_value_is_null(contexts)) {
+		contexts = sentry_value_new_object();
+		sentry_value_set_by_key(p_event, "contexts", contexts);
+	}
+
+	// Check if context exists and update or add it.
+	sentry_value_t ctx = sentry_value_get_by_key(contexts, p_context_name);
+	if (!sentry_value_is_null(ctx)) {
+		// If context exists, update it with new values.
+		const Array &updated_keys = p_context.keys();
+		for (int i = 0; i < updated_keys.size(); i++) {
+			const String &key = updated_keys[i];
+			sentry_value_set_by_key(ctx, key.utf8(), sentry::native::variant_to_sentry_value(p_context[key]));
+		}
+	} else {
+		// If context doesn't exist, add it.
+		sentry_value_set_by_key(contexts, p_context_name, sentry::native::variant_to_sentry_value(p_context));
+	}
+}
+
 } // unnamed namespace
 
 String NativeEvent::get_id() const {
@@ -139,6 +168,11 @@ String NativeEvent::get_tag(const String &p_key) {
 		return String(sentry_value_as_string(value));
 	}
 	return String();
+}
+
+void NativeEvent::set_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
+	sentry_event_set_context(native_event, p_key.utf8(), p_value);
 }
 
 void NativeEvent::add_exception(const Exception &p_exception) {
