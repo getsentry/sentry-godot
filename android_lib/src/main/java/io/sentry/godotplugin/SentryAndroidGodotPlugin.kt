@@ -344,19 +344,26 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun eventMergeContext(eventHandle: Int, key: String, value: Dictionary) {
         val event = getEvent(eventHandle) ?: return
 
-        val existingContext = event.contexts[key] as? Map<*, *>
-        existingContext?.let {
-            // Merge elements from existing context into new context, but only for keys
-            // that don't already exist in the new context.
-            for ((k, v) in it) {
-                val kStr: String = k as? String ?: continue
-                if (!value.containsKey(kStr)) {
-                    value[kStr] = v
+        val existingContext: Any? = event.contexts[key]
+
+        if (existingContext is Dictionary) {
+            // Fast path: merge Dictionary directly.
+            existingContext.putAll(value)
+        } else {
+            val existingMap = existingContext as? Map<*, *>
+            existingMap?.let {
+                // Merge elements from existing context into new context, but only for keys
+                // that don't already exist in the new context.
+                for ((k, v) in it) {
+                    val kStr: String = k as? String ?: continue
+                    if (!value.containsKey(kStr)) {
+                        value[kStr] = v
+                    }
                 }
             }
+            event.contexts[key] = value
         }
 
-        event.contexts[key] = value
     }
 
     @UsedByGodot
