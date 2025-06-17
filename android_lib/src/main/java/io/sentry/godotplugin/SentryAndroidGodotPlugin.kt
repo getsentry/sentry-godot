@@ -336,6 +336,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun eventSetContext(eventHandle: Int, key: String, value: Dictionary) {
+        getEvent(eventHandle)?.contexts?.put(key, value)
+    }
+
+    @UsedByGodot
     fun eventIsCrash(eventHandle: Int): Boolean {
         return getEvent(eventHandle)?.isCrashed == true
     }

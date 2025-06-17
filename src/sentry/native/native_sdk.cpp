@@ -2,196 +2,46 @@
 
 #include "sentry.h"
 #include "sentry/common_defs.h"
-#include "sentry/contexts.h"
 #include "sentry/level.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
+#include "sentry/process_event.h"
 #include "sentry/util/print.h"
-#include "sentry/util/screenshot.h"
-#include "sentry/view_hierarchy.h"
 #include "sentry_options.h"
 
-#include <godot_cpp/classes/dir_access.hpp>
-#include <godot_cpp/classes/display_server.hpp>
-#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
 #include <regex>
 
-#ifdef DEBUG_ENABLED
-#include <godot_cpp/classes/time.hpp>
-#endif
-
 namespace {
-
-void sentry_event_set_context(sentry_value_t p_event, const char *p_context_name, const Dictionary &p_context) {
-	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
-	ERR_FAIL_COND(strlen(p_context_name) == 0);
-
-	if (p_context.is_empty()) {
-		return;
-	}
-
-	sentry_value_t contexts = sentry_value_get_by_key(p_event, "contexts");
-	if (sentry_value_is_null(contexts)) {
-		contexts = sentry_value_new_object();
-		sentry_value_set_by_key(p_event, "contexts", contexts);
-	}
-
-	// Check if context exists and update or add it.
-	sentry_value_t ctx = sentry_value_get_by_key(contexts, p_context_name);
-	if (!sentry_value_is_null(ctx)) {
-		// If context exists, update it with new values.
-		const Array &updated_keys = p_context.keys();
-		for (int i = 0; i < updated_keys.size(); i++) {
-			const String &key = updated_keys[i];
-			sentry_value_set_by_key(ctx, key.utf8(), sentry::native::variant_to_sentry_value(p_context[key]));
-		}
-	} else {
-		// If context doesn't exist, add it.
-		sentry_value_set_by_key(contexts, p_context_name, sentry::native::variant_to_sentry_value(p_context));
-	}
-}
-
-void _save_screenshot(const Ref<SentryEvent> &p_event) {
-	if (!SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
-		return;
-	}
-
-	static int32_t last_screenshot_frame = 0;
-	int32_t current_frame = Engine::get_singleton()->get_frames_drawn();
-	if (current_frame == last_screenshot_frame) {
-		// Screenshot already exists for this frame — nothing to do.
-		return;
-	}
-	last_screenshot_frame = current_frame;
-
-	String screenshot_path = "user://" SENTRY_SCREENSHOT_FN;
-	DirAccess::remove_absolute(screenshot_path);
-
-	if (!DisplayServer::get_singleton() || DisplayServer::get_singleton()->get_name() == "headless") {
-		return;
-	}
-
-	if (p_event->get_level() < SentryOptions::get_singleton()->get_screenshot_level()) {
-		// This check needs to happen after we remove the outdated screenshot file from the drive.
-		return;
-	}
-
-	if (SentryOptions::get_singleton()->get_before_capture_screenshot().is_valid()) {
-		Variant result = SentryOptions::get_singleton()->get_before_capture_screenshot().call(p_event);
-		if (result.get_type() != Variant::BOOL) {
-			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
-			ERR_PRINT_ONCE("Sentry: before_capture_screenshot callback failed: expected a boolean return value");
-			return;
-		}
-		if (result.operator bool() == false) {
-			sentry::util::print_debug("cancelled screenshot: before_capture_screenshot returned false");
-			return;
-		}
-	}
-
-	sentry::util::print_debug("taking screenshot");
-
-	PackedByteArray buffer = sentry::util::take_screenshot();
-	Ref<FileAccess> f = FileAccess::open(screenshot_path, FileAccess::WRITE);
-	if (f.is_valid()) {
-		f->store_buffer(buffer);
-		f->flush();
-		f->close();
-	} else {
-		sentry::util::print_error("failed to save ", screenshot_path);
-	}
-}
-
-inline void _save_view_hierarchy() {
-	if (!SentryOptions::get_singleton()->is_attach_scene_tree_enabled()) {
-		return;
-	}
-
-#ifdef DEBUG_ENABLED
-	uint64_t start = Time::get_singleton()->get_ticks_usec();
-#endif
-
-	String path = "user://" SENTRY_VIEW_HIERARCHY_FN;
-	DirAccess::remove_absolute(path);
-
-	if (OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id()) {
-		sentry::util::print_debug("skipping scene tree capture - can only be performed on the main thread");
-		return;
-	}
-
-	String json_content = sentry::build_view_hierarchy_json();
-	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
-	if (f.is_valid()) {
-		f->store_string(json_content);
-		f->flush();
-		f->close();
-	} else {
-		sentry::util::print_error("failed to save ", path);
-	}
-
-#ifdef DEBUG_ENABLED
-	uint64_t end = Time::get_singleton()->get_ticks_usec();
-	sentry::util::print_debug("capturing scene tree data took ", end - start, " usec");
-#endif
-}
-
-inline void _inject_contexts(sentry_value_t p_event) {
-	HashMap<String, Dictionary> contexts = sentry::contexts::make_event_contexts();
-	for (const auto &kv : contexts) {
-		sentry_event_set_context(p_event, kv.key.utf8(), kv.value);
-	}
-}
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	sentry::util::print_debug("handling before_send");
 	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, false));
-	_save_screenshot(event_obj);
-	_save_view_hierarchy();
-	_inject_contexts(event);
-	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
-		Ref<NativeEvent> processed = before_send.call(event_obj);
-		if (processed.is_valid() && processed != event_obj) {
-			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
-			ERR_PRINT_ONCE("Sentry: before_send callback must return the same event object or null.");
-			return event;
-		}
-		if (processed.is_null()) {
-			// Discard event.
-			sentry::util::print_debug("event discarded by before_send callback: ", event_obj->get_id());
-			sentry_value_decref(event);
-			return sentry_value_new_null();
-		}
-		sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
+	Ref<NativeEvent> processed = sentry::process_event(event_obj);
+
+	if (unlikely(processed.is_null())) {
+		// Discard event.
+		sentry_value_decref(event);
+		return sentry_value_new_null();
+	} else {
+		return event;
 	}
-	return event;
 }
 
 sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
 	sentry::util::print_debug("handling on_crash");
 	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, true));
-	_save_screenshot(event_obj);
-	_save_view_hierarchy();
-	_inject_contexts(event);
-	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
-		Ref<NativeEvent> processed = before_send.call(event_obj);
-		if (processed.is_valid() && processed != event_obj) {
-			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
-			ERR_PRINT_ONCE("Sentry: before_send callback must return the same event object or null.");
-			return event;
-		}
-		if (processed.is_null()) {
-			// Discard event.
-			sentry::util::print_debug("event discarded by before_send callback: ", event_obj->get_id());
-			sentry_value_decref(event);
-			return sentry_value_new_null();
-		}
-		sentry::util::print_debug("event processed by before_send callback: ", event_obj->get_id());
+	Ref<NativeEvent> processed = sentry::process_event(event_obj);
+
+	if (unlikely(processed.is_null())) {
+		// Discard event.
+		sentry_value_decref(event);
+		return sentry_value_new_null();
+	} else {
+		return event;
 	}
-	return event;
 }
 
 void _log_native_message(sentry_level_t level, const char *message, va_list args, void *userdata) {
