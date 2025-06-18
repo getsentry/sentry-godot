@@ -124,8 +124,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun addGlobalAttachment(path: String) {
-        val attachment = Attachment(path)
-        Sentry.getGlobalScope().addAttachment(attachment)
+        if (path.endsWith("view-hierarchy.json")) {
+            val attachment = Attachment(path, "view-hierarchy.json", "application/json", "event.view_hierarchy", true)
+            Sentry.getGlobalScope().addAttachment(attachment)
+        } else {
+            val attachment = Attachment(path)
+            Sentry.getGlobalScope().addAttachment(attachment)
+        }
     }
 
     @UsedByGodot
@@ -334,6 +339,32 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun eventRemoveTag(eventHandle: Int, key: String) {
         getEvent(eventHandle)?.removeTag(key)
+    }
+
+    @UsedByGodot
+    fun eventMergeContext(eventHandle: Int, key: String, value: Dictionary) {
+        val event = getEvent(eventHandle) ?: return
+
+        val existingContext: Any? = event.contexts[key]
+
+        if (existingContext is Dictionary) {
+            // Fast path: merge Dictionary directly.
+            existingContext.putAll(value)
+        } else {
+            val existingMap = existingContext as? Map<*, *>
+            existingMap?.let {
+                // Merge elements from existing context into new context, but only for keys
+                // that don't already exist in the new context.
+                for ((k, v) in it) {
+                    val kStr: String = k as? String ?: continue
+                    if (!value.containsKey(kStr)) {
+                        value[kStr] = v
+                    }
+                }
+            }
+            event.contexts[key] = value
+        }
+
     }
 
     @UsedByGodot
