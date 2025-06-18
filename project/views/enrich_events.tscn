@@ -1,0 +1,100 @@
+[gd_scene load_steps=2 format=3 uid="uid://dyoaec2d7uung"]
+
+[ext_resource type="Script" uid="uid://olue16oihup3" path="res://views/enrich_events.gd" id="1_makeg"]
+
+[node name="EnrichEvents" type="VBoxContainer"]
+offset_right = 490.0
+offset_bottom = 453.0
+size_flags_horizontal = 3
+script = ExtResource("1_makeg")
+metadata/_tab_index = 1
+
+[node name="Header - Enrich" type="Label" parent="."]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = "ENRICH EVENTS"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="Breadcrumb" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Breadcrumb"]
+layout_mode = 2
+text = "Breadcrumb: "
+
+[node name="BreadcrumbMessage" type="LineEdit" parent="Breadcrumb"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Message"
+
+[node name="BreadcrumbCategory" type="LineEdit" parent="Breadcrumb"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Category"
+
+[node name="AddBreadcrumbButton" type="Button" parent="Breadcrumb"]
+layout_mode = 2
+text = "Add Breadcrumb"
+
+[node name="Tags" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Tags"]
+layout_mode = 2
+text = "Tag:"
+
+[node name="TagKey" type="LineEdit" parent="Tags"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Key"
+
+[node name="TagValue" type="LineEdit" parent="Tags"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Value"
+
+[node name="AddTagButton" type="Button" parent="Tags"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Add Tag"
+
+[node name="Context" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Context"]
+layout_mode = 2
+text = "Context"
+
+[node name="ContextName" type="LineEdit" parent="Context"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ship"
+placeholder_text = "Enter name for the context"
+
+[node name="ContextExpression" type="CodeEdit" parent="Context"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 210)
+layout_mode = 2
+text = "# custom context expressed as a dictionary
+{
+	\"name\": \"Rocket Ship 2000\",
+	\"speed\": 100,
+	\"boost\": true,
+	\"parts\": [\"engine\", \"rocket_launcher\", \"escape_pod\"],
+}
+"
+wrap_mode = 1
+indent_wrapped_lines = true
+
+[node name="SetContext" type="Button" parent="Context"]
+layout_mode = 2
+text = "Add context"
+
+[connection signal="pressed" from="Breadcrumb/AddBreadcrumbButton" to="." method="_on_add_breadcrumb_button_pressed"]
+[connection signal="pressed" from="Tags/AddTagButton" to="." method="_on_add_tag_button_pressed"]
+[connection signal="pressed" from="Context/SetContext" to="." method="_on_set_context_pressed"]

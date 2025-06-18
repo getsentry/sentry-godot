@@ -1,0 +1,126 @@
+[gd_scene load_steps=2 format=3 uid="uid://bxi26vu5tlqas"]
+
+[ext_resource type="Script" uid="uid://kjyxrvgox014" path="res://views/capture_events.gd" id="1_ldmgx"]
+
+[node name="CaptureEvents" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -765.0
+offset_bottom = -625.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+script = ExtResource("1_ldmgx")
+metadata/_tab_index = 0
+
+[node name="Header - User Info" type="Label" parent="."]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = "USER INFO"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="User info" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="User info"]
+layout_mode = 2
+text = "User ID: "
+
+[node name="UserID" type="LineEdit" parent="User info"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "ID"
+
+[node name="InferIP" type="CheckBox" parent="User info"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Infer IP"
+
+[node name="User info (continued)" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Username" type="LineEdit" parent="User info (continued)"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Username"
+
+[node name="Email" type="LineEdit" parent="User info (continued)"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Email"
+
+[node name="SetUserButton" type="Button" parent="."]
+layout_mode = 2
+text = "Set User"
+
+[node name="Header - Generate Errors" type="Label" parent="."]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = "GENERATE ERRORS"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="GenerateErrors" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="GenScriptError" type="Button" parent="GenerateErrors"]
+layout_mode = 2
+text = "Generate GDScript error"
+
+[node name="GenNativeError" type="Button" parent="GenerateErrors"]
+layout_mode = 2
+text = "Generate C++ error"
+
+[node name="Header - Capture" type="Label" parent="."]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = "CAPTURE EVENTS"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="MessageEvent" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MessageEvent"]
+layout_mode = 2
+text = "Message: "
+
+[node name="MessageEdit" type="LineEdit" parent="MessageEvent"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Enter message"
+
+[node name="LevelChoice" type="MenuButton" parent="MessageEvent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "WARNING"
+flat = false
+
+[node name="CaptureButton" type="Button" parent="MessageEvent"]
+layout_mode = 2
+text = "Capture Event"
+
+[node name="Crash2" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Crash2"]
+layout_mode = 2
+text = "Crash program: "
+
+[node name="CrashButton" type="Button" parent="Crash2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "CRASH!"
+
+[connection signal="pressed" from="SetUserButton" to="." method="_on_set_user_button_pressed"]
+[connection signal="pressed" from="GenerateErrors/GenScriptError" to="." method="_on_gen_script_error_pressed"]
+[connection signal="pressed" from="GenerateErrors/GenNativeError" to="." method="_on_gen_native_error_pressed"]
+[connection signal="pressed" from="MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
+[connection signal="pressed" from="Crash2/CrashButton" to="." method="_on_crash_button_pressed"]
