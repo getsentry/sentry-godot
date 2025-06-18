@@ -150,13 +150,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun setUser(id: String, name: String, email: String, ipAddress: String) {
+    fun setUser(id: String, userName: String, email: String, ipAddress: String) {
         val user = User()
         if (id.isNotEmpty()) {
             user.id = id
         }
-        if (name.isNotEmpty()) {
-            user.name = name
+        if (userName.isNotEmpty()) {
+            user.username = userName
         }
         if (email.isNotEmpty()) {
             user.email = email
