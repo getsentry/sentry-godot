@@ -1,6 +1,8 @@
 #include "runtime_config.h"
+#include "sentry/disabled_attachment.h"
 #include "sentry/disabled_event.h"
 #include "sentry/util/print.h"
+#include "sentry_attachment.h"
 #include "sentry_configuration.h"
 #include "sentry_event.h"
 #include "sentry_logger.h"
@@ -13,6 +15,7 @@
 #include <godot_cpp/classes/window.hpp>
 
 #ifdef NATIVE_SDK
+#include "sentry/native/native_attachment.h"
 #include "sentry/native/native_event.h"
 #endif // NATIVE_SDK
 
@@ -52,10 +55,13 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(SentryConfiguration);
 		GDREGISTER_CLASS(SentryUser);
 		GDREGISTER_CLASS(SentrySDK);
+		GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
+		GDREGISTER_INTERNAL_CLASS(DisabledAttachment);
 		GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 		GDREGISTER_INTERNAL_CLASS(SentryLogger);
 #ifdef NATIVE_SDK
+		GDREGISTER_INTERNAL_CLASS(NativeAttachment);
 		GDREGISTER_INTERNAL_CLASS(NativeEvent);
 #endif // NATIVE_SDK
 
