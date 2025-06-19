@@ -200,7 +200,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_user"), &SentrySDK::remove_user);
 	ClassDB::bind_method(D_METHOD("create_event"), &SentrySDK::create_event);
 	ClassDB::bind_method(D_METHOD("capture_event", "event"), &SentrySDK::capture_event);
-	ClassDB::bind_method(D_METHOD("capture_feedback"), &SentrySDK::capture_feedback);
+	ClassDB::bind_method(D_METHOD("capture_feedback", "feedback"), &SentrySDK::capture_feedback);
 
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
