@@ -18,11 +18,14 @@ void SentryAttachment::_bind_methods() {
 }
 
 Ref<SentryAttachment> SentryAttachment::create_with_path(const String &p_path, const String &p_content_type) {
+	ERR_FAIL_COND_V_MSG(p_path.is_empty(), Ref<SentryAttachment>(), "Sentry: Can't create attachment with an empty file path.");
+
 #ifdef NATIVE_SDK
 	Ref<SentryAttachment> attachment = memnew(NativeAttachment);
 #else
 	Ref<SentryAttachment> attachment = memnew(DisabledAttachment);
 #endif
+
 	attachment->set_file_path(p_path);
 	attachment->set_content_type(p_content_type);
 	return attachment;
