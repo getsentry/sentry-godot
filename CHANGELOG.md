@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- User feedback API ([#204](https://github.com/getsentry/sentry-godot/pull/204))
+
 ### Dependencies
 
 - Bump gdUnit 4 from v5.0.0 to v5.0.4 ([#193](https://github.com/getsentry/sentry-godot/pull/193), [#197](https://github.com/getsentry/sentry-godot/pull/197))

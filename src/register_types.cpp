@@ -3,6 +3,7 @@
 #include "sentry/util/print.h"
 #include "sentry_configuration.h"
 #include "sentry_event.h"
+#include "sentry_feedback.h"
 #include "sentry_logger.h"
 #include "sentry_options.h"
 #include "sentry_sdk.h"
@@ -51,6 +52,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 		GDREGISTER_CLASS(SentryConfiguration);
 		GDREGISTER_CLASS(SentryUser);
+		GDREGISTER_CLASS(SentryFeedback);
 		GDREGISTER_CLASS(SentrySDK);
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 		GDREGISTER_INTERNAL_CLASS(DisabledEvent);

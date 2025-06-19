@@ -3,6 +3,7 @@
 
 #include "sentry/level.h"
 #include "sentry_event.h"
+#include "sentry_feedback.h"
 #include "sentry_user.h"
 
 #include <godot_cpp/variant/dictionary.hpp>
@@ -33,6 +34,8 @@ public:
 
 	virtual Ref<SentryEvent> create_event() = 0;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) = 0;
+
+	virtual void capture_feedback(const Ref<SentryFeedback> &p_feedback) = 0;
 
 	virtual void initialize() = 0;
 
