@@ -36,7 +36,7 @@
 			<return type="void" />
 			<param index="0" name="feedback" type="SentryFeedback" />
 			<description>
-				Captures user [param feedback] and sends it to Sentry. The feedback can optionally be associated with a specific error event if the [SentryFeedback] object includes an event ID.
+				Captures user [param feedback] and sends it to Sentry. The feedback can optionally be associated with a specific error event if the [member SentryFeedback.associated_event_id] is set.
 			</description>
 		</method>
 		<method name="capture_message">
