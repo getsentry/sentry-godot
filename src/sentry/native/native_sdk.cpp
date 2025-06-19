@@ -340,6 +340,26 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	return _uuid_as_string(uuid);
 }
 
+void NativeSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
+	ERR_FAIL_COND(p_feedback.is_null());
+	ERR_FAIL_COND(p_feedback->get_message().is_empty());
+
+	sentry_uuid_t event_uuid;
+	if (p_feedback->get_associated_event_id().is_empty()) {
+		event_uuid = sentry_uuid_nil();
+	} else {
+		event_uuid = sentry_uuid_from_string(p_feedback->get_associated_event_id().ascii());
+	}
+
+	sentry_value_t uf = sentry_value_new_user_feedback(
+			&event_uuid,
+			p_feedback->get_name().utf8(),
+			p_feedback->get_contact_email().utf8(),
+			p_feedback->get_message().utf8());
+
+	sentry_capture_user_feedback(uf);
+}
+
 void NativeSDK::initialize() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());

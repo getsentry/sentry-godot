@@ -73,6 +73,12 @@ String SentrySDK::capture_event(const Ref<SentryEvent> &p_event) {
 	return internal_sdk->capture_event(p_event);
 }
 
+void SentrySDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
+	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
+	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
+	return internal_sdk->capture_feedback(p_feedback);
+}
+
 void SentrySDK::set_tag(const String &p_key, const String &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set tag with an empty key.");
 	internal_sdk->set_tag(p_key, p_value);
@@ -194,6 +200,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_user"), &SentrySDK::remove_user);
 	ClassDB::bind_method(D_METHOD("create_event"), &SentrySDK::create_event);
 	ClassDB::bind_method(D_METHOD("capture_event", "event"), &SentrySDK::capture_event);
+	ClassDB::bind_method(D_METHOD("capture_feedback"), &SentrySDK::capture_feedback);
 
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
