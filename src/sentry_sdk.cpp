@@ -76,6 +76,9 @@ String SentrySDK::capture_event(const Ref<SentryEvent> &p_event) {
 void SentrySDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
+	if (p_feedback->get_message().length() > 4096) {
+		WARN_PRINT("Sentry: Feedback message is too long (max 4096 characters).");
+	}
 	return internal_sdk->capture_feedback(p_feedback);
 }
 
