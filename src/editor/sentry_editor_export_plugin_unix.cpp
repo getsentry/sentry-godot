@@ -15,17 +15,12 @@ void _set_executable_permissions(const String &p_path) {
 	}
 
 	BitField<FileAccess::UnixPermissionFlags> perm = FileAccess::get_unix_permissions(p_path);
-	BitField<FileAccess::UnixPermissionFlags> new_perm = perm;
 
-	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_OWNER)) {
-		new_perm.set_flag(FileAccess::UNIX_EXECUTE_OWNER);
-	}
-	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_GROUP)) {
-		new_perm.set_flag(FileAccess::UNIX_EXECUTE_GROUP);
-	}
-	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_OTHER)) {
-		new_perm.set_flag(FileAccess::UNIX_EXECUTE_OTHER);
-	}
+	// Permissions for executable files should be set to 755.
+	BitField<FileAccess::UnixPermissionFlags> new_perm =
+			FileAccess::UNIX_READ_OWNER | FileAccess::UNIX_WRITE_OWNER | FileAccess::UNIX_EXECUTE_OWNER |
+			FileAccess::UNIX_READ_GROUP | FileAccess::UNIX_EXECUTE_GROUP |
+			FileAccess::UNIX_READ_OTHER | FileAccess::UNIX_EXECUTE_OTHER;
 
 	if (perm != new_perm) {
 		Error err = FileAccess::set_unix_permissions(p_path, new_perm);
