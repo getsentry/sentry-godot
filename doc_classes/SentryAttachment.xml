@@ -22,10 +22,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="content_type" type="String" setter="set_content_type" getter="get_content_type" default="&quot;&quot;">
+		<member name="content_type" type="String" setter="" getter="get_content_type" default="&quot;&quot;">
 			The MIME content type of the attachment file. This helps Sentry understand how to handle and display the attachment.
 		</member>
-		<member name="file_path" type="String" setter="set_file_path" getter="get_file_path" default="&quot;&quot;">
+		<member name="file_path" type="String" setter="" getter="get_file_path" default="&quot;&quot;">
 			The file path of the attachment. This can be an absolute path or use Godot's virtual file system paths such as "user://" or "res://".
 		</member>
 	</members>
