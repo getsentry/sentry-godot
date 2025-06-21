@@ -2,13 +2,6 @@
 
 ## 0.6.1
 
-### Various fixes & improvements
-
-- fix: Ensure crashpad_handler has executable permissions on Unix exports (#207) by @limbonaut
-- chore: update modules/gdUnit4 to v5.0.4 (#197) by @github-actions
-- chore: update modules/gdUnit4 to v5.0.3 (#193) by @github-actions
-- Bump version to 0.7.0-dev (5ccfe9ba) by @limbonaut
-
 ## Fixes
 
 - Ensure crashpad_handler has executable permissions on Unix exports ([#207](https://github.com/getsentry/sentry-godot/pull/207))
