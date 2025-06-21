@@ -1,5 +1,5 @@
-#ifndef SENTRY_EDITOR_EXPORT_PLUGIN_H
-#define SENTRY_EDITOR_EXPORT_PLUGIN_H
+#ifndef SENTRY_EDITOR_EXPORT_PLUGIN_ANDROID_H
+#define SENTRY_EDITOR_EXPORT_PLUGIN_ANDROID_H
 
 #ifdef TOOLS_ENABLED
 
@@ -8,8 +8,8 @@
 
 using namespace godot;
 
-class SentryEditorExportPlugin : public EditorExportPlugin {
-	GDCLASS(SentryEditorExportPlugin, EditorExportPlugin);
+class SentryEditorExportPluginAndroid : public EditorExportPlugin {
+	GDCLASS(SentryEditorExportPluginAndroid, EditorExportPlugin);
 
 protected:
 	static void _bind_methods() {}
@@ -23,4 +23,4 @@ public:
 
 #endif // TOOLS_ENABLED
 
-#endif // SENTRY_EDITOR_EXPORT_PLUGIN_H
+#endif // SENTRY_EDITOR_EXPORT_PLUGIN_ANDROID_H

@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+
+- Minimum Godot version required is now 4.4, which is needed for the Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
+
+### Features
+
+- Initial Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
+
 ## 0.6.1
 
 ### Various fixes & improvements
@@ -12,14 +22,6 @@
 ## Fixes
 
 - Ensure crashpad_handler has executable permissions on Unix exports ([#207](https://github.com/getsentry/sentry-godot/pull/207))
-
-### Breaking changes
-
-- Minimum Godot version required is now 4.4, which is needed for the Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
-
-### Features
-
-- Initial Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
 
 ### Dependencies
 

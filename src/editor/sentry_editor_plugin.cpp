@@ -2,9 +2,9 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "editor/sentry_editor_export_plugin_android.h"
 #include "editor/sentry_editor_export_plugin_unix.h"
 #include "sentry/util/print.h"
-#include "sentry_editor_export_plugin.h"
 
 void SentryEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
@@ -12,7 +12,7 @@ void SentryEditorPlugin::_notification(int p_what) {
 			sentry::util::print_debug("adding export plugins");
 
 			if (export_plugin.is_null()) {
-				export_plugin = Ref(memnew(SentryEditorExportPlugin));
+				export_plugin = Ref(memnew(SentryEditorExportPluginAndroid));
 			}
 			add_export_plugin(export_plugin);
 
