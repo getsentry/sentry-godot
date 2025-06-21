@@ -33,6 +33,8 @@ public:
 	virtual Ref<SentryEvent> create_event() override;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) override;
 
+	virtual void capture_feedback(const Ref<SentryFeedback> &p_feedback) override;
+
 	virtual void initialize() override;
 
 	virtual ~NativeSDK() override;
