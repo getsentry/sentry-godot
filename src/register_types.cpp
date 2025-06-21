@@ -1,3 +1,5 @@
+#include "editor/sentry_editor_export_plugin_unix.h"
+#include "editor/sentry_editor_plugin.h"
 #include "runtime_config.h"
 #include "sentry/disabled_event.h"
 #include "sentry/util/print.h"
@@ -86,10 +88,13 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
 
 		callable_mp_static(_init_logger).call_deferred();
-	} else if (p_level == godot::MODULE_INITIALIZATION_LEVEL_EDITOR) {
+	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 #ifdef TOOLS_ENABLED
-		GDREGISTER_INTERNAL_CLASS(SentryEditorPlugin);
+#ifndef WINDOWS_ENABLED
+		GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginUnix);
+#endif // !WINDOWS_ENABLED
 		GDREGISTER_INTERNAL_CLASS(SentryEditorExportPlugin);
+		GDREGISTER_INTERNAL_CLASS(SentryEditorPlugin);
 		EditorPlugins::add_by_type<SentryEditorPlugin>();
 #endif // TOOLS_ENABLED
 	}

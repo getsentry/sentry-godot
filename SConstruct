@@ -6,7 +6,7 @@ from functools import partial
 
 # *** Setting.
 
-VERSION = "0.7.0-dev"
+VERSION = "0.6.1"
 COMPATIBILITY_MINIMUM = "4.4"
 
 BIN_DIR = "project/addons/sentry/bin"
@@ -94,7 +94,8 @@ elif env["platform"] == "windows":
         return result.returncode
 
     sentry_native = env.Command(
-        ["modules/sentry-native/install/lib/sentry.lib", BIN_DIR + "/windows/crashpad_handler.exe"],
+        ["modules/sentry-native/install/lib/sentry.lib",
+            BIN_DIR + "/windows/crashpad_handler.exe"],
         ["modules/sentry-native/src/"],
         [
             build_sentry_native,
@@ -106,9 +107,11 @@ elif env["platform"] == "windows":
     )
 
 if env["platform"] in ["linux", "macos", "windows"]:
-    Depends(sentry_native, "modules/godot-cpp")  # Force sentry-native to be built sequential to godot-cpp (not in parallel)
+    # Force sentry-native to be built sequential to godot-cpp (not in parallel)
+    Depends(sentry_native, "modules/godot-cpp")
     Default(sentry_native)
-    Clean(sentry_native, ["modules/sentry-native/build", "modules/sentry-native/install"])
+    Clean(sentry_native, ["modules/sentry-native/build",
+          "modules/sentry-native/install"])
 
 # Include relative to project source root.
 env.Append(CPPPATH=["src/"])
@@ -125,10 +128,13 @@ if env["platform"] in ["linux", "macos", "windows"]:
     def add_target(lib_name):
         env.Append(LIBS=[lib_name])
         if env["platform"] == "windows":
-            sn_targets.append("modules/sentry-native/install/lib/" + lib_name + ".lib")
-            sn_targets.append("modules/sentry-native/install/lib/" + lib_name + ".pdb")
+            sn_targets.append(
+                "modules/sentry-native/install/lib/" + lib_name + ".lib")
+            sn_targets.append(
+                "modules/sentry-native/install/lib/" + lib_name + ".pdb")
         else:
-            sn_targets.append("modules/sentry-native/install/lib/lib" + lib_name + ".a")
+            sn_targets.append(
+                "modules/sentry-native/install/lib/lib" + lib_name + ".a")
 
     add_target("sentry")
     add_target("crashpad_client")
@@ -170,7 +176,8 @@ if env["platform"] in ["linux", "macos", "windows"]:
 
     if env["platform"] == "windows":
         build_actions.append(
-            partial(run_cmd, args=["powershell", "scripts/build-sentry-native.ps1"])
+            partial(run_cmd, args=["powershell",
+                    "scripts/build-sentry-native.ps1"])
         ),
         build_actions.append(
             Copy(
@@ -208,7 +215,8 @@ if env["platform"] in ["linux", "macos", "windows"]:
     Depends(sentry_native, "modules/godot-cpp")
 
     Default(sentry_native)
-    Clean(sentry_native, ["modules/sentry-native/build", "modules/sentry-native/install"])
+    Clean(sentry_native, ["modules/sentry-native/build",
+          "modules/sentry-native/install"])
 
 
 # *** Build GDExtension library.
@@ -225,12 +233,13 @@ sources += Glob("src/sentry/util/*.cpp")
 if env["platform"] in ["linux", "windows", "macos"]:
     sources += Glob("src/sentry/native/*.cpp")
 elif env["platform"] == "android":
-	sources += Glob("src/sentry/android/*.cpp")
+    sources += Glob("src/sentry/android/*.cpp")
 
 # Generate documentation data.
 if env["target"] in ["editor", "template_debug"]:
     try:
-        doc_data = env.GodotCPPDocData("src/gen/doc_data.gen.cpp", source=Glob("doc_classes/*.xml"))
+        doc_data = env.GodotCPPDocData(
+            "src/gen/doc_data.gen.cpp", source=Glob("doc_classes/*.xml"))
         sources.append(doc_data)
     except AttributeError:
         print("Not including class reference as we're targeting a pre-4.3 baseline.")

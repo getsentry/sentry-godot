@@ -13,6 +13,7 @@ class SentryEditorPlugin : public EditorPlugin {
 
 private:
 	Ref<EditorExportPlugin> export_plugin;
+	Ref<EditorExportPlugin> unix_export_plugin;
 
 protected:
 	static void _bind_methods() {}
