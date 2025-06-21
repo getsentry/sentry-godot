@@ -135,7 +135,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun removeContext(key: String) {
-        // Q: Godot SDK doesn't expose scopes yet, should we set it on the global scope?
         Sentry.getGlobalScope().removeContexts(key)
     }
 
