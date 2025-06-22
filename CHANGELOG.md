@@ -2,7 +2,7 @@
 
 ## 0.6.1
 
-## Fixes
+### Fixes
 
 - Ensure crashpad_handler has executable permissions on Unix exports ([#207](https://github.com/getsentry/sentry-godot/pull/207))
 
