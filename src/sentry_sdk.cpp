@@ -175,7 +175,7 @@ void SentrySDK::_initialize() {
 		enabled = false;
 	} else {
 		auto sdk = std::make_shared<AndroidSDK>();
-		if (sdk->is_initialized()) {
+		if (sdk->has_android_plugin()) {
 			internal_sdk = sdk;
 			enabled = true;
 		} else {

@@ -49,7 +49,7 @@ public:
 
 	virtual void initialize(const PackedStringArray &p_global_attachments) override;
 
-	bool is_initialized() const { return android_plugin != nullptr; }
+	bool has_android_plugin() const { return android_plugin != nullptr; }
 
 	AndroidSDK();
 	virtual ~AndroidSDK() override;
