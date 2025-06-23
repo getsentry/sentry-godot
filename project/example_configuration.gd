@@ -15,7 +15,7 @@ func _configure(options: SentryOptions) -> void:
 	# Set up event callbacks
 	options.before_send = _before_send
 
-	# Unit testing hooks (if you're exploring the demo project, pretend the following line doesn't exist).
+	# Unit testing hooks (if you're exploring the demo project, just ignore the following line).
 	load("res://testing_configuration.gd").configure_options(options)
 
 

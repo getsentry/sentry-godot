@@ -1,0 +1,82 @@
+[gd_scene load_steps=3 format=3 uid="uid://dllqhtd731wtc"]
+
+[ext_resource type="Script" uid="uid://7pkoni236cwi" path="res://views/demo_output.gd" id="1_nsnxs"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_owcwq"]
+
+[node name="OutputPane" type="VBoxContainer"]
+offset_right = 789.0
+offset_bottom = 519.0
+size_flags_vertical = 3
+
+[node name="Header - Output" type="Label" parent="."]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = "OUTPUT"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="Header - Output"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -131.0
+offset_top = 1.0
+offset_right = -7.0
+offset_bottom = 51.0
+grow_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_owcwq")
+
+[node name="Verbosity" type="HBoxContainer" parent="Header - Output/PanelContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="VerbosityMenu" type="MenuButton" parent="Header - Output/PanelContainer/Verbosity"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "WARNING"
+flat = false
+
+[node name="DemoOutput" type="RichTextLabel" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+script = ExtResource("1_nsnxs")
+
+[node name="BG" type="Panel" parent="DemoOutput"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MsgCopied" type="PanelContainer" parent="DemoOutput"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(190.651, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -75.5
+offset_top = -20.0
+offset_right = 75.5
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="DemoOutput/MsgCopied"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Copied to clipboard"
+
+[connection signal="meta_clicked" from="DemoOutput" to="DemoOutput" method="_on_meta_clicked"]

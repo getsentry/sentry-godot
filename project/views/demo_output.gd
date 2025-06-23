@@ -1,3 +1,4 @@
+class_name DemoOutput
 extends RichTextLabel
 
 enum Level {
@@ -17,6 +18,22 @@ var _last_level
 
 @onready var msg_copied: PanelContainer = %MsgCopied
 @onready var verbosity_menu: MenuButton = %VerbosityMenu
+
+
+static func print_info(msg: String) -> void:
+	print("INFO: " + msg)
+
+
+static func print_err(msg: String) -> void:
+	printerr("ERROR: " + msg)
+
+
+static func print_line(msg: String) -> void:
+	print(msg)
+
+
+static func print_extra(msg: String) -> void:
+	print("   ", msg)
 
 
 func _init() -> void:
