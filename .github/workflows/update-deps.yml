@@ -1,5 +1,9 @@
 name: Update Dependencies
 
+permissions:
+  contents: read
+  pull-requests: write
+
 on:
   # Run every day.
   schedule:
