@@ -107,7 +107,13 @@ void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
 	sentry::util::print_debug("Initializing Sentry Android SDK");
 
 	for (const String &path : p_global_attachments) {
-		android_plugin->call(ANDROID_SN(addGlobalAttachment), path);
+		String file = path.get_file();
+		bool is_view_hierarchy = file == "view-hierarchy.json";
+		android_plugin->call(ANDROID_SN(addFileAttachment),
+				path,
+				file,
+				is_view_hierarchy ? "application/json" : "",
+				is_view_hierarchy ? "event.view-hierarchy" : "");
 	}
 
 	android_plugin->call("initialize",

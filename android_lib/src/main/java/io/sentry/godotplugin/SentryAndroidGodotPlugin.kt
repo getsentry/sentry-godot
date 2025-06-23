@@ -19,6 +19,7 @@ import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.godot.variant.Callable
+import java.io.File
 import kotlin.random.Random
 
 
@@ -123,14 +124,15 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun addGlobalAttachment(path: String) {
-        if (path.endsWith("view-hierarchy.json")) {
-            val attachment = Attachment(path, "view-hierarchy.json", "application/json", "event.view_hierarchy", true)
-            Sentry.getGlobalScope().addAttachment(attachment)
-        } else {
-            val attachment = Attachment(path)
-            Sentry.getGlobalScope().addAttachment(attachment)
-        }
+    fun addFileAttachment(path: String, contentType: String, attachmentType: String) {
+        val attachment = Attachment(
+            path,
+            File(path).name,
+            contentType.ifEmpty { null },
+            attachmentType.ifEmpty { null },
+            true
+        )
+        Sentry.getGlobalScope().addAttachment(attachment)
     }
 
     @UsedByGodot
