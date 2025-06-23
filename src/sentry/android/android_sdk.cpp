@@ -113,7 +113,7 @@ void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
 				path,
 				file,
 				is_view_hierarchy ? "application/json" : "",
-				is_view_hierarchy ? "event.view-hierarchy" : "");
+				is_view_hierarchy ? "event.view_hierarchy" : "");
 	}
 
 	android_plugin->call("initialize",
