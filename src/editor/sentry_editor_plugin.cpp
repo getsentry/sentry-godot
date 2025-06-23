@@ -11,10 +11,10 @@ void SentryEditorPlugin::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			sentry::util::print_debug("adding export plugins");
 
-			if (export_plugin.is_null()) {
-				export_plugin = Ref(memnew(SentryEditorExportPluginAndroid));
+			if (android_export_plugin.is_null()) {
+				android_export_plugin = Ref(memnew(SentryEditorExportPluginAndroid));
 			}
-			add_export_plugin(export_plugin);
+			add_export_plugin(android_export_plugin);
 
 #ifndef WINDOWS_ENABLED
 			if (unix_export_plugin.is_null()) {
@@ -24,9 +24,9 @@ void SentryEditorPlugin::_notification(int p_what) {
 #endif
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (export_plugin.is_valid()) {
-				remove_export_plugin(export_plugin);
-				export_plugin.unref();
+			if (android_export_plugin.is_valid()) {
+				remove_export_plugin(android_export_plugin);
+				android_export_plugin.unref();
 			}
 
 #ifndef WINDOWS_ENABLED
