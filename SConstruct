@@ -7,7 +7,7 @@ from functools import partial
 # *** Setting.
 
 VERSION = "0.6.1"
-COMPATIBILITY_MINIMUM = "4.3"
+COMPATIBILITY_MINIMUM = "4.4"
 
 BIN_DIR = "project/addons/sentry/bin"
 
@@ -94,7 +94,8 @@ elif env["platform"] == "windows":
         return result.returncode
 
     sentry_native = env.Command(
-        ["modules/sentry-native/install/lib/sentry.lib", BIN_DIR + "/windows/crashpad_handler.exe"],
+        ["modules/sentry-native/install/lib/sentry.lib",
+            BIN_DIR + "/windows/crashpad_handler.exe"],
         ["modules/sentry-native/src/"],
         [
             build_sentry_native,
@@ -106,7 +107,8 @@ elif env["platform"] == "windows":
     )
 
 if env["platform"] in ["linux", "macos", "windows"]:
-    Depends(sentry_native, "modules/godot-cpp")  # Force sentry-native to be built sequential to godot-cpp (not in parallel)
+    # Force sentry-native to be built sequential to godot-cpp (not in parallel)
+    Depends(sentry_native, "modules/godot-cpp")
     Default(sentry_native)
     Clean(sentry_native, ["modules/sentry-native/build", "modules/sentry-native/install"])
 
@@ -224,11 +226,14 @@ sources += Glob("src/sentry/util/*.cpp")
 # Compile sentry-native code only on respective platforms.
 if env["platform"] in ["linux", "windows", "macos"]:
     sources += Glob("src/sentry/native/*.cpp")
+elif env["platform"] == "android":
+    sources += Glob("src/sentry/android/*.cpp")
 
 # Generate documentation data.
 if env["target"] in ["editor", "template_debug"]:
     try:
-        doc_data = env.GodotCPPDocData("src/gen/doc_data.gen.cpp", source=Glob("doc_classes/*.xml"))
+        doc_data = env.GodotCPPDocData(
+            "src/gen/doc_data.gen.cpp", source=Glob("doc_classes/*.xml"))
         sources.append(doc_data)
     except AttributeError:
         print("Not including class reference as we're targeting a pre-4.3 baseline.")

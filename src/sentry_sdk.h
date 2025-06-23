@@ -35,6 +35,7 @@ private:
 	bool configuration_succeeded = false;
 
 	void _init_contexts();
+	PackedStringArray _get_global_attachments();
 	void _initialize();
 	void _check_if_configuration_succeeded();
 
@@ -73,6 +74,7 @@ public:
 
 	void set_before_send(const Callable &p_callable) { SentryOptions::get_singleton()->set_before_send(p_callable); }
 	void unset_before_send() { SentryOptions::get_singleton()->set_before_send(Callable()); }
+	Callable get_before_send() { return SentryOptions::get_singleton()->get_before_send(); }
 
 	SentrySDK();
 	~SentrySDK();

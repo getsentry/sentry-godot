@@ -1,10 +1,12 @@
 #include "sentry_sdk.h"
 
 #include "gen/sdk_version.gen.h"
+#include "sentry/common_defs.h"
 #include "sentry/contexts.h"
 #include "sentry/disabled_sdk.h"
 #include "sentry/util/print.h"
 
+#include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
@@ -14,6 +16,8 @@
 
 #ifdef NATIVE_SDK
 #include "sentry/native/native_sdk.h"
+#elif ANDROID_ENABLED
+#include "sentry/android/android_sdk.h"
 #endif
 
 using namespace godot;
@@ -128,12 +132,57 @@ void SentrySDK::_init_contexts() {
 	internal_sdk->set_context("environment", sentry::contexts::make_environment_context());
 }
 
+PackedStringArray SentrySDK::_get_global_attachments() {
+	PackedStringArray attachments;
+
+	// Attach LOG file.
+	if (SentryOptions::get_singleton()->is_attach_log_enabled()) {
+		String log_path = ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path");
+		if (FileAccess::file_exists(log_path)) {
+			log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
+			attachments.append(log_path);
+		} else {
+			ERR_PRINT("Sentry: Log file not found. Make sure \"debug/file_logging/enable_file_logging\" is turned ON in the Project Settings.");
+		}
+	}
+
+	// Attach screenshot.
+	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
+		String screenshot_path = OS::get_singleton()->get_user_data_dir().path_join(SENTRY_SCREENSHOT_FN);
+		DirAccess::remove_absolute(screenshot_path);
+		attachments.append(screenshot_path);
+	}
+
+	// Attach view hierarchy (aka scene tree info).
+	if (SentryOptions::get_singleton()->is_attach_scene_tree_enabled()) {
+		String vh_path = OS::get_singleton()->get_user_data_dir().path_join(SENTRY_VIEW_HIERARCHY_FN);
+		DirAccess::remove_absolute(vh_path);
+		attachments.append(vh_path);
+	}
+
+	return attachments;
+}
+
 void SentrySDK::_initialize() {
 	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
 #ifdef NATIVE_SDK
 	internal_sdk = std::make_shared<NativeSDK>();
 	enabled = true;
+#elif ANDROID_ENABLED
+	if (unlikely(OS::get_singleton()->has_feature("editor"))) {
+		sentry::util::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
+		enabled = false;
+	} else {
+		auto sdk = std::make_shared<AndroidSDK>();
+		if (sdk->has_android_plugin()) {
+			internal_sdk = sdk;
+			enabled = true;
+		} else {
+			sentry::util::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
+			enabled = false;
+		}
+	}
 #else
 	// Unsupported platform
 	sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
@@ -155,7 +204,8 @@ void SentrySDK::_initialize() {
 	}
 	set_user(user);
 
-	internal_sdk->initialize();
+	internal_sdk->initialize(_get_global_attachments());
+	_init_contexts();
 }
 
 void SentrySDK::_check_if_configuration_succeeded() {
@@ -164,7 +214,6 @@ void SentrySDK::_check_if_configuration_succeeded() {
 		ERR_PRINT("Sentry: Configuration via user script failed. Will try to initialize SDK anyway.");
 		sentry::util::print_error("initializing late because configuration via user script failed");
 		_initialize();
-		SentrySDK::_init_contexts();
 	}
 }
 
@@ -198,6 +247,7 @@ void SentrySDK::_bind_methods() {
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
+	ClassDB::bind_method(D_METHOD("_get_before_send"), &SentrySDK::get_before_send);
 }
 
 SentrySDK::SentrySDK() {

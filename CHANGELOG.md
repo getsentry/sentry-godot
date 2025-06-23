@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+
+- Minimum Godot version required is now 4.4, which is needed for the Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
+
+### Features
+
+- Initial Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
+
 ## 0.6.1
 
 ### Fixes
