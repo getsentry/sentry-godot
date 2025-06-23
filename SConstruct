@@ -110,8 +110,7 @@ if env["platform"] in ["linux", "macos", "windows"]:
     # Force sentry-native to be built sequential to godot-cpp (not in parallel)
     Depends(sentry_native, "modules/godot-cpp")
     Default(sentry_native)
-    Clean(sentry_native, ["modules/sentry-native/build",
-          "modules/sentry-native/install"])
+    Clean(sentry_native, ["modules/sentry-native/build", "modules/sentry-native/install"])
 
 # Include relative to project source root.
 env.Append(CPPPATH=["src/"])
@@ -128,13 +127,10 @@ if env["platform"] in ["linux", "macos", "windows"]:
     def add_target(lib_name):
         env.Append(LIBS=[lib_name])
         if env["platform"] == "windows":
-            sn_targets.append(
-                "modules/sentry-native/install/lib/" + lib_name + ".lib")
-            sn_targets.append(
-                "modules/sentry-native/install/lib/" + lib_name + ".pdb")
+            sn_targets.append("modules/sentry-native/install/lib/" + lib_name + ".lib")
+            sn_targets.append("modules/sentry-native/install/lib/" + lib_name + ".pdb")
         else:
-            sn_targets.append(
-                "modules/sentry-native/install/lib/lib" + lib_name + ".a")
+            sn_targets.append("modules/sentry-native/install/lib/lib" + lib_name + ".a")
 
     add_target("sentry")
     add_target("crashpad_client")
@@ -176,8 +172,7 @@ if env["platform"] in ["linux", "macos", "windows"]:
 
     if env["platform"] == "windows":
         build_actions.append(
-            partial(run_cmd, args=["powershell",
-                    "scripts/build-sentry-native.ps1"])
+            partial(run_cmd, args=["powershell", "scripts/build-sentry-native.ps1"])
         ),
         build_actions.append(
             Copy(
@@ -215,8 +210,7 @@ if env["platform"] in ["linux", "macos", "windows"]:
     Depends(sentry_native, "modules/godot-cpp")
 
     Default(sentry_native)
-    Clean(sentry_native, ["modules/sentry-native/build",
-          "modules/sentry-native/install"])
+    Clean(sentry_native, ["modules/sentry-native/build", "modules/sentry-native/install"])
 
 
 # *** Build GDExtension library.
