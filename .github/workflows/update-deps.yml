@@ -1,15 +1,15 @@
 name: Update Dependencies
 
-permissions:
-  contents: read
-  pull-requests: write
-
 on:
   # Run every day.
   schedule:
     - cron: "0 3 * * *"
   # Allow a manual trigger to be able to run the update when there are new dependencies or after a PR merge to resolve CHANGELOG conflicts.
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   deps:
