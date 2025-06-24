@@ -44,7 +44,7 @@ function Get-CurrentVersion
 
 function Get-RepositoryUrl
 {
-	return "https://github.com/getsentry/sentry-godot"
+	return "https://github.com/getsentry/sentry-java"
 }
 
 function Set-SentryAndroidVersion
