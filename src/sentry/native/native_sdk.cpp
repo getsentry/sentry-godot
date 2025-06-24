@@ -5,7 +5,7 @@
 #include "sentry/level.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
-#include "sentry/process_event.h"
+#include "sentry/processing/process_event.h"
 #include "sentry/util/print.h"
 #include "sentry_options.h"
 
@@ -17,7 +17,6 @@
 namespace {
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
-	sentry::util::print_debug("handling before_send");
 	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, false));
 	Ref<NativeEvent> processed = sentry::process_event(event_obj);
 
@@ -31,7 +30,6 @@ sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closu
 }
 
 sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
-	sentry::util::print_debug("handling on_crash");
 	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, true));
 	Ref<NativeEvent> processed = sentry::process_event(event_obj);
 

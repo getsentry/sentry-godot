@@ -2,7 +2,7 @@
 
 #include "android_event.h"
 #include "android_string_names.h"
-#include "sentry/process_event.h"
+#include "sentry/processing/process_event.h"
 #include "sentry/util/print.h"
 
 #include <godot_cpp/classes/engine.hpp>

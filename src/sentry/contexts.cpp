@@ -113,6 +113,7 @@ Dictionary make_device_context_update() {
 
 	const Dictionary &meminfo = OS::get_singleton()->get_memory_info();
 	// NOTE: Using double since int32 can't handle size in bytes.
+	//       On some platforms, memory info may not be available (-1).
 	int64_t free_memory = meminfo["free"];
 	if (free_memory >= 0) {
 		device_context["free_memory"] = double(free_memory);
