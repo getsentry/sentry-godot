@@ -124,10 +124,10 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun addFileAttachment(path: String, contentType: String, attachmentType: String) {
+    fun addFileAttachment(path: String, filename: String, contentType: String, attachmentType: String) {
         val attachment = Attachment(
             path,
-            File(path).name,
+            filename.ifEmpty { File(path).name },
             contentType.ifEmpty { null },
             attachmentType.ifEmpty { null },
             true
