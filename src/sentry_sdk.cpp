@@ -123,14 +123,10 @@ void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary 
 
 void SentrySDK::_init_contexts() {
 	sentry::util::print_debug("initializing contexts");
-
-#ifdef NATIVE_SDK
 	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
 	internal_sdk->set_context("app", sentry::contexts::make_app_context());
-#endif
-
-	internal_sdk->set_context("culture", sentry::contexts::make_culture_context());
 	internal_sdk->set_context("gpu", sentry::contexts::make_gpu_context());
+	internal_sdk->set_context("culture", sentry::contexts::make_culture_context());
 
 	// Custom contexts.
 	internal_sdk->set_context("display", sentry::contexts::make_display_context());
