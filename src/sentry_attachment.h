@@ -42,7 +42,7 @@ public:
 	void set_native_attachment(sentry_attachment_t *p_native_attachment) { native_attachment = p_native_attachment; }
 #endif
 
-	virtual ~SentryAttachment() = default;
+	~SentryAttachment() = default;
 };
 
 #endif // SENTRY_ATTACHMENT_H
