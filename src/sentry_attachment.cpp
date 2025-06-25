@@ -8,9 +8,9 @@ Ref<SentryAttachment> SentryAttachment::create_with_path(const String &p_path, c
 	ERR_FAIL_COND_V_MSG(p_path.is_empty(), Ref<SentryAttachment>(), "Sentry: Can't create attachment with an empty file path.");
 
 	Ref<SentryAttachment> attachment = memnew(SentryAttachment);
-	attachment->set_path(p_path);
-	attachment->set_filename(p_filename);
-	attachment->set_content_type(p_content_type);
+	attachment->path = p_path;
+	attachment->filename = p_filename;
+	attachment->content_type = p_content_type;
 	return attachment;
 }
 
