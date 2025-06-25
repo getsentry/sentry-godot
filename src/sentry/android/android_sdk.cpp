@@ -2,6 +2,7 @@
 
 #include "android_event.h"
 #include "android_string_names.h"
+#include "sentry/common_defs.h"
 #include "sentry/util/print.h"
 #include "sentry_attachment.h"
 
@@ -153,7 +154,12 @@ void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
 	sentry::util::print_debug("Initializing Sentry Android SDK");
 
 	for (const String &path : p_global_attachments) {
-		android_plugin->call(ANDROID_SN(addGlobalAttachment), path);
+		bool is_view_hierarchy = path.ends_with(SENTRY_VIEW_HIERARCHY_FN);
+		android_plugin->call(ANDROID_SN(addFileAttachment),
+				path,
+				String(), // filename
+				is_view_hierarchy ? "application/json" : String(),
+				is_view_hierarchy ? "event.view_hierarchy" : String());
 	}
 
 	android_plugin->call("initialize",
