@@ -5,12 +5,22 @@
 	</brief_description>
 	<description>
 		SentryAttachment represents a file that can be attached to Sentry events to provide additional context. Attachments are files that are uploaded alongside error reports and can include log files, screenshots, configuration files, or any other relevant data.
-		Attachments should be created using [method SentryAttachment.create_with_path], then added to Sentry using [method SentrySDK.add_attachment] and can be removed using [method SentrySDK.remove_attachment].
+		Attachments can be created using [method SentryAttachment.create_with_path] for existing files on disk or [method SentryAttachment.create_with_bytes] for data already in memory. Once created, they can be added to future events using [method SentrySDK.add_attachment] and removed using [method SentrySDK.remove_attachment].
 		To learn more about attachments, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/attachments/]Attachments documentation[/url].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="create_with_bytes" qualifiers="static">
+			<return type="SentryAttachment" />
+			<param index="0" name="bytes" type="PackedByteArray" />
+			<param index="1" name="filename" type="String" />
+			<param index="2" name="content_type" type="String" default="&quot;&quot;" />
+			<description>
+				Creates a new [SentryAttachment] with the specified [param bytes] data and [param filename]. The [param bytes] parameter contains the raw file data to be attached. The [param filename] parameter specifies the display name for the attachment in Sentry. The optional [param content_type] parameter specifies the MIME type of the file (e.g., "text/plain", "application/json").
+				This method is useful when you have file data already loaded in memory or when creating attachments from generated content rather than existing files on disk.
+			</description>
+		</method>
 		<method name="create_with_path" qualifiers="static">
 			<return type="SentryAttachment" />
 			<param index="0" name="path" type="String" />
@@ -23,6 +33,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bytes" type="PackedByteArray" setter="" getter="get_bytes">
+			Contains the raw byte data of the attachment.
+		</member>
 		<member name="content_type" type="String" setter="" getter="get_content_type">
 			The MIME content type of the attachment file. This helps Sentry understand how to handle and display the attachment.
 		</member>
