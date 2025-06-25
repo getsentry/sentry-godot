@@ -46,3 +46,12 @@ func _on_set_context_pressed() -> void:
 			DemoOutput.print_err("Failed set context: Dictionary is expected, but found: " + type_string(typeof(result)))
 	else:
 		DemoOutput.print_err("Failed to parse expression: " + expr.get_error_text())
+
+
+func _on_attach_button_pressed() -> void:
+	var content: String = %AttachmentContent.text
+	var bytes: PackedByteArray = content.to_utf8_buffer()
+	var attachment := SentryAttachment.create_with_bytes(
+		bytes, "hello.txt", "text/plain")
+	SentrySDK.add_attachment(attachment)
+	DemoOutput.print_info("Attachment added.")
