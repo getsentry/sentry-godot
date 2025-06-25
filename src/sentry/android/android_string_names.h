@@ -41,6 +41,8 @@ public:
 	StringName createEvent;
 	StringName releaseEvent;
 	StringName captureEvent;
+	StringName addFileAttachment;
+	StringName removeFileAttachment;
 
 	// Event methods.
 	StringName eventGetId;

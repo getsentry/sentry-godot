@@ -3,6 +3,7 @@
 #include "android_event.h"
 #include "android_string_names.h"
 #include "sentry/util/print.h"
+#include "sentry_attachment.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/variant/callable.hpp>
@@ -110,6 +111,21 @@ String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	int32_t handle = android_event->get_handle();
 	android_plugin->call(ANDROID_SN(captureEvent), handle);
 	return android_event->get_id();
+}
+
+void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND(p_attachment.is_null());
+	android_plugin->call(ANDROID_SN(addFileAttachment),
+			p_attachment->get_file_path(),
+			String(),
+			p_attachment->get_content_type(),
+			String());
+}
+
+void AndroidSDK::remove_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND(p_attachment.is_null());
+	android_plugin->call(ANDROID_SN(removeFileAttachment),
+			p_attachment->get_file_path());
 }
 
 void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {

@@ -19,6 +19,7 @@ import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.godot.variant.Callable
+import java.io.File
 import kotlin.random.Random
 
 
@@ -123,9 +124,22 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun addGlobalAttachment(path: String) {
-        val attachment = Attachment(path)
+    fun addFileAttachment(path: String, filename: String, contentType: String, attachmentType: String) {
+        val attachment = Attachment(
+            path,
+            filename.ifEmpty { File(path).name },
+            contentType.ifEmpty { null },
+            attachmentType.ifEmpty { null },
+            true
+        )
         Sentry.getGlobalScope().addAttachment(attachment)
+    }
+
+    @UsedByGodot
+    fun removeFileAttachment(path: String) {
+        val globalScope = Sentry.getGlobalScope()
+        val attachment = globalScope.attachments.find { att -> att.pathname == path }
+        globalScope.attachments.remove(attachment)
     }
 
     @UsedByGodot
