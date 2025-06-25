@@ -1,0 +1,57 @@
+[gd_scene load_steps=6 format=3 uid="uid://dpppyaeqgrcn1"]
+
+[ext_resource type="Script" uid="uid://cw2874mkwddfr" path="res://mobile.gd" id="1_bj8h8"]
+[ext_resource type="PackedScene" uid="uid://bxi26vu5tlqas" path="res://views/capture_events.tscn" id="2_xux57"]
+[ext_resource type="PackedScene" uid="uid://dyoaec2d7uung" path="res://views/enrich_events.tscn" id="3_p64qd"]
+[ext_resource type="PackedScene" uid="uid://dllqhtd731wtc" path="res://views/output_pane.tscn" id="4_xux57"]
+
+[sub_resource type="Theme" id="Theme_bj8h8"]
+BoxContainer/constants/separation = 8
+
+[node name="Mobile" type="CanvasLayer"]
+script = ExtResource("1_bj8h8")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = SubResource("Theme_bj8h8")
+metadata/_edit_lock_ = true
+metadata/_edit_use_anchors_ = true
+
+[node name="Spacer" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TabContainer" type="TabContainer" parent="VBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.4
+current_tab = 1
+tab_focus_mode = 0
+
+[node name="Enrich Events" parent="VBoxContainer/VBoxContainer/TabContainer" instance=ExtResource("3_p64qd")]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="Capture Events" parent="VBoxContainer/VBoxContainer/TabContainer" instance=ExtResource("2_xux57")]
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="OutputPane" parent="VBoxContainer/VBoxContainer" instance=ExtResource("4_xux57")]
+layout_mode = 2
+
+[node name="Spacer2" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
