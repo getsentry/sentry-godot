@@ -17,18 +17,26 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 		return nullptr;
 	}
 
-	int32_t current_frame = Engine::get_singleton()->get_frames_drawn();
-	if (current_frame == last_screenshot_frame) {
-		sentry::util::print_debug("skipping screenshot");
-		// Screenshot already exists for this frame — nothing to do.
-		return p_event;
+	bool is_main_thread = OS::get_singleton()->get_thread_caller_id() == OS::get_singleton()->get_main_thread_id();
+
+	{
+		std::lock_guard lock{ mutex };
+
+		int32_t current_frame = Engine::get_singleton()->get_frames_drawn();
+		if (current_frame == last_screenshot_frame) {
+			sentry::util::print_debug("skipping screenshot");
+			// Screenshot already exists for this frame — nothing to do.
+			return p_event;
+		}
+		if (is_main_thread) {
+			last_screenshot_frame = current_frame;
+		}
 	}
-	last_screenshot_frame = current_frame;
 
 	String screenshot_path = "user://" SENTRY_SCREENSHOT_FN;
 	DirAccess::remove_absolute(screenshot_path);
 
-	if (OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id()) {
+	if (!is_main_thread) {
 		sentry::util::print_debug("skipping screenshot capture - can only be performed on the main thread");
 		return p_event;
 	}

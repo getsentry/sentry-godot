@@ -3,12 +3,15 @@
 
 #include "sentry_event_processor.h"
 
+#include <mutex>
+
 // Event processor for capturing in-engine screenshots.
 class ScreenshotProcessor : public SentryEventProcessor {
 	GDCLASS(ScreenshotProcessor, SentryEventProcessor);
 
 private:
 	int32_t last_screenshot_frame = 0;
+	std::mutex mutex;
 
 protected:
 	static void _bind_methods() {}
