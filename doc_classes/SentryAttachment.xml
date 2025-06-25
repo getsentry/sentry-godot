@@ -14,18 +14,22 @@
 		<method name="create_with_path" qualifiers="static">
 			<return type="SentryAttachment" />
 			<param index="0" name="path" type="String" />
-			<param index="1" name="content_type" type="String" default="&quot;&quot;" />
+			<param index="1" name="filename" type="String" default="&quot;&quot;" />
+			<param index="2" name="content_type" type="String" default="&quot;&quot;" />
 			<description>
-				Creates a new [SentryAttachment] with the specified file [param path] and optional [param content_type]. The [param path] should point to an existing file and supports Godot's virtual file system paths like "user://" and "res://". The optional [param content_type] parameter specifies the MIME type of the file (e.g., "text/plain", "application/json").
+				Creates a new [SentryAttachment] with the specified file [param path] and optional [param filename] and [param content_type]. The [param path] should point to an existing file and supports Godot's virtual file system paths like "user://" and "res://". The optional [param filename] parameter specifies the display name for the attachment in Sentry - if not provided, the filename will be extracted from the path. The optional [param content_type] parameter specifies the MIME type of the file (e.g., "text/plain", "application/json").
 				[b]Important:[/b] Attachments are read lazily at the time an event is sent to Sentry.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="content_type" type="String" setter="" getter="get_content_type" default="&quot;&quot;">
+		<member name="content_type" type="String" setter="" getter="get_content_type">
 			The MIME content type of the attachment file. This helps Sentry understand how to handle and display the attachment.
 		</member>
-		<member name="file_path" type="String" setter="" getter="get_file_path" default="&quot;&quot;">
+		<member name="filename" type="String" setter="" getter="get_filename">
+			The filename of the attachment. This is the name that will be displayed in Sentry. If not provided, the filename will be extracted from the [member path].
+		</member>
+		<member name="path" type="String" setter="" getter="get_path">
 			The file path of the attachment. This can be an absolute path or use Godot's virtual file system paths such as "user://" or "res://".
 		</member>
 	</members>
