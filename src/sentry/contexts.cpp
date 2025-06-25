@@ -112,9 +112,16 @@ Dictionary make_device_context_update() {
 	device_context["orientation"] = _screen_orientation_as_string(primary_screen);
 
 	const Dictionary &meminfo = OS::get_singleton()->get_memory_info();
-	// Note: Using double since int32 can't handle size in bytes.
-	device_context["free_memory"] = double(meminfo["free"]);
-	device_context["usable_memory"] = double(meminfo["available"]);
+	// NOTE: Using double since int32 can't handle size in bytes.
+	//       On some platforms, memory info may not be available (-1).
+	int64_t free_memory = meminfo["free"];
+	if (free_memory >= 0) {
+		device_context["free_memory"] = double(free_memory);
+	}
+	int64_t available_memory = meminfo["available"];
+	if (available_memory >= 0) {
+		device_context["usable_memory"] = double(available_memory);
+	}
 
 	auto dir = DirAccess::open("user://");
 	if (dir.is_valid()) {
@@ -342,7 +349,11 @@ Dictionary make_performance_context() {
 HashMap<String, Dictionary> make_event_contexts() {
 	HashMap<String, Dictionary> event_contexts;
 	event_contexts["godot_performance"] = make_performance_context();
+
+#ifdef NATIVE_SDK
 	event_contexts["device"] = make_device_context_update();
+#endif
+
 	return event_contexts;
 }
 
