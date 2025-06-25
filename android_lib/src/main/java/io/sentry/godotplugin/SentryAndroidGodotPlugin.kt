@@ -139,7 +139,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun removeFileAttachment(path: String) {
         val globalScope = Sentry.getGlobalScope()
         val attachment = globalScope.attachments.find { att -> att.pathname == path }
-        globalScope.attachments.remove(attachment)
+        attachment?.let { globalScope.attachments.remove(attachment) }
     }
 
     @UsedByGodot
@@ -158,7 +158,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun removeBytesAttachment(filename: String) {
         val globalScope = Sentry.getGlobalScope()
         val attachment = globalScope.attachments.find { att -> att.filename == filename }
-        globalScope.attachments.remove(attachment)
+        attachment?.let { globalScope.attachments.remove(attachment) }
     }
 
     @UsedByGodot
