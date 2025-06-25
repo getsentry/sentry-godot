@@ -4,6 +4,7 @@
 #include "sentry/common_defs.h"
 #include "sentry/contexts.h"
 #include "sentry/level.h"
+#include "sentry/native/native_attachment.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
 #include "sentry/util/print.h"
@@ -336,6 +337,45 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	sentry_uuid_t uuid = sentry_capture_event(event);
 	last_uuid.store(uuid, std::memory_order_release);
 	return _uuid_as_string(uuid);
+}
+
+void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
+	ERR_FAIL_COND_MSG(p_attachment->get_file_path().is_empty(), "Sentry: Can't add attachment with empty path.");
+
+	NativeAttachment *native_attachment_wrapper = Object::cast_to<NativeAttachment>(p_attachment.ptr());
+	ERR_FAIL_NULL(native_attachment_wrapper); // Sanity check - this should never happen.
+
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+	String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_file_path());
+	sentry_attachment_t *native_attachment = sentry_attach_file(absolute_path.utf8().get_data());
+	if (!native_attachment) {
+		ERR_FAIL_MSG(vformat("Sentry: Failed to attach file: %s", absolute_path));
+	}
+
+	if (!p_attachment->get_content_type().is_empty()) {
+		sentry_attachment_set_content_type(native_attachment, p_attachment->get_content_type().utf8().get_data());
+	}
+
+	native_attachment_wrapper->set_native_attachment(native_attachment);
+
+	sentry::util::print_debug(vformat("attached file: %s", absolute_path));
+}
+
+void NativeSDK::remove_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't remove null attachment.");
+
+	NativeAttachment *native_attachment_wrapper = Object::cast_to<NativeAttachment>(p_attachment.ptr());
+	ERR_FAIL_NULL(native_attachment_wrapper); // Sanity check - this should never.
+
+	sentry_attachment_t *native_attachment = native_attachment_wrapper->get_native_attachment();
+	if (native_attachment) {
+		sentry_remove_attachment(native_attachment);
+		native_attachment_wrapper->set_native_attachment(nullptr);
+		sentry::util::print_debug(vformat("removed attachment: %s", p_attachment->get_file_path()));
+	} else {
+		sentry::util::print_warning(vformat("attempted to remove attachment that was not added: %s", p_attachment->get_file_path()));
+	}
 }
 
 void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
