@@ -345,7 +345,7 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
-	sentry_attachment_t *native_attachment = sentry_attach_file(absolute_path.utf8().get_data());
+	sentry_attachment_t *native_attachment = sentry_attach_file(absolute_path.utf8());
 	if (!native_attachment) {
 		ERR_FAIL_MSG(vformat("Sentry: Failed to attach file: %s", absolute_path));
 	}
