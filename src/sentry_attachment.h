@@ -10,7 +10,7 @@
 
 using namespace godot;
 
-// Base class for attachment objects in the public API.
+// Represents attachments in the public API.
 class SentryAttachment : public RefCounted {
 	GDCLASS(SentryAttachment, RefCounted);
 
