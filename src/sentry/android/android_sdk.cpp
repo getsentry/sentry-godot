@@ -6,6 +6,7 @@
 #include "sentry_attachment.h"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/callable.hpp>
 
 using namespace godot;
@@ -115,17 +116,35 @@ String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
 
 void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND(p_attachment.is_null());
-	android_plugin->call(ANDROID_SN(addFileAttachment),
-			p_attachment->get_path(),
-			p_attachment->get_filename(),
-			p_attachment->get_content_type(),
-			String());
+
+	if (p_attachment->get_path().is_empty()) {
+		sentry::util::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
+		android_plugin->call(ANDROID_SN(addBytesAttachment),
+				p_attachment->get_bytes(),
+				p_attachment->get_filename(),
+				p_attachment->get_content_type(),
+				String());
+	} else {
+		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
+		sentry::util::print_debug("attaching file: ", absolute_path);
+		android_plugin->call(ANDROID_SN(addFileAttachment),
+				absolute_path,
+				p_attachment->get_filename(),
+				p_attachment->get_content_type(),
+				String());
+	}
 }
 
 void AndroidSDK::remove_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND(p_attachment.is_null());
-	android_plugin->call(ANDROID_SN(removeFileAttachment),
-			p_attachment->get_path());
+
+	if (p_attachment->get_path().is_empty()) {
+		android_plugin->call(ANDROID_SN(removeBytesAttachment),
+				p_attachment->get_filename());
+	} else {
+		android_plugin->call(ANDROID_SN(removeFileAttachment),
+				p_attachment->get_path());
+	}
 }
 
 void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {

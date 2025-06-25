@@ -43,6 +43,8 @@ public:
 	StringName captureEvent;
 	StringName addFileAttachment;
 	StringName removeFileAttachment;
+	StringName addBytesAttachment;
+	StringName removeBytesAttachment;
 
 	// Event methods.
 	StringName eventGetId;
