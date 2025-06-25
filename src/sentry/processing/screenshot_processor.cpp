@@ -9,6 +9,7 @@
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/os.hpp>
 
 Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_event) {
 	if (p_event.is_null()) {
@@ -26,6 +27,11 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 
 	String screenshot_path = "user://" SENTRY_SCREENSHOT_FN;
 	DirAccess::remove_absolute(screenshot_path);
+
+	if (OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id()) {
+		sentry::util::print_debug("skipping screenshot capture - can only be performed on the main thread");
+		return p_event;
+	}
 
 	if (!DisplayServer::get_singleton() || DisplayServer::get_singleton()->get_name() == "headless") {
 		return p_event;
