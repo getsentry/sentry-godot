@@ -36,8 +36,8 @@ Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 		if (event.is_null()) {
 			return event;
 		} else if (event != p_event) {
-			sentry::util::print_error("event processor returned a different event object");
-			return p_event;
+			sentry::util::print_error("event processor returned a different event object – discarding processor result");
+			event = p_event; // Reset to original event
 		}
 	}
 
