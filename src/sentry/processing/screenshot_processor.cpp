@@ -13,7 +13,7 @@
 
 Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_event) {
 	if (p_event.is_null()) {
-		sentry::util::print_error("event null");
+		sentry::util::print_error("internal error: can't process null event");
 		return nullptr;
 	}
 
