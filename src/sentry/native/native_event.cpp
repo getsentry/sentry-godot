@@ -19,7 +19,7 @@ inline void _sentry_value_set_or_remove_string_by_key(sentry_value_t value, cons
 
 void sentry_event_merge_context(sentry_value_t p_event, const char *p_context_name, const Dictionary &p_context) {
 	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
-	ERR_FAIL_COND(strlen(p_context_name) == 0);
+	ERR_FAIL_COND(p_context_name == nullptr || strlen(p_context_name) == 0);
 
 	if (p_context.is_empty()) {
 		return;
