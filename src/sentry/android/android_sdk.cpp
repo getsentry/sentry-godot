@@ -116,8 +116,8 @@ String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
 void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND(p_attachment.is_null());
 	android_plugin->call(ANDROID_SN(addFileAttachment),
-			p_attachment->get_file_path(),
-			String(),
+			p_attachment->get_path(),
+			p_attachment->get_filename(),
 			p_attachment->get_content_type(),
 			String());
 }
@@ -125,7 +125,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 void AndroidSDK::remove_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND(p_attachment.is_null());
 	android_plugin->call(ANDROID_SN(removeFileAttachment),
-			p_attachment->get_file_path());
+			p_attachment->get_path());
 }
 
 void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {

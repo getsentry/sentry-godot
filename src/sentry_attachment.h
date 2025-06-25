@@ -15,7 +15,8 @@ class SentryAttachment : public RefCounted {
 	GDCLASS(SentryAttachment, RefCounted);
 
 private:
-	String file_path;
+	String path;
+	String filename;
 	String content_type;
 
 #ifdef NATIVE_SDK
@@ -26,10 +27,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<SentryAttachment> create_with_path(const String &p_path, const String &p_content_type = "");
+	static Ref<SentryAttachment> create_with_path(const String &p_path, const String &p_filename = "", const String &p_content_type = "");
 
-	void set_file_path(const String &p_path) { file_path = p_path; }
-	String get_file_path() const { return file_path; }
+	void set_path(const String &p_path) { path = p_path; }
+	String get_path() const { return path; }
+
+	void set_filename(const String &p_filename) { filename = p_filename; }
+	String get_filename() const { return filename; }
 
 	void set_content_type(const String &p_content_type) { content_type = p_content_type; }
 	String get_content_type() const { return content_type; }
