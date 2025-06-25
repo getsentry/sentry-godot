@@ -9,9 +9,6 @@ class DisabledAttachment : public SentryAttachment {
 
 protected:
 	static void _bind_methods() {}
-
-public:
-	virtual ~DisabledAttachment() override = default;
 };
 
 #endif // DISABLED_ATTACHMENT_H
