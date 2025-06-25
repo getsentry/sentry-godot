@@ -341,26 +341,40 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
 
 void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
-	ERR_FAIL_COND_MSG(p_attachment->get_path().is_empty(), "Sentry: Can't add attachment with empty path.");
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
-	sentry_attachment_t *native_attachment = sentry_attach_file(absolute_path.utf8());
-	if (!native_attachment) {
-		ERR_FAIL_MSG(vformat("Sentry: Failed to attach file: %s", absolute_path));
-	}
+	sentry_attachment_t *native_attachment = nullptr;
 
-	if (!p_attachment->get_content_type().is_empty()) {
-		sentry_attachment_set_content_type(native_attachment, p_attachment->get_content_type().utf8());
-	}
+	if (!p_attachment->get_path().is_empty()) {
+		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
+		native_attachment = sentry_attach_file(absolute_path.utf8());
 
-	if (!p_attachment->get_filename().is_empty()) {
-		sentry_attachment_set_filename(native_attachment, p_attachment->get_filename().utf8());
+		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach file: %s", absolute_path));
+
+		if (!p_attachment->get_filename().is_empty()) {
+			sentry_attachment_set_filename(native_attachment, p_attachment->get_filename().utf8());
+		}
+
+		sentry::util::print_debug(vformat("attached file: %s", absolute_path));
+	} else {
+		PackedByteArray bytes = p_attachment->get_bytes();
+		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
+
+		native_attachment = sentry_attach_bytes(
+				reinterpret_cast<const char *>(bytes.ptr()),
+				bytes.size(),
+				p_attachment->get_filename().utf8());
+
+		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach bytes with filename: %s", p_attachment->get_filename()));
+
+		sentry::util::print_debug(vformat("attached bytes with filename: %s", p_attachment->get_filename()));
 	}
 
 	p_attachment->set_native_attachment(native_attachment);
 
-	sentry::util::print_debug(vformat("attached file: %s", absolute_path));
+	if (!p_attachment->get_content_type().is_empty()) {
+		sentry_attachment_set_content_type(native_attachment, p_attachment->get_content_type().utf8());
+	}
 }
 
 void NativeSDK::remove_attachment(const Ref<SentryAttachment> &p_attachment) {

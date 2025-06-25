@@ -80,8 +80,6 @@ String SentrySDK::capture_event(const Ref<SentryEvent> &p_event) {
 
 void SentrySDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
-	ERR_FAIL_COND_MSG(p_attachment->get_path().is_empty(), "Sentry: Can't add attachment with empty path.");
-
 	internal_sdk->add_attachment(p_attachment);
 }
 

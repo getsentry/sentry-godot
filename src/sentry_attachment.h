@@ -2,6 +2,7 @@
 #define SENTRY_ATTACHMENT_H
 
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/variant/packed_byte_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 #ifdef NATIVE_SDK
@@ -15,6 +16,7 @@ class SentryAttachment : public RefCounted {
 	GDCLASS(SentryAttachment, RefCounted);
 
 private:
+	PackedByteArray bytes;
 	String path;
 	String filename;
 	String content_type;
@@ -28,7 +30,9 @@ protected:
 
 public:
 	static Ref<SentryAttachment> create_with_path(const String &p_path, const String &p_filename = "", const String &p_content_type = "");
+	static Ref<SentryAttachment> create_with_bytes(const PackedByteArray &p_bytes, const String &p_filename, const String &p_content_type = "");
 
+	PackedByteArray get_bytes() const { return bytes; }
 	String get_path() const { return path; }
 	String get_filename() const { return filename; }
 	String get_content_type() const { return content_type; }
