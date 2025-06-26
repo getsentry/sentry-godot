@@ -130,7 +130,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             filename.ifEmpty { File(path).name },
             contentType.ifEmpty { null },
             attachmentType.ifEmpty { null },
-            true
+            false
         )
         Sentry.getGlobalScope().addAttachment(attachment)
     }
