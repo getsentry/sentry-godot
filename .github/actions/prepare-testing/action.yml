@@ -24,9 +24,14 @@ runs:
         scons --version
 
     - name: Set up Godot
+      env:
+        # Set pre-release version status here (e.g. "beta1");
+        # for release version, set to "stable".
+        release_status: "beta1"
       shell: bash
       run: |
-        version=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1-stable/p' project/addons/sentry/bin/sentry.gdextension)
+        major_minor=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1/p' project/addons/sentry/bin/sentry.gdextension)
+        version=${major_minor}-${release_status}
         if [[ "$RUNNER_OS" == "Windows" ]]; then
           suffix=win64.exe
         elif [[ "$RUNNER_OS" == "Linux" ]]; then
@@ -35,7 +40,7 @@ runs:
           suffix=macos.universal
         fi
         archive_file=Godot_v${version}_${suffix}.zip
-        url=https://github.com/godotengine/godot/releases/download/${version}/${archive_file}
+        url=https://github.com/godotengine/godot-builds/releases/download/${version}/${archive_file}
         if [[ "$RUNNER_OS" == "macOS" ]]; then
           bin=${GITHUB_WORKSPACE}/godot/Godot.app/Contents/MacOS/Godot
         else
@@ -43,6 +48,7 @@ runs:
         fi
         mkdir godot/
         cd godot/
+        echo "Downloading ${url}"
         curl -L -o godot.zip "${url}"
         unzip godot.zip
         rm godot.zip
