@@ -14,7 +14,7 @@
 		<method name="create_with_bytes" qualifiers="static">
 			<return type="SentryAttachment" />
 			<param index="0" name="bytes" type="PackedByteArray" />
-			<param index="1" name="filename" type="String" default="&quot;&quot;" />
+			<param index="1" name="filename" type="String" />
 			<description>
 				Creates a new [SentryAttachment] with the specified [param bytes] data and [param filename]. The [param bytes] parameter contains the raw file data to be attached. The [param filename] parameter specifies the display name for the attachment in Sentry. The optional [param content_type] parameter specifies the MIME type of the file (e.g., "text/plain", "application/json").
 				This method is useful when you have file data already loaded in memory or when creating attachments from generated content rather than existing files on disk.
@@ -22,7 +22,7 @@
 		</method>
 		<method name="create_with_path" qualifiers="static">
 			<return type="SentryAttachment" />
-			<param index="0" name="path" type="String" default="&quot;&quot;" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Creates a new [SentryAttachment] with the specified file [param path] and optional [param filename] and [param content_type]. The [param path] should point to an existing file and supports Godot's virtual file system paths like "user://". The optional [param filename] parameter specifies the display name for the attachment in Sentry - if not provided, the filename will be extracted from the path. The optional [param content_type] parameter specifies the MIME type of the file (e.g., "text/plain", "application/json").
 				[b]Note:[/b] Modifying attachment properties after the attachment has been added with [method SentrySDK.add_attachment] will have no effect. To apply property changes, you need to re-add the attachment.

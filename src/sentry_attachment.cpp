@@ -22,8 +22,8 @@ Ref<SentryAttachment> SentryAttachment::create_with_bytes(const PackedByteArray 
 }
 
 void SentryAttachment::_bind_methods() {
-	ClassDB::bind_static_method("SentryAttachment", D_METHOD("create_with_path", "path"), &SentryAttachment::create_with_path, DEFVAL(""), DEFVAL(""));
-	ClassDB::bind_static_method("SentryAttachment", D_METHOD("create_with_bytes", "bytes", "filename"), &SentryAttachment::create_with_bytes, DEFVAL(""));
+	ClassDB::bind_static_method("SentryAttachment", D_METHOD("create_with_path", "path"), &SentryAttachment::create_with_path);
+	ClassDB::bind_static_method("SentryAttachment", D_METHOD("create_with_bytes", "bytes", "filename"), &SentryAttachment::create_with_bytes);
 
 	BIND_PROPERTY(SentryAttachment, PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytes"), set_bytes, get_bytes);
 	BIND_PROPERTY(SentryAttachment, PropertyInfo(Variant::STRING, "path"), set_path, get_path);
