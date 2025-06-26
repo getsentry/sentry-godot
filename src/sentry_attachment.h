@@ -29,13 +29,20 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<SentryAttachment> create_with_path(const String &p_path, const String &p_filename = "", const String &p_content_type = "");
-	static Ref<SentryAttachment> create_with_bytes(const PackedByteArray &p_bytes, const String &p_filename, const String &p_content_type = "");
+	static Ref<SentryAttachment> create_with_path(const String &p_path);
+	static Ref<SentryAttachment> create_with_bytes(const PackedByteArray &p_bytes, const String &p_filename);
 
 	PackedByteArray get_bytes() const { return bytes; }
+	void set_bytes(const PackedByteArray &p_bytes) { bytes = p_bytes; }
+
 	String get_path() const { return path; }
+	void set_path(const String &p_path) { path = p_path; }
+
 	String get_filename() const { return filename; }
+	void set_filename(const String &p_filename) { filename = p_filename; }
+
 	String get_content_type() const { return content_type; }
+	void set_content_type(const String &p_content_type) { content_type = p_content_type; }
 
 #ifdef NATIVE_SDK
 	sentry_attachment_t *get_native_attachment() const { return native_attachment; }

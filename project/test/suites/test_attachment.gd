@@ -3,15 +3,14 @@ extends GdUnitTestSuite
 
 
 func test_create_with_path() -> void:
-	var attachment := SentryAttachment.create_with_path(
-		"res://example_configuration.gd",
-		"config.gd",
-		"text/x-gdscript"
-	)
+	var attachment := SentryAttachment.create_with_path("user://logs/godot.log")
+	attachment.filename = "logfile.txt"
+	attachment.content_type = "text/plain"
+
 	assert_array(attachment.bytes).is_empty()
-	assert_str(attachment.path).is_equal("res://example_configuration.gd")
-	assert_str(attachment.filename).is_equal("config.gd")
-	assert_str(attachment.content_type).is_equal("text/x-gdscript")
+	assert_str(attachment.path).is_equal("user://logs/godot.log")
+	assert_str(attachment.filename).is_equal("logfile.txt")
+	assert_str(attachment.content_type).is_equal("text/plain")
 
 
 func test_create_with_bytes() -> void:
@@ -20,8 +19,8 @@ func test_create_with_bytes() -> void:
 	"""
 	var bytes: PackedByteArray = contents.to_utf8_buffer()
 
-	var attachment := SentryAttachment.create_with_bytes(
-		bytes, "hello.txt", "text/plain")
+	var attachment := SentryAttachment.create_with_bytes(bytes, "hello.txt")
+	attachment.content_type = "text/plain"
 
 	assert_array(attachment.bytes).is_not_empty()
 	assert_str(attachment.path).is_empty()
