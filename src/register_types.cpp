@@ -1,3 +1,5 @@
+#include "editor/sentry_editor_export_plugin_unix.h"
+#include "editor/sentry_editor_plugin.h"
 #include "runtime_config.h"
 #include "sentry/disabled_event.h"
 #include "sentry_configuration.h"
@@ -15,6 +17,17 @@
 #include "sentry/native/native_event.h"
 #endif // NATIVE_SDK
 
+#ifdef ANDROID_ENABLED
+#include "sentry/android/android_event.h"
+#include "sentry/android/android_sdk.h"
+#endif // ANDROID_ENABLED
+
+#ifdef TOOLS_ENABLED
+#include "editor/sentry_editor_export_plugin_android.h"
+#include "editor/sentry_editor_plugin.h"
+#include <godot_cpp/classes/editor_plugin_registration.hpp>
+#endif // TOOLS_ENABLED
+
 using namespace godot;
 
 void initialize_module(ModuleInitializationLevel p_level) {
@@ -30,14 +43,33 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 		GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 		GDREGISTER_INTERNAL_CLASS(SentryLogger);
+
 #ifdef NATIVE_SDK
 		GDREGISTER_INTERNAL_CLASS(NativeEvent);
-#endif // NATIVE_SDK
+#endif
+
+#ifdef ANDROID_ENABLED
+		GDREGISTER_INTERNAL_CLASS(AndroidEvent);
+
+		{
+			using namespace sentry;
+			GDREGISTER_INTERNAL_CLASS(SentryAndroidBeforeSendHandler);
+		}
+#endif
 
 		SentryOptions::create_singleton();
 
 		SentrySDK *sentry_singleton = memnew(SentrySDK);
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
+	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+#ifdef TOOLS_ENABLED
+#ifndef WINDOWS_ENABLED
+		GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginUnix);
+#endif // !WINDOWS_ENABLED
+		GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginAndroid);
+		GDREGISTER_INTERNAL_CLASS(SentryEditorPlugin);
+		EditorPlugins::add_by_type<SentryEditorPlugin>();
+#endif // TOOLS_ENABLED
 	}
 }
 

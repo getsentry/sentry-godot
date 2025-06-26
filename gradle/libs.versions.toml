@@ -1,0 +1,8 @@
+[versions]
+agp = "8.9.3"
+kotlin = "2.0.21"
+
+[plugins]
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+

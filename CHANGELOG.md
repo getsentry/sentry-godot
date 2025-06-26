@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Minimum Godot version required is now 4.4, which is needed for the Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
+
+### Features
+
+- Initial Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
+- Refine demo for mobile screens ([#196](https://github.com/getsentry/sentry-godot/pull/196))
+
+### Dependencies
+
+- Bump Native SDK from v0.9.0 to v0.9.1 ([#210](https://github.com/getsentry/sentry-godot/pull/210))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#091)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.9.0...0.9.1)
+
+## 0.6.1
+
+### Fixes
+
+- Ensure crashpad_handler has executable permissions on Unix exports ([#207](https://github.com/getsentry/sentry-godot/pull/207))
+
 ### Dependencies
 
 - Bump gdUnit 4 from v5.0.0 to v5.0.4 ([#193](https://github.com/getsentry/sentry-godot/pull/193), [#197](https://github.com/getsentry/sentry-godot/pull/197))
