@@ -76,7 +76,7 @@
 			<return type="void" />
 			<param index="0" name="attachment" type="SentryAttachment" />
 			<description>
-				Removes a previously added attachment from future Sentry events. The [param attachment] should be a [SentryAttachment] object returned by [method SentrySDK.add_attachment].
+				Removes a previously added attachment from future Sentry events. The [param attachment] should be a [SentryAttachment] object added with [method SentrySDK.add_attachment].
 			</description>
 		</method>
 		<method name="remove_tag">
