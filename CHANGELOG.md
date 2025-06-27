@@ -11,6 +11,10 @@
 - Initial Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
 - Refine demo for mobile screens ([#196](https://github.com/getsentry/sentry-godot/pull/196))
 
+## Fixes
+
+- Fixed Godot 4.5 complaining that "usage" is not supported ([#214](https://github.com/getsentry/sentry-godot/pull/214))
+
 ### Dependencies
 
 - Bump Native SDK from v0.9.0 to v0.9.1 ([#210](https://github.com/getsentry/sentry-godot/pull/210))
