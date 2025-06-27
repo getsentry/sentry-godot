@@ -26,20 +26,25 @@ using namespace sentry;
 namespace {
 
 void _verify_project_settings() {
-	if (!ProjectSettings::get_singleton()->get_setting("debug/settings/gdscript/always_track_call_stacks")) {
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	ERR_FAIL_NULL(ps);
+	Ref<SentryOptions> options = SentryOptions::get_singleton();
+	ERR_FAIL_COND(options.is_null());
+
+	if (!ps->get_setting("debug/settings/gdscript/always_track_call_stacks")) {
 		ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_call_stacks` in your Project Settings. This is required for supporting script stack traces.");
 	}
-	if (SentryOptions::get_singleton()->is_logger_include_variables_enabled() &&
-			!ProjectSettings::get_singleton()->get_setting("debug/settings/gdscript/always_track_local_variables")) {
+	if (options->is_logger_include_variables_enabled() &&
+			!ps->get_setting("debug/settings/gdscript/always_track_local_variables")) {
 		ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_local_variables` in your Project Settings. This is required to include local variables in backtraces.");
 	}
 
-	if (SentryOptions::get_singleton()->is_attach_log_enabled()) {
+	if (options->is_attach_log_enabled()) {
 #if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
-		if (!ProjectSettings::get_singleton()->get_setting("debug/file_logging/enable_file_logging.pc") &&
-				!ProjectSettings::get_singleton()->get_setting("debug/file_logging/enable_file_logging")) {
+		if (!ps->get_setting("debug/file_logging/enable_file_logging.pc") &&
+				!ps->get_setting("debug/file_logging/enable_file_logging")) {
 #else
-		if (!ProjectSettings::get_singleton()->get_setting("debug/file_logging/enable_file_logging")) {
+		if (!ps->get_setting("debug/file_logging/enable_file_logging")) {
 #endif
 			ERR_PRINT("Sentry: Please enable File Logging in your Project Settings if you want to include log files with Sentry events or disable attaching logs in your Sentry options.");
 		}
