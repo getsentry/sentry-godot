@@ -8,7 +8,6 @@
 #include <godot_cpp/classes/logger.hpp>
 #include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/classes/script_backtrace.hpp>
-#include <regex>
 #include <unordered_map>
 
 using namespace godot;
@@ -25,7 +24,6 @@ private:
 	} limits;
 
 	Ref<Mutex> error_mutex;
-	Ref<Mutex> message_mutex;
 
 	using GodotErrorType = sentry::GodotErrorType;
 	using SourceLine = std::pair<std::string, int>;
@@ -45,19 +43,6 @@ private:
 
 	// Number of events captured during this frame.
 	int frame_events = 0;
-
-	// Patterns that are checked against each message.
-	// If matching, the message is not added as breadcrumb.
-	std::vector<std::regex> filter_patterns;
-	std::vector<String> filter_exact_matches;
-
-	// Used for traceback print filtering.
-	String filter_native_trace_starter_begins;
-	String filter_native_trace_finisher_exact;
-	std::regex filter_script_trace_starter_pattern;
-	String filter_script_trace_finisher_exact;
-
-	bool skip_logging_message = false; // Set by filtering until further condition unsets this.
 
 	void _process_frame();
 

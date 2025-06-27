@@ -239,40 +239,6 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
-	// Filtering: Exact matches that are checked against each message.
-	for (const String &exact_match : filter_exact_matches) {
-		if (p_message == exact_match) {
-			return;
-		}
-	}
-
-	// Filtering: Patterns that are checked against each message (like Sentry debug printing).
-	std::string std_message{ p_message.ascii() };
-	for (auto pattern : filter_patterns) {
-		if (std::regex_search(std_message, pattern)) {
-			return;
-		}
-	}
-
-	message_mutex->lock();
-
-	// Filtering: Backtrace printing.
-	if (!skip_logging_message &&
-			(p_message.begins_with(filter_native_trace_starter_begins) || std::regex_search(std_message, filter_script_trace_starter_pattern))) {
-		skip_logging_message = true;
-	} else if (skip_logging_message &&
-			(p_message == filter_script_trace_finisher_exact || p_message == filter_native_trace_finisher_exact)) {
-		skip_logging_message = false;
-	}
-
-	bool skip_it = skip_logging_message;
-
-	message_mutex->unlock();
-
-	if (skip_it) {
-		return;
-	}
-
 	SentrySDK::get_singleton()->add_breadcrumb(
 			p_message,
 			"log",
@@ -294,23 +260,6 @@ void SentryLogger::_notification(int p_what) {
 
 SentryLogger::SentryLogger() {
 	error_mutex.instantiate();
-	message_mutex.instantiate();
-
-	// Filtering setup.
-	filter_patterns = {
-		// Sentry messages
-		std::regex{ "^[A-Z]+: Sentry:" },
-	};
-	filter_exact_matches = {
-		// Godot prints this line before printing backtrace
-		"\n================================================================\n",
-		// Godot prints this line during and after printing backtrace
-		"================================================================\n"
-	};
-	filter_native_trace_starter_begins = "handle_crash: ";
-	filter_native_trace_finisher_exact = "-- END OF C++ BACKTRACE --\n";
-	filter_script_trace_starter_pattern = "^[a-zA-Z0-9#+]+ backtrace \\(most recent call first\\):";
-	filter_script_trace_finisher_exact = "-- END OF GDSCRIPT BACKTRACE --\n";
 
 	// Cache limits.
 	Ref<SentryLoggerLimits> logger_limits = SentryOptions::get_singleton()->get_logger_limits();
