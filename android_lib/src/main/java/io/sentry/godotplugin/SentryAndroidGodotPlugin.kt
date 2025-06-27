@@ -19,6 +19,7 @@ import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.godot.variant.Callable
+import java.io.File
 import kotlin.random.Random
 
 
@@ -123,8 +124,14 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun addGlobalAttachment(path: String) {
-        val attachment = Attachment(path)
+    fun addFileAttachment(path: String, filename: String, contentType: String, attachmentType: String) {
+        val attachment = Attachment(
+            path,
+            filename.ifEmpty { File(path).name },
+            contentType.ifEmpty { null },
+            attachmentType.ifEmpty { null },
+            false
+        )
         Sentry.getGlobalScope().addAttachment(attachment)
     }
 
@@ -333,6 +340,32 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun eventRemoveTag(eventHandle: Int, key: String) {
         getEvent(eventHandle)?.removeTag(key)
+    }
+
+    @UsedByGodot
+    fun eventMergeContext(eventHandle: Int, key: String, value: Dictionary) {
+        val event = getEvent(eventHandle) ?: return
+
+        val existingContext: Any? = event.contexts[key]
+
+        if (existingContext is Dictionary) {
+            // Fast path: merge Dictionary directly.
+            existingContext.putAll(value)
+        } else {
+            val existingMap = existingContext as? Map<*, *>
+            existingMap?.let {
+                // Merge elements from existing context into new context, but only for keys
+                // that don't already exist in the new context.
+                for ((k, v) in it) {
+                    val kStr: String = k as? String ?: continue
+                    if (!value.containsKey(kStr)) {
+                        value[kStr] = v
+                    }
+                }
+            }
+            event.contexts[key] = value
+        }
+
     }
 
     @UsedByGodot

@@ -27,7 +27,7 @@ public:
 	_FORCE_INLINE_ static AndroidStringNames *get_singleton() { return singleton; }
 
 	// API methods.
-	StringName addGlobalAttachment;
+	StringName addFileAttachment;
 	StringName setContext;
 	StringName removeContext;
 	StringName setTag;
@@ -62,6 +62,7 @@ public:
 	StringName eventSetTag;
 	StringName eventRemoveTag;
 	StringName eventGetTag;
+	StringName eventMergeContext;
 	StringName eventIsCrash;
 
 	// Exceptions.

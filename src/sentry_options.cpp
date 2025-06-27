@@ -155,6 +155,16 @@ void SentryOptions::set_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
 	}
 }
 
+void SentryOptions::add_event_processor(const Ref<SentryEventProcessor> &p_processor) {
+	ERR_FAIL_COND(p_processor.is_null());
+	event_processors.push_back(p_processor);
+}
+
+void SentryOptions::remove_event_processor(const Ref<SentryEventProcessor> &p_processor) {
+	ERR_FAIL_COND(p_processor.is_null());
+	event_processors.erase(p_processor);
+}
+
 void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enabled"), set_enabled, is_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "disabled_in_editor"), set_disabled_in_editor, is_disabled_in_editor);
