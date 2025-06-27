@@ -5,6 +5,7 @@
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
 #include "sentry_event.h"
+#include "sentry_logger.h"
 #include "sentry_options.h"
 
 #include <godot_cpp/classes/mutex.hpp>
@@ -31,6 +32,7 @@ private:
 	Ref<RuntimeConfig> runtime_config;
 	Ref<SentryUser> user;
 	Ref<Mutex> user_mutex;
+	Ref<SentryLogger> logger;
 	bool enabled = false;
 	bool configuration_succeeded = false;
 
@@ -38,6 +40,7 @@ private:
 	PackedStringArray _get_global_attachments();
 	void _initialize();
 	void _check_if_configuration_succeeded();
+	void _demo_helper_crash_app();
 
 protected:
 	static void _bind_methods();
