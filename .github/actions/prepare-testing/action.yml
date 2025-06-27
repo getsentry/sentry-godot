@@ -62,12 +62,19 @@ runs:
       run: |
         ls -lR project/
 
+    - name: Prepare gdUnit4
+      shell: bash
+      run: |
+        scons project/addons/gdUnit4
+        echo "--- Applying gdUnit4 patch"
+        cd modules/gdUnit4
+        git apply ../gdunit4.patch
+
     - name: Prepare project
       shell: bash
       # timeout-minutes: 5
       run: |
-        scons project/addons/gdUnit4
         chmod +x project/addons/sentry/bin/{linux,macos}/crashpad_handler
-        echo "--- Rebuilding import cache.."
+        echo "--- Rebuilding import cache"
         ${GODOT} --headless --editor --path project/ --quit-after 2000 || true
-        echo "--- Finished rebuilding import cache."
+        echo "--- Finished rebuilding import cache"
