@@ -30,7 +30,7 @@ $exitCode = 0
 $numFailed = 0
 $numPassed = 0
 
-Get-ChildItem -Path "test/isolated" -Filter "test_*" | ForEach-Object {
+Get-ChildItem -Path "test/isolated" -Filter "test_*.gd" | ForEach-Object {
     $file = $_.FullName
     Highlight "Running isolated test: $file"
 
@@ -38,7 +38,7 @@ Get-ChildItem -Path "test/isolated" -Filter "test_*" | ForEach-Object {
     $process = Start-Process $godot -ArgumentList $args -PassThru -Wait -NoNewWindow
     $err = $process.ExitCode
 
-    Highlight "Finished with exit code: $err" 
+    Highlight "Finished with exit code: $err"
 
     if ($err -ne 0) {
         $exitCode = $err
