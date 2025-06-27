@@ -2,9 +2,12 @@
 
 #include "android_event.h"
 #include "android_string_names.h"
+#include "sentry/common_defs.h"
 #include "sentry/util/print.h"
+#include "sentry_attachment.h"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/callable.hpp>
 
 using namespace godot;
@@ -112,13 +115,51 @@ String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	return android_event->get_id();
 }
 
+void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND(p_attachment.is_null());
+
+	if (p_attachment->get_path().is_empty()) {
+		sentry::util::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
+		android_plugin->call(ANDROID_SN(addBytesAttachment),
+				p_attachment->get_bytes(),
+				p_attachment->get_filename(),
+				p_attachment->get_content_type(),
+				String());
+	} else {
+		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
+		sentry::util::print_debug("attaching file: ", absolute_path);
+		android_plugin->call(ANDROID_SN(addFileAttachment),
+				absolute_path,
+				p_attachment->get_filename(),
+				p_attachment->get_content_type(),
+				String());
+	}
+}
+
+void AndroidSDK::remove_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND(p_attachment.is_null());
+
+	if (p_attachment->get_path().is_empty()) {
+		android_plugin->call(ANDROID_SN(removeBytesAttachment),
+				p_attachment->get_filename());
+	} else {
+		android_plugin->call(ANDROID_SN(removeFileAttachment),
+				p_attachment->get_path());
+	}
+}
+
 void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
 	ERR_FAIL_NULL(android_plugin);
 
 	sentry::util::print_debug("Initializing Sentry Android SDK");
 
 	for (const String &path : p_global_attachments) {
-		android_plugin->call(ANDROID_SN(addGlobalAttachment), path);
+		bool is_view_hierarchy = path.ends_with(SENTRY_VIEW_HIERARCHY_FN);
+		android_plugin->call(ANDROID_SN(addFileAttachment),
+				path,
+				String(), // filename
+				is_view_hierarchy ? "application/json" : String(),
+				is_view_hierarchy ? "event.view_hierarchy" : String());
 	}
 
 	android_plugin->call("initialize",

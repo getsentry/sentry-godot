@@ -9,6 +9,7 @@
 #include "sentry/util/print.h"
 #include "sentry/util/screenshot.h"
 #include "sentry/view_hierarchy.h"
+#include "sentry_attachment.h"
 #include "sentry_options.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
@@ -336,6 +337,58 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	sentry_uuid_t uuid = sentry_capture_event(event);
 	last_uuid.store(uuid, std::memory_order_release);
 	return _uuid_as_string(uuid);
+}
+
+void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+
+	sentry_attachment_t *native_attachment = nullptr;
+
+	if (!p_attachment->get_path().is_empty()) {
+		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
+		sentry::util::print_debug(vformat("attaching file: %s", absolute_path));
+
+		native_attachment = sentry_attach_file(absolute_path.utf8());
+
+		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach file: %s", absolute_path));
+
+		if (!p_attachment->get_filename().is_empty()) {
+			sentry_attachment_set_filename(native_attachment, p_attachment->get_filename().utf8());
+		}
+
+	} else {
+		PackedByteArray bytes = p_attachment->get_bytes();
+		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
+
+		sentry::util::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
+
+		native_attachment = sentry_attach_bytes(
+				reinterpret_cast<const char *>(bytes.ptr()),
+				bytes.size(),
+				p_attachment->get_filename().utf8());
+
+		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach bytes with filename: %s", p_attachment->get_filename()));
+	}
+
+	p_attachment->set_native_attachment(native_attachment);
+
+	if (!p_attachment->get_content_type().is_empty()) {
+		sentry_attachment_set_content_type(native_attachment, p_attachment->get_content_type().utf8());
+	}
+}
+
+void NativeSDK::remove_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't remove null attachment.");
+
+	sentry_attachment_t *native_attachment = p_attachment->get_native_attachment();
+	if (native_attachment) {
+		sentry_remove_attachment(native_attachment);
+		p_attachment->set_native_attachment(nullptr);
+		sentry::util::print_debug(vformat("removed attachment: %s", p_attachment->get_path()));
+	} else {
+		sentry::util::print_warning(vformat("attempted to remove attachment that was not added: %s", p_attachment->get_path()));
+	}
 }
 
 void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
