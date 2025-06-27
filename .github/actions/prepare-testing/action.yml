@@ -66,7 +66,7 @@ runs:
       shell: bash
       run: |
         scons project/addons/gdUnit4
-        echo "--- Applying gdUnit4 patch"
+        echo "Applying gdUnit4 patch"
         cd modules/gdUnit4
         git apply ../gdunit4.patch
 
