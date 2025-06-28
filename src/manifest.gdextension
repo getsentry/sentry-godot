@@ -7,12 +7,14 @@ compatibility_minimum = "{compatibility_minimum}"
 
 macos.debug = "res://addons/sentry/bin/macos/libsentry.macos.debug.framework"
 macos.release = "res://addons/sentry/bin/macos/libsentry.macos.release.framework"
-;windows.debug.x86_32 = "res://addons/sentry/bin/windows/libsentry.windows.debug.x86_32.dll"
-;windows.release.x86_32 = "res://addons/sentry/bin/windows/libsentry.windows.release.x86_32.dll"
-windows.debug.x86_64 = "res://addons/sentry/bin/windows/libsentry.windows.debug.x86_64.dll"
-windows.release.x86_64 = "res://addons/sentry/bin/windows/libsentry.windows.release.x86_64.dll"
-linux.debug.x86_64 = "res://addons/sentry/bin/linux/libsentry.linux.debug.x86_64.so"
-linux.release.x86_64 = "res://addons/sentry/bin/linux/libsentry.linux.release.x86_64.so"
+windows.debug.x86_64 = "res://addons/sentry/bin/windows/x86_64/libsentry.windows.debug.x86_64.dll"
+windows.release.x86_64 = "res://addons/sentry/bin/windows/x86_64/libsentry.windows.release.x86_64.dll"
+windows.debug.x86_32 = "res://addons/sentry/bin/windows/x86_32/libsentry.windows.debug.x86_32.dll"
+windows.release.x86_32 = "res://addons/sentry/bin/windows/x86_32/libsentry.windows.release.x86_32.dll"
+linux.debug.x86_64 = "res://addons/sentry/bin/linux/x86_64/libsentry.linux.debug.x86_64.so"
+linux.release.x86_64 = "res://addons/sentry/bin/linux/x86_64/libsentry.linux.release.x86_64.so"
+linux.debug.x86_32 = "res://addons/sentry/bin/linux/x86_32/libsentry.linux.debug.x86_32.so"
+linux.release.x86_32 = "res://addons/sentry/bin/linux/x86_32/libsentry.linux.release.x86_32.so"
 ;linux.debug.arm64 = "res://addons/sentry/bin/linux/libsentry.linux.debug.arm64.so"
 ;linux.release.arm64 = "res://addons/sentry/bin/linux/libsentry.linux.release.arm64.so"
 ;linux.debug.rv64 = "res://addons/sentry/bin/linux/libsentry.linux.debug.rv64.so"
@@ -29,11 +31,19 @@ android.release.x86_64 = "res://addons/sentry/bin/android/libsentry.android.rele
 [dependencies]
 
 linux.x86_64 = {
-	"res://addons/sentry/bin/linux/crashpad_handler" : ""
+	"res://addons/sentry/bin/linux/x86_64/crashpad_handler" : ""
+}
+
+linux.x86_32 = {
+	"res://addons/sentry/bin/linux/x86_32/crashpad_handler" : ""
 }
 
 windows.x86_64 = {
-	"res://addons/sentry/bin/windows/crashpad_handler.exe" : ""
+	"res://addons/sentry/bin/windows/x86_64/crashpad_handler.exe" : ""
+}
+
+windows.x86_32 = {
+	"res://addons/sentry/bin/windows/x86_32/crashpad_handler.exe" : ""
 }
 
 macos = {

@@ -41,6 +41,18 @@ jobs:
             target: editor
             arch: x86_64
 
+          - name: 🐧 Linux (x86_32, release)
+            runner: ubuntu-22.04
+            platform: linux
+            target: template_release
+            arch: x86_32
+
+          - name: 🐧 Linux (x86_32, debug)
+            runner: ubuntu-22.04
+            platform: linux
+            target: editor
+            arch: x86_32
+
           - name: 🪟 Windows (x86_64, release)
             runner: windows-latest
             platform: windows
@@ -52,6 +64,18 @@ jobs:
             platform: windows
             target: editor
             arch: x86_64
+
+          - name: 🪟 Windows (x86_32, release)
+            runner: windows-latest
+            platform: windows
+            target: template_release
+            arch: x86_32
+
+          - name: 🪟 Windows (x86_32, debug)
+            runner: windows-latest
+            platform: windows
+            target: editor
+            arch: x86_32
 
           - name: 🍎 macOS (universal, release)
             runner: macos-latest
@@ -117,11 +141,22 @@ jobs:
           submodules: recursive
           ref: ${{inputs.ref}}
 
-      - name: Install Linux dependencies
-        if: matrix.platform == 'linux'
+      - name: Install Linux dependencies (64 bit)
+        if: matrix.platform == 'linux' && matrix.arch == 'x86_64'
         run: |
           sudo apt update
           sudo apt install libcurl4-openssl-dev
+
+      - name: Install Linux dependencies (32-bit)
+        if: matrix.platform == 'linux' && matrix.arch == 'x86_32'
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install \
+              libcurl4-openssl-dev:i386 \
+              g++-multilib gcc-multilib \
+              libc6-dev-i386 \
+              zlib1g-dev:i386
 
       - name: Install SCons
         run: |
@@ -168,7 +203,7 @@ jobs:
           BUILD_TYPE: ${{matrix.target == 'template_release' && 'release' || 'debug'}}
         shell: bash
         run: |
-          cd project/addons/sentry/bin/linux/
+          cd project/addons/sentry/bin/linux/${{matrix.arch}}
           lib=libsentry.${{matrix.platform}}.${BUILD_TYPE}.${{matrix.arch}}.so
           objcopy --only-keep-debug ${lib} ${lib}.debug
           objcopy --add-gnu-debuglink ${lib}.debug ${lib}
