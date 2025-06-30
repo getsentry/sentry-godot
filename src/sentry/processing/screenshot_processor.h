@@ -10,6 +10,7 @@ class ScreenshotProcessor : public SentryEventProcessor {
 	GDCLASS(ScreenshotProcessor, SentryEventProcessor);
 
 private:
+	String screenshot_path;
 	int32_t last_screenshot_frame = 0;
 	std::mutex mutex;
 
@@ -18,6 +19,8 @@ protected:
 
 public:
 	virtual Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) override;
+
+	ScreenshotProcessor();
 };
 
 #endif // SCREENSHOT_EVENT_PROCESSOR_H

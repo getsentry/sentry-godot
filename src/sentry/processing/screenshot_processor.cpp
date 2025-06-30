@@ -17,31 +17,26 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 		return nullptr;
 	}
 
-	bool is_main_thread = OS::get_singleton()->get_thread_caller_id() == OS::get_singleton()->get_main_thread_id();
+	if (!DisplayServer::get_singleton() || DisplayServer::get_singleton()->get_name() == "headless") {
+		return p_event;
+	}
+
+	int32_t current_frame = Engine::get_singleton()->get_frames_drawn();
 
 	{
 		std::lock_guard lock{ mutex };
 
-		int32_t current_frame = Engine::get_singleton()->get_frames_drawn();
 		if (current_frame == last_screenshot_frame) {
-			sentry::util::print_debug("skipping screenshot");
-			// Screenshot already exists for this frame — nothing to do.
+			sentry::util::print_debug("skipping screenshot – already taken");
 			return p_event;
 		}
-		if (is_main_thread) {
-			last_screenshot_frame = current_frame;
-		}
+
+		// Remove the outdated screenshot.
+		DirAccess::remove_absolute(screenshot_path);
 	}
 
-	String screenshot_path = "user://" SENTRY_SCREENSHOT_FN;
-	DirAccess::remove_absolute(screenshot_path);
-
-	if (!is_main_thread) {
-		sentry::util::print_debug("skipping screenshot capture - can only be performed on the main thread");
-		return p_event;
-	}
-
-	if (!DisplayServer::get_singleton() || DisplayServer::get_singleton()->get_name() == "headless") {
+	if (OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id()) {
+		sentry::util::print_debug("skipping screenshot – can only be performed on the main thread");
 		return p_event;
 	}
 
@@ -63,9 +58,13 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 		}
 	}
 
-	sentry::util::print_debug("taking screenshot");
+	mutex.lock();
+	last_screenshot_frame = current_frame;
+	mutex.unlock();
 
+	sentry::util::print_debug("taking screenshot");
 	PackedByteArray buffer = sentry::util::take_screenshot();
+
 	Ref<FileAccess> f = FileAccess::open(screenshot_path, FileAccess::WRITE);
 	if (f.is_valid()) {
 		f->store_buffer(buffer);
@@ -76,4 +75,8 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 	}
 
 	return p_event;
+}
+
+ScreenshotProcessor::ScreenshotProcessor() {
+	screenshot_path = "user://" SENTRY_SCREENSHOT_FN;
 }
