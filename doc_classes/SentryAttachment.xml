@@ -5,7 +5,19 @@
 	</brief_description>
 	<description>
 		SentryAttachment represents a file that can be attached to Sentry events to provide additional context. Attachments are files that are uploaded alongside error reports and can include log files, screenshots, configuration files, or any other relevant data.
-		Attachments can be created using [method SentryAttachment.create_with_path] for existing files on disk or [method SentryAttachment.create_with_bytes] for data already in memory. Once created, they can be added to future events using [method SentrySDK.add_attachment].
+		Attachments can be created using [method SentryAttachment.create_with_path] for existing files on disk. Once created, they can be added to future events using [method SentrySDK.add_attachment]:
+		[codeblock]
+		var attachment := SentryAttachment.create_with_path("user://logs/godot.log")
+		attachment.content_type = "text/plain"
+		SentrySDK.add_attachment(attachment)
+		[/codeblock]
+		Attachments can also be created using [method SentryAttachment.create_with_bytes] for data already in memory:
+		[codeblock]
+		var bytes: PackedByteArray = "Hello, world!".to_ascii_buffer()
+		var attachment := SentryAttachment.create_with_bytes(bytes, "hello.txt")
+		attachment.content_type = "text/plain"
+		SentrySDK.add_attachment(attachment)
+		[/codeblock]
 		To learn more about attachments, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/attachments/]Attachments documentation[/url].
 	</description>
 	<tutorials>
