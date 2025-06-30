@@ -136,13 +136,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun removeFileAttachment(path: String) {
-        val globalScope = Sentry.getGlobalScope()
-        val attachment = globalScope.attachments.find { att -> att.pathname == path }
-        attachment?.let { globalScope.attachments.remove(attachment) }
-    }
-
-    @UsedByGodot
     fun addBytesAttachment(bytes: ByteArray, filename: String, contentType: String, attachmentType: String) {
         val attachment = Attachment(
             bytes,
@@ -152,13 +145,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             false
         )
         Sentry.getGlobalScope().addAttachment(attachment)
-    }
-
-    @UsedByGodot
-    fun removeBytesAttachment(filename: String) {
-        val globalScope = Sentry.getGlobalScope()
-        val attachment = globalScope.attachments.find { att -> att.filename == filename }
-        attachment?.let { globalScope.attachments.remove(attachment) }
     }
 
     @UsedByGodot

@@ -72,7 +72,6 @@ public:
 	String capture_event(const Ref<SentryEvent> &p_event);
 
 	void add_attachment(const Ref<SentryAttachment> &p_attachment);
-	void remove_attachment(const Ref<SentryAttachment> &p_attachment);
 
 	// * Hidden API methods -- used in testing
 

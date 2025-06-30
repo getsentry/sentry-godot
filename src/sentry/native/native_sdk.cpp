@@ -378,19 +378,6 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void NativeSDK::remove_attachment(const Ref<SentryAttachment> &p_attachment) {
-	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't remove null attachment.");
-
-	sentry_attachment_t *native_attachment = p_attachment->get_native_attachment();
-	if (native_attachment) {
-		sentry_remove_attachment(native_attachment);
-		p_attachment->set_native_attachment(nullptr);
-		sentry::util::print_debug(vformat("removed attachment: %s", p_attachment->get_path()));
-	} else {
-		sentry::util::print_warning(vformat("attempted to remove attachment that was not added: %s", p_attachment->get_path()));
-	}
-}
-
 void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());

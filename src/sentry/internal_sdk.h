@@ -37,7 +37,6 @@ public:
 	virtual String capture_event(const Ref<SentryEvent> &p_event) = 0;
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) = 0;
-	virtual void remove_attachment(const Ref<SentryAttachment> &p_attachment) = 0;
 
 	virtual void initialize(const PackedStringArray &p_global_attachments) = 0;
 

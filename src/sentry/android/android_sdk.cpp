@@ -136,18 +136,6 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void AndroidSDK::remove_attachment(const Ref<SentryAttachment> &p_attachment) {
-	ERR_FAIL_COND(p_attachment.is_null());
-
-	if (p_attachment->get_path().is_empty()) {
-		android_plugin->call(ANDROID_SN(removeBytesAttachment),
-				p_attachment->get_filename());
-	} else {
-		android_plugin->call(ANDROID_SN(removeFileAttachment),
-				p_attachment->get_path());
-	}
-}
-
 void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
 	ERR_FAIL_NULL(android_plugin);
 

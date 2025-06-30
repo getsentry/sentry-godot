@@ -72,13 +72,6 @@
 				Returns whether the SDK is enabled, i.e. whether it is initialized and active.
 			</description>
 		</method>
-		<method name="remove_attachment">
-			<return type="void" />
-			<param index="0" name="attachment" type="SentryAttachment" />
-			<description>
-				Removes a previously added attachment from future Sentry events. The [param attachment] should be a [SentryAttachment] object added with [method SentrySDK.add_attachment].
-			</description>
-		</method>
 		<method name="remove_tag">
 			<return type="void" />
 			<param index="0" name="key" type="String" />
