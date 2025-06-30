@@ -16,7 +16,7 @@
 			<param index="0" name="bytes" type="PackedByteArray" />
 			<param index="1" name="filename" type="String" />
 			<description>
-				Creates a new [SentryAttachment] with the specified [param bytes] data and [param filename]. The [param bytes] parameter contains the raw file data to be attached. The [param filename] parameter specifies the display name for the attachment in Sentry. The optional [param content_type] parameter specifies the MIME type of the file (e.g., "text/plain", "application/json").
+				Creates a new [SentryAttachment] with the specified [param bytes] data and [param filename]. The [param bytes] parameter contains the raw file data to be attached. The [param filename] parameter specifies the display name for the attachment in Sentry.
 				This method is useful when you have file data already loaded in memory or when creating attachments from generated content rather than existing files on disk.
 			</description>
 		</method>
@@ -24,7 +24,7 @@
 			<return type="SentryAttachment" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Creates a new [SentryAttachment] with the specified file [param path] and optional [param filename] and [param content_type]. The [param path] should point to an existing file and supports Godot's virtual file system paths like "user://". The optional [param filename] parameter specifies the display name for the attachment in Sentry - if not provided, the filename will be extracted from the path. The optional [param content_type] parameter specifies the MIME type of the file (e.g., "text/plain", "application/json").
+				Creates a new [SentryAttachment] with the specified file [param path] and optional [param filename] and [param content_type]. The [param path] should point to an existing file and supports Godot's virtual file system paths like "user://".
 				[b]Note:[/b] Modifying attachment properties after the attachment has been added with [method SentrySDK.add_attachment] will have no effect. To apply property changes, you need to re-add the attachment.
 				[b]Important:[/b] Attachments are read lazily at the time an event is sent to Sentry.
 			</description>
@@ -36,6 +36,7 @@
 		</member>
 		<member name="content_type" type="String" setter="set_content_type" getter="get_content_type">
 			The MIME content type of the attachment file. This helps Sentry understand how to handle and display the attachment.
+			Sentry understands and renders the following MIME types: [code]text/plain[/code], [code]text/css[/code], [code]text/csv[/code], [code]text/html[/code], [code]text/javascript[/code], [code]text/json[/code] or [code]text/x-json[/code] or [code]application/json[/code] or [code]application/ld+json[/code], [code]image/jpeg[/code], [code]image/png[/code], [code]image/gif[/code].
 		</member>
 		<member name="filename" type="String" setter="set_filename" getter="get_filename">
 			The filename of the attachment. This is the name that will be displayed in Sentry. If not provided, the filename will be extracted from the [member path].
