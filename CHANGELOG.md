@@ -12,6 +12,10 @@
 - Refine demo for mobile screens ([#196](https://github.com/getsentry/sentry-godot/pull/196))
 - Add user attachments support ([#205](https://github.com/getsentry/sentry-godot/pull/205))
 
+## Fixes
+
+- Fixed Godot 4.5 complaining that "usage" is not supported ([#214](https://github.com/getsentry/sentry-godot/pull/214))
+
 ### Dependencies
 
 - Bump Native SDK from v0.9.0 to v0.9.1 ([#210](https://github.com/getsentry/sentry-godot/pull/210))

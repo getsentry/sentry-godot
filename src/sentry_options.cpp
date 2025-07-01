@@ -29,6 +29,7 @@ void _define_setting(const String &p_setting, const Variant &p_default, bool p_b
 void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default, bool p_basic = true) {
 	_define_setting(p_info.name, p_default, p_basic);
 	Dictionary info = (Dictionary)p_info;
+	info.erase("usage"); // Fix "usage" not supported warning.
 	ProjectSettings::get_singleton()->add_property_info(info);
 }
 
@@ -152,6 +153,16 @@ void SentryOptions::set_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
 	if (logger_limits.is_null()) {
 		logger_limits.instantiate();
 	}
+}
+
+void SentryOptions::add_event_processor(const Ref<SentryEventProcessor> &p_processor) {
+	ERR_FAIL_COND(p_processor.is_null());
+	event_processors.push_back(p_processor);
+}
+
+void SentryOptions::remove_event_processor(const Ref<SentryEventProcessor> &p_processor) {
+	ERR_FAIL_COND(p_processor.is_null());
+	event_processors.erase(p_processor);
 }
 
 void SentryOptions::_bind_methods() {

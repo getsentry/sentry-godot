@@ -2,10 +2,13 @@
 #include "editor/sentry_editor_plugin.h"
 #include "runtime_config.h"
 #include "sentry/disabled_event.h"
+#include "sentry/processing/screenshot_processor.h"
+#include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/util/print.h"
 #include "sentry_attachment.h"
 #include "sentry_configuration.h"
 #include "sentry_event.h"
+#include "sentry_event_processor.h"
 #include "sentry_logger.h"
 #include "sentry_options.h"
 #include "sentry_sdk.h"
@@ -69,6 +72,9 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 		GDREGISTER_INTERNAL_CLASS(DisabledEvent);
+		GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
+		GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
+		GDREGISTER_INTERNAL_CLASS(ViewHierarchyProcessor);
 		GDREGISTER_INTERNAL_CLASS(SentryLogger);
 
 #ifdef NATIVE_SDK

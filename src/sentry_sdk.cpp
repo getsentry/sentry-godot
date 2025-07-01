@@ -4,6 +4,8 @@
 #include "sentry/common_defs.h"
 #include "sentry/contexts.h"
 #include "sentry/disabled_sdk.h"
+#include "sentry/processing/screenshot_processor.h"
+#include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/util/print.h"
 #include "sentry_attachment.h"
 
@@ -213,6 +215,14 @@ void SentrySDK::_initialize() {
 		}
 	}
 	set_user(user);
+
+	// Add event processors
+	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
+		SentryOptions::get_singleton()->add_event_processor(memnew(ScreenshotProcessor));
+	}
+	if (SentryOptions::get_singleton()->is_attach_scene_tree_enabled()) {
+		SentryOptions::get_singleton()->add_event_processor(memnew(ViewHierarchyProcessor));
+	}
 
 	internal_sdk->initialize(_get_global_attachments());
 	_init_contexts();
