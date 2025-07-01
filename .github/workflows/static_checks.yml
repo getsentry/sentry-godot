@@ -15,6 +15,8 @@ jobs:
 
       - name: Prepare testing
         uses: ./.github/actions/prepare-testing
+        with:
+          arch: x86_64
 
       - name: Check code style
         uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
