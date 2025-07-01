@@ -65,6 +65,8 @@ public:
 	virtual void remove_tag(const String &p_key) = 0;
 	virtual String get_tag(const String &p_key) = 0;
 
+	virtual void merge_context(const String &p_key, const Dictionary &p_value) = 0;
+
 	virtual void add_exception(const Exception &p_exception) = 0;
 
 	virtual bool is_crash() const = 0;
