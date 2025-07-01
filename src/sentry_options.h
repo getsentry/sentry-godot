@@ -65,6 +65,7 @@ private:
 	bool attach_screenshot = false;
 	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
 	bool attach_scene_tree = false;
+	int64_t max_attachment_size = 20 * 1024 * 1024; // 20 MiB
 
 	bool logger_enabled = true;
 	bool logger_include_source = true;
@@ -135,6 +136,9 @@ public:
 
 	_FORCE_INLINE_ void set_attach_scene_tree(bool p_enable) { attach_scene_tree = p_enable; }
 	_FORCE_INLINE_ bool is_attach_scene_tree_enabled() const { return attach_scene_tree; }
+
+	_FORCE_INLINE_ int64_t get_max_attachment_size() const { return max_attachment_size; }
+	_FORCE_INLINE_ void set_max_attachment_size(int64_t p_size) { max_attachment_size = p_size; }
 
 	_FORCE_INLINE_ bool is_logger_enabled() const { return logger_enabled; }
 	_FORCE_INLINE_ void set_logger_enabled(bool p_enabled) { logger_enabled = p_enabled; }

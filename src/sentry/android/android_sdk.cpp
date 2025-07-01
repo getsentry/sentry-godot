@@ -147,7 +147,8 @@ void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
 			SentryOptions::get_singleton()->get_dist(),
 			SentryOptions::get_singleton()->get_environment(),
 			SentryOptions::get_singleton()->get_sample_rate(),
-			SentryOptions::get_singleton()->get_max_breadcrumbs());
+			SentryOptions::get_singleton()->get_max_breadcrumbs(),
+			SentryOptions::get_singleton()->get_max_attachment_size());
 }
 
 AndroidSDK::AndroidSDK() {

@@ -101,6 +101,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         environment: String,
         sampleRate: Float,
         maxBreadcrumbs: Int,
+        maxAttachmentSize: Long
     ) {
         Log.v(TAG, "Initializing Sentry Android")
         SentryAndroid.init(godot.getActivity()!!.applicationContext) { options ->
@@ -111,6 +112,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             options.environment = environment.ifEmpty { null }
             options.sampleRate = sampleRate.toDouble()
             options.maxBreadcrumbs = maxBreadcrumbs
+            options.maxAttachmentSize = maxAttachmentSize
             options.sdkVersion?.name = "sentry.java.android.godot"
             options.nativeSdkName = "sentry.native.android.godot"
             options.beforeSend =
