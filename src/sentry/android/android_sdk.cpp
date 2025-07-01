@@ -2,10 +2,13 @@
 
 #include "android_event.h"
 #include "android_string_names.h"
+#include "sentry/common_defs.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/util/print.h"
+#include "sentry_attachment.h"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/variant/callable.hpp>
 
 using namespace godot;
@@ -101,19 +104,39 @@ String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	return android_event->get_id();
 }
 
+void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND(p_attachment.is_null());
+
+	if (p_attachment->get_path().is_empty()) {
+		sentry::util::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
+		android_plugin->call(ANDROID_SN(addBytesAttachment),
+				p_attachment->get_bytes(),
+				p_attachment->get_filename(),
+				p_attachment->get_content_type(),
+				String());
+	} else {
+		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
+		sentry::util::print_debug("attaching file: ", absolute_path);
+		android_plugin->call(ANDROID_SN(addFileAttachment),
+				absolute_path,
+				p_attachment->get_filename(),
+				p_attachment->get_content_type(),
+				String());
+	}
+}
+
 void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
 	ERR_FAIL_NULL(android_plugin);
 
 	sentry::util::print_debug("Initializing Sentry Android SDK");
 
 	for (const String &path : p_global_attachments) {
-		String file = path.get_file();
-		bool is_view_hierarchy = file == "view-hierarchy.json";
+		bool is_view_hierarchy = path.ends_with(SENTRY_VIEW_HIERARCHY_FN);
 		android_plugin->call(ANDROID_SN(addFileAttachment),
 				path,
-				file,
-				is_view_hierarchy ? "application/json" : "",
-				is_view_hierarchy ? "event.view_hierarchy" : "");
+				String(), // filename
+				is_view_hierarchy ? "application/json" : String(),
+				is_view_hierarchy ? "event.view_hierarchy" : String());
 	}
 
 	android_plugin->call("initialize",

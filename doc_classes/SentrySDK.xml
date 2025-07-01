@@ -13,6 +13,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_attachment">
+			<return type="void" />
+			<param index="0" name="attachment" type="SentryAttachment" />
+			<description>
+				Attaches a file to future Sentry events. The [param attachment] should be a [SentryAttachment] object created with [method SentryAttachment.create_with_path] or [method SentryAttachment.create_with_bytes]. Supports Godot's virtual file system paths like "user://".
+				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/attachments/]Attachments documentation[/url].
+			</description>
+		</method>
 		<method name="add_breadcrumb">
 			<return type="void" />
 			<param index="0" name="message" type="String" />

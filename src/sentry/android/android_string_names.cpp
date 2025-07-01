@@ -15,7 +15,6 @@ void AndroidStringNames::destroy_singleton() {
 
 AndroidStringNames::AndroidStringNames() {
 	// API methods.
-	addFileAttachment = StringName("addFileAttachment");
 	setContext = StringName("setContext");
 	removeContext = StringName("removeContext");
 	setTag = StringName("setTag");
@@ -29,6 +28,8 @@ AndroidStringNames::AndroidStringNames() {
 	createEvent = StringName("createEvent");
 	releaseEvent = StringName("releaseEvent");
 	captureEvent = StringName("captureEvent");
+	addFileAttachment = StringName("addFileAttachment");
+	addBytesAttachment = StringName("addBytesAttachment");
 
 	// Event methods.
 	eventGetId = StringName("eventGetId");

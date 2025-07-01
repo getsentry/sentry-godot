@@ -4,6 +4,7 @@
 #include "runtime_config.h"
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
+#include "sentry_attachment.h"
 #include "sentry_event.h"
 #include "sentry_options.h"
 
@@ -69,6 +70,8 @@ public:
 
 	Ref<SentryEvent> create_event() const;
 	String capture_event(const Ref<SentryEvent> &p_event);
+
+	void add_attachment(const Ref<SentryAttachment> &p_attachment);
 
 	// * Hidden API methods -- used in testing
 

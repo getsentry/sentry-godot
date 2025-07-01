@@ -5,6 +5,7 @@
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/util/print.h"
+#include "sentry_attachment.h"
 #include "sentry_configuration.h"
 #include "sentry_event.h"
 #include "sentry_event_processor.h"
@@ -68,6 +69,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(SentryConfiguration);
 		GDREGISTER_CLASS(SentryUser);
 		GDREGISTER_CLASS(SentrySDK);
+		GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 		GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 		GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);

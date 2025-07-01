@@ -136,6 +136,18 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun addBytesAttachment(bytes: ByteArray, filename: String, contentType: String, attachmentType: String) {
+        val attachment = Attachment(
+            bytes,
+            filename,
+            contentType.ifEmpty { null },
+            attachmentType.ifEmpty { null },
+            false
+        )
+        Sentry.getGlobalScope().addAttachment(attachment)
+    }
+
+    @UsedByGodot
     fun setContext(key: String, value: Dictionary) {
         Sentry.getGlobalScope().setContexts(key, value)
     }
