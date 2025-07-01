@@ -80,6 +80,10 @@
 		<member name="logger_limits" type="SentryLoggerLimits" setter="set_logger_limits" getter="get_logger_limits">
 			Defines throttling limits for the error logger. These limits are used to prevent the SDK from sending too many non-critical and repeating error events. See [SentryLoggerLimits].
 		</member>
+		<member name="max_attachment_size" type="int" setter="set_max_attachment_size" getter="get_max_attachment_size" default="20971520">
+			Defines the maximum size of each attachment in bytes that can be sent with an event. If an attachment exceeds this size, it will be dropped. The default is 20MiB. Please also check the [url=https://docs.sentry.io/product/relay/options/]maximum attachment size of Relay[/url] to make sure your attachments don't get discarded there.
+			[b]Note:[/b] This option is currently only effective on Android.
+		</member>
 		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">
 			Maximum number of breadcrumbs to send with an event. You should be aware that Sentry has a maximum payload size and any events exceeding that payload size will be dropped.
 		</member>
