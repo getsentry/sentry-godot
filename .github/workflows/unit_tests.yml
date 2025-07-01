@@ -5,18 +5,22 @@ on:
 
 jobs:
   unit-tests:
-    name: Test on ${{matrix.runner}}
+    name: Test ${{matrix.runner}} ${{matrix.arch}}
     runs-on: ${{matrix.runner}}
     strategy:
       fail-fast: false
       matrix:
         include:
           - runner: windows-latest
-            godot-suffix: win64.exe
+            arch: x86_64
+          - runner: windows-latest
+            arch: x86_32
           - runner: ubuntu-latest
-            godot-suffix: linux.x86_64
+            arch: x86_64
+          - runner: ubuntu-latest
+            arch: x86_32
           - runner: macos-latest
-            godot-suffix: macos.universal
+            arch: universal
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -25,6 +29,8 @@ jobs:
 
       - name: Prepare testing
         uses: ./.github/actions/prepare-testing
+        with:
+          arch: ${{ matrix.arch }}
 
       - name: Run tests
         shell: bash
@@ -43,5 +49,5 @@ jobs:
         if: always() # do this step even if the tests fail
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{matrix.runner}}
+          name: test-results-${{matrix.runner}}-${{matrix.arch}}
           path: project/reports
