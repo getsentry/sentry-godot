@@ -29,10 +29,6 @@ runs:
         scons --version
 
     - name: Set up Godot
-      env:
-        # Set pre-release version status here (e.g. "beta1");
-        # for release version, set to "stable".
-        release_status: "beta1"
       shell: bash
       env:
         # Set pre-release version status here (e.g. "beta1");
@@ -110,7 +106,6 @@ runs:
       shell: bash
       # timeout-minutes: 5
       run: |
-        scons project/addons/gdUnit4
         find project/addons/sentry/bin/ -name "crashpad_handler" -exec chmod 755 "{}" \;
         echo "--- Rebuilding import cache"
         ${GODOT} --headless --editor --path project/ --quit-after 2000 || true
