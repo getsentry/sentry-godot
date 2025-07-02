@@ -4,6 +4,7 @@
 #include "sentry/godot_error_types.h"
 #include "sentry/level.h"
 #include "sentry/simple_bind.h"
+#include "sentry_event_processor.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -72,6 +73,8 @@ private:
 	String configuration_script;
 	Callable before_send;
 	Callable before_capture_screenshot;
+
+	Vector<Ref<SentryEventProcessor>> event_processors;
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
@@ -159,6 +162,10 @@ public:
 
 	_FORCE_INLINE_ Callable get_before_capture_screenshot() const { return before_capture_screenshot; }
 	_FORCE_INLINE_ void set_before_capture_screenshot(const Callable &p_before_capture_screenshot) { before_capture_screenshot = p_before_capture_screenshot; }
+
+	void add_event_processor(const Ref<SentryEventProcessor> &p_processor);
+	void remove_event_processor(const Ref<SentryEventProcessor> &p_processor);
+	_FORCE_INLINE_ Vector<Ref<SentryEventProcessor>> get_event_processors() { return event_processors; }
 
 	SentryOptions();
 	~SentryOptions();

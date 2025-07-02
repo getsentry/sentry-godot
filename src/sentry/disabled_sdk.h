@@ -26,6 +26,8 @@ class DisabledSDK : public InternalSDK {
 	virtual Ref<SentryEvent> create_event() override { return memnew(DisabledEvent); }
 	virtual String capture_event(const Ref<SentryEvent> &p_event) override { return ""; }
 
+	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override {}
+
 	virtual void initialize(const PackedStringArray &p_global_attachments) override {}
 };
 

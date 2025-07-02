@@ -49,6 +49,8 @@ public:
 	virtual void remove_tag(const String &p_key) override {}
 	virtual String get_tag(const String &p_key) override { return ""; }
 
+	virtual void merge_context(const String &p_key, const Dictionary &p_value) override {}
+
 	virtual void add_exception(const Exception &p_exception) override {}
 
 	virtual bool is_crash() const override { return false; }

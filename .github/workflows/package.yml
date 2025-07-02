@@ -87,7 +87,7 @@ jobs:
         shell: bash
         run: |
           # * Fix crashpad_handler permissions, workaround for https://github.com/actions/upload-artifact/issues/38
-          chmod +x artifact/addons/sentry/bin/{linux,macos}/crashpad_handler
+          find artifact/addons/sentry/bin/ -name "crashpad_handler" -exec chmod 755 "{}" \;
           # * Create release archive
           version=$(grep 'VERSION =' SConstruct | cut -d '"' -f 2)
           git_short_sha=$(git rev-parse --short HEAD)

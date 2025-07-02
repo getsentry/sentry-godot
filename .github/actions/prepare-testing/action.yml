@@ -1,6 +1,11 @@
 name: Prepare testing
 description: Set up environment for testing purposes.
 
+inputs:
+  arch:
+    description: Architecture to use for testing.
+    required: true
+
 runs:
   using: "composite"
   steps:
@@ -29,16 +34,46 @@ runs:
         # for release version, set to "stable".
         release_status: "beta1"
       shell: bash
+      env:
+        # Set pre-release version status here (e.g. "beta1");
+        # for release version, set to "stable".
+        RELEASE_STATUS: stable
+        ARCH: ${{ inputs.arch }}
       run: |
-        major_minor=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1/p' project/addons/sentry/bin/sentry.gdextension)
-        version=${major_minor}-${release_status}
+        major_minor=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1/p' project/addons/sentry/sentry.gdextension)
+        version=${major_minor}-${RELEASE_STATUS}
+
         if [[ "$RUNNER_OS" == "Windows" ]]; then
-          suffix=win64.exe
+          if [[ "$ARCH" == "x86_32" ]]; then
+            suffix=win32.exe
+          elif [[ "$ARCH" == "x86_64" ]]; then
+            suffix=win64.exe
+          elif [[ "$ARCH" == "arm64" ]]; then
+            suffix=windows_arm64.exe
+          else
+            echo "Unexpected Windows architecture: $ARCH"
+            exit 1
+          fi
         elif [[ "$RUNNER_OS" == "Linux" ]]; then
-          suffix=linux.x86_64
+          if [[ "$ARCH" == "x86_32" ]]; then
+            suffix=linux.x86_32
+          elif [[ "$ARCH" == "x86_64" ]]; then
+            suffix=linux.x86_64
+          elif [[ "$ARCH" == "arm64" ]]; then
+            suffix=linux_arm64
+          else
+            echo "Unexpected Linux architecture: $ARCH"
+            exit 1
+          fi
         elif [[ "$RUNNER_OS" == "macOS" ]]; then
-          suffix=macos.universal
+          if [[ "$ARCH" == "universal" ]]; then
+            suffix=macos.universal
+          else
+            echo "Unexpected macOS architecture: $ARCH"
+            exit 1
+          fi
         fi
+
         archive_file=Godot_v${version}_${suffix}.zip
         url=https://github.com/godotengine/godot-builds/releases/download/${version}/${archive_file}
         if [[ "$RUNNER_OS" == "macOS" ]]; then
@@ -75,7 +110,8 @@ runs:
       shell: bash
       # timeout-minutes: 5
       run: |
-        chmod +x project/addons/sentry/bin/{linux,macos}/crashpad_handler
+        scons project/addons/gdUnit4
+        find project/addons/sentry/bin/ -name "crashpad_handler" -exec chmod 755 "{}" \;
         echo "--- Rebuilding import cache"
         ${GODOT} --headless --editor --path project/ --quit-after 2000 || true
         echo "--- Finished rebuilding import cache"
