@@ -11,8 +11,9 @@
 - Initial Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
 - Refine demo for mobile screens ([#196](https://github.com/getsentry/sentry-godot/pull/196))
 - Add user attachments support ([#205](https://github.com/getsentry/sentry-godot/pull/205))
+- Provide x86_32 builds for Windows and Linux ([#218](https://github.com/getsentry/sentry-godot/pull/218))
 
-## Fixes
+### Fixes
 
 - Fixed Godot 4.5 complaining that "usage" is not supported ([#214](https://github.com/getsentry/sentry-godot/pull/214))
 
