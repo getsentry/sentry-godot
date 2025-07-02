@@ -11,6 +11,7 @@
 #include "sentry_attachment.h"
 #include "sentry_options.h"
 
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -249,14 +250,14 @@ void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
 	String export_subdir;
 #ifdef LINUX_ENABLED
 	handler_fn = "crashpad_handler";
-	platform_dir = "linux";
+	platform_dir = "linux/" + Engine::get_singleton()->get_architecture_name();
 #elif MACOS_ENABLED
 	handler_fn = "crashpad_handler";
 	platform_dir = "macos";
 	export_subdir = "../Frameworks";
 #elif WINDOWS_ENABLED
 	handler_fn = "crashpad_handler.exe";
-	platform_dir = "windows";
+	platform_dir = "windows/" + Engine::get_singleton()->get_architecture_name();
 #else
 	ERR_PRINT("Sentry: Internal Error: NativeSDK should not be initialized on an unsupported platform (this should not happen).");
 #endif
