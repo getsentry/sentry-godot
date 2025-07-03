@@ -133,14 +133,21 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		bool include_variables = SentryOptions::get_singleton()->is_logger_include_variables_enabled();
 		TypedArray<ScriptBacktrace> script_backtraces = include_variables ? Engine::get_singleton()->capture_script_backtraces(true) : p_script_backtraces;
 
-		// Select script backtrace with the biggest number of frames (best-effort heuristic).
+		// Prioritize backtrace with the top frame matching the error's file and linenumber.
+		// Otherwise, select backtrace with the biggest number of frames (best-effort heuristic).
 		// Why: We don't know the order of frames across all backtraces (only within each one),
 		// so we must pick one.
 		int64_t selected_index = -1;
 		int64_t selected_num_frames = -1;
 		for (int i = 0; i < script_backtraces.size(); i++) {
 			const Ref<ScriptBacktrace> backtrace = script_backtraces[i];
-			if (backtrace->get_frame_count() > selected_num_frames) {
+			int32_t num_frames = backtrace->get_frame_count();
+			if (num_frames && backtrace->get_frame_line(0) == p_line && backtrace->get_frame_file(0) == p_file) {
+				// Direct match – prioritize this backtrace.
+				selected_index = i;
+				break;
+			}
+			if (num_frames > selected_num_frames) {
 				selected_index = i;
 				selected_num_frames = backtrace->get_frame_count();
 			}
