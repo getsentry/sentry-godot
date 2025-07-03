@@ -280,6 +280,17 @@ void SentrySDK::notify_options_configured() {
 	SentrySDK::_init_contexts();
 }
 
+void SentrySDK::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_PREDELETE: {
+			if (logger.is_valid()) {
+				OS::get_singleton()->remove_logger(logger);
+				logger.unref();
+			}
+		} break;
+	}
+}
+
 void SentrySDK::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_DEBUG);
 	BIND_ENUM_CONSTANT(LEVEL_INFO);
@@ -375,7 +386,4 @@ SentrySDK::SentrySDK() {
 
 SentrySDK::~SentrySDK() {
 	singleton = nullptr;
-	if (logger.is_valid()) {
-		OS::get_singleton()->remove_logger(logger);
-	}
 }

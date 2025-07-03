@@ -278,6 +278,10 @@ SentryLogger::SentryLogger() {
 }
 
 SentryLogger::~SentryLogger() {
+	if (!Engine::get_singleton()) {
+		return;
+	}
+
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	Callable callable = callable_mp(this, &SentryLogger::_process_frame);
 	if (scene_tree && scene_tree->is_connected("process_frame", callable)) {
