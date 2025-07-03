@@ -81,7 +81,7 @@ elif platform == "android":
     sources += Glob("src/sentry/android/*.cpp")
 
 # Generate documentation data.
-if platform in ["editor", "template_debug"]:
+if env["target"] in ["editor", "template_debug"]:
     try:
         doc_data = env.GodotCPPDocData(
             "src/gen/doc_data.gen.cpp", source=Glob("doc_classes/*.xml"))
