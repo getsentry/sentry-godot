@@ -140,7 +140,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		int64_t selected_index = -1;
 		int64_t selected_num_frames = -1;
 		for (int i = 0; i < script_backtraces.size(); i++) {
-			const Ref<ScriptBacktrace> backtrace = script_backtraces[i];
+			const Ref<ScriptBacktrace> &backtrace = script_backtraces[i];
 			int32_t num_frames = backtrace->get_frame_count();
 			if (num_frames && backtrace->get_frame_line(0) == p_line && backtrace->get_frame_file(0) == p_file) {
 				// Direct match – prioritize this backtrace.
@@ -154,7 +154,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		}
 
 		if (selected_index >= 0) {
-			const Ref<ScriptBacktrace> backtrace = script_backtraces[selected_index];
+			const Ref<ScriptBacktrace> &backtrace = script_backtraces[selected_index];
 			String platform = backtrace->get_language_name().to_lower().remove_char(' ');
 			for (int frame_idx = backtrace->get_frame_count() - 1; frame_idx >= 0; frame_idx--) {
 				SentryEvent::StackFrame stack_frame{
