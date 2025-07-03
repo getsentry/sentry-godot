@@ -108,5 +108,5 @@ runs:
       run: |
         find project/addons/sentry/bin/ -name "crashpad_handler" -exec chmod 755 "{}" \;
         echo "--- Rebuilding import cache"
-        ${GODOT} --headless --editor --path project/ --quit-after 2000 || true
+        ${GODOT} --headless --editor --path project/ --quit-after 2000
         echo "--- Finished rebuilding import cache"
