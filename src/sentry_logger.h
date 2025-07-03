@@ -6,8 +6,8 @@
 #include <chrono>
 #include <deque>
 #include <godot_cpp/classes/logger.hpp>
-#include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/classes/script_backtrace.hpp>
+#include <mutex>
 #include <unordered_map>
 
 using namespace godot;
@@ -23,7 +23,7 @@ private:
 		int throttle_events;
 	} limits;
 
-	Ref<Mutex> error_mutex;
+	std::mutex error_mutex;
 
 	using GodotErrorType = sentry::GodotErrorType;
 	using SourceLine = std::pair<std::string, int>;

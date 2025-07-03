@@ -54,7 +54,8 @@ bool _get_script_context(const String &p_file, int p_line, String &r_context_lin
 } // unnamed namespace
 
 void SentryLogger::_process_frame() {
-	error_mutex->lock();
+	// NOTE: It's important not to push errors from within this function to avoid deadlocks.
+	std::lock_guard lock{ error_mutex };
 
 	// Reset per-frame counter.
 	frame_events = 0;
@@ -69,8 +70,6 @@ void SentryLogger::_process_frame() {
 	if (unlikely(source_line_times.size() > 100)) {
 		source_line_times.clear();
 	}
-
-	error_mutex->unlock();
 }
 
 void SentryLogger::_log_error(const String &p_function, const String &p_file, int32_t p_line,
@@ -78,38 +77,41 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		const TypedArray<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	SourceLine source_line{ p_file.utf8(), p_line };
 
-	error_mutex->lock();
-
 	TimePoint now = std::chrono::high_resolution_clock::now();
 
-	// Reject errors based on per-source-line throttling window to prevent
-	// repetitive logging caused by loops or errors recurring in each frame.
-	// The timestamps are tracked for each source line that produced an error.
-	auto it = source_line_times.find(source_line);
-	bool is_spammy_error = it != source_line_times.end() && now - it->second < limits.repeated_error_window;
+	bool as_event = false;
+	bool as_breadcrumb = false;
 
-	bool within_frame_limit = frame_events < limits.events_per_frame;
-	bool within_throttling_limit = event_times.size() < limits.throttle_events;
+	{
+		std::lock_guard lock{ error_mutex };
 
-	bool as_event = SentryOptions::get_singleton()->should_capture_event((GodotErrorType)p_error_type) &&
-			within_frame_limit &&
-			within_throttling_limit &&
-			!is_spammy_error;
-	bool as_breadcrumb = SentryOptions::get_singleton()->should_capture_breadcrumb((GodotErrorType)p_error_type) &&
-			!is_spammy_error;
+		// Reject errors based on per-source-line throttling window to prevent
+		// repetitive logging caused by loops or errors recurring in each frame.
+		// The timestamps are tracked for each source line that produced an error.
+		auto it = source_line_times.find(source_line);
+		bool is_spammy_error = it != source_line_times.end() && now - it->second < limits.repeated_error_window;
 
-	if (as_event) {
-		// We decided to capture the error as event (it's happening).
-		frame_events++;
-		event_times.push_back(now);
+		bool within_frame_limit = frame_events < limits.events_per_frame;
+		bool within_throttling_limit = event_times.size() < limits.throttle_events;
+
+		as_event = SentryOptions::get_singleton()->should_capture_event((GodotErrorType)p_error_type) &&
+				within_frame_limit &&
+				within_throttling_limit &&
+				!is_spammy_error;
+		as_breadcrumb = SentryOptions::get_singleton()->should_capture_breadcrumb((GodotErrorType)p_error_type) &&
+				!is_spammy_error;
+
+		if (as_event) {
+			// We decided to capture the error as event (it's happening).
+			frame_events++;
+			event_times.push_back(now);
+		}
+
+		if (as_event || as_breadcrumb) {
+			// Store timestamp to prevent repetitive logging from the same line of code.
+			source_line_times[source_line] = now;
+		}
 	}
-
-	if (as_event || as_breadcrumb) {
-		// Store timestamp to prevent repetitive logging from the same line of code.
-		source_line_times[source_line] = now;
-	}
-
-	error_mutex->unlock();
 
 	if (!as_breadcrumb && !as_event) {
 		sentry::util::print_debug("error capture skipped due to limits");
@@ -259,8 +261,6 @@ void SentryLogger::_notification(int p_what) {
 }
 
 SentryLogger::SentryLogger() {
-	error_mutex.instantiate();
-
 	// Cache limits.
 	Ref<SentryLoggerLimits> logger_limits = SentryOptions::get_singleton()->get_logger_limits();
 	limits.events_per_frame = logger_limits->events_per_frame;
