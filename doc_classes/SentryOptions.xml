@@ -78,7 +78,8 @@
 			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available in the exported project.
 		</member>
 		<member name="logger_include_variables" type="int" setter="set_logger_include_variables" getter="is_logger_include_variables_enabled" default="0">
-			If [code]true[/code], the SDK will include stack trace local variables for script errors.
+			If [code]true[/code], the SDK will include local variables from stack traces when capturing script errors. This allows showing the values of variables at each frame in the call stack.
+			[b]Note:[/b] Enabling this option may impact performance, especially for applications with frequent errors or deep call stacks.
 		</member>
 		<member name="logger_limits" type="SentryLoggerLimits" setter="set_logger_limits" getter="get_logger_limits">
 			Defines throttling limits for the error logger. These limits are used to prevent the SDK from sending too many non-critical and repeating error events. See [SentryLoggerLimits].
