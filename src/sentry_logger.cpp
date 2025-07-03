@@ -167,7 +167,6 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 
 				// Provide script source code context for script errors if available.
 				if (SentryOptions::get_singleton()->is_logger_include_source_enabled()) {
-					// Provide script source code context for script errors if available.
 					String context_line;
 					PackedStringArray pre_context;
 					PackedStringArray post_context;
@@ -262,6 +261,8 @@ void SentryLogger::_notification(int p_what) {
 			SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 			if (scene_tree) {
 				scene_tree->connect("process_frame", callable_mp(this, &SentryLogger::_process_frame));
+			} else {
+				ERR_PRINT("Sentry: Failed to connect `process_frame` signal – main loop is null");
 			}
 		} break;
 	}
