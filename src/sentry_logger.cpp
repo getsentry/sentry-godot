@@ -21,7 +21,7 @@ const char *error_type_as_string[] = {
 
 bool _get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) {
 	if (p_file.is_empty()) {
-		return true;
+		return false;
 	}
 
 	Ref<Script> script = ResourceLoader::get_singleton()->load(p_file);
@@ -30,25 +30,25 @@ bool _get_script_context(const String &p_file, int p_line, String &r_context_lin
 
 	if (script.is_null()) {
 		sentry::util::print_error("Failed to load script ", p_file);
-		return true;
+		return false;
 	}
 
 	String source_code = script->get_source_code();
 	if (source_code.is_empty()) {
 		sentry::util::print_debug("Script source not available ", p_file.utf8().ptr());
-		return true;
+		return false;
 	}
 
 	PackedStringArray lines = script->get_source_code().split("\n");
 	if (lines.size() < p_line) {
 		sentry::util::print_error("Script source is smaller than the referenced line, lineno: ", p_line);
-		return true;
+		return false;
 	}
 
 	r_context_line = lines[p_line - 1];
 	r_pre_context = lines.slice(MAX(p_line - 6, 0), p_line - 1);
 	r_post_context = lines.slice(p_line, MIN(p_line + 5, lines.size()));
-	return false;
+	return true;
 }
 
 } // unnamed namespace
@@ -170,9 +170,9 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 					String context_line;
 					PackedStringArray pre_context;
 					PackedStringArray post_context;
-					bool err = _get_script_context(backtrace->get_frame_file(frame_idx),
+					bool success = _get_script_context(backtrace->get_frame_file(frame_idx),
 							backtrace->get_frame_line(frame_idx), context_line, pre_context, post_context);
-					if (!err) {
+					if (success) {
 						stack_frame.context_line = context_line;
 						stack_frame.pre_context = pre_context;
 						stack_frame.post_context = post_context;
