@@ -51,6 +51,94 @@ bool _get_script_context(const String &p_file, int p_line, String &r_context_lin
 	return true;
 }
 
+Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
+		const TypedArray<ScriptBacktrace> &p_backtraces,
+		const String &p_file,
+		int p_line,
+		bool p_include_variables) {
+	Vector<SentryEvent::StackFrame> frames;
+
+	// Prioritize backtrace with the top frame matching the error's file and linenumber.
+	// Otherwise, select backtrace with the biggest number of frames (best-effort heuristic).
+	// Why: We don't know the order of frames across all backtraces (only within each one),
+	// so we must pick one.
+	int64_t selected_index = -1;
+	int64_t selected_num_frames = -1;
+	for (int i = 0; i < p_backtraces.size(); i++) {
+		const Ref<ScriptBacktrace> &backtrace = p_backtraces[i];
+		int32_t num_frames = backtrace->get_frame_count();
+		if (num_frames && backtrace->get_frame_line(0) == p_line && backtrace->get_frame_file(0) == p_file) {
+			// Direct match – prioritize this backtrace.
+			selected_index = i;
+			break;
+		}
+		if (num_frames > selected_num_frames) {
+			selected_index = i;
+			selected_num_frames = backtrace->get_frame_count();
+		}
+	}
+
+	if (selected_index >= 0) {
+		const Ref<ScriptBacktrace> &backtrace = p_backtraces[selected_index];
+		String platform = backtrace->get_language_name().to_lower().remove_char(' ');
+		for (int frame_idx = backtrace->get_frame_count() - 1; frame_idx >= 0; frame_idx--) {
+			SentryEvent::StackFrame stack_frame{
+				backtrace->get_frame_file(frame_idx),
+				backtrace->get_frame_function(frame_idx),
+				backtrace->get_frame_line(frame_idx),
+				true, // in_app
+				platform
+			};
+
+			// Provide script source code context for script errors if available.
+			if (SentryOptions::get_singleton()->is_logger_include_source_enabled()) {
+				String context_line;
+				PackedStringArray pre_context;
+				PackedStringArray post_context;
+				bool success = _get_script_context(backtrace->get_frame_file(frame_idx),
+						backtrace->get_frame_line(frame_idx), context_line, pre_context, post_context);
+				if (success) {
+					stack_frame.context_line = context_line;
+					stack_frame.pre_context = pre_context;
+					stack_frame.post_context = post_context;
+				}
+			}
+
+			// Local and member variables.
+			if (p_include_variables) {
+				int32_t num_locals = backtrace->get_local_variable_count(frame_idx);
+				int32_t num_members = backtrace->get_member_variable_count(frame_idx);
+				int32_t num_globals = backtrace->get_global_variable_count();
+				int32_t num_vars = num_locals + num_members + num_globals;
+				int32_t starting_index = 0;
+
+				stack_frame.vars.resize(num_vars);
+
+				for (int i = 0; i < num_locals; i++) {
+					stack_frame.vars.set(starting_index + i,
+							Pair(backtrace->get_local_variable_name(frame_idx, i), backtrace->get_local_variable_value(frame_idx, i)));
+				}
+				starting_index += num_locals;
+
+				for (int i = 0; i < num_members; i++) {
+					stack_frame.vars.set(starting_index + i,
+							Pair(backtrace->get_member_variable_name(frame_idx, i), backtrace->get_member_variable_value(frame_idx, i)));
+				}
+				starting_index += num_members;
+
+				for (int i = 0; i < num_globals; i++) {
+					stack_frame.vars.set(starting_index + i,
+							Pair(backtrace->get_global_variable_name(i), backtrace->get_global_variable_value(i)));
+				}
+			}
+
+			frames.append(stack_frame);
+		}
+	}
+
+	return frames;
+}
+
 } // unnamed namespace
 
 void SentryLogger::_process_frame() {
@@ -127,89 +215,12 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 
 	// Capture error as event.
 	if (as_event) {
-		Vector<SentryEvent::StackFrame> frames;
-
 		// Backtraces don't include variables by default, so if we need them, we must capture them separately.
 		bool include_variables = SentryOptions::get_singleton()->is_logger_include_variables_enabled();
 		TypedArray<ScriptBacktrace> script_backtraces = include_variables ? Engine::get_singleton()->capture_script_backtraces(true) : p_script_backtraces;
 
-		// Prioritize backtrace with the top frame matching the error's file and linenumber.
-		// Otherwise, select backtrace with the biggest number of frames (best-effort heuristic).
-		// Why: We don't know the order of frames across all backtraces (only within each one),
-		// so we must pick one.
-		int64_t selected_index = -1;
-		int64_t selected_num_frames = -1;
-		for (int i = 0; i < script_backtraces.size(); i++) {
-			const Ref<ScriptBacktrace> &backtrace = script_backtraces[i];
-			int32_t num_frames = backtrace->get_frame_count();
-			if (num_frames && backtrace->get_frame_line(0) == p_line && backtrace->get_frame_file(0) == p_file) {
-				// Direct match – prioritize this backtrace.
-				selected_index = i;
-				break;
-			}
-			if (num_frames > selected_num_frames) {
-				selected_index = i;
-				selected_num_frames = backtrace->get_frame_count();
-			}
-		}
-
-		if (selected_index >= 0) {
-			const Ref<ScriptBacktrace> &backtrace = script_backtraces[selected_index];
-			String platform = backtrace->get_language_name().to_lower().remove_char(' ');
-			for (int frame_idx = backtrace->get_frame_count() - 1; frame_idx >= 0; frame_idx--) {
-				SentryEvent::StackFrame stack_frame{
-					backtrace->get_frame_file(frame_idx),
-					backtrace->get_frame_function(frame_idx),
-					backtrace->get_frame_line(frame_idx),
-					true, // in_app
-					platform
-				};
-
-				// Provide script source code context for script errors if available.
-				if (SentryOptions::get_singleton()->is_logger_include_source_enabled()) {
-					String context_line;
-					PackedStringArray pre_context;
-					PackedStringArray post_context;
-					bool success = _get_script_context(backtrace->get_frame_file(frame_idx),
-							backtrace->get_frame_line(frame_idx), context_line, pre_context, post_context);
-					if (success) {
-						stack_frame.context_line = context_line;
-						stack_frame.pre_context = pre_context;
-						stack_frame.post_context = post_context;
-					}
-				}
-
-				// Local and member variables.
-				if (include_variables) {
-					int32_t num_locals = backtrace->get_local_variable_count(frame_idx);
-					int32_t num_members = backtrace->get_member_variable_count(frame_idx);
-					int32_t num_globals = backtrace->get_global_variable_count();
-					int32_t num_vars = num_locals + num_members + num_globals;
-					int32_t starting_index = 0;
-
-					stack_frame.vars.resize(num_vars);
-
-					for (int i = 0; i < num_locals; i++) {
-						stack_frame.vars.set(starting_index + i,
-								Pair(backtrace->get_local_variable_name(frame_idx, i), backtrace->get_local_variable_value(frame_idx, i)));
-					}
-					starting_index += num_locals;
-
-					for (int i = 0; i < num_members; i++) {
-						stack_frame.vars.set(starting_index + i,
-								Pair(backtrace->get_member_variable_name(frame_idx, i), backtrace->get_member_variable_value(frame_idx, i)));
-					}
-					starting_index += num_members;
-
-					for (int i = 0; i < num_globals; i++) {
-						stack_frame.vars.set(starting_index + i,
-								Pair(backtrace->get_global_variable_name(i), backtrace->get_global_variable_value(i)));
-					}
-				}
-
-				frames.append(stack_frame);
-			}
-		}
+		Vector<SentryEvent::StackFrame> frames = _extract_error_stack_frames_from_backtraces(
+				script_backtraces, p_file, p_line, include_variables);
 
 		if (p_error_type == ErrorType::ERROR_TYPE_ERROR) {
 			// Add native frame to the top so it is preserved as the source of error.
