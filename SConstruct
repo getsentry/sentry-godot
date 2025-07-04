@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 import os
-import sys
 import subprocess
-from functools import partial
 
 
 # *** Settings.
 
 VERSION = "0.6.1"
-COMPATIBILITY_MINIMUM = "4.4"
+COMPATIBILITY_MINIMUM = "4.5"
 
 
 # *** Generate version header.

@@ -13,12 +13,14 @@ config_version=5
 config/name="Sentry demo project"
 config/version="0.6.1"
 run/main_scene="uid://cqiowj0jydds1"
-config/features=PackedStringArray("4.4")
+config/features=PackedStringArray("4.5")
 run/flush_stdout_on_print=true
 
 [debug]
 
 file_logging/enable_file_logging=true
+settings/gdscript/always_track_call_stacks=true
+settings/gdscript/always_track_local_variables=true
 
 [display]
 
@@ -43,6 +45,7 @@ textures/vram_compression/import_etc2_astc=true
 [sentry]
 
 options/dsn="https://3f1e095cf2e14598a0bd5b4ff324f712@o447951.ingest.us.sentry.io/6680910"
-options/configuration_script="res://example_configuration.gd"
+options/configuration_script="uid://dmavxxyqbqght"
 options/attach_screenshot=true
 options/attach_scene_tree=true
+logger/include_variables=true

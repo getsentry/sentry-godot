@@ -4,7 +4,6 @@
 #include "sentry/disabled_event.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
-#include "sentry/util/print.h"
 #include "sentry_attachment.h"
 #include "sentry_configuration.h"
 #include "sentry_event.h"
@@ -34,30 +33,6 @@
 #endif // TOOLS_ENABLED
 
 using namespace godot;
-
-namespace {
-
-void _init_logger() {
-	if (!SentryOptions::get_singleton()->is_logger_enabled()) {
-		// If error logger is disabled, don't add it to the scene tree.
-		sentry::util::print_debug("error logger is disabled in options");
-		return;
-	}
-	if (!SentrySDK::get_singleton()->is_enabled()) {
-		sentry::util::print_debug("error logger is not started because SDK is not initialized");
-		return;
-	}
-	// Add experimental logger to scene tree.
-	sentry::util::print_debug("starting error logger");
-	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-	if (sml && sml->get_root()) {
-		sml->get_root()->add_child(memnew(SentryLogger));
-	} else {
-		ERR_FAIL_MSG("Sentry: Internal error: SceneTree is null.");
-	}
-}
-
-} // unnamed namespace
 
 void initialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
@@ -94,8 +69,6 @@ void initialize_module(ModuleInitializationLevel p_level) {
 
 		SentrySDK *sentry_singleton = memnew(SentrySDK);
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
-
-		callable_mp_static(_init_logger).call_deferred();
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 #ifdef TOOLS_ENABLED
 #ifndef WINDOWS_ENABLED

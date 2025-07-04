@@ -5,6 +5,7 @@
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/templates/pair.hpp>
+#include <godot_cpp/templates/vector.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 using namespace godot;
@@ -22,6 +23,7 @@ public:
 		bool in_app = true;
 		String platform;
 		String context_line;
+		Vector<Pair<String, Variant>> vars;
 		PackedStringArray pre_context;
 		PackedStringArray post_context;
 	};

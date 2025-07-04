@@ -40,33 +40,33 @@
 		</method>
 	</methods>
 	<members>
-		<member name="dist" type="String" setter="set_dist" getter="get_dist" default="&quot;&quot;">
+		<member name="dist" type="String" setter="set_dist" getter="get_dist">
 			The application's distribution. Defaults to the value set in [member SentryOptions.dist].
 			Distributions are used to disambiguate build or deployment variants of the same release of an application.
 		</member>
-		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;&quot;">
+		<member name="environment" type="String" setter="set_environment" getter="get_environment">
 			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. See [member SentryOptions.environment].
 		</member>
-		<member name="id" type="String" setter="" getter="get_id" default="&quot;&quot;">
+		<member name="id" type="String" setter="" getter="get_id">
 			Hexadecimal string representing a UUID version 4 value. Automatically set by the SDK.
 		</member>
-		<member name="level" type="int" setter="set_level" getter="get_level" enum="SentrySDK.Level" default="1">
+		<member name="level" type="int" setter="set_level" getter="get_level" enum="SentrySDK.Level">
 			The record severity level of the event. Defaults to [code]LEVEL_ERROR[/code]. See [enum SentrySDK.Level].
 		</member>
-		<member name="logger" type="String" setter="set_logger" getter="get_logger" default="&quot;&quot;">
+		<member name="logger" type="String" setter="set_logger" getter="get_logger">
 			The name of the logger which created the record.
 		</member>
-		<member name="message" type="String" setter="set_message" getter="get_message" default="&quot;&quot;">
+		<member name="message" type="String" setter="set_message" getter="get_message">
 			The log message that describes an event or error.
 		</member>
-		<member name="platform" type="String" setter="" getter="get_platform" default="&quot;&quot;">
+		<member name="platform" type="String" setter="" getter="get_platform">
 			Represents the platform the SDK is submitting from. Automatically set by the SDK.
 		</member>
-		<member name="release" type="String" setter="set_release" getter="get_release" default="&quot;&quot;">
+		<member name="release" type="String" setter="set_release" getter="get_release">
 			The release version of the application. Defaults to a value based on [member SentryOptions.release] option.
 			Release versions must be unique across all projects in your organization. This value can be the Git SHA for the given project, or a product identifier with a semantic version (suggested format my-game@1.0.0).
 		</member>
-		<member name="timestamp" type="String" setter="set_timestamp" getter="get_timestamp" default="&quot;&quot;">
+		<member name="timestamp" type="String" setter="set_timestamp" getter="get_timestamp">
 			Indicates when the event was created in the Sentry SDK. Automatically set by the SDK.
 			The timestamp follows the [url=https://tools.ietf.org/html/rfc3339]RFC 3339[/url] standard, which uses the format [code]YYYY-MM-DDThh:mm:ss.sssZ[/code] (for example, [code]2025-05-02T02:09:40.376530Z[/code]).
 		</member>

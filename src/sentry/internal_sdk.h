@@ -6,7 +6,6 @@
 #include "sentry_user.h"
 
 #include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 class SentryAttachment;

@@ -28,6 +28,32 @@ using namespace sentry;
 
 namespace {
 
+void _verify_project_settings() {
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	ERR_FAIL_NULL(ps);
+	Ref<SentryOptions> options = SentryOptions::get_singleton();
+	ERR_FAIL_COND(options.is_null());
+
+	if (!ps->get_setting("debug/settings/gdscript/always_track_call_stacks")) {
+		ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_call_stacks` in your Project Settings. This is required for supporting script stack traces.");
+	}
+	if (options->is_logger_include_variables_enabled() &&
+			!ps->get_setting("debug/settings/gdscript/always_track_local_variables")) {
+		ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_local_variables` in your Project Settings. This is required to include local variables in backtraces.");
+	}
+
+	if (options->is_attach_log_enabled()) {
+#if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED) || defined(MACOS_ENABLED)
+		if (!ps->get_setting("debug/file_logging/enable_file_logging.pc") &&
+				!ps->get_setting("debug/file_logging/enable_file_logging")) {
+#else
+		if (!ps->get_setting("debug/file_logging/enable_file_logging")) {
+#endif
+			ERR_PRINT("Sentry: Please enable File Logging in your Project Settings if you want to include log files with Sentry events or disable attaching logs in your Sentry options.");
+		}
+	}
+}
+
 void _fix_unix_executable_permissions(const String &p_path) {
 	if (!FileAccess::file_exists(p_path)) {
 		return;
@@ -226,6 +252,11 @@ void SentrySDK::_initialize() {
 
 	internal_sdk->initialize(_get_global_attachments());
 	_init_contexts();
+
+	if (SentryOptions::get_singleton()->is_logger_enabled()) {
+		logger.instantiate();
+		OS::get_singleton()->add_logger(logger);
+	}
 }
 
 void SentrySDK::_check_if_configuration_succeeded() {
@@ -237,11 +268,27 @@ void SentrySDK::_check_if_configuration_succeeded() {
 	}
 }
 
+void SentrySDK::_demo_helper_crash_app() {
+	char *ptr = (char *)1;
+	sentry::util::print_fatal("Crash by access violation ", ptr); // this is going to crash the app
+}
+
 void SentrySDK::notify_options_configured() {
 	sentry::util::print_debug("finished configuring options via user script");
 	configuration_succeeded = true;
 	_initialize();
 	SentrySDK::_init_contexts();
+}
+
+void SentrySDK::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_PREDELETE: {
+			if (logger.is_valid()) {
+				OS::get_singleton()->remove_logger(logger);
+				logger.unref();
+			}
+		} break;
+	}
 }
 
 void SentrySDK::_bind_methods() {
@@ -269,6 +316,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
 	ClassDB::bind_method(D_METHOD("_get_before_send"), &SentrySDK::get_before_send);
+	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 }
 
 SentrySDK::SentrySDK() {
@@ -285,6 +333,9 @@ SentrySDK::SentrySDK() {
 	// Load the runtime configuration from the user's data directory.
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
+
+	// Verify project settings and notify user via errors if there are any issues (deferred).
+	callable_mp_static(_verify_project_settings).call_deferred();
 
 #if defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
 	// Fix crashpad handler executable bit permissions on Unix platforms if the

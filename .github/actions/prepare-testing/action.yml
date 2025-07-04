@@ -33,7 +33,7 @@ runs:
       env:
         # Set pre-release version status here (e.g. "beta1");
         # for release version, set to "stable".
-        RELEASE_STATUS: stable
+        RELEASE_STATUS: beta2
         ARCH: ${{ inputs.arch }}
       run: |
         major_minor=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1/p' project/addons/sentry/sentry.gdextension)
@@ -93,12 +93,20 @@ runs:
       run: |
         ls -lR project/
 
+    - name: Prepare gdUnit4
+      shell: bash
+      run: |
+        scons project/addons/gdUnit4
+        echo "Applying gdUnit4 patch"
+        cd modules/gdUnit4
+        # NOTE: Patching gdUnit4 as it errors out in Godot 4.5.
+        git apply ../gdunit4.patch
+
     - name: Prepare project
       shell: bash
       # timeout-minutes: 5
       run: |
-        scons project/addons/gdUnit4
         find project/addons/sentry/bin/ -name "crashpad_handler" -exec chmod 755 "{}" \;
-        echo "--- Rebuilding import cache.."
-        ${GODOT} --headless --editor --path project/ --quit-after 2000 || true
-        echo "--- Finished rebuilding import cache."
+        echo "--- Rebuilding import cache"
+        ${GODOT} --headless --editor --path project/ --quit-after 2000
+        echo "--- Finished rebuilding import cache"

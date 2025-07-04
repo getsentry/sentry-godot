@@ -81,6 +81,10 @@ elif platform == "macos":
     env.Append(
         LIBS=[
             "curl",
+            "bsm"
+        ],
+        LINKFLAGS=[
+            "-framework", "Foundation",
         ]
     )
 

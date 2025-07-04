@@ -4,7 +4,7 @@
 
 ### Breaking changes
 
-- Minimum Godot version required is now 4.4, which is needed for the Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
+- Minimum Godot version required is now 4.5, which is needed for the Logger interface ([#201](https://github.com/getsentry/sentry-godot/pull/201)) and Android support ([#169](https://github.com/getsentry/sentry-godot/pull/169))
 
 ### Features
 
@@ -12,6 +12,7 @@
 - Refine demo for mobile screens ([#196](https://github.com/getsentry/sentry-godot/pull/196))
 - Add user attachments support ([#205](https://github.com/getsentry/sentry-godot/pull/205))
 - Provide x86_32 builds for Windows and Linux ([#218](https://github.com/getsentry/sentry-godot/pull/218))
+- Support for the new Logger interface (more accurate error reporting), script stack traces and local variables in Godot 4.5 ([#201](https://github.com/getsentry/sentry-godot/pull/201))
 
 ### Fixes
 
