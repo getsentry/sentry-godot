@@ -8,6 +8,7 @@
 #include <godot_cpp/classes/logger.hpp>
 #include <godot_cpp/classes/script_backtrace.hpp>
 #include <mutex>
+#include <regex>
 #include <unordered_map>
 
 using namespace godot;
@@ -43,6 +44,10 @@ private:
 
 	// Number of events captured during this frame.
 	int frame_events = 0;
+
+	// Patterns that are checked against each message.
+	// If matching, the message is not added as breadcrumb.
+	std::vector<std::regex> filter_patterns;
 
 	void _process_frame();
 

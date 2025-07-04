@@ -258,6 +258,14 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
+	// Filtering: Patterns that are checked against each message (like Sentry debug printing).
+	std::string std_message{ p_message.ascii() };
+	for (auto pattern : filter_patterns) {
+		if (std::regex_search(std_message, pattern)) {
+			return;
+		}
+	}
+
 	SentrySDK::get_singleton()->add_breadcrumb(
 			p_message,
 			"log",
@@ -280,6 +288,12 @@ void SentryLogger::_notification(int p_what) {
 }
 
 SentryLogger::SentryLogger() {
+	// Filtering setup.
+	filter_patterns = {
+		// Sentry messages
+		std::regex{ "^[A-Z]+: Sentry: " },
+	};
+
 	// Cache limits.
 	Ref<SentryLoggerLimits> logger_limits = SentryOptions::get_singleton()->get_logger_limits();
 	limits.events_per_frame = logger_limits->events_per_frame;
