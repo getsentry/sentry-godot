@@ -259,14 +259,11 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
 	// Filtering: Check message prefixes to skip certain messages (e.g., Sentry's own debug output).
-	TimePoint start = std::chrono::high_resolution_clock::now();
 	for (const String &prefix : filter_by_prefix) {
 		if (p_message.begins_with(prefix)) {
 			return;
 		}
 	}
-	TimePoint end = std::chrono::high_resolution_clock::now();
-	sentry::util::print_debug("filtering pass took ", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count(), " usec");
 
 	SentrySDK::get_singleton()->add_breadcrumb(
 			p_message,
