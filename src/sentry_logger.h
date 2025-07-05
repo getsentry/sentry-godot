@@ -8,7 +8,6 @@
 #include <godot_cpp/classes/logger.hpp>
 #include <godot_cpp/classes/script_backtrace.hpp>
 #include <mutex>
-#include <regex>
 #include <unordered_map>
 
 using namespace godot;
