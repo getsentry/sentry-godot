@@ -18,6 +18,10 @@
 
 - Fixed Godot 4.5 complaining that "usage" is not supported ([#214](https://github.com/getsentry/sentry-godot/pull/214))
 
+### Other changes
+
+- Filter SDK messages in logger ([#233](https://github.com/getsentry/sentry-godot/pull/233))
+
 ### Dependencies
 
 - Bump Native SDK from v0.9.0 to v0.9.1 ([#210](https://github.com/getsentry/sentry-godot/pull/210))

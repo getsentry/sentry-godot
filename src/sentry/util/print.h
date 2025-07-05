@@ -22,19 +22,19 @@ void print(sentry::Level p_level, const Variant &p_arg1, const Args &...p_args) 
 
 	switch (p_level) {
 		case LEVEL_DEBUG:
-			UtilityFunctions::print("DEBUG: Sentry: ", p_arg1, p_args...);
+			UtilityFunctions::print("Sentry: DEBUG: ", p_arg1, p_args...);
 			break;
 		case LEVEL_INFO:
-			UtilityFunctions::print("INFO: Sentry: ", p_arg1, p_args...);
+			UtilityFunctions::print("Sentry: INFO: ", p_arg1, p_args...);
 			break;
 		case LEVEL_WARNING:
-			UtilityFunctions::printerr("WARNING: Sentry: ", p_arg1, p_args...);
+			UtilityFunctions::printerr("Sentry: WARNING: ", p_arg1, p_args...);
 			break;
 		case LEVEL_ERROR:
-			UtilityFunctions::printerr("ERROR: Sentry: ", p_arg1, p_args...);
+			UtilityFunctions::printerr("Sentry: ERROR: ", p_arg1, p_args...);
 			break;
 		case LEVEL_FATAL:
-			UtilityFunctions::printerr("FATAL: Sentry: ", p_arg1, p_args...);
+			UtilityFunctions::printerr("Sentry: FATAL: ", p_arg1, p_args...);
 			break;
 	}
 }

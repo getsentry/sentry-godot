@@ -258,6 +258,13 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
+	// Filtering: Check message prefixes to skip certain messages (e.g., Sentry's own debug output).
+	for (const String &prefix : filter_by_prefix) {
+		if (p_message.begins_with(prefix)) {
+			return;
+		}
+	}
+
 	SentrySDK::get_singleton()->add_breadcrumb(
 			p_message,
 			"log",
@@ -280,6 +287,12 @@ void SentryLogger::_notification(int p_what) {
 }
 
 SentryLogger::SentryLogger() {
+	// Filtering setup.
+	filter_by_prefix = {
+		// Sentry messages
+		"Sentry: "
+	};
+
 	// Cache limits.
 	Ref<SentryLoggerLimits> logger_limits = SentryOptions::get_singleton()->get_logger_limits();
 	limits.events_per_frame = logger_limits->events_per_frame;

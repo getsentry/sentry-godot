@@ -72,7 +72,7 @@ func _open_log_file() -> void:
 
 func _get_level(line: String):
 	for level_string in Level.keys():
-		if line.begins_with(level_string):
+		if line.trim_prefix("Sentry: ").begins_with(level_string):
 			_last_level = Level[level_string]
 			return Level[level_string]
 		elif line.begins_with(" "):

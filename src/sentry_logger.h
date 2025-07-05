@@ -44,6 +44,9 @@ private:
 	// Number of events captured during this frame.
 	int frame_events = 0;
 
+	// Filter: Remove messages from breadcrumbs which start with any of these prefixes.
+	std::vector<String> filter_by_prefix;
+
 	void _process_frame();
 
 protected:
