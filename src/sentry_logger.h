@@ -45,9 +45,8 @@ private:
 	// Number of events captured during this frame.
 	int frame_events = 0;
 
-	// Patterns that are checked against each message.
-	// If matching, the message is not added as breadcrumb.
-	std::vector<std::regex> filter_patterns;
+	// Filter: Remove messages from breadcrumbs which start with any of these prefixes.
+	std::vector<String> filter_by_prefix;
 
 	void _process_frame();
 

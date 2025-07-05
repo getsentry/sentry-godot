@@ -258,10 +258,9 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
-	// Filtering: Patterns that are checked against each message (like Sentry debug printing).
-	std::string std_message{ p_message.ascii() };
-	for (auto pattern : filter_patterns) {
-		if (std::regex_search(std_message, pattern)) {
+	// Filtering: Check message prefixes to skip certain messages (e.g., Sentry's own debug output).
+	for (const String &prefix : filter_by_prefix) {
+		if (p_message.begins_with(prefix)) {
 			return;
 		}
 	}
@@ -289,9 +288,9 @@ void SentryLogger::_notification(int p_what) {
 
 SentryLogger::SentryLogger() {
 	// Filtering setup.
-	filter_patterns = {
+	filter_by_prefix = {
 		// Sentry messages
-		std::regex{ "^[A-Z]+: Sentry: " },
+		"Sentry: "
 	};
 
 	// Cache limits.
