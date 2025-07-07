@@ -2,7 +2,7 @@
 
 ## Building SDK
 
-Sentry SDK for Godot Engine can be built for Windows x86_64, Linux x86_64, and macOS universal platforms. Support for more platforms and architectures are expected to be added in time.
+Sentry SDK for Godot Engine can be built for Windows x86_64, Linux x86_64, macOS universal, and Android platforms. Support for more platforms and architectures are expected to be added in time.
 
 ### Prerequisites
 
@@ -10,6 +10,7 @@ Sentry SDK for Godot Engine can be built for Windows x86_64, Linux x86_64, and m
 - SCons build tool and Python
 - CMake -- to build sentry-native SDK
 - clang-format & pre-commit -- for style checks
+- Android Studio -- to build supporting library for Android
 
 On Windows, if you have `scoop` installed, you can easily install most of the required packages with the following command:
 ```
@@ -55,6 +56,20 @@ brew install scons
 
 In the Godot editor, you can adjust the Sentry SDK settings by going to `Project Settings -> Sentry -> Config`.
 
+### Android
+
+Building Android targets requires Android Studio. Additionally, you need to assemble the `SentryAndroidGodotPlugin` library for Android builds:
+
+```bash
+./gradlew assemble
+```
+
+To build Android targets:
+
+```bash
+scons target=editor debug_symbols=yes platform=android
+```
+
 ## Project Structure
 
 - `src/` -- Godot extension source code
@@ -64,6 +79,7 @@ In the Godot editor, you can adjust the Sentry SDK settings by going to `Project
 - `project/test/` -- unit tests
 - `scripts/` -- various scripts used mostly for maintenance
 - `doc_classes/` -- built-in Godot documentation (class reference)
+- `android_lib/` -- supporting library for Android, containing a Godot plugin that bridges the Sentry GDExtension with the native Sentry Android SDK.
 
 ## Formatting Code
 
@@ -101,3 +117,8 @@ Once the XML files are regenerated, you can begin updating the documentation for
 Testing is performed using the **gdUnit4** testing framework in GDScript. Unit tests (and other types of tests) are located in the `project/test/` directory. These tests can be executed from the Godot editor, except for isolated tests (see below).
 
 Some tests require isolation, meaning they need specific options to be set and must be executed in a separate process. These tests are located in the `project/test/isolated/` directory. We have a PowerShell script for running such tests in bulk: `scripts/run-isolated-tests.ps1`.
+
+For the Android platform, you can also run supporting Android library tests:
+```bash
+./gradlew test
+```
