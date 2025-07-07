@@ -45,18 +45,17 @@ platform = env["platform"]
 arch = env["arch"]
 
 # Is this build a noop build (stub library for unsupported platform)
-noop = False
+noop_build = False
 
 out_dir = f"project/addons/sentry/bin/{platform}"
 if platform in ["windows", "linux"]:
     # Separate arch dirs to avoid crashpad handler filename conflicts.
     out_dir += "/" + arch
     if arch in ["arm64", "arm32", "rv64"]:
-        noop = True
+        noop_build = True
 elif platform in ["web", "ios"]:
-    noop = True
-if noop:
-    # Not supported platform (noop build).
+    noop_build = True
+if noop_build:
     out_dir = "project/addons/sentry/bin/noop"
 out_dir = Dir(out_dir)
 
@@ -107,9 +106,10 @@ if platform == "macos":
         source=sources,
     )
 else:
-    shlib_suffix=env["SHLIBSUFFIX"]
+    shlib_suffix = env["SHLIBSUFFIX"]
+    nothreads = ".nothreads" if env["threads"] == False else ""
     library = env.SharedLibrary(
-        f"{out_dir}/libsentry.{platform}.{build_type}.{arch}{shlib_suffix}",
+        f"{out_dir}/libsentry.{platform}.{build_type}.{arch}{nothreads}{shlib_suffix}",
         source=sources,
     )
 
