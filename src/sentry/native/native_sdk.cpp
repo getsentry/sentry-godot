@@ -15,7 +15,6 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
-#include <regex>
 
 namespace {
 
@@ -43,6 +42,20 @@ sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t ev
 	} else {
 		return event;
 	}
+}
+
+inline bool _cstring_begins_with(const char *str, size_t str_len, const char *prefix, size_t prefix_len) {
+	if (str_len < prefix_len) {
+		return false;
+	}
+	return strncmp(str, prefix, prefix_len) == 0;
+}
+
+inline bool _cstring_ends_with(const char *str, size_t str_len, const char *suffix, size_t suffix_len) {
+	if (str_len < suffix_len) {
+		return false;
+	}
+	return strncmp(str + str_len - suffix_len, suffix, suffix_len) == 0;
 }
 
 void _log_native_message(sentry_level_t level, const char *message, va_list args, void *userdata) {
@@ -74,11 +87,17 @@ void _log_native_message(sentry_level_t level, const char *message, va_list args
 	bool accepted = true;
 
 	// Filter out warnings about missing attachment files that may not exist in some scenarios.
-	static auto pattern = std::regex{
-		R"(^failed to read envelope item from \".*?(screenshot\.jpg|view-hierarchy\.json)\")"
-	};
-	if (std::regex_search(buffer, buffer + required, pattern)) {
-		accepted = false;
+	constexpr char warning_prefix[] = "failed to read envelope item from";
+	constexpr size_t warning_prefix_len = sizeof(warning_prefix) - 1;
+	if (_cstring_begins_with(buffer, required, warning_prefix, warning_prefix_len)) {
+		constexpr char screenshot_suffix[] = "screenshot.jpg\"";
+		constexpr size_t screenshot_len = sizeof(screenshot_suffix) - 1;
+		constexpr char vh_suffix[] = "view-hierarchy.json\"";
+		constexpr size_t vh_len = sizeof(vh_suffix) - 1;
+		if (_cstring_ends_with(buffer, required, screenshot_suffix, screenshot_len) ||
+				_cstring_ends_with(buffer, required, vh_suffix, vh_len)) {
+			accepted = false;
+		}
 	}
 
 	if (accepted) {
