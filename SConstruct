@@ -44,10 +44,20 @@ env = SConscript("modules/godot-cpp/SConstruct")
 platform = env["platform"]
 arch = env["arch"]
 
+# Is this build a noop build (stub library for unsupported platform)
+noop = False
+
 out_dir = f"project/addons/sentry/bin/{platform}"
 if platform in ["windows", "linux"]:
     # Separate arch dirs to avoid crashpad handler filename conflicts.
     out_dir += "/" + arch
+    if arch in ["arm64", "arm32", "rv64"]:
+        noop = True
+elif platform in ["web", "ios"]:
+    noop = True
+if noop:
+    # Not supported platform (noop build).
+    out_dir = "project/addons/sentry/bin/noop"
 out_dir = Dir(out_dir)
 
 
