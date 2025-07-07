@@ -58,10 +58,16 @@ In the Godot editor, you can adjust the Sentry SDK settings by going to `Project
 
 ### Android
 
-Additionally, on the Android platform, the `SentryAndroidGodotPlugin` library needs to be assembled:
+Building Android targets requires Android Studio. Additionally, you need to assemble the `SentryAndroidGodotPlugin` library for Android builds:
 
 ```bash
 ./gradlew assemble
+```
+
+To build Android targets:
+
+```bash
+scons target=editor debug_symbols=yes platform=android
 ```
 
 ## Project Structure
