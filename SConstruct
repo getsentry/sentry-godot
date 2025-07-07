@@ -46,7 +46,7 @@ platform = env["platform"]
 arch = env["arch"]
 
 
-# *** Select internal SDK and out_dir
+# *** Select internal SDK and out_dir.
 
 class SDK(Enum):
     NOOP = 0
@@ -65,7 +65,7 @@ elif platform == "android":
 else:
     internal_sdk = SDK.NOOP
 
-# Define output directory for build targets.
+# Define output directory for the build target.
 out_dir = f"project/addons/sentry/bin/{platform}"
 if internal_sdk == SDK.NOOP:
     out_dir = "project/addons/sentry/bin/noop"
