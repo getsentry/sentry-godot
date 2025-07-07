@@ -62,7 +62,7 @@ out_dir = Dir(out_dir)
 
 # *** Build sentry-native.
 
-if platform in ["linux", "macos", "windows"]:
+if platform in ["linux", "macos", "windows"] and not noop_build:
     # Build sentry-native.
     env = SConscript("modules/SConstruct", exports=["env"])
 
