@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import subprocess
+from enum import Enum
 
 
 # *** Settings.
@@ -44,26 +45,39 @@ env = SConscript("modules/godot-cpp/SConstruct")
 platform = env["platform"]
 arch = env["arch"]
 
-# Is this build a noop build (stub library for unsupported platform)
-noop_build = False
 
+# *** Select internal SDK and out_dir
+
+class SDK(Enum):
+    NOOP = 0
+    NATIVE = 1
+    ANDROID = 2
+
+if platform in ["linux", "windows"]:
+    if arch in ["arm64", "arm32", "rv64"]:
+        internal_sdk = SDK.NOOP
+    else:
+        internal_sdk = SDK.NATIVE
+elif platform == "macos":
+    internal_sdk = SDK.NATIVE
+elif platform == "android":
+    internal_sdk = SDK.ANDROID
+else:
+    internal_sdk = SDK.NOOP
+
+# Define output directory for build targets.
 out_dir = f"project/addons/sentry/bin/{platform}"
-if platform in ["windows", "linux"]:
+if internal_sdk == SDK.NOOP:
+    out_dir = "project/addons/sentry/bin/noop"
+elif internal_sdk == SDK.NATIVE:
     # Separate arch dirs to avoid crashpad handler filename conflicts.
     out_dir += "/" + arch
-    if arch in ["arm64", "arm32", "rv64"]:
-        noop_build = True
-elif platform in ["web", "ios"]:
-    noop_build = True
-if noop_build:
-    out_dir = "project/addons/sentry/bin/noop"
 out_dir = Dir(out_dir)
 
 
 # *** Build sentry-native.
 
-if platform in ["linux", "macos", "windows"] and not noop_build:
-    # Build sentry-native.
+if internal_sdk == SDK.NATIVE:
     env = SConscript("modules/SConstruct", exports=["env"])
 
     # Deploy crashpad handler to project directory.
@@ -83,10 +97,10 @@ sources += Glob("src/sentry/*.cpp")
 sources += Glob("src/sentry/processing/*.cpp")
 sources += Glob("src/sentry/util/*.cpp")
 
-# Platform-specific sources.
-if platform in ["linux", "windows", "macos"]:
+# Backend-specific sources.
+if internal_sdk == SDK.NATIVE:
     sources += Glob("src/sentry/native/*.cpp")
-elif platform == "android":
+elif internal_sdk == SDK.ANDROID:
     sources += Glob("src/sentry/android/*.cpp")
 
 # Generate documentation data.
