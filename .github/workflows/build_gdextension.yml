@@ -125,14 +125,59 @@ jobs:
             target: editor
             arch: x86_64
 
-          # Unsupported platform currently.
-          # This entry is used to test compilation with such platforms.
-          # It will help identify issues with preprocessor ifdefs and the build system.
-          - name: 🌐 Web (unsupported platform test)
+          - name: 🍏 iOS (arm64, release)
+            runner: macos-latest
+            platform: ios
+            target: template_release
+            arch: arm64
+
+          - name: 🍏 iOS (arm64, debug)
+            runner: macos-latest
+            platform: ios
+            target: editor
+            arch: arm64
+
+          - name: 🍏 iOS (simulator, release)
+            runner: macos-latest
+            platform: ios
+            target: template_release
+            arch: x86_64
+            scons-flags: ios_simulator=yes
+
+          - name: 🍏 iOS (simulator, debug)
+            runner: macos-latest
+            platform: ios
+            target: editor
+            arch: x86_64
+            scons-flags: ios_simulator=yes
+
+          - name: 🌐 Web (unsupported, threads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
+            scons-flags: threads=yes
+
+          - name: 🌐 Web (unsupported, threads, debug)
+            runner: ubuntu-latest
+            platform: web
+            target: editor
+            arch: wasm32
+            scons-flags: threads=yes
+
+          - name: 🌐 Web (unsupported, nothreads, release)
+            runner: ubuntu-latest
+            platform: web
+            target: template_release
+            arch: wasm32
+            scons-flags: threads=no
+
+          - name: 🌐 Web (unsupported, nothreads, debug)
+            runner: ubuntu-latest
+            platform: web
+            target: editor
+            arch: wasm32
+            scons-flags: threads=no
 
     steps:
       - name: Checkout repo and submodules
@@ -195,7 +240,7 @@ jobs:
       - name: Compile GDExtension library
         shell: bash
         run: |
-          scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}}
+          scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}} ${{matrix.scons-flags}}
 
       - name: Separate debug symbols on Linux
         if: matrix.platform == 'linux'
@@ -210,10 +255,9 @@ jobs:
           strip --strip-debug ${lib}
 
       - name: Upload artifacts
-        if: matrix.platform != 'web' # web is unsupported currently; it is used to test compilation with such platforms (ifdefs)
         uses: actions/upload-artifact@v4
         with:
-          name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}
+          name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}.${{ contains(matrix.scons-flags, 'threads=no') && '.nothreads' || '' }}
           path: |
             project/
             !project/addons/gdUnit4
