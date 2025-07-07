@@ -106,10 +106,14 @@ if platform == "macos":
         source=sources,
     )
 else:
+    extra = ""
+    if env["threads"] == False:
+        extra += ".nothreads"
+    if env["ios_simulator"] == True:
+        extra += ".simulator"
     shlib_suffix = env["SHLIBSUFFIX"]
-    nothreads = ".nothreads" if env["threads"] == False else ""
     library = env.SharedLibrary(
-        f"{out_dir}/libsentry.{platform}.{build_type}.{arch}{nothreads}{shlib_suffix}",
+        f"{out_dir}/libsentry.{platform}.{build_type}.{arch}{extra}{shlib_suffix}",
         source=sources,
     )
 
