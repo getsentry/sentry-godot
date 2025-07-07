@@ -2,7 +2,7 @@
 
 ## Building SDK
 
-Sentry SDK for Godot Engine can be built for Windows x86_64, Linux x86_64, and macOS universal platforms. Support for more platforms and architectures are expected to be added in time.
+Sentry SDK for Godot Engine can be built for Windows x86_64, Linux x86_64, macOS universal, and Android platforms. Support for more platforms and architectures are expected to be added in time.
 
 ### Prerequisites
 
@@ -10,6 +10,7 @@ Sentry SDK for Godot Engine can be built for Windows x86_64, Linux x86_64, and m
 - SCons build tool and Python
 - CMake -- to build sentry-native SDK
 - clang-format & pre-commit -- for style checks
+- Android Studio -- to build supporting library for Android
 
 On Windows, if you have `scoop` installed, you can easily install most of the required packages with the following command:
 ```
@@ -55,6 +56,14 @@ brew install scons
 
 In the Godot editor, you can adjust the Sentry SDK settings by going to `Project Settings -> Sentry -> Config`.
 
+### Android
+
+Additionally, on the Android platform, the `SentryAndroidGodotPlugin` library needs to be assembled:
+
+```bash
+./gradlew assemble
+```
+
 ## Project Structure
 
 - `src/` -- Godot extension source code
@@ -64,6 +73,7 @@ In the Godot editor, you can adjust the Sentry SDK settings by going to `Project
 - `project/test/` -- unit tests
 - `scripts/` -- various scripts used mostly for maintenance
 - `doc_classes/` -- built-in Godot documentation (class reference)
+- `android_lib/` -- supporting library for Android, containing a Godot plugin that bridges the Sentry GDExtension with the native Sentry Android SDK.
 
 ## Formatting Code
 
