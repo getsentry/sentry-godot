@@ -125,54 +125,54 @@ jobs:
             target: editor
             arch: x86_64
 
-          - name: 🍏 iOS (arm64, release)
+          - name: 🍏 iOS (noop, arm64, release)
             runner: macos-latest
             platform: ios
             target: template_release
             arch: arm64
 
-          - name: 🍏 iOS (arm64, debug)
+          - name: 🍏 iOS (noop, arm64, debug)
             runner: macos-latest
             platform: ios
             target: editor
             arch: arm64
 
-          - name: 🍏 iOS (simulator, release)
+          - name: 🍏 iOS (noop, simulator, release)
             runner: macos-latest
             platform: ios
             target: template_release
             arch: x86_64
             scons-flags: ios_simulator=yes
 
-          - name: 🍏 iOS (simulator, debug)
+          - name: 🍏 iOS (noop, simulator, debug)
             runner: macos-latest
             platform: ios
             target: editor
             arch: x86_64
             scons-flags: ios_simulator=yes
 
-          - name: 🌐 Web (unsupported, threads, release)
+          - name: 🌐 Web (noop, threads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
             scons-flags: threads=yes
 
-          - name: 🌐 Web (unsupported, threads, debug)
+          - name: 🌐 Web (noop, threads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
             scons-flags: threads=yes
 
-          - name: 🌐 Web (unsupported, nothreads, release)
+          - name: 🌐 Web (noop, nothreads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
             scons-flags: threads=no
 
-          - name: 🌐 Web (unsupported, nothreads, debug)
+          - name: 🌐 Web (noop, nothreads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
