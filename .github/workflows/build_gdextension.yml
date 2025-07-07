@@ -141,14 +141,14 @@ jobs:
             runner: macos-latest
             platform: ios
             target: template_release
-            arch: x86_64
+            arch: universal
             scons-flags: ios_simulator=yes
 
           - name: 🍏 iOS (noop, simulator, debug)
             runner: macos-latest
             platform: ios
             target: editor
-            arch: x86_64
+            arch: universal
             scons-flags: ios_simulator=yes
 
           - name: 🌐 Web (noop, threads, release)
