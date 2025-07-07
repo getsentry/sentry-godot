@@ -257,7 +257,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}.${{ contains(matrix.scons-flags, 'threads=no') && '.nothreads' || '' }}
+          name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}${{ contains(matrix.scons-flags, 'threads=no') && '.nothreads' || '' }}
           path: |
             project/
             !project/addons/gdUnit4
