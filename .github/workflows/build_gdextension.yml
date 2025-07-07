@@ -53,6 +53,18 @@ jobs:
             target: editor
             arch: x86_32
 
+          - name: 🐧 Linux (noop, arm64, release)
+            runner: ubuntu-22.04
+            platform: linux
+            target: template_release
+            arch: arm64
+
+          - name: 🐧 Linux (noop, arm64, debug)
+            runner: ubuntu-22.04
+            platform: linux
+            target: editor
+            arch: arm64
+
           - name: 🪟 Windows (x86_64, release)
             runner: windows-latest
             platform: windows
@@ -76,6 +88,18 @@ jobs:
             platform: windows
             target: editor
             arch: x86_32
+
+          - name: 🪟 Windows (noop, arm64, release)
+            runner: windows-latest
+            platform: windows
+            target: template_release
+            arch: arm64
+
+          - name: 🪟 Windows (noop, arm64, debug)
+            runner: windows-latest
+            platform: windows
+            target: editor
+            arch: arm64
 
           - name: 🍎 macOS (universal, release)
             runner: macos-latest
