@@ -210,13 +210,13 @@ jobs:
           submodules: recursive
           ref: ${{inputs.ref}}
 
-      - name: Install Linux dependencies (64 bit)
+      - name: Install Linux dependencies (x86_64)
         if: matrix.platform == 'linux' && matrix.arch == 'x86_64'
         run: |
           sudo apt update
           sudo apt install libcurl4-openssl-dev
 
-      - name: Install Linux dependencies (32-bit)
+      - name: Install Linux dependencies (x86_32)
         if: matrix.platform == 'linux' && matrix.arch == 'x86_32'
         run: |
           sudo dpkg --add-architecture i386
@@ -226,6 +226,18 @@ jobs:
               g++-multilib gcc-multilib \
               libc6-dev-i386 \
               zlib1g-dev:i386
+
+      - name: Install Linux dependencies (arm64)
+        if: matrix.platform == 'linux' && matrix.arch == 'arm64'
+        run: |
+          sudo dpkg --add-architecture arm64
+          sudo apt-get update
+          sudo apt-get install \
+              libcurl4-openssl-dev:arm64 \
+              gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
+              g++-multilib gcc-multilib \
+              libc6-dev-arm64-cross \
+              zlib1g-dev:arm64
 
       - name: Install SCons
         run: |
