@@ -17,7 +17,7 @@ on:
 
 env:
   # Default SCons flags applied to each build.
-  SCONSFLAGS: verbose=yes debug_symbols=yes macos_deployment_target=11.0
+  SCONSFLAGS: verbose=yes macos_deployment_target=11.0
   EM_VERSION: 3.1.45
   XCODE_VERSION: 16.2
 
@@ -58,14 +58,14 @@ jobs:
             platform: linux
             target: template_release
             arch: arm64
-            scons-flags: debug_symbols=no
+            debug-symbols: no
 
           - name: 🐧 Linux (noop, arm64, debug)
             runner: ubuntu-22.04-arm
             platform: linux
             target: editor
             arch: arm64
-            scons-flags: debug_symbols=no
+            debug-symbols: no
 
           - name: 🪟 Windows (x86_64, release)
             runner: windows-latest
@@ -96,14 +96,14 @@ jobs:
             platform: windows
             target: template_release
             arch: arm64
-            scons-flags: debug_symbols=no
+            debug-symbols: no
 
           - name: 🪟 Windows (noop, arm64, debug)
             runner: windows-latest
             platform: windows
             target: editor
             arch: arm64
-            scons-flags: debug_symbols=no
+            debug-symbols: no
 
           - name: 🍎 macOS (universal, release)
             runner: macos-latest
@@ -158,56 +158,62 @@ jobs:
             platform: ios
             target: template_release
             arch: arm64
-            scons-flags: debug_symbols=no
+            debug-symbols: no
 
           - name: 🍏 iOS (noop, arm64, debug)
             runner: macos-latest
             platform: ios
             target: editor
             arch: arm64
-            scons-flags: debug_symbols=no
+            debug-symbols: no
 
           - name: 🍏 iOS (noop, simulator, release)
             runner: macos-latest
             platform: ios
             target: template_release
             arch: universal
-            scons-flags: ios_simulator=yes debug_symbols=no
+            debug-symbols: no
+            scons-flags: ios_simulator=yes
 
           - name: 🍏 iOS (noop, simulator, debug)
             runner: macos-latest
             platform: ios
             target: editor
             arch: universal
-            scons-flags: ios_simulator=yes debug_symbols=no
+            debug-symbols: no
+            scons-flags: ios_simulator=yes
 
           - name: 🌐 Web (noop, threads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
-            scons-flags: threads=yes debug_symbols=no
+            debug-symbols: no
+            scons-flags: threads=yes
 
           - name: 🌐 Web (noop, threads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
-            scons-flags: threads=yes debug_symbols=no
+            debug-symbols: no
+            scons-flags: threads=yes
 
           - name: 🌐 Web (noop, nothreads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
-            scons-flags: threads=no debug_symbols=no
+            debug-symbols: no
+            scons-flags: threads=no
 
           - name: 🌐 Web (noop, nothreads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
-            scons-flags: threads=no debug_symbols=no
+            debug-symbols: no
+            scons-flags: threads=no
 
     steps:
       - name: Checkout repo and submodules
@@ -270,7 +276,9 @@ jobs:
       - name: Compile GDExtension library
         shell: bash
         run: |
-          scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}} ${{matrix.scons-flags}}
+          scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}} \
+              debug_symbols=${{ matrix.debug-symbols != null && matrix.debug-symbols || 'yes' }} \
+              ${{matrix.scons-flags}}
 
       - name: Separate debug symbols on Linux
         if: matrix.platform == 'linux'
