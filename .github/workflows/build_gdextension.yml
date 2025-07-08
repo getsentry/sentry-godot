@@ -58,12 +58,14 @@ jobs:
             platform: linux
             target: template_release
             arch: arm64
+            scons-flags: debug_symbols=no
 
           - name: 🐧 Linux (noop, arm64, debug)
             runner: ubuntu-22.04-arm
             platform: linux
             target: editor
             arch: arm64
+            scons-flags: debug_symbols=no
 
           - name: 🪟 Windows (x86_64, release)
             runner: windows-latest
@@ -94,12 +96,14 @@ jobs:
             platform: windows
             target: template_release
             arch: arm64
+            scons-flags: debug_symbols=no
 
           - name: 🪟 Windows (noop, arm64, debug)
             runner: windows-latest
             platform: windows
             target: editor
             arch: arm64
+            scons-flags: debug_symbols=no
 
           - name: 🍎 macOS (universal, release)
             runner: macos-latest
@@ -154,54 +158,56 @@ jobs:
             platform: ios
             target: template_release
             arch: arm64
+            scons-flags: debug_symbols=no
 
           - name: 🍏 iOS (noop, arm64, debug)
             runner: macos-latest
             platform: ios
             target: editor
             arch: arm64
+            scons-flags: debug_symbols=no
 
           - name: 🍏 iOS (noop, simulator, release)
             runner: macos-latest
             platform: ios
             target: template_release
             arch: universal
-            scons-flags: ios_simulator=yes
+            scons-flags: ios_simulator=yes debug_symbols=no
 
           - name: 🍏 iOS (noop, simulator, debug)
             runner: macos-latest
             platform: ios
             target: editor
             arch: universal
-            scons-flags: ios_simulator=yes
+            scons-flags: ios_simulator=yes debug_symbols=no
 
           - name: 🌐 Web (noop, threads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
-            scons-flags: threads=yes
+            scons-flags: threads=yes debug_symbols=no
 
           - name: 🌐 Web (noop, threads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
-            scons-flags: threads=yes
+            scons-flags: threads=yes debug_symbols=no
 
           - name: 🌐 Web (noop, nothreads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
-            scons-flags: threads=no
+            scons-flags: threads=no debug_symbols=no
 
           - name: 🌐 Web (noop, nothreads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
-            scons-flags: threads=no
+            scons-flags: threads=no debug_symbols=no
 
     steps:
       - name: Checkout repo and submodules
