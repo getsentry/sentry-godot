@@ -49,13 +49,13 @@ arch = env["arch"]
 # *** Select internal SDK and out_dir.
 
 class SDK(Enum):
-    NOOP = 0
+    DISABLED = 0
     NATIVE = 1
     ANDROID = 2
 
 if platform in ["linux", "windows"]:
     if arch in ["arm64", "arm32", "rv64"]:
-        internal_sdk = SDK.NOOP
+        internal_sdk = SDK.DISABLED
     else:
         internal_sdk = SDK.NATIVE
 elif platform == "macos":
@@ -63,11 +63,11 @@ elif platform == "macos":
 elif platform == "android":
     internal_sdk = SDK.ANDROID
 else:
-    internal_sdk = SDK.NOOP
+    internal_sdk = SDK.DISABLED
 
 # Define output directory for the build target.
 out_dir = f"project/addons/sentry/bin/{platform}"
-if internal_sdk == SDK.NOOP:
+if internal_sdk == SDK.DISABLED:
     out_dir = "project/addons/sentry/bin/noop"
 elif internal_sdk == SDK.NATIVE:
     # Separate arch dirs to avoid crashpad handler filename conflicts.
