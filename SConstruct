@@ -71,7 +71,8 @@ if internal_sdk == SDK.DISABLED:
     out_dir = "project/addons/sentry/bin/noop"
 elif internal_sdk == SDK.NATIVE:
     # Separate arch dirs to avoid crashpad handler filename conflicts.
-    out_dir += "/" + arch
+    if platform != "macos":
+        out_dir += "/" + arch
 out_dir = Dir(out_dir)
 
 
