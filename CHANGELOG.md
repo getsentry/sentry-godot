@@ -13,6 +13,7 @@
 - Add user attachments support ([#205](https://github.com/getsentry/sentry-godot/pull/205))
 - Provide x86_32 builds for Windows and Linux ([#218](https://github.com/getsentry/sentry-godot/pull/218))
 - Support for the new Logger interface (more accurate error reporting), script stack traces and local variables in Godot 4.5 ([#201](https://github.com/getsentry/sentry-godot/pull/201))
+- Provide noop (stub) builds for unsupported platforms ([#239](https://github.com/getsentry/sentry-godot/pull/239))
 
 ### Fixes
 
