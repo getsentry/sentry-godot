@@ -3,6 +3,9 @@ name: 🧪 Unit tests
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   unit-tests:
     name: Test ${{matrix.runner}} ${{matrix.arch}}

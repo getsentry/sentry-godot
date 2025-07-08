@@ -3,6 +3,9 @@ name: 🔎 Static checks
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   static-checks:
     runs-on: ubuntu-latest
