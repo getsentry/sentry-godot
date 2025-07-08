@@ -54,13 +54,13 @@ jobs:
             arch: x86_32
 
           - name: 🐧 Linux (noop, arm64, release)
-            runner: ubuntu-22.04
+            runner: ubuntu-22.04-arm
             platform: linux
             target: template_release
             arch: arm64
 
           - name: 🐧 Linux (noop, arm64, debug)
-            runner: ubuntu-22.04
+            runner: ubuntu-22.04-arm
             platform: linux
             target: editor
             arch: arm64
@@ -230,14 +230,9 @@ jobs:
       - name: Install Linux dependencies (arm64)
         if: matrix.platform == 'linux' && matrix.arch == 'arm64'
         run: |
-          sudo dpkg --add-architecture arm64
           sudo apt-get update
           sudo apt-get install \
-              libcurl4-openssl-dev:arm64 \
-              gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
-              g++-multilib gcc-multilib \
-              libc6-dev-arm64-cross \
-              zlib1g-dev:arm64
+              libcurl4-openssl-dev
 
       - name: Install SCons
         run: |
