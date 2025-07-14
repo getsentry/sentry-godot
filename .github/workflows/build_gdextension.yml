@@ -15,6 +15,9 @@ on:
         default: ""
         description: "The branch, tag or SHA to checkout (leave empty for event SHA)"
 
+permissions:
+  contents: read
+
 env:
   # Default SCons flags applied to each build.
   SCONSFLAGS: verbose=yes macos_deployment_target=11.0
