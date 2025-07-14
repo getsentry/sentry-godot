@@ -33,6 +33,7 @@
 - Bump gdUnit 4 from v5.0.4 to v5.0.5 ([#221](https://github.com/getsentry/sentry-godot/pull/221))
   - [changelog](https://github.com/MikeSchulze/gdUnit4/blob/master/CHANGELOG.md#v505)
   - [diff](https://github.com/MikeSchulze/gdUnit4/compare/v5.0.4...v5.0.5)
+- Bump godot-cpp to sync with Godot 4.5-beta3 ([#246](https://github.com/getsentry/sentry-godot/pull/246))
 
 ## 0.6.1
 
