@@ -10,10 +10,14 @@ on:
         description: Force a release even when there are release-blockers (optional)
         required: false
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   job_release:
     runs-on: ubuntu-latest
-    name: 'Release a new version: ${{ github.event.inputs.version }}'
+    name: "Release a new version: ${{ github.event.inputs.version }}"
     steps:
       - name: Get auth token
         id: token

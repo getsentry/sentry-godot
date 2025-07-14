@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, edited, ready_for_review]
 
+permissions:
+  contents: read
+  pull-requests: write # needed for comments
+
 jobs:
   danger:
     uses: getsentry/github-workflows/.github/workflows/danger.yml@v2
