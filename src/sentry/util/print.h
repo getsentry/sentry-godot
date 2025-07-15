@@ -13,10 +13,10 @@ namespace sentry::util {
 
 template <typename... Args>
 void print(sentry::Level p_level, const Variant &p_arg1, const Args &...p_args) {
-	if (!SentryOptions::get_singleton()->is_debug_enabled() && p_level < sentry::LEVEL_ERROR) {
+	if (SentryOptions::get_singleton().is_valid() && !SentryOptions::get_singleton()->is_debug_enabled() && p_level < sentry::LEVEL_ERROR) {
 		return;
 	}
-	if (SentryOptions::get_singleton()->get_diagnostic_level() > p_level) {
+	if (SentryOptions::get_singleton().is_valid() && SentryOptions::get_singleton()->get_diagnostic_level() > p_level) {
 		return;
 	}
 
