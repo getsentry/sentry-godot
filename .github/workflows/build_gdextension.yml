@@ -20,7 +20,7 @@ permissions:
 
 env:
   # Default SCons flags applied to each build.
-  SCONSFLAGS: verbose=yes macos_deployment_target=11.0
+  SCONSFLAGS: verbose=yes
   EM_VERSION: 3.1.45
   XCODE_VERSION: 16.2
 
@@ -113,12 +113,14 @@ jobs:
             platform: macos
             target: template_release
             arch: universal
+            scons-flags: macos_deployment_target=11.0
 
           - name: 🍎 macOS (universal, debug)
             runner: macos-latest
             platform: macos
             target: editor
             arch: universal
+            scons-flags: macos_deployment_target=11.0
 
           - name: 🤖 Android (arm64, release)
             runner: ubuntu-latest
