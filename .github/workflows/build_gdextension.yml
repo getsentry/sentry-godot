@@ -61,14 +61,14 @@ jobs:
             platform: linux
             target: template_release
             arch: arm64
-            scons_flags: debug_symbols=no
+            scons-flags: debug_symbols=no
 
           - name: 🐧 Linux (noop, arm64, debug)
             runner: ubuntu-22.04-arm
             platform: linux
             target: editor
             arch: arm64
-            scons_flags: debug_symbols=no
+            scons-flags: debug_symbols=no
 
           - name: 🪟 Windows (x86_64, release)
             runner: windows-latest
@@ -99,14 +99,14 @@ jobs:
             platform: windows
             target: template_release
             arch: arm64
-            scons_flags: debug_symbols=no
+            scons-flags: debug_symbols=no
 
           - name: 🪟 Windows (noop, arm64, debug)
             runner: windows-latest
             platform: windows
             target: editor
             arch: arm64
-            scons_flags: debug_symbols=no
+            scons-flags: debug_symbols=no
 
           - name: 🍎 macOS (universal, release)
             runner: macos-latest
