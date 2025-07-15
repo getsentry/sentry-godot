@@ -22,7 +22,7 @@ jobs:
             arch: x86_64
           - runner: ubuntu-latest
             arch: x86_32
-          - runner: macos-latest
+          - runner: macos-15
             arch: universal
     steps:
       - name: Checkout repo
