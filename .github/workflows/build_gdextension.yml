@@ -37,24 +37,28 @@ jobs:
             platform: linux
             target: template_release
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
           - name: 🐧 Linux (x86_64, debug)
             runner: ubuntu-22.04
             platform: linux
             target: editor
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
           - name: 🐧 Linux (x86_32, release)
             runner: ubuntu-22.04
             platform: linux
             target: template_release
             arch: x86_32
+            scons-flags: debug_symbols=yes
 
           - name: 🐧 Linux (x86_32, debug)
             runner: ubuntu-22.04
             platform: linux
             target: editor
             arch: x86_32
+            scons-flags: debug_symbols=yes
 
           - name: 🐧 Linux (noop, arm64, release)
             runner: ubuntu-22.04-arm
@@ -75,24 +79,28 @@ jobs:
             platform: windows
             target: template_release
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
           - name: 🪟 Windows (x86_64, debug)
             runner: windows-latest
             platform: windows
             target: editor
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
           - name: 🪟 Windows (x86_32, release)
             runner: windows-latest
             platform: windows
             target: template_release
             arch: x86_32
+            scons-flags: debug_symbols=yes
 
           - name: 🪟 Windows (x86_32, debug)
             runner: windows-latest
             platform: windows
             target: editor
             arch: x86_32
+            scons-flags: debug_symbols=yes
 
           - name: 🪟 Windows (noop, arm64, release)
             runner: windows-latest
@@ -113,50 +121,56 @@ jobs:
             platform: macos
             target: template_release
             arch: universal
-            scons-flags: macos_deployment_target=11.0
+            scons-flags: debug_symbols=yes macos_deployment_target=11.0
 
           - name: 🍎 macOS (universal, debug)
             runner: macos-latest
             platform: macos
             target: editor
             arch: universal
-            scons-flags: macos_deployment_target=11.0
+            scons-flags: debug_symbols=yes macos_deployment_target=11.0
 
           - name: 🤖 Android (arm64, release)
             runner: ubuntu-latest
             platform: android
             target: template_release
             arch: arm64
+            scons-flags: debug_symbols=yes
 
           - name: 🤖 Android (arm64, debug)
             runner: ubuntu-latest
             platform: android
             target: editor
             arch: arm64
+            scons-flags: debug_symbols=yes
 
           - name: 🤖 Android (arm32, release)
             runner: ubuntu-latest
             platform: android
             target: template_release
             arch: arm32
+            scons-flags: debug_symbols=yes
 
           - name: 🤖 Android (arm32, debug)
             runner: ubuntu-latest
             platform: android
             target: editor
             arch: arm32
+            scons-flags: debug_symbols=yes
 
           - name: 🤖 Android (x86_64, release)
             runner: ubuntu-latest
             platform: android
             target: template_release
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
           - name: 🤖 Android (x86_64, debug)
             runner: ubuntu-latest
             platform: android
             target: editor
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
           - name: 🍏 iOS (noop, arm64, release)
             runner: macos-latest
@@ -177,42 +191,42 @@ jobs:
             platform: ios
             target: template_release
             arch: universal
-            scons-flags: ios_simulator=yes debug_symbols=no
+            scons-flags: debug_symbols=no ios_simulator=yes
 
           - name: 🍏 iOS (noop, simulator, debug)
             runner: macos-latest
             platform: ios
             target: editor
             arch: universal
-            scons-flags: ios_simulator=yes debug_symbols=no
+            scons-flags: debug_symbols=no ios_simulator=yes
 
           - name: 🌐 Web (noop, threads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
-            scons-flags: threads=yes debug_symbols=no
+            scons-flags: debug_symbols=no threads=yes
 
           - name: 🌐 Web (noop, threads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
-            scons-flags: threads=yes debug_symbols=no
+            scons-flags: debug_symbols=no threads=yes
 
           - name: 🌐 Web (noop, nothreads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
-            scons-flags: threads=no debug_symbols=no
+            scons-flags: debug_symbols=no threads=no
 
           - name: 🌐 Web (noop, nothreads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
-            scons-flags: threads=no debug_symbols=no
+            scons-flags: debug_symbols=no threads=no
 
     steps:
       - name: Checkout repo and submodules
@@ -272,21 +286,10 @@ jobs:
           ndk-version: r23c
           link-to-sdk: true
 
-      - name: Prepare SCONSFLAGS
-        shell: bash
-        run: |
-          SCONSFLAGS="$SCONSFLAGS ${{ matrix.scons-flags }}"
-          # If not specified, default to debug_symbols=yes.
-          if [[ "$SCONSFLAGS" != *"debug_symbols="* ]]; then
-            SCONSFLAGS="$SCONSFLAGS debug_symbols=yes"
-          fi
-          echo "SCONSFLAGS=$SCONSFLAGS" >> $GITHUB_ENV
-
       - name: Compile GDExtension library
         shell: bash
         run: |
-          echo "Starting SCons build with additional flags: ${SCONSFLAGS}"
-          scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}}
+          scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}} ${{matrix.scons-flags}}
 
       - name: Separate debug symbols on Linux
         if: matrix.platform == 'linux'
