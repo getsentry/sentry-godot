@@ -20,7 +20,7 @@ permissions:
 
 env:
   # Default SCons flags applied to each build.
-  SCONSFLAGS: verbose=yes debug_symbols=yes macos_deployment_target=11.0
+  SCONSFLAGS: verbose=yes
   EM_VERSION: 3.1.45
   XCODE_VERSION: 16.2
 
@@ -37,105 +37,196 @@ jobs:
             platform: linux
             target: template_release
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
           - name: 🐧 Linux (x86_64, debug)
             runner: ubuntu-22.04
             platform: linux
             target: editor
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
           - name: 🐧 Linux (x86_32, release)
             runner: ubuntu-22.04
             platform: linux
             target: template_release
             arch: x86_32
+            scons-flags: debug_symbols=yes
 
           - name: 🐧 Linux (x86_32, debug)
             runner: ubuntu-22.04
             platform: linux
             target: editor
             arch: x86_32
+            scons-flags: debug_symbols=yes
+
+          - name: 🐧 Linux (noop, arm64, release)
+            runner: ubuntu-22.04-arm
+            platform: linux
+            target: template_release
+            arch: arm64
+            scons-flags: debug_symbols=no
+
+          - name: 🐧 Linux (noop, arm64, debug)
+            runner: ubuntu-22.04-arm
+            platform: linux
+            target: editor
+            arch: arm64
+            scons-flags: debug_symbols=no
 
           - name: 🪟 Windows (x86_64, release)
             runner: windows-latest
             platform: windows
             target: template_release
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
           - name: 🪟 Windows (x86_64, debug)
             runner: windows-latest
             platform: windows
             target: editor
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
           - name: 🪟 Windows (x86_32, release)
             runner: windows-latest
             platform: windows
             target: template_release
             arch: x86_32
+            scons-flags: debug_symbols=yes
 
           - name: 🪟 Windows (x86_32, debug)
             runner: windows-latest
             platform: windows
             target: editor
             arch: x86_32
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (noop, arm64, release)
+            runner: windows-latest
+            platform: windows
+            target: template_release
+            arch: arm64
+            scons-flags: debug_symbols=no
+
+          - name: 🪟 Windows (noop, arm64, debug)
+            runner: windows-latest
+            platform: windows
+            target: editor
+            arch: arm64
+            scons-flags: debug_symbols=no
 
           - name: 🍎 macOS (universal, release)
             runner: macos-latest
             platform: macos
             target: template_release
             arch: universal
+            scons-flags: debug_symbols=yes macos_deployment_target=11.0
 
           - name: 🍎 macOS (universal, debug)
             runner: macos-latest
             platform: macos
             target: editor
             arch: universal
+            scons-flags: debug_symbols=yes macos_deployment_target=11.0
 
           - name: 🤖 Android (arm64, release)
             runner: ubuntu-latest
             platform: android
             target: template_release
             arch: arm64
+            scons-flags: debug_symbols=yes
 
           - name: 🤖 Android (arm64, debug)
             runner: ubuntu-latest
             platform: android
             target: editor
             arch: arm64
+            scons-flags: debug_symbols=yes
 
           - name: 🤖 Android (arm32, release)
             runner: ubuntu-latest
             platform: android
             target: template_release
             arch: arm32
+            scons-flags: debug_symbols=yes
 
           - name: 🤖 Android (arm32, debug)
             runner: ubuntu-latest
             platform: android
             target: editor
             arch: arm32
+            scons-flags: debug_symbols=yes
 
           - name: 🤖 Android (x86_64, release)
             runner: ubuntu-latest
             platform: android
             target: template_release
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
           - name: 🤖 Android (x86_64, debug)
             runner: ubuntu-latest
             platform: android
             target: editor
             arch: x86_64
+            scons-flags: debug_symbols=yes
 
-          # Unsupported platform currently.
-          # This entry is used to test compilation with such platforms.
-          # It will help identify issues with preprocessor ifdefs and the build system.
-          - name: 🌐 Web (unsupported platform test)
+          - name: 🍏 iOS (noop, arm64, release)
+            runner: macos-latest
+            platform: ios
+            target: template_release
+            arch: arm64
+            scons-flags: debug_symbols=no
+
+          - name: 🍏 iOS (noop, arm64, debug)
+            runner: macos-latest
+            platform: ios
+            target: editor
+            arch: arm64
+            scons-flags: debug_symbols=no
+
+          - name: 🍏 iOS (noop, simulator, release)
+            runner: macos-latest
+            platform: ios
+            target: template_release
+            arch: universal
+            scons-flags: debug_symbols=no ios_simulator=yes
+
+          - name: 🍏 iOS (noop, simulator, debug)
+            runner: macos-latest
+            platform: ios
+            target: editor
+            arch: universal
+            scons-flags: debug_symbols=no ios_simulator=yes
+
+          - name: 🌐 Web (noop, threads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
+            scons-flags: debug_symbols=no threads=yes
+
+          - name: 🌐 Web (noop, threads, debug)
+            runner: ubuntu-latest
+            platform: web
+            target: editor
+            arch: wasm32
+            scons-flags: debug_symbols=no threads=yes
+
+          - name: 🌐 Web (noop, nothreads, release)
+            runner: ubuntu-latest
+            platform: web
+            target: template_release
+            arch: wasm32
+            scons-flags: debug_symbols=no threads=no
+
+          - name: 🌐 Web (noop, nothreads, debug)
+            runner: ubuntu-latest
+            platform: web
+            target: editor
+            arch: wasm32
+            scons-flags: debug_symbols=no threads=no
 
     steps:
       - name: Checkout repo and submodules
@@ -144,13 +235,13 @@ jobs:
           submodules: recursive
           ref: ${{inputs.ref}}
 
-      - name: Install Linux dependencies (64 bit)
-        if: matrix.platform == 'linux' && matrix.arch == 'x86_64'
+      - name: Install Linux dependencies (x86_64, arm64)
+        if: matrix.platform == 'linux' && matrix.arch != 'x86_32'
         run: |
           sudo apt update
           sudo apt install libcurl4-openssl-dev
 
-      - name: Install Linux dependencies (32-bit)
+      - name: Install Linux dependencies (x86_32)
         if: matrix.platform == 'linux' && matrix.arch == 'x86_32'
         run: |
           sudo dpkg --add-architecture i386
@@ -198,7 +289,7 @@ jobs:
       - name: Compile GDExtension library
         shell: bash
         run: |
-          scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}}
+          scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}} ${{matrix.scons-flags}}
 
       - name: Separate debug symbols on Linux
         if: matrix.platform == 'linux'
@@ -206,17 +297,20 @@ jobs:
           BUILD_TYPE: ${{matrix.target == 'template_release' && 'release' || 'debug'}}
         shell: bash
         run: |
-          cd project/addons/sentry/bin/linux/${{matrix.arch}}
+          if [ -d "project/addons/sentry/bin/linux/${{matrix.arch}}" ]; then
+            cd project/addons/sentry/bin/linux/${{matrix.arch}}
+          else
+            cd project/addons/sentry/bin/noop
+          fi
           lib=libsentry.${{matrix.platform}}.${BUILD_TYPE}.${{matrix.arch}}.so
           objcopy --only-keep-debug ${lib} ${lib}.debug
           objcopy --add-gnu-debuglink ${lib}.debug ${lib}
           strip --strip-debug ${lib}
 
       - name: Upload artifacts
-        if: matrix.platform != 'web' # web is unsupported currently; it is used to test compilation with such platforms (ifdefs)
         uses: actions/upload-artifact@v4
         with:
-          name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}
+          name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}${{ contains(matrix.scons-flags, 'threads=no') && '.nothreads' || '' }}
           path: |
             project/
             !project/addons/gdUnit4
