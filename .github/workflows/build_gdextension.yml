@@ -22,7 +22,7 @@ env:
   # Default SCons flags applied to each build.
   SCONSFLAGS: verbose=yes
   EM_VERSION: 3.1.45
-  XCODE_VERSION: 16.2
+  XCODE_VERSION: 16.4
 
 jobs:
   build:
@@ -117,14 +117,14 @@ jobs:
             scons-flags: debug_symbols=no
 
           - name: 🍎 macOS (universal, release)
-            runner: macos-latest
+            runner: macos-15
             platform: macos
             target: template_release
             arch: universal
             scons-flags: debug_symbols=yes macos_deployment_target=11.0
 
           - name: 🍎 macOS (universal, debug)
-            runner: macos-latest
+            runner: macos-15
             platform: macos
             target: editor
             arch: universal
@@ -173,28 +173,28 @@ jobs:
             scons-flags: debug_symbols=yes
 
           - name: 🍏 iOS (noop, arm64, release)
-            runner: macos-latest
+            runner: macos-15
             platform: ios
             target: template_release
             arch: arm64
             scons-flags: debug_symbols=no
 
           - name: 🍏 iOS (noop, arm64, debug)
-            runner: macos-latest
+            runner: macos-15
             platform: ios
             target: editor
             arch: arm64
             scons-flags: debug_symbols=no
 
           - name: 🍏 iOS (noop, simulator, release)
-            runner: macos-latest
+            runner: macos-15
             platform: ios
             target: template_release
             arch: universal
             scons-flags: debug_symbols=no ios_simulator=yes
 
           - name: 🍏 iOS (noop, simulator, debug)
-            runner: macos-latest
+            runner: macos-15
             platform: ios
             target: editor
             arch: universal
