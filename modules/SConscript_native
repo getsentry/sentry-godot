@@ -95,7 +95,7 @@ else:
     build_targets.append(File(f"sentry-native/install/bin/crashpad_handler"))
 
 # Other defines
-env.Append(CPPDEFINES=["SENTRY_BUILD_STATIC", "NATIVE_SDK"])
+env.Append(CPPDEFINES=["SENTRY_BUILD_STATIC", "SDK_NATIVE"])
 env.Append(CPPPATH=[Dir("sentry-native/include/")])
 env.Append(LIBPATH=[Dir("sentry-native/install/lib/")])
 

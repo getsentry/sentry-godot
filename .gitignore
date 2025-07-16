@@ -9,6 +9,9 @@ project/.godot/
 # Source tree
 src/gen/
 
+# Cocoa: downloaded automatically.
+modules/sentry-cocoa/
+
 # Android plugin
 .gradle/
 .idea/

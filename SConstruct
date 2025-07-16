@@ -52,14 +52,15 @@ class SDK(Enum):
     DISABLED = 0
     NATIVE = 1
     ANDROID = 2
+    COCOA = 3
 
 if platform in ["linux", "windows"]:
     if arch in ["arm64", "arm32", "rv64"]:
         internal_sdk = SDK.DISABLED
     else:
         internal_sdk = SDK.NATIVE
-elif platform == "macos":
-    internal_sdk = SDK.NATIVE
+elif platform in ["macos", "ios"]:
+    internal_sdk = SDK.COCOA
 elif platform == "android":
     internal_sdk = SDK.ANDROID
 else:
@@ -71,19 +72,24 @@ if internal_sdk == SDK.DISABLED:
     out_dir = "project/addons/sentry/bin/noop"
 elif internal_sdk == SDK.NATIVE:
     # Separate arch dirs to avoid crashpad handler filename conflicts.
-    if platform != "macos":
-        out_dir += "/" + arch
+    out_dir += "/" + arch
 out_dir = Dir(out_dir)
 
 
 # *** Build sentry-native.
 
 if internal_sdk == SDK.NATIVE:
-    env = SConscript("modules/SConstruct", exports=["env"])
+    env = SConscript("modules/SConscript_native", exports=["env"])
 
     # Deploy crashpad handler to project directory.
     deploy_crashpad_handler = env.CopyCrashpadHandler(out_dir)
     Default(deploy_crashpad_handler)
+
+
+# *** Utilize sentry-cocoa.
+
+if internal_sdk == SDK.COCOA:
+    env = SConscript("modules/SConscript_cocoa", exports=["env"])
 
 
 # *** Build GDExtension library.
@@ -101,8 +107,14 @@ sources += Glob("src/sentry/util/*.cpp")
 # Backend-specific sources.
 if internal_sdk == SDK.NATIVE:
     sources += Glob("src/sentry/native/*.cpp")
+    env.Append(CPPDEFINES=["SDK_NATIVE"])
 elif internal_sdk == SDK.ANDROID:
     sources += Glob("src/sentry/android/*.cpp")
+    env.Append(CPPDEFINES=["SDK_ANDROID"])
+elif internal_sdk == SDK.COCOA:
+    sources += Glob("src/sentry/cocoa/*.cpp")
+    sources += Glob("src/sentry/cocoa/*.mm")
+    env.Append(CPPDEFINES=["SDK_COCOA"])
 
 # Generate documentation data.
 if env["target"] in ["editor", "template_debug"]:

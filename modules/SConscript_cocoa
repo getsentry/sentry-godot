@@ -1,0 +1,237 @@
+#!/usr/bin/env python
+## Purpose: macOS and iOS-specific build configuration using sentry-cocoa
+
+import urllib.request
+import zipfile
+import os
+import stat
+import subprocess
+from pathlib import Path
+
+Import("env")
+
+
+def get_property(prop_name, file_path):
+    """Read property from .properties file"""
+    with open(file_path, 'r') as file:
+        for line in file:
+            if line.startswith(prop_name):
+                return line.split('=')[1].strip().strip('"')
+    raise KeyError(f"Property '{prop_name}' not found in {file_path}")
+
+
+def extract_zip_with_symlinks(zip_path, extract_to):
+    """Extract zip file preserving symlinks
+
+    Python's zipfile.extractall() doesn't preserve symlinks - it extracts them
+    as regular files containing the symlink target path. This function detects
+    symlinks by their external_attr and creates proper symlinks instead.
+    """
+    with zipfile.ZipFile(zip_path, 'r') as zip_archive:
+        for info in zip_archive.infolist():
+            # NOTE: external_attr contains Unix permissions in upper 16 bits.
+            unix_mode = info.external_attr >> 16
+            if stat.S_ISLNK(unix_mode):
+                # Symlink – create manually.
+                target_path = zip_archive.read(info.filename).decode('utf-8')
+                source_path = os.path.join(extract_to, info.filename)
+
+                parent_dir = os.path.dirname(source_path)
+                if parent_dir:
+                    os.makedirs(parent_dir, exist_ok=True)
+
+                try:
+                    os.symlink(target_path, source_path)
+                except OSError as e:
+                    print(f"ERROR: Failed to create symlink {source_path} -> {target_path}: {e}")
+                    Exit(1)
+            else:
+                # Regular file or directory – extract normally.
+                zip_archive.extract(info, extract_to)
+
+
+def detect_xcode():
+    """Get the current Xcode path using xcode-select"""
+    try:
+        result = subprocess.run(['xcode-select', '--print-path'],
+                              capture_output=True, text=True, check=True)
+        xcode_path = result.stdout.strip()
+        print(f"Detected Xcode path: {xcode_path}")
+        return xcode_path
+    except Exception as e:
+        print(f"ERROR: Failed to get Xcode path: {e}")
+        Exit(1)
+
+
+def update_cocoa_framework():
+    project_root = Path(env.Dir("#").abspath)
+
+    properties_file = project_root / "modules/sentry-cocoa.properties"
+    if not properties_file.exists():
+        print(f"ERROR: Properties file not found at {properties_file}")
+        Exit(1)
+
+    cocoa_repo = get_property("repo", properties_file)
+    cocoa_version = get_property("version", properties_file)
+
+    cocoa_dir = project_root / "modules/sentry-cocoa"
+    version_file = cocoa_dir / ".version"
+
+    # Check if we need to download
+    should_download = True
+    if version_file.exists():
+        try:
+            stored_version = version_file.read_text().strip()
+            if stored_version == cocoa_version:
+                # Check if framework actually exists
+                xcframework_path = cocoa_dir / "Sentry.xcframework"
+                if xcframework_path.exists():
+                    should_download = False
+                    print(f"Detected Sentry Cocoa SDK v{cocoa_version} – up-to-date!")
+        except:
+            pass
+
+    if should_download:
+        print(f"Fetching Sentry Cocoa SDK v{cocoa_version}")
+
+        # Clean up existing framework directory
+        if cocoa_dir.exists():
+            import shutil
+            shutil.rmtree(cocoa_dir)
+
+        cocoa_dir.mkdir(parents=True, exist_ok=True)
+
+        # Download framework
+        framework_url = f"{cocoa_repo}/releases/download/{cocoa_version}/Sentry.xcframework.zip"
+        zip_path = cocoa_dir / "Sentry.xcframework.zip"
+
+        try:
+            print(f"Downloading {framework_url}")
+            urllib.request.urlretrieve(framework_url, zip_path)
+
+            print(f"Extracting {zip_path}")
+            extract_zip_with_symlinks(zip_path, cocoa_dir)
+
+            zip_path.unlink() # delete file
+            version_file.write_text(cocoa_version)
+
+            print(f"Successfully fetched Sentry.xcframework {cocoa_version}.")
+
+        except Exception as e:
+            print(f"ERROR: Failed to download Sentry framework: {e}.")
+            Exit(1)
+
+
+update_cocoa_framework()
+
+platform = env["platform"]
+
+# Configuring framework.
+if platform in ["macos", "ios"]:
+    project_root = Path(env.Dir("#").abspath)
+    xcframework_path = project_root / "modules/sentry-cocoa/Sentry.xcframework"
+
+    if not xcframework_path.exists():
+        print(f"ERROR: Sentry.xcframework is missing at {xcframework_path}.")
+        Exit(1)
+
+    env.Append(
+        LIBS=[
+            "bsm"
+        ],
+        LINKFLAGS=[
+            "-framework", "Foundation",
+        ]
+    )
+
+    if platform == "macos":
+        framework_dir = xcframework_path / "macos-arm64_arm64e_x86_64/Sentry.framework"
+        if not framework_dir.exists():
+            print(f"ERROR: Sentry.framework not found at {framework_dir}.")
+            Exit(1)
+
+        framework_container_dir = str(framework_dir.parent.absolute())
+        static_lib_path = framework_dir / "Sentry"
+
+        env.Append(
+            CPPFLAGS=["-F" + str(framework_container_dir)],
+            LINKFLAGS=[
+                str(static_lib_path),
+            ]
+        )
+
+        xcode_path = detect_xcode()
+        swift_runtime_path = f"{xcode_path}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
+
+        if not os.path.exists(swift_runtime_path):
+            print(f"ERROR: Swift runtime path not found at {swift_runtime_path}")
+            Exit(1)
+
+        swift_libs = [
+            f"{swift_runtime_path}/libswiftCompatibility50.a",
+            f"{swift_runtime_path}/libswiftCompatibility51.a",
+            f"{swift_runtime_path}/libswiftCompatibility56.a",
+            f"{swift_runtime_path}/libswiftCompatibilityConcurrency.a",
+            f"{swift_runtime_path}/libswiftCompatibilityDynamicReplacements.a",
+            f"{swift_runtime_path}/libswiftCompatibilityPacks.a"
+        ]
+
+        for lib in swift_libs:
+            if not os.path.exists(lib):
+                print(f"ERROR: Swift static library not found: {lib}")
+                Exit(1)
+
+        env.Append(
+            LINKFLAGS=[
+                "-L" + swift_runtime_path,
+                "-Wl,-search_paths_first", # ensure static libraries are preferred
+            ] + swift_libs
+        )
+
+        print(f"Added macOS Sentry framework: {framework_dir}")
+
+    elif platform == "ios":
+        framework_dir = xcframework_path / "ios-arm64_arm64e/Sentry.framework"
+        if not framework_dir.exists():
+            print(f"ERROR: Sentry.xcframework is missing at {framework_dir}.")
+            Exit(1)
+
+        framework_container_dir = str(framework_dir.parent.absolute())
+        env.Append(
+            FRAMEWORKPATH=[framework_container_dir],
+            FRAMEWORKS=["Sentry"],
+            CPPFLAGS=["-F" + framework_container_dir],
+        )
+
+        xcode_path = detect_xcode()
+        swift_runtime_path = f"{xcode_path}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos"
+
+        if not os.path.exists(swift_runtime_path):
+            print(f"ERROR: Swift runtime path not found at {swift_runtime_path}")
+            Exit(1)
+
+        # Verify Swift static libraries exist for iOS
+        swift_libs_ios = [
+            f"{swift_runtime_path}/libswiftCompatibility50.a",
+            f"{swift_runtime_path}/libswiftCompatibility51.a",
+            f"{swift_runtime_path}/libswiftCompatibility56.a",
+            f"{swift_runtime_path}/libswiftCompatibilityConcurrency.a",
+            f"{swift_runtime_path}/libswiftCompatibilityDynamicReplacements.a",
+            f"{swift_runtime_path}/libswiftCompatibilityPacks.a"
+        ]
+
+        for lib in swift_libs_ios:
+            if not os.path.exists(lib):
+                print(f"ERROR: Swift static library not found: {lib}")
+                Exit(1)
+
+        env.Append(LINKFLAGS=[
+            "-F" + framework_container_dir,
+            "-framework", "Sentry",
+            "-L" + swift_runtime_path,
+            "-Wl,-search_paths_first", # prefer static libs
+        ] + swift_libs_ios)
+
+        print(f"Added iOS Sentry framework: {framework_dir}")
+
+Return("env")
