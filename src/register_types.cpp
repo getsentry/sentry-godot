@@ -17,14 +17,18 @@
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/window.hpp>
 
-#ifdef NATIVE_SDK
+#ifdef SDK_NATIVE
 #include "sentry/native/native_event.h"
-#endif // NATIVE_SDK
+#endif // SDK_NATIVE
 
-#ifdef ANDROID_ENABLED
+#ifdef SDK_ANDROID
 #include "sentry/android/android_event.h"
 #include "sentry/android/android_sdk.h"
-#endif // ANDROID_ENABLED
+#endif // SDK_ANDROID
+
+#ifdef SDK_COCOA
+#include "sentry/cocoa/cocoa_sdk.h"
+#endif // SDK_COCOA
 
 #ifdef TOOLS_ENABLED
 #include "editor/sentry_editor_export_plugin_android.h"
@@ -52,17 +56,21 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_INTERNAL_CLASS(ViewHierarchyProcessor);
 		GDREGISTER_INTERNAL_CLASS(SentryLogger);
 
-#ifdef NATIVE_SDK
+#ifdef SDK_NATIVE
 		GDREGISTER_INTERNAL_CLASS(NativeEvent);
 #endif
 
-#ifdef ANDROID_ENABLED
+#ifdef SDK_ANDROID
 		GDREGISTER_INTERNAL_CLASS(AndroidEvent);
 
 		{
 			using namespace sentry;
 			GDREGISTER_INTERNAL_CLASS(SentryAndroidBeforeSendHandler);
 		}
+#endif
+
+#ifdef SDK_COCOA
+		// GDREGISTER_INTERNAL_CLASS(CocoaEvent);
 #endif
 
 		SentryOptions::create_singleton();

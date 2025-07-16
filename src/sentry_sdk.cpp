@@ -17,10 +17,12 @@
 #include <godot_cpp/core/mutex_lock.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
-#ifdef NATIVE_SDK
+#ifdef SDK_NATIVE
 #include "sentry/native/native_sdk.h"
-#elif ANDROID_ENABLED
+#elif SDK_ANDROID
 #include "sentry/android/android_sdk.h"
+#elif SDK_COCOA
+#include "sentry/cocoa/cocoa_sdk.h"
 #endif
 
 using namespace godot;
@@ -156,7 +158,7 @@ void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary 
 void SentrySDK::_init_contexts() {
 	sentry::util::print_debug("initializing contexts");
 
-#ifdef NATIVE_SDK
+#ifdef SDK_NATIVE
 	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
 	internal_sdk->set_context("app", sentry::contexts::make_app_context());
 #endif
@@ -204,10 +206,10 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 void SentrySDK::_initialize() {
 	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
-#ifdef NATIVE_SDK
+#ifdef SDK_NATIVE
 	internal_sdk = std::make_shared<NativeSDK>();
 	enabled = true;
-#elif ANDROID_ENABLED
+#elif SDK_ANDROID
 	if (unlikely(OS::get_singleton()->has_feature("editor"))) {
 		sentry::util::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
 		enabled = false;
