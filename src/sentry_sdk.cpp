@@ -234,16 +234,6 @@ void SentrySDK::_initialize() {
 		return;
 	}
 
-	// Initialize user if it wasn't set explicitly in the configuration script.
-	if (user.is_null()) {
-		user.instantiate();
-		user->set_id(runtime_config->get_installation_id());
-		if (SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
-			user->infer_ip_address();
-		}
-	}
-	set_user(user);
-
 	// Add event processors
 	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
 		SentryOptions::get_singleton()->add_event_processor(memnew(ScreenshotProcessor));
@@ -334,6 +324,16 @@ SentrySDK::SentrySDK() {
 	// Load the runtime configuration from the user's data directory.
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
+
+	// Initialize user if it wasn't set explicitly in the configuration script.
+	if (user.is_null()) {
+		user.instantiate();
+		user->set_id(runtime_config->get_installation_id());
+		if (SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
+			user->infer_ip_address();
+		}
+	}
+	set_user(user);
 
 	// Verify project settings and notify user via errors if there are any issues (deferred).
 	callable_mp_static(_verify_project_settings).call_deferred();
