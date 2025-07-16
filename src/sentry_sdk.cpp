@@ -279,7 +279,6 @@ void SentrySDK::notify_options_configured() {
 	sentry::util::print_debug("finished configuring options via user script");
 	configuration_succeeded = true;
 	_initialize();
-	SentrySDK::_init_contexts();
 }
 
 void SentrySDK::_notification(int p_what) {
