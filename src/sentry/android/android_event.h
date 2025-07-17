@@ -1,7 +1,7 @@
 #ifndef SENTRY_ANDROID_EVENT_H
 #define SENTRY_ANDROID_EVENT_H
 
-#include "sentry_event.h"
+#include "sentry/sentry_event.h"
 
 using namespace godot;
 

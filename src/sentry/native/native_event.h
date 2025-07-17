@@ -1,7 +1,7 @@
 #ifndef NATIVE_EVENT_H
 #define NATIVE_EVENT_H
 
-#include "sentry_event.h"
+#include "sentry/sentry_event.h"
 
 #include <sentry.h>
 

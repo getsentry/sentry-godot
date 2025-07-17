@@ -4,10 +4,10 @@
 #include "runtime_config.h"
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
-#include "sentry_attachment.h"
-#include "sentry_event.h"
-#include "sentry_logger.h"
-#include "sentry_options.h"
+#include "sentry/sentry_attachment.h"
+#include "sentry/sentry_event.h"
+#include "sentry/sentry_logger.h"
+#include "sentry/sentry_options.h"
 
 #include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/core/object.hpp>

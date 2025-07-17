@@ -1,8 +1,8 @@
 #include "sentry_logger.h"
 
+#include "sentry/sentry_options.h"
+#include "sentry/sentry_sdk.h"
 #include "sentry/util/print.h"
-#include "sentry_options.h"
-#include "sentry_sdk.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>

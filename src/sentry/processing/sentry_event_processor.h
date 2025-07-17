@@ -1,7 +1,7 @@
 #ifndef SENTRY_EVENT_PROCESSOR_H
 #define SENTRY_EVENT_PROCESSOR_H
 
-#include "sentry_event.h"
+#include "sentry/sentry_event.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
 

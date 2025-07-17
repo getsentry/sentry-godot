@@ -1,7 +1,7 @@
 #ifndef SCREENSHOT_EVENT_PROCESSOR_H
 #define SCREENSHOT_EVENT_PROCESSOR_H
 
-#include "sentry_event_processor.h"
+#include "sentry/processing/sentry_event_processor.h"
 
 #include <mutex>
 

@@ -1,7 +1,7 @@
 #ifndef DISABLED_EVENT_H
 #define DISABLED_EVENT_H
 
-#include "sentry_event.h"
+#include "sentry/sentry_event.h"
 
 // Event class that is used when the SDK is disabled.
 class DisabledEvent : public SentryEvent {

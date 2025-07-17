@@ -6,8 +6,9 @@
 #include "sentry/disabled_sdk.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
+#include "sentry/sentry_attachment.h"
+#include "sentry/sentry_options.h"
 #include "sentry/util/print.h"
-#include "sentry_attachment.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/engine.hpp>
