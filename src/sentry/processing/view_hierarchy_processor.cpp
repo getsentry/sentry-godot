@@ -1,8 +1,8 @@
 #include "view_hierarchy_processor.h"
 
 #include "sentry/common_defs.h"
+#include "sentry/processing/view_hierarchy.h"
 #include "sentry/util/print.h"
-#include "sentry/view_hierarchy.h" // TODO: incorporate
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/file_access.hpp>

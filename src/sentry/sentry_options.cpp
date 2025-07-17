@@ -1,7 +1,6 @@
 #include "sentry_options.h"
 
 #include "sentry/environment.h"
-#include "sentry/simple_bind.h"
 #include "sentry_sdk.h" // for SentrySDK::Level variant casts
 
 #include <godot_cpp/classes/os.hpp>

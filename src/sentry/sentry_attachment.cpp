@@ -1,6 +1,6 @@
 #include "sentry_attachment.h"
 
-#include "sentry/simple_bind.h"
+#include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/core/class_db.hpp>
 
