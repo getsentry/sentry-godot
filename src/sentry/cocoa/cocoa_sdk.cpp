@@ -2,8 +2,8 @@
 
 #include "sentry/common_defs.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/sentry_attachment.h"
 #include "sentry/util/print.h"
-#include "sentry_attachment.h"
 #include "sentry_objc_wrapper.h"
 
 #include <godot_cpp/classes/engine.hpp>
