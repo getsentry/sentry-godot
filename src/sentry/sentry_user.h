@@ -6,6 +6,8 @@
 
 using namespace godot;
 
+namespace sentry {
+
 class SentryUser : public RefCounted {
 	GDCLASS(SentryUser, RefCounted);
 
@@ -41,5 +43,7 @@ public:
 
 	Ref<SentryUser> duplicate();
 };
+
+} // namespace sentry
 
 #endif // SENTRY_USER_H

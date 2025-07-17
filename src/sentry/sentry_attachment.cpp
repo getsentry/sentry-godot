@@ -1,8 +1,10 @@
 #include "sentry_attachment.h"
 
-#include "sentry/simple_bind.h"
+#include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/core/class_db.hpp>
+
+namespace sentry {
 
 Ref<SentryAttachment> SentryAttachment::create_with_path(const String &p_path) {
 	ERR_FAIL_COND_V_MSG(p_path.is_empty(), Ref<SentryAttachment>(), "Sentry: Can't create attachment with an empty file path.");
@@ -30,3 +32,5 @@ void SentryAttachment::_bind_methods() {
 	BIND_PROPERTY(SentryAttachment, PropertyInfo(Variant::STRING, "filename"), set_filename, get_filename);
 	BIND_PROPERTY(SentryAttachment, PropertyInfo(Variant::STRING, "content_type"), set_content_type, get_content_type);
 }
+
+} // namespace sentry

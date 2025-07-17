@@ -1,9 +1,9 @@
 #include "process_event.h"
 
 #include "sentry/contexts.h"
+#include "sentry/processing/sentry_event_processor.h"
+#include "sentry/sentry_options.h"
 #include "sentry/util/print.h"
-#include "sentry_event_processor.h"
-#include "sentry_options.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>

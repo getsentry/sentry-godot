@@ -11,6 +11,8 @@
 
 using namespace godot;
 
+namespace sentry {
+
 // Represents attachments in the public API.
 class SentryAttachment : public RefCounted {
 	GDCLASS(SentryAttachment, RefCounted);
@@ -51,5 +53,7 @@ public:
 
 	~SentryAttachment() = default;
 };
+
+} // namespace sentry
 
 #endif // SENTRY_ATTACHMENT_H

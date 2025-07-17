@@ -1,8 +1,10 @@
 #include "sentry_event.h"
 
-#include "sentry_sdk.h" // Needed for VariantCaster<SentrySDK::Level>
+#include "sentry/sentry_sdk.h" // Needed for VariantCaster<SentrySDK::Level>
 
 #include <godot_cpp/classes/global_constants.hpp>
+
+namespace sentry {
 
 void SentryEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id"), &SentryEvent::get_id);
@@ -36,3 +38,5 @@ void SentryEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dist"), "set_dist", "get_dist");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "environment"), "set_environment", "get_environment");
 }
+
+} // namespace sentry

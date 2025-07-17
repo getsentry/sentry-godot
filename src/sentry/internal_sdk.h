@@ -2,13 +2,12 @@
 #define INTERNAL_SDK_H
 
 #include "sentry/level.h"
-#include "sentry_event.h"
-#include "sentry_user.h"
+#include "sentry/sentry_attachment.h"
+#include "sentry/sentry_event.h"
+#include "sentry/sentry_user.h"
 
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
-
-class SentryAttachment;
 
 using namespace godot;
 

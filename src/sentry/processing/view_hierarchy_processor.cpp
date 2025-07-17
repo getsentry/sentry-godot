@@ -1,13 +1,15 @@
 #include "view_hierarchy_processor.h"
 
 #include "sentry/common_defs.h"
+#include "sentry/processing/view_hierarchy.h"
 #include "sentry/util/print.h"
-#include "sentry/view_hierarchy.h" // TODO: incorporate
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/time.hpp>
+
+namespace sentry {
 
 Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p_event) {
 #ifdef DEBUG_ENABLED
@@ -39,3 +41,5 @@ Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p
 
 	return p_event;
 }
+
+} // namespace sentry

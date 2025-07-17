@@ -1,12 +1,14 @@
 #ifndef SENTRY_CONFIGURATION_H
 #define SENTRY_CONFIGURATION_H
 
-#include "sentry_options.h"
+#include "sentry/sentry_options.h"
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/gdvirtual.gen.inc>
 
 using namespace godot;
+
+namespace sentry {
 
 class SentryConfiguration : public Node {
 	GDCLASS(SentryConfiguration, Node);
@@ -22,5 +24,7 @@ protected:
 public:
 	SentryConfiguration() {}
 };
+
+} // namespace sentry
 
 #endif // SENTRY_CONFIGURATION_H

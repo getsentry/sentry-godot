@@ -48,6 +48,8 @@ void sentry_event_merge_context(sentry_value_t p_event, const char *p_context_na
 
 } // unnamed namespace
 
+namespace sentry {
+
 String NativeEvent::get_id() const {
 	sentry_value_t id = sentry_value_get_by_key(native_event, "event_id");
 	return sentry_value_as_string(id);
@@ -230,3 +232,5 @@ NativeEvent::NativeEvent() {
 NativeEvent::~NativeEvent() {
 	sentry_value_decref(native_event); // release ownership
 }
+
+} // namespace sentry

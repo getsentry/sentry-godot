@@ -1,7 +1,9 @@
 #ifndef DISABLED_EVENT_H
 #define DISABLED_EVENT_H
 
-#include "sentry_event.h"
+#include "sentry/sentry_event.h"
+
+namespace sentry {
 
 // Event class that is used when the SDK is disabled.
 class DisabledEvent : public SentryEvent {
@@ -55,5 +57,7 @@ public:
 
 	virtual bool is_crash() const override { return false; }
 };
+
+} // namespace sentry
 
 #endif // DISABLED_EVENT_H

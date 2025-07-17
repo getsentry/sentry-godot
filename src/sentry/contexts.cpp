@@ -2,8 +2,8 @@
 
 #include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
+#include "sentry/sentry_options.h"
 #include "sentry/uuid.h"
-#include "sentry_options.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>

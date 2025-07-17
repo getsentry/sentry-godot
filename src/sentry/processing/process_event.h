@@ -1,7 +1,7 @@
 #ifndef SENTRY_PROCESS_EVENT_H
 #define SENTRY_PROCESS_EVENT_H
 
-#include "sentry_event.h"
+#include "sentry/sentry_event.h"
 
 namespace sentry {
 

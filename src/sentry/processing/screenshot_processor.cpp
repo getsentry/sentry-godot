@@ -1,15 +1,17 @@
 #include "screenshot_processor.h"
 
 #include "sentry/common_defs.h"
+#include "sentry/sentry_options.h"
 #include "sentry/util/print.h"
 #include "sentry/util/screenshot.h" // TODO: incorporate
-#include "sentry_options.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
+
+namespace sentry {
 
 Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_event) {
 	if (p_event.is_null()) {
@@ -80,3 +82,5 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 ScreenshotProcessor::ScreenshotProcessor() {
 	screenshot_path = "user://" SENTRY_SCREENSHOT_FN;
 }
+
+} // namespace sentry
