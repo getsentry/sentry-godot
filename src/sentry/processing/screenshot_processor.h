@@ -5,6 +5,8 @@
 
 #include <mutex>
 
+namespace sentry {
+
 // Event processor for capturing in-engine screenshots.
 class ScreenshotProcessor : public SentryEventProcessor {
 	GDCLASS(ScreenshotProcessor, SentryEventProcessor);
@@ -22,5 +24,7 @@ public:
 
 	ScreenshotProcessor();
 };
+
+} // namespace sentry
 
 #endif // SCREENSHOT_EVENT_PROCESSOR_H

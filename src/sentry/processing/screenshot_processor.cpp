@@ -11,6 +11,8 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 
+namespace sentry {
+
 Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_event) {
 	if (p_event.is_null()) {
 		sentry::util::print_error("internal error: can't process null event");
@@ -80,3 +82,5 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 ScreenshotProcessor::ScreenshotProcessor() {
 	screenshot_path = "user://" SENTRY_SCREENSHOT_FN;
 }
+
+} // namespace sentry

@@ -3,6 +3,8 @@
 
 #include "sentry/processing/sentry_event_processor.h"
 
+namespace sentry {
+
 // Event processor for capturing the view hierarchy (aka scene tree state).
 class ViewHierarchyProcessor : public SentryEventProcessor {
 	GDCLASS(ViewHierarchyProcessor, SentryEventProcessor);
@@ -13,5 +15,7 @@ protected:
 public:
 	virtual Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) override;
 };
+
+} // namespace sentry
 
 #endif // VIEW_HIERARCHY_PROCESSOR_H

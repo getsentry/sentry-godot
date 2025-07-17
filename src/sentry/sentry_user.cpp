@@ -4,6 +4,8 @@
 
 #include <godot_cpp/variant/packed_string_array.hpp>
 
+namespace sentry {
+
 bool SentryUser::is_empty() const {
 	return id.is_empty() && username.is_empty() && email.is_empty() && ip_address.is_empty();
 }
@@ -61,3 +63,5 @@ void SentryUser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_new_id"), &SentryUser::generate_new_id);
 	ClassDB::bind_method(D_METHOD("duplicate"), &SentryUser::duplicate);
 }
+
+} // namespace sentry

@@ -83,6 +83,8 @@ void _fix_unix_executable_permissions(const String &p_path) {
 
 } // unnamed namespace
 
+namespace sentry {
+
 SentrySDK *SentrySDK::singleton = nullptr;
 
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
@@ -388,3 +390,5 @@ SentrySDK::SentrySDK() {
 SentrySDK::~SentrySDK() {
 	singleton = nullptr;
 }
+
+} // namespace sentry

@@ -3,6 +3,8 @@
 
 #include "sentry/sentry_event.h"
 
+namespace sentry {
+
 // Event class that is used when the SDK is disabled.
 class DisabledEvent : public SentryEvent {
 	GDCLASS(DisabledEvent, SentryEvent);
@@ -55,5 +57,7 @@ public:
 
 	virtual bool is_crash() const override { return false; }
 };
+
+} // namespace sentry
 
 #endif // DISABLED_EVENT_H

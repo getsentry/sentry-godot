@@ -15,6 +15,8 @@
 
 using namespace godot;
 
+namespace sentry {
+
 // Entry point for Sentry SDK users.
 // This singleton class exposes the public API of the Sentry SDK for the Godot Engine.
 class SentrySDK : public Object {
@@ -88,6 +90,8 @@ public:
 	~SentrySDK();
 };
 
-VARIANT_ENUM_CAST(SentrySDK::Level);
+} // namespace sentry
+
+VARIANT_ENUM_CAST(sentry::SentrySDK::Level);
 
 #endif // SENTRY_SINGLETON_H

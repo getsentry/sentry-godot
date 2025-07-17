@@ -11,6 +11,8 @@
 
 using namespace godot;
 
+namespace sentry {
+
 class SentryLoggerLimits : public RefCounted {
 	GDCLASS(SentryLoggerLimits, RefCounted);
 
@@ -171,6 +173,8 @@ public:
 	~SentryOptions();
 };
 
-VARIANT_BITFIELD_CAST(SentryOptions::GodotErrorMask);
+} // namespace sentry
+
+VARIANT_BITFIELD_CAST(sentry::SentryOptions::GodotErrorMask);
 
 #endif // SENTRY_OPTIONS_H

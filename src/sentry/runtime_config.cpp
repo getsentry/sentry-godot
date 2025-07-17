@@ -10,6 +10,8 @@ inline String _ensure_string(const Variant &p_value, const String &p_fallback) {
 
 } // unnamed namespace
 
+namespace sentry {
+
 void RuntimeConfig::set_installation_id(const String &p_id) {
 	ERR_FAIL_COND(p_id.length() == 0);
 
@@ -33,3 +35,5 @@ void RuntimeConfig::load_file(const String &p_conf_path) {
 RuntimeConfig::RuntimeConfig() {
 	conf.instantiate();
 }
+
+} // namespace sentry

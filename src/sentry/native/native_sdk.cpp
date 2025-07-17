@@ -18,6 +18,8 @@
 
 namespace {
 
+using NativeEvent = sentry::NativeEvent;
+
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, false));
 	Ref<NativeEvent> processed = sentry::process_event(event_obj);

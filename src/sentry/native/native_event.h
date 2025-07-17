@@ -5,6 +5,8 @@
 
 #include <sentry.h>
 
+namespace sentry {
+
 // Event class that is used with the NativeSDK.
 class NativeEvent : public SentryEvent {
 	GDCLASS(NativeEvent, SentryEvent);
@@ -58,5 +60,7 @@ public:
 	NativeEvent();
 	virtual ~NativeEvent() override;
 };
+
+} // namespace sentry
 
 #endif // NATIVE_EVENT_H

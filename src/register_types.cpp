@@ -33,6 +33,7 @@
 #endif // TOOLS_ENABLED
 
 using namespace godot;
+using namespace sentry;
 
 void initialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
@@ -58,11 +59,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 
 #ifdef ANDROID_ENABLED
 		GDREGISTER_INTERNAL_CLASS(AndroidEvent);
-
-		{
-			using namespace sentry;
-			GDREGISTER_INTERNAL_CLASS(SentryAndroidBeforeSendHandler);
-		}
+		GDREGISTER_INTERNAL_CLASS(SentryAndroidBeforeSendHandler);
 #endif
 
 		SentryOptions::create_singleton();

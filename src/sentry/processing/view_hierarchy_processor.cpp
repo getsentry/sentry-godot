@@ -9,6 +9,8 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/time.hpp>
 
+namespace sentry {
+
 Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p_event) {
 #ifdef DEBUG_ENABLED
 	uint64_t start = Time::get_singleton()->get_ticks_usec();
@@ -39,3 +41,5 @@ Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p
 
 	return p_event;
 }
+
+} // namespace sentry

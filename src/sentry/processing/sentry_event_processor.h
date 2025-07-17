@@ -7,6 +7,8 @@
 
 using namespace godot;
 
+namespace sentry {
+
 // Base class for processing Sentry events before they are sent to the server.
 // Implementations can modify, or discard events by returning null.
 class SentryEventProcessor : public RefCounted {
@@ -21,5 +23,7 @@ public:
 
 	virtual ~SentryEventProcessor() = default;
 };
+
+} // namespace sentry
 
 #endif // SENTRY_EVENT_PROCESSOR_H

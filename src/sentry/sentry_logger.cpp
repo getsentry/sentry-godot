@@ -11,6 +11,9 @@
 
 namespace {
 
+using SentryEvent = sentry::SentryEvent;
+using SentryOptions = sentry::SentryOptions;
+
 // Error enum values as strings
 const char *error_type_as_string[] = {
 	"ERROR",
@@ -140,6 +143,8 @@ Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
 }
 
 } // unnamed namespace
+
+namespace sentry {
 
 void SentryLogger::_process_frame() {
 	// NOTE: It's important not to push errors from within this function to avoid deadlocks.
@@ -312,3 +317,5 @@ SentryLogger::~SentryLogger() {
 		scene_tree->disconnect("process_frame", callable);
 	}
 }
+
+} // namespace sentry
