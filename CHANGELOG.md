@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Check options.enabled during SDK initialization ([#250](https://github.com/getsentry/sentry-godot/pull/250))
+
 ## 1.0.0-alpha.0
 
 ### Breaking changes
