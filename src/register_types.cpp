@@ -1,6 +1,6 @@
 #include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_plugin.h"
-#include "sentry/disabled_event.h"
+#include "sentry/disabled/disabled_event.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/sentry_event_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"

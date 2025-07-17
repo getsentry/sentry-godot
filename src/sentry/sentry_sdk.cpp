@@ -3,7 +3,7 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/common_defs.h"
 #include "sentry/contexts.h"
-#include "sentry/disabled_sdk.h"
+#include "sentry/disabled/disabled_sdk.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/sentry_attachment.h"
