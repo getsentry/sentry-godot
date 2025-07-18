@@ -109,12 +109,15 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 }
 
 void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
-	String dsn = SentryOptions::get_singleton()->get_dsn();
-	bool debug_enabled = SentryOptions::get_singleton()->is_debug_enabled();
-
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
-		options.dsn = string_to_objc(dsn);
-		options.debug = debug_enabled;
+		options.dsn = string_to_objc(SentryOptions::get_singleton()->get_dsn());
+		options.debug = SentryOptions::get_singleton()->is_debug_enabled();
+		options.releaseName = string_to_objc(SentryOptions::get_singleton()->get_release());
+		options.dist = string_to_objc(SentryOptions::get_singleton()->get_dist());
+		options.environment = string_to_objc(SentryOptions::get_singleton()->get_environment());
+		options.sampleRate = double_to_objc(SentryOptions::get_singleton()->get_sample_rate());
+		options.maxBreadcrumbs = (NSUInteger)SentryOptions::get_singleton()->get_max_breadcrumbs();
+		// TODO: how to set sdk name?
 	}];
 
 	initialized = true;
