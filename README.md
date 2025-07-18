@@ -3,7 +3,9 @@
 This SDK is actively evolving and may still be incomplete. It is developed as a C++ GDExtension library, building on top of existing Sentry SDKs, such as [sentry-native](https://github.com/getsentry/sentry-native). We are also considering adding support for compilation as a [custom module](https://docs.godotengine.org/en/stable/contributing/development/core_and_modules/custom_modules_in_cpp.html). [Let us know](https://github.com/getsentry/sentry-godot/discussions) what you think!
 
 > [!IMPORTANT]
-> Minimum Godot Engine version: **4.4** or higher
+> Minimum Godot Engine version: **4.3** or higher.
+>
+> For version 1.0.0 and all pre-release versions, Godot **4.5** is required.
 
 ## Getting started
 
