@@ -5,7 +5,7 @@
 
 using namespace godot;
 
-namespace sentry {
+namespace sentry::cocoa {
 
 // Internal SDK utilizing Sentry Cocoa.
 class CocoaSDK : public InternalSDK {
@@ -38,6 +38,6 @@ public:
 	virtual ~CocoaSDK() override;
 };
 
-} //namespace sentry
+} //namespace sentry::cocoa
 
 #endif // COCOA_SDK_H

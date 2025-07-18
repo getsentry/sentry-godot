@@ -227,7 +227,7 @@ void SentrySDK::_initialize() {
 		}
 	}
 #elif SDK_COCOA
-	internal_sdk = std::make_shared<CocoaSDK>();
+	internal_sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
 	enabled = true;
 #else
 	// Unsupported platform

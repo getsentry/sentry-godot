@@ -12,7 +12,7 @@
 
 using namespace godot;
 
-namespace sentry {
+namespace sentry::cocoa {
 
 void CocoaSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
@@ -140,4 +140,4 @@ CocoaSDK::~CocoaSDK() {
 	}
 }
 
-} // namespace sentry
+} //namespace sentry::cocoa
