@@ -81,15 +81,12 @@ void CocoaSDK::add_breadcrumb(const String &p_message, const String &p_category,
 }
 
 String CocoaSDK::capture_message(const String &p_message, Level p_level) {
-	objc::SentryId *event_id = [objc::SentrySDK captureMessage:[NSString stringWithUTF8String:p_message.utf8()]
+	objc::SentryId *event_id = [objc::SentrySDK captureMessage:string_to_objc(p_message)
 												withScopeBlock:^(objc::SentryScope *scope) {
 													scope.level = sentry_level_to_objc(p_level);
 												}];
 
-	if (event_id) {
-		return string_from_objc([event_id description]);
-	}
-	return "";
+	return event_id ? string_from_objc([event_id description]) : String();
 }
 
 String CocoaSDK::get_last_event_id() {
