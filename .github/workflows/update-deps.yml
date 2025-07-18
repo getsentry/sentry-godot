@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # needed to add commits to branches
   pull-requests: write
   actions: write # needed for cancelling workflow runs
 

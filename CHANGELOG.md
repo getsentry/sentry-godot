@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
+## 1.0.0-alpha.1
 
 ### Fixes
 
 - Check options.enabled during SDK initialization ([#250](https://github.com/getsentry/sentry-godot/pull/250))
+- Fix crashing when SDK is disabled via options ([#253](https://github.com/getsentry/sentry-godot/pull/253))
 
 ## 1.0.0-alpha.0
 
