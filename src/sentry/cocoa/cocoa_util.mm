@@ -18,17 +18,6 @@ NSObject *variant_to_objc(const godot::Variant &p_value) {
 		case Variant::FLOAT: {
 			return [NSNumber numberWithDouble:(double)p_value];
 		}
-		case Variant::ARRAY: {
-			Array arr = p_value;
-			NSMutableArray *objc_array = [[NSMutableArray alloc] init];
-
-			for (int i = 0; i < arr.size(); i++) {
-				const NSObject *objc_value = variant_to_objc(arr[i]);
-				[objc_array addObject:objc_value];
-			}
-
-			return objc_array;
-		}
 		case Variant::DICTIONARY: {
 			Dictionary dict = p_value;
 			NSMutableDictionary *objc_dict = [[NSMutableDictionary alloc] init];
@@ -42,6 +31,31 @@ NSObject *variant_to_objc(const godot::Variant &p_value) {
 			}
 
 			return objc_dict;
+		}
+		case Variant::ARRAY:
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+		case Variant::PACKED_STRING_ARRAY:
+		case Variant::PACKED_VECTOR2_ARRAY:
+		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			NSMutableArray *objc_array = [[NSMutableArray alloc] init];
+			bool oob = false;
+			bool valid = true;
+			int i = 0;
+
+			do {
+				Variant item = p_value.get_indexed(i++, valid, oob);
+				if (valid) {
+					[objc_array addObject:variant_to_objc(item)];
+				}
+			} while (!oob);
+
+			return objc_array;
 		}
 		default: {
 			return [NSString stringWithUTF8String:String(p_value).utf8()];
