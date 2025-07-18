@@ -15,41 +15,30 @@ using namespace godot;
 namespace sentry::cocoa {
 
 void CocoaSDK::set_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND(p_key.is_empty());
 	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
-		NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-
-		Array keys = p_value.keys();
-		for (int i = 0; i < keys.size(); i++) {
-			Variant k = keys[i];
-			Variant v = p_value[k];
-
-			NSString *keyStr = [NSString stringWithUTF8String:k.stringify().utf8()];
-			// TODO: value has to be properly typed!
-			NSString *valueStr = [NSString stringWithUTF8String:v.stringify().utf8()];
-
-			[dict setObject:valueStr forKey:keyStr];
-		}
-
-		[scope setContextValue:dict forKey:[NSString stringWithUTF8String:p_key.utf8()]];
+		[scope setContextValue:dictionary_to_objc(p_value) forKey:string_to_objc(p_key)];
 	}];
 }
 
 void CocoaSDK::remove_context(const String &p_key) {
+	ERR_FAIL_COND(p_key.is_empty());
 	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
-		[scope removeContextForKey:[NSString stringWithUTF8String:p_key.utf8()]];
+		[scope removeContextForKey:string_to_objc(p_key)];
 	}];
 }
 
 void CocoaSDK::set_tag(const String &p_key, const String &p_value) {
+	ERR_FAIL_COND(p_key.is_empty());
 	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
-		[scope setTagValue:[NSString stringWithUTF8String:p_value.utf8()]
-					forKey:[NSString stringWithUTF8String:p_key.utf8()]];
+		[scope setTagValue:string_to_objc(p_value) forKey:string_to_objc(p_key)];
 	}];
 }
 
 void CocoaSDK::remove_tag(const String &p_key) {
+	ERR_FAIL_COND(p_key.is_empty());
 	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
-		[scope removeTagForKey:[NSString stringWithUTF8String:p_key.utf8()]];
+		[scope removeTagForKey:string_to_objc(p_key)];
 	}];
 }
 
@@ -58,16 +47,16 @@ void CocoaSDK::set_user(const Ref<SentryUser> &p_user) {
 		objc::SentryUser *user = [[objc::SentryUser alloc] init];
 
 		if (!p_user->get_id().is_empty()) {
-			user.userId = [NSString stringWithUTF8String:p_user->get_id().utf8()];
+			user.userId = string_to_objc(p_user->get_id());
 		}
 		if (!p_user->get_username().is_empty()) {
-			user.username = [NSString stringWithUTF8String:p_user->get_username().utf8()];
+			user.username = string_to_objc(p_user->get_username());
 		}
 		if (!p_user->get_email().is_empty()) {
-			user.email = [NSString stringWithUTF8String:p_user->get_email().utf8()];
+			user.email = string_to_objc(p_user->get_email());
 		}
 		if (!p_user->get_ip_address().is_empty()) {
-			user.ipAddress = [NSString stringWithUTF8String:p_user->get_ip_address().utf8()];
+			user.ipAddress = string_to_objc(p_user->get_ip_address());
 		}
 
 		[objc::SentrySDK setUser:user];
@@ -83,10 +72,10 @@ void CocoaSDK::remove_user() {
 void CocoaSDK::add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
 		const String &p_type, const Dictionary &p_data) {
 	objc::SentryBreadcrumb *breadcrumb = [[objc::SentryBreadcrumb alloc] init];
-	breadcrumb.message = [NSString stringWithUTF8String:p_message.utf8()];
-	breadcrumb.category = [NSString stringWithUTF8String:p_category.utf8()];
-	breadcrumb.type = [NSString stringWithUTF8String:p_type.utf8()];
-	breadcrumb.level = sentry::cocoa::sentry_level_to_objc(p_level);
+	breadcrumb.message = string_to_objc(p_message);
+	breadcrumb.category = string_to_objc(p_category);
+	breadcrumb.type = string_to_objc(p_type);
+	breadcrumb.level = sentry_level_to_objc(p_level);
 
 	[objc::SentrySDK addBreadcrumb:breadcrumb];
 }
@@ -94,11 +83,11 @@ void CocoaSDK::add_breadcrumb(const String &p_message, const String &p_category,
 String CocoaSDK::capture_message(const String &p_message, Level p_level) {
 	objc::SentryId *event_id = [objc::SentrySDK captureMessage:[NSString stringWithUTF8String:p_message.utf8()]
 												withScopeBlock:^(objc::SentryScope *scope) {
-													scope.level = sentry::cocoa::sentry_level_to_objc(p_level);
+													scope.level = sentry_level_to_objc(p_level);
 												}];
 
 	if (event_id) {
-		return String([[event_id description] UTF8String]);
+		return string_from_objc([event_id description]);
 	}
 	return "";
 }
@@ -127,7 +116,7 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 	bool debug_enabled = SentryOptions::get_singleton()->is_debug_enabled();
 
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
-		options.dsn = [NSString stringWithUTF8String:dsn.utf8()];
+		options.dsn = string_to_objc(dsn);
 		options.debug = debug_enabled;
 	}];
 
