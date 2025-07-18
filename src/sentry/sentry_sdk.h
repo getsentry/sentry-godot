@@ -4,16 +4,18 @@
 #include "runtime_config.h"
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
-#include "sentry_attachment.h"
-#include "sentry_event.h"
-#include "sentry_logger.h"
-#include "sentry_options.h"
+#include "sentry/sentry_attachment.h"
+#include "sentry/sentry_event.h"
+#include "sentry/sentry_logger.h"
+#include "sentry/sentry_options.h"
 
 #include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/core/object.hpp>
 #include <memory>
 
 using namespace godot;
+
+namespace sentry {
 
 // Entry point for Sentry SDK users.
 // This singleton class exposes the public API of the Sentry SDK for the Godot Engine.
@@ -88,6 +90,8 @@ public:
 	~SentrySDK();
 };
 
-VARIANT_ENUM_CAST(SentrySDK::Level);
+} // namespace sentry
+
+VARIANT_ENUM_CAST(sentry::SentrySDK::Level);
 
 #endif // SENTRY_SINGLETON_H

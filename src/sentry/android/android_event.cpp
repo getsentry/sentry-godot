@@ -3,6 +3,8 @@
 #include "android_string_names.h"
 #include "sentry/util/timestamp.h"
 
+namespace sentry {
+
 String AndroidEvent::get_id() const {
 	ERR_FAIL_NULL_V(android_plugin, String());
 	return android_plugin->call(ANDROID_SN(eventGetId), event_handle);
@@ -146,3 +148,5 @@ AndroidEvent::~AndroidEvent() {
 		android_plugin->call(ANDROID_SN(releaseEvent), event_handle);
 	}
 }
+
+} // namespace sentry

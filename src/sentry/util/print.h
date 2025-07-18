@@ -2,7 +2,7 @@
 #define SENTRY_PRINT_H
 
 #include "sentry/level.h"
-#include "sentry_options.h"
+#include "sentry/sentry_options.h"
 
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>

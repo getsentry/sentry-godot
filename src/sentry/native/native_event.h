@@ -1,9 +1,11 @@
 #ifndef NATIVE_EVENT_H
 #define NATIVE_EVENT_H
 
-#include "sentry_event.h"
+#include "sentry/sentry_event.h"
 
 #include <sentry.h>
+
+namespace sentry {
 
 // Event class that is used with the NativeSDK.
 class NativeEvent : public SentryEvent {
@@ -58,5 +60,7 @@ public:
 	NativeEvent();
 	virtual ~NativeEvent() override;
 };
+
+} // namespace sentry
 
 #endif // NATIVE_EVENT_H

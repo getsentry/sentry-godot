@@ -3,11 +3,12 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/common_defs.h"
 #include "sentry/contexts.h"
-#include "sentry/disabled_sdk.h"
+#include "sentry/disabled/disabled_sdk.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
+#include "sentry/sentry_attachment.h"
+#include "sentry/sentry_options.h"
 #include "sentry/util/print.h"
-#include "sentry_attachment.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/engine.hpp>
@@ -81,6 +82,8 @@ void _fix_unix_executable_permissions(const String &p_path) {
 }
 
 } // unnamed namespace
+
+namespace sentry {
 
 SentrySDK *SentrySDK::singleton = nullptr;
 
@@ -393,3 +396,5 @@ SentrySDK::SentrySDK() {
 SentrySDK::~SentrySDK() {
 	singleton = nullptr;
 }
+
+} // namespace sentry

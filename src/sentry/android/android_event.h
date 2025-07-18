@@ -1,9 +1,11 @@
 #ifndef SENTRY_ANDROID_EVENT_H
 #define SENTRY_ANDROID_EVENT_H
 
-#include "sentry_event.h"
+#include "sentry/sentry_event.h"
 
 using namespace godot;
+
+namespace sentry {
 
 // Event class that is used with the AndroidSDK.
 class AndroidEvent : public SentryEvent {
@@ -61,5 +63,7 @@ public:
 	AndroidEvent(Object *android_plugin, int32_t p_event_handle);
 	virtual ~AndroidEvent() override;
 };
+
+} // namespace sentry
 
 #endif // SENTRY_ANDROID_EVENT_H

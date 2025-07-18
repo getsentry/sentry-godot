@@ -6,10 +6,10 @@
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_util.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/sentry_attachment.h"
+#include "sentry/sentry_options.h"
 #include "sentry/util/print.h"
 #include "sentry/util/screenshot.h"
-#include "sentry_attachment.h"
-#include "sentry_options.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
@@ -17,6 +17,8 @@
 #include <godot_cpp/classes/project_settings.hpp>
 
 namespace {
+
+using NativeEvent = sentry::NativeEvent;
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, false));

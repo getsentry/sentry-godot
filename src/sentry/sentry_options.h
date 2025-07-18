@@ -3,13 +3,15 @@
 
 #include "sentry/godot_error_types.h"
 #include "sentry/level.h"
-#include "sentry/simple_bind.h"
-#include "sentry_event_processor.h"
+#include "sentry/processing/sentry_event_processor.h"
+#include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
 using namespace godot;
+
+namespace sentry {
 
 class SentryLoggerLimits : public RefCounted {
 	GDCLASS(SentryLoggerLimits, RefCounted);
@@ -171,6 +173,8 @@ public:
 	~SentryOptions();
 };
 
-VARIANT_BITFIELD_CAST(SentryOptions::GodotErrorMask);
+} // namespace sentry
+
+VARIANT_BITFIELD_CAST(sentry::SentryOptions::GodotErrorMask);
 
 #endif // SENTRY_OPTIONS_H

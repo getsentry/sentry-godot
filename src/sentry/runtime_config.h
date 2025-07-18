@@ -1,13 +1,13 @@
 #ifndef RUNTIME_CONFIG_H
 #define RUNTIME_CONFIG_H
 
-#include "sentry_user.h"
-
 #include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 using namespace godot;
+
+namespace sentry {
 
 class RuntimeConfig : public RefCounted {
 	GDCLASS(RuntimeConfig, RefCounted)
@@ -29,5 +29,7 @@ public:
 
 	RuntimeConfig();
 };
+
+} // namespace sentry
 
 #endif // RUNTIME_CONFIG_H

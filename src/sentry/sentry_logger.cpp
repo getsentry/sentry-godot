@@ -1,8 +1,8 @@
 #include "sentry_logger.h"
 
+#include "sentry/sentry_options.h"
+#include "sentry/sentry_sdk.h"
 #include "sentry/util/print.h"
-#include "sentry_options.h"
-#include "sentry_sdk.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
@@ -10,6 +10,9 @@
 #include <godot_cpp/classes/script.hpp>
 
 namespace {
+
+using SentryEvent = sentry::SentryEvent;
+using SentryOptions = sentry::SentryOptions;
 
 // Error enum values as strings
 const char *error_type_as_string[] = {
@@ -140,6 +143,8 @@ Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
 }
 
 } // unnamed namespace
+
+namespace sentry {
 
 void SentryLogger::_process_frame() {
 	// NOTE: It's important not to push errors from within this function to avoid deadlocks.
@@ -312,3 +317,5 @@ SentryLogger::~SentryLogger() {
 		scene_tree->disconnect("process_frame", callable);
 	}
 }
+
+} // namespace sentry

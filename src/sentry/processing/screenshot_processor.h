@@ -1,9 +1,11 @@
 #ifndef SCREENSHOT_EVENT_PROCESSOR_H
 #define SCREENSHOT_EVENT_PROCESSOR_H
 
-#include "sentry_event_processor.h"
+#include "sentry/processing/sentry_event_processor.h"
 
 #include <mutex>
+
+namespace sentry {
 
 // Event processor for capturing in-engine screenshots.
 class ScreenshotProcessor : public SentryEventProcessor {
@@ -22,5 +24,7 @@ public:
 
 	ScreenshotProcessor();
 };
+
+} // namespace sentry
 
 #endif // SCREENSHOT_EVENT_PROCESSOR_H

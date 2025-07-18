@@ -1,17 +1,17 @@
 #include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_plugin.h"
-#include "runtime_config.h"
-#include "sentry/disabled_event.h"
+#include "sentry/disabled/disabled_event.h"
 #include "sentry/processing/screenshot_processor.h"
+#include "sentry/processing/sentry_event_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
-#include "sentry_attachment.h"
-#include "sentry_configuration.h"
-#include "sentry_event.h"
-#include "sentry_event_processor.h"
-#include "sentry_logger.h"
-#include "sentry_options.h"
-#include "sentry_sdk.h"
-#include "sentry_user.h"
+#include "sentry/runtime_config.h"
+#include "sentry/sentry_attachment.h"
+#include "sentry/sentry_configuration.h"
+#include "sentry/sentry_event.h"
+#include "sentry/sentry_logger.h"
+#include "sentry/sentry_options.h"
+#include "sentry/sentry_sdk.h"
+#include "sentry/sentry_user.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -33,6 +33,7 @@
 #endif // TOOLS_ENABLED
 
 using namespace godot;
+using namespace sentry;
 
 void initialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
@@ -58,11 +59,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 
 #ifdef ANDROID_ENABLED
 		GDREGISTER_INTERNAL_CLASS(AndroidEvent);
-
-		{
-			using namespace sentry;
-			GDREGISTER_INTERNAL_CLASS(SentryAndroidBeforeSendHandler);
-		}
+		GDREGISTER_INTERNAL_CLASS(SentryAndroidBeforeSendHandler);
 #endif
 
 		SentryOptions::create_singleton();
