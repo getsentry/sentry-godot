@@ -8,7 +8,8 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 
-#include <Sentry/Sentry.h>
+#import <MetricKit/MetricKit.h>
+#import <Sentry/Sentry-Swift.h>
 
 using namespace godot;
 
@@ -30,17 +31,17 @@ namespace {
 objc::SentryLevel sentry_level_to_objc(sentry::Level p_level) {
 	switch (p_level) {
 		case sentry::Level::LEVEL_DEBUG:
-			return objc::SentryLevel(1);
+			return kSentryLevelDebug;
 		case sentry::Level::LEVEL_INFO:
-			return objc::SentryLevel(2);
+			return kSentryLevelInfo;
 		case sentry::Level::LEVEL_WARNING:
-			return objc::SentryLevel(3);
+			return kSentryLevelWarning;
 		case sentry::Level::LEVEL_ERROR:
-			return objc::SentryLevel(4);
+			return kSentryLevelError;
 		case sentry::Level::LEVEL_FATAL:
-			return objc::SentryLevel(5);
+			return kSentryLevelFatal;
 		default:
-			return objc::SentryLevel(4);
+			return kSentryLevelError;
 	}
 }
 
