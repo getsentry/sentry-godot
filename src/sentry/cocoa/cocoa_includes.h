@@ -6,14 +6,14 @@
 
 namespace objc {
 
-using SentryOptions = SentryOptions;
-using SentrySDK = SentrySDK;
-using SentryEvent = SentryEvent;
-using SentryUser = SentryUser;
-using SentryLevel = SentryLevel;
-using SentryBreadcrumb = SentryBreadcrumb;
-using SentryId = SentryId;
-using SentryScope = SentryScope;
+using SentryOptions = ::SentryOptions;
+using SentrySDK = ::SentrySDK;
+using SentryEvent = ::SentryEvent;
+using SentryUser = ::SentryUser;
+using SentryLevel = ::SentryLevel;
+using SentryBreadcrumb = ::SentryBreadcrumb;
+using SentryId = ::SentryId;
+using SentryScope = ::SentryScope;
 
 } // namespace objc
 
