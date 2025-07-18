@@ -1,5 +1,7 @@
 #include "cocoa_sdk.h"
 
+#include "cocoa_includes.h"
+#include "cocoa_util.h"
 #include "sentry/common_defs.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/sentry_attachment.h"
@@ -8,44 +10,7 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 
-#import <MetricKit/MetricKit.h>
-#import <Sentry/Sentry-Swift.h>
-
 using namespace godot;
-
-namespace objc {
-
-using SentryOptions = SentryOptions;
-using SentrySDK = SentrySDK;
-using SentryEvent = SentryEvent;
-using SentryUser = SentryUser;
-using SentryLevel = SentryLevel;
-using SentryBreadcrumb = SentryBreadcrumb;
-using SentryId = SentryId;
-using SentryScope = SentryScope;
-
-} // namespace objc
-
-namespace {
-
-objc::SentryLevel sentry_level_to_objc(sentry::Level p_level) {
-	switch (p_level) {
-		case sentry::Level::LEVEL_DEBUG:
-			return kSentryLevelDebug;
-		case sentry::Level::LEVEL_INFO:
-			return kSentryLevelInfo;
-		case sentry::Level::LEVEL_WARNING:
-			return kSentryLevelWarning;
-		case sentry::Level::LEVEL_ERROR:
-			return kSentryLevelError;
-		case sentry::Level::LEVEL_FATAL:
-			return kSentryLevelFatal;
-		default:
-			return kSentryLevelError;
-	}
-}
-
-} // unnamed namespace
 
 namespace sentry {
 
@@ -121,7 +86,7 @@ void CocoaSDK::add_breadcrumb(const String &p_message, const String &p_category,
 	breadcrumb.message = [NSString stringWithUTF8String:p_message.utf8()];
 	breadcrumb.category = [NSString stringWithUTF8String:p_category.utf8()];
 	breadcrumb.type = [NSString stringWithUTF8String:p_type.utf8()];
-	breadcrumb.level = sentry_level_to_objc(p_level);
+	breadcrumb.level = sentry::cocoa::sentry_level_to_objc(p_level);
 
 	[objc::SentrySDK addBreadcrumb:breadcrumb];
 }
@@ -129,7 +94,7 @@ void CocoaSDK::add_breadcrumb(const String &p_message, const String &p_category,
 String CocoaSDK::capture_message(const String &p_message, Level p_level) {
 	objc::SentryId *event_id = [objc::SentrySDK captureMessage:[NSString stringWithUTF8String:p_message.utf8()]
 												withScopeBlock:^(objc::SentryScope *scope) {
-													scope.level = sentry_level_to_objc(p_level);
+													scope.level = sentry::cocoa::sentry_level_to_objc(p_level);
 												}];
 
 	if (event_id) {
