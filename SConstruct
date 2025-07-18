@@ -6,7 +6,7 @@ from enum import Enum
 
 # *** Settings.
 
-VERSION = "1.0.0-alpha.0"
+VERSION = "1.0.0-alpha.1"
 COMPATIBILITY_MINIMUM = "4.5"
 
 
