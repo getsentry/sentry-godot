@@ -9,9 +9,6 @@ namespace sentry::cocoa {
 
 // Internal SDK utilizing Sentry Cocoa.
 class CocoaSDK : public InternalSDK {
-private:
-	bool initialized = false;
-
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void remove_context(const String &p_key) override;
@@ -34,6 +31,8 @@ public:
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
 
 	virtual void initialize(const PackedStringArray &p_global_attachments) override;
+
+	bool is_enabled() const;
 
 	virtual ~CocoaSDK() override;
 };

@@ -227,8 +227,14 @@ void SentrySDK::_initialize() {
 		}
 	}
 #elif SDK_COCOA
-	internal_sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
-	enabled = true;
+	auto sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
+	if (sdk->is_enabled()) {
+		internal_sdk = sdk;
+		enabled = true;
+	} else {
+		sentry::util::print_error(vformat("Failed to initialize backend Cocoa SDK. Disabling Sentry SDK..."));
+		enabled = false;
+	}
 #else
 	// Unsupported platform
 	sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");

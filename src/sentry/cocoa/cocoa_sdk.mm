@@ -182,12 +182,14 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 			[scope addAttachment:att];
 		}
 	}];
+}
 
-	initialized = true;
+bool CocoaSDK::is_enabled() const {
+	return [objc::SentrySDK isEnabled];
 }
 
 CocoaSDK::~CocoaSDK() {
-	if (initialized) {
+	if (is_enabled()) {
 		[objc::SentrySDK close];
 	}
 }
