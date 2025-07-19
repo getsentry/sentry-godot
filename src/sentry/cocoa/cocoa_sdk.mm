@@ -156,11 +156,15 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 		options.environment = string_to_objc(SentryOptions::get_singleton()->get_environment());
 		options.sampleRate = double_to_objc(SentryOptions::get_singleton()->get_sample_rate());
 		options.maxBreadcrumbs = (NSUInteger)SentryOptions::get_singleton()->get_max_breadcrumbs();
+		options.sendDefaultPii = SentryOptions::get_singleton()->is_send_default_pii_enabled();
+		options.diagnosticLevel = sentry_level_to_objc(SentryOptions::get_singleton()->get_diagnostic_level());
 
 		String dist = SentryOptions::get_singleton()->get_dist();
 		if (!dist.is_empty()) {
 			options.dist = string_to_objc(dist);
 		}
+
+		options.attachStacktrace = false;
 
 		// TODO: how to set sdk name?
 	}];
