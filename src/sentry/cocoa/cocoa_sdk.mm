@@ -166,25 +166,26 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 
 		options.attachStacktrace = false;
 
-		// TODO: how to set sdk name?
-	}];
-
-	// Add global attachments
-	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
-		for (const String &path : p_global_attachments) {
-			sentry::util::print_debug("adding attachment \"", path, "\"");
-			objc::SentryAttachment *att = nil;
-			if (path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
-				// TODO: Can't specify attachmentType!
-				att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(path)
-														  filename:string_to_objc("view-hierarchy.json")
-													   contentType:string_to_objc("application/json")];
-			} else {
-				att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(path)];
+		options.initialScope = ^(objc::SentryScope *scope) {
+			// Add global attachments
+			for (const String &path : p_global_attachments) {
+				sentry::util::print_debug("adding attachment \"", path, "\"");
+				objc::SentryAttachment *att = nil;
+				if (path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
+					// TODO: Can't specify attachmentType!
+					att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(path)
+															  filename:string_to_objc("view-hierarchy.json")
+														   contentType:string_to_objc("application/json")];
+				} else {
+					att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(path)];
+				}
+				ERR_CONTINUE(att == nil);
+				[scope addAttachment:att];
 			}
-			ERR_CONTINUE(att == nil);
-			[scope addAttachment:att];
-		}
+			return scope;
+		};
+
+		// TODO: how to set sdk name?
 	}];
 }
 
