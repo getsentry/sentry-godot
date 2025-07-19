@@ -72,10 +72,20 @@ void CocoaSDK::remove_user() {
 void CocoaSDK::add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
 		const String &p_type, const Dictionary &p_data) {
 	objc::SentryBreadcrumb *breadcrumb = [[objc::SentryBreadcrumb alloc] init];
-	breadcrumb.message = string_to_objc(p_message);
-	breadcrumb.category = string_to_objc(p_category);
-	breadcrumb.type = string_to_objc(p_type);
+
 	breadcrumb.level = sentry_level_to_objc(p_level);
+	if (!p_message.is_empty()) {
+		breadcrumb.message = string_to_objc(p_message);
+	}
+	if (!p_category.is_empty()) {
+		breadcrumb.category = string_to_objc(p_category);
+	}
+	if (!p_type.is_empty()) {
+		breadcrumb.type = string_to_objc(p_type);
+	}
+	if (!p_data.is_empty()) {
+		breadcrumb.data = dictionary_to_objc(p_data);
+	}
 
 	[objc::SentrySDK addBreadcrumb:breadcrumb];
 }
