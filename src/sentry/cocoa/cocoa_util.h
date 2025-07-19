@@ -30,7 +30,7 @@ _FORCE_INLINE_ NSString *string_to_objc(const godot::String &p_str) {
 }
 
 _FORCE_INLINE_ godot::String string_from_objc(NSString *p_str) {
-	return godot::String::utf8([p_str UTF8String]);
+	return p_str ? godot::String::utf8([p_str UTF8String]) : godot::String();
 }
 
 _FORCE_INLINE_ NSNumber *double_to_objc(double p_num) {
