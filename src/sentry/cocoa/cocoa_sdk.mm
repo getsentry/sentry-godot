@@ -115,7 +115,37 @@ String CocoaSDK::capture_event(const Ref<SentryEvent> &p_event) {
 }
 
 void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
-	// TODO: Implement
+	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
+
+	objc::SentryAttachment *attachment_objc = nil;
+
+	if (!p_attachment->get_path().is_empty()) {
+		ERR_FAIL_NULL(ProjectSettings::get_singleton());
+		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
+
+		sentry::util::print_debug(vformat("attaching file: %s", absolute_path));
+
+		String filename = p_attachment->get_filename().is_empty() ? p_attachment->get_path().get_file() : p_attachment->get_filename();
+		attachment_objc = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(p_attachment->get_path())
+															  filename:string_to_objc(filename)
+														   contentType:string_to_objc(p_attachment->get_content_type_or_default())];
+	} else {
+		PackedByteArray bytes = p_attachment->get_bytes();
+		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
+		NSData *bytes_objc = [NSData dataWithBytes:bytes.ptr() length:bytes.size()];
+
+		sentry::util::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
+
+		attachment_objc = [[objc::SentryAttachment alloc] initWithData:bytes_objc
+															  filename:string_to_objc(p_attachment->get_filename())
+														   contentType:string_to_objc(p_attachment->get_content_type_or_default())];
+	}
+
+	ERR_FAIL_NULL_MSG(attachment_objc, "Sentry: Failed to create Cocoa attachment object from the provided SentryAttachment data.");
+
+	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
+		[scope addAttachment:attachment_objc];
+	}];
 }
 
 void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {

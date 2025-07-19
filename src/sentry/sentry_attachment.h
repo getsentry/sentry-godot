@@ -46,6 +46,8 @@ public:
 	String get_content_type() const { return content_type; }
 	void set_content_type(const String &p_content_type) { content_type = p_content_type; }
 
+	String get_content_type_or_default() const { return content_type.is_empty() ? "application/octet-stream" : content_type; }
+
 #ifdef SDK_NATIVE
 	sentry_attachment_t *get_native_attachment() const { return native_attachment; }
 	void set_native_attachment(sentry_attachment_t *p_native_attachment) { native_attachment = p_native_attachment; }

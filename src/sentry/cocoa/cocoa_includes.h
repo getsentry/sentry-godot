@@ -14,6 +14,7 @@ using SentryLevel = ::SentryLevel;
 using SentryBreadcrumb = ::SentryBreadcrumb;
 using SentryId = ::SentryId;
 using SentryScope = ::SentryScope;
+using SentryAttachment = ::SentryAttachment;
 
 } // namespace objc
 
