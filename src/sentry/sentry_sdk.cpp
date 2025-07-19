@@ -209,6 +209,12 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 void SentrySDK::_initialize() {
 	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
+	if (!SentryOptions::get_singleton()->is_enabled()) {
+		enabled = false;
+		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
+		return;
+	}
+
 #ifdef SDK_NATIVE
 	internal_sdk = std::make_shared<NativeSDK>();
 	enabled = true;
