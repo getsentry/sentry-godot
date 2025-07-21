@@ -253,4 +253,20 @@ bool CocoaEvent::is_crash() const {
 	return cocoa_event.error != nil;
 }
 
+CocoaEvent::CocoaEvent() {
+	objc::SentryEvent *ev = [[objc::SentryEvent alloc] init];
+	cocoa_event = [ev retain];
+}
+
+CocoaEvent::CocoaEvent(void *p_cocoa_event) {
+	cocoa_event = [(id)p_cocoa_event retain];
+}
+
+CocoaEvent::~CocoaEvent() {
+	if (cocoa_event) {
+		[(id)cocoa_event release];
+		cocoa_event = nil;
+	}
+}
+
 } // namespace sentry::cocoa

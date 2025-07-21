@@ -52,6 +52,7 @@ public:
 
 	virtual bool is_crash() const override;
 
+	CocoaEvent(void *p_cocoa_event);
 	CocoaEvent();
 	virtual ~CocoaEvent() override;
 };
