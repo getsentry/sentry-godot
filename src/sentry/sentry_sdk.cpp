@@ -34,13 +34,26 @@ void _verify_project_settings() {
 	ERR_FAIL_NULL(ps);
 	Ref<SentryOptions> options = SentryOptions::get_singleton();
 	ERR_FAIL_COND(options.is_null());
+	ERR_FAIL_NULL(Engine::get_singleton());
 
 	if (!ps->get_setting("debug/settings/gdscript/always_track_call_stacks")) {
-		ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_call_stacks` in your Project Settings. This is required for supporting script stack traces.");
+		if (Engine::get_singleton()->is_editor_hint()) {
+			ps->set_setting("debug/settings/gdscript/always_track_call_stacks", true);
+			ps->save();
+			print_line("Sentry: Automatically enabled call stack tracking in project settings. This setting is required for Sentry to capture GDScript stack traces.");
+		} else {
+			ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_call_stacks` in your Project Settings. This is required for supporting script stack traces.");
+		}
 	}
 	if (options->is_logger_include_variables_enabled() &&
 			!ps->get_setting("debug/settings/gdscript/always_track_local_variables")) {
-		ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_local_variables` in your Project Settings. This is required to include local variables in backtraces.");
+		if (Engine::get_singleton()->is_editor_hint()) {
+			ps->set_setting("debug/settings/gdscript/always_track_local_variables", true);
+			ps->save();
+			print_line("Sentry: Automatically enabled local variable tracking in project settings. This setting is required for Sentry to capture local variables in backtraces.");
+		} else {
+			ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_local_variables` in your Project Settings. This is required to include local variables in backtraces.");
+		}
 	}
 
 	if (options->is_attach_log_enabled()) {
