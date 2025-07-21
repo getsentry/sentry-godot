@@ -36,13 +36,26 @@ void _verify_project_settings() {
 	ERR_FAIL_NULL(ps);
 	Ref<SentryOptions> options = SentryOptions::get_singleton();
 	ERR_FAIL_COND(options.is_null());
+	ERR_FAIL_NULL(Engine::get_singleton());
 
 	if (!ps->get_setting("debug/settings/gdscript/always_track_call_stacks")) {
-		ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_call_stacks` in your Project Settings. This is required for supporting script stack traces.");
+		if (Engine::get_singleton()->is_editor_hint()) {
+			ps->set_setting("debug/settings/gdscript/always_track_call_stacks", true);
+			ps->save();
+			print_line("Sentry: Automatically enabled call stack tracking in project settings. This setting is required for Sentry to capture GDScript stack traces.");
+		} else {
+			ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_call_stacks` in your Project Settings. This is required for supporting script stack traces.");
+		}
 	}
 	if (options->is_logger_include_variables_enabled() &&
 			!ps->get_setting("debug/settings/gdscript/always_track_local_variables")) {
-		ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_local_variables` in your Project Settings. This is required to include local variables in backtraces.");
+		if (Engine::get_singleton()->is_editor_hint()) {
+			ps->set_setting("debug/settings/gdscript/always_track_local_variables", true);
+			ps->save();
+			print_line("Sentry: Automatically enabled local variable tracking in project settings. This setting is required for Sentry to capture local variables in backtraces.");
+		} else {
+			ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_local_variables` in your Project Settings. This is required to include local variables in backtraces.");
+		}
 	}
 
 	if (options->is_attach_log_enabled()) {
@@ -209,46 +222,63 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 void SentrySDK::_initialize() {
 	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
-	if (!SentryOptions::get_singleton()->is_enabled()) {
-		enabled = false;
-		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
-		return;
-	}
-
-#ifdef SDK_NATIVE
-	internal_sdk = std::make_shared<NativeSDK>();
-	enabled = true;
-#elif SDK_ANDROID
-	if (unlikely(OS::get_singleton()->has_feature("editor"))) {
-		sentry::util::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
-		enabled = false;
-	} else {
-		auto sdk = std::make_shared<AndroidSDK>();
-		if (sdk->has_android_plugin()) {
-			internal_sdk = sdk;
-			enabled = true;
-		} else {
-			sentry::util::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
-			enabled = false;
+	// Initialize user if it wasn't set explicitly in the configuration script.
+	if (user.is_null()) {
+		user.instantiate();
+		user->set_id(runtime_config->get_installation_id());
+		if (SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
+			user->infer_ip_address();
 		}
 	}
-#elif SDK_COCOA
-	auto sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
-	if (sdk->is_enabled()) {
-		internal_sdk = sdk;
-		enabled = true;
-	} else {
-		sentry::util::print_error(vformat("Failed to initialize backend Cocoa SDK. Disabling Sentry SDK..."));
-		enabled = false;
+	set_user(user);
+
+	bool should_enable = true;
+
+	if (!SentryOptions::get_singleton()->is_enabled()) {
+		should_enable = false;
+		sentry::util::print_debug("Sentry SDK is disabled in options.");
 	}
+
+	if (Engine::get_singleton()->is_editor_hint() && SentryOptions::get_singleton()->is_disabled_in_editor()) {
+		should_enable = false;
+		sentry::util::print_debug("Sentry SDK is disabled in the editor. Tip: This can be changed in the project settings.");
+	}
+
+	if (should_enable) {
+#ifdef NATIVE_SDK
+		internal_sdk = std::make_shared<NativeSDK>();
+#elif ANDROID_ENABLED
+		if (unlikely(OS::get_singleton()->has_feature("editor"))) {
+			sentry::util::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
+			should_enable = false;
+		} else {
+			auto sdk = std::make_shared<AndroidSDK>();
+			if (sdk->has_android_plugin()) {
+				internal_sdk = sdk;
+			} else {
+				sentry::util::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
+				should_enable = false;
+			}
+		}
+#elif SDK_COCOA
+		auto sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
+		if (sdk->is_enabled()) {
+			internal_sdk = sdk;
+		} else {
+			sentry::util::print_error(vformat("Failed to initialize backend Cocoa SDK. Disabling Sentry SDK..."));
+			should_enable = false;
+		}
 #else
-	// Unsupported platform
-	sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
-	enabled = false;
+		// Unsupported platform
+		sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
+		should_enable = false;
 #endif
+	}
+
+	enabled = should_enable;
 
 	if (!enabled) {
-		sentry::util::print_debug("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
+		sentry::util::print_info("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
 		return;
 	}
 
@@ -368,38 +398,25 @@ SentrySDK::SentrySDK() {
 	}
 #endif
 
-	bool should_enable = SentryOptions::get_singleton()->is_enabled();
-
-	if (!should_enable) {
-		sentry::util::print_debug("Sentry SDK is disabled in the project settings.");
-	}
-
-	if (should_enable && Engine::get_singleton()->is_editor_hint() && SentryOptions::get_singleton()->is_disabled_in_editor()) {
-		sentry::util::print_debug("Sentry SDK is disabled in the editor. Tip: This can be changed in the project settings.");
-		should_enable = false;
-	}
-
-	if (should_enable) {
-		if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
-			_initialize();
-			// Delay contexts initialization until the engine singletons are ready.
-			callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
-		} else {
-			// Register an autoload singleton, which is a user script extending the
-			// `SentryConfiguration` class. It will be instantiated and added to the
-			// scene tree by the engine shortly after ScriptServer is initialized.
-			// When this happens, the `SentryConfiguration` instance receives
-			// `NOTIFICATION_READY`, triggering our notification processing code in
-			// C++, which calls `_configure()` on the user script and then invokes
-			// `notify_options_configured()` in `SentrySDK`. This, in turn, initializes
-			// the internal SDK.
-			sentry::util::print_debug("waiting for user configuration autoload");
-			ERR_FAIL_NULL(ProjectSettings::get_singleton());
-			ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
-					SentryOptions::get_singleton()->get_configuration_script());
-			// Ensure issues with the configuration script are detected.
-			callable_mp(this, &SentrySDK::_check_if_configuration_succeeded).call_deferred();
-		}
+	if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
+		_initialize();
+		// Delay contexts initialization until the engine singletons are ready.
+		callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
+	} else {
+		// Register an autoload singleton, which is a user script extending the
+		// `SentryConfiguration` class. It will be instantiated and added to the
+		// scene tree by the engine shortly after ScriptServer is initialized.
+		// When this happens, the `SentryConfiguration` instance receives
+		// `NOTIFICATION_READY`, triggering our notification processing code in
+		// C++, which calls `_configure()` on the user script and then invokes
+		// `notify_options_configured()` in `SentrySDK`. This, in turn, initializes
+		// the internal SDK.
+		sentry::util::print_debug("waiting for user configuration autoload");
+		ERR_FAIL_NULL(ProjectSettings::get_singleton());
+		ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
+				SentryOptions::get_singleton()->get_configuration_script());
+		// Ensure issues with the configuration script are detected.
+		callable_mp(this, &SentrySDK::_check_if_configuration_succeeded).call_deferred();
 	}
 }
 

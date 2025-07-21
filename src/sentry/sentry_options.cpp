@@ -25,6 +25,10 @@ void _define_setting(const String &p_setting, const Variant &p_default, bool p_b
 	config_value_order++;
 }
 
+inline void _requires_restart(const String &p_setting) {
+	ProjectSettings::get_singleton()->set_restart_if_changed(p_setting, true);
+}
+
 void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_default, bool p_basic = true) {
 	_define_setting(p_info.name, p_default, p_basic);
 	Dictionary info = (Dictionary)p_info;
@@ -55,6 +59,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/options/enabled", p_options->enabled);
 	_define_setting("sentry/options/disabled_in_editor", p_options->disabled_in_editor, false);
+	_requires_restart("sentry/options/disabled_in_editor");
 	_define_setting("sentry/options/dsn", p_options->dsn);
 	_define_setting("sentry/options/release", p_options->release, false);
 	_define_setting("sentry/options/dist", p_options->dist, false);
@@ -73,6 +78,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
 	_define_setting("sentry/logger/include_variables", p_options->logger_include_variables, false);
+	_requires_restart("sentry/logger/include_variables");
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_event_mask, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_breadcrumb_mask, false);
 
