@@ -22,8 +22,6 @@ Sentry for Godot helps you monitor your game's health after release. It provides
 
 ## Supported platforms and architectures
 
-The Sentry Godot SDK supports the following platforms and architectures:
-
 - **Windows**: x86_64, x86_32
 - **Linux**: x86_64, x86_32
 - **macOS**: universal (Intel and Apple Silicon)
