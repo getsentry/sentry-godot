@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Auto-enable required project settings ([#260](https://github.com/getsentry/sentry-godot/pull/260))
+
 ## 1.0.0-alpha.1
 
 ### Fixes
