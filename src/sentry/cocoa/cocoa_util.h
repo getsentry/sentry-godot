@@ -54,6 +54,14 @@ _FORCE_INLINE_ godot::String string_from_objc(NSString *p_str) {
 	return p_str ? godot::String::utf8([p_str UTF8String]) : godot::String();
 }
 
+_FORCE_INLINE_ NSNumber *int_to_objc(int p_num) {
+	return [NSNumber numberWithLong:p_num];
+}
+
+_FORCE_INLINE_ NSNumber *bool_to_objc(bool p_flag) {
+	return [NSNumber numberWithBool:p_flag];
+}
+
 _FORCE_INLINE_ NSNumber *double_to_objc(double p_num) {
 	return [NSNumber numberWithDouble:p_num];
 }

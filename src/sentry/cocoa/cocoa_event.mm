@@ -18,11 +18,18 @@ inline NSMutableDictionary *as_mutable_dict(NSDictionary *p_dict) {
 }
 
 // clang-format off
-// Access NSDictionary property of an object as mutable (creates mutable copy if needed).
+// Access NSDictionary property of an object as mutable (create a copy if needed).
 #define AS_MUTABLE_DICT(obj, prop) 												\
     ([obj.prop isKindOfClass:[NSMutableDictionary class]] ? 					\
     (NSMutableDictionary *)obj.prop : 											\
     (NSMutableDictionary *)(obj.prop = ([obj.prop mutableCopy] ?: [NSMutableDictionary dictionary])))
+
+// Access NSArray property of an object as mutable (create a copy if needed).
+#define AS_MUTABLE_ARRAY(obj, prop)												\
+	([obj.prop isKindOfClass:[NSMutableArray class]] ? 							\
+	(NSMutableArray *)obj.prop : 												\
+	(NSMutableArray *)(obj.prop = ([obj.prop mutableCopy] ?: [NSMutableArray array])))
+
 // clang-format on
 
 } // unnamed namespace
@@ -210,6 +217,33 @@ void CocoaEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 		// If context doesn't exist, just add it.
 		mut_contexts[context_name] = dictionary_to_objc(p_value);
 	}
+}
+
+void CocoaEvent::add_exception(const Exception &p_exception) {
+	objc::SentryEvent *cocoa_event = _get_typed_cocoa_event(this);
+	ERR_FAIL_NULL(cocoa_event);
+
+	NSMutableArray *mut_frames = [NSMutableArray arrayWithCapacity:p_exception.frames.size()];
+	for (const StackFrame &frame : p_exception.frames) {
+		objc::SentryFrame *cocoa_frame = [[objc::SentryFrame alloc] init];
+		cocoa_frame.fileName = string_to_objc(frame.filename);
+		cocoa_frame.function = string_to_objc(frame.function);
+		cocoa_frame.lineNumber = int_to_objc(frame.lineno);
+		cocoa_frame.inApp = bool_to_objc(frame.in_app);
+		cocoa_frame.platform = string_to_objc(frame.platform);
+
+		// TODO: unable to pass context_line, pre_context, post_context.
+		// TODO: unable to pass local/member vars.
+
+		[mut_frames addObject:cocoa_frame];
+	}
+
+	objc::SentryStacktrace *stack_trace = [[objc::SentryStacktrace alloc] initWithFrames:mut_frames
+																			   registers:[NSDictionary dictionary]];
+	objc::SentryException *cocoa_exception = [[objc::SentryException alloc] initWithValue:string_to_objc(p_exception.value)
+																					 type:string_to_objc(p_exception.type)];
+	NSMutableArray *mut_exceptions = AS_MUTABLE_ARRAY(cocoa_event, exceptions);
+	[mut_exceptions addObject:cocoa_exception];
 }
 
 } // namespace sentry::cocoa
