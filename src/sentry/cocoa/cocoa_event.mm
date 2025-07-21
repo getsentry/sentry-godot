@@ -9,6 +9,22 @@ inline objc::SentryEvent *_get_typed_cocoa_event(const sentry::cocoa::CocoaEvent
 	return (objc::SentryEvent *)p_event->get_cocoa_event();
 }
 
+inline NSMutableDictionary *as_mutable_dict(NSDictionary *p_dict) {
+	if ([p_dict isKindOfClass:[NSMutableDictionary class]]) {
+		return (NSMutableDictionary *)p_dict;
+	} else {
+		return [p_dict mutableCopy] ?: [NSMutableDictionary dictionary];
+	}
+}
+
+// clang-format off
+// Access NSDictionary property of an object as mutable (create mutable copy if needed).
+#define AS_MUTABLE_DICT(obj, prop) 												\
+    ([obj.prop isKindOfClass:[NSMutableDictionary class]] ? 					\
+    (NSMutableDictionary *)obj.prop : 											\
+    (NSMutableDictionary *)(obj.prop = ([obj.prop mutableCopy] ?: [NSMutableDictionary dictionary])))
+// clang-format on
+
 } // unnamed namespace
 
 namespace sentry::cocoa {
@@ -180,6 +196,36 @@ String CocoaEvent::get_tag(const String &p_key) {
 		return string_from_objc(v);
 	}
 	return String();
+}
+
+void CocoaEvent::merge_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
+
+	if (p_value.is_empty()) {
+		return;
+	}
+
+	objc::SentryEvent *cocoa_event = _get_typed_cocoa_event(this);
+	ERR_FAIL_NULL(cocoa_event);
+
+	NSMutableDictionary *mut_contexts = AS_MUTABLE_DICT(cocoa_event, context);
+
+	NSString *context_name = string_to_objc(p_key);
+
+	NSDictionary *existing_context = [mut_contexts objectForKey:context_name];
+	if (existing_context) {
+		// If context exists, update it with new values.
+		NSMutableDictionary *mut_exisiting_context = as_mutable_dict(existing_context);
+		const Array &updated_keys = p_value.keys();
+		for (int i = 0; i < updated_keys.size(); i++) {
+			const String &key = updated_keys[i];
+			mut_exisiting_context[string_to_objc(key)] = variant_to_objc(p_value[key]);
+		}
+		mut_contexts[context_name] = mut_exisiting_context;
+	} else {
+		// If context doesn't exist, just add it.
+		mut_contexts[context_name] = dictionary_to_objc(p_value);
+	}
 }
 
 } // namespace sentry::cocoa
