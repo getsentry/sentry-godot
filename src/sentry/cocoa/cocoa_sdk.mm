@@ -1,5 +1,6 @@
 #include "cocoa_sdk.h"
 
+#include "cocoa_event.h"
 #include "cocoa_includes.h"
 #include "cocoa_util.h"
 #include "sentry/common_defs.h"
@@ -96,7 +97,7 @@ String CocoaSDK::capture_message(const String &p_message, Level p_level) {
 													scope.level = sentry_level_to_objc(p_level);
 												}];
 
-	return event_id ? string_from_objc([event_id description]) : String();
+	return event_id ? string_from_objc([event_id sentryIdString]) : String();
 }
 
 String CocoaSDK::get_last_event_id() {
@@ -105,13 +106,16 @@ String CocoaSDK::get_last_event_id() {
 }
 
 Ref<SentryEvent> CocoaSDK::create_event() {
-	// TODO: Implement
-	return nullptr;
+	objc::SentryEvent *cocoa_event = [[objc::SentryEvent alloc] init];
+	return memnew(CocoaEvent(cocoa_event));
 }
 
 String CocoaSDK::capture_event(const Ref<SentryEvent> &p_event) {
-	// TODO: Implement
-	return "";
+	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Sentry: Can't capture event - event object is null.");
+	CocoaEvent *typed_event = Object::cast_to<CocoaEvent>(p_event.ptr());
+	objc::SentryEvent *cocoa_event = (objc::SentryEvent *)typed_event->get_cocoa_event();
+	objc::SentryId *event_id = [objc::SentrySDK captureEvent:cocoa_event];
+	return event_id ? string_from_objc([event_id sentryIdString]) : String();
 }
 
 void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
