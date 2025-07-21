@@ -18,7 +18,7 @@ inline NSMutableDictionary *as_mutable_dict(NSDictionary *p_dict) {
 }
 
 // clang-format off
-// Access NSDictionary property of an object as mutable (create mutable copy if needed).
+// Access NSDictionary property of an object as mutable (creates mutable copy if needed).
 #define AS_MUTABLE_DICT(obj, prop) 												\
     ([obj.prop isKindOfClass:[NSMutableDictionary class]] ? 					\
     (NSMutableDictionary *)obj.prop : 											\
@@ -155,15 +155,8 @@ void CocoaEvent::set_tag(const String &p_key, const String &p_value) {
 	NSString *k = string_to_objc(p_key);
 	NSString *v = string_to_objc(p_value);
 
-	if ([cocoa_event.tags isKindOfClass:[NSMutableDictionary class]]) {
-		// Mutable dictionary – avoid copy.
-		((NSMutableDictionary *)cocoa_event.tags)[k] = v;
-	} else {
-		// Not mutable or nil.
-		NSMutableDictionary *mutable_tags = cocoa_event.tags ? [cocoa_event.tags mutableCopy] : [[NSMutableDictionary alloc] init];
-		mutable_tags[k] = v;
-		cocoa_event.tags = mutable_tags;
-	}
+	NSMutableDictionary *mut_tags = AS_MUTABLE_DICT(cocoa_event, tags);
+	mut_tags[k] = v;
 }
 
 void CocoaEvent::remove_tag(const String &p_key) {
@@ -172,17 +165,8 @@ void CocoaEvent::remove_tag(const String &p_key) {
 	objc::SentryEvent *cocoa_event = _get_typed_cocoa_event(this);
 	ERR_FAIL_NULL(cocoa_event);
 
-	NSString *k = string_to_objc(p_key);
-
-	if ([cocoa_event.tags isKindOfClass:[NSMutableDictionary class]]) {
-		// Mutable – avoid copy.
-		[((NSMutableDictionary *)cocoa_event.tags) removeObjectForKey:k];
-	} else if (cocoa_event.tags) {
-		// Not mutable and not nil.
-		NSMutableDictionary *mutable_tags = [cocoa_event.tags mutableCopy];
-		[mutable_tags removeObjectForKey:k];
-		cocoa_event.tags = mutable_tags;
-	}
+	NSMutableDictionary *mut_tags = AS_MUTABLE_DICT(cocoa_event, tags);
+	[mut_tags removeObjectForKey:string_to_objc(p_key)];
 }
 
 String CocoaEvent::get_tag(const String &p_key) {
