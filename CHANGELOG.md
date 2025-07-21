@@ -6,6 +6,10 @@
 
 - Auto-enable required project settings ([#260](https://github.com/getsentry/sentry-godot/pull/260))
 
+### Fixes
+
+- Allow configuration script to run even if SDK is initially disabled in project settings ([#258](https://github.com/getsentry/sentry-godot/pull/258))
+
 ## 1.0.0-alpha.1
 
 ### Fixes
