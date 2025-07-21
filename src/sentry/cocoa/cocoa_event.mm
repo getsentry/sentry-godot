@@ -246,4 +246,11 @@ void CocoaEvent::add_exception(const Exception &p_exception) {
 	[mut_exceptions addObject:cocoa_exception];
 }
 
+bool CocoaEvent::is_crash() const {
+	objc::SentryEvent *cocoa_event = _get_typed_cocoa_event(this);
+	ERR_FAIL_NULL_V(cocoa_event, false);
+
+	return cocoa_event.error != nil;
+}
+
 } // namespace sentry::cocoa
