@@ -4,8 +4,6 @@ Sentry for Godot helps you monitor your game's health after release. It provides
 
 **Architecture**: Built as a C++ GDExtension library using mature Sentry SDKs like [sentry-native](https://github.com/getsentry/sentry-native) as the foundation.
 
-**Error report example**
-
 ![issue-example](./.github/issue_example.png)
 
 🚧 **Preview Phase** - This SDK is currently in 1.0 preview phase as we work towards a stable 1.0.0 release. While functional, some features may be incomplete, subject to change or missing.<br>
