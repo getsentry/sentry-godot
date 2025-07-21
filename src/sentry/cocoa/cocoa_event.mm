@@ -132,4 +132,54 @@ String CocoaEvent::get_environment() const {
 	return string_from_objc(cocoa_event.environment);
 }
 
+void CocoaEvent::set_tag(const String &p_key, const String &p_value) {
+	objc::SentryEvent *cocoa_event = _get_typed_cocoa_event(this);
+	ERR_FAIL_NULL(cocoa_event);
+
+	NSString *k = string_to_objc(p_key);
+	NSString *v = string_to_objc(p_value);
+
+	if ([cocoa_event.tags isKindOfClass:[NSMutableDictionary class]]) {
+		// Mutable dictionary – avoid copy.
+		((NSMutableDictionary *)cocoa_event.tags)[k] = v;
+	} else {
+		// Not mutable or nil.
+		NSMutableDictionary *mutable_tags = cocoa_event.tags ? [cocoa_event.tags mutableCopy] : [[NSMutableDictionary alloc] init];
+		mutable_tags[k] = v;
+		cocoa_event.tags = mutable_tags;
+	}
+}
+
+void CocoaEvent::remove_tag(const String &p_key) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't remove tag with an empty key.");
+
+	objc::SentryEvent *cocoa_event = _get_typed_cocoa_event(this);
+	ERR_FAIL_NULL(cocoa_event);
+
+	NSString *k = string_to_objc(p_key);
+
+	if ([cocoa_event.tags isKindOfClass:[NSMutableDictionary class]]) {
+		// Mutable – avoid copy.
+		[((NSMutableDictionary *)cocoa_event.tags) removeObjectForKey:k];
+	} else if (cocoa_event.tags) {
+		// Not mutable and not nil.
+		NSMutableDictionary *mutable_tags = [cocoa_event.tags mutableCopy];
+		[mutable_tags removeObjectForKey:k];
+		cocoa_event.tags = mutable_tags;
+	}
+}
+
+String CocoaEvent::get_tag(const String &p_key) {
+	ERR_FAIL_COND_V_MSG(p_key.is_empty(), String(), "Sentry: Can't get tag with an empty key.");
+
+	objc::SentryEvent *cocoa_event = _get_typed_cocoa_event(this);
+	ERR_FAIL_NULL_V(cocoa_event, String());
+
+	if (cocoa_event.tags) {
+		NSString *v = [cocoa_event.tags objectForKey:string_to_objc(p_key)];
+		return string_from_objc(v);
+	}
+	return String();
+}
+
 } // namespace sentry::cocoa
