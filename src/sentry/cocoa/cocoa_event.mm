@@ -242,6 +242,7 @@ void CocoaEvent::add_exception(const Exception &p_exception) {
 																			   registers:[NSDictionary dictionary]];
 	objc::SentryException *cocoa_exception = [[objc::SentryException alloc] initWithValue:string_to_objc(p_exception.value)
 																					 type:string_to_objc(p_exception.type)];
+	cocoa_exception.stacktrace = stack_trace;
 	NSMutableArray *mut_exceptions = AS_MUTABLE_ARRAY(cocoa_event, exceptions);
 	[mut_exceptions addObject:cocoa_exception];
 }
