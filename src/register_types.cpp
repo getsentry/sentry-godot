@@ -27,6 +27,7 @@
 #endif // SDK_ANDROID
 
 #ifdef SDK_COCOA
+#include "sentry/cocoa/cocoa_event.h"
 #include "sentry/cocoa/cocoa_sdk.h"
 #endif // SDK_COCOA
 
@@ -67,7 +68,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 #endif
 
 #ifdef SDK_COCOA
-		// GDREGISTER_INTERNAL_CLASS(CocoaEvent);
+		GDREGISTER_INTERNAL_CLASS(cocoa::CocoaEvent);
 #endif
 
 		SentryOptions::create_singleton();
