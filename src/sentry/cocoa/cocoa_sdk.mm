@@ -156,6 +156,8 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 }
 
 void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
+	[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
+
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
 		options.dsn = string_to_objc(SentryOptions::get_singleton()->get_dsn());
 		options.debug = SentryOptions::get_singleton()->is_debug_enabled();
@@ -173,8 +175,6 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
-
-		[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
 
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments
