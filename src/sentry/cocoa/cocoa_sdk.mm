@@ -6,10 +6,13 @@
 #include "sentry/common_defs.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/sentry_attachment.h"
+#include "sentry/sentry_options.h"
 #include "sentry/util/print.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+
+#import <Sentry/PrivateSentrySDKOnly.h>
 
 using namespace godot;
 
@@ -168,9 +171,10 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 			options.dist = string_to_objc(dist);
 		}
 
+		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
 
-		// TODO: how to set sdk name?
+		[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
 
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments
