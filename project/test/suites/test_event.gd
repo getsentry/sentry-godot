@@ -27,19 +27,27 @@ func test_event_level() -> void:
 ## SentryEvent.timestamp should not be empty on event creation, and setter should update it.
 func test_event_timestamp() -> void:
 	var event := SentrySDK.create_event()
-	assert_str(event.timestamp).is_not_empty()
 
-	# Example of how to format a timestamp:
-	var unix_time: float = Time.get_unix_time_from_system()
-	var dt: Dictionary = Time.get_datetime_dict_from_unix_time(unix_time)
-	var date := "%04d-%02d-%02d" % [dt.year, dt.month, dt.day]
-	var time := "%02d:%02d:%02d" % [dt.hour, dt.minute, dt.second]
-	var fractional: float = unix_time - int(unix_time)
-	var micros := int(round(fractional * 1000000))
-	var timestamp := "%sT%s.%06dZ" % [date, time, micros]
+	# Test that timestamp is not null on creation
+	assert_object(event.timestamp).is_not_null()
 
-	event.timestamp = timestamp
-	assert_str(event.timestamp).is_equal(timestamp)
+	# Test assigning a custom timestamp from microseconds
+	var custom_timestamp := SentryTimestamp.from_microseconds(1612325106123456)
+	event.timestamp = custom_timestamp
+	assert_bool(event.timestamp.equals(custom_timestamp)).is_true()
+	assert_int(event.timestamp.microseconds_since_epoch).is_equal(1612325106123456)
+
+	# Test assigning timestamp from current time
+	var current_timestamp := SentryTimestamp.from_unix_time(Time.get_unix_time_from_system())
+	event.timestamp = current_timestamp
+	assert_bool(event.timestamp.equals(current_timestamp)).is_true()
+	assert_int(event.timestamp.microseconds_since_epoch).is_equal(current_timestamp.microseconds_since_epoch)
+
+	# Test assigning parsed RFC3339 timestamp
+	var parsed_timestamp := SentryTimestamp.parse_rfc3339("2021-02-03T04:05:06.123456789Z")
+	event.timestamp = parsed_timestamp
+	assert_bool(event.timestamp.equals(parsed_timestamp)).is_true()
+	assert_int(event.timestamp.microseconds_since_epoch).is_equal(1612325106123456)
 
 
 ## SentryEvent.platform should not be empty.

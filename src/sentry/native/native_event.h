@@ -26,8 +26,8 @@ public:
 	virtual void set_message(const String &p_message) override;
 	virtual String get_message() const override;
 
-	virtual void set_timestamp(const String &p_timestamp) override;
-	virtual String get_timestamp() const override;
+	virtual void set_timestamp(const Ref<SentryTimestamp> &p_timestamp) override;
+	virtual Ref<SentryTimestamp> get_timestamp() const override;
 
 	virtual String get_platform() const override;
 
