@@ -101,8 +101,8 @@ String CocoaSDK::capture_message(const String &p_message, Level p_level) {
 }
 
 String CocoaSDK::get_last_event_id() {
-	// TODO: figure out what to do with this (maybe handle last id via callbacks).
-	return String();
+	std::lock_guard lock(last_event_id_mutex);
+	return last_event_id;
 }
 
 Ref<SentryEvent> CocoaSDK::create_event() {
@@ -206,6 +206,8 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 			if (unlikely(processed.is_null())) {
 				return nil;
 			} else {
+				std::lock_guard lock(last_event_id_mutex);
+				last_event_id = string_from_objc(event.eventId.sentryIdString);
 				return event;
 			}
 		};

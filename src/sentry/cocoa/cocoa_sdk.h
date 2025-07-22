@@ -9,6 +9,10 @@ namespace sentry::cocoa {
 
 // Internal SDK utilizing Sentry Cocoa.
 class CocoaSDK : public InternalSDK {
+private:
+	String last_event_id;
+	std::mutex last_event_id_mutex;
+
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void remove_context(const String &p_key) override;
