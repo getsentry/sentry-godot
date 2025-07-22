@@ -170,6 +170,8 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 
 		options.attachStacktrace = false;
 
+		// TODO: how to set sdk name?
+
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments
 			for (const String &path : p_global_attachments) {
@@ -189,7 +191,24 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 			return scope;
 		};
 
-		// TODO: how to set sdk name?
+		options.beforeSend = ^objc::SentryEvent *(objc::SentryEvent *event) {
+			if (event.error == nil) {
+				// HACK: Remove threads info for non-crash events.
+				//       Threads override our custom-built stacktrace for scripts.
+				// TODO: This needs to be disabled in sentry-cocoa.
+				event.threads = nil;
+				event.debugMeta = nil;
+			}
+
+			Ref<CocoaEvent> event_obj = memnew(CocoaEvent(event));
+			Ref<CocoaEvent> processed = sentry::process_event(event_obj);
+
+			if (unlikely(processed.is_null())) {
+				return nil;
+			} else {
+				return event;
+			}
+		};
 	}];
 }
 
