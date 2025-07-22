@@ -118,7 +118,7 @@ String CocoaSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	CocoaEvent *typed_event = Object::cast_to<CocoaEvent>(p_event.ptr());
 	objc::SentryEvent *cocoa_event = (objc::SentryEvent *)typed_event->get_cocoa_event();
 	objc::SentryId *event_id = [objc::SentrySDK captureEvent:cocoa_event];
-	return event_id ? string_from_objc([event_id sentryIdString]) : String();
+	return event_id ? string_from_objc(event_id.sentryIdString) : String();
 }
 
 void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
