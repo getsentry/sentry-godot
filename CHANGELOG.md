@@ -9,7 +9,7 @@
 ### Fixes
 
 - Allow configuration script to run even if SDK is initially disabled in project settings ([#258](https://github.com/getsentry/sentry-godot/pull/258))
-- Context-related errors generated at runtime with early intialization ([#264](https://github.com/getsentry/sentry-godot/pull/264))
+- Fixed context-related errors generated at runtime with early intialization ([#264](https://github.com/getsentry/sentry-godot/pull/264))
 
 ## 1.0.0-alpha.1
 
