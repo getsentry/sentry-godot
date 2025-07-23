@@ -1,6 +1,6 @@
 # Sentry for Godot Engine
 
-Sentry for Godot helps you monitor your game's health after release. It provides insights into crash reports, script errors, hardware information, user feedback, and more through an intuitive web dashboard. With automatic error reporting, release tracking, and AI-assisted analysis, you can quickly identify, prioritize, and resolve issues for better player experience.
+Sentry for Godot helps you monitor your game's health during QA and after release. It provides insights into crash reports, script errors, hardware information, user feedback, attachments and more through real-time alerting an intuitive web dashboard. With automatic error reporting, release tracking, and AI-assisted analysis, you can quickly identify, prioritize, and resolve issues for better player experience.
 
 **Architecture**: Built as a C++ GDExtension library using mature Sentry SDKs like [sentry-native](https://github.com/getsentry/sentry-native) as the foundation.
 
