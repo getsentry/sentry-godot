@@ -149,7 +149,10 @@ namespace sentry {
 void SentryLogger::_connect_process_frame() {
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	if (scene_tree) {
-		scene_tree->connect("process_frame", callable_mp(this, &SentryLogger::_process_frame));
+		Callable callable = callable_mp(this, &SentryLogger::_process_frame);
+		if (!scene_tree->is_connected("process_frame", callable)) {
+			scene_tree->connect("process_frame", callable);
+		}
 	} else {
 		ERR_PRINT("Sentry: Failed to connect `process_frame` signal – main loop is null");
 	}
