@@ -116,7 +116,7 @@ Ref<SentryEvent> CocoaSDK::create_event() {
 String CocoaSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Sentry: Can't capture event - event object is null.");
 	CocoaEvent *typed_event = Object::cast_to<CocoaEvent>(p_event.ptr());
-	objc::SentryEvent *cocoa_event = (objc::SentryEvent *)typed_event->get_cocoa_event();
+	objc::SentryEvent *cocoa_event = typed_event->get_cocoa_event();
 	objc::SentryId *event_id = [objc::SentrySDK captureEvent:cocoa_event];
 	return event_id ? string_from_objc(event_id.sentryIdString) : String();
 }

@@ -1,6 +1,8 @@
 #ifndef COCOA_INCLUDES_H
 #define COCOA_INCLUDES_H
 
+#ifdef __OBJC__
+
 #import <MetricKit/MetricKit.h>
 #import <Sentry/Sentry-Swift.h>
 
@@ -21,5 +23,14 @@ using SentryStacktrace = ::SentryStacktrace;
 using SentryFrame = ::SentryFrame;
 
 } // namespace objc
+
+#else // C++ context
+
+// In C++ context, make objc::SentryEvent an alias to void
+namespace objc {
+using SentryEvent = void;
+} // namespace objc
+
+#endif
 
 #endif // COCOA_INCLUDES_H

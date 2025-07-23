@@ -1,6 +1,7 @@
 #ifndef COCOA_EVENT_H
 #define COCOA_EVENT_H
 
+#include "sentry/cocoa/cocoa_includes.h"
 #include "sentry/sentry_event.h"
 
 namespace sentry::cocoa {
@@ -9,13 +10,13 @@ class CocoaEvent : public sentry::SentryEvent {
 	GDCLASS(CocoaEvent, sentry::SentryEvent);
 
 private:
-	void *cocoa_event = nullptr;
+	objc::SentryEvent *cocoa_event = nullptr;
 
 protected:
 	static void _bind_methods() {}
 
 public:
-	_FORCE_INLINE_ void *get_cocoa_event() const { return cocoa_event; }
+	_FORCE_INLINE_ objc::SentryEvent *get_cocoa_event() const { return cocoa_event; }
 
 	virtual String get_id() const override;
 
@@ -52,7 +53,7 @@ public:
 
 	virtual bool is_crash() const override;
 
-	CocoaEvent(void *p_cocoa_event);
+	CocoaEvent(objc::SentryEvent *p_cocoa_event);
 	CocoaEvent();
 	virtual ~CocoaEvent() override;
 };
