@@ -2,6 +2,7 @@
 
 #include "cocoa_includes.h"
 #include "cocoa_util.h"
+#include "sentry/util/timestamp.h"
 
 namespace {
 
@@ -68,14 +69,29 @@ void CocoaEvent::set_timestamp(const String &p_timestamp) {
 	objc::SentryEvent *cocoa_event = _get_typed_cocoa_event(this);
 	ERR_FAIL_NULL(cocoa_event);
 
-	ERR_FAIL_MSG("not implemented");
+	if (p_timestamp.is_empty()) {
+		cocoa_event.timestamp = nil;
+		return;
+	}
+
+	int64_t microseconds = sentry::util::rfc3339_timestamp_to_microseconds(p_timestamp.ascii());
+	NSTimeInterval seconds = microseconds * 0.000'001;
+
+	cocoa_event.timestamp = [NSDate dateWithTimeIntervalSince1970:seconds];
 }
 
 String CocoaEvent::get_timestamp() const {
 	objc::SentryEvent *cocoa_event = _get_typed_cocoa_event(this);
 	ERR_FAIL_NULL_V(cocoa_event, String());
 
-	ERR_FAIL_V_MSG(String(), "not implemented");
+	if (cocoa_event.timestamp == nil) {
+		return String();
+	}
+
+	NSTimeInterval seconds = [cocoa_event.timestamp timeIntervalSince1970];
+	int64_t microseconds = (int64_t)(seconds * 1000'000.0);
+
+	return sentry::util::microseconds_to_rfc3339_timestamp(microseconds);
 }
 
 String CocoaEvent::get_platform() const {
