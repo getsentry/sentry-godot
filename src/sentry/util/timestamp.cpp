@@ -114,8 +114,13 @@ godot::String microseconds_to_rfc3339_timestamp(int64_t p_microseconds_since_uni
 	time_t secs = static_cast<time_t>(seconds);
 	struct tm *tm;
 
-#if defined(WINDOWS_ENABLED)
-	tm = gmtime(&secs);
+#ifdef WINDOWS_ENABLED
+	struct tm tm_buf;
+	if (gmtime_s(&tm_buf, &secs) != 0) {
+		tm = nullptr;
+	} else {
+		tm = &tm_buf;
+	}
 #else
 	struct tm tm_buf;
 	tm = gmtime_r(&secs, &tm_buf);
