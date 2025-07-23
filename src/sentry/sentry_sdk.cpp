@@ -242,6 +242,11 @@ void SentrySDK::_initialize() {
 		sentry::util::print_debug("Sentry SDK is disabled in the editor. Tip: This can be changed in the project settings.");
 	}
 
+	if (!Engine::get_singleton()->is_editor_hint() && OS::get_singleton()->has_feature("editor") && SentryOptions::get_singleton()->is_disabled_in_editor_play()) {
+		should_enable = false;
+		sentry::util::print_debug("Sentry SDK is disabled during editor play. Tip: This can be changed in the project settings.");
+	}
+
 	if (should_enable) {
 #ifdef NATIVE_SDK
 		internal_sdk = std::make_shared<NativeSDK>();

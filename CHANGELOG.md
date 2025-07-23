@@ -5,6 +5,7 @@
 ### Features
 
 - Auto-enable required project settings ([#260](https://github.com/getsentry/sentry-godot/pull/260))
+- Add `disabled_in_editor_play` option ([#262](https://github.com/getsentry/sentry-godot/pull/262))
 
 ### Fixes
 

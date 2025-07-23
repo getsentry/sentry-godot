@@ -52,6 +52,9 @@
 		<member name="disabled_in_editor" type="bool" setter="set_disabled_in_editor" getter="is_disabled_in_editor" default="true">
 			If [code]true[/code], the SDK will not initialize in the Godot editor.
 		</member>
+		<member name="disabled_in_editor_play" type="bool" setter="set_disabled_in_editor_play" getter="is_disabled_in_editor_play" default="false">
+			If [code]true[/code], the SDK will not initialize when the project is run from within the Godot editor. This differs from [member disabled_in_editor] which prevents initialization when working in the editor itself.
+		</member>
 		<member name="dist" type="String" setter="set_dist" getter="get_dist" default="&quot;&quot;">
 			The application's distribution. Distributions are used to disambiguate build or deployment variants of the same release of an application.
 		</member>
