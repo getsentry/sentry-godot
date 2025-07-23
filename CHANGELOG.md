@@ -9,6 +9,7 @@
 ### Fixes
 
 - Allow configuration script to run even if SDK is initially disabled in project settings ([#258](https://github.com/getsentry/sentry-godot/pull/258))
+- Logger connecting to signal runtime error with early initialization ([#265](https://github.com/getsentry/sentry-godot/pull/265))
 
 ## 1.0.0-alpha.1
 
