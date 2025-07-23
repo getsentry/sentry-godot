@@ -249,12 +249,12 @@ CocoaEvent::CocoaEvent() {
 }
 
 CocoaEvent::CocoaEvent(objc::SentryEvent *p_cocoa_event) {
-	cocoa_event = [(id)p_cocoa_event retain];
+	cocoa_event = [p_cocoa_event retain];
 }
 
 CocoaEvent::~CocoaEvent() {
 	if (cocoa_event) {
-		[(id)cocoa_event release];
+		[cocoa_event release];
 		cocoa_event = nil;
 	}
 }
