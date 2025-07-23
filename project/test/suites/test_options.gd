@@ -14,6 +14,7 @@ func before_test() -> void:
 func test_bool_properties(property: String, test_parameters := [
 		["enabled"],
 		["disabled_in_editor"],
+		["disabled_in_editor_play"],
 		["debug"],
 		["attach_log"],
 		["attach_screenshot"],
