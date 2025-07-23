@@ -245,9 +245,9 @@ void SentrySDK::_initialize() {
 	}
 
 	if (should_enable) {
-#ifdef NATIVE_SDK
+#ifdef SDK_NATIVE
 		internal_sdk = std::make_shared<NativeSDK>();
-#elif ANDROID_ENABLED
+#elif SDK_ANDROID
 		if (unlikely(OS::get_singleton()->has_feature("editor"))) {
 			sentry::util::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
 			should_enable = false;
