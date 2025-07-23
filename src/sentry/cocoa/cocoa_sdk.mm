@@ -100,7 +100,7 @@ String CocoaSDK::capture_message(const String &p_message, Level p_level) {
 													scope.level = sentry_level_to_objc(p_level);
 												}];
 
-	return event_id ? string_from_objc([event_id sentryIdString]) : String();
+	return event_id ? string_from_objc(event_id.sentryIdString) : String();
 }
 
 String CocoaSDK::get_last_event_id() {

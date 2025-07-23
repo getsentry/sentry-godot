@@ -14,6 +14,7 @@ inline NSMutableDictionary *as_mutable_dict(NSDictionary *p_dict) {
 }
 
 // clang-format off
+
 // Access NSDictionary property of an object as mutable (create a copy if needed).
 #define AS_MUTABLE_DICT(obj, prop) 												\
     ([obj.prop isKindOfClass:[NSMutableDictionary class]] ? 					\

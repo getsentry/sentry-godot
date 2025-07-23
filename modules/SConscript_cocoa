@@ -152,7 +152,7 @@ if platform in ["macos", "ios"]:
             print(f"ERROR: Sentry.framework not found at {framework_dir}.")
             Exit(1)
 
-        framework_container_dir = str(framework_dir.parent.absolute())
+        framework_container_dir = framework_dir.parent.absolute()
         static_lib_path = framework_dir / "Sentry"
 
         env.Append(

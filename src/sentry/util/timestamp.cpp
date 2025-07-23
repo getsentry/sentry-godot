@@ -47,8 +47,8 @@ int64_t rfc3339_timestamp_to_microseconds(const char *p_formatted_cstring) {
 	cur += num_consumed;
 
 	if (cur[0] == '.') {
-		int fractional = 0;
-		if (sscanf(cur, ".%d%n", &fractional, &num_consumed) < 1 || num_consumed > 10) {
+		int64_t fractional = 0;
+		if (sscanf(cur, ".%lld%n", &fractional, &num_consumed) < 1 || num_consumed > 10) {
 			sentry::util::print_error("Timestamp parsing needs 1-9 fractional digits.");
 			return 0;
 		}
@@ -90,6 +90,7 @@ int64_t rfc3339_timestamp_to_microseconds(const char *p_formatted_cstring) {
 	tm.tm_hour = hour;
 	tm.tm_min = minute;
 	tm.tm_sec = second;
+
 #ifdef WINDOWS_ENABLED
 	time_t time = _mkgmtime(&tm);
 #else
