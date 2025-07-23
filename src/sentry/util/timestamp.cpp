@@ -2,7 +2,16 @@
 
 #include "sentry/util/print.h"
 
+#include <cstdio>
+#include <cstring>
+#include <ctime>
 #include <regex>
+
+#ifdef SENTRY_PLATFORM_WINDOWS
+#include <time.h>
+#endif
+
+using namespace godot;
 
 namespace sentry::util {
 
