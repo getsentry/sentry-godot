@@ -7,7 +7,7 @@
 #include <ctime>
 #include <regex>
 
-#ifdef SENTRY_PLATFORM_WINDOWS
+#ifdef WINDOWS_ENABLED
 #include <time.h>
 #endif
 
@@ -121,7 +121,7 @@ godot::String microseconds_to_rfc3339_timestamp(int64_t p_microseconds_since_uni
 	} else {
 		tm = &tm_buf;
 	}
-#else
+#else // POSIX
 	struct tm tm_buf;
 	tm = gmtime_r(&secs, &tm_buf);
 #endif

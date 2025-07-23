@@ -191,7 +191,11 @@ if platform in ["macos", "ios"]:
         print(f"Added macOS Sentry framework: {framework_dir}")
 
     elif platform == "ios":
-        framework_dir = xcframework_path / "ios-arm64_arm64e/Sentry.framework"
+        if env.get("ios_simulator", False):
+            framework_dir = xcframework_path / "ios-arm64_x86_64-simulator/Sentry.framework"
+        else:
+            framework_dir = xcframework_path / "ios-arm64_arm64e/Sentry.framework"
+
         if not framework_dir.exists():
             print(f"ERROR: Sentry.xcframework is missing at {framework_dir}.")
             Exit(1)
@@ -204,7 +208,11 @@ if platform in ["macos", "ios"]:
         )
 
         xcode_path = detect_xcode()
-        swift_runtime_path = f"{xcode_path}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos"
+
+        if env.get("ios_simulator", False):
+            swift_runtime_path = f"{xcode_path}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator"
+        else:
+            swift_runtime_path = f"{xcode_path}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos"
 
         if not os.path.exists(swift_runtime_path):
             print(f"ERROR: Swift runtime path not found at {swift_runtime_path}")
