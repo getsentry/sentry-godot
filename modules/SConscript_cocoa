@@ -154,46 +154,32 @@ if platform in ["macos", "ios"]:
         ]
     )
 
+    # Add Sentry Cocoa framework to compilation.
+
     if platform == "macos":
         framework_dir = xcframework_path / "macos-arm64_arm64e_x86_64/Sentry.framework"
-        if not framework_dir.exists():
-            print(f"ERROR: Sentry.framework not found at {framework_dir}.")
-            Exit(1)
-
-        framework_container_dir = framework_dir.parent.absolute()
-
-        env.Append(
-            CPPFLAGS=["-F" + str(framework_container_dir)],
-            LINKFLAGS=[
-                "-framework", "Sentry",
-                "-F" + str(framework_container_dir),
-                "-Wl,-rpath,@loader_path/..",
-            ]
-        )
-
-        print(f"Added macOS Sentry dynamic framework: {framework_dir}")
-
-    elif platform == "ios":
+    else:
         if ios_simulator:
             framework_dir = xcframework_path / "ios-arm64_x86_64-simulator/Sentry.framework"
         else:
             framework_dir = xcframework_path / "ios-arm64_arm64e/Sentry.framework"
 
-        if not framework_dir.exists():
-            print(f"ERROR: Sentry-Dynamic.xcframework is missing at {framework_dir}.")
-            Exit(1)
+    if not framework_dir.exists():
+        print(f"ERROR: Sentry.framework is missing at {framework_dir}.")
+        Exit(1)
 
-        framework_container_dir = str(framework_dir.parent.absolute())
-        env.Append(
-            CPPFLAGS=["-F" + framework_container_dir],
-            LINKFLAGS=[
-                "-framework", "Sentry",
-                "-F" + framework_container_dir,
-                "-Wl,-rpath,@loader_path/..",
-            ]
-        )
+    framework_container_dir = framework_dir.parent.absolute()
 
-        print(f"Added iOS Sentry dynamic framework: {framework_dir}")
+    env.Append(
+        CPPFLAGS=["-F" + str(framework_container_dir)],
+        LINKFLAGS=[
+            "-framework", "Sentry",
+            "-F" + str(framework_container_dir),
+            "-Wl,-rpath,@loader_path/..",
+        ]
+    )
+
+    print(f"Added {platform} Sentry dynamic framework: {framework_dir}")
 
 
 ## *** Export pseudo-builders to create xcframeworks
