@@ -2,7 +2,6 @@
 import os
 import subprocess
 from enum import Enum
-from pathlib import Path
 
 
 # *** Settings.
@@ -43,6 +42,7 @@ with open("src/gen/sdk_version.gen.h", "w") as f:
 custom_options = {}
 help_entries = []
 
+
 def add_custom_bool_option(name, description, default=False):
     """Add a custom boolean option with help description."""
     value = ARGUMENTS.get(name, "no" if not default else "yes").lower() in ("yes", "true", "1")
@@ -53,6 +53,7 @@ def add_custom_bool_option(name, description, default=False):
         'default': default,
         'actual': value
     })
+
 
 # Define our custom options
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
@@ -96,6 +97,7 @@ class SDK(Enum):
     ANDROID = 2
     COCOA = 3
 
+
 if platform in ["linux", "windows"]:
     if arch in ["arm64", "arm32", "rv64"]:
         internal_sdk = SDK.DISABLED
@@ -132,7 +134,6 @@ if internal_sdk == SDK.NATIVE:
 
 if internal_sdk == SDK.COCOA:
     env = SConscript("modules/SConscript_cocoa", exports=["env"])
-
 
 
 # *** Build GDExtension library.
@@ -176,10 +177,10 @@ extra = ""
 if platform == "ios":
     # *** Build iOS shared library.
 
-    if env["ios_simulator"] == True:
+    if env["ios_simulator"]:
         extra += ".simulator"
 
-    temp_dir = Dir(f"project/addons/sentry/bin/ios/temp")
+    temp_dir = "project/addons/sentry/bin/ios/temp"
     lib_path = f"{temp_dir}/libsentry.{platform}.{build_type}.{arch}{extra}.dylib"
 
     library = env.SharedLibrary(
@@ -200,8 +201,8 @@ if platform == "ios":
     cocoa_target_path = f"{out_dir}/Sentry.xcframework"
 
     deploy_cocoa_xcframework = env.CreateXCFrameworkFromSlices(
-        target_path = cocoa_target_path,
-        slice_dirs = slice_dirs
+        target_path=cocoa_target_path,
+        slice_dirs=slice_dirs
     )
 
     Default(deploy_cocoa_xcframework)
@@ -234,11 +235,11 @@ elif platform == "macos":
 
     # Deploy Sentry framework for macOS
     if internal_sdk == SDK.COCOA:
-        project_root = Path(env.Dir("#").abspath)
-        source_xcframework = project_root / "modules/sentry-cocoa/Sentry-Dynamic.xcframework"
+        project_root = env.Dir("#").abspath
+        source_xcframework = f"{project_root}/modules/sentry-cocoa/Sentry-Dynamic.xcframework"
 
         cocoa_target_path = f"{out_dir}/Sentry.framework"
-        cocoa_source_path = source_xcframework / "macos-arm64_arm64e_x86_64/Sentry.framework/"
+        cocoa_source_path = f"{source_xcframework}/macos-arm64_arm64e_x86_64/Sentry.framework/"
 
         deploy_cocoa_framework = env.Command(
             cocoa_target_path,
@@ -254,7 +255,7 @@ else:
     # *** Build shared library on other platforms.
 
     # Web builds come in two flavors: with threads and without.
-    if env["threads"] == False:
+    if env["threads"] is False:
         extra += ".nothreads"
 
     library = env.SharedLibrary(
