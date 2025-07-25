@@ -7,14 +7,17 @@ compatibility_minimum = "{compatibility_minimum}"
 
 macos.debug = "res://addons/sentry/bin/macos/libsentry.macos.debug.framework"
 macos.release = "res://addons/sentry/bin/macos/libsentry.macos.release.framework"
+
 windows.debug.x86_64 = "res://addons/sentry/bin/windows/x86_64/libsentry.windows.debug.x86_64.dll"
 windows.release.x86_64 = "res://addons/sentry/bin/windows/x86_64/libsentry.windows.release.x86_64.dll"
 windows.debug.x86_32 = "res://addons/sentry/bin/windows/x86_32/libsentry.windows.debug.x86_32.dll"
 windows.release.x86_32 = "res://addons/sentry/bin/windows/x86_32/libsentry.windows.release.x86_32.dll"
+
 linux.debug.x86_64 = "res://addons/sentry/bin/linux/x86_64/libsentry.linux.debug.x86_64.so"
 linux.release.x86_64 = "res://addons/sentry/bin/linux/x86_64/libsentry.linux.release.x86_64.so"
 linux.debug.x86_32 = "res://addons/sentry/bin/linux/x86_32/libsentry.linux.debug.x86_32.so"
 linux.release.x86_32 = "res://addons/sentry/bin/linux/x86_32/libsentry.linux.release.x86_32.so"
+
 android.debug.arm64 = "res://addons/sentry/bin/android/libsentry.android.debug.arm64.so"
 android.release.arm64 = "res://addons/sentry/bin/android/libsentry.android.release.arm64.so"
 android.debug.arm32 = "res://addons/sentry/bin/android/libsentry.android.debug.arm32.so"
@@ -22,11 +25,10 @@ android.release.arm32 = "res://addons/sentry/bin/android/libsentry.android.relea
 android.debug.x86_64 = "res://addons/sentry/bin/android/libsentry.android.debug.x86_64.so"
 android.release.x86_64 = "res://addons/sentry/bin/android/libsentry.android.release.x86_64.so"
 
+ios.debug = "res://addons/sentry/bin/ios/libsentry.ios.debug.xcframework"
+ios.release = "res://addons/sentry/bin/ios/libsentry.ios.release.xcframework"
+
 ; noop libs for unsupported platforms
-ios.debug.arm64 = "res://addons/sentry/bin/noop/libsentry.ios.debug.arm64.dylib"
-ios.release.arm64 = "res://addons/sentry/bin/noop/libsentry.ios.release.arm64.dylib"
-ios.debug.simulator = "res://addons/sentry/bin/noop/libsentry.ios.debug.universal.simulator.dylib"
-ios.release.simulator = "res://addons/sentry/bin/noop/libsentry.ios.release.universal.simulator.dylib"
 web.debug.wasm32 = "res://addons/sentry/bin/noop/libsentry.web.debug.wasm32.nothreads.wasm"
 web.release.wasm32 = "res://addons/sentry/bin/noop/libsentry.web.release.wasm32.nothreads.wasm"
 web.debug.threads.wasm32 = "res://addons/sentry/bin/noop/libsentry.web.debug.wasm32.wasm"
@@ -56,6 +58,18 @@ windows.x86_32 = {
 	"res://addons/sentry/bin/windows/x86_32/crashpad_handler.exe" : ""
 }
 
-macos = {
-	"res://addons/sentry/bin/macos/crashpad_handler" : ""
+macos.debug = {
+  "res://addons/sentry/bin/macos/Sentry.framework": ""
+}
+
+macos.release = {
+  "res://addons/sentry/bin/macos/Sentry.framework": ""
+}
+
+ios.debug = {
+  "res://addons/sentry/bin/ios/Sentry.xcframework": "",
+}
+
+ios.release = {
+  "res://addons/sentry/bin/ios/Sentry.xcframework": "",
 }

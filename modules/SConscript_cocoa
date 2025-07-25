@@ -6,6 +6,7 @@ import zipfile
 import os
 import stat
 import subprocess
+import shutil
 from pathlib import Path
 
 Import("env")
@@ -18,6 +19,15 @@ def get_property(prop_name, file_path):
             if line.startswith(prop_name):
                 return line.split('=')[1].strip().strip('"')
     raise KeyError(f"Property '{prop_name}' not found in {file_path}")
+
+
+def remove_if_exists(filesystem_path):
+    """Remove directory tree, file or link."""
+    path = Path(filesystem_path)
+    if path.is_dir():
+        shutil.rmtree(path)
+    elif path.is_file() or path.is_symlink():
+        path.unlink()
 
 
 def extract_zip_with_symlinks(zip_path, extract_to):
@@ -84,7 +94,7 @@ def update_cocoa_framework():
             stored_version = version_file.read_text().strip()
             if stored_version == cocoa_version:
                 # Check if framework actually exists
-                xcframework_path = cocoa_dir / "Sentry.xcframework"
+                xcframework_path = cocoa_dir / "Sentry-Dynamic.xcframework"
                 if xcframework_path.exists():
                     should_download = False
                     print(f"Detected Sentry Cocoa SDK v{cocoa_version} – up-to-date!")
@@ -95,15 +105,13 @@ def update_cocoa_framework():
         print(f"Fetching Sentry Cocoa SDK v{cocoa_version}")
 
         # Clean up existing framework directory
-        if cocoa_dir.exists():
-            import shutil
-            shutil.rmtree(cocoa_dir)
+        remove_if_exists(cocoa_dir)
 
         cocoa_dir.mkdir(parents=True, exist_ok=True)
 
-        # Download framework
-        framework_url = f"{cocoa_repo}/releases/download/{cocoa_version}/Sentry.xcframework.zip"
-        zip_path = cocoa_dir / "Sentry.xcframework.zip"
+        # Download dynamic framework
+        framework_url = f"{cocoa_repo}/releases/download/{cocoa_version}/Sentry-Dynamic.xcframework.zip"
+        zip_path = cocoa_dir / "Sentry-Dynamic.xcframework.zip"
 
         try:
             print(f"Downloading {framework_url}")
@@ -115,7 +123,7 @@ def update_cocoa_framework():
             zip_path.unlink() # delete file
             version_file.write_text(cocoa_version)
 
-            print(f"Successfully fetched Sentry.xcframework {cocoa_version}.")
+            print(f"Successfully fetched Sentry-Dynamic.xcframework {cocoa_version}.")
 
         except Exception as e:
             print(f"ERROR: Failed to download Sentry framework: {e}.")
@@ -128,13 +136,13 @@ platform = env["platform"]
 ios_simulator = env.get("ios_simulator", False)
 
 
-# Configuring framework.
+# Configuring Cocoa framework.
 if platform in ["macos", "ios"]:
     project_root = Path(env.Dir("#").abspath)
-    xcframework_path = project_root / "modules/sentry-cocoa/Sentry.xcframework"
+    xcframework_path = project_root / "modules/sentry-cocoa/Sentry-Dynamic.xcframework"
 
     if not xcframework_path.exists():
-        print(f"ERROR: Sentry.xcframework is missing at {xcframework_path}.")
+        print(f"ERROR: Sentry-Dynamic.xcframework is missing at {xcframework_path}.")
         Exit(1)
 
     env.Append(
@@ -153,44 +161,17 @@ if platform in ["macos", "ios"]:
             Exit(1)
 
         framework_container_dir = framework_dir.parent.absolute()
-        static_lib_path = framework_dir / "Sentry"
 
         env.Append(
             CPPFLAGS=["-F" + str(framework_container_dir)],
             LINKFLAGS=[
-                str(static_lib_path),
+                "-framework", "Sentry",
+                "-F" + str(framework_container_dir),
+                "-Wl,-rpath,@loader_path/..",
             ]
         )
 
-        xcode_path = detect_xcode()
-        swift_runtime_path = f"{xcode_path}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
-
-        if not os.path.exists(swift_runtime_path):
-            print(f"ERROR: Swift runtime path not found at {swift_runtime_path}")
-            Exit(1)
-
-        swift_libs = [
-            f"{swift_runtime_path}/libswiftCompatibility50.a",
-            f"{swift_runtime_path}/libswiftCompatibility51.a",
-            f"{swift_runtime_path}/libswiftCompatibility56.a",
-            f"{swift_runtime_path}/libswiftCompatibilityConcurrency.a",
-            f"{swift_runtime_path}/libswiftCompatibilityDynamicReplacements.a",
-            f"{swift_runtime_path}/libswiftCompatibilityPacks.a"
-        ]
-
-        for lib in swift_libs:
-            if not os.path.exists(lib):
-                print(f"ERROR: Swift static library not found: {lib}")
-                Exit(1)
-
-        env.Append(
-            LINKFLAGS=[
-                "-L" + swift_runtime_path,
-                "-Wl,-search_paths_first", # ensure static libraries are preferred
-            ] + swift_libs
-        )
-
-        print(f"Added macOS Sentry framework: {framework_dir}")
+        print(f"Added macOS Sentry dynamic framework: {framework_dir}")
 
     elif platform == "ios":
         if ios_simulator:
@@ -199,49 +180,129 @@ if platform in ["macos", "ios"]:
             framework_dir = xcframework_path / "ios-arm64_arm64e/Sentry.framework"
 
         if not framework_dir.exists():
-            print(f"ERROR: Sentry.xcframework is missing at {framework_dir}.")
+            print(f"ERROR: Sentry-Dynamic.xcframework is missing at {framework_dir}.")
             Exit(1)
 
         framework_container_dir = str(framework_dir.parent.absolute())
         env.Append(
-            FRAMEWORKPATH=[framework_container_dir],
-            FRAMEWORKS=["Sentry"],
             CPPFLAGS=["-F" + framework_container_dir],
+            LINKFLAGS=[
+                "-framework", "Sentry",
+                "-F" + framework_container_dir,
+                "-Wl,-rpath,@loader_path/..",
+            ]
         )
 
-        xcode_path = detect_xcode()
+        print(f"Added iOS Sentry dynamic framework: {framework_dir}")
 
-        if ios_simulator:
-            swift_runtime_path = f"{xcode_path}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator"
-        else:
-            swift_runtime_path = f"{xcode_path}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos"
 
-        if not os.path.exists(swift_runtime_path):
-            print(f"ERROR: Swift runtime path not found at {swift_runtime_path}")
-            Exit(1)
+## *** Export pseudo-builders to create xcframeworks
 
-        # Verify Swift static libraries exist for iOS
-        swift_libs_ios = [
-            f"{swift_runtime_path}/libswiftCompatibility50.a",
-            f"{swift_runtime_path}/libswiftCompatibility51.a",
-            f"{swift_runtime_path}/libswiftCompatibility56.a",
-            f"{swift_runtime_path}/libswiftCompatibilityConcurrency.a",
-            f"{swift_runtime_path}/libswiftCompatibilityDynamicReplacements.a",
-            f"{swift_runtime_path}/libswiftCompatibilityPacks.a"
-        ]
+def CreateXCFrameworkFromLibs(self, framework_path, libraries):
+    """Create an xcframework from multiple libraries."""
 
-        for lib in swift_libs_ios:
-            if not os.path.exists(lib):
-                print(f"ERROR: Swift static library not found: {lib}")
-                Exit(1)
+    def create_xcframework_action(target, source, env):
+        # Check if all expected libraries exist at build time
+        missing_libs = [lib for lib in libraries if not os.path.exists(str(lib))]
 
-        env.Append(LINKFLAGS=[
-            "-F" + framework_container_dir,
-            "-framework", "Sentry",
-            "-L" + swift_runtime_path,
-            "-Wl,-search_paths_first", # prefer static libs
-        ] + swift_libs_ios)
+        if missing_libs:
+            print("ERROR: Missing libraries for xcframework:")
+            for lib in missing_libs:
+                print(f"  {lib}")
+            print("Tip: Build all required variants first.")
+            return 1
 
-        print(f"Added iOS Sentry framework: {framework_dir}")
+        print(f"Creating xcframework from {len(libraries)} libraries...")
+
+        remove_if_exists(framework_path)
+
+        # Generate xcodebuild command
+        cmd = ["xcodebuild", "-create-xcframework"]
+        for lib in libraries:
+            cmd.extend(["-library", str(lib)])
+        cmd.extend(["-output", framework_path])
+
+        print(f"Running: {' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            print("ERROR: Failed creating xcframework:")
+            print(result.stdout)
+            print(result.stderr)
+            return 1
+
+        print(f"Successfully created: {framework_path}")
+        return 0
+
+    xcframework = env.Command(
+        framework_path,
+        libraries,
+        create_xcframework_action
+    )
+    env.AlwaysBuild(xcframework)
+
+    return xcframework
+
+
+def CreateXCFrameworkFromSlices(self, target_path, slice_dirs):
+    """Create an xcframework from selected framework slices."""
+
+    def create_framework_from_slices_action(target, source, env):
+        # Check if all expected slice directories exist at build time
+        missing_slices = [slice_dir for slice_dir in slice_dirs if not os.path.exists(str(slice_dir))]
+
+        if missing_slices:
+            print("ERROR: Missing framework slices:")
+            for slice_dir in missing_slices:
+                print(f"  {slice_dir}")
+            return 1
+
+        print(f"Creating xcframework from {len(slice_dirs)} framework slices...")
+
+        remove_if_exists(target_path)
+
+        # Run xcodebuild command
+        cmd = ["xcodebuild", "-create-xcframework"]
+        for slice_dir in slice_dirs:
+            # Each slice directory should contain a .framework
+            framework_path = None
+            if os.path.isdir(slice_dir):
+                for item in os.listdir(slice_dir):
+                    if item.endswith('.framework'):
+                        framework_path = os.path.join(slice_dir, item)
+                        break
+
+            if not framework_path or not os.path.exists(framework_path):
+                print(f"ERROR: No .framework found in slice directory: {slice_dir}")
+                return 1
+
+            cmd.extend(["-framework", framework_path])
+
+        cmd.extend(["-output", target_path])
+
+        print(f"Running: {' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            print("ERROR: Failed creating xcframework from slices:")
+            print(result.stdout)
+            print(result.stderr)
+            return 1
+
+        print(f"Successfully created xcframework: {target_path}")
+        return 0
+
+    xcframework = env.Command(
+        target_path,
+        slice_dirs,
+        create_framework_from_slices_action
+    )
+    env.AlwaysBuild(xcframework)
+
+    return xcframework
+
+
+env.AddMethod(CreateXCFrameworkFromLibs, "CreateXCFrameworkFromLibs")
+env.AddMethod(CreateXCFrameworkFromSlices, "CreateXCFrameworkFromSlices")
 
 Return("env")

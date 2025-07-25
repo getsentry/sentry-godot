@@ -2,6 +2,7 @@
 import os
 import subprocess
 from enum import Enum
+from pathlib import Path
 
 
 # *** Settings.
@@ -37,6 +38,33 @@ with open("src/gen/sdk_version.gen.h", "w") as f:
     f.write(version_header_content)
 
 
+# *** Custom options system.
+
+custom_options = {}
+help_entries = []
+
+def add_custom_bool_option(name, description, default=False):
+    """Add a custom boolean option with help description."""
+    value = ARGUMENTS.get(name, "no" if not default else "yes").lower() in ("yes", "true", "1")
+    custom_options[name] = value
+    help_entries.append({
+        'name': name,
+        'description': description,
+        'default': default,
+        'actual': value
+    })
+
+# Define our custom options
+add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
+
+# Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
+# Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
+original_arguments = dict(ARGUMENTS)
+for key in custom_options.keys():
+    if key in ARGUMENTS:
+        del ARGUMENTS[key]
+
+
 # *** Build godot-cpp.
 
 print("Reading godot-cpp build configuration...")
@@ -44,6 +72,20 @@ env = SConscript("modules/godot-cpp/SConstruct")
 
 platform = env["platform"]
 arch = env["arch"]
+
+# Restore original ARGUMENTS and add custom options to environment
+ARGUMENTS.clear()
+ARGUMENTS.update(original_arguments)
+for name, value in custom_options.items():
+    env[name] = value
+
+# Generate help for custom options
+help_text = "\nCustom sentry-godot-cocoa options:\n"
+for entry in help_entries:
+    help_text += f"\n{entry['name']}: {entry['description']} (yes|no)\n"
+    help_text += f"    default: {entry['default']}\n"
+    help_text += f"    actual: {entry['actual']}\n"
+Help(help_text)
 
 
 # *** Select internal SDK and out_dir.
@@ -92,6 +134,7 @@ if internal_sdk == SDK.COCOA:
     env = SConscript("modules/SConscript_cocoa", exports=["env"])
 
 
+
 # *** Build GDExtension library.
 
 # Include relative to project source root.
@@ -126,25 +169,99 @@ if env["target"] in ["editor", "template_debug"]:
         print("Not including class reference as we're targeting a pre-4.3 baseline.")
 
 build_type = "release" if env["target"] == "template_release" else "debug"
+shlib_suffix = env["SHLIBSUFFIX"]
+extra = ""
 
-if platform == "macos":
-    library = env.SharedLibrary(
-        f"{out_dir}/libsentry.{platform}.{build_type}.framework/libsentry.{platform}.{build_type}",
-        source=sources,
-    )
-else:
-    extra = ""
-    if env["threads"] == False:
-        extra += ".nothreads"
+
+if platform == "ios":
+    # *** Build iOS shared library.
+
     if env["ios_simulator"] == True:
         extra += ".simulator"
-    shlib_suffix = env["SHLIBSUFFIX"]
+
+    temp_dir = Dir(f"project/addons/sentry/bin/ios/temp")
+    lib_path = f"{temp_dir}/libsentry.{platform}.{build_type}.{arch}{extra}.dylib"
+
+    library = env.SharedLibrary(
+        lib_path,
+        source=sources,
+    )
+
+    Default(library)
+    Clean(library, File(lib_path))
+
+    # Deploy Sentry Cocoa XCFramework for iOS (both device and simulator).
+    project_root = env.Dir("#").abspath
+    source_xcframework = f"{project_root}/modules/sentry-cocoa/Sentry-Dynamic.xcframework"
+    slice_dirs = [
+        f"{source_xcframework}/ios-arm64_arm64e",
+        f"{source_xcframework}/ios-arm64_x86_64-simulator"
+    ]
+    cocoa_target_path = f"{out_dir}/Sentry.xcframework"
+
+    deploy_cocoa_xcframework = env.CreateXCFrameworkFromSlices(
+        target_path = cocoa_target_path,
+        slice_dirs = slice_dirs
+    )
+
+    Default(deploy_cocoa_xcframework)
+    Clean(deploy_cocoa_xcframework, cocoa_target_path)
+
+    # Generate XCFramework for GDExtension libs if requested
+    if env.get("generate_ios_framework", False):
+        device_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.arm64.dylib"
+        simulator_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.universal.simulator.dylib"
+        xcframework_path = f"{out_dir}/libsentry.{platform}.{build_type}.xcframework"
+
+        xcframework = env.CreateXCFrameworkFromLibs(
+            framework_path=xcframework_path,
+            libraries=[device_lib, simulator_lib],
+        )
+
+        env.Depends(xcframework, library)
+        Default(xcframework)
+        Clean(xcframework, Dir(xcframework_path))
+
+
+elif platform == "macos":
+    # *** Build macOS shared library.
+
+    library = env.SharedLibrary(
+        f"{out_dir}/libsentry.{platform}.{build_type}.framework/libsentry.{platform}.{build_type}{extra}",
+        source=sources,
+    )
+    Default(library)
+
+    # Deploy Sentry framework for macOS
+    if internal_sdk == SDK.COCOA:
+        project_root = Path(env.Dir("#").abspath)
+        source_xcframework = project_root / "modules/sentry-cocoa/Sentry-Dynamic.xcframework"
+
+        cocoa_target_path = f"{out_dir}/Sentry.framework"
+        cocoa_source_path = source_xcframework / "macos-arm64_arm64e_x86_64/Sentry.framework/"
+
+        deploy_cocoa_framework = env.Command(
+            cocoa_target_path,
+            cocoa_source_path,
+            [
+                Copy("$TARGET", "$SOURCE")
+            ]
+        )
+        Default(deploy_cocoa_framework)
+        Clean(deploy_cocoa_framework, cocoa_target_path)
+
+else:
+    # *** Build shared library on other platforms.
+
+    # Web builds come in two flavors: with threads and without.
+    if env["threads"] == False:
+        extra += ".nothreads"
+
     library = env.SharedLibrary(
         f"{out_dir}/libsentry.{platform}.{build_type}.{arch}{extra}{shlib_suffix}",
         source=sources,
     )
-
-Default(library)
+    Default(library)
 
 
 # *** Deploy extension manifest.
