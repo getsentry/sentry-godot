@@ -108,6 +108,9 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 
 Dictionary make_device_context_update() {
 	Dictionary device_context = Dictionary();
+	ERR_FAIL_NULL_V(DisplayServer::get_singleton(), device_context);
+	ERR_FAIL_NULL_V(OS::get_singleton(), device_context);
+
 	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
 	device_context["orientation"] = _screen_orientation_as_string(primary_screen);
 

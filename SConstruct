@@ -7,7 +7,7 @@ from pathlib import Path
 
 # *** Settings.
 
-VERSION = "1.0.0-alpha.1"
+VERSION = "1.0.0-alpha.2"
 COMPATIBILITY_MINIMUM = "4.5"
 
 

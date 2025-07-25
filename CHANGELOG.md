@@ -1,14 +1,17 @@
 # Changelog
 
-## Unreleased
+## 1.0.0-alpha.2
 
 ### Features
 
 - Auto-enable required project settings ([#260](https://github.com/getsentry/sentry-godot/pull/260))
+- Add `disabled_in_editor_play` option ([#262](https://github.com/getsentry/sentry-godot/pull/262))
 
 ### Fixes
 
 - Allow configuration script to run even if SDK is initially disabled in project settings ([#258](https://github.com/getsentry/sentry-godot/pull/258))
+- Fix runtime errors with logger connecting to signal and early initialization ([#265](https://github.com/getsentry/sentry-godot/pull/265))
+- Fix context-related errors generated at runtime with early intialization ([#264](https://github.com/getsentry/sentry-godot/pull/264))
 
 ## 1.0.0-alpha.1
 

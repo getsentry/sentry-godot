@@ -49,6 +49,8 @@ private:
 	// Filter: Remove messages from breadcrumbs which start with any of these prefixes.
 	std::vector<String> filter_by_prefix;
 
+	void _connect_process_frame();
+	void _disconnect_process_frame();
 	void _process_frame();
 
 protected:

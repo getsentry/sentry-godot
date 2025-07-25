@@ -50,6 +50,7 @@ private:
 
 	bool enabled = true;
 	bool disabled_in_editor = true;
+	bool disabled_in_editor_play = false;
 	String dsn = "";
 	String release = "{app_name}@{app_version}";
 	String dist = "";
@@ -96,6 +97,9 @@ public:
 
 	_FORCE_INLINE_ bool is_disabled_in_editor() const { return disabled_in_editor; }
 	_FORCE_INLINE_ void set_disabled_in_editor(bool p_disabled_in_editor) { disabled_in_editor = p_disabled_in_editor; }
+
+	_FORCE_INLINE_ bool is_disabled_in_editor_play() const { return disabled_in_editor_play; }
+	_FORCE_INLINE_ void set_disabled_in_editor_play(bool p_disabled_in_editor_play) { disabled_in_editor_play = p_disabled_in_editor_play; }
 
 	_FORCE_INLINE_ String get_dsn() const { return dsn; }
 	_FORCE_INLINE_ void set_dsn(const String &p_dsn) { dsn = p_dsn; }

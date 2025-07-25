@@ -244,6 +244,11 @@ void SentrySDK::_initialize() {
 		sentry::util::print_debug("Sentry SDK is disabled in the editor. Tip: This can be changed in the project settings.");
 	}
 
+	if (!Engine::get_singleton()->is_editor_hint() && OS::get_singleton()->has_feature("editor") && SentryOptions::get_singleton()->is_disabled_in_editor_play()) {
+		should_enable = false;
+		sentry::util::print_debug("Sentry SDK is disabled during editor play. Tip: This can be changed in the project settings.");
+	}
+
 	if (should_enable) {
 #ifdef SDK_NATIVE
 		internal_sdk = std::make_shared<NativeSDK>();
@@ -285,7 +290,6 @@ void SentrySDK::_initialize() {
 	}
 
 	internal_sdk->initialize(_get_global_attachments());
-	_init_contexts();
 
 	if (SentryOptions::get_singleton()->is_logger_enabled()) {
 		logger.instantiate();
@@ -383,6 +387,7 @@ SentrySDK::SentrySDK() {
 #endif
 
 	if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
+		// Early initialization path.
 		_initialize();
 		// Delay contexts initialization until the engine singletons are ready.
 		callable_mp(this, &SentrySDK::_init_contexts).call_deferred();

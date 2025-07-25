@@ -146,6 +146,26 @@ Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
 
 namespace sentry {
 
+void SentryLogger::_connect_process_frame() {
+	SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+	if (scene_tree) {
+		Callable callable = callable_mp(this, &SentryLogger::_process_frame);
+		if (!scene_tree->is_connected("process_frame", callable)) {
+			scene_tree->connect("process_frame", callable);
+		}
+	} else {
+		ERR_PRINT("Sentry: Failed to connect `process_frame` signal – main loop is null");
+	}
+}
+
+void SentryLogger::_disconnect_process_frame() {
+	SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+	Callable callable = callable_mp(this, &SentryLogger::_process_frame);
+	if (scene_tree && scene_tree->is_connected("process_frame", callable)) {
+		scene_tree->disconnect("process_frame", callable);
+	}
+}
+
 void SentryLogger::_process_frame() {
 	// NOTE: It's important not to push errors from within this function to avoid deadlocks.
 	std::lock_guard lock{ error_mutex };
@@ -280,13 +300,10 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 void SentryLogger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
-			// Connect process function.
-			SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-			if (scene_tree) {
-				scene_tree->connect("process_frame", callable_mp(this, &SentryLogger::_process_frame));
-			} else {
-				ERR_PRINT("Sentry: Failed to connect `process_frame` signal – main loop is null");
-			}
+			callable_mp(this, &SentryLogger::_connect_process_frame).call_deferred();
+		} break;
+		case NOTIFICATION_PREDELETE: {
+			_disconnect_process_frame();
 		} break;
 	}
 }
