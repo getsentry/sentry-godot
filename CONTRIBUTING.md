@@ -72,7 +72,7 @@ scons target=editor debug_symbols=yes platform=android
 
 ### iOS
 
-Building for iOS requires making separate builds for device and simulator architectures, then combining them into a universal XCFramework using the `generate_ios_framework=yes` option:
+Building for iOS requires making separate builds for device and simulator architectures, then combining them into an XCFramework using the `generate_ios_framework=yes` option:
 
 ```bash
 scons platform=ios target=editor arch=arm64 ios_simulator=no
