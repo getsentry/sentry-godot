@@ -59,7 +59,6 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/options/enabled", p_options->enabled);
 	_define_setting("sentry/options/disabled_in_editor_play", p_options->disabled_in_editor_play);
-	_requires_restart("sentry/options/disabled_in_editor");
 	_define_setting("sentry/options/dsn", p_options->dsn);
 	_define_setting("sentry/options/release", p_options->release, false);
 	_define_setting("sentry/options/dist", p_options->dist, false);
