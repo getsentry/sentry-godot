@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Prevent feedback loops in SentryLogger ([#275](https://github.com/getsentry/sentry-godot/pull/275))
 - Fix `release` option not honored if set to a custom value in the project settings, and fix parsing of `app_name`/`app_version` replacement tokens if set via a configuration script. ([#276](https://github.com/getsentry/sentry-godot/pull/276))
 
 ## 1.0.0-alpha.2
