@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fix `release` option value ignored ([#276](https://github.com/getsentry/sentry-godot/pull/276))
+
 ## 1.0.0-alpha.2
 
 ### Features
