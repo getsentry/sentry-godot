@@ -105,7 +105,7 @@ public:
 	_FORCE_INLINE_ void set_dsn(const String &p_dsn) { dsn = p_dsn; }
 
 	_FORCE_INLINE_ String get_release() const { return release; }
-	_FORCE_INLINE_ void set_release(const String &p_release) { release = p_release; }
+	void set_release(const String &p_release);
 
 	_FORCE_INLINE_ void set_dist(const String &p_dist) { dist = p_dist; }
 	_FORCE_INLINE_ String get_dist() const { return dist; }

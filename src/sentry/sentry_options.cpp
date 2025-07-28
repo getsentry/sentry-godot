@@ -93,18 +93,11 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	String app_name = ProjectSettings::get_singleton()->get_setting("application/config/name", "Unknown Godot project");
-	String app_version = ProjectSettings::get_singleton()->get_setting("application/config/version", "noversion");
-	String release_str = ProjectSettings::get_singleton()->get_setting("application/config/release", p_options->release);
-	Dictionary format_params;
-	format_params["app_name"] = app_name;
-	format_params["app_version"] = app_version;
-	p_options->release = release_str.format(format_params).utf8();
-
 	p_options->enabled = ProjectSettings::get_singleton()->get_setting("sentry/options/enabled", p_options->enabled);
 	p_options->disabled_in_editor = ProjectSettings::get_singleton()->get_setting("sentry/options/disabled_in_editor", p_options->disabled_in_editor);
 	p_options->disabled_in_editor_play = ProjectSettings::get_singleton()->get_setting("sentry/options/disabled_in_editor_play", p_options->disabled_in_editor_play);
 	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
+	p_options->set_release(ProjectSettings::get_singleton()->get_setting("sentry/options/release", p_options->release));
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/options/dist", p_options->dist);
 
 	// DebugMode is only used to represent the debug option in the project settings.
@@ -162,6 +155,16 @@ void SentryOptions::set_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
 	if (logger_limits.is_null()) {
 		logger_limits.instantiate();
 	}
+}
+
+void SentryOptions::set_release(const String &p_release) {
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+	String app_name = ProjectSettings::get_singleton()->get_setting("application/config/name", "Unknown Godot project");
+	String app_version = ProjectSettings::get_singleton()->get_setting("application/config/version", "noversion");
+	Dictionary format_params;
+	format_params["app_name"] = app_name;
+	format_params["app_version"] = app_version;
+	release = p_release.format(format_params);
 }
 
 void SentryOptions::add_event_processor(const Ref<SentryEventProcessor> &p_processor) {
