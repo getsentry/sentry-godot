@@ -164,7 +164,7 @@ void SentryOptions::set_release(const String &p_release) {
 	Dictionary format_params;
 	format_params["app_name"] = app_name;
 	format_params["app_version"] = app_version;
-	release = p_release.format(format_params).utf8();
+	release = p_release.format(format_params);
 }
 
 void SentryOptions::add_event_processor(const Ref<SentryEventProcessor> &p_processor) {
