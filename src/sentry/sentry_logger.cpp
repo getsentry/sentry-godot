@@ -22,6 +22,24 @@ const char *error_type_as_string[] = {
 	"SHADER ERROR",
 };
 
+// RAII-style recursion guard that prevents entering function recursively more
+// than `max_entries` times.
+class RecursionGuard {
+private:
+	uint32_t *counter_ptr = nullptr;
+	uint32_t max_entries = 0;
+
+public:
+	_FORCE_INLINE_ bool can_enter() const { return *counter_ptr <= max_entries; }
+
+	RecursionGuard(uint32_t *p_counter_ptr, uint32_t p_max_entries) :
+			counter_ptr(p_counter_ptr), max_entries(p_max_entries) {
+		(*counter_ptr)++;
+	}
+
+	~RecursionGuard() { (*counter_ptr)--; }
+};
+
 bool _get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) {
 	if (p_file.is_empty()) {
 		return false;
@@ -188,6 +206,14 @@ void SentryLogger::_process_frame() {
 void SentryLogger::_log_error(const String &p_function, const String &p_file, int32_t p_line,
 		const String &p_code, const String &p_rationale, bool p_editor_notify, int32_t p_error_type,
 		const TypedArray<Ref<ScriptBacktrace>> &p_script_backtraces) {
+	static thread_local uint32_t num_entries = 0;
+	constexpr uint32_t MAX_ENTRIES = 5;
+	RecursionGuard feedback_loop_guard{ &num_entries, MAX_ENTRIES };
+	if (!feedback_loop_guard.can_enter()) {
+		ERR_PRINT_ONCE("SentryLogger::_log_error() feedback loop detected.");
+		return;
+	}
+
 	SourceLine source_line{ p_file.utf8(), p_line };
 
 	TimePoint now = std::chrono::high_resolution_clock::now();
@@ -283,6 +309,14 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
+	static thread_local uint32_t num_entries = 0;
+	constexpr uint32_t MAX_ENTRIES = 5;
+	RecursionGuard feedback_loop_guard{ &num_entries, MAX_ENTRIES };
+	if (!feedback_loop_guard.can_enter()) {
+		ERR_PRINT_ONCE("SentryLogger::_log_message() feedback loop detected.");
+		return;
+	}
+
 	// Filtering: Check message prefixes to skip certain messages (e.g., Sentry's own debug output).
 	for (const String &prefix : filter_by_prefix) {
 		if (p_message.begins_with(prefix)) {

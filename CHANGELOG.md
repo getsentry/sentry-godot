@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Prevent feedback loops in SentryLogger ([#275](https://github.com/getsentry/sentry-godot/pull/275))
+
 ## 1.0.0-alpha.2
 
 ### Features
