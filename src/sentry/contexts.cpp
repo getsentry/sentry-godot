@@ -85,6 +85,7 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 
 #ifndef IOS_ENABLED
 	// NOTE: Memory info access on iOS can cause runtime errors in Godot 4.5.
+	// See: https://github.com/godotengine/godot/issues/109073
 	Dictionary meminfo = OS::get_singleton()->get_memory_info();
 	// NOTE: Using double since int32 can't handle size in bytes.
 	device_context["memory_size"] = double(meminfo["physical"]);
