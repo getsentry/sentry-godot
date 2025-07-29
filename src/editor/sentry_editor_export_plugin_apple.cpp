@@ -11,16 +11,12 @@
 namespace {
 
 void _copy_dir_preserving_links(const String &p_source, const String &p_dest) {
-	print_line("Copy source: ", p_source, " dest: ", p_dest);
-
-	// Create destination directory if it doesn't exist
 	Ref<DirAccess> dest_dir = DirAccess::open(".");
 	if (!dest_dir->dir_exists(p_dest)) {
 		Error err = dest_dir->make_dir_recursive(p_dest);
 		ERR_FAIL_COND_MSG(err != OK, "Failed to create destination directory: " + p_dest + " Error: " + itos(err));
 	}
 
-	// Open destination directory for operations
 	dest_dir = DirAccess::open(p_dest);
 	ERR_FAIL_COND_MSG(dest_dir.is_null(), "Failed to open destination directory: " + p_dest);
 
@@ -37,11 +33,8 @@ void _copy_dir_preserving_links(const String &p_source, const String &p_dest) {
 
 		String source_path = p_source.path_join(item);
 		String dest_path = p_dest.path_join(item);
-		print_verbose("Processing: ", source_path);
-
 		if (source_dir->is_link(item)) {
 			String link_target = source_dir->read_link(item);
-			print_verbose("Creating link: ", item, " -> ", link_target);
 			Error err = dest_dir->create_link(link_target, item);
 			ERR_FAIL_COND_MSG(err != OK, "Failed to create symbolic link: " + item + " -> " + link_target + " Error: " + itos(err));
 		} else if (source_dir->current_is_dir()) {
@@ -71,8 +64,10 @@ void SentryEditorExportPluginApple::_export_begin(const PackedStringArray &p_fea
 }
 
 void SentryEditorExportPluginApple::_export_end() {
-	print_line("Copying Sentry.framework source: ", "res://addons/sentry/bin/macos/Sentry.framework/", "to: ", export_path.path_join("Contents/Frameworks/Sentry.framework"));
-	_copy_dir_preserving_links("res://addons/sentry/bin/macos/Sentry.framework/", export_path.path_join("Contents/Frameworks/Sentry.framework"));
+	String source_path = "res://addons/sentry/bin/macos/Sentry.framework/";
+	String target_path = export_path.path_join("Contents/Frameworks/Sentry.framework");
+	print_verbose("Copying ", source_path, " -> ", target_path);
+	_copy_dir_preserving_links(source_path, target_path);
 }
 
 #endif // TOOLS_ENABLED
