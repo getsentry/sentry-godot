@@ -58,9 +58,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	_define_setting("sentry/options/enabled", p_options->enabled);
-	_define_setting("sentry/options/disabled_in_editor", p_options->disabled_in_editor, false);
 	_define_setting("sentry/options/disabled_in_editor_play", p_options->disabled_in_editor_play);
-	_requires_restart("sentry/options/disabled_in_editor");
 	_define_setting("sentry/options/dsn", p_options->dsn);
 	_define_setting("sentry/options/release", p_options->release, false);
 	_define_setting("sentry/options/dist", p_options->dist, false);
@@ -94,7 +92,6 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	p_options->enabled = ProjectSettings::get_singleton()->get_setting("sentry/options/enabled", p_options->enabled);
-	p_options->disabled_in_editor = ProjectSettings::get_singleton()->get_setting("sentry/options/disabled_in_editor", p_options->disabled_in_editor);
 	p_options->disabled_in_editor_play = ProjectSettings::get_singleton()->get_setting("sentry/options/disabled_in_editor_play", p_options->disabled_in_editor_play);
 	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
 	p_options->set_release(ProjectSettings::get_singleton()->get_setting("sentry/options/release", p_options->release));
@@ -179,7 +176,6 @@ void SentryOptions::remove_event_processor(const Ref<SentryEventProcessor> &p_pr
 
 void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enabled"), set_enabled, is_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "disabled_in_editor"), set_disabled_in_editor, is_disabled_in_editor);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "disabled_in_editor_play"), set_disabled_in_editor_play, is_disabled_in_editor_play);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dsn"), set_dsn, get_dsn);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "release"), set_release, get_release);
