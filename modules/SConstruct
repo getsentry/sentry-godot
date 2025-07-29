@@ -74,7 +74,6 @@ elif platform == "linux":
     env.Append(
         LIBS=[
             "curl",
-            "atomic"
         ]
     )
 elif platform == "macos":
