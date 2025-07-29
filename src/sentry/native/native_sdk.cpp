@@ -185,12 +185,20 @@ String NativeSDK::capture_message(const String &p_message, Level p_level) {
 			p_message.utf8().get_data());
 
 	sentry_uuid_t uuid = sentry_capture_event(event);
-	last_uuid.store(uuid, std::memory_order_release);
+
+	last_uuid_mutex->lock();
+	last_uuid = uuid;
+	last_uuid_mutex->unlock();
+
 	return _uuid_as_string(uuid);
 }
 
 String NativeSDK::get_last_event_id() {
-	return _uuid_as_string(last_uuid.load(std::memory_order_acquire));
+	last_uuid_mutex->lock();
+	String uuid_str = _uuid_as_string(last_uuid);
+	last_uuid_mutex->unlock();
+
+	return uuid_str;
 }
 
 Ref<SentryEvent> NativeSDK::create_event() {
@@ -206,7 +214,11 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	sentry_value_t event = native_event->get_native_value();
 	sentry_value_incref(event); // Keep ownership.
 	sentry_uuid_t uuid = sentry_capture_event(event);
-	last_uuid.store(uuid, std::memory_order_release);
+
+	last_uuid_mutex->lock();
+	last_uuid = uuid;
+	last_uuid_mutex->unlock();
+
 	return _uuid_as_string(uuid);
 }
 
@@ -316,6 +328,10 @@ void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
 	if (err != 0) {
 		ERR_PRINT("Sentry: Failed to initialize native SDK. Error code: " + itos(err));
 	}
+}
+
+NativeSDK::NativeSDK() {
+	last_uuid_mutex.instantiate();
 }
 
 NativeSDK::~NativeSDK() {
