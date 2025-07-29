@@ -175,6 +175,7 @@ if platform in ["macos", "ios"]:
         LINKFLAGS=[
             "-framework", "Sentry",
             "-F" + str(framework_container_dir),
+            # Allow extension to find framework in addons/sentry/ directory.
             "-Wl,-rpath,@loader_path/..",
         ]
     )
@@ -182,7 +183,7 @@ if platform in ["macos", "ios"]:
     print(f"Added {platform} Sentry dynamic framework: {framework_dir}")
 
 
-## *** Export pseudo-builders to create xcframeworks
+# *** Export pseudo-builders to create xcframeworks
 
 def CreateXCFrameworkFromLibs(self, framework_path, libraries):
     """Create an xcframework from multiple libraries."""
