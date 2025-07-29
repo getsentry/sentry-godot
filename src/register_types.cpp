@@ -28,11 +28,11 @@
 
 #ifdef SDK_COCOA
 #include "sentry/cocoa/cocoa_event.h"
-#include "sentry/cocoa/cocoa_sdk.h"
 #endif // SDK_COCOA
 
 #ifdef TOOLS_ENABLED
 #include "editor/sentry_editor_export_plugin_android.h"
+#include "editor/sentry_editor_export_plugin_apple.h"
 #include "editor/sentry_editor_plugin.h"
 #include <godot_cpp/classes/editor_plugin_registration.hpp>
 #endif // TOOLS_ENABLED
@@ -80,6 +80,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 #ifndef WINDOWS_ENABLED
 		GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginUnix);
 #endif // !WINDOWS_ENABLED
+		GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginApple);
 		GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginAndroid);
 		GDREGISTER_INTERNAL_CLASS(SentryEditorPlugin);
 		EditorPlugins::add_by_type<SentryEditorPlugin>();
