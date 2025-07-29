@@ -332,6 +332,7 @@ void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
 
 NativeSDK::NativeSDK() {
 	last_uuid_mutex.instantiate();
+	last_uuid = sentry_uuid_nil();
 }
 
 NativeSDK::~NativeSDK() {
