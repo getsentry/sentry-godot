@@ -3,7 +3,6 @@
 #ifdef TOOLS_ENABLED
 
 #include "editor/sentry_editor_export_plugin_android.h"
-#include "editor/sentry_editor_export_plugin_apple.h"
 #include "editor/sentry_editor_export_plugin_unix.h"
 #include "sentry/util/print.h"
 
@@ -17,11 +16,6 @@ void SentryEditorPlugin::_notification(int p_what) {
 			}
 			add_export_plugin(android_export_plugin);
 
-			if (apple_export_plugin.is_null()) {
-				apple_export_plugin = Ref(memnew(SentryEditorExportPluginApple));
-			}
-			add_export_plugin(apple_export_plugin);
-
 #ifndef WINDOWS_ENABLED
 			if (unix_export_plugin.is_null()) {
 				unix_export_plugin = Ref(memnew(SentryEditorExportPluginUnix));
@@ -33,11 +27,6 @@ void SentryEditorPlugin::_notification(int p_what) {
 			if (android_export_plugin.is_valid()) {
 				remove_export_plugin(android_export_plugin);
 				android_export_plugin.unref();
-			}
-
-			if (apple_export_plugin.is_valid()) {
-				remove_export_plugin(apple_export_plugin);
-				apple_export_plugin.unref();
 			}
 
 #ifndef WINDOWS_ENABLED

@@ -58,6 +58,14 @@ windows.x86_32 = {
 	"res://addons/sentry/bin/windows/x86_32/crashpad_handler.exe" : ""
 }
 
+macos.debug = {
+	"res://addons/sentry/bin/macos/Sentry.framework" : ""
+}
+
+macos.release = {
+	"res://addons/sentry/bin/macos/Sentry.framework" : ""
+}
+
 ios.debug = {
   "res://addons/sentry/bin/ios/Sentry.xcframework": "",
 }
