@@ -22,7 +22,9 @@ bool is_valid_timestamp(const godot::String &p_timestamp) {
 	return std::regex_match(p_timestamp.ascii().ptr(), rfc3339_regex);
 }
 
-int64_t rfc3339_timestamp_to_microseconds(const char *p_formatted_cstring) {
+int64_t rfc3339_timestamp_to_microseconds(const char *p_formatted_cstring, bool &p_success) {
+	p_success = false;
+
 	if (p_formatted_cstring == NULL) {
 		return 0;
 	}
@@ -105,6 +107,7 @@ int64_t rfc3339_timestamp_to_microseconds(const char *p_formatted_cstring) {
 	time -= timezone_offset_seconds;
 
 	int64_t microseconds = (int64_t)time * 1000000 + nanos / 1000;
+	p_success = true;
 	return microseconds;
 }
 

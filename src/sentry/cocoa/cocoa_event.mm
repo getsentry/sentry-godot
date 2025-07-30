@@ -67,8 +67,9 @@ void CocoaEvent::set_timestamp(const String &p_timestamp) {
 		return;
 	}
 
-	int64_t microseconds = sentry::util::rfc3339_timestamp_to_microseconds(p_timestamp.ascii());
-	if (microseconds == 0) {
+	bool success;
+	int64_t microseconds = sentry::util::rfc3339_timestamp_to_microseconds(p_timestamp.ascii(), success);
+	if (!success) {
 		sentry::util::print_error("Failed to parse timestamp: '", p_timestamp, "'");
 		return;
 	}
