@@ -239,14 +239,14 @@ void SentrySDK::_initialize() {
 		sentry::util::print_debug("Sentry SDK is disabled in options.");
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() && SentryOptions::get_singleton()->is_disabled_in_editor()) {
+	if (Engine::get_singleton()->is_editor_hint()) {
 		should_enable = false;
-		sentry::util::print_debug("Sentry SDK is disabled in the editor. Tip: This can be changed in the project settings.");
+		sentry::util::print_debug("Sentry SDK is disabled in the editor.");
 	}
 
 	if (!Engine::get_singleton()->is_editor_hint() && OS::get_singleton()->has_feature("editor") && SentryOptions::get_singleton()->is_disabled_in_editor_play()) {
 		should_enable = false;
-		sentry::util::print_debug("Sentry SDK is disabled during editor play. Tip: This can be changed in the project settings.");
+		sentry::util::print_debug("Sentry SDK is disabled when project is played from the editor. Tip: This can be changed in the project settings.");
 	}
 
 	if (should_enable) {

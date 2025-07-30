@@ -50,7 +50,7 @@ brew install scons
     ```
 4. Open demo project in Godot Engine:
     ```bash
-    # open demo project in Godot 4.3
+    # open demo project in Godot
     godot project/project.godot
     ```
 
