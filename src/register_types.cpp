@@ -12,6 +12,7 @@
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_user.h"
+#include "sentry/util/print.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -37,8 +38,11 @@ using namespace sentry;
 
 void initialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+		sentry::util::print_debug("init level core");
 	} else if (p_level == godot::MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		sentry::util::print_debug("init level servers");
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		sentry::util::print_debug("init level scene");
 		GDREGISTER_CLASS(SentryLoggerLimits);
 		GDREGISTER_CLASS(SentryOptions);
 		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
@@ -67,6 +71,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		SentrySDK *sentry_singleton = memnew(SentrySDK);
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		sentry::util::print_debug("init level editor");
 #ifdef TOOLS_ENABLED
 #ifndef WINDOWS_ENABLED
 		GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginUnix);
@@ -94,7 +99,7 @@ GDExtensionBool GDE_EXPORT gdextension_init(GDExtensionInterfaceGetProcAddress p
 
 	init_obj.register_initializer(initialize_module);
 	init_obj.register_terminator(uninitialize_module);
-	init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SCENE);
+	init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_CORE);
 
 	return init_obj.init();
 }
