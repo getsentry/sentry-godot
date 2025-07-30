@@ -1,6 +1,7 @@
 #include "cocoa_event.h"
 
 #include "cocoa_util.h"
+#include "sentry/util/print.h"
 #include "sentry/util/timestamp.h"
 
 namespace {
@@ -67,6 +68,11 @@ void CocoaEvent::set_timestamp(const String &p_timestamp) {
 	}
 
 	int64_t microseconds = sentry::util::rfc3339_timestamp_to_microseconds(p_timestamp.ascii());
+	if (microseconds == 0) {
+		sentry::util::print_error("Failed to parse timestamp: '", p_timestamp, "'");
+		return;
+	}
+
 	NSTimeInterval seconds = microseconds * 0.000'001;
 
 	cocoa_event.timestamp = [NSDate dateWithTimeIntervalSince1970:seconds];
