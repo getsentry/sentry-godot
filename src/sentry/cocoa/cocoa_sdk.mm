@@ -11,6 +11,7 @@
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/core/mutex_lock.hpp>
 
 #import <Sentry/PrivateSentrySDKOnly.h>
 
@@ -104,7 +105,7 @@ String CocoaSDK::capture_message(const String &p_message, Level p_level) {
 }
 
 String CocoaSDK::get_last_event_id() {
-	std::lock_guard lock(last_event_id_mutex);
+	MutexLock lock(*last_event_id_mutex.ptr());
 	return last_event_id;
 }
 
@@ -210,8 +211,9 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 			if (unlikely(processed.is_null())) {
 				return nil;
 			} else {
-				std::lock_guard lock(last_event_id_mutex);
+				last_event_id_mutex->lock();
 				last_event_id = string_from_objc(event.eventId.sentryIdString);
+				last_event_id_mutex->unlock();
 				return event;
 			}
 		};
@@ -220,6 +222,10 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 
 bool CocoaSDK::is_enabled() const {
 	return [objc::SentrySDK isEnabled];
+}
+
+CocoaSDK::CocoaSDK() {
+	last_event_id_mutex.instantiate();
 }
 
 CocoaSDK::~CocoaSDK() {

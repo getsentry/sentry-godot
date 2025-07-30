@@ -3,6 +3,8 @@
 
 #include "sentry/internal_sdk.h"
 
+#include <godot_cpp/classes/mutex.hpp>
+
 using namespace godot;
 
 namespace sentry::cocoa {
@@ -11,7 +13,7 @@ namespace sentry::cocoa {
 class CocoaSDK : public InternalSDK {
 private:
 	String last_event_id;
-	std::mutex last_event_id_mutex;
+	Ref<Mutex> last_event_id_mutex;
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
@@ -38,6 +40,7 @@ public:
 
 	bool is_enabled() const;
 
+	CocoaSDK();
 	virtual ~CocoaSDK() override;
 };
 
