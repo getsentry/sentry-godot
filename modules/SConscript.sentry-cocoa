@@ -294,6 +294,7 @@ def CreateXCFrameworkFromLibs(self, framework_path, libraries):
         create_xcframework_action
     )
     env.AlwaysBuild(xcframework)
+    Clean(xcframework, framework_path)
 
     return xcframework
 
@@ -353,11 +354,60 @@ def CreateXCFrameworkFromSlices(self, target_path, slice_dirs):
         create_framework_from_slices_action
     )
     env.AlwaysBuild(xcframework)
+    Clean(xcframework, target_path)
 
     return xcframework
 
 
+def DeploySentryCocoa(self, target_dir):
+    """Deploy Sentry Cocoa framework to target directory."""
+
+    platform = env["platform"]
+    project_root = Path(env.Dir("#").abspath)
+    source_xcframework = project_root / "modules/sentry-cocoa/Sentry-Dynamic.xcframework"
+    target_dir_path = str(target_dir) if hasattr(target_dir, 'abspath') else target_dir
+
+    if platform == "ios":
+        # Deploy XCFramework for iOS using existing CreateXCFrameworkFromSlices
+        slice_dirs = [
+            source_xcframework / "ios-arm64_arm64e",
+            source_xcframework / "ios-arm64_x86_64-simulator"
+        ]
+        target_path = str(Path(target_dir_path) / "Sentry.xcframework")
+
+        return env.CreateXCFrameworkFromSlices(
+            target_path=target_path,
+            slice_dirs=slice_dirs
+        )
+
+    elif platform == "macos":
+        # Deploy framework for macOS using Copy commands
+        source_framework = source_xcframework / "macos-arm64_arm64e_x86_64/Sentry.framework"
+        target_path = Path(target_dir_path) / "Sentry.framework"
+
+        # Copy only the binary and "Resources" dir -- we don't need to export headers or modules.
+        cocoa_sources = [source_framework / "Sentry", source_framework / "Resources"]
+
+        deploy_commands = []
+        for src in cocoa_sources:
+            if src.exists():
+                dest = target_path / src.name
+                deploy_commands.append(
+                    env.Command(
+                        dest,
+                        src,
+                        Copy("$TARGET", "$SOURCE")
+                    )
+                )
+        Clean(deploy_commands, target_path)
+        return deploy_commands
+    else:
+        print("ERROR: Unexpected platform: ", platform)
+        Exit(1)
+
+
 env.AddMethod(CreateXCFrameworkFromLibs, "CreateXCFrameworkFromLibs")
 env.AddMethod(CreateXCFrameworkFromSlices, "CreateXCFrameworkFromSlices")
+env.AddMethod(DeploySentryCocoa, "DeploySentryCocoa")
 
 Return("env")

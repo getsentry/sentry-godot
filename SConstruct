@@ -192,21 +192,8 @@ if platform == "ios":
     Clean(library, File(lib_path))
 
     # Deploy Sentry Cocoa XCFramework for iOS (both device and simulator).
-    project_root = env.Dir("#").abspath
-    source_xcframework = f"{project_root}/modules/sentry-cocoa/Sentry-Dynamic.xcframework"
-    slice_dirs = [
-        f"{source_xcframework}/ios-arm64_arm64e",
-        f"{source_xcframework}/ios-arm64_x86_64-simulator"
-    ]
-    cocoa_target_path = f"{out_dir}/Sentry.xcframework"
-
-    deploy_cocoa_xcframework = env.CreateXCFrameworkFromSlices(
-        target_path=cocoa_target_path,
-        slice_dirs=slice_dirs
-    )
-
+    deploy_cocoa_xcframework = env.DeploySentryCocoa(out_dir)
     Default(deploy_cocoa_xcframework)
-    Clean(deploy_cocoa_xcframework, cocoa_target_path)
 
     # Generate XCFramework for GDExtension libs if requested
     if env.get("generate_ios_framework", False):
@@ -221,7 +208,6 @@ if platform == "ios":
 
         env.Depends(xcframework, library)
         Default(xcframework)
-        Clean(xcframework, Dir(xcframework_path))
 
 
 elif platform == "macos":
@@ -234,28 +220,8 @@ elif platform == "macos":
     Default(library)
 
     # Deploy Sentry framework for macOS
-    if internal_sdk == SDK.COCOA:
-        project_root = env.Dir("#").abspath
-        source_xcframework = f"{project_root}/modules/sentry-cocoa/Sentry-Dynamic.xcframework"
-
-        cocoa_target_path = f"{out_dir}/Sentry.framework"
-        cocoa_source_path = f"{source_xcframework}/macos-arm64_arm64e_x86_64/Sentry.framework/"
-
-        # Only copy binary and Resources -- we don't need to export headers or modules.
-        cocoa_sources = [f"{cocoa_source_path}/Sentry", f"{cocoa_source_path}/Resources"]
-
-        deploy_cocoa_framework = [
-            env.Command(
-                os.path.join(cocoa_target_path, os.path.basename(src)),
-                src,
-                [
-                    Copy("$TARGET", "$SOURCE"),
-                ]
-            )
-            for src in cocoa_sources
-        ]
-        Default(deploy_cocoa_framework)
-        Clean(deploy_cocoa_framework, cocoa_target_path)
+    deploy_cocoa_framework = env.DeploySentryCocoa(out_dir)
+    Default(deploy_cocoa_framework)
 
 else:
     # *** Build shared library on other platforms.
