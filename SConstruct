@@ -123,7 +123,7 @@ out_dir = Dir(out_dir)
 # *** Build sentry-native.
 
 if internal_sdk == SDK.NATIVE:
-    env = SConscript("modules/SConscript.sentry-native", exports=["env"])
+    env = SConscript("modules/sentry-native.SConscript", exports=["env"])
 
     # Deploy crashpad handler to project directory.
     deploy_crashpad_handler = env.CopyCrashpadHandler(out_dir)
@@ -133,7 +133,7 @@ if internal_sdk == SDK.NATIVE:
 # *** Utilize sentry-cocoa.
 
 if internal_sdk == SDK.COCOA:
-    env = SConscript("modules/SConscript.sentry-cocoa", exports=["env"])
+    env = SConscript("modules/sentry-cocoa.SConscript", exports=["env"])
 
     # Deploy Sentry Cocoa dependency to project directory.
     deploy_cocoa_xcframework = env.DeploySentryCocoa(out_dir)
