@@ -8,7 +8,7 @@
 
 ### Features
 
-- Support for iOS & macOS using Cocoa SDK integration ([#266](https://github.com/getsentry/sentry-godot/pull/266))
+- Support for iOS & macOS using Sentry Cocoa SDK integration ([#266](https://github.com/getsentry/sentry-godot/pull/266))
 
 ### Fixes
 
