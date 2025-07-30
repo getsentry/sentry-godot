@@ -251,6 +251,7 @@ if platform in ["macos", "ios"]:
 
 def CreateXCFrameworkFromLibs(self, framework_path, libraries):
     """Create an xcframework from multiple libraries."""
+    framework_path = str(framework_path)
 
     def create_xcframework_action(target, source, env):
         # Check if all expected libraries exist at build time
@@ -298,6 +299,7 @@ def CreateXCFrameworkFromLibs(self, framework_path, libraries):
 
 def CreateXCFrameworkFromSlices(self, target_path, slice_dirs):
     """Create an xcframework from selected framework slices."""
+    target_path = str(target_path)
 
     def create_framework_from_slices_action(target, source, env):
         # Check if all expected slice directories exist at build time
