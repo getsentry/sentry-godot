@@ -11,6 +11,10 @@
 
 namespace objc {
 
+// Type aliases for Cocoa SDK types to avoid naming conflicts
+// with C++ extension types. The objc:: namespace distinguishes original
+// Cocoa types from types defined elsewhere.
+
 using SentryOptions = ::SentryOptions;
 using SentrySDK = ::SentrySDK;
 using SentryEvent = ::SentryEvent;
@@ -34,6 +38,6 @@ namespace objc {
 using SentryEvent = void;
 } // namespace objc
 
-#endif
+#endif // __OBJC__
 
 #endif // COCOA_INCLUDES_H
