@@ -185,7 +185,7 @@ def update_cocoa_framework():
             extract_zip_with_symlinks(zip_path, cocoa_dir)
 
             # NOTE: We need to flatten macOS framework due to issues with symlinks on Windows.
-            flatten_framework(f"{cocoa_dir}/Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework")
+            flatten_framework(cocoa_dir / "Sentry-Dynamic.xcframework" / "macos-arm64_arm64e_x86_64" / "Sentry.framework")
 
             zip_path.unlink() # delete file
             version_file.write_text(cocoa_version)
