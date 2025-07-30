@@ -399,7 +399,7 @@ def DeploySentryCocoa(self, target_dir):
                         Copy("$TARGET", "$SOURCE")
                     )
                 )
-        Clean(deploy_commands, target_path)
+        Clean(deploy_commands, Dir(target_path))
         return deploy_commands
     else:
         print("ERROR: Unexpected platform: ", platform)
