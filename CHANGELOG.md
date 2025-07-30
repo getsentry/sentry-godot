@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## Breaking changes
+### Breaking changes
 
 - Remove `disabled_in_editor` option in favor of disabling SDK in the Godot editor by default.([#277](https://github.com/getsentry/sentry-godot/pull/277))
 
