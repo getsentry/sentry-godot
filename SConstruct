@@ -135,6 +135,10 @@ if internal_sdk == SDK.NATIVE:
 if internal_sdk == SDK.COCOA:
     env = SConscript("modules/SConscript.sentry-cocoa", exports=["env"])
 
+    # Deploy Sentry Cocoa dependency to project directory.
+    deploy_cocoa_xcframework = env.DeploySentryCocoa(out_dir)
+    Default(deploy_cocoa_xcframework)
+
 
 # *** Build GDExtension library.
 
@@ -191,10 +195,6 @@ if platform == "ios":
     Default(library)
     Clean(library, File(lib_path))
 
-    # Deploy Sentry Cocoa XCFramework for iOS (both device and simulator).
-    deploy_cocoa_xcframework = env.DeploySentryCocoa(out_dir)
-    Default(deploy_cocoa_xcframework)
-
     # Generate XCFramework for GDExtension libs if requested
     if env.get("generate_ios_framework", False):
         device_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.arm64.dylib"
@@ -209,7 +209,6 @@ if platform == "ios":
         env.Depends(xcframework, library)
         Default(xcframework)
 
-
 elif platform == "macos":
     # *** Build macOS shared library.
 
@@ -218,10 +217,6 @@ elif platform == "macos":
         source=sources,
     )
     Default(library)
-
-    # Deploy Sentry framework for macOS
-    deploy_cocoa_framework = env.DeploySentryCocoa(out_dir)
-    Default(deploy_cocoa_framework)
 
 else:
     # *** Build shared library on other platforms.
