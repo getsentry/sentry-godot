@@ -135,7 +135,7 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		sentry::util::print_debug(vformat("attaching file: %s", absolute_path));
 
 		String filename = p_attachment->get_filename().is_empty() ? p_attachment->get_path().get_file() : p_attachment->get_filename();
-		attachment_objc = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(p_attachment->get_path())
+		attachment_objc = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(absolute_path)
 															  filename:string_to_objc(filename)
 														   contentType:string_to_objc(p_attachment->get_content_type_or_default())];
 	} else {
