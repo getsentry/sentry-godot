@@ -241,13 +241,19 @@ elif platform == "macos":
         cocoa_target_path = f"{out_dir}/Sentry.framework"
         cocoa_source_path = f"{source_xcframework}/macos-arm64_arm64e_x86_64/Sentry.framework/"
 
-        deploy_cocoa_framework = env.Command(
-            cocoa_target_path,
-            cocoa_source_path,
-            [
-                Copy("$TARGET", "$SOURCE")
-            ]
-        )
+        # Only copy binary and Resources -- we don't need to export headers or modules.
+        cocoa_sources = [f"{cocoa_source_path}/Sentry", f"{cocoa_source_path}/Resources"]
+
+        deploy_cocoa_framework = [
+            env.Command(
+                os.path.join(cocoa_target_path, os.path.basename(src)),
+                src,
+                [
+                    Copy("$TARGET", "$SOURCE"),
+                ]
+            )
+            for src in cocoa_sources
+        ]
         Default(deploy_cocoa_framework)
         Clean(deploy_cocoa_framework, cocoa_target_path)
 
