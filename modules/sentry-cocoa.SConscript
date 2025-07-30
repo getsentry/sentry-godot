@@ -138,6 +138,7 @@ def flatten_framework(framework_path):
 
 
 def update_cocoa_framework():
+    """Updates Sentry Cocoa to the latest version."""
     project_root = Path(env.Dir("#").abspath)
 
     properties_file = project_root / "modules/sentry-cocoa.properties"
@@ -168,7 +169,6 @@ def update_cocoa_framework():
     if should_download:
         print(f"Fetching Sentry Cocoa SDK v{cocoa_version}")
 
-        # Clean up existing framework directory
         remove_if_exists(cocoa_dir)
 
         cocoa_dir.mkdir(parents=True, exist_ok=True)
@@ -184,7 +184,7 @@ def update_cocoa_framework():
             print(f"Extracting {zip_path}")
             extract_zip_with_symlinks(zip_path, cocoa_dir)
 
-            # NOTE: We need to flatten macOS framework due to issues with symlinks on Windows.
+            # NOTE: We need to flatten macOS slice due to issues with symlinks on Windows.
             flatten_framework(cocoa_dir / "Sentry-Dynamic.xcframework" / "macos-arm64_arm64e_x86_64" / "Sentry.framework")
 
             zip_path.unlink() # delete file
@@ -213,9 +213,6 @@ if platform in ["macos", "ios"]:
         Exit(1)
 
     env.Append(
-        LIBS=[
-            "bsm"
-        ],
         LINKFLAGS=[
             "-framework", "Foundation",
         ]
@@ -368,12 +365,11 @@ def DeploySentryCocoa(self, target_dir):
     target_dir_path = str(target_dir) if hasattr(target_dir, 'abspath') else target_dir
 
     if platform == "ios":
-        # Deploy XCFramework for iOS using existing CreateXCFrameworkFromSlices
         slice_dirs = [
             source_xcframework / "ios-arm64_arm64e",
             source_xcframework / "ios-arm64_x86_64-simulator"
         ]
-        target_path = str(Path(target_dir_path) / "Sentry.xcframework")
+        target_path = Path(target_dir_path) / "Sentry.xcframework"
 
         return env.CreateXCFrameworkFromSlices(
             target_path=target_path,
@@ -381,12 +377,14 @@ def DeploySentryCocoa(self, target_dir):
         )
 
     elif platform == "macos":
-        # Deploy framework for macOS using Copy commands
         source_framework = source_xcframework / "macos-arm64_arm64e_x86_64/Sentry.framework"
         target_path = Path(target_dir_path) / "Sentry.framework"
 
         # Copy only the binary and "Resources" dir -- we don't need to export headers or modules.
-        cocoa_sources = [source_framework / "Sentry", source_framework / "Resources"]
+        cocoa_sources = [
+            source_framework / "Sentry",
+            source_framework / "Resources"
+        ]
 
         deploy_commands = []
         for src in cocoa_sources:
