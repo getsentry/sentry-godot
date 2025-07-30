@@ -153,6 +153,7 @@ String CocoaEvent::get_environment() const {
 
 void CocoaEvent::set_tag(const String &p_key, const String &p_value) {
 	ERR_FAIL_NULL(cocoa_event);
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set tag with an empty key.");
 
 	NSString *k = string_to_objc(p_key);
 	NSString *v = string_to_objc(p_value);
@@ -245,19 +246,15 @@ bool CocoaEvent::is_crash() const {
 }
 
 CocoaEvent::CocoaEvent() {
-	objc::SentryEvent *ev = [[objc::SentryEvent alloc] init];
-	cocoa_event = [ev retain];
+	cocoa_event = [[objc::SentryEvent alloc] init];
 }
 
 CocoaEvent::CocoaEvent(objc::SentryEvent *p_cocoa_event) {
-	cocoa_event = [p_cocoa_event retain];
+	cocoa_event = p_cocoa_event;
 }
 
 CocoaEvent::~CocoaEvent() {
-	if (cocoa_event) {
-		[cocoa_event release];
-		cocoa_event = nil;
-	}
+	cocoa_event = nil;
 }
 
 } // namespace sentry::cocoa
