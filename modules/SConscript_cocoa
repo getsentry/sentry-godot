@@ -44,14 +44,14 @@ def extract_zip_with_symlinks(zip_path, extract_to):
             if stat.S_ISLNK(unix_mode):
                 # Symlink – create manually.
                 target_path = zip_archive.read(info.filename).decode('utf-8')
-                source_path = os.path.join(extract_to, info.filename)
+                source_path = Path(extract_to) / info.filename
 
-                parent_dir = os.path.dirname(source_path)
-                if parent_dir:
-                    os.makedirs(parent_dir, exist_ok=True)
+                parent_dir = source_path.parent
+                if parent_dir != Path('.'):
+                    parent_dir.mkdir(parents=True, exist_ok=True)
 
                 try:
-                    os.symlink(target_path, source_path)
+                    os.symlink(target_path, str(source_path))
                 except OSError as e:
                     print(f"ERROR: Failed to create symlink {source_path} -> {target_path}: {e}")
                     Exit(1)
@@ -75,39 +75,38 @@ def detect_xcode():
 
 def flatten_framework(framework_path):
     """Flatten macOS framework by removing symlinks and versioned structure"""
-    if not os.path.exists(framework_path):
+    framework_path = Path(framework_path)
+    if not framework_path.exists():
         print(f"ERROR: Framework not found at {framework_path}")
         Exit(1)
 
-    versions_dir = os.path.join(framework_path, "Versions")
-    if not os.path.exists(versions_dir):
+    versions_dir = framework_path / "Versions"
+    if not versions_dir.exists():
         # Framework doesn't need flattening.
         return
 
     print(f"Flattening framework structure: {framework_path}")
 
     # 1. Remove all symlinks from the root of the framework
-    for item in os.listdir(framework_path):
-        item_path = os.path.join(framework_path, item)
-        if os.path.islink(item_path):
-            print(f"  Removing symlink: {item}")
-            os.unlink(item_path)
+    for item_path in framework_path.iterdir():
+        if item_path.is_symlink():
+            print(f"  Removing symlink: {item_path.name}")
+            item_path.unlink()
 
     # 2. Move Versions/A/* to root of the framework
-    version_a_dir = os.path.join(versions_dir, "A")
-    if os.path.exists(version_a_dir):
+    version_a_dir = versions_dir / "A"
+    if version_a_dir.exists():
         print("  Moving contents from Versions/A/ to root")
-        for item in os.listdir(version_a_dir):
-            source_path = os.path.join(version_a_dir, item)
-            dest_path = os.path.join(framework_path, item)
+        for item_path in version_a_dir.iterdir():
+            dest_path = framework_path / item_path.name
 
             # Handle potential conflicts
-            if os.path.exists(dest_path):
-                print(f"  WARNING: {item} already exists at root, removing old version")
+            if dest_path.exists():
+                print(f"  WARNING: {item_path.name} already exists at root, removing old version")
                 remove_if_exists(dest_path)
 
-            shutil.move(source_path, dest_path)
-            print(f"    Moved: {item}")
+            shutil.move(str(item_path), str(dest_path))
+            print(f"    Moved: {item_path.name}")
     else:
         print(f"  WARNING: Versions/A directory not found in {framework_path}")
 
@@ -116,16 +115,16 @@ def flatten_framework(framework_path):
     shutil.rmtree(versions_dir)
 
     # 4. Patch the binary's install name for flattened structure
-    binary_name = os.path.basename(framework_path).replace('.framework', '')
-    binary_path = os.path.join(framework_path, binary_name)
+    binary_name = framework_path.name.replace('.framework', '')
+    binary_path = framework_path / binary_name
 
-    if not os.path.exists(binary_path):
+    if not binary_path.exists():
         print(f"ERROR: Framework binary not found at {binary_path}")
         Exit(1)
 
     print(f"  Patching install name for binary: {binary_name}")
     install_name = f"@rpath/{binary_name}.framework/{binary_name}"
-    cmd = ["install_name_tool", "-id", install_name, binary_path]
+    cmd = ["install_name_tool", "-id", install_name, str(binary_path)]
 
     try:
         subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -258,7 +257,7 @@ def CreateXCFrameworkFromLibs(self, framework_path, libraries):
 
     def create_xcframework_action(target, source, env):
         # Check if all expected libraries exist at build time
-        missing_libs = [lib for lib in libraries if not os.path.exists(str(lib))]
+        missing_libs = [lib for lib in libraries if not Path(lib).exists()]
 
         if missing_libs:
             print("ERROR: Missing libraries for xcframework:")
@@ -304,7 +303,7 @@ def CreateXCFrameworkFromSlices(self, target_path, slice_dirs):
 
     def create_framework_from_slices_action(target, source, env):
         # Check if all expected slice directories exist at build time
-        missing_slices = [slice_dir for slice_dir in slice_dirs if not os.path.exists(str(slice_dir))]
+        missing_slices = [slice_dir for slice_dir in slice_dirs if not Path(slice_dir).exists()]
 
         if missing_slices:
             print("ERROR: Missing framework slices:")
@@ -320,18 +319,19 @@ def CreateXCFrameworkFromSlices(self, target_path, slice_dirs):
         cmd = ["xcodebuild", "-create-xcframework"]
         for slice_dir in slice_dirs:
             # Each slice directory should contain a .framework
+            slice_path = Path(slice_dir)
             framework_path = None
-            if os.path.isdir(slice_dir):
-                for item in os.listdir(slice_dir):
-                    if item.endswith('.framework'):
-                        framework_path = os.path.join(slice_dir, item)
+            if slice_path.is_dir():
+                for item in slice_path.iterdir():
+                    if item.name.endswith('.framework'):
+                        framework_path = item
                         break
 
-            if not framework_path or not os.path.exists(framework_path):
+            if not framework_path or not framework_path.exists():
                 print(f"ERROR: No .framework found in slice directory: {slice_dir}")
                 return 1
 
-            cmd.extend(["-framework", framework_path])
+            cmd.extend(["-framework", str(framework_path)])
 
         cmd.extend(["-output", target_path])
 
