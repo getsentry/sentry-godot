@@ -48,6 +48,13 @@ int64_t rfc3339_timestamp_to_microseconds(const char *p_formatted_cstring, bool 
 
 	cur += num_consumed;
 
+	FAIL_COND_V_PRINT_ERROR(year < 1900 || year > 9999, 0, "Invalid timestamp year");
+	FAIL_COND_V_PRINT_ERROR(month < 1 || month > 12, 0, "Invalid timestamp month");
+	FAIL_COND_V_PRINT_ERROR(day < 1 || day > 31, 0, "Invalid timestamp day");
+	FAIL_COND_V_PRINT_ERROR(hour < 0 || hour > 23, 0, "Invalid timestamp hour");
+	FAIL_COND_V_PRINT_ERROR(minute < 0 || minute > 59, 0, "Invalid timestamp minute");
+	FAIL_COND_V_PRINT_ERROR(second < 0 || second > 59, 0, "Invalid timestamp second");
+
 	if (cur[0] == '.') {
 		int32_t fractional = 0;
 		if (sscanf(cur, ".%d%n", &fractional, &num_consumed) < 1 || num_consumed > 10) {
