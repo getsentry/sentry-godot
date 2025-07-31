@@ -58,6 +58,10 @@ _FORCE_INLINE_ NSNumber *int_to_objc(int p_num) {
 	return [NSNumber numberWithLong:p_num];
 }
 
+_FORCE_INLINE_ NSNumber *uint64_to_objc(uint64_t p_num) {
+	return [NSNumber numberWithUnsignedLongLong:p_num];
+}
+
 _FORCE_INLINE_ NSNumber *bool_to_objc(bool p_flag) {
 	return [NSNumber numberWithBool:p_flag];
 }

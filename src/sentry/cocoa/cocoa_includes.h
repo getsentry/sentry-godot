@@ -28,6 +28,7 @@ using SentryMessage = ::SentryMessage;
 using SentryException = ::SentryException;
 using SentryStacktrace = ::SentryStacktrace;
 using SentryFrame = ::SentryFrame;
+using SentryThread = ::SentryThread;
 
 } // namespace objc
 

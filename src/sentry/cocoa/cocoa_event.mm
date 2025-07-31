@@ -4,6 +4,8 @@
 #include "sentry/util/print.h"
 #include "sentry/util/timestamp.h"
 
+#include <godot_cpp/classes/os.hpp>
+
 namespace {
 
 inline NSMutableDictionary *as_mutable_dict(NSDictionary *p_dict) {
@@ -239,9 +241,22 @@ void CocoaEvent::add_exception(const Exception &p_exception) {
 
 	objc::SentryStacktrace *stack_trace = [[objc::SentryStacktrace alloc] initWithFrames:mut_frames
 																			   registers:[NSDictionary dictionary]];
+
+	uint64_t thread_id = godot::OS::get_singleton()->get_thread_caller_id();
+	bool is_main = godot::OS::get_singleton()->get_main_thread_id() == thread_id;
+
+	objc::SentryThread *cocoa_thread = [[objc::SentryThread alloc] initWithThreadId:uint64_to_objc(thread_id)];
+	cocoa_thread.stacktrace = stack_trace;
+	cocoa_thread.crashed = [NSNumber numberWithBool:NO];
+	cocoa_thread.current = [NSNumber numberWithBool:YES];
+	cocoa_thread.isMain = bool_to_objc(is_main);
+
+	NSMutableArray *mut_threads = AS_MUTABLE_ARRAY(cocoa_event, threads);
+	[mut_threads addObject:cocoa_thread];
+
 	objc::SentryException *cocoa_exception = [[objc::SentryException alloc] initWithValue:string_to_objc(p_exception.value)
 																					 type:string_to_objc(p_exception.type)];
-	cocoa_exception.stacktrace = stack_trace;
+	cocoa_exception.threadId = uint64_to_objc(thread_id);
 	NSMutableArray *mut_exceptions = AS_MUTABLE_ARRAY(cocoa_event, exceptions);
 	[mut_exceptions addObject:cocoa_exception];
 }

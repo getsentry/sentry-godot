@@ -198,14 +198,6 @@ void CocoaSDK::initialize(const PackedStringArray &p_global_attachments) {
 		};
 
 		options.beforeSend = ^objc::SentryEvent *(objc::SentryEvent *event) {
-			if (event.error == nil) {
-				// HACK: Remove threads info for non-crash events.
-				//       Threads override our custom-built stacktrace for scripts.
-				// TODO: Try adding script stack trace in "threads" instead.
-				event.threads = nil;
-				event.debugMeta = nil;
-			}
-
 			Ref<CocoaEvent> event_obj = memnew(CocoaEvent(event));
 			Ref<CocoaEvent> processed = sentry::process_event(event_obj);
 
