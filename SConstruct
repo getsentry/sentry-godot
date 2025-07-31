@@ -195,19 +195,20 @@ if platform == "ios":
     Default(library)
     Clean(library, File(lib_path))
 
-    # Generate XCFramework for GDExtension libs if requested
+    # Generate XCFramework for iOS GDExtension libs if requested
+    device_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.arm64.dylib"
+    simulator_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.universal.simulator.dylib"
+    xcframework_path = f"{out_dir}/libsentry.{platform}.{build_type}.xcframework"
+
+    ios_framework = env.CreateXCFrameworkFromLibs(
+        framework_path=xcframework_path,
+        libraries=[device_lib, simulator_lib],
+    )
+    Alias("ios_framework", ios_framework)
+
     if env.get("generate_ios_framework", False):
-        device_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.arm64.dylib"
-        simulator_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.universal.simulator.dylib"
-        xcframework_path = f"{out_dir}/libsentry.{platform}.{build_type}.xcframework"
-
-        xcframework = env.CreateXCFrameworkFromLibs(
-            framework_path=xcframework_path,
-            libraries=[device_lib, simulator_lib],
-        )
-
-        env.Depends(xcframework, library)
-        Default(xcframework)
+        env.Depends(ios_framework, library)
+        Default(ios_framework)
 
 elif platform == "macos":
     # *** Build macOS shared library.
@@ -230,6 +231,16 @@ else:
         source=sources,
     )
     Default(library)
+
+
+Help("""
+Optional targets:
+
+ios_framework: Create iOS XCFramework from device and simulator builds.
+               Usage: scons target=template_release platform=ios ios_framework
+               Note: Requires both device and simulator builds to exist, and it
+                     doesn't trigger a build.
+""")
 
 
 # *** Deploy extension manifest.
