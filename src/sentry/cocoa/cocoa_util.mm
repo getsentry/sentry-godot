@@ -4,7 +4,11 @@ using namespace godot;
 
 namespace sentry::cocoa {
 
-NSObject *variant_to_objc(const godot::Variant &p_value) {
+NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
+	if (p_depth > 32) {
+		return [NSString stringWithUTF8String:"(Conversion depth limit reached)"];
+	}
+
 	switch (p_value.get_type()) {
 		case Variant::NIL: {
 			return [NSNull null];
@@ -26,7 +30,7 @@ NSObject *variant_to_objc(const godot::Variant &p_value) {
 			for (int i = 0; i < keys.size(); i++) {
 				const String &key = keys[i];
 				const NSString *objc_key = [NSString stringWithUTF8String:key.utf8()];
-				const NSObject *objc_value = variant_to_objc(dict[key]);
+				const NSObject *objc_value = variant_to_objc(dict[key], p_depth + 1);
 				[objc_dict setObject:objc_value forKey:objc_key];
 			}
 
@@ -51,7 +55,7 @@ NSObject *variant_to_objc(const godot::Variant &p_value) {
 			do {
 				Variant item = p_value.get_indexed(i++, valid, oob);
 				if (valid) {
-					[objc_array addObject:variant_to_objc(item)];
+					[objc_array addObject:variant_to_objc(item, p_depth + 1)];
 				}
 			} while (!oob);
 

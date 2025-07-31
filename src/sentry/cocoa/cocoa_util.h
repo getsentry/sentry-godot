@@ -66,7 +66,7 @@ _FORCE_INLINE_ NSNumber *double_to_objc(double p_num) {
 	return [NSNumber numberWithDouble:p_num];
 }
 
-NSObject *variant_to_objc(const godot::Variant &p_value);
+NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth = 0);
 NSDictionary *dictionary_to_objc(const godot::Dictionary &p_dictionary);
 
 } //namespace sentry::cocoa
