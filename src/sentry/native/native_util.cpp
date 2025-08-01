@@ -1,5 +1,7 @@
 #include "native_util.h"
 
+#include "sentry/common_defs.h"
+
 namespace sentry::native {
 
 sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
@@ -20,7 +22,7 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 			return sentry_value_new_string(((String)p_variant).utf8());
 		} break;
 		case Variant::Type::DICTIONARY: {
-			if (p_depth > 32) {
+			if (p_depth > VARIANT_CONVERSION_MAX_DEPTH) {
 				ERR_PRINT_ONCE("Sentry: Maximum Variant conversion depth reached!");
 				return sentry_value_new_string("{...}");
 			}
@@ -45,7 +47,7 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 		case Variant::Type::PACKED_VECTOR3_ARRAY:
 		case Variant::Type::PACKED_COLOR_ARRAY:
 		case Variant::Type::PACKED_VECTOR4_ARRAY: {
-			if (p_depth > 32) {
+			if (p_depth > VARIANT_CONVERSION_MAX_DEPTH) {
 				ERR_PRINT_ONCE("Sentry: Maximum Variant conversion depth reached!");
 				return sentry_value_new_string("[...]");
 			}
