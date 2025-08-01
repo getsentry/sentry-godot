@@ -2,7 +2,12 @@
 
 namespace sentry::native {
 
-sentry_value_t variant_to_sentry_value(const Variant &p_variant) {
+sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
+	if (p_depth > 32) {
+		ERR_PRINT_ONCE("Sentry: Variant conversion depth exceeded");
+		return sentry_value_new_null();
+	}
+
 	switch (p_variant.get_type()) {
 		case Variant::Type::NIL: {
 			return sentry_value_new_null();
@@ -25,7 +30,7 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant) {
 			const Array &keys = dic.keys();
 			for (int i = 0; i < keys.size(); i++) {
 				const String &key = keys[i];
-				sentry_value_set_by_key(sentry_dic, key.utf8(), variant_to_sentry_value(dic[key]));
+				sentry_value_set_by_key(sentry_dic, key.utf8(), variant_to_sentry_value(dic[key], p_depth + 1));
 			}
 			return sentry_dic;
 		} break;
@@ -47,7 +52,7 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant) {
 			do {
 				Variant item = p_variant.get_indexed(i++, valid, oob);
 				if (valid) {
-					sentry_value_append(sentry_list, variant_to_sentry_value(item));
+					sentry_value_append(sentry_list, variant_to_sentry_value(item, p_depth + 1));
 				}
 			} while (!oob);
 			return sentry_list;
