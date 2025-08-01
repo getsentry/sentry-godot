@@ -3,11 +3,6 @@
 namespace sentry::native {
 
 sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
-	if (p_depth > 32) {
-		ERR_PRINT_ONCE("Sentry: Maximum Variant conversion depth reached!");
-		return sentry_value_new_null();
-	}
-
 	switch (p_variant.get_type()) {
 		case Variant::Type::NIL: {
 			return sentry_value_new_null();
@@ -25,6 +20,11 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 			return sentry_value_new_string(((String)p_variant).utf8());
 		} break;
 		case Variant::Type::DICTIONARY: {
+			if (p_depth > 32) {
+				ERR_PRINT_ONCE("Sentry: Maximum Variant conversion depth reached!");
+				return sentry_value_new_string("{...}");
+			}
+
 			Dictionary dic = p_variant;
 			sentry_value_t sentry_dic = sentry_value_new_object();
 			const Array &keys = dic.keys();
@@ -45,6 +45,11 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 		case Variant::Type::PACKED_VECTOR3_ARRAY:
 		case Variant::Type::PACKED_COLOR_ARRAY:
 		case Variant::Type::PACKED_VECTOR4_ARRAY: {
+			if (p_depth > 32) {
+				ERR_PRINT_ONCE("Sentry: Maximum Variant conversion depth reached!");
+				return sentry_value_new_string("[...]");
+			}
+
 			bool oob = false;
 			bool valid = true;
 			int i = 0;
