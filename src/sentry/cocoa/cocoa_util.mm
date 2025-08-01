@@ -5,10 +5,6 @@ using namespace godot;
 namespace sentry::cocoa {
 
 NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
-	if (p_depth > 32) {
-		return [NSString stringWithUTF8String:"(Conversion depth limit reached)"];
-	}
-
 	switch (p_value.get_type()) {
 		case Variant::NIL: {
 			return [NSNull null];
@@ -23,6 +19,11 @@ NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 			return [NSNumber numberWithDouble:(double)p_value];
 		}
 		case Variant::DICTIONARY: {
+			if (p_depth > 32) {
+				ERR_PRINT_ONCE("Sentry: Maximum Variant conversion depth reached!");
+				return [NSString stringWithUTF8String:"{...}"];
+			}
+
 			Dictionary dict = p_value;
 			NSMutableDictionary *objc_dict = [[NSMutableDictionary alloc] init];
 
@@ -47,6 +48,11 @@ NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 		case Variant::PACKED_VECTOR3_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
 		case Variant::PACKED_VECTOR4_ARRAY: {
+			if (p_depth > 32) {
+				ERR_PRINT_ONCE("Sentry: Maximum Variant conversion depth reached!");
+				return [NSString stringWithUTF8String:"[...]"];
+			}
+
 			NSMutableArray *objc_array = [[NSMutableArray alloc] init];
 			bool oob = false;
 			bool valid = true;
