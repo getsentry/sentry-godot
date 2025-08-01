@@ -4,7 +4,7 @@ namespace sentry::native {
 
 sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 	if (p_depth > 32) {
-		ERR_PRINT_ONCE("Sentry: Variant conversion depth exceeded");
+		ERR_PRINT_ONCE("Sentry: Variant conversion depth reached!");
 		return sentry_value_new_null();
 	}
 
