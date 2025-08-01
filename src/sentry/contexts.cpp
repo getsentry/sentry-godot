@@ -83,11 +83,15 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	device_context["screen_dpi"] = DisplayServer::get_singleton()->screen_get_dpi(
 			DisplayServer::get_singleton()->get_primary_screen());
 
+#ifndef IOS_ENABLED
+	// NOTE: Memory info access on iOS can cause runtime errors in Godot 4.5.
+	// See: https://github.com/godotengine/godot/issues/109073
 	Dictionary meminfo = OS::get_singleton()->get_memory_info();
-	// Note: Using double since int32 can't handle size in bytes.
+	// NOTE: Using double since int32 can't handle size in bytes.
 	device_context["memory_size"] = double(meminfo["physical"]);
 	device_context["free_memory"] = double(meminfo["free"]);
 	device_context["usable_memory"] = double(meminfo["available"]);
+#endif // !IOS_ENABLED
 
 	auto dir = DirAccess::open("user://");
 	if (dir.is_valid()) {
@@ -114,6 +118,8 @@ Dictionary make_device_context_update() {
 	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
 	device_context["orientation"] = _screen_orientation_as_string(primary_screen);
 
+#ifndef IOS_ENABLED
+	// NOTE: Memory info access on iOS can cause runtime errors in Godot 4.5.
 	const Dictionary &meminfo = OS::get_singleton()->get_memory_info();
 	// NOTE: Using double since int32 can't handle size in bytes.
 	//       On some platforms, memory info may not be available (-1).
@@ -125,6 +131,7 @@ Dictionary make_device_context_update() {
 	if (available_memory >= 0) {
 		device_context["usable_memory"] = double(available_memory);
 	}
+#endif // !IOS_ENABLED
 
 	auto dir = DirAccess::open("user://");
 	if (dir.is_valid()) {
@@ -312,8 +319,11 @@ Dictionary make_performance_context() {
 	perf_context["static_memory_peak_usage"] = String::humanize_size(OS::get_singleton()->get_static_memory_peak_usage());
 	perf_context["static_memory_usage"] = String::humanize_size(OS::get_singleton()->get_static_memory_usage());
 
+#ifndef IOS_ENABLED
+	// NOTE: Memory info access on iOS can cause runtime errors in Godot 4.5.
 	Dictionary meminfo = OS::get_singleton()->get_memory_info();
 	perf_context["main_thread_stack_size"] = String::humanize_size(meminfo["stack"]);
+#endif // !IOS_ENABLED
 
 	double fps_metric = Engine::get_singleton()->get_frames_per_second();
 	if (fps_metric) {
@@ -353,7 +363,7 @@ HashMap<String, Dictionary> make_event_contexts() {
 	HashMap<String, Dictionary> event_contexts;
 	event_contexts["godot_performance"] = make_performance_context();
 
-#ifdef NATIVE_SDK
+#ifdef SDK_NATIVE
 	event_contexts["device"] = make_device_context_update();
 #endif
 

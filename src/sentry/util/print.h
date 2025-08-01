@@ -64,6 +64,18 @@ void print_fatal(const Variant &p_arg1, const Args &...p_args) {
 	print(Level::LEVEL_FATAL, p_arg1, p_args...);
 }
 
+#define FAIL_COND_V_PRINT_ERROR(m_cond, m_ret, m_msg) \
+	if (m_cond) {                                     \
+		sentry::util::print_error(m_msg);             \
+		return m_ret;                                 \
+	}
+
+#define FAIL_COND_PRINT_ERROR(m_cond, m_msg) \
+	if (m_cond) {                            \
+		sentry::util::print_error(m_msg);    \
+		return;                              \
+	}
+
 } //namespace sentry::util
 
 #endif // SENTRY_PRINT_H
