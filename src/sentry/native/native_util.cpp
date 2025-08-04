@@ -1,8 +1,10 @@
 #include "native_util.h"
 
+#include "sentry/common_defs.h"
+
 namespace sentry::native {
 
-sentry_value_t variant_to_sentry_value(const Variant &p_variant) {
+sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 	switch (p_variant.get_type()) {
 		case Variant::Type::NIL: {
 			return sentry_value_new_null();
@@ -20,12 +22,17 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant) {
 			return sentry_value_new_string(((String)p_variant).utf8());
 		} break;
 		case Variant::Type::DICTIONARY: {
+			if (p_depth > VARIANT_CONVERSION_MAX_DEPTH) {
+				ERR_PRINT_ONCE("Sentry: Maximum Variant conversion depth reached!");
+				return sentry_value_new_string("{...}");
+			}
+
 			Dictionary dic = p_variant;
 			sentry_value_t sentry_dic = sentry_value_new_object();
 			const Array &keys = dic.keys();
 			for (int i = 0; i < keys.size(); i++) {
 				const String &key = keys[i];
-				sentry_value_set_by_key(sentry_dic, key.utf8(), variant_to_sentry_value(dic[key]));
+				sentry_value_set_by_key(sentry_dic, key.utf8(), variant_to_sentry_value(dic[key], p_depth + 1));
 			}
 			return sentry_dic;
 		} break;
@@ -40,6 +47,11 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant) {
 		case Variant::Type::PACKED_VECTOR3_ARRAY:
 		case Variant::Type::PACKED_COLOR_ARRAY:
 		case Variant::Type::PACKED_VECTOR4_ARRAY: {
+			if (p_depth > VARIANT_CONVERSION_MAX_DEPTH) {
+				ERR_PRINT_ONCE("Sentry: Maximum Variant conversion depth reached!");
+				return sentry_value_new_string("[...]");
+			}
+
 			bool oob = false;
 			bool valid = true;
 			int i = 0;
@@ -47,7 +59,7 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant) {
 			do {
 				Variant item = p_variant.get_indexed(i++, valid, oob);
 				if (valid) {
-					sentry_value_append(sentry_list, variant_to_sentry_value(item));
+					sentry_value_append(sentry_list, variant_to_sentry_value(item, p_depth + 1));
 				}
 			} while (!oob);
 			return sentry_list;

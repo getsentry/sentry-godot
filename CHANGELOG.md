@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
+## 1.0.0-alpha.3
 
-## Breaking changes
+### Breaking changes
 
 - Remove `disabled_in_editor` option in favor of disabling SDK in the Godot editor by default.([#277](https://github.com/getsentry/sentry-godot/pull/277))
+- Bump Godot minimum version to `4.5-beta4` ([#285](https://github.com/getsentry/sentry-godot/pull/285))
 
 ### Features
 
@@ -15,6 +16,13 @@
 - Prevent feedback loops in SentryLogger ([#275](https://github.com/getsentry/sentry-godot/pull/275))
 - Fix `release` option not honored if set to a custom value in the project settings, and fix parsing of `app_name`/`app_version` replacement tokens if set via a configuration script. ([#276](https://github.com/getsentry/sentry-godot/pull/276))
 - Remove `libatomic.so.1` dependency on Linux ([#278](https://github.com/getsentry/sentry-godot/pull/278))
+- Prevent stack overflow in variant conversion ([#284](https://github.com/getsentry/sentry-godot/pull/284))
+
+### Dependencies
+
+- Bump Sentry Android from v8.17.0 to v8.18.0 ([#282](https://github.com/getsentry/sentry-godot/pull/282))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8180)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.17.0...8.18.0)
 
 ## 1.0.0-alpha.2
 
