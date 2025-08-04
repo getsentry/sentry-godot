@@ -1,5 +1,7 @@
 #include "cocoa_util.h"
 
+#include "sentry/common_defs.h"
+
 using namespace godot;
 
 namespace sentry::cocoa {
@@ -19,7 +21,7 @@ NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 			return [NSNumber numberWithDouble:(double)p_value];
 		}
 		case Variant::DICTIONARY: {
-			if (p_depth > 32) {
+			if (p_depth > VARIANT_CONVERSION_MAX_DEPTH) {
 				ERR_PRINT_ONCE("Sentry: Maximum Variant conversion depth reached!");
 				return [NSString stringWithUTF8String:"{...}"];
 			}
@@ -48,7 +50,7 @@ NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 		case Variant::PACKED_VECTOR3_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
 		case Variant::PACKED_VECTOR4_ARRAY: {
-			if (p_depth > 32) {
+			if (p_depth > VARIANT_CONVERSION_MAX_DEPTH) {
 				ERR_PRINT_ONCE("Sentry: Maximum Variant conversion depth reached!");
 				return [NSString stringWithUTF8String:"[...]"];
 			}
