@@ -1,15 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Support for iOS & macOS using Sentry Cocoa SDK integration ([#266](https://github.com/getsentry/sentry-godot/pull/266))
+
 ## 1.0.0-alpha.3
 
 ### Breaking changes
 
 - Remove `disabled_in_editor` option in favor of disabling SDK in the Godot editor by default.([#277](https://github.com/getsentry/sentry-godot/pull/277))
 - Bump Godot minimum version to `4.5-beta4` ([#285](https://github.com/getsentry/sentry-godot/pull/285))
-
-### Features
-
-- Support for iOS & macOS using Sentry Cocoa SDK integration ([#266](https://github.com/getsentry/sentry-godot/pull/266))
 
 ### Fixes
 
