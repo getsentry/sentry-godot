@@ -269,19 +269,15 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun eventSetTimestamp(eventHandle: Int, timestamp: String) {
+    fun eventSetTimestamp(eventHandle: Int, microsSinceUnixEpoch: Long) {
         val event: SentryEvent = getEvent(eventHandle) ?: return
-        try {
-            event.timestamp = timestamp.parseTimestamp()
-        } catch (_: Exception) {
-            Log.e(TAG, "Failed to parse timestamp: $timestamp")
-        }
+        event.timestamp = microsSinceUnixEpoch.microsecondsToTimestamp()
     }
 
     @UsedByGodot
-    fun eventGetTimestamp(eventHandle: Int): String {
-        val event: SentryEvent = getEvent(eventHandle) ?: return ""
-        return event.timestamp?.toRfc3339() ?: ""
+    fun eventGetTimestamp(eventHandle: Int): Long {
+        val event: SentryEvent = getEvent(eventHandle) ?: return 0
+        return event.timestamp?.toInstant()?.toMicros() ?: 0
     }
 
     @UsedByGodot

@@ -2,6 +2,7 @@
 #define SENTRY_EVENT_H
 
 #include "sentry/level.h"
+#include "sentry_timestamp.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/templates/pair.hpp>
@@ -45,8 +46,8 @@ public:
 	virtual void set_message(const String &p_message) = 0;
 	virtual String get_message() const = 0;
 
-	virtual void set_timestamp(const String &p_timestamp) = 0;
-	virtual String get_timestamp() const = 0;
+	virtual void set_timestamp(const Ref<SentryTimestamp> &p_timestamp) = 0;
+	virtual Ref<SentryTimestamp> get_timestamp() const = 0;
 
 	virtual String get_platform() const = 0;
 

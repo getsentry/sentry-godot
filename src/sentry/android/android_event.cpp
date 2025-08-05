@@ -20,15 +20,15 @@ String AndroidEvent::get_message() const {
 	return android_plugin->call(ANDROID_SN(eventGetMessage), event_handle);
 }
 
-void AndroidEvent::set_timestamp(const String &p_timestamp) {
+void AndroidEvent::set_timestamp(const Ref<SentryTimestamp> &p_timestamp) {
 	ERR_FAIL_NULL(android_plugin);
-	ERR_FAIL_COND_MSG(!sentry::util::is_valid_timestamp(p_timestamp), "Invalid timestamp - expecting RFC 3339 format.");
-	android_plugin->call(ANDROID_SN(eventSetTimestamp), event_handle, p_timestamp);
+	android_plugin->call(ANDROID_SN(eventSetTimestamp), event_handle, p_timestamp.is_valid() ? p_timestamp->get_microseconds_since_unix_epoch() : 0);
 }
 
-String AndroidEvent::get_timestamp() const {
-	ERR_FAIL_NULL_V(android_plugin, String());
-	return android_plugin->call(ANDROID_SN(eventGetTimestamp), event_handle);
+Ref<SentryTimestamp> AndroidEvent::get_timestamp() const {
+	ERR_FAIL_NULL_V(android_plugin, nullptr);
+	int64_t micros = android_plugin->call(ANDROID_SN(eventGetTimestamp), event_handle);
+	return SentryTimestamp::from_microseconds_since_unix_epoch(micros);
 }
 
 String AndroidEvent::get_platform() const {

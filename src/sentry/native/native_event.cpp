@@ -77,14 +77,17 @@ String NativeEvent::get_message() const {
 	return sentry_value_as_string(formatted);
 }
 
-void NativeEvent::set_timestamp(const String &p_timestamp) {
-	ERR_FAIL_COND_MSG(!sentry::util::is_valid_timestamp(p_timestamp), "Invalid timestamp - expecting RFC 3339 format.");
-	_sentry_value_set_or_remove_string_by_key(native_event, "timestamp", p_timestamp);
+void NativeEvent::set_timestamp(const Ref<SentryTimestamp> &p_timestamp) {
+	if (p_timestamp.is_valid()) {
+		_sentry_value_set_or_remove_string_by_key(native_event, "timestamp", p_timestamp->to_rfc3339());
+	} else {
+		sentry_value_remove_by_key(native_event, "timestamp");
+	}
 }
 
-String NativeEvent::get_timestamp() const {
+Ref<SentryTimestamp> NativeEvent::get_timestamp() const {
 	sentry_value_t timestamp = sentry_value_get_by_key(native_event, "timestamp");
-	return sentry_value_as_string(timestamp);
+	return SentryTimestamp::parse_rfc3339_cstr(sentry_value_as_string(timestamp));
 }
 
 String NativeEvent::get_platform() const {
