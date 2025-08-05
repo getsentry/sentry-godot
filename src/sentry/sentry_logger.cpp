@@ -164,6 +164,20 @@ Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
 
 namespace sentry {
 
+std::size_t SentryLogger::ErrorKeyHash::operator()(const ErrorKey &p_key) const {
+	CharString message_cstr = p_key.message.utf8();
+	CharString filename_cstr = p_key.file.utf8();
+
+	std::string_view message_sv{ message_cstr.get_data() };
+	std::string_view filename_sv{ filename_cstr.get_data() };
+
+	size_t message_hash = std::hash<std::string_view>{}(message_sv);
+	size_t filename_hash = std::hash<std::string_view>{}(filename_sv);
+
+	size_t lineno_hash = std::hash<int>{}(p_key.line);
+	return message_hash ^ filename_hash ^ lineno_hash;
+}
+
 void SentryLogger::_connect_process_frame() {
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	if (scene_tree) {
@@ -198,8 +212,8 @@ void SentryLogger::_process_frame() {
 	}
 
 	// Clear source_line_times if it's too big. Cheap and efficient.
-	if (unlikely(source_line_times.size() > 100)) {
-		source_line_times.clear();
+	if (unlikely(error_timepoints.size() > 100)) {
+		error_timepoints.clear();
 	}
 }
 
@@ -214,7 +228,12 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		return;
 	}
 
-	SourceLine source_line{ p_file.utf8(), p_line };
+	String error_message = p_rationale.is_empty() ? p_code : p_rationale;
+
+	ErrorKey error_key;
+	error_key.message = error_message;
+	error_key.file = p_file;
+	error_key.line = p_line;
 
 	TimePoint now = std::chrono::high_resolution_clock::now();
 
@@ -227,8 +246,8 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		// Reject errors based on per-source-line throttling window to prevent
 		// repetitive logging caused by loops or errors recurring in each frame.
 		// The timestamps are tracked for each source line that produced an error.
-		auto it = source_line_times.find(source_line);
-		bool is_spammy_error = it != source_line_times.end() && now - it->second < limits.repeated_error_window;
+		auto it = error_timepoints.find(error_key);
+		bool is_spammy_error = it != error_timepoints.end() && now - it->second < limits.repeated_error_window;
 
 		bool within_frame_limit = frame_events < limits.events_per_frame;
 		bool within_throttling_limit = event_times.size() < limits.throttle_events;
@@ -248,7 +267,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 
 		if (as_event || as_breadcrumb) {
 			// Store timestamp to prevent repetitive logging from the same line of code.
-			source_line_times[source_line] = now;
+			error_timepoints[error_key] = now;
 		}
 	}
 
@@ -257,10 +276,8 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		return;
 	}
 
-	String error_value = p_rationale.is_empty() ? p_code : p_rationale;
-
 	sentry::util::print_debug(
-			"Capturing error: ", error_value,
+			"Capturing error: ", error_message,
 			"\n   at: ", p_function, " (", p_file, ":", p_line, ")",
 			"\n   event: ", as_event, "  breadcrumb: ", as_breadcrumb);
 
@@ -282,7 +299,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		ev->set_level(sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type));
 		SentryEvent::Exception exception = {
 			error_type_as_string[int(p_error_type)],
-			error_value,
+			error_message,
 			frames
 		};
 		ev->add_exception(exception);
@@ -300,7 +317,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		data["error_type"] = String(error_type_as_string[int(p_error_type)]);
 
 		SentrySDK::get_singleton()->add_breadcrumb(
-				error_value,
+				error_message,
 				"error",
 				sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type),
 				"error",
