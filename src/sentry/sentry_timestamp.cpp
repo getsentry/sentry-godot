@@ -44,6 +44,13 @@ Ref<SentryTimestamp> SentryTimestamp::parse_rfc3339_cstr(const char *p_formatted
 	FAIL_COND_V_PRINT_ERROR(minute < 0 || minute > 59, Ref<SentryTimestamp>(), "Invalid timestamp minute");
 	FAIL_COND_V_PRINT_ERROR(second < 0 || second > 59, Ref<SentryTimestamp>(), "Invalid timestamp second");
 
+	if (month == 2) {
+		int max_day = ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) ? 29 : 28;
+		FAIL_COND_V_PRINT_ERROR(day > max_day, Ref<SentryTimestamp>(), "Invalid timestamp day for February");
+	} else if (month == 4 || month == 6 || month == 9 || month == 11) {
+		FAIL_COND_V_PRINT_ERROR(day > 30, Ref<SentryTimestamp>(), "Invalid timestamp day for month");
+	}
+
 	if (cur[0] == '.') {
 		int32_t fractional = 0;
 		if (sscanf(cur, ".%9d%n", &fractional, &num_consumed) < 1 || num_consumed > 10) {
