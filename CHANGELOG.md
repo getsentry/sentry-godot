@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- Make error throttling smarter by factoring in error message ([#287](https://github.com/getsentry/sentry-godot/pull/287))
+
 ## 1.0.0-alpha.3
 
 ### Breaking changes
