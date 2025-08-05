@@ -106,14 +106,14 @@ Ref<SentryTimestamp> SentryTimestamp::parse_rfc3339_cstr(const char *p_formatted
 
 	Ref<SentryTimestamp> timestamp;
 	timestamp.instantiate();
-	timestamp->set_microseconds_since_epoch(microseconds);
+	timestamp->set_microseconds_since_unix_epoch(microseconds);
 	return timestamp;
 }
 
-Ref<SentryTimestamp> SentryTimestamp::from_microseconds(int64_t p_microseconds_since_epoch) {
+Ref<SentryTimestamp> SentryTimestamp::from_microseconds_since_unix_epoch(int64_t p_microseconds) {
 	Ref<SentryTimestamp> ts;
 	ts.instantiate();
-	ts->set_microseconds_since_epoch(p_microseconds_since_epoch);
+	ts->set_microseconds_since_unix_epoch(p_microseconds);
 	return ts;
 }
 
@@ -122,7 +122,7 @@ Ref<SentryTimestamp> SentryTimestamp::from_unix_time(double p_unix_time) {
 
 	Ref<SentryTimestamp> ts;
 	ts.instantiate();
-	ts->set_microseconds_since_epoch(microseconds);
+	ts->set_microseconds_since_unix_epoch(microseconds);
 	return ts;
 }
 
@@ -163,10 +163,10 @@ String SentryTimestamp::to_rfc3339() const {
 
 void SentryTimestamp::_bind_methods() {
 	ClassDB::bind_static_method("SentryTimestamp", D_METHOD("parse_rfc3339", "formatted_string"), &SentryTimestamp::parse_rfc3339);
-	ClassDB::bind_static_method("SentryTimestamp", D_METHOD("from_microseconds", "microseconds_since_epoch"), &SentryTimestamp::from_microseconds);
+	ClassDB::bind_static_method("SentryTimestamp", D_METHOD("from_microseconds_since_unix_epoch", "microseconds"), &SentryTimestamp::from_microseconds_since_unix_epoch);
 	ClassDB::bind_static_method("SentryTimestamp", D_METHOD("from_unix_time", "unix_time"), &SentryTimestamp::from_unix_time);
 
-	BIND_PROPERTY(SentryTimestamp, PropertyInfo(Variant::INT, "microseconds_since_epoch"), set_microseconds_since_epoch, get_microseconds_since_epoch);
+	BIND_PROPERTY(SentryTimestamp, PropertyInfo(Variant::INT, "microseconds_since_unix_epoch"), set_microseconds_since_unix_epoch, get_microseconds_since_unix_epoch);
 
 	ClassDB::bind_method(D_METHOD("to_rfc3339"), &SentryTimestamp::to_rfc3339);
 	ClassDB::bind_method(D_METHOD("equals", "other"), &SentryTimestamp::equals);

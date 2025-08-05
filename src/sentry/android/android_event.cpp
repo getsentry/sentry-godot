@@ -22,13 +22,13 @@ String AndroidEvent::get_message() const {
 
 void AndroidEvent::set_timestamp(const Ref<SentryTimestamp> &p_timestamp) {
 	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(eventSetTimestamp), event_handle, p_timestamp.is_valid() ? p_timestamp->get_microseconds_since_epoch() : 0);
+	android_plugin->call(ANDROID_SN(eventSetTimestamp), event_handle, p_timestamp.is_valid() ? p_timestamp->get_microseconds_since_unix_epoch() : 0);
 }
 
 Ref<SentryTimestamp> AndroidEvent::get_timestamp() const {
 	ERR_FAIL_NULL_V(android_plugin, nullptr);
 	int64_t micros = android_plugin->call(ANDROID_SN(eventGetTimestamp), event_handle);
-	return SentryTimestamp::from_microseconds(micros);
+	return SentryTimestamp::from_microseconds_since_unix_epoch(micros);
 }
 
 String AndroidEvent::get_platform() const {

@@ -28,10 +28,10 @@ public:
 	static Ref<SentryTimestamp> from_unix_time(double p_unix_time);
 
 	// Create with microseconds since Unix epoch – lossless.
-	static Ref<SentryTimestamp> from_microseconds(int64_t p_microseconds_since_epoch);
+	static Ref<SentryTimestamp> from_microseconds_since_unix_epoch(int64_t p_microseconds);
 
-	_FORCE_INLINE_ int64_t get_microseconds_since_epoch() const { return microseconds_since_epoch; }
-	_FORCE_INLINE_ void set_microseconds_since_epoch(int64_t p_microseconds_since_epoch) { microseconds_since_epoch = p_microseconds_since_epoch; }
+	_FORCE_INLINE_ int64_t get_microseconds_since_unix_epoch() const { return microseconds_since_epoch; }
+	_FORCE_INLINE_ void set_microseconds_since_unix_epoch(int64_t p_microseconds) { microseconds_since_epoch = p_microseconds; }
 
 	_FORCE_INLINE_ bool equals(const Ref<SentryTimestamp> &p_other) {
 		return microseconds_since_epoch == p_other->microseconds_since_epoch;
