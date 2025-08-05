@@ -38,5 +38,5 @@ fun Long.microsecondsToTimestamp(): Date {
 
 fun Instant.toMicros(): Long {
     val instant: Instant = this@toMicros
-    return instant.epochSecond * 1_000_000 + instant.nano / 1_000
+    return instant.epochSecond * 1_000_000 + (instant.nano + 500) / 1_000
 }
