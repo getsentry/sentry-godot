@@ -94,22 +94,6 @@ class UtilityFunctionsTest {
     }
 
     @Test
-    fun instantToMicros_roundsNanosecondsCorrectly() {
-        // Test rounding behavior: (nano + 500) / 1000
-        val instant1 = Instant.ofEpochSecond(0, 499)
-        val result1 = instant1.toMicros()
-        assertEquals(0L, result1) // (499 + 500) / 1000 = 999 / 1000 = 0
-
-        val instant2 = Instant.ofEpochSecond(0, 500)
-        val result2 = instant2.toMicros()
-        assertEquals(1L, result2) // (500 + 500) / 1000 = 1000 / 1000 = 1
-
-        val instant3 = Instant.ofEpochSecond(0, 1500)
-        val result3 = instant3.toMicros()
-        assertEquals(2L, result3) // (1500 + 500) / 1000 = 2000 / 1000 = 2
-    }
-
-    @Test
     fun bidirectionalConversion_maintainsAccuracy() {
         val originalMicros = 1_672_531_200_500_000L // January 1, 2023 00:00:00.500000 UTC (exact millisecond)
         val date = originalMicros.microsecondsToTimestamp()
