@@ -61,37 +61,30 @@ String CocoaEvent::get_message() const {
 	}
 }
 
-void CocoaEvent::set_timestamp(const String &p_timestamp) {
+void CocoaEvent::set_timestamp(const Ref<SentryTimestamp> &p_timestamp) {
 	ERR_FAIL_NULL(cocoa_event);
 
-	if (p_timestamp.is_empty()) {
+	if (p_timestamp.is_null()) {
 		cocoa_event.timestamp = nil;
 		return;
 	}
 
-	bool success;
-	int64_t microseconds = sentry::util::rfc3339_timestamp_to_microseconds(p_timestamp.ascii(), success);
-	if (!success) {
-		sentry::util::print_error("Failed to parse timestamp: '", p_timestamp, "'");
-		return;
-	}
-
-	NSTimeInterval seconds = microseconds * 0.000'001;
+	NSTimeInterval seconds = p_timestamp->get_microseconds_since_unix_epoch() * 0.000'001;
 
 	cocoa_event.timestamp = [NSDate dateWithTimeIntervalSince1970:seconds];
 }
 
-String CocoaEvent::get_timestamp() const {
-	ERR_FAIL_NULL_V(cocoa_event, String());
+Ref<SentryTimestamp> CocoaEvent::get_timestamp() const {
+	ERR_FAIL_NULL_V(cocoa_event, Ref<SentryTimestamp>());
 
 	if (cocoa_event.timestamp == nil) {
-		return String();
+		return Ref<SentryTimestamp>();
 	}
 
 	NSTimeInterval seconds = [cocoa_event.timestamp timeIntervalSince1970];
 	int64_t microseconds = (int64_t)(seconds * 1000'000.0);
 
-	return sentry::util::microseconds_to_rfc3339_timestamp(microseconds);
+	return SentryTimestamp::from_microseconds_since_unix_epoch(microseconds);
 }
 
 String CocoaEvent::get_platform() const {
