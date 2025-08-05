@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Intoduce `SentryTimestamp` class to improve timestamp handling ([#286](https://github.com/getsentry/sentry-godot/pull/286))
+
 ### Improvements
 
 - Make error throttling smarter by factoring in error message ([#287](https://github.com/getsentry/sentry-godot/pull/287))

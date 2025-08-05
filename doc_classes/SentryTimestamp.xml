@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryTimestamp" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A timestamp in Sentry events.
+	</brief_description>
+	<description>
+		A timestamp representation used in Sentry events, providing precise time tracking with microsecond resolution.
+		[SentryTimestamp] instances can be created in several ways: from microseconds since the Unix epoch using [method SentryTimestamp.from_microseconds_since_unix_epoch], from Unix time (seconds as a float) using [method SentryTimestamp.from_unix_time], or by parsing RFC 3339 formatted timestamp strings using [method SentryTimestamp.parse_rfc3339].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="equals">
+			<return type="bool" />
+			<param index="0" name="other" type="SentryTimestamp" />
+			<description>
+				Returns [code]true[/code] if this timestamp is equal to the [param]other[/param] timestamp.
+			</description>
+		</method>
+		<method name="from_microseconds_since_unix_epoch" qualifiers="static">
+			<return type="SentryTimestamp" />
+			<param index="0" name="microseconds" type="int" />
+			<description>
+				Creates a new [SentryTimestamp] instance from the given number of microseconds since the Unix epoch (January 1, 1970, 00:00:00 UTC).
+			</description>
+		</method>
+		<method name="from_unix_time" qualifiers="static">
+			<return type="SentryTimestamp" />
+			<param index="0" name="unix_time" type="float" />
+			<description>
+				Creates a new [SentryTimestamp] instance from the given Unix time. Unix time is a floating-point number representing the number of seconds since the Unix epoch (January 1, 1970, 00:00:00 UTC).
+			</description>
+		</method>
+		<method name="parse_rfc3339" qualifiers="static">
+			<return type="SentryTimestamp" />
+			<param index="0" name="formatted_string" type="String" />
+			<description>
+				Creates a new [SentryTimestamp] instance from the given RFC 3339 formatted string. The format should be YYYY-MM-DDTHH:MM:SS.sssssssssZ (UTC) or YYYY-MM-DDTHH:MM:SS.sssssssss±HH:MM (with timezone offset), for example: [code]2025-05-02T02:09:40.376530Z[/code].
+			</description>
+		</method>
+		<method name="to_rfc3339" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts this timestamp to an RFC 3339 formatted string in UTC. The returned string follows the format YYYY-MM-DDTHH:MM:SS.ssssssZ, for example: [code]2025-05-02T02:09:40.376534Z[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="microseconds_since_unix_epoch" type="int" setter="set_microseconds_since_unix_epoch" getter="get_microseconds_since_unix_epoch" default="0">
+			Microseconds passed since the Unix epoch (January 1, 1970, 00:00:00 UTC).
+		</member>
+	</members>
+</class>

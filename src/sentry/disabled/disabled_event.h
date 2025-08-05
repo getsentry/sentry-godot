@@ -11,7 +11,7 @@ class DisabledEvent : public SentryEvent {
 
 private:
 	String message;
-	String timestamp;
+	Ref<SentryTimestamp> timestamp;
 	String logger;
 	sentry::Level level = sentry::Level::LEVEL_INFO;
 	String release;
@@ -27,8 +27,8 @@ public:
 	virtual void set_message(const String &p_message) override { message = p_message; }
 	virtual String get_message() const override { return message; }
 
-	virtual void set_timestamp(const String &p_timestamp) override { timestamp = p_timestamp; }
-	virtual String get_timestamp() const override { return timestamp; }
+	virtual void set_timestamp(const Ref<SentryTimestamp> &p_timestamp) override { timestamp = p_timestamp; }
+	virtual Ref<SentryTimestamp> get_timestamp() const override { return timestamp; }
 
 	virtual String get_platform() const override { return ""; }
 
