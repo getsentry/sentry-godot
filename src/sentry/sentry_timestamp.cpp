@@ -13,14 +13,14 @@
 
 namespace sentry {
 
-Ref<SentryTimestamp> SentryTimestamp::parse_rfc3339_cstr(const char *p_cstring) {
-	if (p_cstring == NULL) {
+Ref<SentryTimestamp> SentryTimestamp::parse_rfc3339_cstr(const char *p_formatted_cstring) {
+	if (p_formatted_cstring == NULL) {
 		return Ref<SentryTimestamp>();
 	}
 
-	const char *cur = p_cstring;
+	const char *cur = p_formatted_cstring;
 
-	size_t len = strlen(p_cstring);
+	size_t len = strlen(p_formatted_cstring);
 	if (len < 20) {
 		return Ref<SentryTimestamp>();
 	}
@@ -37,8 +37,15 @@ Ref<SentryTimestamp> SentryTimestamp::parse_rfc3339_cstr(const char *p_cstring) 
 
 	cur += num_consumed;
 
+	FAIL_COND_V_PRINT_ERROR(year < 1900 || year > 9999, Ref<SentryTimestamp>(), "Invalid timestamp year");
+	FAIL_COND_V_PRINT_ERROR(month < 1 || month > 12, Ref<SentryTimestamp>(), "Invalid timestamp month");
+	FAIL_COND_V_PRINT_ERROR(day < 1 || day > 31, Ref<SentryTimestamp>(), "Invalid timestamp day");
+	FAIL_COND_V_PRINT_ERROR(hour < 0 || hour > 23, Ref<SentryTimestamp>(), "Invalid timestamp hour");
+	FAIL_COND_V_PRINT_ERROR(minute < 0 || minute > 59, Ref<SentryTimestamp>(), "Invalid timestamp minute");
+	FAIL_COND_V_PRINT_ERROR(second < 0 || second > 59, Ref<SentryTimestamp>(), "Invalid timestamp second");
+
 	if (cur[0] == '.') {
-		int fractional = 0;
+		int32_t fractional = 0;
 		if (sscanf(cur, ".%d%n", &fractional, &num_consumed) < 1 || num_consumed > 10) {
 			sentry::util::print_error("Timestamp parsing needs 1-9 fractional digits.");
 			return Ref<SentryTimestamp>();
@@ -81,6 +88,7 @@ Ref<SentryTimestamp> SentryTimestamp::parse_rfc3339_cstr(const char *p_cstring) 
 	tm.tm_hour = hour;
 	tm.tm_min = minute;
 	tm.tm_sec = second;
+
 #ifdef WINDOWS_ENABLED
 	time_t time = _mkgmtime(&tm);
 #else

@@ -21,8 +21,8 @@ protected:
 
 public:
 	// Parse RFC3339 timestamp (YYYY-MM-DDTHH:MM:SS.sssssssssZ or with ±HH:MM offset).
-	static Ref<SentryTimestamp> parse_rfc3339_cstr(const char *p_cstring);
-	static Ref<SentryTimestamp> parse_rfc3339(const String &p_string) { return parse_rfc3339_cstr(p_string.ascii()); }
+	static Ref<SentryTimestamp> parse_rfc3339_cstr(const char *p_formatted_cstring);
+	static Ref<SentryTimestamp> parse_rfc3339(const String &p_formatted_string) { return parse_rfc3339_cstr(p_formatted_string.ascii()); }
 
 	// Create with Unix time (seconds since unix epoch) – useful in GDScript.
 	static Ref<SentryTimestamp> from_unix_time(double p_unix_time);
