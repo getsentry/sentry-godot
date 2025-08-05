@@ -12,7 +12,7 @@ class SentryTimestamp : public RefCounted {
 
 private:
 	// NOTE: Use int64_t for Godot Variant compatibility.
-	int64_t microseconds_since_unix_epoch; // 1970-01-01
+	int64_t microseconds_since_unix_epoch = 0; // 1970-01-01
 
 protected:
 	static void _bind_methods();
