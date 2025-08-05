@@ -41,7 +41,7 @@
 		<method name="to_rfc3339" qualifiers="const">
 			<return type="String" />
 			<description>
-				Converts this timestamp to an RFC 3339 formatted string.
+				Converts this timestamp to an RFC 3339 formatted string in UTC. The returned string follows the format YYYY-MM-DDTHH:MM:SS.ssssssZ, for example: [code]2025-05-02T02:09:40.376534Z[/code].
 			</description>
 		</method>
 	</methods>
