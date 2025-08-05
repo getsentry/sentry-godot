@@ -3,7 +3,13 @@
 #include "sentry/util/print.h"
 #include "sentry/util/simple_bind.h"
 
+#include <cstdio>
+#include <cstring>
 #include <ctime>
+
+#ifdef WINDOWS_ENABLED
+#include <time.h>
+#endif
 
 namespace sentry {
 
@@ -119,9 +125,14 @@ String SentryTimestamp::to_rfc3339() const {
 	time_t secs = static_cast<time_t>(seconds);
 	struct tm *tm;
 
-#if defined(PLATFORM_WINDOWS)
-	tm = gmtime(&secs);
-#else
+#ifdef WINDOWS_ENABLED
+	struct tm tm_buf;
+	if (gmtime_s(&tm_buf, &secs) != 0) {
+		tm = nullptr;
+	} else {
+		tm = &tm_buf;
+	}
+#else // POSIX
 	struct tm tm_buf;
 	tm = gmtime_r(&secs, &tm_buf);
 #endif
