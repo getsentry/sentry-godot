@@ -175,7 +175,7 @@ std::size_t SentryLogger::ErrorKeyHash::operator()(const ErrorKey &p_key) const 
 	size_t filename_hash = std::hash<std::string_view>{}(filename_sv);
 
 	size_t lineno_hash = std::hash<int>{}(p_key.line);
-	return message_hash ^ filename_hash ^ lineno_hash;
+	return message_hash ^ (filename_hash << 1) ^ (lineno_hash << 2);
 }
 
 void SentryLogger::_connect_process_frame() {
