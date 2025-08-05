@@ -10,27 +10,11 @@ import kotlin.math.abs
 class UtilityFunctionsTest {
 
     @Test
-    fun toSentryLevel_convertsDebugCorrectly() {
+    fun toSentryLevel_convertsCorrectlyWithValidValues() {
         assertEquals(SentryLevel.DEBUG, 0.toSentryLevel())
-    }
-
-    @Test
-    fun toSentryLevel_convertsInfoCorrectly() {
         assertEquals(SentryLevel.INFO, 1.toSentryLevel())
-    }
-
-    @Test
-    fun toSentryLevel_convertsWarningCorrectly() {
         assertEquals(SentryLevel.WARNING, 2.toSentryLevel())
-    }
-
-    @Test
-    fun toSentryLevel_convertsErrorCorrectly() {
         assertEquals(SentryLevel.ERROR, 3.toSentryLevel())
-    }
-
-    @Test
-    fun toSentryLevel_convertsFatalCorrectly() {
         assertEquals(SentryLevel.FATAL, 4.toSentryLevel())
     }
 
@@ -42,27 +26,11 @@ class UtilityFunctionsTest {
     }
 
     @Test
-    fun sentryLevelToInt_convertsDebugCorrectly() {
+    fun sentryLevelToInt_convertsAllLevelsCorrectly() {
         assertEquals(0, SentryLevel.DEBUG.toInt())
-    }
-
-    @Test
-    fun sentryLevelToInt_convertsInfoCorrectly() {
         assertEquals(1, SentryLevel.INFO.toInt())
-    }
-
-    @Test
-    fun sentryLevelToInt_convertsWarningCorrectly() {
         assertEquals(2, SentryLevel.WARNING.toInt())
-    }
-
-    @Test
-    fun sentryLevelToInt_convertsErrorCorrectly() {
         assertEquals(3, SentryLevel.ERROR.toInt())
-    }
-
-    @Test
-    fun sentryLevelToInt_convertsFatalCorrectly() {
         assertEquals(4, SentryLevel.FATAL.toInt())
     }
 
@@ -147,7 +115,7 @@ class UtilityFunctionsTest {
         val date = originalMicros.microsecondsToTimestamp()
         val instant = date.toInstant()
         val convertedMicros = instant.toMicros()
-        
+
         // For microsecond values that align with millisecond boundaries, conversion should be precise
         assertEquals(originalMicros, convertedMicros)
     }
@@ -158,11 +126,11 @@ class UtilityFunctionsTest {
         val date = originalMicros.microsecondsToTimestamp()
         val instant = date.toInstant()
         val convertedMicros = instant.toMicros()
-        
+
         // Due to Date/Instant precision limitations, sub-millisecond precision is lost
         // The result should be rounded to the nearest millisecond (500000 microseconds)
         assertEquals(1_672_531_200_500_000L, convertedMicros)
-        
+
         // The difference should be exactly the sub-millisecond part
         val difference = abs(originalMicros - convertedMicros)
         assertEquals(750L, difference)
