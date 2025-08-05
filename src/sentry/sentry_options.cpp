@@ -58,8 +58,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	_define_setting("sentry/options/enabled", p_options->enabled);
-	_define_setting("sentry/options/disabled_in_editor", p_options->disabled_in_editor, false);
-	_requires_restart("sentry/options/disabled_in_editor");
+	_define_setting("sentry/options/disabled_in_editor_play", p_options->disabled_in_editor_play);
 	_define_setting("sentry/options/dsn", p_options->dsn);
 	_define_setting("sentry/options/release", p_options->release, false);
 	_define_setting("sentry/options/dist", p_options->dist, false);
@@ -92,17 +91,10 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	String app_name = ProjectSettings::get_singleton()->get_setting("application/config/name", "Unknown Godot project");
-	String app_version = ProjectSettings::get_singleton()->get_setting("application/config/version", "noversion");
-	String release_str = ProjectSettings::get_singleton()->get_setting("application/config/release", p_options->release);
-	Dictionary format_params;
-	format_params["app_name"] = app_name;
-	format_params["app_version"] = app_version;
-	p_options->release = release_str.format(format_params).utf8();
-
 	p_options->enabled = ProjectSettings::get_singleton()->get_setting("sentry/options/enabled", p_options->enabled);
-	p_options->disabled_in_editor = ProjectSettings::get_singleton()->get_setting("sentry/options/disabled_in_editor", p_options->disabled_in_editor);
+	p_options->disabled_in_editor_play = ProjectSettings::get_singleton()->get_setting("sentry/options/disabled_in_editor_play", p_options->disabled_in_editor_play);
 	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
+	p_options->set_release(ProjectSettings::get_singleton()->get_setting("sentry/options/release", p_options->release));
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/options/dist", p_options->dist);
 
 	// DebugMode is only used to represent the debug option in the project settings.
@@ -162,6 +154,16 @@ void SentryOptions::set_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
 	}
 }
 
+void SentryOptions::set_release(const String &p_release) {
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+	String app_name = ProjectSettings::get_singleton()->get_setting("application/config/name", "Unknown Godot project");
+	String app_version = ProjectSettings::get_singleton()->get_setting("application/config/version", "noversion");
+	Dictionary format_params;
+	format_params["app_name"] = app_name;
+	format_params["app_version"] = app_version;
+	release = p_release.format(format_params);
+}
+
 void SentryOptions::add_event_processor(const Ref<SentryEventProcessor> &p_processor) {
 	ERR_FAIL_COND(p_processor.is_null());
 	event_processors.push_back(p_processor);
@@ -174,7 +176,7 @@ void SentryOptions::remove_event_processor(const Ref<SentryEventProcessor> &p_pr
 
 void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enabled"), set_enabled, is_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "disabled_in_editor"), set_disabled_in_editor, is_disabled_in_editor);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "disabled_in_editor_play"), set_disabled_in_editor_play, is_disabled_in_editor_play);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dsn"), set_dsn, get_dsn);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "release"), set_release, get_release);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dist"), set_dist, get_dist);
