@@ -35,7 +35,7 @@
 			<return type="SentryTimestamp" />
 			<param index="0" name="formatted_string" type="String" />
 			<description>
-				Creates a new [SentryTimestamp] instance from the given RFC 3339 formatted string (for example, [code]2025-05-02T02:09:40.376530Z[/code]).
+				Creates a new [SentryTimestamp] instance from the given RFC 3339 formatted string. The format should be YYYY-MM-DDTHH:MM:SS.sssssssssZ (UTC) or YYYY-MM-DDTHH:MM:SS.sssssssss±HH:MM (with timezone offset), for example: [code]2025-05-02T02:09:40.376530Z[/code].
 			</description>
 		</method>
 		<method name="to_rfc3339" qualifiers="const">
