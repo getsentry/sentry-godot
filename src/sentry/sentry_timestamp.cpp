@@ -31,7 +31,7 @@ Ref<SentryTimestamp> SentryTimestamp::parse_rfc3339_cstr(const char *p_formatted
 	int num_consumed = 0;
 	constexpr int num_inputs = 6;
 	constexpr int num_chars_in_date = 19;
-	if (sscanf(cur, "%d-%d-%dT%d:%d:%d%n", &year, &month, &day, &hour, &minute, &second, &num_consumed) < num_inputs || num_consumed != num_chars_in_date) {
+	if (sscanf(cur, "%4d-%2d-%2dT%2d:%2d:%2d%n", &year, &month, &day, &hour, &minute, &second, &num_consumed) < num_inputs || num_consumed != num_chars_in_date) {
 		return Ref<SentryTimestamp>();
 	}
 
@@ -46,7 +46,7 @@ Ref<SentryTimestamp> SentryTimestamp::parse_rfc3339_cstr(const char *p_formatted
 
 	if (cur[0] == '.') {
 		int32_t fractional = 0;
-		if (sscanf(cur, ".%d%n", &fractional, &num_consumed) < 1 || num_consumed > 10) {
+		if (sscanf(cur, ".%9d%n", &fractional, &num_consumed) < 1 || num_consumed > 10) {
 			sentry::util::print_error("Timestamp parsing needs 1-9 fractional digits.");
 			return Ref<SentryTimestamp>();
 		}
@@ -70,7 +70,7 @@ Ref<SentryTimestamp> SentryTimestamp::parse_rfc3339_cstr(const char *p_formatted
 		int sign = (cur[0] == '+') ? 1 : -1;
 		int offset_hours, offset_minutes;
 
-		if (sscanf(cur, "%*c%d:%d%n", &offset_hours, &offset_minutes, &num_consumed) < 2 || num_consumed != 6) {
+		if (sscanf(cur, "%*c%2d:%2d%n", &offset_hours, &offset_minutes, &num_consumed) < 2 || num_consumed != 6) {
 			sentry::util::print_error("Invalid timezone offset format. Expected +HH:MM or -HH:MM");
 			return Ref<SentryTimestamp>();
 		}
