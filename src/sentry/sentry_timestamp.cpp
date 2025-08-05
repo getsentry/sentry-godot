@@ -127,8 +127,8 @@ Ref<SentryTimestamp> SentryTimestamp::from_unix_time(double p_unix_time) {
 }
 
 String SentryTimestamp::to_rfc3339() const {
-	int64_t seconds = microseconds_since_epoch / 1000000;
-	int64_t remaining_microseconds = microseconds_since_epoch % 1000000;
+	int64_t seconds = microseconds_since_unix_epoch / 1000000;
+	int64_t remaining_microseconds = microseconds_since_unix_epoch % 1000000;
 
 	time_t secs = static_cast<time_t>(seconds);
 	struct tm *tm;

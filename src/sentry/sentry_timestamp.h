@@ -12,7 +12,7 @@ class SentryTimestamp : public RefCounted {
 
 private:
 	// NOTE: Use int64_t for Godot Variant compatibility.
-	int64_t microseconds_since_epoch; // microseconds since unix epoch (1970-01-01)
+	int64_t microseconds_since_unix_epoch; // 1970-01-01
 
 protected:
 	static void _bind_methods();
@@ -30,11 +30,11 @@ public:
 	// Create with microseconds since Unix epoch – lossless.
 	static Ref<SentryTimestamp> from_microseconds_since_unix_epoch(int64_t p_microseconds);
 
-	_FORCE_INLINE_ int64_t get_microseconds_since_unix_epoch() const { return microseconds_since_epoch; }
-	_FORCE_INLINE_ void set_microseconds_since_unix_epoch(int64_t p_microseconds) { microseconds_since_epoch = p_microseconds; }
+	_FORCE_INLINE_ int64_t get_microseconds_since_unix_epoch() const { return microseconds_since_unix_epoch; }
+	_FORCE_INLINE_ void set_microseconds_since_unix_epoch(int64_t p_microseconds) { microseconds_since_unix_epoch = p_microseconds; }
 
 	_FORCE_INLINE_ bool equals(const Ref<SentryTimestamp> &p_other) {
-		return microseconds_since_epoch == p_other->microseconds_since_epoch;
+		return microseconds_since_unix_epoch == p_other->microseconds_since_unix_epoch;
 	}
 
 	// Return RFC3339 formatted string.

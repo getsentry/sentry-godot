@@ -6,32 +6,32 @@ extends GdUnitTestSuite
 func test_from_microseconds() -> void:
 	# Test with whole seconds (no fractional part)
 	var timestamp := SentryTimestamp.from_microseconds_since_unix_epoch(1612325106000000)
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106000000)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106000000)
 
 	# Test with microseconds precision
 	timestamp = SentryTimestamp.from_microseconds_since_unix_epoch(1612325106123456)
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106123456)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106123456)
 
 	# Test with zero epoch
 	timestamp = SentryTimestamp.from_microseconds_since_unix_epoch(0)
-	assert_int(timestamp.microseconds_since_epoch).is_equal(0)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(0)
 
 
 ## Test creating SentryTimestamp from unix time (double)
 func test_from_unix_time() -> void:
 	# Test with whole seconds
 	var timestamp := SentryTimestamp.from_unix_time(1612325106.0)
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106000000)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106000000)
 
 	# Test with fractional seconds (microsecond precision)
 	timestamp = SentryTimestamp.from_unix_time(1612325106.123456)
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106123456)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106123456)
 
 	# Test with current time
 	var current_time := Time.get_unix_time_from_system()
 	timestamp = SentryTimestamp.from_unix_time(current_time)
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_greater(0)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_greater(0)
 
 
 ## Test parsing RFC3339 formatted timestamp strings
@@ -39,32 +39,32 @@ func test_parse_rfc3339() -> void:
 	# Test basic ISO 8601 format with Z timezone
 	var timestamp := SentryTimestamp.parse_rfc3339("2021-02-03T04:05:06Z")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106000000)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106000000)
 
 	# Test with milliseconds
 	timestamp = SentryTimestamp.parse_rfc3339("2021-02-03T04:05:06.123Z")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106123000)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106123000)
 
 	# Test with microseconds
 	timestamp = SentryTimestamp.parse_rfc3339("2021-02-03T04:05:06.123456Z")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106123456)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106123456)
 
 	# Test with nanoseconds (should truncate to microseconds)
 	timestamp = SentryTimestamp.parse_rfc3339("2021-02-03T04:05:06.123456789Z")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106123456)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106123456)
 
 	# Test with positive timezone offset
 	timestamp = SentryTimestamp.parse_rfc3339("2021-02-03T06:05:06+02:00")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106000000)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106000000)
 
 	# Test with negative timezone offset
 	timestamp = SentryTimestamp.parse_rfc3339("2021-02-03T02:05:06-02:00")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106000000)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106000000)
 
 
 ## Test timestamp equality comparison
@@ -151,28 +151,28 @@ func test_advanced_rfc3339_parsing() -> void:
 	# Test various timezone offsets
 	var timestamp := SentryTimestamp.parse_rfc3339("2021-02-03T09:05:06+05:00")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106000000)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106000000)
 
 	# Test negative timezone with minutes
 	timestamp = SentryTimestamp.parse_rfc3339("2021-02-02T23:35:06-04:30")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106000000)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106000000)
 
 	# Test UTC+0 and UTC-0
 	timestamp = SentryTimestamp.parse_rfc3339("2021-02-03T04:05:06+00:00")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106000000)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106000000)
 
 	# Test fractional seconds precision
 	timestamp = SentryTimestamp.parse_rfc3339("2021-02-03T04:05:06.1Z")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106100000)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106100000)
 
 	timestamp = SentryTimestamp.parse_rfc3339("2021-02-03T04:05:06.12Z")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106120000)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106120000)
 
 	# Test nanosecond precision (should truncate to microseconds)
 	timestamp = SentryTimestamp.parse_rfc3339("2021-02-03T04:05:06.987654321Z")
 	assert_object(timestamp).is_not_null()
-	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106987654)
+	assert_int(timestamp.microseconds_since_unix_epoch).is_equal(1612325106987654)
