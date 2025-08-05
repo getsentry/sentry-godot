@@ -44,6 +44,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 		GDREGISTER_CLASS(SentryConfiguration);
 		GDREGISTER_CLASS(SentryUser);
+		GDREGISTER_CLASS(SentryTimestamp);
 		GDREGISTER_CLASS(SentrySDK);
 		GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
 		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
