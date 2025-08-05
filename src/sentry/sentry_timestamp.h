@@ -34,7 +34,7 @@ public:
 	_FORCE_INLINE_ void set_microseconds_since_unix_epoch(int64_t p_microseconds) { microseconds_since_unix_epoch = p_microseconds; }
 
 	_FORCE_INLINE_ bool equals(const Ref<SentryTimestamp> &p_other) {
-		return microseconds_since_unix_epoch == p_other->microseconds_since_unix_epoch;
+		return p_other.is_valid() ? microseconds_since_unix_epoch == p_other->microseconds_since_unix_epoch : false;
 	}
 
 	// Return RFC3339 formatted string.
