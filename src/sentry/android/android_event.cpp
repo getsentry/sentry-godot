@@ -1,7 +1,6 @@
 #include "android_event.h"
 
 #include "android_string_names.h"
-#include "sentry/util/timestamp.h"
 
 namespace sentry {
 
