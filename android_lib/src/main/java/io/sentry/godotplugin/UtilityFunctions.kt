@@ -1,10 +1,7 @@
 package io.sentry.godotplugin
 
 import io.sentry.SentryLevel
-import java.util.Calendar
 import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
 import java.time.Instant
 
 fun Int.toSentryLevel(): SentryLevel =
