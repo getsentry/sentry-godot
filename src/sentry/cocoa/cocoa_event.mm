@@ -2,7 +2,6 @@
 
 #include "cocoa_util.h"
 #include "sentry/util/print.h"
-#include "sentry/util/timestamp.h"
 
 #include <godot_cpp/classes/os.hpp>
 
