@@ -5,15 +5,15 @@ extends GdUnitTestSuite
 ## Test creating SentryTimestamp from microseconds
 func test_from_microseconds() -> void:
 	# Test with whole seconds (no fractional part)
-	var timestamp := SentryTimestamp.from_microseconds(1612325106000000)
+	var timestamp := SentryTimestamp.from_microseconds_since_unix_epoch(1612325106000000)
 	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106000000)
 
 	# Test with microseconds precision
-	timestamp = SentryTimestamp.from_microseconds(1612325106123456)
+	timestamp = SentryTimestamp.from_microseconds_since_unix_epoch(1612325106123456)
 	assert_int(timestamp.microseconds_since_epoch).is_equal(1612325106123456)
 
 	# Test with zero epoch
-	timestamp = SentryTimestamp.from_microseconds(0)
+	timestamp = SentryTimestamp.from_microseconds_since_unix_epoch(0)
 	assert_int(timestamp.microseconds_since_epoch).is_equal(0)
 
 
@@ -70,10 +70,10 @@ func test_parse_rfc3339() -> void:
 ## Test timestamp equality comparison
 func test_equals() -> void:
 	# Use realistic timestamp: 2021-02-03T04:05:06.123456Z
-	var timestamp1 := SentryTimestamp.from_microseconds(1612325106123456)
-	var timestamp2 := SentryTimestamp.from_microseconds(1612325106123456)
-	var timestamp3 := SentryTimestamp.from_microseconds(1612325106123457) # +1 microsecond
-	var timestamp4 := SentryTimestamp.from_microseconds(1612325105123456) # -1 second
+	var timestamp1 := SentryTimestamp.from_microseconds_since_unix_epoch(1612325106123456)
+	var timestamp2 := SentryTimestamp.from_microseconds_since_unix_epoch(1612325106123456)
+	var timestamp3 := SentryTimestamp.from_microseconds_since_unix_epoch(1612325106123457) # +1 microsecond
+	var timestamp4 := SentryTimestamp.from_microseconds_since_unix_epoch(1612325105123456) # -1 second
 
 	# Test equal timestamps
 	assert_bool(timestamp1.equals(timestamp2)).is_true()
@@ -91,14 +91,14 @@ func test_equals() -> void:
 	assert_bool(timestamp1.equals(timestamp1)).is_true()
 
 	# Test zero timestamp
-	var zero1 := SentryTimestamp.from_microseconds(0)
-	var zero2 := SentryTimestamp.from_microseconds(0)
+	var zero1 := SentryTimestamp.from_microseconds_since_unix_epoch(0)
+	var zero2 := SentryTimestamp.from_microseconds_since_unix_epoch(0)
 	assert_bool(zero1.equals(zero2)).is_true()
 
 
 ## Test RFC3339 output and string representation
 func test_rfc3339_output() -> void:
-	var timestamp := SentryTimestamp.from_microseconds(1612325106123456)
+	var timestamp := SentryTimestamp.from_microseconds_since_unix_epoch(1612325106123456)
 	var rfc3339 := timestamp.to_rfc3339()
 
 	# Should follow RFC3339/ISO 8601 format with microseconds
@@ -109,12 +109,12 @@ func test_rfc3339_output() -> void:
 	assert_str(string_repr).is_equal(rfc3339)
 
 	# Test with zero microseconds
-	timestamp = SentryTimestamp.from_microseconds(1612325106000000)
+	timestamp = SentryTimestamp.from_microseconds_since_unix_epoch(1612325106000000)
 	rfc3339 = timestamp.to_rfc3339()
 	assert_str(rfc3339).is_equal("2021-02-03T04:05:06.000000Z")
 
 	# Test epoch time formatting
-	timestamp = SentryTimestamp.from_microseconds(0)
+	timestamp = SentryTimestamp.from_microseconds_since_unix_epoch(0)
 	rfc3339 = timestamp.to_rfc3339()
 	assert_str(rfc3339).is_equal("1970-01-01T00:00:00.000000Z")
 

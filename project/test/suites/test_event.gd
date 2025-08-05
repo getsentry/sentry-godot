@@ -32,22 +32,22 @@ func test_event_timestamp() -> void:
 	assert_object(event.timestamp).is_not_null()
 
 	# Test assigning a custom timestamp from microseconds
-	var custom_timestamp := SentryTimestamp.from_microseconds(1612325106123456)
+	var custom_timestamp := SentryTimestamp.from_microseconds_since_unix_epoch(1612325106123456)
 	event.timestamp = custom_timestamp
 	assert_bool(event.timestamp.equals(custom_timestamp)).is_true()
-	assert_int(event.timestamp.microseconds_since_epoch).is_equal(1612325106123456)
+	assert_int(event.timestamp.microseconds_since_unix_epoch).is_equal(1612325106123456)
 
 	# Test assigning timestamp from current time
 	var current_timestamp := SentryTimestamp.from_unix_time(Time.get_unix_time_from_system())
 	event.timestamp = current_timestamp
 	assert_bool(event.timestamp.equals(current_timestamp)).is_true()
-	assert_int(event.timestamp.microseconds_since_epoch).is_equal(current_timestamp.microseconds_since_epoch)
+	assert_int(event.timestamp.microseconds_since_unix_epoch).is_equal(current_timestamp.microseconds_since_unix_epoch)
 
 	# Test assigning parsed RFC3339 timestamp
 	var parsed_timestamp := SentryTimestamp.parse_rfc3339("2021-02-03T04:05:06.123456789Z")
 	event.timestamp = parsed_timestamp
 	assert_bool(event.timestamp.equals(parsed_timestamp)).is_true()
-	assert_int(event.timestamp.microseconds_since_epoch).is_equal(1612325106123456)
+	assert_int(event.timestamp.microseconds_since_unix_epoch).is_equal(1612325106123456)
 
 
 ## SentryEvent.platform should not be empty.
