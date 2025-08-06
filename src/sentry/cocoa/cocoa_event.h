@@ -10,7 +10,7 @@ class CocoaEvent : public sentry::SentryEvent {
 	GDCLASS(CocoaEvent, sentry::SentryEvent);
 
 private:
-	__strong objc::SentryEvent *cocoa_event = nullptr;
+	objc::SentryEvent *cocoa_event = nullptr;
 
 protected:
 	static void _bind_methods() {}
