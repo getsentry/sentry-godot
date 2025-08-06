@@ -51,18 +51,10 @@ void CocoaSDK::set_user(const Ref<SentryUser> &p_user) {
 	if (p_user.is_valid()) {
 		objc::SentryUser *user = [[objc::SentryUser alloc] init];
 
-		if (!p_user->get_id().is_empty()) {
-			user.userId = string_to_objc(p_user->get_id());
-		}
-		if (!p_user->get_username().is_empty()) {
-			user.username = string_to_objc(p_user->get_username());
-		}
-		if (!p_user->get_email().is_empty()) {
-			user.email = string_to_objc(p_user->get_email());
-		}
-		if (!p_user->get_ip_address().is_empty()) {
-			user.ipAddress = string_to_objc(p_user->get_ip_address());
-		}
+		user.userId = string_to_objc_or_nil_if_empty(p_user->get_id());
+		user.username = string_to_objc_or_nil_if_empty(p_user->get_username());
+		user.email = string_to_objc_or_nil_if_empty(p_user->get_email());
+		user.ipAddress = string_to_objc_or_nil_if_empty(p_user->get_ip_address());
 
 		[objc::SentrySDK setUser:user];
 	} else {
@@ -79,15 +71,10 @@ void CocoaSDK::add_breadcrumb(const String &p_message, const String &p_category,
 	objc::SentryBreadcrumb *breadcrumb = [[objc::SentryBreadcrumb alloc] init];
 
 	breadcrumb.level = sentry_level_to_objc(p_level);
-	if (!p_message.is_empty()) {
-		breadcrumb.message = string_to_objc(p_message);
-	}
-	if (!p_category.is_empty()) {
-		breadcrumb.category = string_to_objc(p_category);
-	}
-	if (!p_type.is_empty()) {
-		breadcrumb.type = string_to_objc(p_type);
-	}
+	breadcrumb.message = string_to_objc_or_nil_if_empty(p_message);
+	breadcrumb.category = string_to_objc_or_nil_if_empty(p_category);
+	breadcrumb.type = string_to_objc_or_nil_if_empty(p_type);
+
 	if (!p_data.is_empty()) {
 		breadcrumb.data = dictionary_to_objc(p_data);
 	}
