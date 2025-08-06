@@ -166,9 +166,9 @@ inline size_t _hash(const T &p_value) {
 	return hasher(p_value);
 }
 
-// Hash combining technique, originally from boost.
 template <class T>
 inline void _hash_combine(std::size_t &p_hash, const T &p_value) {
+	// NOTE: Hash combining technique, originally from boost.
 	std::hash<T> hasher;
 	p_hash ^= hasher(p_value) + 0x9e3779b9 + (p_hash << 6) + (p_hash >> 2);
 }
