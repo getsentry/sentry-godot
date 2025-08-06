@@ -373,6 +373,10 @@ jobs:
           xcodebuild -version
           clang --version
 
+      - name: Diagnostics
+        run: |
+          ls -laR .
+
       - name: Create iOS XCFramework
         run: |
           scons platform=ios target=editor ios_framework
