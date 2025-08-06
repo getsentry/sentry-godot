@@ -257,12 +257,12 @@ bool CocoaEvent::is_crash() const {
 	return cocoa_event.error != nil;
 }
 
-CocoaEvent::CocoaEvent() {
-	cocoa_event = [[objc::SentryEvent alloc] init];
+CocoaEvent::CocoaEvent() :
+		cocoa_event([[objc::SentryEvent alloc] init]) {
 }
 
-CocoaEvent::CocoaEvent(objc::SentryEvent *p_cocoa_event) {
-	cocoa_event = p_cocoa_event;
+CocoaEvent::CocoaEvent(objc::SentryEvent *p_cocoa_event) :
+		cocoa_event(p_cocoa_event) {
 }
 
 CocoaEvent::~CocoaEvent() {
