@@ -172,33 +172,33 @@ jobs:
             arch: x86_64
             scons-flags: debug_symbols=yes
 
-          - name: 🍏 iOS (noop, arm64, release)
+          - name: 🍏 iOS (arm64, release)
             runner: macos-15
             platform: ios
             target: template_release
             arch: arm64
-            scons-flags: debug_symbols=no
+            scons-flags: debug_symbols=yes
 
-          - name: 🍏 iOS (noop, arm64, debug)
+          - name: 🍏 iOS (arm64, debug)
             runner: macos-15
             platform: ios
             target: editor
             arch: arm64
-            scons-flags: debug_symbols=no
+            scons-flags: debug_symbols=yes
 
-          - name: 🍏 iOS (noop, simulator, release)
+          - name: 🍏 iOS (simulator, release)
             runner: macos-15
             platform: ios
             target: template_release
             arch: universal
-            scons-flags: debug_symbols=no ios_simulator=yes
+            scons-flags: debug_symbols=yes ios_simulator=yes
 
-          - name: 🍏 iOS (noop, simulator, debug)
+          - name: 🍏 iOS (simulator, debug)
             runner: macos-15
             platform: ios
             target: editor
             arch: universal
-            scons-flags: debug_symbols=no ios_simulator=yes
+            scons-flags: debug_symbols=yes ios_simulator=yes
 
           - name: 🌐 Web (noop, threads, release)
             runner: ubuntu-latest
