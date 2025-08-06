@@ -344,10 +344,45 @@ jobs:
             project/addons/sentry/bin/android/sentry_android_godot_plugin.debug.aar
             project/addons/sentry/bin/android/sentry_android_godot_plugin.release.aar
 
+  ios-framework:
+    name: 🍏 Make iOS XCFramework
+    needs: [build]
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{inputs.ref}}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sentry.ios.*
+
+      - name: Build iOS XCFramework
+        run: |
+          scons platform=ios target=editor ios_framework
+          scons platform=ios target=template_release ios_framework
+          rm -rf project/addons/sentry/bin/ios/temp/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sentry.ios-framework
+          path: |
+            project
+            !project
+            project/addons/sentry/bin/ios/
+
+      - name: Delete other iOS artifacts
+        uses: actions/delete-artifact@v4
+        with:
+          pattern: sentry.ios.*
+
   package:
     name: 📦 Package GDExtension
     runs-on: ubuntu-latest
-    needs: [build, android-plugin]
+    needs: [build, android-plugin, ios-framework]
     steps:
       - name: Merge artifacts
         uses: actions/upload-artifact/merge@v4
