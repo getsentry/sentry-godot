@@ -2,7 +2,7 @@
 #define SENTRY_EVENT_H
 
 #include "sentry/level.h"
-#include "sentry_timestamp.h"
+#include "sentry/sentry_timestamp.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/templates/pair.hpp>

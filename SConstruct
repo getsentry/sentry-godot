@@ -37,6 +37,35 @@ with open("src/gen/sdk_version.gen.h", "w") as f:
     f.write(version_header_content)
 
 
+# *** Custom options system.
+
+custom_options = {}
+help_entries = []
+
+
+def add_custom_bool_option(name, description, default=False):
+    """Add a custom boolean option with help description."""
+    value = ARGUMENTS.get(name, "no" if not default else "yes").lower() in ("yes", "true", "1")
+    custom_options[name] = value
+    help_entries.append({
+        'name': name,
+        'description': description,
+        'default': default,
+        'actual': value
+    })
+
+
+# Define our custom options
+add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
+
+# Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
+# Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
+original_arguments = dict(ARGUMENTS)
+for key in custom_options.keys():
+    if key in ARGUMENTS:
+        del ARGUMENTS[key]
+
+
 # *** Build godot-cpp.
 
 print("Reading godot-cpp build configuration...")
@@ -45,6 +74,20 @@ env = SConscript("modules/godot-cpp/SConstruct")
 platform = env["platform"]
 arch = env["arch"]
 
+# Restore original ARGUMENTS and add custom options to environment
+ARGUMENTS.clear()
+ARGUMENTS.update(original_arguments)
+for name, value in custom_options.items():
+    env[name] = value
+
+# Generate help for custom options
+help_text = "\nCustom sentry-godot-cocoa options:\n"
+for entry in help_entries:
+    help_text += f"\n{entry['name']}: {entry['description']} (yes|no)\n"
+    help_text += f"    default: {entry['default']}\n"
+    help_text += f"    actual: {entry['actual']}\n"
+Help(help_text)
+
 
 # *** Select internal SDK and out_dir.
 
@@ -52,14 +95,16 @@ class SDK(Enum):
     DISABLED = 0
     NATIVE = 1
     ANDROID = 2
+    COCOA = 3
+
 
 if platform in ["linux", "windows"]:
     if arch in ["arm64", "arm32", "rv64"]:
         internal_sdk = SDK.DISABLED
     else:
         internal_sdk = SDK.NATIVE
-elif platform == "macos":
-    internal_sdk = SDK.NATIVE
+elif platform in ["macos", "ios"]:
+    internal_sdk = SDK.COCOA
 elif platform == "android":
     internal_sdk = SDK.ANDROID
 else:
@@ -71,19 +116,28 @@ if internal_sdk == SDK.DISABLED:
     out_dir = "project/addons/sentry/bin/noop"
 elif internal_sdk == SDK.NATIVE:
     # Separate arch dirs to avoid crashpad handler filename conflicts.
-    if platform != "macos":
-        out_dir += "/" + arch
+    out_dir += "/" + arch
 out_dir = Dir(out_dir)
 
 
 # *** Build sentry-native.
 
 if internal_sdk == SDK.NATIVE:
-    env = SConscript("modules/SConstruct", exports=["env"])
+    env = SConscript("modules/sentry-native.SConscript", exports=["env"])
 
     # Deploy crashpad handler to project directory.
     deploy_crashpad_handler = env.CopyCrashpadHandler(out_dir)
     Default(deploy_crashpad_handler)
+
+
+# *** Utilize sentry-cocoa.
+
+if internal_sdk == SDK.COCOA:
+    env = SConscript("modules/sentry-cocoa.SConscript", exports=["env"])
+
+    # Deploy Sentry Cocoa dependency to project directory.
+    deploy_cocoa_xcframework = env.DeploySentryCocoa(out_dir)
+    Default(deploy_cocoa_xcframework)
 
 
 # *** Build GDExtension library.
@@ -101,8 +155,14 @@ sources += Glob("src/sentry/util/*.cpp")
 # Backend-specific sources.
 if internal_sdk == SDK.NATIVE:
     sources += Glob("src/sentry/native/*.cpp")
+    env.Append(CPPDEFINES=["SDK_NATIVE"])
 elif internal_sdk == SDK.ANDROID:
     sources += Glob("src/sentry/android/*.cpp")
+    env.Append(CPPDEFINES=["SDK_ANDROID"])
+elif internal_sdk == SDK.COCOA:
+    sources += Glob("src/sentry/cocoa/*.cpp")
+    sources += Glob("src/sentry/cocoa/*.mm")
+    env.Append(CPPDEFINES=["SDK_COCOA"])
 
 # Generate documentation data.
 if env["target"] in ["editor", "template_debug"]:
@@ -114,25 +174,62 @@ if env["target"] in ["editor", "template_debug"]:
         print("Not including class reference as we're targeting a pre-4.3 baseline.")
 
 build_type = "release" if env["target"] == "template_release" else "debug"
+shlib_suffix = env["SHLIBSUFFIX"]
+extra = ""
 
-if platform == "macos":
+
+if platform == "ios":
+    # *** Build iOS shared library.
+
+    if env["ios_simulator"]:
+        extra += ".simulator"
+
+    temp_dir = "project/addons/sentry/bin/ios/temp"
+    lib_path = f"{temp_dir}/libsentry.{platform}.{build_type}.{arch}{extra}.dylib"
+
     library = env.SharedLibrary(
-        f"{out_dir}/libsentry.{platform}.{build_type}.framework/libsentry.{platform}.{build_type}",
+        lib_path,
         source=sources,
     )
+
+    Default(library)
+    Clean(library, File(lib_path))
+
+    # Generate XCFramework for GDExtension libs if requested
+    if env.get("generate_ios_framework", False):
+        device_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.arm64.dylib"
+        simulator_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.universal.simulator.dylib"
+        xcframework_path = f"{out_dir}/libsentry.{platform}.{build_type}.xcframework"
+
+        xcframework = env.CreateXCFrameworkFromLibs(
+            framework_path=xcframework_path,
+            libraries=[device_lib, simulator_lib],
+        )
+
+        env.Depends(xcframework, library)
+        Default(xcframework)
+
+elif platform == "macos":
+    # *** Build macOS shared library.
+
+    library = env.SharedLibrary(
+        f"{out_dir}/libsentry.{platform}.{build_type}.framework/libsentry.{platform}.{build_type}{extra}",
+        source=sources,
+    )
+    Default(library)
+
 else:
-    extra = ""
-    if env["threads"] == False:
+    # *** Build shared library on other platforms.
+
+    # Web builds come in two flavors: with threads and without.
+    if env["threads"] is False:
         extra += ".nothreads"
-    if env["ios_simulator"] == True:
-        extra += ".simulator"
-    shlib_suffix = env["SHLIBSUFFIX"]
+
     library = env.SharedLibrary(
         f"{out_dir}/libsentry.{platform}.{build_type}.{arch}{extra}{shlib_suffix}",
         source=sources,
     )
-
-Default(library)
+    Default(library)
 
 
 # *** Deploy extension manifest.
