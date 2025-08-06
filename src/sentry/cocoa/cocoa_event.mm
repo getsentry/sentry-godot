@@ -81,9 +81,7 @@ Ref<SentryTimestamp> CocoaEvent::get_timestamp() const {
 	}
 
 	NSTimeInterval seconds = [cocoa_event.timestamp timeIntervalSince1970];
-	int64_t microseconds = (int64_t)(seconds * 1000'000.0);
-
-	return SentryTimestamp::from_microseconds_since_unix_epoch(microseconds);
+	return SentryTimestamp::from_unix_time(seconds);
 }
 
 String CocoaEvent::get_platform() const {
