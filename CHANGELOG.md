@@ -7,6 +7,10 @@
 - Intoduce `SentryTimestamp` class to improve timestamp handling ([#286](https://github.com/getsentry/sentry-godot/pull/286))
 - Support for iOS & macOS using Sentry Cocoa SDK integration ([#266](https://github.com/getsentry/sentry-godot/pull/266))
 
+### Other changes
+
+- Add iOS framework as optional build target ([#290](https://github.com/getsentry/sentry-godot/pull/290))
+
 ## 1.0.0-alpha.3
 
 ### Breaking changes
