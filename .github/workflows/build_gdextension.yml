@@ -358,6 +358,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: sentry.ios.*
+          path: project/
 
       - name: Build iOS XCFramework
         run: |
