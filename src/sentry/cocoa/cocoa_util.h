@@ -55,7 +55,7 @@ _FORCE_INLINE_ godot::String string_from_objc(NSString *p_str) {
 }
 
 _FORCE_INLINE_ NSNumber *int_to_objc(int p_num) {
-	return [NSNumber numberWithLong:p_num];
+	return [NSNumber numberWithInt:p_num];
 }
 
 _FORCE_INLINE_ NSNumber *uint64_to_objc(uint64_t p_num) {

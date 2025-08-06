@@ -15,7 +15,7 @@ NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 			return [NSNumber numberWithBool:(bool)p_value];
 		}
 		case Variant::INT: {
-			return [NSNumber numberWithLong:(int64_t)p_value];
+			return [NSNumber numberWithLongLong:(int64_t)p_value];
 		}
 		case Variant::FLOAT: {
 			return [NSNumber numberWithDouble:(double)p_value];
