@@ -360,6 +360,18 @@ jobs:
           pattern: sentry.ios.*
           path: project/
 
+      - name: Install SCons
+        run: |
+          python -m pip install scons
+          python --version
+          scons --version
+
+      - name: Select Xcode version
+        run: |
+          sudo xcode-select -s /Applications/Xcode_${{env.XCODE_VERSION}}.app/Contents/Developer
+          xcodebuild -version
+          clang --version
+
       - name: Build iOS XCFramework
         run: |
           scons platform=ios target=editor ios_framework
