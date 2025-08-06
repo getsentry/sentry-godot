@@ -387,10 +387,10 @@ jobs:
             !project
             project/addons/sentry/bin/ios/
 
-      - name: Delete other iOS artifacts
-        uses: actions/delete-artifact@v4
+      - name: Delete downloaded iOS artifacts
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
         with:
-          pattern: sentry.ios.*
+          name: sentry.ios.*
 
   package:
     name: 📦 Package GDExtension
