@@ -354,7 +354,7 @@ jobs:
         with:
           ref: ${{inputs.ref}}
 
-      - name: Download artifacts
+      - name: Download iOS artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: sentry.ios.*
@@ -372,7 +372,7 @@ jobs:
           xcodebuild -version
           clang --version
 
-      - name: Build iOS XCFramework
+      - name: Create iOS XCFramework
         run: |
           scons platform=ios target=editor ios_framework
           scons platform=ios target=template_release ios_framework
