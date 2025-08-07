@@ -11,6 +11,10 @@
 
 - Make error throttling smarter by factoring in error message ([#287](https://github.com/getsentry/sentry-godot/pull/287))
 
+### Other changes
+
+- Add iOS framework as optional build target ([#290](https://github.com/getsentry/sentry-godot/pull/290))
+
 ## 1.0.0-alpha.3
 
 ### Breaking changes
