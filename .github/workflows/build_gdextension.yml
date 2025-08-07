@@ -387,8 +387,8 @@ jobs:
           name: sentry.ios-framework
           # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
           path: |
-            project
-            !project
+            project/
+            !project/
             project/addons/sentry/bin/ios/
 
       - name: Delete downloaded iOS artifacts
