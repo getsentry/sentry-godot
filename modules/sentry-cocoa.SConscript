@@ -215,7 +215,9 @@ if platform in ["macos", "ios"]:
     env.Append(
         LINKFLAGS=[
             "-framework", "Foundation",
-        ]
+        ],
+        # Enable ARC for Objective-C files
+        CCFLAGS=["-fobjc-arc"]
     )
 
     # Add Sentry Cocoa framework to compilation.
