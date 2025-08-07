@@ -14,6 +14,7 @@
 ### Other changes
 
 - Add iOS framework as optional build target ([#290](https://github.com/getsentry/sentry-godot/pull/290))
+- Add demo icon ([#302](https://github.com/getsentry/sentry-godot/pull/302))
 
 ## 1.0.0-alpha.3
 
