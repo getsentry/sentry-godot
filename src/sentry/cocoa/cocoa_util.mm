@@ -79,4 +79,12 @@ NSDictionary *dictionary_to_objc(const godot::Dictionary &p_dictionary) {
 	return (NSDictionary *)variant_to_objc(p_dictionary);
 }
 
+NSArray<NSString *> *string_array_to_objc(const godot::PackedStringArray &p_array) {
+	NSMutableArray<NSString *> *objc_array = [[NSMutableArray alloc] init];
+	for (int i = 0; i < p_array.size(); i++) {
+		[objc_array addObject:string_to_objc(p_array[i])];
+	}
+	return objc_array;
+}
+
 } // namespace sentry::cocoa
