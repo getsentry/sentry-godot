@@ -338,6 +338,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sentry.android.godot_plugin
+          # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
           path: |
             project/
             !project/
@@ -384,6 +385,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sentry.ios-framework
+          # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
           path: |
             project
             !project
