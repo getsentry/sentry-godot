@@ -21,6 +21,8 @@ jobs:
         include:
           - name: Native SDK
             path: modules/sentry-native
+          - name: Cocoa SDK
+            path: modules/sentry-cocoa.properties
           - name: gdUnit 4
             path: modules/gdUnit4
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v2
