@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Bump Godot compatibility to 4.5-beta5 ([#307](https://github.com/getsentry/sentry-godot/pull/307))
+
 ### Features
 
 - Intoduce `SentryTimestamp` class to improve timestamp handling ([#286](https://github.com/getsentry/sentry-godot/pull/286))
