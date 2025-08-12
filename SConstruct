@@ -164,6 +164,10 @@ elif internal_sdk == SDK.COCOA:
     sources += Glob("src/sentry/cocoa/*.mm")
     env.Append(CPPDEFINES=["SDK_COCOA"])
 
+# Support 16KiB pages on Android
+if platform == "android":
+    env.Append(LINKFLAGS=['-Wl,-z,max-page-size=16384'])
+
 # Generate documentation data.
 if env["target"] in ["editor", "template_debug"]:
     try:
