@@ -34,7 +34,7 @@ Get-ChildItem -Path "test/isolated" -Filter "test_*.gd" | ForEach-Object {
     $file = $_.FullName
     Highlight "Running isolated test: $file"
 
-    $args = "--headless --path . -s `"res://addons/gdUnit4/bin/GdUnitCmdTool.gd`" --ignoreHeadlessMode -c -a `"$file`""
+    $args = "--headless --path . -s addons/gut/gut_cmdln.gd -gtest=`"$file`" -gexit"
     $process = Start-Process $godot -ArgumentList $args -PassThru -Wait -NoNewWindow
     $err = $process.ExitCode
 

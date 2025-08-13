@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+extends GutTest
 ## Test "repeated_error_window_ms" error logger limit.
 
 
@@ -15,7 +15,7 @@ static func configure_options(options: SentryOptions) -> void:
 	options.logger_limits.throttle_events = 88
 
 
-func before_test() -> void:
+func before_each() -> void:
 	SentrySDK._set_before_send(_before_send)
 
 
@@ -27,16 +27,18 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 
 ## Only one error should be logged within 1 second time window, and another one after 1 second passes.
 func test_repeating_error_window_limit() -> void:
-	var monitor := monitor_signals(self, false)
+	watch_signals(self)
 	push_error("dummy-error")
 	push_error("dummy-error")
-	await assert_signal(monitor).is_emitted("callback_processed")
-	assert_int(_num_events).is_equal(1)
+	await wait_for_signal(callback_processed, 2.0)
+	assert_signal_emitted(callback_processed)
+	assert_eq(_num_events, 1)
 
 	# Wait for window to expire.
 	await get_tree().create_timer(1.5).timeout
 
 	push_error("dummy-error")
 	push_error("dummy-error")
-	await assert_signal(monitor).is_emitted("callback_processed")
-	assert_int(_num_events).is_equal(2)
+	await wait_for_signal(callback_processed, 2.0)
+	assert_signal_emitted(callback_processed)
+	assert_eq(_num_events, 2)

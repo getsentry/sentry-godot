@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+extends GutTest
 ## Events should not be logged for errors when the logger is disabled.
 
 
@@ -17,7 +17,7 @@ static func configure_options(options: SentryOptions) -> void:
     options.logger_limits.throttle_window_ms = 0
 
 
-func before_test() -> void:
+func before_each() -> void:
     SentrySDK._set_before_send(_before_send)
 
 
@@ -28,9 +28,10 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 
 
 func test_event_and_breadcrumb_masks() -> void:
-    var monitor := monitor_signals(self, false)
+    watch_signals(self)
     push_error("dummy-error")
     push_warning("dummy-warning")
-    await assert_signal(monitor).is_not_emitted("callback_processed")
+    await wait_for_signal(callback_processed, 2.0)
+    assert_signal_not_emitted(callback_processed)
 
-    assert_int(_num_events).is_equal(0)
+    assert_eq(_num_events, 0)

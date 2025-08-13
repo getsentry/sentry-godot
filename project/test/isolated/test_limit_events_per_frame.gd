@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+extends GutTest
 ## Test "events_per_frame" error logger limit.
 
 
@@ -15,7 +15,7 @@ static func configure_options(options: SentryOptions) -> void:
 	options.logger_limits.throttle_events = 88
 
 
-func before_test() -> void:
+func before_each() -> void:
 	SentrySDK._set_before_send(_before_send)
 
 
@@ -27,10 +27,11 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 
 ## Only one error should be logged within 1 processed frame.
 func test_events_per_frame_limit() -> void:
-	var monitor := monitor_signals(self, false)
+	watch_signals(self)
 	push_error("dummy-error")
 	push_error("dummy-error")
 	push_error("dummy-error")
-	await assert_signal(monitor).is_emitted("callback_processed")
+	await wait_for_signal(callback_processed, 2.0)
+	assert_signal_emitted(callback_processed)
 	await get_tree().create_timer(0.1).timeout
-	assert_int(_num_events).is_equal(1)
+	assert_eq(_num_events, 1)

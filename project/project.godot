@@ -50,3 +50,4 @@ options/configuration_script="uid://dmavxxyqbqght"
 options/attach_screenshot=true
 options/attach_scene_tree=true
 logger/include_variables=true
+logger/messages_as_breadcrumbs=false

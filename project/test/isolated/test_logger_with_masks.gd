@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+extends GutTest
 ## Events and breadcrumbs should be logged when "logger_event_mask" and
 ## "logger_breadcrumb_mask" are configured to include all categories.
 
@@ -20,7 +20,7 @@ static func configure_options(options: SentryOptions) -> void:
     options.logger_limits.throttle_window_ms = 0
 
 
-func before_test() -> void:
+func before_each() -> void:
     SentrySDK._set_before_send(_before_send)
 
 
@@ -33,10 +33,11 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 ## Both events or breadcrumbs should be logged for error and warning.
 ## TODO: can't verify breadcrumbs yet, maybe later.
 func test_event_and_breadcrumb_masks() -> void:
-    var monitor := monitor_signals(self, false)
+    watch_signals(self)
     push_error("dummy-error")
     push_warning("dummy-warning")
-    await assert_signal(monitor).is_emitted("callback_processed")
+    await wait_for_signal(callback_processed, 2.0)
+    assert_signal_emitted(callback_processed)
 
     await get_tree().create_timer(0.1).timeout
-    assert_int(_num_events).is_equal(2)
+    assert_eq(_num_events, 2)
