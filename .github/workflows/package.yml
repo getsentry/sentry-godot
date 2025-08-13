@@ -67,9 +67,6 @@ jobs:
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
             artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/libsentry.macos.release
-          rcodesign sign --for-notarization \
-            --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/crashpad_handler
 
       - name: Notarize macOS binaries
         if: env.DO_CODESIGN == '1'
