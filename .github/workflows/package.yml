@@ -82,10 +82,6 @@ jobs:
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentry.macos.release.zip
 
-          zip crashpad_handler.zip artifact/addons/sentry/bin/macos/crashpad_handler
-          rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
-            crashpad_handler.zip
-
       - name: Prepare artifact
         shell: bash
         run: |
