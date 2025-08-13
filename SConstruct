@@ -256,7 +256,7 @@ manifest = env.Substfile(
 Default(manifest)
 
 
-# *** Create symbolic link from project addons dir to gdUnit4 testing framework submodule.
+# *** Create symbolic link from project addons dir to Gut testing framework submodule.
 
 def symlink(target, source, env):
     # Note: parameter `target` is a list of build targets.
@@ -272,7 +272,7 @@ def symlink(target, source, env):
             _winapi.CreateJunction(src, dst)
         except Exception as e:
             # Don't fail the build if this step fails.
-            print("WARNING: Failed to create NTFS junction for gdUnit4: ", str(e))
+            print("WARNING: Failed to create NTFS junction for Gut: ", str(e))
     else:
         # Create symlink.
         src = os.path.relpath(src, os.path.dirname(dst))
@@ -280,12 +280,12 @@ def symlink(target, source, env):
     return 0
 
 
-gdunit_symlink = env.Command(
-    "project/addons/gdUnit4",
-    "modules/gdUnit4/addons/gdUnit4",
+gut_symlink = env.Command(
+    "project/addons/gut",
+    "modules/gut/addons/gut",
     [
         symlink,
     ],
 )
 
-Default(gdunit_symlink)
+Default(gut_symlink)
