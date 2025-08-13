@@ -51,8 +51,8 @@ jobs:
         shell: bash
         timeout-minutes: 5
         run: |
-          # Exit status codes: 0 - success, 100 - ends with test failures, 101 - ends with test warnings.
-          ${GODOT} --headless --path project/ -s -d "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" --ignoreHeadlessMode -c -a test/suites/
+          # Exit status codes: 0 - success, 1 - test failures
+          ${GODOT} --headless --path project/ -s -d addons/gut/gut_cmdln.gd -gdir=res://test/suites/ -gexit
 
       - name: Run isolated tests
         if: success() || failure()

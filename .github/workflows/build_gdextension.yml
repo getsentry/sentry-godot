@@ -313,8 +313,8 @@ jobs:
           name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}${{ contains(matrix.scons-flags, 'threads=no') && '.nothreads' || '' }}
           path: |
             project/
-            !project/addons/gdUnit4
             !project/test/
+            !project/addons/gut/
 
   android-plugin:
     name: 🤖 Android Plugin AARs
