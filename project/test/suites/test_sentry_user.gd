@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+extends GutTest
 ## Test SentryUser class.
 
 
@@ -14,23 +14,23 @@ func _make_test_user() -> SentryUser:
 
 ## Verify if two SentryUser instances are equal.
 func _assert_users_are_equal(user1: SentryUser, user2: SentryUser) -> void:
-	assert_str(user1.id).is_equal(user2.id)
-	assert_str(user1.email).is_equal(user2.email)
-	assert_str(user1.username).is_equal(user2.username)
-	assert_str(user1.ip_address).is_equal(user2.ip_address)
+	assert_eq(user1.id, user2.id)
+	assert_eq(user1.email, user2.email)
+	assert_eq(user1.username, user2.username)
+	assert_eq(user1.ip_address, user2.ip_address)
 
 
 ## Default SentryUser should have non-empty ID initialized to installation_id.
 func test_default_user() -> void:
 	var user := SentrySDK.get_user()
-	assert_str(user.id).is_not_empty()
-	assert_bool(user.is_empty()).is_false()
+	assert_ne(user.id, "")
+	assert_false(user.is_empty())
 
 
 ## SentryUser data should be correctly saved.
 func test_sentry_user_assignment() -> void:
 	SentrySDK.set_user(_make_test_user())
-	assert_bool(SentrySDK.get_user().is_empty()).is_false()
+	assert_false(SentrySDK.get_user().is_empty())
 	_assert_users_are_equal(SentrySDK.get_user(), _make_test_user())
 
 
@@ -40,11 +40,11 @@ func test_sentry_user_remove() -> void:
 	SentrySDK.remove_user()
 
 	var user := SentrySDK.get_user()
-	assert_str(user.email).is_empty()
-	assert_str(user.username).is_empty()
-	assert_str(user.ip_address).is_empty()
-	assert_str(user.id).is_empty()
-	assert_bool(user.is_empty()).is_true()
+	assert_eq(user.email, "")
+	assert_eq(user.username, "")
+	assert_eq(user.ip_address, "")
+	assert_eq(user.id, "")
+	assert_true(user.is_empty())
 
 
 ## Setting new user data should not contain leftovers from previous data.
@@ -57,10 +57,10 @@ func test_sentry_user_no_leftovers() -> void:
 	SentrySDK.set_user(user)
 
 	user = SentrySDK.get_user()
-	assert_str(user.email).is_empty()
-	assert_str(user.username).is_empty()
-	assert_str(user.ip_address).is_empty()
-	assert_str(user.id).is_not_empty()
+	assert_eq(user.email, "")
+	assert_eq(user.username, "")
+	assert_eq(user.ip_address, "")
+	assert_ne(user.id, "")
 
 
 ## SentryUser IP address should contain correct value when IP address is inferred.
@@ -71,9 +71,9 @@ func test_sentry_user_ip_inferring() -> void:
 	SentrySDK.set_user(user)
 
 	user = SentrySDK.get_user()
-	assert_str(user.ip_address).is_equal("{{auto}}")
-	assert_str(user.email).is_empty()
-	assert_str(user.username).is_empty()
+	assert_eq(user.ip_address, "{{auto}}")
+	assert_eq(user.email, "")
+	assert_eq(user.username, "")
 
 
 ## SentryUser ID generation should produce a unique ID.
@@ -85,12 +85,12 @@ func test_sentry_user_id_generation() -> void:
 
 	user = SentrySDK.get_user()
 	var id1 := user.id
-	assert_int(id1.length()).is_greater(4)
+	assert_gt(id1.length(), 4)
 
 	user.generate_new_id()
 	SentrySDK.set_user(user)
 
 	user = SentrySDK.get_user()
 	var id2 := user.id
-	assert_int(id2.length()).is_greater(4)
-	assert_str(id2).is_not_equal(id1) # Newly-generated ID should be different.
+	assert_gt(id2.length(), 4)
+	assert_ne(id2, id1) # Newly-generated ID should be different.

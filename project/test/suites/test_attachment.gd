@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+extends GutTest
 ## Basic tests for the SentryAttachment class.
 
 
@@ -7,10 +7,10 @@ func test_create_with_path() -> void:
 	attachment.filename = "logfile.txt"
 	attachment.content_type = "text/plain"
 
-	assert_array(attachment.bytes).is_empty()
-	assert_str(attachment.path).is_equal("user://logs/godot.log")
-	assert_str(attachment.filename).is_equal("logfile.txt")
-	assert_str(attachment.content_type).is_equal("text/plain")
+	assert_true(attachment.bytes.is_empty())
+	assert_eq(attachment.path, "user://logs/godot.log")
+	assert_eq(attachment.filename, "logfile.txt")
+	assert_eq(attachment.content_type, "text/plain")
 
 
 func test_create_with_bytes() -> void:
@@ -22,11 +22,11 @@ func test_create_with_bytes() -> void:
 	var attachment := SentryAttachment.create_with_bytes(bytes, "hello.txt")
 	attachment.content_type = "text/plain"
 
-	assert_array(attachment.bytes).is_not_empty()
-	assert_str(attachment.path).is_empty()
-	assert_str(attachment.filename).is_equal("hello.txt")
-	assert_str(attachment.content_type).is_equal("text/plain")
+	assert_false(attachment.bytes.is_empty())
+	assert_eq(attachment.path, "")
+	assert_eq(attachment.filename, "hello.txt")
+	assert_eq(attachment.content_type, "text/plain")
 
-	assert_int(attachment.bytes.size()).is_equal(bytes.size())
+	assert_eq(attachment.bytes.size(), bytes.size())
 	for i in attachment.bytes.size():
-		assert_int(attachment.bytes[i]).is_equal(bytes[i])
+		assert_eq(attachment.bytes[i], bytes[i])
