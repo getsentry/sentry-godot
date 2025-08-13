@@ -83,7 +83,7 @@ jobs:
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentry.macos.release.zip
 
-          zip Sentry.framework.zip artifact/addons/sentry/bin/macos/Sentry.framework
+          zip -r Sentry.framework.zip artifact/addons/sentry/bin/macos/Sentry.framework
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             Sentry.framework.zip
 
