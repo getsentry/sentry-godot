@@ -67,6 +67,9 @@ jobs:
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
             artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/libsentry.macos.release
+          rcodesign sign --for-notarization \
+            --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
+            artifact/addons/sentry/bin/macos/Sentry.framework
 
       - name: Notarize macOS binaries
         if: env.DO_CODESIGN == '1'
@@ -78,6 +81,10 @@ jobs:
           zip libsentry.macos.release.zip artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/libsentry.macos.release
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentry.macos.release.zip
+
+          zip -r Sentry.framework.zip artifact/addons/sentry/bin/macos/Sentry.framework
+          rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
+            Sentry.framework.zip
 
       - name: Prepare artifact
         shell: bash
