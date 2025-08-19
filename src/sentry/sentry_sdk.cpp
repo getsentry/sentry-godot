@@ -285,14 +285,6 @@ void SentrySDK::_auto_initialize() {
 		return;
 	}
 
-	// Add event processors
-	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
-		SentryOptions::get_singleton()->add_event_processor(memnew(ScreenshotProcessor));
-	}
-	if (SentryOptions::get_singleton()->is_attach_scene_tree_enabled()) {
-		SentryOptions::get_singleton()->add_event_processor(memnew(ViewHierarchyProcessor));
-	}
-
 	internal_sdk->initialize(_get_global_attachments());
 
 	if (SentryOptions::get_singleton()->is_logger_enabled()) {
@@ -341,6 +333,14 @@ void SentrySDK::prepare_and_auto_initialize() {
 		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/arm32/crashpad_handler");
 	}
 #endif
+
+	// Add event processors.
+	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
+		SentryOptions::get_singleton()->add_event_processor(memnew(ScreenshotProcessor));
+	}
+	if (SentryOptions::get_singleton()->is_attach_scene_tree_enabled()) {
+		SentryOptions::get_singleton()->add_event_processor(memnew(ViewHierarchyProcessor));
+	}
 
 	// Auto-initialize SDK.
 	if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
