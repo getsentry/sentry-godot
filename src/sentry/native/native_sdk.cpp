@@ -330,6 +330,14 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments) {
 	}
 }
 
+void NativeSDK::close() {
+	sentry_close();
+}
+
+bool NativeSDK::is_enabled() const {
+	return initialized;
+}
+
 NativeSDK::NativeSDK() {
 	last_uuid_mutex.instantiate();
 	last_uuid = sentry_uuid_nil();

@@ -15,6 +15,9 @@ void AndroidStringNames::destroy_singleton() {
 
 AndroidStringNames::AndroidStringNames() {
 	// API methods.
+	init = StringName("init");
+	close = StringName("close");
+	isEnabled = StringName("isEnabled");
 	setContext = StringName("setContext");
 	removeContext = StringName("removeContext");
 	setTag = StringName("setTag");

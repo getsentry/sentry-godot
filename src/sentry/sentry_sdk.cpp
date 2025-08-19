@@ -118,6 +118,19 @@ void SentrySDK::destroy_singleton() {
 	singleton = nullptr;
 }
 
+void SentrySDK::init() {
+	ERR_FAIL_COND_MSG(internal_sdk->is_enabled(), "Attempted to initialize SentrySDK that is already initialized");
+	sentry::util::print_debug("Initializing Sentry SDK");
+	internal_sdk->init(_get_global_attachments());
+}
+
+void SentrySDK::close() {
+	if (internal_sdk->is_enabled()) {
+		sentry::util::print_debug("Shutting down Sentry SDK");
+		internal_sdk->close();
+	}
+}
+
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
 	return internal_sdk->capture_message(p_message, p_level);
 }

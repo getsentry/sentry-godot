@@ -200,6 +200,10 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments) {
 	}];
 }
 
+void CocoaSDK::close() {
+	[objc::SentrySDK close];
+}
+
 bool CocoaSDK::is_enabled() const {
 	return [objc::SentrySDK isEnabled];
 }
@@ -209,9 +213,7 @@ CocoaSDK::CocoaSDK() {
 }
 
 CocoaSDK::~CocoaSDK() {
-	if (is_enabled()) {
-		[objc::SentrySDK close];
-	}
+	close();
 }
 
 } //namespace sentry::cocoa

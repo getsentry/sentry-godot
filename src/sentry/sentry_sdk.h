@@ -61,7 +61,9 @@ public:
 
 	// * Exported API
 
-	bool is_enabled() const { return enabled; }
+	void init();
+	void close();
+	bool is_enabled() const { return internal_sdk->is_enabled(); }
 
 	void add_breadcrumb(const String &p_message, const String &p_category, sentry::Level p_level,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary());
