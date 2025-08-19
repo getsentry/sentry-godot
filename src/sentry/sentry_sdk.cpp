@@ -356,7 +356,7 @@ void SentrySDK::prepare_and_auto_initialize() {
 		// `NOTIFICATION_READY`, triggering our notification processing code in
 		// C++, which calls `_configure()` on the user script and then invokes
 		// `notify_options_configured()` in `SentrySDK`. This, in turn,
-		// auto-initializes the internal SDK.
+		// auto-initializes the SDK.
 		sentry::util::print_debug("waiting for user configuration autoload");
 		ERR_FAIL_NULL(ProjectSettings::get_singleton());
 		ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
