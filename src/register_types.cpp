@@ -88,6 +88,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		register_runtime_classes();
 		SentryOptions::create_singleton();
 		SentrySDK::create_singleton();
+		SentrySDK::get_singleton()->prepare_and_auto_initialize();
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 #ifdef TOOLS_ENABLED
 		register_editor_classes();

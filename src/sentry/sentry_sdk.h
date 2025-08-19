@@ -88,6 +88,8 @@ public:
 	void unset_before_send() { SentryOptions::get_singleton()->set_before_send(Callable()); }
 	Callable get_before_send() { return SentryOptions::get_singleton()->get_before_send(); }
 
+	void prepare_and_auto_initialize();
+
 	SentrySDK();
 	~SentrySDK();
 };
