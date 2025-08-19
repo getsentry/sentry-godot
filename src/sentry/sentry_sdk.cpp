@@ -102,6 +102,22 @@ namespace sentry {
 
 SentrySDK *SentrySDK::singleton = nullptr;
 
+void SentrySDK::create_singleton() {
+	ERR_FAIL_NULL(Engine::get_singleton());
+	singleton = memnew(SentrySDK);
+	Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
+}
+
+void SentrySDK::destroy_singleton() {
+	ERR_FAIL_NULL(Engine::get_singleton());
+	if (!singleton) {
+		return;
+	}
+	Engine::get_singleton()->unregister_singleton("SentrySDK");
+	memdelete(singleton);
+	singleton = nullptr;
+}
+
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
 	return internal_sdk->capture_message(p_message, p_level);
 }

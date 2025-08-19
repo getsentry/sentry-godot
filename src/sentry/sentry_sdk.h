@@ -51,6 +51,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static void create_singleton();
+	static void destroy_singleton();
 	static SentrySDK *get_singleton() { return singleton; }
 
 	_FORCE_INLINE_ std::shared_ptr<sentry::InternalSDK> get_internal_sdk() const { return internal_sdk; }

@@ -73,7 +73,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 
 		SentryOptions::create_singleton();
 
-		SentrySDK *sentry_singleton = memnew(SentrySDK);
+		SentrySDK::create_singleton();
 		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 #ifdef TOOLS_ENABLED
