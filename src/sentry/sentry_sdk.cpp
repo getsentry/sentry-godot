@@ -267,14 +267,8 @@ void SentrySDK::_auto_initialize() {
 
 #if SDK_ANDROID
 	if (should_enable) {
-		if (unlikely(OS::get_singleton()->has_feature("editor"))) {
+		if (OS::get_singleton()->has_feature("editor")) {
 			should_enable = false;
-		} else {
-			std::shared_ptr<AndroidSDK> android_sdk = std::make_shared<AndroidSDK>();
-			if (!android_sdk->has_android_plugin()) {
-				sentry::util::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
-				should_enable = false;
-			}
 		}
 	}
 #endif
