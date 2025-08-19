@@ -261,7 +261,7 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
+void NativeSDK::init(const PackedStringArray &p_global_attachments) {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 

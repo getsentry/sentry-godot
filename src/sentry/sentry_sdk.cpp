@@ -280,7 +280,7 @@ void SentrySDK::_auto_initialize() {
 		return;
 	}
 
-	internal_sdk->initialize(_get_global_attachments());
+	internal_sdk->init(_get_global_attachments());
 
 	if (SentryOptions::get_singleton()->is_logger_enabled()) {
 		logger.instantiate();
