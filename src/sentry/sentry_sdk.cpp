@@ -235,7 +235,7 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 	return attachments;
 }
 
-void SentrySDK::_initialize() {
+void SentrySDK::_auto_initialize() {
 	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
 	// Initialize user if it wasn't set explicitly in the configuration script.
@@ -306,7 +306,7 @@ void SentrySDK::_check_if_configuration_succeeded() {
 		// Push error and initialize anyway.
 		ERR_PRINT("Sentry: Configuration via user script failed. Will try to initialize SDK anyway.");
 		sentry::util::print_error("initializing late because configuration via user script failed");
-		_initialize();
+		_auto_initialize();
 	}
 }
 
@@ -318,7 +318,7 @@ void SentrySDK::_demo_helper_crash_app() {
 void SentrySDK::notify_options_configured() {
 	sentry::util::print_debug("finished configuring options via user script");
 	configuration_succeeded = true;
-	_initialize();
+	_auto_initialize();
 	_init_contexts();
 }
 
@@ -345,7 +345,7 @@ void SentrySDK::prepare_and_auto_initialize() {
 	// Auto-initialize SDK.
 	if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
 		// Early initialization path.
-		_initialize();
+		_auto_initialize();
 		// Delay contexts initialization until the engine singletons are ready.
 		callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
 	} else {
@@ -355,8 +355,8 @@ void SentrySDK::prepare_and_auto_initialize() {
 		// When this happens, the `SentryConfiguration` instance receives
 		// `NOTIFICATION_READY`, triggering our notification processing code in
 		// C++, which calls `_configure()` on the user script and then invokes
-		// `notify_options_configured()` in `SentrySDK`. This, in turn, initializes
-		// the internal SDK.
+		// `notify_options_configured()` in `SentrySDK`. This, in turn,
+		// auto-initializes the internal SDK.
 		sentry::util::print_debug("waiting for user configuration autoload");
 		ERR_FAIL_NULL(ProjectSettings::get_singleton());
 		ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",

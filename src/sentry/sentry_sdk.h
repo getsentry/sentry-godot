@@ -41,7 +41,7 @@ private:
 
 	void _init_contexts();
 	PackedStringArray _get_global_attachments();
-	void _initialize();
+	void _auto_initialize();
 	void _check_if_configuration_succeeded();
 	void _demo_helper_crash_app();
 
