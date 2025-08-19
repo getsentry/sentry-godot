@@ -39,49 +39,58 @@
 using namespace godot;
 using namespace sentry;
 
-void initialize_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
-	} else if (p_level == godot::MODULE_INITIALIZATION_LEVEL_SERVERS) {
-	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		GDREGISTER_CLASS(SentryLoggerLimits);
-		GDREGISTER_CLASS(SentryOptions);
-		GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
-		GDREGISTER_CLASS(SentryConfiguration);
-		GDREGISTER_CLASS(SentryUser);
-		GDREGISTER_CLASS(SentryTimestamp);
-		GDREGISTER_CLASS(SentrySDK);
-		GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
-		GDREGISTER_ABSTRACT_CLASS(SentryEvent);
-		GDREGISTER_INTERNAL_CLASS(DisabledEvent);
-		GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
-		GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
-		GDREGISTER_INTERNAL_CLASS(ViewHierarchyProcessor);
-		GDREGISTER_INTERNAL_CLASS(SentryLogger);
+void register_runtime_classes() {
+	GDREGISTER_CLASS(SentryLoggerLimits);
+	GDREGISTER_CLASS(SentryOptions);
+	GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
+	GDREGISTER_CLASS(SentryConfiguration);
+	GDREGISTER_CLASS(SentryUser);
+	GDREGISTER_CLASS(SentryTimestamp);
+	GDREGISTER_CLASS(SentrySDK);
+	GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
+	GDREGISTER_ABSTRACT_CLASS(SentryEvent);
+	GDREGISTER_INTERNAL_CLASS(DisabledEvent);
+	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
+	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
+	GDREGISTER_INTERNAL_CLASS(ViewHierarchyProcessor);
+	GDREGISTER_INTERNAL_CLASS(SentryLogger);
 
 #ifdef SDK_NATIVE
-		GDREGISTER_INTERNAL_CLASS(NativeEvent);
+	GDREGISTER_INTERNAL_CLASS(NativeEvent);
 #endif
 
 #ifdef SDK_ANDROID
-		GDREGISTER_INTERNAL_CLASS(AndroidEvent);
-		GDREGISTER_INTERNAL_CLASS(SentryAndroidBeforeSendHandler);
+	GDREGISTER_INTERNAL_CLASS(AndroidEvent);
+	GDREGISTER_INTERNAL_CLASS(SentryAndroidBeforeSendHandler);
 #endif
 
 #ifdef SDK_COCOA
-		GDREGISTER_INTERNAL_CLASS(cocoa::CocoaEvent);
+	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaEvent);
 #endif
+}
 
+void register_editor_classes() {
+#ifdef TOOLS_ENABLED
+	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginAndroid);
+	GDREGISTER_INTERNAL_CLASS(SentryEditorPlugin);
+
+#ifndef WINDOWS_ENABLED
+	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginUnix);
+#endif // !WINDOWS_ENABLED
+
+#endif // TOOLS_ENABLED
+}
+
+void initialize_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		register_runtime_classes();
 		SentryOptions::create_singleton();
-
 		SentrySDK::create_singleton();
-		Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 #ifdef TOOLS_ENABLED
-#ifndef WINDOWS_ENABLED
-		GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginUnix);
-#endif // !WINDOWS_ENABLED
-		GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginAndroid);
-		GDREGISTER_INTERNAL_CLASS(SentryEditorPlugin);
+		register_editor_classes();
 		EditorPlugins::add_by_type<SentryEditorPlugin>();
 #endif // TOOLS_ENABLED
 	}
@@ -89,9 +98,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 
 void uninitialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		if (SentrySDK::get_singleton()) {
-			memdelete(SentrySDK::get_singleton());
-		}
+		SentrySDK::destroy_singleton();
 		SentryOptions::destroy_singleton();
 	}
 }
