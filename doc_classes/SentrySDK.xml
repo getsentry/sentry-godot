@@ -48,6 +48,12 @@
 				Captures an event with [param message] and sends it to Sentry, returning the event ID.
 			</description>
 		</method>
+		<method name="close">
+			<return type="void" />
+			<description>
+				Closes the SDK and flushes any pending events to ensure all queued data is sent to Sentry before shutdown. Called automatically when the application exits.
+			</description>
+		</method>
 		<method name="create_event" qualifiers="const">
 			<return type="SentryEvent" />
 			<description>
@@ -64,6 +70,12 @@
 			<return type="SentryUser" />
 			<description>
 				Returns the currently set user. See [SentryUser].
+			</description>
+		</method>
+		<method name="init">
+			<return type="void" />
+			<description>
+				Initializes the SDK. Called automatically during startup if [member SentryOptions.enabled] is set to [code]true[/code]. Manual initialization is only needed when you want to control the exact timing of SDK startup or when automatic initialization is disabled.
 			</description>
 		</method>
 		<method name="is_enabled" qualifiers="const">
