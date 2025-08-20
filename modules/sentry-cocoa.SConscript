@@ -185,7 +185,7 @@ def update_cocoa_framework():
             extract_zip_with_symlinks(zip_path, cocoa_dir)
 
             # NOTE: We need to flatten macOS slice due to issues with symlinks on Windows.
-            flatten_framework(cocoa_dir / "Sentry-Dynamic.xcframework" / "macos-arm64_arm64e_x86_64" / "Sentry.framework")
+            flatten_framework(cocoa_dir / "Sentry-Dynamic.xcframework" / "macos-arm64_x86_64" / "Sentry.framework")
 
             zip_path.unlink() # delete file
             version_file.write_text(cocoa_version)
@@ -223,12 +223,12 @@ if platform in ["macos", "ios"]:
     # Add Sentry Cocoa framework to compilation.
 
     if platform == "macos":
-        framework_dir = xcframework_path / "macos-arm64_arm64e_x86_64/Sentry.framework"
+        framework_dir = xcframework_path / "macos-arm64_x86_64/Sentry.framework"
     else:
         if ios_simulator:
             framework_dir = xcframework_path / "ios-arm64_x86_64-simulator/Sentry.framework"
         else:
-            framework_dir = xcframework_path / "ios-arm64_arm64e/Sentry.framework"
+            framework_dir = xcframework_path / "ios-arm64/Sentry.framework"
 
     if not framework_dir.exists():
         print(f"ERROR: Sentry.framework is missing at {framework_dir}.")
@@ -370,7 +370,7 @@ def DeploySentryCocoa(self, target_dir):
 
     if platform == "ios":
         slice_dirs = [
-            source_xcframework / "ios-arm64_arm64e",
+            source_xcframework / "ios-arm64",
             source_xcframework / "ios-arm64_x86_64-simulator"
         ]
         target_path = Path(target_dir_path) / "Sentry.xcframework"
@@ -381,7 +381,7 @@ def DeploySentryCocoa(self, target_dir):
         )
 
     elif platform == "macos":
-        source_framework = source_xcframework / "macos-arm64_arm64e_x86_64/Sentry.framework"
+        source_framework = source_xcframework / "macos-arm64_x86_64/Sentry.framework"
         target_path = Path(target_dir_path) / "Sentry.framework"
 
         # Copy only the binary and "Resources" dir -- we don't need to export headers or modules.
