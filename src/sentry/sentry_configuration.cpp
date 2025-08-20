@@ -10,7 +10,7 @@ void SentryConfiguration::_call_configure(const Ref<SentryOptions> &p_options) {
 	if (!GDVIRTUAL_CALL(_configure, p_options)) {
 		ERR_PRINT("Failed to call _configure(options). Please ensure the method is properly defined.");
 	}
-	
+
 	ERR_FAIL_NULL(SentrySDK::get_singleton());
 	SentrySDK::get_singleton()->notify_options_configured();
 }
