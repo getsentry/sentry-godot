@@ -36,7 +36,6 @@ private:
 	Ref<SentryUser> user;
 	Ref<Mutex> user_mutex;
 	Ref<SentryLogger> logger;
-	bool enabled = false;
 	bool configuration_succeeded = false;
 
 	void _init_contexts();

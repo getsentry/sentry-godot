@@ -122,11 +122,21 @@ void SentrySDK::init() {
 	ERR_FAIL_COND_MSG(internal_sdk->is_enabled(), "Attempted to initialize SentrySDK that is already initialized");
 	sentry::util::print_debug("Initializing Sentry SDK");
 	internal_sdk->init(_get_global_attachments());
+	if (internal_sdk->is_enabled() && SentryOptions::get_singleton()->is_logger_enabled()) {
+		if (logger.is_null()) {
+			logger.instantiate();
+		}
+		OS::get_singleton()->add_logger(logger);
+	}
 }
 
 void SentrySDK::close() {
 	if (internal_sdk->is_enabled()) {
 		sentry::util::print_debug("Shutting down Sentry SDK");
+		if (logger.is_valid()) {
+			OS::get_singleton()->remove_logger(logger);
+			logger.unref();
+		}
 		internal_sdk->close();
 	}
 }
@@ -286,19 +296,12 @@ void SentrySDK::_auto_initialize() {
 	}
 #endif
 
-	enabled = should_enable;
-
-	if (!enabled) {
+	if (!should_enable) {
 		sentry::util::print_info("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
 		return;
 	}
 
-	internal_sdk->init(_get_global_attachments());
-
-	if (SentryOptions::get_singleton()->is_logger_enabled()) {
-		logger.instantiate();
-		OS::get_singleton()->add_logger(logger);
-	}
+	init();
 }
 
 void SentrySDK::_check_if_configuration_succeeded() {
