@@ -338,6 +338,10 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
+	if (!SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled()) {
+		return;
+	}
+
 	static thread_local uint32_t num_entries = 0;
 	constexpr uint32_t MAX_ENTRIES = 5;
 	RecursionGuard feedback_loop_guard{ &num_entries, MAX_ENTRIES };

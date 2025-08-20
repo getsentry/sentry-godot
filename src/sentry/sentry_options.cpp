@@ -78,6 +78,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
 	_define_setting("sentry/logger/include_variables", p_options->logger_include_variables, false);
 	_requires_restart("sentry/logger/include_variables");
+	_define_setting("sentry/logger/messages_as_breadcrumbs", p_options->logger_messages_as_breadcrumbs);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_event_mask, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_breadcrumb_mask, false);
 
@@ -116,6 +117,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	p_options->logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", p_options->logger_include_source);
 	p_options->logger_include_variables = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_variables", p_options->logger_include_variables);
+	p_options->logger_messages_as_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/logger/messages_as_breadcrumbs", p_options->logger_messages_as_breadcrumbs);
 	p_options->logger_event_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/events", p_options->logger_event_mask);
 	p_options->logger_breadcrumb_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/breadcrumbs", p_options->logger_breadcrumb_mask);
 
@@ -195,6 +197,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, is_logger_include_source_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_variables"), set_logger_include_variables, is_logger_include_variables_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_messages_as_breadcrumbs"), set_logger_messages_as_breadcrumbs, is_logger_messages_as_breadcrumbs_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_event_mask"), set_logger_event_mask, get_logger_event_mask);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_breadcrumb_mask"), set_logger_breadcrumb_mask, get_logger_breadcrumb_mask);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::OBJECT, "logger_limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), set_logger_limits, get_logger_limits);

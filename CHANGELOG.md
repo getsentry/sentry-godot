@@ -2,10 +2,23 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.54.0 to v8.55.0 ([#318](https://github.com/getsentry/sentry-godot/pull/318))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8550)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.54.0...8.55.0)
+
+## 1.0.0-beta.0
+
+### Breaking changes
+
+- Bump Godot compatibility to 4.5-beta5 ([#307](https://github.com/getsentry/sentry-godot/pull/307))
+
 ### Features
 
 - Intoduce `SentryTimestamp` class to improve timestamp handling ([#286](https://github.com/getsentry/sentry-godot/pull/286))
 - Support for iOS & macOS using Sentry Cocoa SDK integration ([#266](https://github.com/getsentry/sentry-godot/pull/266))
+- Add option to disable logging messages as breadcrumbs ([#305](https://github.com/getsentry/sentry-godot/pull/305))
 
 ### Improvements
 
@@ -15,6 +28,18 @@
 
 - Add iOS framework as optional build target ([#290](https://github.com/getsentry/sentry-godot/pull/290))
 - Add demo icon ([#302](https://github.com/getsentry/sentry-godot/pull/302))
+
+### Dependencies
+
+- Bump Cocoa SDK from v8.53.2 to v8.54.0 ([#304](https://github.com/getsentry/sentry-godot/pull/304))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8540)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.53.2...8.54.0)
+- Bump Native SDK from v0.9.1 to v0.10.0 ([#311](https://github.com/getsentry/sentry-godot/pull/311))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0100)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.9.1...0.10.0)
+- Bump Sentry Android from v8.18.0 to v8.19.1 ([#312](https://github.com/getsentry/sentry-godot/pull/312), [#315](https://github.com/getsentry/sentry-godot/pull/315))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8191)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.18.0...8.19.1)
 
 ## 1.0.0-alpha.3
 

@@ -69,7 +69,7 @@ jobs:
             artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/libsentry.macos.release
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/crashpad_handler
+            artifact/addons/sentry/bin/macos/Sentry.framework
 
       - name: Notarize macOS binaries
         if: env.DO_CODESIGN == '1'
@@ -82,9 +82,9 @@ jobs:
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentry.macos.release.zip
 
-          zip crashpad_handler.zip artifact/addons/sentry/bin/macos/crashpad_handler
+          zip -r Sentry.framework.zip artifact/addons/sentry/bin/macos/Sentry.framework
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
-            crashpad_handler.zip
+            Sentry.framework.zip
 
       - name: Prepare artifact
         shell: bash

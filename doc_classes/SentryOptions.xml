@@ -84,6 +84,9 @@
 		<member name="logger_limits" type="SentryLoggerLimits" setter="set_logger_limits" getter="get_logger_limits">
 			Defines throttling limits for the error logger. These limits are used to prevent the SDK from sending too many non-critical and repeating error events. See [SentryLoggerLimits].
 		</member>
+		<member name="logger_messages_as_breadcrumbs" type="bool" setter="set_logger_messages_as_breadcrumbs" getter="is_logger_messages_as_breadcrumbs_enabled" default="true">
+			If [code]true[/code], the SDK will capture log messages (such as [code]print()[/code] statements) as breadcrumbs along with events.
+		</member>
 		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">
 			Maximum number of breadcrumbs to send with an event. You should be aware that Sentry has a maximum payload size and any events exceeding that payload size will be dropped.
 		</member>

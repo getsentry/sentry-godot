@@ -38,7 +38,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
     // NOTE: All dependencies below must be also updated in sentry_editor_export_plugin.cpp.
-    implementation("io.sentry:sentry-android:8.18.0")
+    implementation("io.sentry:sentry-android:8.19.1")
 }
 
 val copyDebugAarToProject by tasks.registering(Copy::class) {

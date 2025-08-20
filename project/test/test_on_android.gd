@@ -31,7 +31,7 @@ func test_capture_message() -> void:
 
 
 var created_id: String
-var timestamp: String
+var timestamp: SentryTimestamp
 func test_capture_event() -> void:
 	SentrySDK._set_before_send(
 		func(event: SentryEvent) -> SentryEvent:
@@ -44,14 +44,8 @@ func test_capture_event() -> void:
 			assert_equal(event.get_tag("custom-tag"), "custom-tag-value", "capture_event(): event retains custom tag value")
 			assert_equal(event.id, created_id, "capture_event(): event.id retains its value")
 			assert_false(event.is_crash(), "capture_event(): event.is_crash() should be false")
-
-			# Validate timestamp
-			var rfc3339_pattern = r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.\d+)?(?:Z|[\+\-]\d{2}:\d{2})$"
-			var regex = RegEx.create_from_string(rfc3339_pattern)
-			var hit: RegExMatch = regex.search(event.timestamp)
-			assert_not_null(hit, "capture_event(): event.timestamp is valid RFC3339")
-			if hit:
-				assert_true(timestamp.begins_with(hit.get_string(1)), "capture_event(): event.timestamp retains datetime")
+			assert_not_null(event.timestamp, "capture_event(): event.timestamp should not be null")
+			assert_true(event.timestamp.equals(timestamp), "capture_event(): event.timestamp retains its value")
 
 			if OS.get_name() == "Android":
 				assert_equal(event.platform, "java", "capture_event(): event.platfrom returns 'java' on Android")
@@ -59,25 +53,22 @@ func test_capture_event() -> void:
 			return null # discard event
 	)
 
-	var event := SentrySDK.create_event()
-	event.message = "integrity-check"
-	event.level = SentrySDK.LEVEL_DEBUG
-	event.logger = "custom-logger"
-	event.release = "custom-release"
-	event.dist = "custom-dist"
-	event.environment = "custom-environment"
-	event.set_tag("custom-tag", "custom-tag-value")
+	var ev := SentrySDK.create_event()
+	ev.message = "integrity-check"
+	ev.level = SentrySDK.LEVEL_DEBUG
+	ev.logger = "custom-logger"
+	ev.release = "custom-release"
+	ev.dist = "custom-dist"
+	ev.environment = "custom-environment"
+	ev.set_tag("custom-tag", "custom-tag-value")
 
-	timestamp = _create_timestamp()
-	event.timestamp = timestamp
+	timestamp = SentryTimestamp.parse_rfc3339("2025-06-02T14:45:01.123Z")
+	ev.timestamp = timestamp
 
-	created_id = event.id
+	created_id = ev.id
 
-	SentrySDK.capture_event(event)
+	SentrySDK.capture_event(ev)
 
-
-func _create_timestamp() -> String:
-	return "2025-06-02T14:45:01.123Z"
 
 # --------------------------------------------------------------------------------------------------
 
