@@ -413,7 +413,13 @@ SentrySDK::SentrySDK() {
 		sentry::util::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
 		internal_sdk = std::make_shared<DisabledSDK>();
 	} else {
-		internal_sdk = std::make_shared<AndroidSDK>();
+		auto sdk = std::make_shared<AndroidSDK>();
+		if (sdk->has_android_plugin()) {
+			internal_sdk = sdk;
+		} else {
+			sentry::util::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
+			internal_sdk = std::make_shared<DisabledSDK>();
+		}
 	}
 #elif SDK_COCOA
 	internal_sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
