@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- Impove initialization flow ([#322](https://github.com/getsentry/sentry-godot/pull/322))
+
 ## 1.0.0-beta.0
 
 ### Breaking changes
