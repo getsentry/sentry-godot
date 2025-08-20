@@ -3,7 +3,6 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
 #include "sentry/sentry_options.h"
-#include "sentry/uuid.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
@@ -49,6 +48,14 @@ String _screen_orientation_as_string(int32_t p_screen) {
 } // unnamed namespace
 
 namespace sentry::contexts {
+
+bool should_delay_contexts() {
+	// Delay contexts if engine singletons are not ready.
+	return !OS::get_singleton() || !Engine::get_singleton() ||
+			!DisplayServer::get_singleton() || !Time::get_singleton() ||
+			!ProjectSettings::get_singleton() || !Performance::get_singleton() ||
+			!RenderingServer::get_singleton();
+}
 
 Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	Dictionary device_context = Dictionary();

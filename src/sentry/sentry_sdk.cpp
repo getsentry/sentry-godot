@@ -120,13 +120,24 @@ void SentrySDK::destroy_singleton() {
 
 void SentrySDK::init() {
 	ERR_FAIL_COND_MSG(internal_sdk->is_enabled(), "Attempted to initialize SentrySDK that is already initialized");
+
 	sentry::util::print_debug("Initializing Sentry SDK");
 	internal_sdk->init(_get_global_attachments());
-	if (internal_sdk->is_enabled() && SentryOptions::get_singleton()->is_logger_enabled()) {
-		if (logger.is_null()) {
-			logger.instantiate();
+
+	if (internal_sdk->is_enabled()) {
+		if (sentry::contexts::should_delay_contexts()) {
+			// Delay contexts initialization until engine singletons are ready during early initialization.
+			callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
+		} else {
+			_init_contexts();
 		}
-		OS::get_singleton()->add_logger(logger);
+
+		if (SentryOptions::get_singleton()->is_logger_enabled()) {
+			if (logger.is_null()) {
+				logger.instantiate();
+			}
+			OS::get_singleton()->add_logger(logger);
+		}
 	}
 }
 
@@ -322,7 +333,6 @@ void SentrySDK::notify_options_configured() {
 	sentry::util::print_debug("finished configuring options via user script");
 	configuration_succeeded = true;
 	_auto_initialize();
-	_init_contexts();
 }
 
 void SentrySDK::prepare_and_auto_initialize() {
@@ -357,8 +367,6 @@ void SentrySDK::prepare_and_auto_initialize() {
 	if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
 		// Early initialization path.
 		_auto_initialize();
-		// Delay contexts initialization until the engine singletons are ready.
-		callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
 	} else {
 		// Register an autoload singleton, which is a user script extending the
 		// `SentryConfiguration` class. It will be instantiated and added to the
