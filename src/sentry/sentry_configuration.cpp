@@ -1,12 +1,16 @@
 #include "sentry_configuration.h"
 
-#include "sentry_sdk.h"
+#include "sentry/sentry_sdk.h"
 
 namespace sentry {
 
 void SentryConfiguration::_call_configure(const Ref<SentryOptions> &p_options) {
 	ERR_FAIL_COND(p_options.is_null());
-	GDVIRTUAL_CALL(_configure, p_options);
+
+	if (!GDVIRTUAL_CALL(_configure, p_options)) {
+		ERR_PRINT("Failed to call _configure(options). Please ensure the method is properly defined.");
+	}
+	
 	ERR_FAIL_NULL(SentrySDK::get_singleton());
 	SentrySDK::get_singleton()->notify_options_configured();
 }
