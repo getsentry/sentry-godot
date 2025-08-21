@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Test lifecycle methods.
+## Test SDK lifecycle methods.
 
 
 signal callback_processed
