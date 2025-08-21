@@ -331,7 +331,12 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments) {
 }
 
 void NativeSDK::close() {
-	sentry_close();
+	int err = sentry_close();
+	initialized = false;
+
+	if (err != 0) {
+		ERR_PRINT("Sentry: Failed to close native SDK cleanly. Error code: " + itos(err));
+	}
 }
 
 bool NativeSDK::is_enabled() const {
