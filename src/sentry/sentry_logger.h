@@ -61,7 +61,7 @@ private:
 	void _process_frame();
 
 protected:
-	static void _bind_methods() {}
+	static void _bind_methods();
 
 	void _notification(int p_what);
 

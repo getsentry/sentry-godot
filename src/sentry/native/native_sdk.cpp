@@ -261,7 +261,7 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
+void NativeSDK::init(const PackedStringArray &p_global_attachments) {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
@@ -328,6 +328,19 @@ void NativeSDK::initialize(const PackedStringArray &p_global_attachments) {
 	if (err != 0) {
 		ERR_PRINT("Sentry: Failed to initialize native SDK. Error code: " + itos(err));
 	}
+}
+
+void NativeSDK::close() {
+	int err = sentry_close();
+	initialized = false;
+
+	if (err != 0) {
+		ERR_PRINT("Sentry: Failed to close native SDK cleanly. Error code: " + itos(err));
+	}
+}
+
+bool NativeSDK::is_enabled() const {
+	return initialized;
 }
 
 NativeSDK::NativeSDK() {
