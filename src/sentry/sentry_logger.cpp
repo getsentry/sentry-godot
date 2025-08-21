@@ -191,19 +191,14 @@ std::size_t SentryLogger::ErrorKeyHash::operator()(const ErrorKey &p_key) const 
 }
 
 void SentryLogger::_connect_process_frame() {
-	SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-	if (scene_tree) {
-		Callable callable = callable_mp(this, &SentryLogger::_process_frame);
-		if (!scene_tree->is_connected("process_frame", callable)) {
-			scene_tree->connect("process_frame", callable);
-		}
-	} else {
-		if (!Engine::get_singleton()->get_main_loop()) {
-			// Defer signal connection since SceneTree is not available yet.
-			call_deferred("_connect_process_frame");
-		} else {
-			ERR_PRINT("SentryLogger: Expected SceneTree instance as main loop.");
-		}
+	MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
+	ERR_FAIL_NULL_MSG(main_loop, "SentryLogger: Failed to connect to \"process_frame\" signal - main loop is null.");
+	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
+	ERR_FAIL_NULL_MSG(scene_tree, "SentryLogger: Failed to connect to \"process_frame\" signal - expected SceneTree instance as main loop.");
+
+	Callable callable = callable_mp(this, &SentryLogger::_process_frame);
+	if (!scene_tree->is_connected("process_frame", callable)) {
+		scene_tree->connect("process_frame", callable);
 	}
 }
 
@@ -376,7 +371,13 @@ void SentryLogger::_bind_methods() {
 void SentryLogger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
-			_connect_process_frame();
+			SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+			if (scene_tree) {
+				_connect_process_frame();
+			} else {
+				// Defer signal connection since SceneTree is not available during early initialization.
+				call_deferred("_connect_process_frame");
+			}
 		} break;
 		case NOTIFICATION_PREDELETE: {
 			_disconnect_process_frame();
