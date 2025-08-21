@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Potential crash in SentryLogger if removed early ([#323](https://github.com/getsentry/sentry-godot/pull/323))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.54.0 to v8.55.0 ([#318](https://github.com/getsentry/sentry-godot/pull/318))
