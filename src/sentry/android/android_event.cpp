@@ -124,6 +124,15 @@ void AndroidEvent::add_exception(const Exception &p_exception) {
 			data["pre_context"] = frame.pre_context;
 			data["post_context"] = frame.post_context;
 		}
+
+		if (!frame.vars.is_empty()) {
+			Dictionary variables;
+			for (auto var : frame.vars) {
+				variables[var.first] = var.second;
+			}
+			data["vars"] = variables;
+		}
+
 		android_plugin->call(ANDROID_SN(exceptionAppendStackFrame), exception_handle, data);
 	}
 
