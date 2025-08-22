@@ -65,6 +65,7 @@ public:
 	StringName eventGetTag;
 	StringName eventMergeContext;
 	StringName eventIsCrash;
+	StringName eventToJson;
 
 	// Exceptions.
 	StringName createException;

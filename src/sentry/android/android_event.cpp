@@ -136,6 +136,11 @@ bool AndroidEvent::is_crash() const {
 	return android_plugin->call(ANDROID_SN(eventIsCrash), event_handle);
 }
 
+String AndroidEvent::to_json() const {
+	ERR_FAIL_NULL_V(android_plugin, String());
+	return android_plugin->call(ANDROID_SN(eventToJson), event_handle);
+}
+
 AndroidEvent::AndroidEvent(Object *p_android_plugin, int32_t p_event_handle) {
 	android_plugin = p_android_plugin;
 	event_handle = p_event_handle;

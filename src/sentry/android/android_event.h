@@ -57,6 +57,8 @@ public:
 
 	virtual bool is_crash() const override;
 
+	virtual String to_json() const override;
+
 	void set_as_borrowed() { is_borrowed = true; }
 
 	AndroidEvent() {}

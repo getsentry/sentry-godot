@@ -76,6 +76,8 @@ public:
 
 	virtual bool is_crash() const = 0;
 
+	virtual String to_json() const = 0;
+
 	virtual ~SentryEvent() = default;
 };
 

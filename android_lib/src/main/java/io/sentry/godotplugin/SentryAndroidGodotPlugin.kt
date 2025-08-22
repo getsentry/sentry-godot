@@ -4,6 +4,7 @@ import android.util.Log
 import io.sentry.Attachment
 import io.sentry.Breadcrumb
 import io.sentry.Hint
+import io.sentry.ISerializer
 import io.sentry.Sentry
 import io.sentry.SentryEvent
 import io.sentry.SentryLevel
@@ -20,6 +21,7 @@ import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.godot.variant.Callable
 import java.io.File
+import java.io.StringWriter
 import kotlin.random.Random
 
 
@@ -379,6 +381,15 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun eventIsCrash(eventHandle: Int): Boolean {
         return getEvent(eventHandle)?.isCrashed == true
+    }
+
+    @UsedByGodot
+    fun eventToJson(eventHandle: Int): String {
+        val event = getEvent(eventHandle) ?: return ""
+        val serializer: ISerializer = Sentry.getCurrentScopes().options.serializer
+        val writer = StringWriter()
+        serializer.serialize(event, writer)
+        return writer.toString()
     }
 
     @UsedByGodot
