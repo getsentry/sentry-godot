@@ -277,7 +277,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun eventGetTimestamp(eventHandle: Int): Long {
         val event: SentryEvent = getEvent(eventHandle) ?: return 0
-        return event.timestamp?.toInstant()?.toMicros() ?: 0
+        return event.timestamp?.toMicros() ?: 0
     }
 
     @UsedByGodot
