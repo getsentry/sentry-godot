@@ -53,6 +53,8 @@ public:
 
 	virtual bool is_crash() const override;
 
+	virtual String to_json() const override;
+
 	CocoaEvent(objc::SentryEvent *p_cocoa_event);
 	CocoaEvent();
 	virtual ~CocoaEvent() override;

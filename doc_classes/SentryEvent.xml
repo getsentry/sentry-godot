@@ -38,6 +38,12 @@
 				Sets a tag with the specified [param key] to the given [param value].
 			</description>
 		</method>
+		<method name="to_json" qualifiers="const">
+			<return type="String" />
+			<description>
+				Serializes the event to JSON string.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="dist" type="String" setter="set_dist" getter="get_dist">

@@ -27,6 +27,7 @@ void SentryEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &SentryEvent::remove_tag);
 	ClassDB::bind_method(D_METHOD("get_tag", "key"), &SentryEvent::get_tag);
 	ClassDB::bind_method(D_METHOD("is_crash"), &SentryEvent::is_crash);
+	ClassDB::bind_method(D_METHOD("to_json"), &SentryEvent::to_json);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "id"), "", "get_id");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "message"), "set_message", "get_message");
