@@ -12,6 +12,7 @@
 
 ### Fixes
 
+- Potential crash in SentryLogger if removed early ([#323](https://github.com/getsentry/sentry-godot/pull/323))
 - Ensure compatibility with minSdk 24 on Android ([#324](https://github.com/getsentry/sentry-godot/pull/324))
 
 ### Dependencies
