@@ -191,14 +191,14 @@ std::size_t SentryLogger::ErrorKeyHash::operator()(const ErrorKey &p_key) const 
 }
 
 void SentryLogger::_connect_process_frame() {
-	SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-	if (scene_tree) {
-		Callable callable = callable_mp(this, &SentryLogger::_process_frame);
-		if (!scene_tree->is_connected("process_frame", callable)) {
-			scene_tree->connect("process_frame", callable);
-		}
-	} else {
-		ERR_PRINT("Sentry: Failed to connect `process_frame` signal – main loop is null");
+	MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
+	ERR_FAIL_NULL_MSG(main_loop, "SentryLogger: Failed to connect to \"process_frame\" signal - main loop is null.");
+	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
+	ERR_FAIL_NULL_MSG(scene_tree, "SentryLogger: Failed to connect to \"process_frame\" signal - expected SceneTree instance as main loop.");
+
+	Callable callable = callable_mp(this, &SentryLogger::_process_frame);
+	if (!scene_tree->is_connected("process_frame", callable)) {
+		scene_tree->connect("process_frame", callable);
 	}
 }
 
@@ -364,10 +364,20 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 			"debug");
 }
 
+void SentryLogger::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_connect_process_frame"), &SentryLogger::_connect_process_frame);
+}
+
 void SentryLogger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
-			callable_mp(this, &SentryLogger::_connect_process_frame).call_deferred();
+			SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+			if (scene_tree) {
+				_connect_process_frame();
+			} else {
+				// Defer signal connection since SceneTree is not available during early initialization.
+				call_deferred("_connect_process_frame");
+			}
 		} break;
 		case NOTIFICATION_PREDELETE: {
 			_disconnect_process_frame();
@@ -393,12 +403,6 @@ SentryLogger::SentryLogger() {
 SentryLogger::~SentryLogger() {
 	if (!Engine::get_singleton()) {
 		return;
-	}
-
-	SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-	Callable callable = callable_mp(this, &SentryLogger::_process_frame);
-	if (scene_tree && scene_tree->is_connected("process_frame", callable)) {
-		scene_tree->disconnect("process_frame", callable);
 	}
 }
 
