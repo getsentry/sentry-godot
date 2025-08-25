@@ -125,7 +125,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void AndroidSDK::initialize(const PackedStringArray &p_global_attachments) {
+void AndroidSDK::init(const PackedStringArray &p_global_attachments) {
 	ERR_FAIL_NULL(android_plugin);
 
 	sentry::util::print_debug("Initializing Sentry Android SDK");

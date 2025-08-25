@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Features
+
+- Add support for script context and variables on Apple platforms ([#306](https://github.com/getsentry/sentry-godot/pull/306))
+
+### Improvements
+
+- Improve initialization flow ([#322](https://github.com/getsentry/sentry-godot/pull/322))
+
 ### Fixes
 
 - Potential crash in SentryLogger if removed early ([#323](https://github.com/getsentry/sentry-godot/pull/323))

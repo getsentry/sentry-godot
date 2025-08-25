@@ -36,7 +36,7 @@ public:
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) = 0;
 
-	virtual void initialize(const PackedStringArray &p_global_attachments) = 0;
+	virtual void init(const PackedStringArray &p_global_attachments) = 0;
 
 	virtual ~InternalSDK() = default;
 };

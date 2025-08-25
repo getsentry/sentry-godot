@@ -102,6 +102,22 @@ namespace sentry {
 
 SentrySDK *SentrySDK::singleton = nullptr;
 
+void SentrySDK::create_singleton() {
+	ERR_FAIL_NULL(Engine::get_singleton());
+	singleton = memnew(SentrySDK);
+	Engine::get_singleton()->register_singleton("SentrySDK", SentrySDK::get_singleton());
+}
+
+void SentrySDK::destroy_singleton() {
+	ERR_FAIL_NULL(Engine::get_singleton());
+	if (!singleton) {
+		return;
+	}
+	Engine::get_singleton()->unregister_singleton("SentrySDK");
+	memdelete(singleton);
+	singleton = nullptr;
+}
+
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
 	return internal_sdk->capture_message(p_message, p_level);
 }
@@ -219,7 +235,7 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 	return attachments;
 }
 
-void SentrySDK::_initialize() {
+void SentrySDK::_auto_initialize() {
 	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
 	// Initialize user if it wasn't set explicitly in the configuration script.
@@ -249,30 +265,13 @@ void SentrySDK::_initialize() {
 		sentry::util::print_debug("Sentry SDK is disabled when project is played from the editor. Tip: This can be changed in the project settings.");
 	}
 
+#if SDK_ANDROID
 	if (should_enable) {
-#ifdef SDK_NATIVE
-		internal_sdk = std::make_shared<NativeSDK>();
-#elif SDK_ANDROID
-		if (unlikely(OS::get_singleton()->has_feature("editor"))) {
-			sentry::util::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
+		if (OS::get_singleton()->has_feature("editor")) {
 			should_enable = false;
-		} else {
-			auto sdk = std::make_shared<AndroidSDK>();
-			if (sdk->has_android_plugin()) {
-				internal_sdk = sdk;
-			} else {
-				sentry::util::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
-				should_enable = false;
-			}
 		}
-#elif SDK_COCOA
-		internal_sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
-#else
-		// Unsupported platform
-		sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
-		should_enable = false;
-#endif
 	}
+#endif
 
 	enabled = should_enable;
 
@@ -281,15 +280,7 @@ void SentrySDK::_initialize() {
 		return;
 	}
 
-	// Add event processors
-	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
-		SentryOptions::get_singleton()->add_event_processor(memnew(ScreenshotProcessor));
-	}
-	if (SentryOptions::get_singleton()->is_attach_scene_tree_enabled()) {
-		SentryOptions::get_singleton()->add_event_processor(memnew(ViewHierarchyProcessor));
-	}
-
-	internal_sdk->initialize(_get_global_attachments());
+	internal_sdk->init(_get_global_attachments());
 
 	if (SentryOptions::get_singleton()->is_logger_enabled()) {
 		logger.instantiate();
@@ -302,7 +293,7 @@ void SentrySDK::_check_if_configuration_succeeded() {
 		// Push error and initialize anyway.
 		ERR_PRINT("Sentry: Configuration via user script failed. Will try to initialize SDK anyway.");
 		sentry::util::print_error("initializing late because configuration via user script failed");
-		_initialize();
+		_auto_initialize();
 	}
 }
 
@@ -314,8 +305,60 @@ void SentrySDK::_demo_helper_crash_app() {
 void SentrySDK::notify_options_configured() {
 	sentry::util::print_debug("finished configuring options via user script");
 	configuration_succeeded = true;
-	_initialize();
+	_auto_initialize();
 	_init_contexts();
+}
+
+void SentrySDK::prepare_and_auto_initialize() {
+	// Load the runtime configuration from the user's data directory.
+	runtime_config.instantiate();
+	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
+
+	// Verify project settings and notify user via errors if there are any issues (deferred).
+	callable_mp_static(_verify_project_settings).call_deferred();
+
+#if defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
+	// Fix crashpad handler executable bit permissions on Unix platforms if the
+	// user extracts the distribution archive without preserving such permissions.
+	if (OS::get_singleton()->is_debug_build()) {
+		_fix_unix_executable_permissions("res://addons/sentry/bin/macos/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/x86_64/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/x86_32/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/arm64/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/arm32/crashpad_handler");
+	}
+#endif
+
+	// Add event processors.
+	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
+		SentryOptions::get_singleton()->add_event_processor(memnew(ScreenshotProcessor));
+	}
+	if (SentryOptions::get_singleton()->is_attach_scene_tree_enabled()) {
+		SentryOptions::get_singleton()->add_event_processor(memnew(ViewHierarchyProcessor));
+	}
+
+	// Auto-initialize SDK.
+	if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
+		// Early initialization path.
+		_auto_initialize();
+		// Delay contexts initialization until the engine singletons are ready.
+		callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
+	} else {
+		// Register an autoload singleton, which is a user script extending the
+		// `SentryConfiguration` class. It will be instantiated and added to the
+		// scene tree by the engine shortly after ScriptServer is initialized.
+		// When this happens, the `SentryConfiguration` instance receives
+		// `NOTIFICATION_READY`, triggering our notification processing code in
+		// C++, which calls `_configure()` on the user script and then invokes
+		// `notify_options_configured()` in `SentrySDK`. This, in turn,
+		// auto-initializes the SDK.
+		sentry::util::print_debug("waiting for user configuration autoload");
+		ERR_FAIL_NULL(ProjectSettings::get_singleton());
+		ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
+				SentryOptions::get_singleton()->get_configuration_script());
+		// Ensure issues with the configuration script are detected.
+		callable_mp(this, &SentrySDK::_check_if_configuration_succeeded).call_deferred();
+	}
 }
 
 void SentrySDK::_notification(int p_what) {
@@ -363,51 +406,28 @@ SentrySDK::SentrySDK() {
 
 	user_mutex.instantiate();
 
-	// Prevent potential crashes if initialization is skipped (unsupported platform, script failure, etc.)
-	internal_sdk = std::make_shared<DisabledSDK>();
-
-	singleton = this;
-
-	// Load the runtime configuration from the user's data directory.
-	runtime_config.instantiate();
-	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
-
-	// Verify project settings and notify user via errors if there are any issues (deferred).
-	callable_mp_static(_verify_project_settings).call_deferred();
-
-#if defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
-	// Fix crashpad handler executable bit permissions on Unix platforms if the
-	// user extracts the distribution archive without preserving such permissions.
-	if (OS::get_singleton()->is_debug_build()) {
-		_fix_unix_executable_permissions("res://addons/sentry/bin/macos/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/x86_64/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/x86_32/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/arm64/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/arm32/crashpad_handler");
-	}
-#endif
-
-	if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
-		// Early initialization path.
-		_initialize();
-		// Delay contexts initialization until the engine singletons are ready.
-		callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
+#ifdef SDK_NATIVE
+	internal_sdk = std::make_shared<NativeSDK>();
+#elif SDK_ANDROID
+	if (unlikely(OS::get_singleton()->has_feature("editor"))) {
+		sentry::util::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
+		internal_sdk = std::make_shared<DisabledSDK>();
 	} else {
-		// Register an autoload singleton, which is a user script extending the
-		// `SentryConfiguration` class. It will be instantiated and added to the
-		// scene tree by the engine shortly after ScriptServer is initialized.
-		// When this happens, the `SentryConfiguration` instance receives
-		// `NOTIFICATION_READY`, triggering our notification processing code in
-		// C++, which calls `_configure()` on the user script and then invokes
-		// `notify_options_configured()` in `SentrySDK`. This, in turn, initializes
-		// the internal SDK.
-		sentry::util::print_debug("waiting for user configuration autoload");
-		ERR_FAIL_NULL(ProjectSettings::get_singleton());
-		ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
-				SentryOptions::get_singleton()->get_configuration_script());
-		// Ensure issues with the configuration script are detected.
-		callable_mp(this, &SentrySDK::_check_if_configuration_succeeded).call_deferred();
+		auto sdk = std::make_shared<AndroidSDK>();
+		if (sdk->has_android_plugin()) {
+			internal_sdk = sdk;
+		} else {
+			sentry::util::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
+			internal_sdk = std::make_shared<DisabledSDK>();
+		}
 	}
+#elif SDK_COCOA
+	internal_sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
+#else
+	// Unsupported platform
+	sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
+	internal_sdk = std::make_shared<DisabledSDK>();
+#endif
 }
 
 SentrySDK::~SentrySDK() {
