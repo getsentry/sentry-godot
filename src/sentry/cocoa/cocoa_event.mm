@@ -223,8 +223,21 @@ void CocoaEvent::add_exception(const Exception &p_exception) {
 		cocoa_frame.inApp = bool_to_objc(frame.in_app);
 		cocoa_frame.platform = string_to_objc(frame.platform);
 
-		// TODO: unable to pass context_line, pre_context, post_context.
-		// TODO: unable to pass local/member vars.
+		if (!frame.context_line.is_empty()) {
+			cocoa_frame.contextLine = string_to_objc(frame.context_line);
+			cocoa_frame.preContext = string_array_to_objc(frame.pre_context);
+			cocoa_frame.postContext = string_array_to_objc(frame.post_context);
+		}
+
+		if (!frame.vars.is_empty()) {
+			NSMutableDictionary *objc_vars = [NSMutableDictionary dictionaryWithCapacity:frame.vars.size()];
+			for (const auto &var : frame.vars) {
+				NSString *key = string_to_objc(var.first);
+				id value = variant_to_objc(var.second);
+				objc_vars[key] = value;
+			}
+			cocoa_frame.vars = objc_vars;
+		}
 
 		[mut_frames addObject:cocoa_frame];
 	}
