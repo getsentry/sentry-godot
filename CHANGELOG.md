@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Features
+
+- Add support for script context and variables on Apple platforms ([#306](https://github.com/getsentry/sentry-godot/pull/306))
+
+### Improvements
+
+- Improve initialization flow ([#322](https://github.com/getsentry/sentry-godot/pull/322))
+
 ### Fixes
 
 - Ensure compatibility with minSdk 24 on Android ([#324](https://github.com/getsentry/sentry-godot/pull/324))
