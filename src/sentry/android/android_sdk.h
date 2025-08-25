@@ -49,7 +49,7 @@ public:
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
 
-	virtual void initialize(const PackedStringArray &p_global_attachments) override;
+	virtual void init(const PackedStringArray &p_global_attachments) override;
 
 	bool has_android_plugin() const { return android_plugin != nullptr; }
 

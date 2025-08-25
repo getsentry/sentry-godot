@@ -6,6 +6,10 @@
 
 - Add support for script context and variables on Apple platforms ([#306](https://github.com/getsentry/sentry-godot/pull/306))
 
+### Improvements
+
+- Improve initialization flow ([#322](https://github.com/getsentry/sentry-godot/pull/322))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.54.0 to v8.55.0 ([#318](https://github.com/getsentry/sentry-godot/pull/318))
