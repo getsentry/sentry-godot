@@ -20,6 +20,9 @@
 - Bump Cocoa SDK from v8.54.0 to v8.55.0 ([#318](https://github.com/getsentry/sentry-godot/pull/318))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8550)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.54.0...8.55.0)
+- Bump gdUnit 4 from v5.1.0-8-g4357f3f to v5.1.0 ([#319](https://github.com/getsentry/sentry-godot/pull/319))
+  - [changelog](https://github.com/MikeSchulze/gdUnit4/blob/master/CHANGELOG.md#v510)
+  - [diff](https://github.com/MikeSchulze/gdUnit4/compare/v5.1.0-8-g4357f3f...v5.1.0)
 
 ## 1.0.0-beta.0
 
