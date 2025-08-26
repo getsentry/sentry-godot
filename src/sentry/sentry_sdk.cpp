@@ -381,7 +381,7 @@ void SentrySDK::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_enabled"), &SentrySDK::is_enabled);
 	ClassDB::bind_method(D_METHOD("capture_message", "message", "level"), &SentrySDK::capture_message, DEFVAL(LEVEL_INFO));
-	ClassDB::bind_method(D_METHOD("add_breadcrumb", "message", "category", "level", "type", "data"), &SentrySDK::add_breadcrumb, DEFVAL(LEVEL_INFO), DEFVAL("default"), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("add_breadcrumb", "message", "category", "level", "type", "data"), &SentrySDK::add_breadcrumb, DEFVAL(""), DEFVAL(LEVEL_INFO), DEFVAL("default"), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("get_last_event_id"), &SentrySDK::get_last_event_id);
 	ClassDB::bind_method(D_METHOD("set_context", "key", "value"), &SentrySDK::set_context);
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &SentrySDK::set_tag);
