@@ -552,6 +552,29 @@ func must_satisfy(short_description: String, predicate: Callable) -> JSONAssert:
 	return self
 
 
+## Asserts that each candidate matches the given regular expression.
+func must_match_regex(expression: String) -> JSONAssert:
+	var step := Step.new("must_match_regex \"" + expression + "\"", func(state: EvaluationState) -> StepResult:
+		var num_candidates: int = state.candidates.size()
+		if num_candidates == 0:
+			return Step.failed("expected at least 1 candidate, but got " + str(num_candidates))
+
+		var regex := RegEx.new()
+		var err: Error = regex.compile(expression)
+		if err != OK:
+			return Step.failed("failed to compile regex")
+
+		for c in state.candidates:
+			if json_type(c) != Type.STRING:
+				return Step.failed("expected string, but got " + json_type_string(json_type(c)))
+			if not regex.search(c):
+				return Step.failed("failed to match \"" + str(c) + "\"")
+		return Step.passed()
+	)
+	_add_step(step)
+	return self
+
+
 ## Asserts that exactly n candidates are currently selected.
 ## This is a non-finalizing assertion that can be chained with other operations.
 ## Use this to verify the count of candidates at any point in the chain without terminating it.
