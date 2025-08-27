@@ -437,3 +437,191 @@ func test_empty_values() -> void:
 	# Empty array operations
 	assert_json(test_data).at("/empty_array").is_array().verify()
 	assert_json(test_data).at("/empty_array").with_objects().exactly(0)
+
+
+func test_either_or_else_basic() -> void:
+	var test_data := '{"type": "user", "role": "moderator"}'
+
+	assert_json(test_data).describe("Basic two-branch either/or_else - passes on first branch") \
+		.at("/type") \
+		.either().must_be("user") \
+		.or_else().must_be("admin") \
+		.end() \
+		.verify()
+
+	assert_json(test_data).describe("Basic two-branch either/or_else - passes on second branch") \
+		.at("/type") \
+		.either().must_be("admin") \
+		.or_else().must_be("user") \
+		.end() \
+		.verify()
+
+	assert_json(test_data).describe("Multiple branches - passes on third option") \
+		.at("/role") \
+		.either().must_be("admin") \
+		.or_else().must_be("user") \
+		.or_else().must_be("moderator") \
+		.end() \
+		.verify()
+
+	assert_failure(func() -> void:
+		assert_json(test_data).describe("All branches fail") \
+			.at("/type") \
+			.either().must_be("admin") \
+			.or_else().must_be("guest") \
+			.end() \
+			.verify()
+	).is_failed()
+
+
+func test_either_or_else_with_filtering() -> void:
+	var test_data := {
+		"users": [
+			{"name": "Alice", "role": "admin", "active": true},
+			{"name": "Bob", "role": "user", "active": false},
+			{"name": "Charlie", "role": "moderator", "active": true}
+		]
+	}
+
+	assert_json(test_data).describe("Either/or_else with object filtering") \
+		.at("/users") \
+		.with_objects() \
+		.either() \
+			.containing("role", "admin") \
+		.or_else() \
+			.containing("role", "moderator") \
+		.end() \
+		.exactly(2)
+
+	assert_json(test_data).describe("Combining candidates from multiple passing branches") \
+		.at("/users") \
+		.with_objects() \
+		.containing("active", true) \
+		.either() \
+			.containing("role", "admin") \
+		.or_else() \
+			.containing("role", "moderator") \
+		.end() \
+		.exactly(2)
+
+
+func test_either_or_else_chaining() -> void:
+	var test_data := '{"user": {"role": "admin", "level": 5}}'
+
+	assert_json(test_data).describe("Method chaining continues after either/or_else/end") \
+		.at("/user/role") \
+		.either().must_be("admin") \
+		.or_else().must_be("user") \
+		.end() \
+		.at("/user/level") \
+		.must_be(5) \
+		.verify()
+
+	assert_json(test_data).describe("Mixed assertion types in branches") \
+		.at("/user/level") \
+		.either() \
+			.is_string() \
+		.or_else() \
+			.is_number() \
+			.must_be(5) \
+		.end() \
+		.verify()
+
+
+func test_either_or_else_errors() -> void:
+	var test_data := '{"test": "value"}'
+
+	assert_failure(func() -> void:
+		assert_json(test_data).describe("or_else without either should fail") \
+			.at("/test") \
+			.or_else().must_be("other") \
+			.end() \
+			.verify()
+	).is_failed()
+
+	assert_failure(func() -> void:
+		assert_json(test_data).describe("end without either should fail") \
+			.at("/test") \
+			.end() \
+			.verify()
+	).is_failed()
+
+
+func test_must_begin_with() -> void:
+	var test_data := '{"url": "https://api.example.com", "empty": "", "name": "John Doe"}'
+
+	# Success cases
+	assert_json(test_data).describe("String begins with expected prefix") \
+		.at("/url") \
+		.must_begin_with("https://") \
+		.verify()
+
+	assert_json(test_data).describe("Empty string with empty prefix") \
+		.at("/empty") \
+		.must_begin_with("") \
+		.verify()
+
+	# Failure cases
+	assert_failure(func() -> void:
+		assert_json(test_data).describe("Wrong prefix should fail") \
+			.at("/name") \
+			.must_begin_with("Jane") \
+			.verify()
+	).is_failed()
+
+	assert_failure(func() -> void:
+		assert_json(test_data).describe("Non-string should fail type check") \
+			.at("/") \
+			.must_begin_with("test") \
+			.verify()
+	).is_failed()
+
+
+func test_must_end_with() -> void:
+	var test_data := '{"file": "config.json", "empty": "", "path": "/api/v1"}'
+
+	# Success cases
+	assert_json(test_data).describe("String ends with expected suffix") \
+		.at("/file") \
+		.must_end_with(".json") \
+		.verify()
+
+	assert_json(test_data).describe("Empty string with empty suffix") \
+		.at("/empty") \
+		.must_end_with("") \
+		.verify()
+
+	# Failure cases
+	assert_failure(func() -> void:
+		assert_json(test_data).describe("Wrong suffix should fail") \
+			.at("/path") \
+			.must_end_with("/v2") \
+			.verify()
+	).is_failed()
+
+	assert_failure(func() -> void:
+		assert_json(test_data).describe("Non-string should fail type check") \
+			.at("/") \
+			.must_end_with("test") \
+			.verify()
+	).is_failed()
+
+
+func test_must_begin_with_and_must_end_with_chaining() -> void:
+	var test_data := '{"url": "https://example.com/api/v1"}'
+
+	# Chaining both methods
+	assert_json(test_data).describe("URL starts and ends with expected patterns") \
+		.at("/url") \
+		.must_begin_with("https://") \
+		.must_end_with("/v1") \
+		.verify()
+
+	# Failure in chain
+	assert_failure(func() -> void:
+		assert_json(test_data).describe("Chain should fail on wrong suffix") \
+			.at("/url") \
+			.must_begin_with("https://") \
+			.must_end_with("/v2") \
+			.verify()
+	).is_failed()

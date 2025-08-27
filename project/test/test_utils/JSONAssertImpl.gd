@@ -516,6 +516,40 @@ func must_not_contain(path: String, specific_value: Variant = null) -> JSONAsser
 	return self
 
 
+## Asserts that each candidate is a string that begins with the given prefix.
+func must_begin_with(expected_prefix: String) -> JSONAssert:
+	var step := Step.new("must_begin_with \"" + expected_prefix + "\"", func(state: EvaluationState) -> StepResult:
+		var num_candidates: int = state.candidates.size()
+		if num_candidates == 0:
+			return Step.failed("expected at least 1 candidate, but got " + str(num_candidates))
+		for c in state.candidates:
+			if not json_type(c) == Type.STRING:
+				return Step.failed("expected string, but got " + json_type_string(json_type(c)))
+			if not c.begins_with(expected_prefix):
+				return Step.failed("failed with actual \"" + c + "\"")
+		return Step.passed()
+	)
+	_add_step(step)
+	return self
+
+
+## Asserts that each candidate is a string that ends with the given prefix.
+func must_end_with(expected_suffix: String) -> JSONAssert:
+	var step := Step.new("must_end_with \"" + expected_suffix + "\"", func(state: EvaluationState) -> StepResult:
+		var num_candidates: int = state.candidates.size()
+		if num_candidates == 0:
+			return Step.failed("expected at least 1 candidate, but got " + str(num_candidates))
+		for c in state.candidates:
+			if not json_type(c) == Type.STRING:
+				return Step.failed("expected string, but got " + json_type_string(json_type(c)))
+			if not c.ends_with(expected_suffix):
+				return Step.failed("failed with actual \"" + c + "\"")
+		return Step.passed()
+	)
+	_add_step(step)
+	return self
+
+
 ## Asserts that each candidate satisfies the given predicate.
 ## Predicate is a function that takes a candidate and returns true if it satisfies the condition; otherwise, false.
 func must_satisfy(short_description: String, predicate: Callable) -> JSONAssert:
