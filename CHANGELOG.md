@@ -9,6 +9,7 @@
 ### Improvements
 
 - Improve initialization flow ([#322](https://github.com/getsentry/sentry-godot/pull/322))
+- Make category optional in SentrySDK.add_breadcrumb() ([#330](https://github.com/getsentry/sentry-godot/pull/330))
 
 ### Fixes
 
