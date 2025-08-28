@@ -9,6 +9,7 @@
 ### Improvements
 
 - Improve initialization flow ([#322](https://github.com/getsentry/sentry-godot/pull/322))
+- Don't add breadcrumb data and category when empty ([#331](https://github.com/getsentry/sentry-godot/pull/331))
 
 ### Fixes
 
