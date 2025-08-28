@@ -87,14 +87,81 @@ class EvaluationState:
 		return steps_passed
 
 	## Returns a detailed breakdown of steps performed.
-	func get_step_results_pretty() -> PackedStringArray:
+	func get_step_results_pretty(enable_status := true, depth: int = 0) -> PackedStringArray:
 		var lines := PackedStringArray()
 		for i in steps.size():
 			var step := steps[i]
 			var result := results[i]
-			var status := "FAIL" if not result.passed else "    "
-			lines.append("%s  %s -> %s" % [status, step.description, result.message])
+			lines.append(format_result(step.description, result, depth, enable_status))
 		return lines
+
+	func format_result(step_name: String, result: StepResult, depth: int, show_status: bool) -> String:
+		var status := "FAIL" if not result.passed and show_status else "    "
+		var indent := "  ".repeat(depth)
+		return "%s  %s%s -> %s" % [status, indent, step_name, result.message]
+
+
+## Result of evaluating all branches in an either/or_else chain.
+class BranchResults:
+	var branch_statuses: Array[bool]
+	var chain_passed: bool
+	var combined_candidates: Array
+	var logs: PackedStringArray
+
+	func _init(statuses: Array[bool], survivors: Array = []):
+		branch_statuses = statuses
+		chain_passed = statuses.any(func(status): return status)
+		combined_candidates = survivors
+
+
+## Encapsulates branching context and logic for either/or_else chains.
+class BranchingContext:
+	var branches: Array[JSONAssert] = []
+	var parent: JSONAssert
+
+	func _init(parent_scope: JSONAssert):
+		parent = parent_scope
+
+	func add_branch(branch: JSONAssert) -> void:
+		branches.append(branch)
+
+	func evaluate_branches(original: JSONAssert) -> BranchResults:
+		var branch_statuses: Array[bool] = []
+		var combined_candidates: Array = []
+
+		# Evaluate all branches and combine candidates from passing branches
+		for branch: JSONAssert in branches:
+			branch._state.candidates = original._state.candidates.duplicate()
+			var steps_passed: bool = branch._state.apply_steps()
+			branch_statuses.append(steps_passed)
+
+			# If this branch passed, add its candidates to combined results
+			if steps_passed:
+				for candidate in branch._state.candidates:
+					if not combined_candidates.has(candidate):
+						combined_candidates.append(candidate)
+
+		return BranchResults.new(branch_statuses, combined_candidates)
+
+	func format_branch_results(results: BranchResults, original: JSONAssert) -> String:
+		var show_statuses: bool = not results.chain_passed
+		var logs := PackedStringArray()
+		var nesting_depth: int = original._get_nesting_depth()
+
+		for i in branches.size():
+			var branch: JSONAssert = branches[i]
+			if i == 0:
+				# First branch result is handled by the main step
+				pass
+			elif results.branch_statuses[i]:
+				logs.append(original._state.format_result("or_else", Step.passed("passed"), nesting_depth, show_statuses))
+			else:
+				logs.append(original._state.format_result("or_else", Step.failed("failed"), nesting_depth, show_statuses))
+
+			logs.append_array(branch._state.get_step_results_pretty(show_statuses, nesting_depth + 1))
+
+		var first_status = "passed" if results.branch_statuses[0] else "failed"
+		return first_status + "\n  " + "\n  ".join(logs)
 
 
 ## Represents a JSON type.
@@ -114,6 +181,10 @@ var _base: GdUnitAssertImpl
 var _invalid: bool = false
 var _finalized: bool = false
 var _line: int = 0
+
+# Branching support
+var _parent_scope: JSONAssert
+var _branch_context_stack: Array[BranchingContext] = []
 
 
 static func assert_json(json: String) -> JSONAssert:
@@ -194,6 +265,15 @@ func _notification(event :int) -> void:
 
 func _add_step(step: Step) -> void:
 	_state.steps.append(step)
+
+
+## Creates a forked copy of this JSONAssert with parent-child relation tracked.
+func _fork() -> JSONAssert:
+	var fork := JSONAssert.new(null)
+	fork._state.candidates = _state.candidates.duplicate()
+	fork._parent_scope = self
+	fork._root_value = _root_value
+	return fork
 
 
 func current_value() -> Variant:
@@ -654,6 +734,86 @@ func at_most(n: int) -> void:
 	verify()
 
 
+## Starts either-or-else chain for conditional assertions.
+## Creates a branching context where at least one branch must pass for the chain to succeed.
+## To create the next branch in the chain, call or_else().
+## For simple value testing, consider using any_of() instead.
+## [br][br]
+## Example:
+## [codeblock]
+##	assert_json('{"user": {"role": "admin"}}') \
+##	.either() \
+##		.at("user/role") \
+## 		.must_be("admin") \
+##	.or_else() \
+## 		.at("user/status") \
+## 		.must_be("active") \
+##	.end()
+## [/codeblock]
+func either() -> JSONAssert:
+	var context := BranchingContext.new(self)
+	_branch_context_stack.push_back(context)
+	var fork: JSONAssert = _fork()
+	context.add_branch(fork)
+	return fork
+
+
+## Starts the next branch in an either-or-else chain.
+## Must be called after either() or another or_else().
+## Chain must be ended with end().
+func or_else() -> JSONAssert:
+	var original: JSONAssert = _get_original_scope()
+
+	if original._branch_context_stack.is_empty():
+		push_error("or_else() called without preceding either(). Use either() first to start a branching chain.")
+		_invalid = true
+		return self
+
+	var context: BranchingContext = original._branch_context_stack[-1]  # Get current context
+	var fork: JSONAssert = original._fork()
+	context.add_branch(fork)
+	return fork
+
+
+## Ends the either-or-else chain and returns the original JSONAssert instance.
+## Evaluates all branches created by either() and or_else() calls, succeeding if at least one branch passes.
+func end() -> JSONAssert:
+	var original: JSONAssert = _get_original_scope()
+
+	if original._branch_context_stack.is_empty():
+		push_error("end() called without preceding either(). Use either() first to start a branching chain.")
+		original._invalid = true
+		return original
+
+	var context: BranchingContext = original._branch_context_stack.pop_back()  # Remove current context
+	var step: Step = _create_branching_step(original, context)
+	original._add_step(step)
+	return original
+
+
+## Creates a Step for the branching evaluation.
+func _create_branching_step(original: JSONAssert, context: BranchingContext) -> Step:
+	var run_callable := func(_unused_state: EvaluationState) -> StepResult:
+		var results: BranchResults = context.evaluate_branches(original)
+		var log_message: String = context.format_branch_results(results, original)
+
+		# Update original candidates with combined results from all passing branches
+		if results.chain_passed and not results.combined_candidates.is_empty():
+			original._state.candidates = results.combined_candidates
+
+		if results.chain_passed:
+			return Step.passed(log_message)
+		else:
+			return Step.failed(log_message)
+
+	return Step.new("either", run_callable)
+
+
+## Gets the original JSONAssert instance (root of the branching chain).
+func _get_original_scope() -> JSONAssert:
+	return _parent_scope if _parent_scope else self
+
+
 ## Returns a formatted failure report.
 func _failure_message(msg: String, survivors: Array) -> String:
 	return """
@@ -709,3 +869,12 @@ func _are_equal(v1: Variant, v2: Variant) -> bool:
 				return false
 		return true
 	return json_type(v1) == json_type(v2) and v1 == v2
+
+
+func _get_nesting_depth() -> int:
+	var depth: int = -1
+	var parent: JSONAssert = self
+	while parent:
+		parent = parent._parent_scope
+		depth += 1
+	return depth
