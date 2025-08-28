@@ -172,9 +172,13 @@ void NativeSDK::remove_user() {
 void NativeSDK::add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
 		const String &p_type, const Dictionary &p_data) {
 	sentry_value_t crumb = sentry_value_new_breadcrumb(p_type.utf8().ptr(), p_message.utf8().ptr());
-	sentry_value_set_by_key(crumb, "category", sentry_value_new_string(p_category.utf8().ptr()));
 	sentry_value_set_by_key(crumb, "level", sentry_value_new_string(sentry::level_as_cstring(p_level)));
-	sentry_value_set_by_key(crumb, "data", sentry::native::variant_to_sentry_value(p_data));
+	if (!p_category.is_empty()) {
+		sentry_value_set_by_key(crumb, "category", sentry_value_new_string(p_category.utf8().ptr()));
+	}
+	if (!p_data.is_empty()) {
+		sentry_value_set_by_key(crumb, "data", sentry::native::variant_to_sentry_value(p_data));
+	}
 	sentry_add_breadcrumb(crumb);
 }
 

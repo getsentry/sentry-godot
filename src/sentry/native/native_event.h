@@ -56,6 +56,8 @@ public:
 
 	virtual bool is_crash() const override;
 
+	virtual String to_json() const override;
+
 	NativeEvent(sentry_value_t p_event, bool p_is_crash);
 	NativeEvent();
 	virtual ~NativeEvent() override;

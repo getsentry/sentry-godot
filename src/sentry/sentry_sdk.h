@@ -63,7 +63,7 @@ public:
 
 	bool is_enabled() const { return enabled; }
 
-	void add_breadcrumb(const String &p_message, const String &p_category, sentry::Level p_level,
+	void add_breadcrumb(const String &p_message, const String &p_category = "", sentry::Level p_level = sentry::Level::LEVEL_INFO,
 			const String &p_type = "default", const Dictionary &p_data = Dictionary());
 	void set_context(const String &p_key, const Dictionary &p_value);
 

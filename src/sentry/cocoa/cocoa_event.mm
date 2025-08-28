@@ -270,6 +270,20 @@ bool CocoaEvent::is_crash() const {
 	return cocoa_event.error != nil;
 }
 
+String CocoaEvent::to_json() const {
+	ERR_FAIL_NULL_V(cocoa_event, String());
+
+	NSDictionary *event_dict = [cocoa_event serialize];
+
+	NSError *error = nil;
+	NSData *json_data = [NSJSONSerialization dataWithJSONObject:event_dict
+														options:0
+														  error:&error];
+	ERR_FAIL_COND_V(error != nil, "Sentry: Failed to serialize event to JSON: " + string_from_objc(error.localizedDescription));
+
+	return String::utf8((const char *)json_data.bytes, json_data.length);
+}
+
 CocoaEvent::CocoaEvent() :
 		cocoa_event([[objc::SentryEvent alloc] init]) {
 }

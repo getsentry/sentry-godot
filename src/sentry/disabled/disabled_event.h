@@ -56,6 +56,8 @@ public:
 	virtual void add_exception(const Exception &p_exception) override {}
 
 	virtual bool is_crash() const override { return false; }
+
+	virtual String to_json() const override { return ""; }
 };
 
 } // namespace sentry
