@@ -24,6 +24,7 @@
 #endif // SDK_NATIVE
 
 #ifdef SDK_ANDROID
+#include "sentry/android/android_breadcrumb.h"
 #include "sentry/android/android_event.h"
 #include "sentry/android/android_sdk.h"
 #endif // SDK_ANDROID
@@ -66,6 +67,7 @@ void register_runtime_classes() {
 
 #ifdef SDK_ANDROID
 	GDREGISTER_INTERNAL_CLASS(android::AndroidEvent);
+	GDREGISTER_INTERNAL_CLASS(android::AndroidBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendHandler);
 #endif
 

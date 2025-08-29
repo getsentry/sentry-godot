@@ -43,6 +43,12 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
+    private val breadcrumbsByHandle = object : ThreadLocal<MutableMap<Int, Breadcrumb>>() {
+        override fun initialValue(): MutableMap<Int, Breadcrumb> {
+            return mutableMapOf()
+        }
+    }
+
     private fun getEvent(eventHandle: Int): SentryEvent? {
         val event: SentryEvent? = eventsByHandle.get()?.get(eventHandle)
         if (event == null) {
@@ -57,6 +63,14 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             Log.e(TAG, "Internal Error -- SentryException not found: $exceptionHandle")
         }
         return exception
+    }
+
+    private fun getBreadcrumb(breadcrumbHandle: Int): Breadcrumb? {
+        var crumb: Breadcrumb? = breadcrumbsByHandle.get()?.get(breadcrumbHandle)
+        if (crumb == null) {
+            Log.e(TAG, "Internal Error -- Breadcrumb not found: $breadcrumbHandle")
+        }
+        return crumb
     }
 
     private fun registerEvent(event: SentryEvent): Int {
@@ -86,6 +100,21 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
 
         exceptionsMap[handle] = exception
+        return handle
+    }
+
+    private fun registerBreadcrumb(crumb: Breadcrumb): Int {
+        val breadcrumbsMap = breadcrumbsByHandle.get() ?: run {
+            Log.e(TAG, "Internal Error -- breadcrumbsByHandle is null")
+            return 0
+        }
+
+        var handle = Random.nextInt()
+        while(breadcrumbsMap.containsKey(handle)) {
+            handle = Random.nextInt()
+        }
+
+        breadcrumbsMap[handle] = crumb
         return handle
     }
 
@@ -193,23 +222,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun addBreadcrumb(
-        message: String,
-        category: String,
-        level: Int,
-        type: String,
-        data: Dictionary
-    ) {
-        val crumb = Breadcrumb()
-        crumb.message = message
-        crumb.category = category
-        crumb.level = level.toSentryLevel()
-        crumb.type = type
-
-        for ((k, v) in data) {
-            crumb.data[k] = v
-        }
-
+    fun addBreadcrumb(handle: Int) {
+        val crumb = getBreadcrumb(handle) ?: return
         Sentry.addBreadcrumb(crumb)
     }
 
@@ -442,4 +456,73 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
         event.exceptions?.add(exception)
     }
+
+    @UsedByGodot
+    fun createBreadcrumb(): Int {
+        val crumb = Breadcrumb()
+        val handle = registerBreadcrumb(crumb)
+        return handle
+    }
+
+    @UsedByGodot
+    fun releaseBreadcrumb(handle: Int) {
+        val breadcrumbsMap = breadcrumbsByHandle.get() ?: run {
+            Log.e(TAG, "Internal Error -- breadcrumbsByHandle is null")
+            return
+        }
+
+        breadcrumbsMap.remove(handle)
+    }
+
+    @UsedByGodot
+    fun breadcrumbSetMessage(handle: Int, message: String) {
+        getBreadcrumb(handle)?.message = message
+    }
+
+    @UsedByGodot
+    fun breadcrumbGetMessage(handle: Int): String {
+        return getBreadcrumb(handle)?.message ?: ""
+    }
+
+    @UsedByGodot
+    fun breadcrumbSetCategory(handle: Int, category: String) {
+        getBreadcrumb(handle)?.category = category
+    }
+
+    @UsedByGodot
+    fun breadcrumbGetCategory(handle: Int): String {
+        return getBreadcrumb(handle)?.category ?: ""
+    }
+
+    @UsedByGodot
+    fun breadcrumbSetLevel(handle: Int, level: Int) {
+        getBreadcrumb(handle)?.level = level.toSentryLevel()
+    }
+
+    @UsedByGodot
+    fun breadcrumbGetLevel(handle: Int): Int {
+        return getBreadcrumb(handle)?.level?.toInt() ?: SentryLevel.INFO.toInt()
+    }
+
+    @UsedByGodot
+    fun breadcrumbSetType(handle: Int, type: String) {
+       getBreadcrumb(handle)?.type = type
+    }
+
+    @UsedByGodot
+    fun breadcrumbGetType(handle: Int): String {
+        return getBreadcrumb(handle)?.type ?: ""
+    }
+
+    @UsedByGodot
+    fun breadcrumbSetData(handle: Int, data: Dictionary) {
+        val crumb = getBreadcrumb(handle) ?: return
+
+        crumb.data.clear()
+
+        for ((k, v) in data) {
+            crumb.data[k] = v
+        }
+    }
+
 }
