@@ -18,7 +18,7 @@
 
 namespace {
 
-using NativeEvent = sentry::NativeEvent;
+using NativeEvent = sentry::native::NativeEvent;
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, false));
@@ -119,7 +119,7 @@ inline String _uuid_as_string(sentry_uuid_t p_uuid) {
 
 } // unnamed namespace
 
-namespace sentry {
+namespace sentry::native {
 
 void NativeSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(p_key.is_empty());
@@ -339,4 +339,4 @@ NativeSDK::~NativeSDK() {
 	sentry_close();
 }
 
-} //namespace sentry
+} //namespace sentry::native

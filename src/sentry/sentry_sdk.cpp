@@ -407,13 +407,13 @@ SentrySDK::SentrySDK() {
 	user_mutex.instantiate();
 
 #ifdef SDK_NATIVE
-	internal_sdk = std::make_shared<NativeSDK>();
+	internal_sdk = std::make_shared<sentry::native::NativeSDK>();
 #elif SDK_ANDROID
 	if (unlikely(OS::get_singleton()->has_feature("editor"))) {
 		sentry::util::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
 		internal_sdk = std::make_shared<DisabledSDK>();
 	} else {
-		auto sdk = std::make_shared<AndroidSDK>();
+		auto sdk = std::make_shared<sentry::android::AndroidSDK>();
 		if (sdk->has_android_plugin()) {
 			internal_sdk = sdk;
 		} else {

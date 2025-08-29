@@ -16,6 +16,10 @@
 - Potential crash in SentryLogger if removed early ([#323](https://github.com/getsentry/sentry-godot/pull/323))
 - Ensure compatibility with minSdk 24 on Android ([#324](https://github.com/getsentry/sentry-godot/pull/324))
 
+## Other changes
+
+- Move native and Android internal code into respective namespaces ([#333](https://github.com/getsentry/sentry-godot/pull/333))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.54.0 to v8.55.0 ([#318](https://github.com/getsentry/sentry-godot/pull/318))

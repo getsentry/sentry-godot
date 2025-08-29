@@ -1,6 +1,6 @@
 #include "sentry/android/android_string_names.h"
 
-namespace sentry {
+namespace sentry::android {
 
 AndroidStringNames *AndroidStringNames::singleton = nullptr;
 
@@ -62,4 +62,4 @@ AndroidStringNames::AndroidStringNames() {
 	eventAddException = StringName("eventAddException");
 }
 
-} // namespace sentry
+} //namespace sentry::android

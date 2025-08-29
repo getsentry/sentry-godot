@@ -6,7 +6,7 @@
 #include <sentry.h>
 #include <godot_cpp/classes/mutex.hpp>
 
-namespace sentry {
+namespace sentry::native {
 
 // Internal SDK utilizing sentry-native.
 class NativeSDK : public InternalSDK {
@@ -42,6 +42,6 @@ public:
 	virtual ~NativeSDK() override;
 };
 
-} //namespace sentry
+} //namespace sentry::native
 
 #endif // NATIVE_SDK_H

@@ -13,7 +13,7 @@
 
 using namespace godot;
 
-namespace sentry {
+namespace sentry::android {
 
 void SentryAndroidBeforeSendHandler::_initialize(Object *p_android_plugin) {
 	android_plugin = p_android_plugin;
@@ -167,4 +167,4 @@ AndroidSDK::~AndroidSDK() {
 	}
 }
 
-} //namespace sentry
+} //namespace sentry::android
