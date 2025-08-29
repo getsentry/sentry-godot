@@ -34,6 +34,19 @@ func test_breadcrumb_type() -> void:
 	assert_str(crumb.type).is_equal("test-type")
 
 
+func test_breadcrumb_can_set_data() -> void:
+	var crumb: SentryBreadcrumb = SentrySDK.create_breadcrumb()
+	crumb.set_data({"biome": "forest", "time_of_day": 0.42})
+
+
+func test_breadcrumb_default_values() -> void:
+	var crumb: SentryBreadcrumb = SentrySDK.create_breadcrumb()
+	assert_str(crumb.message).is_empty()
+	assert_str(crumb.type).is_empty()
+	assert_str(crumb.category).is_equal("default")
+	assert_int(crumb.level).is_equal(SentrySDK.LEVEL_INFO)
+
+
 func test_breadcrumb_info_shortcut() -> void:
 	var crumb := SentryBreadcrumb.info("Info message")
 	assert_str(crumb.message).is_equal("Info message")
