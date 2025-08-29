@@ -5,7 +5,7 @@
 
 using namespace godot;
 
-namespace sentry {
+namespace sentry::android {
 
 /**
  * Stores StringName constants for Android SDK implementation.
@@ -74,7 +74,7 @@ public:
 	StringName eventAddException;
 };
 
-} // namespace sentry
+} //namespace sentry::android
 
 #define ANDROID_SN(m_arg) sentry::AndroidStringNames::get_singleton()->m_arg
 

@@ -56,12 +56,12 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(SentryLogger);
 
 #ifdef SDK_NATIVE
-	GDREGISTER_INTERNAL_CLASS(NativeEvent);
+	GDREGISTER_INTERNAL_CLASS(native::NativeEvent);
 #endif
 
 #ifdef SDK_ANDROID
-	GDREGISTER_INTERNAL_CLASS(AndroidEvent);
-	GDREGISTER_INTERNAL_CLASS(SentryAndroidBeforeSendHandler);
+	GDREGISTER_INTERNAL_CLASS(android::AndroidEvent);
+	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendHandler);
 #endif
 
 #ifdef SDK_COCOA

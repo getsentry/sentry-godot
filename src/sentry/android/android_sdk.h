@@ -5,7 +5,7 @@
 
 using namespace godot;
 
-namespace sentry {
+namespace sentry::android {
 
 class SentryAndroidBeforeSendHandler : public Object {
 	GDCLASS(SentryAndroidBeforeSendHandler, Object);
@@ -57,6 +57,6 @@ public:
 	virtual ~AndroidSDK() override;
 };
 
-} //namespace sentry
+} //namespace sentry::android
 
 #endif // SENTRY_ANDROID_SDK_H

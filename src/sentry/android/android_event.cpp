@@ -2,7 +2,7 @@
 
 #include "android_string_names.h"
 
-namespace sentry {
+namespace sentry::android {
 
 String AndroidEvent::get_id() const {
 	ERR_FAIL_NULL_V(android_plugin, String());
@@ -153,4 +153,4 @@ AndroidEvent::~AndroidEvent() {
 	}
 }
 
-} // namespace sentry
+} //namespace sentry::android
