@@ -1,5 +1,6 @@
 #include "android_sdk.h"
 
+#include "android_breadcrumb.h"
 #include "android_event.h"
 #include "android_string_names.h"
 #include "sentry/common_defs.h"
@@ -71,10 +72,18 @@ void AndroidSDK::remove_user() {
 	android_plugin->call(ANDROID_SN(removeUser));
 }
 
-void AndroidSDK::add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
-		const String &p_type, const Dictionary &p_data) {
+Ref<SentryBreadcrumb> AndroidSDK::create_breadcrumb() {
+	ERR_FAIL_NULL_V(android_plugin, nullptr);
+	int32_t handle = android_plugin->call(ANDROID_SN(createBreadcrumb));
+	Ref<AndroidBreadcrumb> crumb = memnew(AndroidBreadcrumb(android_plugin, handle));
+	return crumb;
+}
+
+void AndroidSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(addBreadcrumb), p_message, p_category, p_level, p_type, p_data);
+	Ref<AndroidBreadcrumb> crumb = p_breadcrumb;
+	ERR_FAIL_COND(crumb.is_null());
+	android_plugin->call(ANDROID_SN(addBreadcrumb), crumb->get_handle());
 }
 
 String AndroidSDK::capture_message(const String &p_message, Level p_level) {
