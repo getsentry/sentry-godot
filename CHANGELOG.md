@@ -5,6 +5,7 @@
 ### Features
 
 - Add support for script context and variables on Apple platforms ([#306](https://github.com/getsentry/sentry-godot/pull/306))
+- Add SentryEvent.to_json() ([#329](https://github.com/getsentry/sentry-godot/pull/329))
 
 ### Improvements
 

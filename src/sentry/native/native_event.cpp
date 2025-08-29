@@ -215,6 +215,13 @@ bool NativeEvent::is_crash() const {
 	return _is_crash;
 }
 
+String NativeEvent::to_json() const {
+	char *json_value = sentry_value_to_json(native_event);
+	String json_str = String::utf8(json_value);
+	sentry_free(json_value);
+	return json_str;
+}
+
 NativeEvent::NativeEvent(sentry_value_t p_native_event, bool p_is_crash) :
 		_is_crash(p_is_crash) {
 	if (sentry_value_refcount(p_native_event) > 0) {

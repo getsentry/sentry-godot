@@ -53,6 +53,7 @@ AndroidStringNames::AndroidStringNames() {
 	eventGetTag = StringName("eventGetTag");
 	eventMergeContext = StringName("eventMergeContext");
 	eventIsCrash = StringName("eventIsCrash");
+	eventToJson = StringName("eventToJson");
 
 	// Exceptions.
 	createException = StringName("createException");
