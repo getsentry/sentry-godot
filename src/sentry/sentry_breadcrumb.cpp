@@ -1,6 +1,6 @@
 #include "sentry_breadcrumb.h"
 
-#include "sentry/simple_bind.h"
+#include "sentry/util/simple_bind.h"
 #include "sentry_sdk.h" // Needed for VariantCaster<SentrySDK::Level>
 
 void SentryBreadcrumb::_bind_methods() {
