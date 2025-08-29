@@ -1,7 +1,7 @@
 #ifndef NATIVE_BREADCRUMB_H
 #define NATIVE_BREADCRUMB_H
 
-#include "sentry_breadcrumb.h"
+#include "sentry/sentry_breadcrumb.h"
 
 #include <sentry.h>
 
