@@ -2,7 +2,9 @@
 #define DISABLED_BREADCRUMB_H
 
 #include "sentry/level.h"
-#include "sentry_breadcrumb.h"
+#include "sentry/sentry_breadcrumb.h"
+
+namespace sentry {
 
 class DisabledBreadcrumb : public SentryBreadcrumb {
 	GDCLASS(DisabledBreadcrumb, SentryBreadcrumb);
@@ -33,5 +35,7 @@ public:
 	virtual void set_data(const Dictionary &p_data) override { data = p_data; }
 	virtual Dictionary get_data() const override { return data; }
 };
+
+} // namespace sentry
 
 #endif // DISABLED_BREADCRUMB_H
