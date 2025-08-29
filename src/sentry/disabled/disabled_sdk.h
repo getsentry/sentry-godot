@@ -18,9 +18,8 @@ class DisabledSDK : public InternalSDK {
 	virtual void set_user(const Ref<SentryUser> &p_user) override {}
 	virtual void remove_user() override {}
 
-	virtual void add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
-			const String &p_type = "default", const Dictionary &p_data = Dictionary()) override {}
 	virtual Ref<SentryBreadcrumb> create_breadcrumb() override { return memnew(DisabledBreadcrumb); }
+	virtual void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) override {}
 
 	virtual String capture_message(const String &p_message, Level p_level = sentry::LEVEL_INFO) override { return ""; }
 	virtual String get_last_event_id() override { return ""; }

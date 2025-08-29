@@ -29,6 +29,7 @@
 #endif // SDK_ANDROID
 
 #ifdef SDK_COCOA
+#include "sentry/cocoa/cocoa_breadcrumb.h"
 #include "sentry/cocoa/cocoa_event.h"
 #endif // SDK_COCOA
 
@@ -70,6 +71,7 @@ void register_runtime_classes() {
 
 #ifdef SDK_COCOA
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaEvent);
+	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaBreadcrumb);
 #endif
 }
 
