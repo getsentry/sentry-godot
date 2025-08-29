@@ -31,7 +31,6 @@ public:
 	virtual String get_type() const override;
 
 	virtual void set_data(const Dictionary &p_data) override;
-	virtual Dictionary get_data() const override;
 
 	CocoaBreadcrumb();
 	CocoaBreadcrumb(objc::SentryBreadcrumb *p_cocoa_breadcrumb);

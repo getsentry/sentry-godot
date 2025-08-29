@@ -35,7 +35,6 @@ public:
 	virtual String get_type() const = 0;
 
 	virtual void set_data(const Dictionary &p_data) = 0;
-	virtual Dictionary get_data() const = 0;
 
 	virtual ~SentryBreadcrumb() = default;
 };

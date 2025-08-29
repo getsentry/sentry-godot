@@ -41,12 +41,6 @@ void CocoaBreadcrumb::set_data(const Dictionary &p_data) {
 	cocoa_breadcrumb.data = dictionary_to_objc(p_data);
 }
 
-Dictionary CocoaBreadcrumb::get_data() const {
-	// TODO: not implemented
-	// return dictionary_from_objc(cocoa_breadcrumb.data);
-	return Dictionary();
-}
-
 CocoaBreadcrumb::CocoaBreadcrumb() :
 		cocoa_breadcrumb([[objc::SentryBreadcrumb alloc] init]) {
 }
