@@ -170,17 +170,16 @@ void NativeSDK::remove_user() {
 	sentry_remove_user();
 }
 
-void NativeSDK::add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
-		const String &p_type, const Dictionary &p_data) {
-	sentry_value_t crumb = sentry_value_new_breadcrumb(p_type.utf8().ptr(), p_message.utf8().ptr());
-	sentry_value_set_by_key(crumb, "category", sentry_value_new_string(p_category.utf8().ptr()));
-	sentry_value_set_by_key(crumb, "level", sentry_value_new_string(sentry::level_as_cstring(p_level)));
-	sentry_value_set_by_key(crumb, "data", sentry::native::variant_to_sentry_value(p_data));
-	sentry_add_breadcrumb(crumb);
-}
-
 Ref<SentryBreadcrumb> NativeSDK::create_breadcrumb() {
 	return memnew(NativeBreadcrumb);
+}
+
+void NativeSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
+	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Sentry: Can't add breadcrumb - breadcrumb object is null.");
+	Ref<NativeBreadcrumb> crumb = p_breadcrumb;
+	ERR_FAIL_COND(crumb.is_null());
+	sentry_value_t native_crumb = crumb->get_native_breadcrumb();
+	sentry_add_breadcrumb(native_crumb);
 }
 
 String NativeSDK::capture_message(const String &p_message, Level p_level) {
