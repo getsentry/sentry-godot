@@ -51,11 +51,21 @@ Ref<SentryBreadcrumb> SentryBreadcrumb::query(const String &p_message) {
 	return instance;
 }
 
+Ref<SentryBreadcrumb> SentryBreadcrumb::user(const String &p_category, const String &p_message) {
+	Ref<SentryBreadcrumb> instance = _create_breadcrumb();
+	instance->set_type("user");
+	instance->set_category(p_category);
+	instance->set_message(p_message);
+	instance->set_level(sentry::Level::LEVEL_INFO);
+	return instance;
+}
+
 void SentryBreadcrumb::_bind_methods() {
 	ClassDB::bind_static_method("SentryBreadcrumb", D_METHOD("debug", "message"), &SentryBreadcrumb::debug);
 	ClassDB::bind_static_method("SentryBreadcrumb", D_METHOD("info", "message"), &SentryBreadcrumb::info);
 	ClassDB::bind_static_method("SentryBreadcrumb", D_METHOD("error", "message"), &SentryBreadcrumb::error);
 	ClassDB::bind_static_method("SentryBreadcrumb", D_METHOD("query", "message"), &SentryBreadcrumb::query);
+	ClassDB::bind_static_method("SentryBreadcrumb", D_METHOD("user", "category", "message"), &SentryBreadcrumb::user);
 
 	BIND_PROPERTY_SIMPLE(SentryBreadcrumb, Variant::STRING, message);
 	BIND_PROPERTY_SIMPLE(SentryBreadcrumb, Variant::STRING, category);
