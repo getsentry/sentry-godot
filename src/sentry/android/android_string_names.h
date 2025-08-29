@@ -76,6 +76,6 @@ public:
 
 } //namespace sentry::android
 
-#define ANDROID_SN(m_arg) sentry::AndroidStringNames::get_singleton()->m_arg
+#define ANDROID_SN(m_arg) sentry::android::AndroidStringNames::get_singleton()->m_arg
 
 #endif // SENTRY_ANDROID_STRING_NAMES_H
