@@ -5,6 +5,8 @@
 
 #include <sentry.h>
 
+namespace sentry::native {
+
 class NativeBreadcrumb : public SentryBreadcrumb {
 	GDCLASS(NativeBreadcrumb, SentryBreadcrumb);
 
@@ -34,5 +36,7 @@ public:
 	NativeBreadcrumb();
 	virtual ~NativeBreadcrumb() override;
 };
+
+} //namespace sentry::native
 
 #endif // NATIVE_BREADCRUMB_H

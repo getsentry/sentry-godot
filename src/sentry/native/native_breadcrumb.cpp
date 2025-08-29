@@ -1,8 +1,11 @@
 #include "native_breadcrumb.h"
+
 #include "godot_cpp/core/error_macros.hpp"
 #include "sentry/native/native_util.h"
 
 #include <sentry.h>
+
+namespace sentry::native {
 
 void NativeBreadcrumb::set_message(const String &p_message) {
 	sentry::native::sentry_value_set_or_remove_string_by_key(native_crumb, "message", p_message);
@@ -75,3 +78,5 @@ NativeBreadcrumb::NativeBreadcrumb() {
 NativeBreadcrumb::~NativeBreadcrumb() {
 	sentry_value_decref(native_crumb); // release ownership
 }
+
+} //namespace sentry::native
