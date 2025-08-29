@@ -7,6 +7,8 @@
 
 using namespace godot;
 
+namespace sentry {
+
 // Represents breadcrumbs in the public API.
 class SentryBreadcrumb : public RefCounted {
 	GDCLASS(SentryBreadcrumb, RefCounted);
@@ -15,6 +17,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<SentryBreadcrumb> debug(const String &p_message);
+	static Ref<SentryBreadcrumb> info(const String &p_message);
+	static Ref<SentryBreadcrumb> error(const String &p_message);
+	static Ref<SentryBreadcrumb> query(const String &p_message);
+
 	virtual void set_message(const String &p_message) = 0;
 	virtual String get_message() const = 0;
 
@@ -32,5 +39,7 @@ public:
 
 	virtual ~SentryBreadcrumb() = default;
 };
+
+} //namespace sentry
 
 #endif // SENTRY_BREADCRUMB_H
