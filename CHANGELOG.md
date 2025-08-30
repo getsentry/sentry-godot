@@ -16,6 +16,12 @@
 - Potential crash in SentryLogger if removed early ([#323](https://github.com/getsentry/sentry-godot/pull/323))
 - Ensure compatibility with minSdk 24 on Android ([#324](https://github.com/getsentry/sentry-godot/pull/324))
 
+### Dependencies
+
+- Bump Sentry Android from v8.19.1 to v8.20.0 ([#325](https://github.com/getsentry/sentry-godot/pull/325))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8200)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.19.1...8.20.0)
+
 ## Other changes
 
 - Move native and Android internal code into respective namespaces ([#333](https://github.com/getsentry/sentry-godot/pull/333))
