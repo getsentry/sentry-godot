@@ -21,7 +21,12 @@
 			<return type="SentryBreadcrumb" />
 			<param index="0" name="message" type="String" default="&quot;&quot;" />
 			<description>
-				Creates a new [SentryBreadcrumb] object. You can add the breadcrumb with [method SentrySDK.add_breadcrumb].
+			</description>
+		</method>
+		<method name="get_timestamp">
+			<return type="SentryTimestamp" />
+			<description>
+				Returns the timestamp of the breadcrumb.
 			</description>
 		</method>
 		<method name="set_data">
