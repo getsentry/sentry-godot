@@ -85,6 +85,7 @@ public:
 	StringName breadcrumbSetLevel;
 	StringName breadcrumbGetLevel;
 	StringName breadcrumbSetData;
+	StringName breadcrumbGetTimestamp;
 };
 
 } //namespace sentry::android

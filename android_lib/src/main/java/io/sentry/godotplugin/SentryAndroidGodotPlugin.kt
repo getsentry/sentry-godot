@@ -525,4 +525,10 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
+    @UsedByGodot
+    fun breadcrumbGetTimestamp(handle: Int): Long {
+        val crumb = getBreadcrumb(handle) ?: return 0
+        return crumb.timestamp.toMicros()
+    }
+
 }

@@ -52,7 +52,9 @@ void AndroidBreadcrumb::set_data(const Dictionary &p_data) {
 }
 
 Ref<SentryTimestamp> AndroidBreadcrumb::get_timestamp() {
-	// not implemented
+	ERR_FAIL_NULL_V(android_plugin, nullptr);
+	int64_t micros = android_plugin->call(ANDROID_SN(breadcrumbGetTimestamp), handle);
+	return SentryTimestamp::from_microseconds_since_unix_epoch(micros);
 }
 
 AndroidBreadcrumb::AndroidBreadcrumb(Object *android_plugin, int32_t p_breadcrumb_handle) :

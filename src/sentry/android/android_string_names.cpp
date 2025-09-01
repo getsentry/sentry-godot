@@ -73,6 +73,7 @@ AndroidStringNames::AndroidStringNames() {
 	breadcrumbSetLevel = StringName("breadcrumbSetLevel");
 	breadcrumbGetLevel = StringName("breadcrumbGetLevel");
 	breadcrumbSetData = StringName("breadcrumbSetData");
+	breadcrumbGetTimestamp = StringName("breadcrumbGetTimestamp");
 }
 
 } //namespace sentry::android
