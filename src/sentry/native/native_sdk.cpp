@@ -176,9 +176,10 @@ Ref<SentryBreadcrumb> NativeSDK::create_breadcrumb() {
 
 void NativeSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Sentry: Can't add breadcrumb - breadcrumb object is null.");
-	Ref<NativeBreadcrumb> crumb = p_breadcrumb;
-	ERR_FAIL_COND(crumb.is_null());
+	NativeBreadcrumb *crumb = Object::cast_to<NativeBreadcrumb>(p_breadcrumb.ptr());
+	ERR_FAIL_NULL(crumb);
 	sentry_value_t native_crumb = crumb->get_native_breadcrumb();
+	sentry_value_incref(native_crumb); // pass ownership to native
 	sentry_add_breadcrumb(native_crumb);
 }
 
