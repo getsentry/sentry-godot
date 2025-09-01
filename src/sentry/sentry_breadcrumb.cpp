@@ -9,11 +9,14 @@ Ref<SentryBreadcrumb> SentryBreadcrumb::create(const String &p_message) {
 	ERR_FAIL_NULL_V(SentrySDK::get_singleton(), nullptr);
 	auto internal_sdk = SentrySDK::get_singleton()->get_internal_sdk();
 	Ref<SentryBreadcrumb> instance = internal_sdk->create_breadcrumb();
+	if (!p_message.is_empty()) {
+		instance->set_message(p_message);
+	}
 	return instance;
 }
 
 void SentryBreadcrumb::_bind_methods() {
-	ClassDB::bind_static_method("SentryBreadcrumb", D_METHOD("create", "message"), &SentryBreadcrumb::create);
+	ClassDB::bind_static_method("SentryBreadcrumb", D_METHOD("create", "message"), &SentryBreadcrumb::create, DEFVAL(String()));
 
 	BIND_PROPERTY_SIMPLE(SentryBreadcrumb, Variant::STRING, message);
 	BIND_PROPERTY_SIMPLE(SentryBreadcrumb, Variant::STRING, category);

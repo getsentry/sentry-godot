@@ -17,7 +17,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<SentryBreadcrumb> create(const String &p_message);
+	static Ref<SentryBreadcrumb> create(const String &p_message = "");
 
 	virtual void set_message(const String &p_message) = 0;
 	virtual String get_message() const = 0;
