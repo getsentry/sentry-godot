@@ -12,7 +12,7 @@
 		crumb.category = "level.finished"
 		SentrySDK.add_breadcrumb(crumb)
 		[/codeblock]
-		For more information, check out the [url=https://docs.sentry.io/platforms/unreal/enriching-events/breadcrumbs/]Breadcrumbs documentation[/url].
+		For more information, check out the [url=https://docs.sentry.io/platforms/godot/enriching-events/breadcrumbs/]Breadcrumbs documentation[/url].
 	</description>
 	<tutorials>
 	</tutorials>
