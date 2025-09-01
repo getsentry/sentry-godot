@@ -41,6 +41,10 @@ void CocoaBreadcrumb::set_data(const Dictionary &p_data) {
 	cocoa_breadcrumb.data = dictionary_to_objc(p_data);
 }
 
+Ref<SentryTimestamp> CocoaBreadcrumb::get_timestamp() {
+	// not implemented
+}
+
 CocoaBreadcrumb::CocoaBreadcrumb() :
 		cocoa_breadcrumb([[objc::SentryBreadcrumb alloc] init]) {
 }

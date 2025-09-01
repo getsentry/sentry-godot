@@ -33,6 +33,8 @@ public:
 	virtual String get_type() const override { return type; }
 
 	virtual void set_data(const Dictionary &p_data) override { data = p_data; }
+
+	virtual Ref<SentryTimestamp> get_timestamp() override { return memnew(SentryTimestamp); }
 };
 
 } // namespace sentry

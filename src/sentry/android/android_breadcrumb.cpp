@@ -51,6 +51,10 @@ void AndroidBreadcrumb::set_data(const Dictionary &p_data) {
 	android_plugin->call(ANDROID_SN(breadcrumbSetData), handle, p_data);
 }
 
+Ref<SentryTimestamp> AndroidBreadcrumb::get_timestamp() {
+	// not implemented
+}
+
 AndroidBreadcrumb::AndroidBreadcrumb(Object *android_plugin, int32_t p_breadcrumb_handle) :
 		android_plugin(android_plugin), handle(p_breadcrumb_handle) {
 	ERR_FAIL_NULL(android_plugin);

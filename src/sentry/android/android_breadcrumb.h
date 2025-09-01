@@ -32,6 +32,8 @@ public:
 
 	virtual void set_data(const Dictionary &p_data) override;
 
+	virtual Ref<SentryTimestamp> get_timestamp() override;
+
 	AndroidBreadcrumb() = default;
 	AndroidBreadcrumb(Object *android_plugin, int32_t p_breadcrumb_handle);
 	virtual ~AndroidBreadcrumb() override;

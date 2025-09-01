@@ -2,6 +2,7 @@
 #define SENTRY_BREADCRUMB_H
 
 #include "sentry/level.h"
+#include "sentry/sentry_timestamp.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
 
@@ -32,6 +33,8 @@ public:
 	virtual String get_type() const = 0;
 
 	virtual void set_data(const Dictionary &p_data) = 0;
+
+	virtual Ref<SentryTimestamp> get_timestamp() = 0;
 
 	virtual ~SentryBreadcrumb() = default;
 };

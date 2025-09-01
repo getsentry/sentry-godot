@@ -52,6 +52,11 @@ void NativeBreadcrumb::set_data(const Dictionary &p_data) {
 	sentry_value_set_by_key(native_crumb, "data", native_data);
 }
 
+Ref<SentryTimestamp> NativeBreadcrumb::get_timestamp() {
+	sentry_value_t value = sentry_value_get_by_key(native_crumb, "timestamp");
+	return SentryTimestamp::parse_rfc3339_cstr(sentry_value_as_string(value));
+}
+
 NativeBreadcrumb::NativeBreadcrumb(sentry_value_t p_native_crumb) {
 	if (sentry_value_refcount(p_native_crumb) > 0) {
 		sentry_value_incref(p_native_crumb); // acquire ownership

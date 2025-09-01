@@ -33,6 +33,8 @@ public:
 
 	virtual void set_data(const Dictionary &p_data) override;
 
+	virtual Ref<SentryTimestamp> get_timestamp() override;
+
 	NativeBreadcrumb(sentry_value_t p_native_crumb);
 	NativeBreadcrumb();
 	virtual ~NativeBreadcrumb() override;

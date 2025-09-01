@@ -32,6 +32,8 @@ public:
 
 	virtual void set_data(const Dictionary &p_data) override;
 
+	virtual Ref<SentryTimestamp> get_timestamp() override;
+
 	CocoaBreadcrumb();
 	CocoaBreadcrumb(objc::SentryBreadcrumb *p_cocoa_breadcrumb);
 };

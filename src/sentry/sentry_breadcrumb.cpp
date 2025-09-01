@@ -24,6 +24,7 @@ void SentryBreadcrumb::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryBreadcrumb, Variant::STRING, type);
 
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &SentryBreadcrumb::set_data);
+	ClassDB::bind_method(D_METHOD("get_timestamp"), &SentryBreadcrumb::get_timestamp);
 }
 
 } //namespace sentry
