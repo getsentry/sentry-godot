@@ -2,6 +2,7 @@
 
 #include "godot_cpp/core/error_macros.hpp"
 #include "sentry/native/native_util.h"
+#include "sentry/util/print.h"
 
 #include <sentry.h>
 
@@ -54,6 +55,7 @@ void NativeBreadcrumb::set_data(const Dictionary &p_data) {
 
 Ref<SentryTimestamp> NativeBreadcrumb::get_timestamp() {
 	sentry_value_t value = sentry_value_get_by_key(native_crumb, "timestamp");
+	sentry::util::print_debug("breadcrumb timestamp: ", String(sentry_value_as_string(value)));
 	return SentryTimestamp::parse_rfc3339_cstr(sentry_value_as_string(value));
 }
 
@@ -63,13 +65,13 @@ NativeBreadcrumb::NativeBreadcrumb(sentry_value_t p_native_crumb) {
 		native_crumb = p_native_crumb;
 	} else {
 		// Shouldn't happen in healthy code.
-		native_crumb = sentry_value_new_object();
+		native_crumb = sentry_value_new_breadcrumb(NULL, NULL);
 		ERR_PRINT_ONCE("Sentry: Internal error: Breadcrumb refcount is zero.");
 	}
 }
 
 NativeBreadcrumb::NativeBreadcrumb() {
-	native_crumb = sentry_value_new_object();
+	native_crumb = sentry_value_new_breadcrumb(NULL, NULL);
 }
 
 NativeBreadcrumb::~NativeBreadcrumb() {
