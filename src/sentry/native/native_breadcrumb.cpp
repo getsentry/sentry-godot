@@ -61,7 +61,6 @@ NativeBreadcrumb::NativeBreadcrumb(sentry_value_t p_native_crumb) {
 		native_crumb = sentry_value_new_object();
 		ERR_PRINT("Sentry: Internal error: Breadcrumb refcount is zero.");
 	}
-	native_crumb = p_native_crumb;
 }
 
 NativeBreadcrumb::NativeBreadcrumb() {
