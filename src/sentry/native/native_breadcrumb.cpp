@@ -33,7 +33,7 @@ void NativeBreadcrumb::set_level(sentry::Level p_level) {
 sentry::Level NativeBreadcrumb::get_level() const {
 	sentry_value_t value = sentry_value_get_by_key(native_crumb, "level");
 	if (sentry_value_is_null(value)) {
-		return sentry::Level::LEVEL_ERROR;
+		return sentry::Level::LEVEL_INFO;
 	}
 	return sentry::native::cstring_to_level(sentry_value_as_string(value));
 }
