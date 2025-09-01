@@ -42,7 +42,12 @@ void CocoaBreadcrumb::set_data(const Dictionary &p_data) {
 }
 
 Ref<SentryTimestamp> CocoaBreadcrumb::get_timestamp() {
-	// not implemented
+	if (cocoa_breadcrumb.timestamp == nil) {
+		return Ref<SentryTimestamp>();
+	}
+
+	NSTimeInterval seconds = [cocoa_breadcrumb.timestamp timeIntervalSince1970];
+	return SentryTimestamp::from_unix_time(seconds);
 }
 
 CocoaBreadcrumb::CocoaBreadcrumb() :
@@ -51,6 +56,10 @@ CocoaBreadcrumb::CocoaBreadcrumb() :
 
 CocoaBreadcrumb::CocoaBreadcrumb(objc::SentryBreadcrumb *p_cocoa_breadcrumb) :
 		cocoa_breadcrumb(p_cocoa_breadcrumb) {
+	if (!p_cocoa_breadcrumb) {
+		cocoa_breadcrumb = [[objc::SentryBreadcrumb alloc] init];
+		ERR_PRINT_ONCE("Sentry: Internal error - cocoa breadcrumb instance is null");
+	}
 }
 
 } //namespace sentry::cocoa
