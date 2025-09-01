@@ -330,6 +330,8 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 
 		Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(error_message);
 		crumb->set_level(sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type));
+		crumb->set_type("error");
+		crumb->set_category("error");
 		crumb->set_data(data);
 		SentrySDK::get_singleton()->add_breadcrumb(crumb);
 	}
