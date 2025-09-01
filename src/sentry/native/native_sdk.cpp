@@ -179,7 +179,7 @@ void NativeSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	NativeBreadcrumb *crumb = Object::cast_to<NativeBreadcrumb>(p_breadcrumb.ptr());
 	ERR_FAIL_NULL(crumb);
 	sentry_value_t native_crumb = crumb->get_native_breadcrumb();
-	sentry_value_incref(native_crumb); // pass ownership to native
+	sentry_value_incref(native_crumb); // give ownership to native
 	sentry_add_breadcrumb(native_crumb);
 }
 
