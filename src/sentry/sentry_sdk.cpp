@@ -380,7 +380,6 @@ void SentrySDK::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_FATAL);
 
 	ClassDB::bind_method(D_METHOD("is_enabled"), &SentrySDK::is_enabled);
-	ClassDB::bind_method(D_METHOD("create_breadcrumb"), &SentrySDK::create_breadcrumb);
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "breadcrumb"), &SentrySDK::add_breadcrumb);
 	ClassDB::bind_method(D_METHOD("capture_message", "message", "level"), &SentrySDK::capture_message, DEFVAL(LEVEL_INFO));
 	ClassDB::bind_method(D_METHOD("get_last_event_id"), &SentrySDK::get_last_event_id);
