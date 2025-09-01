@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### Breaking changes
+
+We've redesigned the breadcrumb API for a cleaner, more intuitive interface. Previously, `add_breadcrumb()` method accepted 5 parameters (3 of which were strings), making it confusing to use. The new approach uses a dedicated `SentryBreadcrumb` class:
+
+```gdscript
+var crumb := SentryBreadcrumb.create("Something happened")
+crumb.type = "info"
+crumb.set_data({"some": "data"})
+SentrySDK.add_breadcrumb(crumb)
+```
+
+For simple breadcrumbs, you can use a one-liner:
+```gdscript
+SentrySDK.add_breadcrumb(SentryBreadcrumb.create("Something happened"))
+```
+
+This change provides better type safety, improved readability, and enables future support for the `before_breadcrumb` callback.
+
 ### Features
 
 - Add support for script context and variables on Apple platforms ([#306](https://github.com/getsentry/sentry-godot/pull/306))
@@ -10,6 +28,7 @@
 ### Improvements
 
 - Improve initialization flow ([#322](https://github.com/getsentry/sentry-godot/pull/322))
+- Introduce `SentryBreadcrumb` class ([#332](https://github.com/getsentry/sentry-godot/pull/332))
 
 ### Fixes
 
