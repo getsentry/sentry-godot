@@ -5,46 +5,30 @@
 	</brief_description>
 	<description>
 		A breadcrumb is a small piece of diagnostic data that records an event or action leading up to an error or crash. These breadcrumbs create a trail that shows what the user and your game was doing right before something went wrong.
+		To create a breadcrumb, use the static [method SentryBreadcrumb.create] method with an optional message parameter. Once created, you can configure additional properties like category, level, type, and data before adding it to Sentry using [method SentrySDK.add_breadcrumb].
+		[codeblock]
+		var crumb := SentryBreadcrumb.create("Level finished!")
+		crumb.type = "info"
+		crumb.category = "level.finished"
+		SentrySDK.add_breadcrumb(crumb)
+		[/codeblock]
 		For more information, check out the [url=https://docs.sentry.io/platforms/unreal/enriching-events/breadcrumbs/]Breadcrumbs documentation[/url].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="debug" qualifiers="static">
+		<method name="create" qualifiers="static">
 			<return type="SentryBreadcrumb" />
-			<param index="0" name="message" type="String" />
+			<param index="0" name="message" type="String" default="&quot;&quot;" />
 			<description>
-			</description>
-		</method>
-		<method name="error" qualifiers="static">
-			<return type="SentryBreadcrumb" />
-			<param index="0" name="message" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="info" qualifiers="static">
-			<return type="SentryBreadcrumb" />
-			<param index="0" name="message" type="String" />
-			<description>
-			</description>
-		</method>
-		<method name="query" qualifiers="static">
-			<return type="SentryBreadcrumb" />
-			<param index="0" name="message" type="String" />
-			<description>
+				Creates a new [SentryBreadcrumb] object. You can add the breadcrumb with [method SentrySDK.add_breadcrumb].
 			</description>
 		</method>
 		<method name="set_data">
 			<return type="void" />
 			<param index="0" name="data" type="Dictionary" />
 			<description>
-			</description>
-		</method>
-		<method name="user" qualifiers="static">
-			<return type="SentryBreadcrumb" />
-			<param index="0" name="category" type="String" />
-			<param index="1" name="message" type="String" />
-			<description>
+				Sets additional data associated with the breadcrumb. This can be useful for providing more context about the event or action that triggered the breadcrumb.
 			</description>
 		</method>
 	</methods>

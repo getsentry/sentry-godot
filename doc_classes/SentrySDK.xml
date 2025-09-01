@@ -25,9 +25,8 @@
 			<return type="void" />
 			<param index="0" name="breadcrumb" type="SentryBreadcrumb" />
 			<description>
-				Adds a breadcrumb to the next event. You can create a [SentryBreadcrumb] object with [method SentryBreadcrumb.create].
-				Sentry uses breadcrumbs to create a trail of events that happened prior to an issue.
-				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/breadcrumbs/]Breadcrumbs documentation[/url].
+				Adds a breadcrumb to the future events. You can create a [SentryBreadcrumb] object using the static [method SentryBreadcrumb.create] method with an optional message parameter.
+				Sentry uses breadcrumbs to create a trail of events that happened prior to an issue. For more information, see [SentryBreadcrumb] class.
 			</description>
 		</method>
 		<method name="capture_event">
@@ -43,12 +42,6 @@
 			<param index="1" name="level" type="int" enum="SentrySDK.Level" default="1" />
 			<description>
 				Captures an event with [param message] and sends it to Sentry, returning the event ID.
-			</description>
-		</method>
-		<method name="create_breadcrumb">
-			<return type="SentryBreadcrumb" />
-			<description>
-				Creates a new [SentryBreadcrumb] object. You can add the breadcrumb with [method SentrySDK.add_breadcrumb].
 			</description>
 		</method>
 		<method name="create_event" qualifiers="const">
