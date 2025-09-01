@@ -6,7 +6,7 @@ namespace sentry::android {
 
 void AndroidBreadcrumb::set_message(const String &p_message) {
 	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(breadcrumbSetMessage), handle);
+	android_plugin->call(ANDROID_SN(breadcrumbSetMessage), handle, p_message);
 }
 
 String AndroidBreadcrumb::get_message() const {
