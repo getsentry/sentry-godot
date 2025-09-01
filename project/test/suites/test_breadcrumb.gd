@@ -55,12 +55,16 @@ func test_breadcrumb_default_values() -> void:
 func test_breadcrumb_timestamp_is_set_automatically() -> void:
 	var time_before: float = Time.get_unix_time_from_system()
 	await get_tree().process_frame  # small delay to ensure timestamp differs
+
 	var crumb := SentryBreadcrumb.create()
+
 	await get_tree().process_frame
 	var time_after: float = Time.get_unix_time_from_system()
 
 	# Timestamp should be between time_before and time_after
-	var micros: int = crumb.get_timestamp().microseconds_since_unix_epoch
+	var timestamp: SentryTimestamp = crumb.get_timestamp()
+	assert_object(timestamp).is_not_null()
+	var micros: int = timestamp.microseconds_since_unix_epoch
 	var timestamp_unix: float = float(micros) / 1_000_000.0
 	assert_float(timestamp_unix).is_greater_equal(time_before)
 	assert_float(timestamp_unix).is_less_equal(time_after)
