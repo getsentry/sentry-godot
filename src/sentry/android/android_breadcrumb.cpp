@@ -57,9 +57,9 @@ Ref<SentryTimestamp> AndroidBreadcrumb::get_timestamp() {
 	return SentryTimestamp::from_microseconds_since_unix_epoch(micros);
 }
 
-AndroidBreadcrumb::AndroidBreadcrumb(Object *android_plugin, int32_t p_breadcrumb_handle) :
-		android_plugin(android_plugin), handle(p_breadcrumb_handle) {
-	ERR_FAIL_NULL(android_plugin);
+AndroidBreadcrumb::AndroidBreadcrumb(Object *p_android_plugin, int32_t p_breadcrumb_handle) :
+		android_plugin(p_android_plugin), handle(p_breadcrumb_handle) {
+	ERR_FAIL_NULL(p_android_plugin);
 }
 
 AndroidBreadcrumb::~AndroidBreadcrumb() {

@@ -35,7 +35,7 @@ public:
 	virtual Ref<SentryTimestamp> get_timestamp() override;
 
 	AndroidBreadcrumb() = default;
-	AndroidBreadcrumb(Object *android_plugin, int32_t p_breadcrumb_handle);
+	AndroidBreadcrumb(Object *p_android_plugin, int32_t p_breadcrumb_handle);
 	virtual ~AndroidBreadcrumb() override;
 };
 
