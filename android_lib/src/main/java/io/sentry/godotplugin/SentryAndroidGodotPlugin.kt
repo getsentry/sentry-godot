@@ -110,7 +110,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
 
         var handle = Random.nextInt()
-        while(breadcrumbsMap.containsKey(handle)) {
+        while (breadcrumbsMap.containsKey(handle)) {
             handle = Random.nextInt()
         }
 
