@@ -2,21 +2,23 @@ extends GdUnitTestSuite
 ## Test SentryBreadcrumb class properties and methods.
 
 
+## Test string properties accessors and UTF-8 encoding preservation.
+@warning_ignore("unused_parameter")
+func test_string_properties_and_utf8(property: String, test_parameters := [
+		["message"],
+		["category"],
+		["type"],
+]) -> void:
+	var crumb := SentryBreadcrumb.create()
+	crumb.set(property, "Hello, World!")
+	assert_str(crumb.get(property)).is_equal("Hello, World!")
+	crumb.set(property, "Hello 世界! 👋")
+	assert_str(crumb.get(property)).is_equal("Hello 世界! 👋")
+
+
 func test_breadcrumb_create_with_message() -> void:
 	var crumb := SentryBreadcrumb.create("test-message")
 	assert_str(crumb.message).is_equal("test-message")
-
-
-func test_breadcrumb_message() -> void:
-	var crumb := SentryBreadcrumb.create()
-	crumb.message = "test-message"
-	assert_str(crumb.message).is_equal("test-message")
-
-
-func test_breadcrumb_category() -> void:
-	var crumb := SentryBreadcrumb.create()
-	crumb.category = "test-category"
-	assert_str(crumb.category).is_equal("test-category")
 
 
 func test_breadcrumb_level() -> void:
@@ -31,12 +33,6 @@ func test_breadcrumb_level() -> void:
 	assert_int(crumb.level).is_equal(SentrySDK.LEVEL_ERROR)
 	crumb.level = SentrySDK.LEVEL_FATAL
 	assert_int(crumb.level).is_equal(SentrySDK.LEVEL_FATAL)
-
-
-func test_breadcrumb_type() -> void:
-	var crumb := SentryBreadcrumb.create()
-	crumb.type = "test-type"
-	assert_str(crumb.type).is_equal("test-type")
 
 
 func test_breadcrumb_can_set_data() -> void:
