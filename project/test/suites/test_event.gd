@@ -2,18 +2,26 @@ extends GdUnitTestSuite
 ## Basic tests for the SentryEvent class.
 
 
+## Test string properties accessors and UTF-8 encoding preservation.
+@warning_ignore("unused_parameter")
+func test_string_properties_and_utf8(property: String, test_parameters := [
+		["message"],
+		["logger"],
+		["release"],
+		["dist"],
+		["environment"],
+]) -> void:
+	var event := SentrySDK.create_event()
+	event.set(property, "Hello, World!")
+	assert_str(event.get(property)).is_equal("Hello, World!")
+	event.set(property, "Hello 世界! 👋")
+	assert_str(event.get(property)).is_equal("Hello 世界! 👋")
+
+
 ## SentryEvent.id should not be empty on event creation.
-func test_event_id() -> void:
+func test_event_id_not_empty() -> void:
 	var event := SentrySDK.create_event()
 	assert_str(event.id).is_not_empty()
-
-
-## SentryEvent.message should be set to the specified value, and should be empty on event creation.
-func test_event_message() -> void:
-	var event := SentrySDK.create_event()
-	assert_str(event.message).is_empty()
-	event.message = "Hello, World!"
-	assert_str(event.message).is_equal("Hello, World!")
 
 
 ## SentryEvent.level should be set to the specified value.
@@ -51,41 +59,9 @@ func test_event_timestamp() -> void:
 
 
 ## SentryEvent.platform should not be empty.
-func test_event_platform() -> void:
+func test_event_platform_not_empty() -> void:
 	var event := SentrySDK.create_event()
 	assert_str(event.platform).is_not_empty()
-
-
-## SentryEvent.logger should be set to the specified value, and empty on event creation.
-func test_event_logger() -> void:
-	var event := SentrySDK.create_event()
-	assert_str(event.logger).is_empty()
-	event.logger = "custom-logger"
-	assert_str(event.logger).is_equal("custom-logger")
-
-
-## SentryEvent.release should be set to the specified value, and empty on event creation.
-func test_event_release() -> void:
-	var event := SentrySDK.create_event()
-	assert_str(event.release).is_empty()
-	event.release = "custom-release"
-	assert_str(event.release).is_equal("custom-release")
-
-
-## SentryEvent.dist should be set to the specified value, and empty on event creation.
-func test_event_dist() -> void:
-	var event := SentrySDK.create_event()
-	assert_str(event.dist).is_empty()
-	event.dist = "custom-dist"
-	assert_str(event.dist).is_equal("custom-dist")
-
-
-## SentryEvent.environment should be set to the specified value, and empty on event creation.
-func test_event_environment() -> void:
-	var event := SentrySDK.create_event()
-	assert_str(event.environment).is_empty()
-	event.environment = "custom-environment"
-	assert_str(event.environment).is_equal("custom-environment")
 
 
 ## SentryEvent.set_tag() should set tag to the specified value, remove_tag() should unset it.
@@ -96,6 +72,8 @@ func test_event_tags() -> void:
 	assert_str(event.get_tag("test_tag")).is_equal("test_value")
 	event.remove_tag("test_tag")
 	assert_str(event.get_tag("test_tag")).is_empty()
+	event.set_tag("test_utf8", "Hello 世界! 👋")
+	assert_str(event.get_tag("test_utf8")).is_equal("Hello 世界! 👋")
 
 
 ## SentryEvent.is_crash() should return false on a custom-created event.
