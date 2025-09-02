@@ -12,8 +12,8 @@ void NativeBreadcrumb::set_message(const String &p_message) {
 }
 
 String NativeBreadcrumb::get_message() const {
-	return sentry_value_as_string(
-			sentry_value_get_by_key(native_crumb, "message"));
+	return String::utf8(sentry_value_as_string(
+			sentry_value_get_by_key(native_crumb, "message")));
 }
 
 void NativeBreadcrumb::set_category(const String &p_category) {
@@ -21,8 +21,8 @@ void NativeBreadcrumb::set_category(const String &p_category) {
 }
 
 String NativeBreadcrumb::get_category() const {
-	return sentry_value_as_string(
-			sentry_value_get_by_key(native_crumb, "category"));
+	return String::utf8(sentry_value_as_string(
+			sentry_value_get_by_key(native_crumb, "category")));
 }
 
 void NativeBreadcrumb::set_level(sentry::Level p_level) {
@@ -43,8 +43,8 @@ void NativeBreadcrumb::set_type(const String &p_type) {
 }
 
 String NativeBreadcrumb::get_type() const {
-	return sentry_value_as_string(
-			sentry_value_get_by_key(native_crumb, "type"));
+	return String::utf8(sentry_value_as_string(
+			sentry_value_get_by_key(native_crumb, "type")));
 }
 
 void NativeBreadcrumb::set_data(const Dictionary &p_data) {
