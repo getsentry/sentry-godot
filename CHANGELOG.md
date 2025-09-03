@@ -15,6 +15,7 @@
 
 - Potential crash in SentryLogger if removed early ([#323](https://github.com/getsentry/sentry-godot/pull/323))
 - Ensure compatibility with minSdk 24 on Android ([#324](https://github.com/getsentry/sentry-godot/pull/324))
+- Fixed UTF-8 retention problems with native SentryEvent properties ([#345](https://github.com/getsentry/sentry-godot/pull/345))
 
 ## Other changes
 

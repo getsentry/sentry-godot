@@ -73,7 +73,7 @@ String NativeEvent::get_message() const {
 		return String();
 	}
 	sentry_value_t formatted = sentry_value_get_by_key(message, "formatted");
-	return sentry_value_as_string(formatted);
+	return String::utf8(sentry_value_as_string(formatted));
 }
 
 void NativeEvent::set_timestamp(const Ref<SentryTimestamp> &p_timestamp) {
@@ -91,7 +91,7 @@ Ref<SentryTimestamp> NativeEvent::get_timestamp() const {
 
 String NativeEvent::get_platform() const {
 	sentry_value_t platform = sentry_value_get_by_key(native_event, "platform");
-	return sentry_value_as_string(platform);
+	return String::utf8(sentry_value_as_string(platform));
 }
 
 void NativeEvent::set_level(sentry::Level p_level) {
@@ -116,7 +116,7 @@ void NativeEvent::set_logger(const String &p_logger) {
 
 String NativeEvent::get_logger() const {
 	sentry_value_t logger = sentry_value_get_by_key(native_event, "logger");
-	return sentry_value_as_string(logger);
+	return String::utf8(sentry_value_as_string(logger));
 }
 
 void NativeEvent::set_release(const String &p_release) {
@@ -125,7 +125,7 @@ void NativeEvent::set_release(const String &p_release) {
 
 String NativeEvent::get_release() const {
 	sentry_value_t release = sentry_value_get_by_key(native_event, "release");
-	return sentry_value_as_string(release);
+	return String::utf8(sentry_value_as_string(release));
 }
 
 void NativeEvent::set_dist(const String &p_dist) {
@@ -134,7 +134,7 @@ void NativeEvent::set_dist(const String &p_dist) {
 
 String NativeEvent::get_dist() const {
 	sentry_value_t dist = sentry_value_get_by_key(native_event, "dist");
-	return sentry_value_as_string(dist);
+	return String::utf8(sentry_value_as_string(dist));
 }
 
 void NativeEvent::set_environment(const String &p_environment) {
@@ -143,7 +143,7 @@ void NativeEvent::set_environment(const String &p_environment) {
 
 String NativeEvent::get_environment() const {
 	sentry_value_t environment = sentry_value_get_by_key(native_event, "environment");
-	return sentry_value_as_string(environment);
+	return String::utf8(sentry_value_as_string(environment));
 }
 
 void NativeEvent::set_tag(const String &p_key, const String &p_value) {
@@ -169,7 +169,7 @@ String NativeEvent::get_tag(const String &p_key) {
 	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
 	if (!sentry_value_is_null(tags)) {
 		sentry_value_t value = sentry_value_get_by_key(tags, p_key.utf8());
-		return String(sentry_value_as_string(value));
+		return String::utf8(sentry_value_as_string(value));
 	}
 	return String();
 }

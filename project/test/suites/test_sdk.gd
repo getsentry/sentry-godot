@@ -6,7 +6,7 @@ signal callback_processed
 
 
 ## SentrySDK.capture_message() should return a non-empty event ID, which must match the ID returned by the get_last_event_id() call.
-func test_capture_message() -> void:
+func test_capture_message_id() -> void:
 	var event_id := SentrySDK.capture_message("capture_message_test", SentrySDK.LEVEL_DEBUG)
 	assert_str(event_id).is_not_empty()
 	assert_str(SentrySDK.get_last_event_id()).is_not_empty()
@@ -18,10 +18,12 @@ func test_set_tag() -> void:
 	SentrySDK._set_before_send(
 		func(ev: SentryEvent):
 			assert_str(ev.get_tag("custom-tag")).is_equal("custom-tag-value")
+			assert_str(ev.get_tag("utf8-test")).is_equal("Hello 世界! 👋")
 			callback_processed.emit()
 			return null)
 
 	SentrySDK.set_tag("custom-tag", "custom-tag-value")
+	SentrySDK.set_tag("utf8-test", "Hello 世界! 👋")
 
 	var monitor := monitor_signals(self, false)
 	SentrySDK.capture_message("test-tags")
