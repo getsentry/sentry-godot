@@ -36,6 +36,12 @@ This change provides better type safety, improved readability, and enables futur
 - Ensure compatibility with minSdk 24 on Android ([#324](https://github.com/getsentry/sentry-godot/pull/324))
 - Fixed UTF-8 retention problems with native SentryEvent properties ([#345](https://github.com/getsentry/sentry-godot/pull/345))
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.55.0 to v8.55.1 ([#349](https://github.com/getsentry/sentry-godot/pull/349))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8551)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.0...8.55.1)
+
 ## Other changes
 
 - Move native and Android internal code into respective namespaces ([#333](https://github.com/getsentry/sentry-godot/pull/333))
