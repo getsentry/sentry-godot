@@ -44,6 +44,9 @@ This change provides better type safety, improved readability, and enables futur
 - Bump Native SDK from v0.10.0 to v0.10.1 ([#344](https://github.com/getsentry/sentry-godot/pull/344))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0101)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.10.0...0.10.1)
+- Bump Sentry Android from v8.19.1 to v8.20.0 ([#325](https://github.com/getsentry/sentry-godot/pull/325))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8200)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.19.1...8.20.0)
 
 ## Other changes
 
