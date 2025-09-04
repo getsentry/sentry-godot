@@ -4,7 +4,9 @@
 
 ### Breaking changes
 
-We've redesigned the breadcrumb API for a cleaner, more intuitive interface. Previously, `add_breadcrumb()` method accepted 5 parameters (3 of which were strings), making it confusing to use. The new approach uses a dedicated `SentryBreadcrumb` class:
+First, we bumped Godot compatibility to 4.5-beta7 ([#348](https://github.com/getsentry/sentry-godot/pull/348))
+
+Second, we've redesigned the breadcrumb API for a cleaner, more intuitive interface. Previously, `add_breadcrumb()` method accepted 5 parameters (3 of which were strings), making it confusing to use. The new approach uses a dedicated `SentryBreadcrumb` class:
 
 ```gdscript
 var crumb := SentryBreadcrumb.create("Something happened")
