@@ -33,7 +33,7 @@ runs:
       env:
         # Set pre-release version status here (e.g. "beta1");
         # for release version, set to "stable".
-        RELEASE_STATUS: beta5
+        RELEASE_STATUS: beta7
         ARCH: ${{ inputs.arch }}
       run: |
         major_minor=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1/p' project/addons/sentry/sentry.gdextension)
