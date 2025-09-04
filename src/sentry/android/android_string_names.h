@@ -72,6 +72,20 @@ public:
 	StringName releaseException;
 	StringName exceptionAppendStackFrame;
 	StringName eventAddException;
+
+	// Breadcrumbs.
+	StringName createBreadcrumb;
+	StringName releaseBreadcrumb;
+	StringName breadcrumbSetMessage;
+	StringName breadcrumbGetMessage;
+	StringName breadcrumbSetType;
+	StringName breadcrumbGetType;
+	StringName breadcrumbSetCategory;
+	StringName breadcrumbGetCategory;
+	StringName breadcrumbSetLevel;
+	StringName breadcrumbGetLevel;
+	StringName breadcrumbSetData;
+	StringName breadcrumbGetTimestamp;
 };
 
 } //namespace sentry::android

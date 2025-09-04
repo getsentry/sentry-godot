@@ -13,7 +13,9 @@ func _ready() -> void:
 
 
 func _on_add_breadcrumb_button_pressed() -> void:
-	SentrySDK.add_breadcrumb(breadcrumb_message.text, breadcrumb_category.text, SentrySDK.LEVEL_ERROR, "default")
+	var crumb := SentryBreadcrumb.create(breadcrumb_message.text)
+	crumb.category = breadcrumb_category.text
+	SentrySDK.add_breadcrumb(crumb)
 	DemoOutput.print_info("Breadcrumb added.")
 
 

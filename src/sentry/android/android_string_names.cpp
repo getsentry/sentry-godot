@@ -60,6 +60,20 @@ AndroidStringNames::AndroidStringNames() {
 	releaseException = StringName("releaseException");
 	exceptionAppendStackFrame = StringName("exceptionAppendStackFrame");
 	eventAddException = StringName("eventAddException");
+
+	// Breadcrumbs.
+	createBreadcrumb = StringName("createBreadcrumb");
+	releaseBreadcrumb = StringName("releaseBreadcrumb");
+	breadcrumbSetMessage = StringName("breadcrumbSetMessage");
+	breadcrumbGetMessage = StringName("breadcrumbGetMessage");
+	breadcrumbSetType = StringName("breadcrumbSetType");
+	breadcrumbGetType = StringName("breadcrumbGetType");
+	breadcrumbSetCategory = StringName("breadcrumbSetCategory");
+	breadcrumbGetCategory = StringName("breadcrumbGetCategory");
+	breadcrumbSetLevel = StringName("breadcrumbSetLevel");
+	breadcrumbGetLevel = StringName("breadcrumbGetLevel");
+	breadcrumbSetData = StringName("breadcrumbSetData");
+	breadcrumbGetTimestamp = StringName("breadcrumbGetTimestamp");
 }
 
 } //namespace sentry::android

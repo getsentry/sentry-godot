@@ -328,12 +328,12 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		data["rationale"] = p_rationale;
 		data["error_type"] = String(error_type_as_string[int(p_error_type)]);
 
-		SentrySDK::get_singleton()->add_breadcrumb(
-				error_message,
-				"error",
-				sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type),
-				"error",
-				data);
+		Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(error_message);
+		crumb->set_level(sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type));
+		crumb->set_type("error");
+		crumb->set_category("error");
+		crumb->set_data(data);
+		SentrySDK::get_singleton()->add_breadcrumb(crumb);
 	}
 }
 
@@ -357,11 +357,11 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 		}
 	}
 
-	SentrySDK::get_singleton()->add_breadcrumb(
-			p_message,
-			"log",
-			p_error ? sentry::Level::LEVEL_ERROR : sentry::Level::LEVEL_INFO,
-			"debug");
+	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(p_message);
+	crumb->set_category("log");
+	crumb->set_level(p_error ? sentry::Level::LEVEL_ERROR : sentry::Level::LEVEL_INFO);
+	crumb->set_type("debug");
+	SentrySDK::get_singleton()->add_breadcrumb(crumb);
 }
 
 void SentryLogger::_bind_methods() {

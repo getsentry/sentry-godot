@@ -1,5 +1,6 @@
 #include "cocoa_sdk.h"
 
+#include "cocoa_breadcrumb.h"
 #include "cocoa_event.h"
 #include "cocoa_includes.h"
 #include "cocoa_util.h"
@@ -66,20 +67,16 @@ void CocoaSDK::remove_user() {
 	[objc::SentrySDK setUser:nil];
 }
 
-void CocoaSDK::add_breadcrumb(const String &p_message, const String &p_category, Level p_level,
-		const String &p_type, const Dictionary &p_data) {
-	objc::SentryBreadcrumb *breadcrumb = [[objc::SentryBreadcrumb alloc] init];
+Ref<SentryBreadcrumb> CocoaSDK::create_breadcrumb() {
+	return memnew(CocoaBreadcrumb);
+}
 
-	breadcrumb.level = sentry_level_to_objc(p_level);
-	breadcrumb.message = string_to_objc_or_nil_if_empty(p_message);
-	breadcrumb.category = string_to_objc_or_nil_if_empty(p_category);
-	breadcrumb.type = string_to_objc_or_nil_if_empty(p_type);
+void CocoaSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
+	ERR_FAIL_COND(p_breadcrumb.is_null());
 
-	if (!p_data.is_empty()) {
-		breadcrumb.data = dictionary_to_objc(p_data);
-	}
-
-	[objc::SentrySDK addBreadcrumb:breadcrumb];
+	Ref<CocoaBreadcrumb> crumb = p_breadcrumb;
+	ERR_FAIL_COND(crumb.is_null());
+	[objc::SentrySDK addBreadcrumb:crumb->get_cocoa_breadcrumb()];
 }
 
 String CocoaSDK::capture_message(const String &p_message, Level p_level) {

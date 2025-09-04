@@ -5,6 +5,7 @@
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
 #include "sentry/sentry_attachment.h"
+#include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
 #include "sentry/sentry_logger.h"
 #include "sentry/sentry_options.h"
@@ -63,8 +64,8 @@ public:
 
 	bool is_enabled() const { return enabled; }
 
-	void add_breadcrumb(const String &p_message, const String &p_category, sentry::Level p_level,
-			const String &p_type = "default", const Dictionary &p_data = Dictionary());
+	void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb);
+
 	void set_context(const String &p_key, const Dictionary &p_value);
 
 	void set_tag(const String &p_key, const String &p_value);
