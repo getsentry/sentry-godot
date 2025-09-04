@@ -41,6 +41,9 @@ This change provides better type safety, improved readability, and enables futur
 - Bump Cocoa SDK from v8.55.0 to v8.55.1 ([#349](https://github.com/getsentry/sentry-godot/pull/349))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8551)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.0...8.55.1)
+- Bump Native SDK from v0.10.0 to v0.10.1 ([#344](https://github.com/getsentry/sentry-godot/pull/344))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0101)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.10.0...0.10.1)
 
 ## Other changes
 
