@@ -1,10 +1,11 @@
 #include "native_event.h"
 
-#include "godot_cpp/core/error_macros.hpp"
 #include "sentry/level.h"
 #include "sentry/native/native_util.h"
 
 #include <sentry.h>
+#include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/core/error_macros.hpp>
 
 namespace {
 
@@ -180,11 +181,7 @@ void NativeEvent::merge_context(const String &p_key, const Dictionary &p_value) 
 }
 
 void NativeEvent::add_exception(const Exception &p_exception) {
-	sentry_value_t native_exception = sentry_value_new_exception(p_exception.type.utf8(), p_exception.value.utf8());
-	sentry_value_t stack_trace = sentry_value_new_object();
-	sentry_value_set_by_key(native_exception, "stacktrace", stack_trace);
 	sentry_value_t frames = sentry_value_new_list();
-	sentry_value_set_by_key(stack_trace, "frames", frames);
 
 	for (const StackFrame &frame : p_exception.frames) {
 		sentry_value_t sentry_frame = sentry_value_new_object();
@@ -208,6 +205,26 @@ void NativeEvent::add_exception(const Exception &p_exception) {
 		sentry_value_append(frames, sentry_frame);
 	}
 
+	sentry_value_t stack_trace = sentry_value_new_object();
+	sentry_value_set_by_key(stack_trace, "frames", frames);
+
+	uint64_t thread_id = godot::OS::get_singleton()->get_thread_caller_id();
+	bool is_main = godot::OS::get_singleton()->get_main_thread_id() == thread_id;
+
+	sentry_value_t thread = sentry_value_new_thread(thread_id, NULL);
+	sentry_value_set_by_key(thread, "main", sentry_value_new_bool(is_main));
+	// Set `crashed` to true to indicate that this thread is responsible for the event,
+	// even if it's not a crash event.
+	sentry_value_set_by_key(thread, "crashed", sentry_value_new_bool(true));
+	sentry_value_set_by_key(thread, "current", sentry_value_new_bool(true));
+	sentry_value_set_by_key(thread, "stacktrace", stack_trace);
+
+	sentry_value_t native_exception = sentry_value_new_exception(
+			p_exception.type.utf8(), p_exception.value.utf8());
+	sentry_value_set_by_key(native_exception, "stacktrace", stack_trace);
+	sentry_value_set_by_key(native_exception, "thread_id", sentry_value_new_uint64(thread_id));
+
+	sentry_event_add_thread(native_event, thread);
 	sentry_event_add_exception(native_event, native_exception);
 }
 
