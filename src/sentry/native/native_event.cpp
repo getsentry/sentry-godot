@@ -221,7 +221,6 @@ void NativeEvent::add_exception(const Exception &p_exception) {
 
 	sentry_value_t native_exception = sentry_value_new_exception(
 			p_exception.type.utf8(), p_exception.value.utf8());
-	sentry_value_set_by_key(native_exception, "stacktrace", stack_trace);
 	sentry_value_set_by_key(native_exception, "thread_id", sentry_value_new_uint64(thread_id));
 
 	sentry_event_add_thread(native_event, thread);
