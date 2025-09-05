@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Other changes
+
+- Use threads interface for error reporting with Native SDK ([#350](https://github.com/getsentry/sentry-godot/pull/350))
+
 ## 1.0.0-beta.1
 
 ### Breaking changes
