@@ -24,7 +24,9 @@ Sentry for Godot helps you monitor your game's health during QA and after releas
 - **Linux**: x86_64, x86_32
 - **macOS**: universal (Intel and Apple Silicon)
 - **Android**: arm64, arm32, x86_64
-- **iOS**: coming soon
+- **iOS**: device and simulator
+- **Web**: expected in Q4 2025, after 1.0.0 stable
+- **W4 console forks**: coming in 2026
 
 Support for additional platforms and architectures may be added in future releases.
 
