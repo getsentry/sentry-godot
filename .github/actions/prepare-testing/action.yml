@@ -14,6 +14,7 @@ runs:
       run: |
         git submodule update --init --depth 1 modules/gdUnit4
         git submodule update --init --depth 1 modules/godot-cpp
+        git submodule update --init --depth 1 project/test/util/json_assert
 
     - name: Download artifact
       uses: actions/download-artifact@v4
