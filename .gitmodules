@@ -7,3 +7,6 @@
 [submodule "modules/godot-cpp"]
 	path = modules/godot-cpp
 	url = https://github.com/godotengine/godot-cpp
+[submodule "project/test/util/json_assert"]
+	path = project/test/util/json_assert
+	url = https://github.com/getsentry/gdunit-json-assert
