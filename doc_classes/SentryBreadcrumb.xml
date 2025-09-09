@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryBreadcrumb" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Sentry breadcrumb for error reporting context.
+	</brief_description>
+	<description>
+		A breadcrumb is a small piece of diagnostic data that records an event or action leading up to an error or crash. These breadcrumbs create a trail that shows what the user and your game was doing right before something went wrong.
+		To create a breadcrumb, use the static [method SentryBreadcrumb.create] method with an optional message parameter. Once created, you can configure additional properties like category, level, type, and data before adding it to Sentry using [method SentrySDK.add_breadcrumb].
+		[codeblock]
+		var crumb := SentryBreadcrumb.create("Level finished!")
+		crumb.type = "info"
+		crumb.category = "level.finished"
+		SentrySDK.add_breadcrumb(crumb)
+		[/codeblock]
+		For more information, check out the [url=https://docs.sentry.io/platforms/godot/enriching-events/breadcrumbs/]Breadcrumbs documentation[/url].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create" qualifiers="static">
+			<return type="SentryBreadcrumb" />
+			<param index="0" name="message" type="String" default="&quot;&quot;" />
+			<description>
+			</description>
+		</method>
+		<method name="get_timestamp">
+			<return type="SentryTimestamp" />
+			<description>
+				Returns the timestamp of the breadcrumb.
+			</description>
+		</method>
+		<method name="set_data">
+			<return type="void" />
+			<param index="0" name="data" type="Dictionary" />
+			<description>
+				Sets additional data associated with the breadcrumb. This can be useful for providing more context about the event or action that triggered the breadcrumb.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="category" type="String" setter="set_category" getter="get_category">
+			A category label that shows what type of action this breadcrumb represents. Use dot notation like "ui.click" for a button click or "network.request" for an API call.
+		</member>
+		<member name="level" type="int" setter="set_level" getter="get_level" enum="SentrySDK.Level">
+			The severity level of the breadcrumb. Defaults to [code]LEVEL_INFO[/code]. See [enum SentrySDK.Level].
+		</member>
+		<member name="message" type="String" setter="set_message" getter="get_message">
+			A short description of what happened.
+		</member>
+		<member name="type" type="String" setter="set_type" getter="get_type">
+			The type of breadcrumb that determines how it appears in the Sentry interface. Defaults to [code]default[/code] which renders as a Debug entry. Common types include [code]http[/code] for network requests, [code]navigation[/code] for page/screen changes, [code]user[/code] for user interactions, and [code]error[/code] for error events. See [url=https://develop.sentry.dev/sdk/data-model/event-payloads/breadcrumbs/#breadcrumb-types]Breadcrumb Types[/url] for the complete list.
+		</member>
+	</members>
+</class>

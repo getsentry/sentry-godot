@@ -5,7 +5,7 @@
 
 using namespace godot;
 
-namespace sentry {
+namespace sentry::android {
 
 // Event class that is used with the AndroidSDK.
 class AndroidEvent : public SentryEvent {
@@ -57,6 +57,8 @@ public:
 
 	virtual bool is_crash() const override;
 
+	virtual String to_json() const override;
+
 	void set_as_borrowed() { is_borrowed = true; }
 
 	AndroidEvent() {}
@@ -64,6 +66,6 @@ public:
 	virtual ~AndroidEvent() override;
 };
 
-} // namespace sentry
+} //namespace sentry::android
 
 #endif // SENTRY_ANDROID_EVENT_H

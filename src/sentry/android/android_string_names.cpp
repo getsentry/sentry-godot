@@ -1,6 +1,6 @@
 #include "sentry/android/android_string_names.h"
 
-namespace sentry {
+namespace sentry::android {
 
 AndroidStringNames *AndroidStringNames::singleton = nullptr;
 
@@ -56,12 +56,27 @@ AndroidStringNames::AndroidStringNames() {
 	eventGetTag = StringName("eventGetTag");
 	eventMergeContext = StringName("eventMergeContext");
 	eventIsCrash = StringName("eventIsCrash");
+	eventToJson = StringName("eventToJson");
 
 	// Exceptions.
 	createException = StringName("createException");
 	releaseException = StringName("releaseException");
 	exceptionAppendStackFrame = StringName("exceptionAppendStackFrame");
 	eventAddException = StringName("eventAddException");
+
+	// Breadcrumbs.
+	createBreadcrumb = StringName("createBreadcrumb");
+	releaseBreadcrumb = StringName("releaseBreadcrumb");
+	breadcrumbSetMessage = StringName("breadcrumbSetMessage");
+	breadcrumbGetMessage = StringName("breadcrumbGetMessage");
+	breadcrumbSetType = StringName("breadcrumbSetType");
+	breadcrumbGetType = StringName("breadcrumbGetType");
+	breadcrumbSetCategory = StringName("breadcrumbSetCategory");
+	breadcrumbGetCategory = StringName("breadcrumbGetCategory");
+	breadcrumbSetLevel = StringName("breadcrumbSetLevel");
+	breadcrumbGetLevel = StringName("breadcrumbGetLevel");
+	breadcrumbSetData = StringName("breadcrumbSetData");
+	breadcrumbGetTimestamp = StringName("breadcrumbGetTimestamp");
 }
 
-} // namespace sentry
+} //namespace sentry::android

@@ -223,8 +223,21 @@ void CocoaEvent::add_exception(const Exception &p_exception) {
 		cocoa_frame.inApp = bool_to_objc(frame.in_app);
 		cocoa_frame.platform = string_to_objc(frame.platform);
 
-		// TODO: unable to pass context_line, pre_context, post_context.
-		// TODO: unable to pass local/member vars.
+		if (!frame.context_line.is_empty()) {
+			cocoa_frame.contextLine = string_to_objc(frame.context_line);
+			cocoa_frame.preContext = string_array_to_objc(frame.pre_context);
+			cocoa_frame.postContext = string_array_to_objc(frame.post_context);
+		}
+
+		if (!frame.vars.is_empty()) {
+			NSMutableDictionary *objc_vars = [NSMutableDictionary dictionaryWithCapacity:frame.vars.size()];
+			for (const auto &var : frame.vars) {
+				NSString *key = string_to_objc(var.first);
+				id value = variant_to_objc(var.second);
+				objc_vars[key] = value;
+			}
+			cocoa_frame.vars = objc_vars;
+		}
 
 		[mut_frames addObject:cocoa_frame];
 	}
@@ -255,6 +268,20 @@ bool CocoaEvent::is_crash() const {
 	ERR_FAIL_NULL_V(cocoa_event, false);
 
 	return cocoa_event.error != nil;
+}
+
+String CocoaEvent::to_json() const {
+	ERR_FAIL_NULL_V(cocoa_event, String());
+
+	NSDictionary *event_dict = [cocoa_event serialize];
+
+	NSError *error = nil;
+	NSData *json_data = [NSJSONSerialization dataWithJSONObject:event_dict
+														options:0
+														  error:&error];
+	ERR_FAIL_COND_V(error != nil, "Sentry: Failed to serialize event to JSON: " + string_from_objc(error.localizedDescription));
+
+	return String::utf8((const char *)json_data.bytes, json_data.length);
 }
 
 CocoaEvent::CocoaEvent() :

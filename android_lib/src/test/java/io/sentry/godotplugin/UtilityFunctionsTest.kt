@@ -3,7 +3,6 @@ package io.sentry.godotplugin
 import io.sentry.SentryLevel
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.time.Instant
 import java.util.Date
 import kotlin.math.abs
 
@@ -37,7 +36,7 @@ class UtilityFunctionsTest {
     @Test
     fun microsecondsToTimestamp_convertsZeroCorrectly() {
         val result = 0L.microsecondsToTimestamp()
-        val expected = Date.from(Instant.ofEpochSecond(0, 0))
+        val expected = Date(0L)
         assertEquals(expected, result)
     }
 
@@ -45,7 +44,7 @@ class UtilityFunctionsTest {
     fun microsecondsToTimestamp_convertsExactSecondsCorrectly() {
         val microseconds = 1_000_000L // 1 second in microseconds
         val result = microseconds.microsecondsToTimestamp()
-        val expected = Date.from(Instant.ofEpochSecond(1, 0))
+        val expected = Date(1000L) // 1 second in milliseconds
         assertEquals(expected, result)
     }
 
@@ -53,7 +52,7 @@ class UtilityFunctionsTest {
     fun microsecondsToTimestamp_convertsWithMicrosecondsCorrectly() {
         val microseconds = 1_500_750L // 1.500750 seconds
         val result = microseconds.microsecondsToTimestamp()
-        val expected = Date.from(Instant.ofEpochSecond(1, 500_750_000)) // 500750 microseconds = 500750000 nanoseconds
+        val expected = Date(1500L) // Truncated to 1.5 seconds (1500 milliseconds)
         assertEquals(expected, result)
     }
 
@@ -61,44 +60,43 @@ class UtilityFunctionsTest {
     fun microsecondsToTimestamp_convertsLargeValueCorrectly() {
         val microseconds = 1_672_531_200_000_000L // January 1, 2023 00:00:00 UTC in microseconds
         val result = microseconds.microsecondsToTimestamp()
-        val expected = Date.from(Instant.ofEpochSecond(1_672_531_200, 0))
+        val expected = Date(1_672_531_200_000L) // January 1, 2023 00:00:00 UTC in milliseconds
         assertEquals(expected, result)
     }
 
     @Test
-    fun instantToMicros_convertsZeroCorrectly() {
-        val instant = Instant.ofEpochSecond(0, 0)
-        val result = instant.toMicros()
+    fun dateToMicros_convertsZeroCorrectly() {
+        val date = Date(0L)
+        val result = date.toMicros()
         assertEquals(0L, result)
     }
 
     @Test
-    fun instantToMicros_convertsExactSecondsCorrectly() {
-        val instant = Instant.ofEpochSecond(1, 0)
-        val result = instant.toMicros()
-        assertEquals(1_000_000L, result)
+    fun dateToMicros_convertsExactMillisecondsCorrectly() {
+        val date = Date(1000L) // 1 second in milliseconds
+        val result = date.toMicros()
+        assertEquals(1_000_000L, result) // 1 second in microseconds
     }
 
     @Test
-    fun instantToMicros_convertsWithNanosecondsCorrectly() {
-        val instant = Instant.ofEpochSecond(1, 500_750_000) // 500750 microseconds
-        val result = instant.toMicros()
-        assertEquals(1_500_750L, result) // 500_750_000 nanos = 500750 micros exactly
+    fun dateToMicros_convertsWithMillisecondsCorrectly() {
+        val date = Date(1500L) // 1.5 seconds in milliseconds
+        val result = date.toMicros()
+        assertEquals(1_500_000L, result) // 1.5 seconds in microseconds
     }
 
     @Test
-    fun instantToMicros_convertsLargeValueCorrectly() {
-        val instant = Instant.ofEpochSecond(1_672_531_200, 0) // January 1, 2023 00:00:00 UTC
-        val result = instant.toMicros()
-        assertEquals(1_672_531_200_000_000L, result)
+    fun dateToMicros_convertsLargeValueCorrectly() {
+        val date = Date(1_672_531_200_000L) // January 1, 2023 00:00:00 UTC in milliseconds
+        val result = date.toMicros()
+        assertEquals(1_672_531_200_000_000L, result) // January 1, 2023 00:00:00 UTC in microseconds
     }
 
     @Test
     fun bidirectionalConversion_maintainsAccuracy() {
         val originalMicros = 1_672_531_200_500_000L // January 1, 2023 00:00:00.500000 UTC (exact millisecond)
         val date = originalMicros.microsecondsToTimestamp()
-        val instant = date.toInstant()
-        val convertedMicros = instant.toMicros()
+        val convertedMicros = date.toMicros()
 
         // For microsecond values that align with millisecond boundaries, conversion should be precise
         assertEquals(originalMicros, convertedMicros)
@@ -108,8 +106,7 @@ class UtilityFunctionsTest {
     fun bidirectionalConversion_showsPrecisionLimitations() {
         val originalMicros = 1_672_531_200_500_750L // January 1, 2023 00:00:00.500750 UTC (sub-millisecond precision)
         val date = originalMicros.microsecondsToTimestamp()
-        val instant = date.toInstant()
-        val convertedMicros = instant.toMicros()
+        val convertedMicros = date.toMicros()
 
         // Due to Date/Instant precision limitations, sub-millisecond precision is lost
         // The result should be rounded to the nearest millisecond (500000 microseconds)

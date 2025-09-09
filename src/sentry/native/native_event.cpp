@@ -1,10 +1,11 @@
 #include "native_event.h"
 
-#include "godot_cpp/core/error_macros.hpp"
 #include "sentry/level.h"
 #include "sentry/native/native_util.h"
 
 #include <sentry.h>
+#include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/core/error_macros.hpp>
 
 namespace {
 
@@ -47,7 +48,7 @@ void sentry_event_merge_context(sentry_value_t p_event, const char *p_context_na
 
 } // unnamed namespace
 
-namespace sentry {
+namespace sentry::native {
 
 String NativeEvent::get_id() const {
 	sentry_value_t id = sentry_value_get_by_key(native_event, "event_id");
@@ -73,7 +74,7 @@ String NativeEvent::get_message() const {
 		return String();
 	}
 	sentry_value_t formatted = sentry_value_get_by_key(message, "formatted");
-	return sentry_value_as_string(formatted);
+	return String::utf8(sentry_value_as_string(formatted));
 }
 
 void NativeEvent::set_timestamp(const Ref<SentryTimestamp> &p_timestamp) {
@@ -91,7 +92,7 @@ Ref<SentryTimestamp> NativeEvent::get_timestamp() const {
 
 String NativeEvent::get_platform() const {
 	sentry_value_t platform = sentry_value_get_by_key(native_event, "platform");
-	return sentry_value_as_string(platform);
+	return String::utf8(sentry_value_as_string(platform));
 }
 
 void NativeEvent::set_level(sentry::Level p_level) {
@@ -116,7 +117,7 @@ void NativeEvent::set_logger(const String &p_logger) {
 
 String NativeEvent::get_logger() const {
 	sentry_value_t logger = sentry_value_get_by_key(native_event, "logger");
-	return sentry_value_as_string(logger);
+	return String::utf8(sentry_value_as_string(logger));
 }
 
 void NativeEvent::set_release(const String &p_release) {
@@ -125,7 +126,7 @@ void NativeEvent::set_release(const String &p_release) {
 
 String NativeEvent::get_release() const {
 	sentry_value_t release = sentry_value_get_by_key(native_event, "release");
-	return sentry_value_as_string(release);
+	return String::utf8(sentry_value_as_string(release));
 }
 
 void NativeEvent::set_dist(const String &p_dist) {
@@ -134,7 +135,7 @@ void NativeEvent::set_dist(const String &p_dist) {
 
 String NativeEvent::get_dist() const {
 	sentry_value_t dist = sentry_value_get_by_key(native_event, "dist");
-	return sentry_value_as_string(dist);
+	return String::utf8(sentry_value_as_string(dist));
 }
 
 void NativeEvent::set_environment(const String &p_environment) {
@@ -143,7 +144,7 @@ void NativeEvent::set_environment(const String &p_environment) {
 
 String NativeEvent::get_environment() const {
 	sentry_value_t environment = sentry_value_get_by_key(native_event, "environment");
-	return sentry_value_as_string(environment);
+	return String::utf8(sentry_value_as_string(environment));
 }
 
 void NativeEvent::set_tag(const String &p_key, const String &p_value) {
@@ -169,7 +170,7 @@ String NativeEvent::get_tag(const String &p_key) {
 	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
 	if (!sentry_value_is_null(tags)) {
 		sentry_value_t value = sentry_value_get_by_key(tags, p_key.utf8());
-		return String(sentry_value_as_string(value));
+		return String::utf8(sentry_value_as_string(value));
 	}
 	return String();
 }
@@ -180,11 +181,7 @@ void NativeEvent::merge_context(const String &p_key, const Dictionary &p_value) 
 }
 
 void NativeEvent::add_exception(const Exception &p_exception) {
-	sentry_value_t native_exception = sentry_value_new_exception(p_exception.type.utf8(), p_exception.value.utf8());
-	sentry_value_t stack_trace = sentry_value_new_object();
-	sentry_value_set_by_key(native_exception, "stacktrace", stack_trace);
 	sentry_value_t frames = sentry_value_new_list();
-	sentry_value_set_by_key(stack_trace, "frames", frames);
 
 	for (const StackFrame &frame : p_exception.frames) {
 		sentry_value_t sentry_frame = sentry_value_new_object();
@@ -208,11 +205,37 @@ void NativeEvent::add_exception(const Exception &p_exception) {
 		sentry_value_append(frames, sentry_frame);
 	}
 
+	sentry_value_t stack_trace = sentry_value_new_object();
+	sentry_value_set_by_key(stack_trace, "frames", frames);
+
+	uint64_t thread_id = godot::OS::get_singleton()->get_thread_caller_id();
+	bool is_main = godot::OS::get_singleton()->get_main_thread_id() == thread_id;
+
+	sentry_value_t thread = sentry_value_new_thread(thread_id, NULL);
+	sentry_value_set_by_key(thread, "main", sentry_value_new_bool(is_main));
+	// Set `crashed` to true to indicate that this thread is responsible for the event,
+	// even if it's not a crash event.
+	sentry_value_set_by_key(thread, "crashed", sentry_value_new_bool(true));
+	sentry_value_set_by_key(thread, "current", sentry_value_new_bool(true));
+	sentry_value_set_by_key(thread, "stacktrace", stack_trace);
+
+	sentry_value_t native_exception = sentry_value_new_exception(
+			p_exception.type.utf8(), p_exception.value.utf8());
+	sentry_value_set_by_key(native_exception, "thread_id", sentry_value_new_uint64(thread_id));
+
+	sentry_event_add_thread(native_event, thread);
 	sentry_event_add_exception(native_event, native_exception);
 }
 
 bool NativeEvent::is_crash() const {
 	return _is_crash;
+}
+
+String NativeEvent::to_json() const {
+	char *json_value = sentry_value_to_json(native_event);
+	String json_str = String::utf8(json_value);
+	sentry_free(json_value);
+	return json_str;
 }
 
 NativeEvent::NativeEvent(sentry_value_t p_native_event, bool p_is_crash) :
@@ -235,4 +258,4 @@ NativeEvent::~NativeEvent() {
 	sentry_value_decref(native_event); // release ownership
 }
 
-} // namespace sentry
+} //namespace sentry::native

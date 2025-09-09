@@ -24,16 +24,12 @@ fun SentryLevel.toInt(): Int =
     }
 
 fun Long.microsecondsToTimestamp(): Date {
-    val micros: Long = this@microsecondsToTimestamp
-    val seconds = micros / 1_000_000
-    val nanos = (micros % 1_000_000) * 1000
-
-    val instant = Instant.ofEpochSecond(seconds, nanos.toLong())
-    return Date.from(instant)
+    val millis = this / 1_000
+    return Date(millis)
 }
 
 
-fun Instant.toMicros(): Long {
-    val instant: Instant = this@toMicros
-    return instant.epochSecond * 1_000_000 + instant.nano / 1_000
+fun Date.toMicros(): Long {
+    val date: Date = this@toMicros
+    return date.time * 1000
 }

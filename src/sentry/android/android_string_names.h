@@ -5,7 +5,7 @@
 
 using namespace godot;
 
-namespace sentry {
+namespace sentry::android {
 
 /**
  * Stores StringName constants for Android SDK implementation.
@@ -68,16 +68,31 @@ public:
 	StringName eventGetTag;
 	StringName eventMergeContext;
 	StringName eventIsCrash;
+	StringName eventToJson;
 
 	// Exceptions.
 	StringName createException;
 	StringName releaseException;
 	StringName exceptionAppendStackFrame;
 	StringName eventAddException;
+
+	// Breadcrumbs.
+	StringName createBreadcrumb;
+	StringName releaseBreadcrumb;
+	StringName breadcrumbSetMessage;
+	StringName breadcrumbGetMessage;
+	StringName breadcrumbSetType;
+	StringName breadcrumbGetType;
+	StringName breadcrumbSetCategory;
+	StringName breadcrumbGetCategory;
+	StringName breadcrumbSetLevel;
+	StringName breadcrumbGetLevel;
+	StringName breadcrumbSetData;
+	StringName breadcrumbGetTimestamp;
 };
 
-} // namespace sentry
+} //namespace sentry::android
 
-#define ANDROID_SN(m_arg) sentry::AndroidStringNames::get_singleton()->m_arg
+#define ANDROID_SN(m_arg) sentry::android::AndroidStringNames::get_singleton()->m_arg
 
 #endif // SENTRY_ANDROID_STRING_NAMES_H
