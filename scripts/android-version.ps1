@@ -1,12 +1,28 @@
 #!/usr/bin/env pwsh
 
-# Updates Sentry Android dependency version across project files.
+# Updates Sentry Android dependency versions across project files.
 
 Set-StrictMode -Version latest
 
 # Files to update.
 $gradleFile = "$PSScriptRoot/../android_lib/build.gradle.kts"
 $exportPluginFile = "$PSScriptRoot/../src/editor/sentry_editor_export_plugin_android.cpp"
+
+# Dependencies to manage
+$dependencies = @(
+	@{ 
+		Name = "sentry-android"
+		Group = "io.sentry"
+		GradlePattern = 'implementation\("io\.sentry:sentry-android:([^"]+)"\)'
+		CppPattern = 'deps\.append\("io\.sentry:sentry-android:([^"]+)"\);'
+	},
+	@{ 
+		Name = "sentry-android-ndk"
+		Group = "io.sentry"
+		GradlePattern = 'implementation\("io\.sentry:sentry-android-ndk:([^"]+)"\)'
+		CppPattern = 'deps\.append\("io\.sentry:sentry-android-ndk:([^"]+)"\);'
+	}
+)
 
 function Write-Usage
 {
@@ -32,7 +48,10 @@ function Get-CurrentVersion
 	Test-FileExists $exportPluginFile
 
 	$gradleContent = Get-Content $gradleFile
-	$currentVersion = [regex]::Match("$gradleContent", 'implementation\("io\.sentry:sentry-android:([^"]+)"\)').Groups[1].Value
+	
+	# Get version from the first dependency (they should all be the same)
+	$firstDep = $dependencies[0]
+	$currentVersion = [regex]::Match("$gradleContent", $firstDep.GradlePattern).Groups[1].Value
 	if ($currentVersion)
 	{
 		return $currentVersion
@@ -59,30 +78,50 @@ function Set-SentryAndroidVersion
 
 	$performedChanges = $false
 
-	# Update gradle file if version differs
+	# Update gradle file
 	$gradleContent = Get-Content $gradleFile
-	$currentGradleVersion = [regex]::Match("$gradleContent", 'implementation\("io\.sentry:sentry-android:([^"]+)"\)').Groups[1].Value
-	if ($currentGradleVersion -ne $Version)
-	{
-		Write-Host "Updating $(Split-Path $gradleFile -Leaf) from version $currentGradleVersion to $Version"
-		$gradleContent -replace 'implementation\("io\.sentry:sentry-android:([^"]+)"\)', ('implementation("io.sentry:sentry-android:' + $Version + '")') | Out-File $gradleFile
-		$performedChanges = $true
-	} else
-	{
-		Write-Host "$(Split-Path $gradleFile -Leaf) already declares version $Version"
+	$updatedGradleContent = $gradleContent
+	
+	foreach ($dep in $dependencies) {
+		$currentGradleVersion = [regex]::Match("$gradleContent", $dep.GradlePattern).Groups[1].Value
+		if ($currentGradleVersion -and $currentGradleVersion -ne $Version)
+		{
+			Write-Host "Updating $(Split-Path $gradleFile -Leaf) $($dep.Name) from version $currentGradleVersion to $Version"
+			$replacement = 'implementation("' + $dep.Group + ':' + $dep.Name + ':' + $Version + '")'
+			$updatedGradleContent = $updatedGradleContent -replace $dep.GradlePattern, $replacement
+			$performedChanges = $true
+		} elseif ($currentGradleVersion -eq $Version) {
+			Write-Host "$(Split-Path $gradleFile -Leaf) $($dep.Name) already declares version $Version"
+		} else {
+			Write-Warning "Could not find $($dep.Name) dependency in $(Split-Path $gradleFile -Leaf)"
+		}
+	}
+	
+	if ($updatedGradleContent -ne $gradleContent) {
+		$updatedGradleContent | Out-File $gradleFile
 	}
 
-	# Update export plugin file if version differs
+	# Update export plugin file
 	$exportContent = Get-Content $exportPluginFile
-	$currentExportVersion = [regex]::Match("$exportContent", 'deps\.append\("io\.sentry:sentry-android:([^"]+)"\);').Groups[1].Value
-	if ($currentExportVersion -ne $Version)
-	{
-		Write-Host "Updating $(Split-Path $exportPluginFile -Leaf) from version $currentExportVersion to $Version"
-		$exportContent -replace 'deps\.append\("io\.sentry:sentry-android:([^"]+)"\);', ('deps.append("io.sentry:sentry-android:' + $Version + '");') | Out-File $exportPluginFile
-		$performedChanges = $true
-	} else
-	{
-		Write-Host "$(Split-Path $exportPluginFile -Leaf) already declares version $Version"
+	$updatedExportContent = $exportContent
+	
+	foreach ($dep in $dependencies) {
+		$currentExportVersion = [regex]::Match("$exportContent", $dep.CppPattern).Groups[1].Value
+		if ($currentExportVersion -and $currentExportVersion -ne $Version)
+		{
+			Write-Host "Updating $(Split-Path $exportPluginFile -Leaf) $($dep.Name) from version $currentExportVersion to $Version"
+			$replacement = 'deps.append("' + $dep.Group + ':' + $dep.Name + ':' + $Version + '");'
+			$updatedExportContent = $updatedExportContent -replace $dep.CppPattern, $replacement
+			$performedChanges = $true
+		} elseif ($currentExportVersion -eq $Version) {
+			Write-Host "$(Split-Path $exportPluginFile -Leaf) $($dep.Name) already declares version $Version"
+		} else {
+			Write-Warning "Could not find $($dep.Name) dependency in $(Split-Path $exportPluginFile -Leaf)"
+		}
+	}
+	
+	if ($updatedExportContent -ne $exportContent) {
+		$updatedExportContent | Out-File $exportPluginFile
 	}
 
 	if (-not $performedChanges)
@@ -90,7 +129,7 @@ function Set-SentryAndroidVersion
 		Write-Host "No changes needed."
 	} else
 	{
-		Write-Host "Successfully updated Sentry Android dependency to version $Version in all files."
+		Write-Host "Successfully updated Sentry Android dependencies to version $Version in all files."
 	}
 }
 
