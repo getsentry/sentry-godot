@@ -2,6 +2,39 @@
 
 ## Unreleased
 
+### Other changes
+
+- Use threads interface for error reporting with Native SDK ([#350](https://github.com/getsentry/sentry-godot/pull/350))
+
+### Dependencies
+
+- Bump Sentry Android from v8.20.0 to v8.21.0 ([#352](https://github.com/getsentry/sentry-godot/pull/352))
+  - Also bumps Kotlin from 2.0.21 to 2.2.0
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8210)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.20.0...8.21.0)
+
+## 1.0.0-beta.1
+
+### Breaking changes
+
+First, we bumped Godot compatibility to 4.5-beta7 ([#348](https://github.com/getsentry/sentry-godot/pull/348))
+
+Second, we've redesigned the breadcrumb API for a cleaner, more intuitive interface. Previously, `add_breadcrumb()` method accepted 5 parameters (3 of which were strings), making it confusing to use. The new approach uses a dedicated `SentryBreadcrumb` class:
+
+```gdscript
+var crumb := SentryBreadcrumb.create("Something happened")
+crumb.type = "info"
+crumb.set_data({"some": "data"})
+SentrySDK.add_breadcrumb(crumb)
+```
+
+For simple breadcrumbs, you can use a one-liner:
+```gdscript
+SentrySDK.add_breadcrumb(SentryBreadcrumb.create("Something happened"))
+```
+
+This change provides better type safety, improved readability, and enables future support for the `before_breadcrumb` callback.
+
 ### Features
 
 - Add support for script context and variables on Apple platforms ([#306](https://github.com/getsentry/sentry-godot/pull/306))
@@ -10,11 +43,25 @@
 ### Improvements
 
 - Improve initialization flow ([#322](https://github.com/getsentry/sentry-godot/pull/322))
+- Introduce `SentryBreadcrumb` class ([#332](https://github.com/getsentry/sentry-godot/pull/332))
 
 ### Fixes
 
 - Potential crash in SentryLogger if removed early ([#323](https://github.com/getsentry/sentry-godot/pull/323))
 - Ensure compatibility with minSdk 24 on Android ([#324](https://github.com/getsentry/sentry-godot/pull/324))
+- Fixed UTF-8 retention problems with native SentryEvent properties ([#345](https://github.com/getsentry/sentry-godot/pull/345))
+
+### Dependencies
+
+- Bump Cocoa SDK from v8.55.0 to v8.55.1 ([#349](https://github.com/getsentry/sentry-godot/pull/349))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8551)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.0...8.55.1)
+- Bump Native SDK from v0.10.0 to v0.10.1 ([#344](https://github.com/getsentry/sentry-godot/pull/344))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0101)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.10.0...0.10.1)
+- Bump Sentry Android from v8.19.1 to v8.20.0 ([#325](https://github.com/getsentry/sentry-godot/pull/325))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8200)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.19.1...8.20.0)
 
 ## Other changes
 

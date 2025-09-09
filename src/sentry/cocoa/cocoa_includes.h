@@ -37,6 +37,7 @@ using SentryThread = ::SentryThread;
 // In C++ context, make objc::SentryEvent an alias to void
 namespace objc {
 using SentryEvent = void;
+using SentryBreadcrumb = void;
 } // namespace objc
 
 #endif // __OBJC__
