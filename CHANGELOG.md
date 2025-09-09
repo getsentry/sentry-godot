@@ -6,6 +6,12 @@
 
 - Use threads interface for error reporting with Native SDK ([#350](https://github.com/getsentry/sentry-godot/pull/350))
 
+### Dependencies
+
+- Bump Sentry Android from v8.20.0 to v8.21.0 ([#352](https://github.com/getsentry/sentry-godot/pull/352))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8210)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.20.0...8.21.0)
+
 ## 1.0.0-beta.1
 
 ### Breaking changes
