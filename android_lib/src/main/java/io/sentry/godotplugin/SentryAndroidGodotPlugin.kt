@@ -444,8 +444,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             }
 
             if (frameData.containsKey("vars")) {
-                val variables = frameData["vars"] as? Dictionary
-                vars = variables
+                vars = frameData["vars"] as? Dictionary
             }
         }
 
