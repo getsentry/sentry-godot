@@ -2,9 +2,16 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Configuration script support and `SentryConfiguration` class are removed. Instead, please use manual initialization with a configuration callback, if you need to set up SDK from code.
+- `enabled` option is renamed to `auto_init` for clarity, and removed from SentryOptions properties (setting it from code has no sense - we auto-initialize very early).
+- `disabled_in_editor_play` option is renamed to `skip_auto_init_on_editor_play` for clarity, and removed from SentryOptions properties.
+
 ### Features
 
 - Support local variables on Android ([#334](https://github.com/getsentry/sentry-godot/pull/334))
+- Allow initializing manually and shutting down SentrySDK ([#321](https://github.com/getsentry/sentry-godot/pull/321))
 
 ### Other changes
 
