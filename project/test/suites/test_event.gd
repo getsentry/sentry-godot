@@ -2,6 +2,11 @@ extends GdUnitTestSuite
 ## Basic tests for the SentryEvent class.
 
 
+func before() -> void:
+	if not SentrySDK.is_enabled():
+		SentrySDK.init()
+
+
 ## Test string properties accessors and UTF-8 encoding preservation.
 @warning_ignore("unused_parameter")
 func test_string_properties_and_utf8(property: String, test_parameters := [
