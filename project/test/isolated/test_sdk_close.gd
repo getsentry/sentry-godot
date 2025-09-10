@@ -5,11 +5,6 @@ extends GdUnitTestSuite
 signal callback_processed
 
 
-static func configure_options(options: SentryOptions) -> void:
-	# Ensure SDK auto-intialization.
-	options.enabled = true
-
-
 func before_test() -> void:
 	SentrySDK._set_before_send(_before_send)
 

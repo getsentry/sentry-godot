@@ -12,8 +12,6 @@ func before_test() -> void:
 ## Test simple bool properties.
 @warning_ignore("unused_parameter")
 func test_bool_properties(property: String, test_parameters := [
-		["enabled"],
-		["disabled_in_editor_play"],
 		["debug"],
 		["attach_log"],
 		["attach_screenshot"],
