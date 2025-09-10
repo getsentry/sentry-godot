@@ -12,6 +12,9 @@
   - Also bumps Kotlin from 2.0.21 to 2.2.0
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8210)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.20.0...8.21.0)
+- Bump Sentry Android from v8.21.0 to v8.21.1 ([#353](https://github.com/getsentry/sentry-godot/pull/353))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8211)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.21.0...8.21.1)
 
 ## 1.0.0-beta.1
 
