@@ -118,7 +118,7 @@ void SentrySDK::destroy_singleton() {
 	singleton = nullptr;
 }
 
-void SentrySDK::init() {
+void SentrySDK::init(const Callable &p_configuration_callback) {
 	ERR_FAIL_COND_MSG(internal_sdk->is_enabled(), "Attempted to initialize SentrySDK that is already initialized");
 
 #if SDK_ANDROID
@@ -139,7 +139,7 @@ void SentrySDK::init() {
 	set_user(user);
 
 	sentry::util::print_debug("Initializing Sentry SDK");
-	internal_sdk->init(_get_global_attachments());
+	internal_sdk->init(_get_global_attachments(), p_configuration_callback);
 
 	if (internal_sdk->is_enabled()) {
 		if (sentry::contexts::should_delay_contexts()) {
@@ -369,7 +369,7 @@ void SentrySDK::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_ERROR);
 	BIND_ENUM_CONSTANT(LEVEL_FATAL);
 
-	ClassDB::bind_method(D_METHOD("init"), &SentrySDK::init);
+	ClassDB::bind_method(D_METHOD("init", "configuration_callback"), &SentrySDK::init, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("close"), &SentrySDK::close);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &SentrySDK::is_enabled);
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "breadcrumb"), &SentrySDK::add_breadcrumb);

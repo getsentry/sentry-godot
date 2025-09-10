@@ -134,8 +134,12 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void AndroidSDK::init(const PackedStringArray &p_global_attachments) {
+void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	ERR_FAIL_NULL(android_plugin);
+
+	if (p_configuration_callback.is_valid()) {
+		p_configuration_callback.call(SentryOptions::get_singleton());
+	}
 
 	for (const String &path : p_global_attachments) {
 		bool is_view_hierarchy = path.ends_with(SENTRY_VIEW_HIERARCHY_FN);

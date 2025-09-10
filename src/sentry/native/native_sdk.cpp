@@ -266,9 +266,13 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void NativeSDK::init(const PackedStringArray &p_global_attachments) {
+void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+
+	if (p_configuration_callback.is_valid()) {
+		p_configuration_callback.call(SentryOptions::get_singleton());
+	}
 
 	sentry_options_t *options = sentry_options_new();
 

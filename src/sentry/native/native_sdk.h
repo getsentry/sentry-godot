@@ -36,7 +36,7 @@ public:
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
 
-	virtual void init(const PackedStringArray &p_global_attachments) override;
+	virtual void init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) override;
 	virtual void close() override;
 	virtual bool is_enabled() const override;
 

@@ -39,7 +39,7 @@ public:
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) = 0;
 
-	virtual void init(const PackedStringArray &p_global_attachments) = 0;
+	virtual void init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) = 0;
 	virtual void close() = 0;
 	virtual bool is_enabled() const = 0;
 
