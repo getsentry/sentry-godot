@@ -74,6 +74,7 @@
 			<description>
 				Initializes the SDK. Called automatically during startup if "Auto Init" is enabled in the project settings.
 				Manual initialization is only needed when you want to control the exact timing of SDK startup, or when you need to initialize options from code, or use callbacks such as [member SentryOptions.before_send]. Make sure to disable "Auto Init" in the project settings if you intend to manually initialize the SDK.
+				[b]Note[/b]: The earliest place to initialize Sentry from script is in the [method MainLoop._initialize].
 				You can customize the SDK's options by passing a [param configuration_callback] function. Here's a complete example:
 				[codeblock]
 				class_name ProjectMainLoop
@@ -90,7 +91,8 @@
 					)
 
 				func _on_before_send_to_sentry(event: SentryEvent) -> SentryEvent:
-					# Process event and return either the same event object or null to discard it
+					# Process event and return either the same event object,
+					# with or withour modifications, or null to skip reporting the event.
 					return event
 				[/codeblock]
 			</description>
