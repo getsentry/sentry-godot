@@ -82,7 +82,7 @@
 				# Tip: Assign ProjectMainLoop as your main loop type in the project settings
 				# under `application/run/main_loop_type`.
 
-				func _initialize() -> void:
+				func _initialize() -&gt; void:
 					SentrySDK.init(func(options: SentryOptions) -&gt; void:
 						options.debug = true
 						options.release = "my-game@1.2.3"
@@ -90,7 +90,7 @@
 						options.before_send = _on_before_send_to_sentry
 					)
 
-				func _on_before_send_to_sentry(event: SentryEvent) -> SentryEvent:
+				func _on_before_send_to_sentry(event: SentryEvent) -&gt; SentryEvent:
 					# Process event and return either the same event object,
 					# with or withour modifications, or null to skip reporting the event.
 					return event
