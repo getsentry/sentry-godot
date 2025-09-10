@@ -37,12 +37,10 @@ private:
 	Ref<SentryUser> user;
 	Ref<Mutex> user_mutex;
 	Ref<SentryLogger> logger;
-	bool configuration_succeeded = false;
 
 	void _init_contexts();
 	PackedStringArray _get_global_attachments();
 	void _auto_initialize();
-	void _check_if_configuration_succeeded();
 	void _demo_helper_crash_app();
 
 protected:
@@ -56,8 +54,6 @@ public:
 	static SentrySDK *get_singleton() { return singleton; }
 
 	_FORCE_INLINE_ std::shared_ptr<sentry::InternalSDK> get_internal_sdk() const { return internal_sdk; }
-
-	void notify_options_configured();
 
 	// * Exported API
 
