@@ -70,8 +70,18 @@
 		</method>
 		<method name="init">
 			<return type="void" />
+			<param index="0" name="configuration_callback" type="Callable" default="Callable()" />
 			<description>
-				Initializes the SDK. Called automatically during startup if [member SentryOptions.enabled] is set to [code]true[/code]. Manual initialization is only needed when you want to control the exact timing of SDK startup or when automatic initialization is disabled.
+				Initializes the SDK. Called automatically during startup if [member SentryOptions.auto_init] is set to [code]true[/code]. Manual initialization is only needed when you want to control the exact timing of SDK startup, or when you need to initialize options from code, or use callbacks such as [method SentryOptions.before_send].
+				If you want to customize the SDK's behavior, you can pass a configuration callback to this method:
+				[codeblock]
+				SentrySDK.init(func(options: SentryOptions) -> void:
+					options.debug = true
+					options.release = "my-game@1.2.3"
+					options.environment = "production"
+					options.before_send = _on_before_send_to_sentry
+				)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_enabled" qualifiers="const">

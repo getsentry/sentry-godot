@@ -49,17 +49,11 @@
 		<member name="diagnostic_level" type="int" setter="set_diagnostic_level" getter="get_diagnostic_level" enum="SentrySDK.Level" default="0">
 			Specifies the minimum level of messages to be printed if [member debug] is enabled.
 		</member>
-		<member name="disabled_in_editor_play" type="bool" setter="set_disabled_in_editor_play" getter="is_disabled_in_editor_play" default="false">
-			If [code]true[/code], the SDK will not initialize when you play/run your project from within the Godot editor (using the play button or F5).
-		</member>
 		<member name="dist" type="String" setter="set_dist" getter="get_dist" default="&quot;&quot;">
 			The application's distribution. Distributions are used to disambiguate build or deployment variants of the same release of an application.
 		</member>
 		<member name="dsn" type="String" setter="set_dsn" getter="get_dsn" default="&quot;&quot;">
 			Data Source Name (DSN): Specifies where the SDK should send the events. If this value is not provided, the SDK will try to read it from the [code]SENTRY_DSN[/code] environment variable. If that variable also does not exist, the SDK will just not send any events.
-		</member>
-		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
-			If [code]false[/code], the SDK will not initialize. This is useful for temporarily disabling the SDK in the Project Settings, or in a [SentryConfiguration] script.
 		</member>
 		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;editor_dev&quot;">
 			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a [SentryConfiguration] script.
