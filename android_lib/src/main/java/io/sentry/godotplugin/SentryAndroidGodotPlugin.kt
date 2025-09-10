@@ -123,7 +123,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun initialize(
+    fun init(
         beforeSendHandlerId: Long,
         dsn: String,
         debug: Boolean,
