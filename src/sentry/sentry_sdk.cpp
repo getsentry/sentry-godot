@@ -128,16 +128,6 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	}
 #endif
 
-	// Initialize user if it wasn't explicitly assigned.
-	if (user.is_null()) {
-		user.instantiate();
-		user->set_id(runtime_config->get_installation_id());
-		if (SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
-			user->infer_ip_address();
-		}
-	}
-	set_user(user);
-
 	sentry::util::print_debug("Initializing Sentry SDK");
 	internal_sdk->init(_get_global_attachments(), p_configuration_callback);
 
@@ -324,6 +314,16 @@ void SentrySDK::prepare_and_auto_initialize() {
 	// Load the runtime configuration from the user's data directory.
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
+
+	// Initialize user.
+	if (user.is_null()) {
+		user.instantiate();
+		user->set_id(runtime_config->get_installation_id());
+		if (SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
+			user->infer_ip_address();
+		}
+	}
+	set_user(user);
 
 	// Verify project settings and notify user via errors if there are any issues (deferred).
 	callable_mp_static(_verify_project_settings).call_deferred();
