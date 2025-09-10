@@ -10,7 +10,7 @@ using namespace godot;
 
 namespace sentry::contexts {
 
-void init_contexts();
+bool should_delay_contexts();
 
 Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config);
 

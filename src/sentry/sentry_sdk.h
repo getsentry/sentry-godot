@@ -39,6 +39,7 @@ private:
 	Ref<SentryLogger> logger;
 	bool is_auto_initializing = false;
 
+	void _init_contexts();
 	PackedStringArray _get_global_attachments();
 	void _auto_initialize();
 	void _demo_helper_crash_app();

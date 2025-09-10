@@ -3,8 +3,6 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
 #include "sentry/sentry_options.h"
-#include "sentry/sentry_sdk.h"
-#include "sentry/util/print.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
@@ -51,22 +49,12 @@ String _screen_orientation_as_string(int32_t p_screen) {
 
 namespace sentry::contexts {
 
-void init_contexts() {
-	sentry::util::print_debug("initializing contexts");
-	std::shared_ptr<InternalSDK> internal_sdk = SentrySDK::get_singleton()->get_internal_sdk();
-
-#ifdef SDK_NATIVE
-	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
-	internal_sdk->set_context("app", sentry::contexts::make_app_context());
-#endif
-
-	internal_sdk->set_context("culture", sentry::contexts::make_culture_context());
-	internal_sdk->set_context("gpu", sentry::contexts::make_gpu_context());
-
-	// Custom contexts.
-	internal_sdk->set_context("display", sentry::contexts::make_display_context());
-	internal_sdk->set_context("godot_engine", sentry::contexts::make_godot_engine_context());
-	internal_sdk->set_context("environment", sentry::contexts::make_environment_context());
+bool should_delay_contexts() {
+	// Delay contexts if engine singletons are not ready.
+	return !OS::get_singleton() || !Engine::get_singleton() ||
+			!DisplayServer::get_singleton() || !Time::get_singleton() ||
+			!ProjectSettings::get_singleton() || !Performance::get_singleton() ||
+			!RenderingServer::get_singleton();
 }
 
 Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
