@@ -7,7 +7,6 @@
 #include "sentry/runtime_config.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_breadcrumb.h"
-#include "sentry/sentry_configuration.h"
 #include "sentry/sentry_event.h"
 #include "sentry/sentry_logger.h"
 #include "sentry/sentry_options.h"
@@ -47,7 +46,6 @@ void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryLoggerLimits);
 	GDREGISTER_CLASS(SentryOptions);
 	GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
-	GDREGISTER_CLASS(SentryConfiguration);
 	GDREGISTER_CLASS(SentryUser);
 	GDREGISTER_CLASS(SentryTimestamp);
 	GDREGISTER_CLASS(SentrySDK);
