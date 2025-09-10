@@ -49,14 +49,6 @@ String _screen_orientation_as_string(int32_t p_screen) {
 
 namespace sentry::contexts {
 
-bool should_delay_contexts() {
-	// Delay contexts if engine singletons are not ready.
-	return !OS::get_singleton() || !Engine::get_singleton() ||
-			!DisplayServer::get_singleton() || !Time::get_singleton() ||
-			!ProjectSettings::get_singleton() || !Performance::get_singleton() ||
-			!RenderingServer::get_singleton();
-}
-
 Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	Dictionary device_context = Dictionary();
 	ERR_FAIL_NULL_V(OS::get_singleton(), device_context);

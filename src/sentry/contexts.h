@@ -10,8 +10,6 @@ using namespace godot;
 
 namespace sentry::contexts {
 
-bool should_delay_contexts();
-
 Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config);
 
 // Returns smaller device context dictionary that only includes values that are
