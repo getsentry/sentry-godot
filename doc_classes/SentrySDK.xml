@@ -74,14 +74,24 @@
 			<description>
 				Initializes the SDK. Called automatically during startup if "Auto Init" is enabled in the project settings.
 				Manual initialization is only needed when you want to control the exact timing of SDK startup, or when you need to initialize options from code, or use callbacks such as [member SentryOptions.before_send]. Make sure to disable "Auto Init" in the project settings if you intend to manually initialize the SDK.
-				If you want to customize the SDK's behavior, you can pass a configuration callback to this method:
+				You can customize the SDK's options by passing a [param configuration_callback] function. Here's a complete example:
 				[codeblock]
-				SentrySDK.init(func(options: SentryOptions) -&gt; void:
-					options.debug = true
-					options.release = "my-game@1.2.3"
-					options.environment = "production"
-					options.before_send = _on_before_send_to_sentry
-				)
+				class_name ProjectMainLoop
+				extends SceneTree
+				# Tip: Assign ProjectMainLoop as your main loop type in the project settings
+				# under `application/run/main_loop_type`.
+
+				func _initialize() -> void:
+					SentrySDK.init(func(options: SentryOptions) -&gt; void:
+						options.debug = true
+						options.release = "my-game@1.2.3"
+						options.environment = "production"
+						options.before_send = _on_before_send_to_sentry
+					)
+
+				func _on_before_send_to_sentry(event: SentryEvent) -> SentryEvent:
+					# Process event and return either the same event object or null to discard it
+					return event
 				[/codeblock]
 			</description>
 		</method>
