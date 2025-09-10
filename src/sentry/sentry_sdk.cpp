@@ -132,7 +132,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	internal_sdk->init(_get_global_attachments(), p_configuration_callback);
 
 	if (internal_sdk->is_enabled()) {
-		if (sentry::contexts::should_delay_contexts()) {
+		if (is_auto_initializing) {
 			// Delay contexts initialization until engine singletons are ready during early initialization.
 			callable_mp_static(&sentry::contexts::init_contexts).call_deferred();
 		} else {
@@ -284,7 +284,11 @@ void SentrySDK::_auto_initialize() {
 		return;
 	}
 
+	sentry::util::print_debug("Proceeding with automatic initialization.");
+
+	is_auto_initializing = true;
 	init();
+	is_auto_initializing = false;
 }
 
 void SentrySDK::_demo_helper_crash_app() {

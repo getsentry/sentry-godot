@@ -37,6 +37,7 @@ private:
 	Ref<SentryUser> user;
 	Ref<Mutex> user_mutex;
 	Ref<SentryLogger> logger;
+	bool is_auto_initializing = false;
 
 	PackedStringArray _get_global_attachments();
 	void _auto_initialize();

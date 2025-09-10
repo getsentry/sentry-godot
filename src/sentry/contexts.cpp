@@ -51,14 +51,6 @@ String _screen_orientation_as_string(int32_t p_screen) {
 
 namespace sentry::contexts {
 
-bool should_delay_contexts() {
-	// Delay contexts if engine singletons are not ready.
-	return !OS::get_singleton() || !Engine::get_singleton() ||
-			!DisplayServer::get_singleton() || !Time::get_singleton() ||
-			!ProjectSettings::get_singleton() || !Performance::get_singleton() ||
-			!RenderingServer::get_singleton();
-}
-
 void init_contexts() {
 	sentry::util::print_debug("initializing contexts");
 	std::shared_ptr<InternalSDK> internal_sdk = SentrySDK::get_singleton()->get_internal_sdk();
