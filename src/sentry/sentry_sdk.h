@@ -38,7 +38,6 @@ private:
 	Ref<Mutex> user_mutex;
 	Ref<SentryLogger> logger;
 
-	void _init_contexts();
 	PackedStringArray _get_global_attachments();
 	void _auto_initialize();
 	void _demo_helper_crash_app();

@@ -134,10 +134,9 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	if (internal_sdk->is_enabled()) {
 		if (sentry::contexts::should_delay_contexts()) {
 			// Delay contexts initialization until engine singletons are ready during early initialization.
-			callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
+			callable_mp_static(&sentry::contexts::init_contexts).call_deferred();
 		} else {
-			// TODO: move this into sentry::contexts
-			_init_contexts();
+			sentry::contexts::init_contexts();
 		}
 
 		if (SentryOptions::get_singleton()->is_logger_enabled()) {
@@ -227,23 +226,6 @@ void SentrySDK::remove_user() {
 void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	internal_sdk->set_context(p_key, p_value);
-}
-
-void SentrySDK::_init_contexts() {
-	sentry::util::print_debug("initializing contexts");
-
-#ifdef SDK_NATIVE
-	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
-	internal_sdk->set_context("app", sentry::contexts::make_app_context());
-#endif
-
-	internal_sdk->set_context("culture", sentry::contexts::make_culture_context());
-	internal_sdk->set_context("gpu", sentry::contexts::make_gpu_context());
-
-	// Custom contexts.
-	internal_sdk->set_context("display", sentry::contexts::make_display_context());
-	internal_sdk->set_context("godot_engine", sentry::contexts::make_godot_engine_context());
-	internal_sdk->set_context("environment", sentry::contexts::make_environment_context());
 }
 
 PackedStringArray SentrySDK::_get_global_attachments() {
