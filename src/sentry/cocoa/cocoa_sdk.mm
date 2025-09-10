@@ -214,7 +214,9 @@ CocoaSDK::CocoaSDK() {
 }
 
 CocoaSDK::~CocoaSDK() {
-	close();
+	if (is_enabled()) {
+		close();
+	}
 }
 
 } //namespace sentry::cocoa

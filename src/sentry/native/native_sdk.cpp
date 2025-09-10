@@ -358,7 +358,9 @@ NativeSDK::NativeSDK() {
 }
 
 NativeSDK::~NativeSDK() {
-	sentry_close();
+	if (is_enabled()) {
+		close();
+	}
 }
 
 } //namespace sentry::native
