@@ -65,7 +65,6 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/dist", p_options->dist, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
 	_define_setting(sentry::make_level_enum_property("sentry/options/diagnostic_level"), p_options->diagnostic_level);
-	_define_setting(PropertyInfo(Variant::STRING, "sentry/options/configuration_script", PROPERTY_HINT_FILE, "*.gd"), p_options->configuration_script, false);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs, false);
 	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
@@ -101,12 +100,11 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/options/dist", p_options->dist);
 
 	// DebugMode is only used to represent the debug option in the project settings.
-	// The user may also set the `debug` option explicitly in a configuration script.
+	// The user may also set the `debug` option explicitly in a configuration callback.
 	DebugMode mode = (DebugMode)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/debug_printing", (int)SentryOptions::DEBUG_DEFAULT);
 	p_options->_init_debug_option(mode);
 	p_options->diagnostic_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/diagnostic_level", p_options->diagnostic_level);
 
-	p_options->configuration_script = ProjectSettings::get_singleton()->get_setting("sentry/options/configuration_script", p_options->configuration_script);
 	p_options->sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/sample_rate", p_options->sample_rate);
 	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/options/max_breadcrumbs", p_options->max_breadcrumbs);
 	p_options->send_default_pii = ProjectSettings::get_singleton()->get_setting("sentry/options/send_default_pii", p_options->send_default_pii);

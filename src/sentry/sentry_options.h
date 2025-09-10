@@ -73,7 +73,6 @@ private:
 	BitField<GodotErrorMask> logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
 	Ref<SentryLoggerLimits> logger_limits;
 
-	String configuration_script;
 	Callable before_send;
 	Callable before_capture_screenshot;
 
@@ -160,8 +159,6 @@ public:
 
 	_FORCE_INLINE_ Ref<SentryLoggerLimits> get_logger_limits() const { return logger_limits; }
 	void set_logger_limits(const Ref<SentryLoggerLimits> &p_limits);
-
-	_FORCE_INLINE_ String get_configuration_script() const { return configuration_script; }
 
 	_FORCE_INLINE_ Callable get_before_send() const { return before_send; }
 	_FORCE_INLINE_ void set_before_send(const Callable &p_before_send) { before_send = p_before_send; }
