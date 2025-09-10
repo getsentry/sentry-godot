@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Support local variables on Android ([#334](https://github.com/getsentry/sentry-godot/pull/334))
+
 ### Other changes
 
 - Use threads interface for error reporting with Native SDK ([#350](https://github.com/getsentry/sentry-godot/pull/350))

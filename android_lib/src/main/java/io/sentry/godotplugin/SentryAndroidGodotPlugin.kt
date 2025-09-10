@@ -442,6 +442,10 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 preContext = (frameData["pre_context"] as? Array<*>)?.map { it as String }
                 postContext = (frameData["post_context"] as? Array<*>)?.map { it as String }
             }
+
+            if (frameData.containsKey("vars")) {
+                vars = frameData["vars"] as? Dictionary
+            }
         }
 
         exception.stacktrace?.frames?.add(frame)
