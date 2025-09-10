@@ -5,13 +5,13 @@ extends GdUnitTestSuite
 signal callback_processed
 
 
-static func configure_options(options: SentryOptions) -> void:
-	options.release = "1.2.3"
-	options.environment = "testing"
+func before() -> void:
+	SentrySDK.init(func(options: SentryOptions) -> void:
+		options.release = "1.2.3"
+		options.environment = "testing"
 
-
-func before_test() -> void:
-	SentrySDK._set_before_send(_before_send)
+		options.before_send = _before_send
+	)
 
 
 func _before_send(ev: SentryEvent) -> SentryEvent:

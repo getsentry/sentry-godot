@@ -5,8 +5,10 @@ extends GdUnitTestSuite
 signal callback_processed
 
 
-func before_test() -> void:
-	SentrySDK._set_before_send(_before_send)
+func before() -> void:
+	SentrySDK.init(func(options: SentryOptions) -> void:
+		options.before_send = _before_send
+	)
 
 
 func _before_send(_ev: SentryEvent) -> SentryEvent:
