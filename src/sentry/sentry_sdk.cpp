@@ -297,6 +297,11 @@ void SentrySDK::_auto_initialize() {
 		sentry::util::print_debug("Automatic initialization is disabled when project is played from the editor. Tip: This can be changed in the project settings.");
 	}
 
+	if (SentryOptions::get_singleton()->get_dsn().is_empty()) {
+		should_enable = false;
+		sentry::util::print_debug("Automatic initialization is disabled because no DSN was provided. Tip: You can obtain a DSN from Sentry's dashboard and add it in the project settings.");
+	}
+
 	if (!should_enable) {
 		sentry::util::print_info("Automatic initialization is disabled! Operations with Sentry SDK will result in no-ops.");
 		return;
