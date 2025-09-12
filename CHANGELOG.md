@@ -64,8 +64,15 @@ This change provides better type safety, improved readability, and enables futur
 - Ensure compatibility with minSdk 24 on Android ([#324](https://github.com/getsentry/sentry-godot/pull/324))
 - Fixed UTF-8 retention problems with native SentryEvent properties ([#345](https://github.com/getsentry/sentry-godot/pull/345))
 
+### Other changes
+
+- Move native and Android internal code into respective namespaces ([#333](https://github.com/getsentry/sentry-godot/pull/333))
+
 ### Dependencies
 
+- Bump Cocoa SDK from v8.54.0 to v8.55.0 ([#318](https://github.com/getsentry/sentry-godot/pull/318))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8550)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.54.0...8.55.0)
 - Bump Cocoa SDK from v8.55.0 to v8.55.1 ([#349](https://github.com/getsentry/sentry-godot/pull/349))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8551)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.0...8.55.1)
@@ -75,16 +82,6 @@ This change provides better type safety, improved readability, and enables futur
 - Bump Sentry Android from v8.19.1 to v8.20.0 ([#325](https://github.com/getsentry/sentry-godot/pull/325))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8200)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.19.1...8.20.0)
-
-## Other changes
-
-- Move native and Android internal code into respective namespaces ([#333](https://github.com/getsentry/sentry-godot/pull/333))
-
-### Dependencies
-
-- Bump Cocoa SDK from v8.54.0 to v8.55.0 ([#318](https://github.com/getsentry/sentry-godot/pull/318))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8550)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.54.0...8.55.0)
 - Bump gdUnit 4 from v5.1.0-8-g4357f3f to v5.1.0 ([#319](https://github.com/getsentry/sentry-godot/pull/319))
   - [changelog](https://github.com/MikeSchulze/gdUnit4/blob/master/CHANGELOG.md#v510)
   - [diff](https://github.com/MikeSchulze/gdUnit4/compare/v5.1.0-8-g4357f3f...v5.1.0)
