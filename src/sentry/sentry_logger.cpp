@@ -173,6 +173,43 @@ inline void _hash_combine(std::size_t &p_hash, const T &p_value) {
 	p_hash ^= hasher(p_value) + 0x9e3779b9 + (p_hash << 6) + (p_hash >> 2);
 }
 
+String _strip_invisible(const String &p_text) {
+	String result;
+
+	int i = 0;
+	int length = p_text.length();
+
+	while (i < length) {
+		char32_t c = p_text[i];
+
+		// Detect ANSI escape sequences: ESC (0x1B) + '['
+		if (c == 0x1B && i + 1 < length && p_text[i + 1] == '[') {
+			i += 2;
+			// Skip until we reach an ASCII letter (terminator)
+			while (i < length) {
+				char32_t cc = p_text[i];
+				if ((cc >= 'A' && cc <= 'Z') || (cc >= 'a' && cc <= 'z')) {
+					i++;
+					break;
+				}
+				i++;
+			}
+			continue;
+		}
+
+		// Skip control characters (ASCII < 0x20 or DEL 0x7F)
+		if (c < 0x20 || c == 0x7F) {
+			i++;
+			continue;
+		}
+
+		result += c;
+		i++;
+	}
+
+	return result;
+}
+
 } // unnamed namespace
 
 namespace sentry {
@@ -357,7 +394,9 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 		}
 	}
 
-	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(p_message);
+	String processed_message = _strip_invisible(p_message);
+
+	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(processed_message);
 	crumb->set_category("log");
 	crumb->set_level(p_error ? sentry::Level::LEVEL_ERROR : sentry::Level::LEVEL_INFO);
 	crumb->set_type("debug");
