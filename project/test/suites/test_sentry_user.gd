@@ -12,14 +12,6 @@ func _make_test_user() -> SentryUser:
 	return user
 
 
-## Verify if two SentryUser instances are equal.
-func _assert_users_are_equal(user1: SentryUser, user2: SentryUser) -> void:
-	assert_str(user1.id).is_equal(user2.id)
-	assert_str(user1.email).is_equal(user2.email)
-	assert_str(user1.username).is_equal(user2.username)
-	assert_str(user1.ip_address).is_equal(user2.ip_address)
-
-
 ## Default SentryUser should have non-empty ID initialized to installation_id.
 func test_default_user() -> void:
 	var user := SentrySDK.get_user()
@@ -29,9 +21,17 @@ func test_default_user() -> void:
 
 ## SentryUser data should be correctly saved.
 func test_sentry_user_assignment() -> void:
+	var expected: SentryUser = _make_test_user()
+
 	SentrySDK.set_user(_make_test_user())
-	assert_bool(SentrySDK.get_user().is_empty()).is_false()
-	_assert_users_are_equal(SentrySDK.get_user(), _make_test_user())
+
+	var actual: SentryUser = SentrySDK.get_user()
+
+	assert_bool(actual.is_empty()).is_false()
+	assert_str(expected.id).is_equal(actual.id)
+	assert_str(expected.email).is_equal(actual.email)
+	assert_str(expected.username).is_equal(actual.username)
+	assert_str(expected.ip_address).is_equal(actual.ip_address)
 
 
 ## SentryUser data should be properly removed.
