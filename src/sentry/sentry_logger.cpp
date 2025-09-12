@@ -104,7 +104,7 @@ Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
 		String platform = backtrace->get_language_name().to_lower().remove_char(' ');
 		for (int frame_idx = backtrace->get_frame_count() - 1; frame_idx >= 0; frame_idx--) {
 			SentryEvent::StackFrame stack_frame{
-				backtrace->get_frame_file(frame_idx),
+				backtrace->get_frame_file(frame_idx).trim_prefix("res://"),
 				backtrace->get_frame_function(frame_idx),
 				backtrace->get_frame_line(frame_idx),
 				true, // in_app
