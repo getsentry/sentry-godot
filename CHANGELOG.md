@@ -7,6 +7,7 @@
 - Configuration script support and `SentryConfiguration` class are removed. Instead, please use manual initialization with a configuration callback, if you need to set up SDK from code. See [#321](https://github.com/getsentry/sentry-godot/pull/321) for details.
 - `enabled` option is renamed to `auto_init` for clarity, and removed from SentryOptions properties (setting it from code has no sense - we auto-initialize very early).
 - `disabled_in_editor_play` option is renamed to `skip_auto_init_on_editor_play` for clarity, and removed from SentryOptions properties.
+- We bumped Godot compatibility to 4.5-rc2.
 
 ### Features
 
@@ -25,6 +26,7 @@
 - Bump Sentry Android from v8.21.0 to v8.21.1 ([#353](https://github.com/getsentry/sentry-godot/pull/353))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8211)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.21.0...8.21.1)
+- Bump Godot compatibility to 4.5-rc2 ([#356](https://github.com/getsentry/sentry-godot/pull/356))
 
 ## 1.0.0-beta.1
 
