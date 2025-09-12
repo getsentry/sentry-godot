@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- Strip invisible characters from logger breadcrumbs ([#359](https://github.com/getsentry/sentry-godot/pull/359))
+
 ## 1.0.0-beta.2
 
 ### Breaking changes
