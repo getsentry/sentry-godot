@@ -118,6 +118,48 @@ void SentrySDK::destroy_singleton() {
 	singleton = nullptr;
 }
 
+void SentrySDK::init(const Callable &p_configuration_callback) {
+	ERR_FAIL_COND_MSG(internal_sdk->is_enabled(), "Attempted to initialize SentrySDK that is already initialized");
+
+#if SDK_ANDROID
+	if (OS::get_singleton()->has_feature("editor")) {
+		ERR_FAIL_MSG("Initializing in Android editor is not supported!");
+		return;
+	}
+#endif
+
+	sentry::util::print_debug("Initializing Sentry SDK");
+	internal_sdk->init(_get_global_attachments(), p_configuration_callback);
+
+	if (internal_sdk->is_enabled()) {
+		if (is_auto_initializing) {
+			// Delay contexts initialization until engine singletons are ready during early initialization.
+			callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
+		} else {
+			// TODO: move this into sentry::contexts
+			_init_contexts();
+		}
+
+		if (SentryOptions::get_singleton()->is_logger_enabled()) {
+			if (logger.is_null()) {
+				logger.instantiate();
+			}
+			OS::get_singleton()->add_logger(logger);
+		}
+	}
+}
+
+void SentrySDK::close() {
+	if (internal_sdk->is_enabled()) {
+		sentry::util::print_debug("Shutting down Sentry SDK");
+		if (logger.is_valid()) {
+			OS::get_singleton()->remove_logger(logger);
+			logger.unref();
+		}
+		internal_sdk->close();
+	}
+}
+
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
 	return internal_sdk->capture_message(p_message, p_level);
 }
@@ -238,7 +280,51 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 void SentrySDK::_auto_initialize() {
 	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
-	// Initialize user if it wasn't set explicitly in the configuration script.
+	bool should_enable = true;
+
+	if (!SentryOptions::get_singleton()->is_auto_init_enabled()) {
+		should_enable = false;
+		sentry::util::print_debug("Automatic initialization is disabled in the project settings.");
+	}
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		should_enable = false;
+		sentry::util::print_debug("Automatic initialization is disabled in the editor.");
+	}
+
+	if (!Engine::get_singleton()->is_editor_hint() && OS::get_singleton()->has_feature("editor") && SentryOptions::get_singleton()->should_skip_auto_init_on_editor_play()) {
+		should_enable = false;
+		sentry::util::print_debug("Automatic initialization is disabled when project is played from the editor. Tip: This can be changed in the project settings.");
+	}
+
+	if (SentryOptions::get_singleton()->get_dsn().is_empty()) {
+		should_enable = false;
+		sentry::util::print_debug("Automatic initialization is disabled because no DSN was provided. Tip: You can obtain a DSN from Sentry's dashboard and add it in the project settings.");
+	}
+
+	if (!should_enable) {
+		sentry::util::print_info("Automatic initialization is disabled! Operations with Sentry SDK will result in no-ops.");
+		return;
+	}
+
+	sentry::util::print_debug("Proceeding with automatic initialization.");
+
+	is_auto_initializing = true;
+	init();
+	is_auto_initializing = false;
+}
+
+void SentrySDK::_demo_helper_crash_app() {
+	char *ptr = (char *)1;
+	sentry::util::print_fatal("Crash by access violation ", ptr); // this is going to crash the app
+}
+
+void SentrySDK::prepare_and_auto_initialize() {
+	// Load the runtime configuration from the user's data directory.
+	runtime_config.instantiate();
+	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
+
+	// Initialize user.
 	if (user.is_null()) {
 		user.instantiate();
 		user->set_id(runtime_config->get_installation_id());
@@ -247,72 +333,6 @@ void SentrySDK::_auto_initialize() {
 		}
 	}
 	set_user(user);
-
-	bool should_enable = true;
-
-	if (!SentryOptions::get_singleton()->is_enabled()) {
-		should_enable = false;
-		sentry::util::print_debug("Sentry SDK is disabled in options.");
-	}
-
-	if (Engine::get_singleton()->is_editor_hint()) {
-		should_enable = false;
-		sentry::util::print_debug("Sentry SDK is disabled in the editor.");
-	}
-
-	if (!Engine::get_singleton()->is_editor_hint() && OS::get_singleton()->has_feature("editor") && SentryOptions::get_singleton()->is_disabled_in_editor_play()) {
-		should_enable = false;
-		sentry::util::print_debug("Sentry SDK is disabled when project is played from the editor. Tip: This can be changed in the project settings.");
-	}
-
-#if SDK_ANDROID
-	if (should_enable) {
-		if (OS::get_singleton()->has_feature("editor")) {
-			should_enable = false;
-		}
-	}
-#endif
-
-	enabled = should_enable;
-
-	if (!enabled) {
-		sentry::util::print_info("Sentry SDK is DISABLED! Operations with Sentry SDK will result in no-ops.");
-		return;
-	}
-
-	internal_sdk->init(_get_global_attachments());
-
-	if (SentryOptions::get_singleton()->is_logger_enabled()) {
-		logger.instantiate();
-		OS::get_singleton()->add_logger(logger);
-	}
-}
-
-void SentrySDK::_check_if_configuration_succeeded() {
-	if (!configuration_succeeded) {
-		// Push error and initialize anyway.
-		ERR_PRINT("Sentry: Configuration via user script failed. Will try to initialize SDK anyway.");
-		sentry::util::print_error("initializing late because configuration via user script failed");
-		_auto_initialize();
-	}
-}
-
-void SentrySDK::_demo_helper_crash_app() {
-	char *ptr = (char *)1;
-	sentry::util::print_fatal("Crash by access violation ", ptr); // this is going to crash the app
-}
-
-void SentrySDK::notify_options_configured() {
-	sentry::util::print_debug("finished configuring options via user script");
-	configuration_succeeded = true;
-	_auto_initialize();
-	_init_contexts();
-}
-
-void SentrySDK::prepare_and_auto_initialize() {
-	// Load the runtime configuration from the user's data directory.
-	runtime_config.instantiate();
-	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
 	// Verify project settings and notify user via errors if there are any issues (deferred).
 	callable_mp_static(_verify_project_settings).call_deferred();
@@ -337,28 +357,7 @@ void SentrySDK::prepare_and_auto_initialize() {
 		SentryOptions::get_singleton()->add_event_processor(memnew(ViewHierarchyProcessor));
 	}
 
-	// Auto-initialize SDK.
-	if (SentryOptions::get_singleton()->get_configuration_script().is_empty() || Engine::get_singleton()->is_editor_hint()) {
-		// Early initialization path.
-		_auto_initialize();
-		// Delay contexts initialization until the engine singletons are ready.
-		callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
-	} else {
-		// Register an autoload singleton, which is a user script extending the
-		// `SentryConfiguration` class. It will be instantiated and added to the
-		// scene tree by the engine shortly after ScriptServer is initialized.
-		// When this happens, the `SentryConfiguration` instance receives
-		// `NOTIFICATION_READY`, triggering our notification processing code in
-		// C++, which calls `_configure()` on the user script and then invokes
-		// `notify_options_configured()` in `SentrySDK`. This, in turn,
-		// auto-initializes the SDK.
-		sentry::util::print_debug("waiting for user configuration autoload");
-		ERR_FAIL_NULL(ProjectSettings::get_singleton());
-		ProjectSettings::get_singleton()->set_setting("autoload/SentryConfigurationScript",
-				SentryOptions::get_singleton()->get_configuration_script());
-		// Ensure issues with the configuration script are detected.
-		callable_mp(this, &SentrySDK::_check_if_configuration_succeeded).call_deferred();
-	}
+	_auto_initialize();
 }
 
 void SentrySDK::_notification(int p_what) {
@@ -379,6 +378,8 @@ void SentrySDK::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_ERROR);
 	BIND_ENUM_CONSTANT(LEVEL_FATAL);
 
+	ClassDB::bind_method(D_METHOD("init", "configuration_callback"), &SentrySDK::init, DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("close"), &SentrySDK::close);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &SentrySDK::is_enabled);
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "breadcrumb"), &SentrySDK::add_breadcrumb);
 	ClassDB::bind_method(D_METHOD("capture_message", "message", "level"), &SentrySDK::capture_message, DEFVAL(LEVEL_INFO));

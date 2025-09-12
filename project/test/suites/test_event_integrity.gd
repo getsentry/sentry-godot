@@ -7,6 +7,11 @@ signal callback_processed
 var created_id: String
 
 
+func before() -> void:
+	if not SentrySDK.is_enabled():
+		SentrySDK.init()
+
+
 func before_test() -> void:
 	SentrySDK._set_before_send(_before_send)
 

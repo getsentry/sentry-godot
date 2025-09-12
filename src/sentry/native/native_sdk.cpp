@@ -266,9 +266,13 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void NativeSDK::init(const PackedStringArray &p_global_attachments) {
+void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+
+	if (p_configuration_callback.is_valid()) {
+		p_configuration_callback.call(SentryOptions::get_singleton());
+	}
 
 	sentry_options_t *options = sentry_options_new();
 
@@ -335,13 +339,28 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments) {
 	}
 }
 
+void NativeSDK::close() {
+	int err = sentry_close();
+	initialized = false;
+
+	if (err != 0) {
+		ERR_PRINT("Sentry: Failed to close native SDK cleanly. Error code: " + itos(err));
+	}
+}
+
+bool NativeSDK::is_enabled() const {
+	return initialized;
+}
+
 NativeSDK::NativeSDK() {
 	last_uuid_mutex.instantiate();
 	last_uuid = sentry_uuid_nil();
 }
 
 NativeSDK::~NativeSDK() {
-	sentry_close();
+	if (is_enabled()) {
+		close();
+	}
 }
 
 } //namespace sentry::native

@@ -27,6 +27,9 @@ public:
 	_FORCE_INLINE_ static AndroidStringNames *get_singleton() { return singleton; }
 
 	// API methods.
+	StringName init;
+	StringName close;
+	StringName isEnabled;
 	StringName setContext;
 	StringName removeContext;
 	StringName setTag;

@@ -4,7 +4,10 @@
 		Contains Sentry SDK options.
 	</brief_description>
 	<description>
-		Defines options for the Sentry SDK. These options can be modified in the Project Settings under the [b]Sentry[/b] category or through a user configuration script. See [SentryConfiguration] for details on creating such a script.
+		Defines options for the Sentry SDK. These options can be modified in the Project Settings under the [b]Sentry[/b] category or from code through a configuration callback using manual initialization. See [method SentrySDK.init].
+		There are two options, that only appear in the project settings:
+		[b]Auto Init[/b] - Enables automatic initialization of the Sentry SDK when the game starts.
+		[b]Skip Auto Init on Editor Play[/b] - Prevents automatic initialization when running the game from the editor (by pressing the play button or F5).
 		To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/options/]Options documentation[/url].
 	</description>
 	<tutorials>
@@ -29,7 +32,7 @@
 			[/codeblock]
 		</member>
 		<member name="before_send" type="Callable" setter="set_before_send" getter="get_before_send" default="Callable()">
-			If assigned, this callback runs before an event is sent to Sentry. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a [SentryConfiguration] script. To check if the event is a crash, use [method SentryEvent.is_crash].
+			If assigned, this callback runs before an event is sent to Sentry. It takes [SentryEvent] as a parameter and return either the same event object, with or without modifications, or [code]null[/code] to skip reporting the event. You can assign it in a configuration callback using manual initialization (see [method SentrySDK.init]). To check if the event is a crash, use [method SentryEvent.is_crash].
 			[codeblock]
 			func _before_send(event: SentryEvent) -&gt; SentryEvent:
 			    if event.environment == "editor_dev_run":
@@ -49,20 +52,14 @@
 		<member name="diagnostic_level" type="int" setter="set_diagnostic_level" getter="get_diagnostic_level" enum="SentrySDK.Level" default="0">
 			Specifies the minimum level of messages to be printed if [member debug] is enabled.
 		</member>
-		<member name="disabled_in_editor_play" type="bool" setter="set_disabled_in_editor_play" getter="is_disabled_in_editor_play" default="false">
-			If [code]true[/code], the SDK will not initialize when you play/run your project from within the Godot editor (using the play button or F5).
-		</member>
 		<member name="dist" type="String" setter="set_dist" getter="get_dist" default="&quot;&quot;">
 			The application's distribution. Distributions are used to disambiguate build or deployment variants of the same release of an application.
 		</member>
 		<member name="dsn" type="String" setter="set_dsn" getter="get_dsn" default="&quot;&quot;">
 			Data Source Name (DSN): Specifies where the SDK should send the events. If this value is not provided, the SDK will try to read it from the [code]SENTRY_DSN[/code] environment variable. If that variable also does not exist, the SDK will just not send any events.
 		</member>
-		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
-			If [code]false[/code], the SDK will not initialize. This is useful for temporarily disabling the SDK in the Project Settings, or in a [SentryConfiguration] script.
-		</member>
 		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;editor_dev&quot;">
-			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a [SentryConfiguration] script.
+			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a configuration callback using manual initialization (see [method SentrySDK.init]).
 			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/environments/]Environments documentation[/url].
 		</member>
 		<member name="logger_breadcrumb_mask" type="int" setter="set_logger_breadcrumb_mask" getter="get_logger_breadcrumb_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="15">

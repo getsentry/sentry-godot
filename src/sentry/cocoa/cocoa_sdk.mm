@@ -141,10 +141,14 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}];
 }
 
-void CocoaSDK::init(const PackedStringArray &p_global_attachments) {
+void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
 
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
+		if (p_configuration_callback.is_valid()) {
+			p_configuration_callback.call(SentryOptions::get_singleton());
+		}
+
 		options.dsn = string_to_objc(SentryOptions::get_singleton()->get_dsn());
 		options.debug = SentryOptions::get_singleton()->is_debug_enabled();
 		options.releaseName = string_to_objc(SentryOptions::get_singleton()->get_release());
@@ -197,6 +201,10 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments) {
 	}];
 }
 
+void CocoaSDK::close() {
+	[objc::SentrySDK close];
+}
+
 bool CocoaSDK::is_enabled() const {
 	return [objc::SentrySDK isEnabled];
 }
@@ -207,7 +215,7 @@ CocoaSDK::CocoaSDK() {
 
 CocoaSDK::~CocoaSDK() {
 	if (is_enabled()) {
-		[objc::SentrySDK close];
+		close();
 	}
 }
 

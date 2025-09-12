@@ -134,10 +134,12 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void AndroidSDK::init(const PackedStringArray &p_global_attachments) {
+void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	ERR_FAIL_NULL(android_plugin);
 
-	sentry::util::print_debug("Initializing Sentry Android SDK");
+	if (p_configuration_callback.is_valid()) {
+		p_configuration_callback.call(SentryOptions::get_singleton());
+	}
 
 	for (const String &path : p_global_attachments) {
 		bool is_view_hierarchy = path.ends_with(SENTRY_VIEW_HIERARCHY_FN);
@@ -148,7 +150,7 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments) {
 				is_view_hierarchy ? "event.view_hierarchy" : String());
 	}
 
-	android_plugin->call("initialize",
+	android_plugin->call(ANDROID_SN(init),
 			before_send_handler->get_instance_id(),
 			SentryOptions::get_singleton()->get_dsn(),
 			SentryOptions::get_singleton()->is_debug_enabled(),
@@ -157,6 +159,16 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments) {
 			SentryOptions::get_singleton()->get_environment(),
 			SentryOptions::get_singleton()->get_sample_rate(),
 			SentryOptions::get_singleton()->get_max_breadcrumbs());
+}
+
+void AndroidSDK::close() {
+	if (android_plugin != nullptr) {
+		android_plugin->call(ANDROID_SN(close));
+	}
+}
+
+bool AndroidSDK::is_enabled() const {
+	return android_plugin && android_plugin->call(ANDROID_SN(isEnabled));
 }
 
 AndroidSDK::AndroidSDK() {
@@ -170,6 +182,10 @@ AndroidSDK::AndroidSDK() {
 }
 
 AndroidSDK::~AndroidSDK() {
+	if (is_enabled()) {
+		close();
+	}
+
 	AndroidStringNames::destroy_singleton();
 	if (before_send_handler != nullptr) {
 		memdelete(before_send_handler);

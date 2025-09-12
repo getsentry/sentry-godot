@@ -123,7 +123,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun initialize(
+    fun init(
         beforeSendHandlerId: Long,
         dsn: String,
         debug: Boolean,
@@ -152,6 +152,16 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                     eventsByHandle.get()?.remove(handle) // Returns the event or null if it was discarded.
                 }
             }
+    }
+
+    @UsedByGodot
+    fun close() {
+        Sentry.close()
+    }
+
+    @UsedByGodot
+    fun isEnabled(): Boolean {
+      return Sentry.isEnabled()
     }
 
     @UsedByGodot

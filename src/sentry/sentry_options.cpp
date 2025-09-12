@@ -57,14 +57,14 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	_define_setting("sentry/options/enabled", p_options->enabled);
-	_define_setting("sentry/options/disabled_in_editor_play", p_options->disabled_in_editor_play);
+	_define_setting("sentry/options/auto_init", p_options->auto_init);
+	_define_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
+
 	_define_setting("sentry/options/dsn", p_options->dsn);
 	_define_setting("sentry/options/release", p_options->release, false);
 	_define_setting("sentry/options/dist", p_options->dist, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
 	_define_setting(sentry::make_level_enum_property("sentry/options/diagnostic_level"), p_options->diagnostic_level);
-	_define_setting(PropertyInfo(Variant::STRING, "sentry/options/configuration_script", PROPERTY_HINT_FILE, "*.gd"), p_options->configuration_script, false);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs, false);
 	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
@@ -92,19 +92,19 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	p_options->enabled = ProjectSettings::get_singleton()->get_setting("sentry/options/enabled", p_options->enabled);
-	p_options->disabled_in_editor_play = ProjectSettings::get_singleton()->get_setting("sentry/options/disabled_in_editor_play", p_options->disabled_in_editor_play);
+	p_options->auto_init = ProjectSettings::get_singleton()->get_setting("sentry/options/auto_init", p_options->auto_init);
+	p_options->skip_auto_init_on_editor_play = ProjectSettings::get_singleton()->get_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
+
 	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
 	p_options->set_release(ProjectSettings::get_singleton()->get_setting("sentry/options/release", p_options->release));
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/options/dist", p_options->dist);
 
 	// DebugMode is only used to represent the debug option in the project settings.
-	// The user may also set the `debug` option explicitly in a configuration script.
+	// The user may also set the `debug` option explicitly in a configuration callback.
 	DebugMode mode = (DebugMode)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/debug_printing", (int)SentryOptions::DEBUG_DEFAULT);
 	p_options->_init_debug_option(mode);
 	p_options->diagnostic_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/diagnostic_level", p_options->diagnostic_level);
 
-	p_options->configuration_script = ProjectSettings::get_singleton()->get_setting("sentry/options/configuration_script", p_options->configuration_script);
 	p_options->sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/sample_rate", p_options->sample_rate);
 	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/options/max_breadcrumbs", p_options->max_breadcrumbs);
 	p_options->send_default_pii = ProjectSettings::get_singleton()->get_setting("sentry/options/send_default_pii", p_options->send_default_pii);
@@ -177,8 +177,6 @@ void SentryOptions::remove_event_processor(const Ref<SentryEventProcessor> &p_pr
 }
 
 void SentryOptions::_bind_methods() {
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enabled"), set_enabled, is_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "disabled_in_editor_play"), set_disabled_in_editor_play, is_disabled_in_editor_play);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dsn"), set_dsn, get_dsn);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "release"), set_release, get_release);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dist"), set_dist, get_dist);

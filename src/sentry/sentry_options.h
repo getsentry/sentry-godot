@@ -48,8 +48,8 @@ private:
 	};
 	static constexpr DebugMode DEBUG_DEFAULT = DebugMode::DEBUG_AUTO;
 
-	bool enabled = true;
-	bool disabled_in_editor_play = false;
+	bool auto_init = true;
+	bool skip_auto_init_on_editor_play = false;
 	String dsn = "";
 	String release = "{app_name}@{app_version}";
 	String dist = "";
@@ -73,7 +73,6 @@ private:
 	BitField<GodotErrorMask> logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
 	Ref<SentryLoggerLimits> logger_limits;
 
-	String configuration_script;
 	Callable before_send;
 	Callable before_capture_screenshot;
 
@@ -92,11 +91,11 @@ public:
 	static void destroy_singleton();
 	_FORCE_INLINE_ static Ref<SentryOptions> get_singleton() { return singleton; }
 
-	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
-	_FORCE_INLINE_ void set_enabled(bool p_enabled) { enabled = p_enabled; }
+	_FORCE_INLINE_ bool is_auto_init_enabled() const { return auto_init; }
+	_FORCE_INLINE_ void set_auto_init(bool p_enabled) { auto_init = p_enabled; }
 
-	_FORCE_INLINE_ bool is_disabled_in_editor_play() const { return disabled_in_editor_play; }
-	_FORCE_INLINE_ void set_disabled_in_editor_play(bool p_disabled_in_editor_play) { disabled_in_editor_play = p_disabled_in_editor_play; }
+	_FORCE_INLINE_ bool should_skip_auto_init_on_editor_play() const { return skip_auto_init_on_editor_play; }
+	_FORCE_INLINE_ void set_skip_auto_init_on_editor_play(bool p_skip) { skip_auto_init_on_editor_play = p_skip; }
 
 	_FORCE_INLINE_ String get_dsn() const { return dsn; }
 	_FORCE_INLINE_ void set_dsn(const String &p_dsn) { dsn = p_dsn; }
@@ -160,8 +159,6 @@ public:
 
 	_FORCE_INLINE_ Ref<SentryLoggerLimits> get_logger_limits() const { return logger_limits; }
 	void set_logger_limits(const Ref<SentryLoggerLimits> &p_limits);
-
-	_FORCE_INLINE_ String get_configuration_script() const { return configuration_script; }
 
 	_FORCE_INLINE_ Callable get_before_send() const { return before_send; }
 	_FORCE_INLINE_ void set_before_send(const Callable &p_before_send) { before_send = p_before_send; }

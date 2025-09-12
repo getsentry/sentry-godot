@@ -5,6 +5,11 @@ extends GdUnitTestSuite
 signal callback_processed
 
 
+func before() -> void:
+	if not SentrySDK.is_enabled():
+		SentrySDK.init()
+
+
 ## SentrySDK.capture_message() should return a non-empty event ID, which must match the ID returned by the get_last_event_id() call.
 func test_capture_message_id() -> void:
 	var event_id := SentrySDK.capture_message("capture_message_test", SentrySDK.LEVEL_DEBUG)

@@ -37,13 +37,11 @@ private:
 	Ref<SentryUser> user;
 	Ref<Mutex> user_mutex;
 	Ref<SentryLogger> logger;
-	bool enabled = false;
-	bool configuration_succeeded = false;
+	bool is_auto_initializing = false;
 
 	void _init_contexts();
 	PackedStringArray _get_global_attachments();
 	void _auto_initialize();
-	void _check_if_configuration_succeeded();
 	void _demo_helper_crash_app();
 
 protected:
@@ -58,11 +56,11 @@ public:
 
 	_FORCE_INLINE_ std::shared_ptr<sentry::InternalSDK> get_internal_sdk() const { return internal_sdk; }
 
-	void notify_options_configured();
-
 	// * Exported API
 
-	bool is_enabled() const { return enabled; }
+	void init(const Callable &p_configuration_callback = Callable());
+	void close();
+	bool is_enabled() const { return internal_sdk->is_enabled(); }
 
 	void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb);
 
