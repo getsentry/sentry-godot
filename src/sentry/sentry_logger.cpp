@@ -387,14 +387,19 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 		return;
 	}
 
+	String processed_message = _strip_invisible(p_message);
+
+	if (processed_message.is_empty()) {
+		// Don't add empty breadcrumb.
+		return;
+	}
+
 	// Filtering: Check message prefixes to skip certain messages (e.g., Sentry's own debug output).
 	for (const String &prefix : filter_by_prefix) {
-		if (p_message.begins_with(prefix)) {
+		if (processed_message.begins_with(prefix)) {
 			return;
 		}
 	}
-
-	String processed_message = _strip_invisible(p_message);
 
 	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(processed_message);
 	crumb->set_category("log");
