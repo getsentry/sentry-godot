@@ -185,10 +185,10 @@ String _strip_invisible(const String &p_text) {
 		// Detect ANSI escape sequences: ESC (0x1B) + '['
 		if (c == 0x1B && i + 1 < length && p_text[i + 1] == '[') {
 			i += 2;
-			// Skip until we reach an ASCII letter (terminator)
+			// Skip until we reach a final byte (0x40-0x7E) aka [A-Za-z0-9].
 			while (i < length) {
 				char32_t cc = p_text[i];
-				if ((cc >= 'A' && cc <= 'Z') || (cc >= 'a' && cc <= 'z')) {
+				if (cc >= 0x40 && cc <= 0x7E) {
 					i++;
 					break;
 				}
