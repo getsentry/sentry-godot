@@ -56,14 +56,24 @@ jobs:
               --script "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" \
               --ignoreHeadlessMode \
               --continue \
-              --add test/suites/ \
-              --add test/util/json_assert/
+              --add test/suites/
 
       - name: Run isolated tests
         if: success() || failure()
         shell: pwsh
         timeout-minutes: 5
         run: ./scripts/run-isolated-tests.ps1
+
+      - name: Run JSONAssert tests
+        if: success() || failure()
+        shell: bash
+        timeout-minutes: 2
+        run: |
+          ${GODOT} --headless --debug --path project/ \
+              --script "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" \
+              --ignoreHeadlessMode \
+              --continue \
+              --add test/util/json_assert/
 
       - name: Upload results
         if: always() # do this step even if the tests fail
