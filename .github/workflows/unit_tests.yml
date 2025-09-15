@@ -56,7 +56,7 @@ jobs:
               --script "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" \
               --ignoreHeadlessMode \
               --continue \
-              --add test/suites/
+              --add test/suites/ \
               --add test/util/json_assert/
 
       - name: Run isolated tests
