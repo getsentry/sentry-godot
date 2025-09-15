@@ -8,7 +8,7 @@ extends SceneTree
 
 
 func _initialize() -> void:
-	if _is_testing_environment():
+	if _is_running_tests():
 		return
 
 	SentrySDK.init(func(options: SentryOptions) -> void:
@@ -39,5 +39,5 @@ func _on_before_send_to_sentry(ev: SentryEvent) -> SentryEvent:
 	return ev
 
 
-func _is_testing_environment() -> bool:
+func _is_running_tests() -> bool:
 	return "res://addons/gdUnit4/src/core/runners/GdUnitTestRunner.tscn" in OS.get_cmdline_args()
