@@ -1,18 +1,17 @@
-extends GdUnitTestSuite
+extends SentryTestSuite
 ## Test SentrySDK methods.
 
 
 signal callback_processed
 
 
-func before() -> void:
-	if not SentrySDK.is_enabled():
-		SentrySDK.init()
-
-
 ## SentrySDK.capture_message() should return a non-empty event ID, which must match the ID returned by the get_last_event_id() call.
 func test_capture_message_id() -> void:
+	# Ensure events are not discarded
+	SentrySDK._set_before_send(func(ev): return ev)
+
 	var event_id := SentrySDK.capture_message("capture_message_test", SentrySDK.LEVEL_DEBUG)
+
 	assert_str(event_id).is_not_empty()
 	assert_str(SentrySDK.get_last_event_id()).is_not_empty()
 	assert_str(event_id).is_equal(SentrySDK.get_last_event_id())
@@ -34,8 +33,6 @@ func test_set_tag() -> void:
 	SentrySDK.capture_message("test-tags")
 	await assert_signal(monitor).is_emitted("callback_processed")
 
-	SentrySDK._unset_before_send()
-
 
 ## SentrySDK.remove_tag() should remove a tag from the event object.
 func test_remove_tag() -> void:
@@ -51,8 +48,6 @@ func test_remove_tag() -> void:
 	var monitor := monitor_signals(self, false)
 	SentrySDK.capture_message("test-tags")
 	await assert_signal(monitor).is_emitted("callback_processed")
-
-	SentrySDK._unset_before_send()
 
 
 ## SentrySDK Variant conversion should not cause stack overflow.

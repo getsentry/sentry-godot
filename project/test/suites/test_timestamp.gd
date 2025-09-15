@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+extends SentryTestSuite
 ## Tests for SentryTimestamp class.
 
 

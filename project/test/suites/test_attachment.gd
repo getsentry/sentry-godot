@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+extends SentryTestSuite
 ## Basic tests for the SentryAttachment class.
 
 
