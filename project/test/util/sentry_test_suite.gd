@@ -1,13 +1,18 @@
 class_name SentryTestSuite
 extends GdUnitTestSuite
 ## Sentry test suite extensions for gdUnit4.
+##
+## The default `before_send` handler collects captured event json content in
+## `captured_events` array in the chronological order. The array is cleared
+## before each test.
+## The `before_send` handler is reassigned before each test, and unset after each test.
+## To override the default `before_send` handler, simply set a new one in a test body.
+
 
 ## Emitted after event was processed by before_send callback, and its JSON content stored in captured_events.
 signal event_captured
 
 var captured_events: Array[String]
-
-var _saved_before_send: Callable
 
 
 ## Perform queries and assertions on JSON content.
@@ -30,15 +35,15 @@ func wait_for_captured_event_json() -> String:
 
 func before() -> void:
 	# NOTE: Make sure to call super() if overriding.
-	# Save before send
-	_saved_before_send = SentrySDK._get_before_send()
+	if not SentrySDK.is_enabled():
+		SentrySDK.init(func(options: SentryOptions) -> void:
+			options.logger_messages_as_breadcrumbs = false  # this may interfere with our tests
+		)
 
 
 func after() -> void:
 	# NOTE: Make sure to call super() if overriding.
-	# Restore before send
-	if _saved_before_send.is_valid():
-		SentrySDK._set_before_send(_saved_before_send)
+	pass
 
 
 func before_test() -> void:
@@ -50,7 +55,7 @@ func before_test() -> void:
 
 func after_test() -> void:
 	# NOTE: Make sure to call super() if overriding.
-	SentrySDK._unset_before_send()
+	SentrySDK._unset_before_send()  # ignore events between tests
 
 
 func _before_send(event: SentryEvent) -> SentryEvent:
