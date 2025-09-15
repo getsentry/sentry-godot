@@ -49,7 +49,7 @@ func test_breadcrumb_default_values() -> void:
 
 
 func test_breadcrumb_timestamp_is_set_automatically() -> void:
-	const time_tolerance: float = 0.05  # 50 ms
+	const time_tolerance: float = 0.001  # 1 ms
 
 	var time_before: float = Time.get_unix_time_from_system() - time_tolerance
 	await get_tree().process_frame  # small delay to ensure timestamp differs
