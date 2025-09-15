@@ -2,11 +2,16 @@ class_name SentryTestSuite
 extends GdUnitTestSuite
 ## Sentry test suite extensions for gdUnit4.
 ##
-## The default `before_send` handler collects captured event json content in
-## `captured_events` array in the chronological order. The array is cleared
-## before each test.
-## The `before_send` handler is reassigned before each test, and unset after each test.
-## To override the default `before_send` handler, simply set a new one in a test body.
+## Base test suite class for Sentry SDK testing that automatically initializes the SDK
+## and provides utilities for capturing and analyzing event JSON content.
+##
+## The default "before_send" handler intercepts all events and stores their JSON
+## representations in the "captured_events" array in chronological order. This array
+## is automatically cleared before each test case runs.
+##
+## The "before_send" handler is reassigned before each test case and removed afterward
+## to ensure clean runs. To customize event handling, simply assign a new
+## "before_send" handler within your test method.
 
 
 ## Emitted after event was processed by before_send callback, and its JSON content stored in captured_events.
