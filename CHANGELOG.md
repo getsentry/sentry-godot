@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Bumped the minimum Godot compatibility to `4.5-stable`, locking it in for the 1.x series. ([#369](https://github.com/getsentry/sentry-godot/pull/369))
+
 ### Improvements
 
 - Strip invisible characters from logger breadcrumbs ([#359](https://github.com/getsentry/sentry-godot/pull/359))
