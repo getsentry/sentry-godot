@@ -13,10 +13,8 @@ func test_gdscript_error_event_structure() -> void:
 		.must_contain("event_id") \
 		.must_contain("timestamp") \
 		.must_contain("level", "error") \
+		.must_contain("logger", "SentryLogger") \
 		.verify()
-
-	# NOTE: Logger events from push_error() do not include a "logger" field
-	# TODO: Set logger attribute in SentryLogger
 
 	assert_json(json).describe("Logger error event contains exception data") \
 		.at("/exception") \
