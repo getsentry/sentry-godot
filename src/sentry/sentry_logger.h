@@ -21,6 +21,8 @@ private:
 	using GodotErrorType = sentry::GodotErrorType;
 	using TimePoint = std::chrono::high_resolution_clock::time_point;
 
+	String logger_name;
+
 	struct Limits {
 		int events_per_frame;
 		std::chrono::milliseconds repeated_error_window;
