@@ -128,8 +128,8 @@ func test_edge_values_in_context() -> void:
 	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
 
 	assert_json(json).describe("Verify edge values in context data") \
-		.is_object() \
 		.at("/contexts/edge_data") \
+		.is_object() \
 		.must_contain("empty_string", "") \
 		.must_contain("zero_value", 0) \
 		.must_contain("false_value", false) \
