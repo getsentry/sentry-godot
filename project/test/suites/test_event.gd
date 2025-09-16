@@ -1,10 +1,5 @@
-extends GdUnitTestSuite
+extends SentryTestSuite
 ## Basic tests for the SentryEvent class.
-
-
-func before() -> void:
-	if not SentrySDK.is_enabled():
-		SentrySDK.init()
 
 
 ## Test string properties accessors and UTF-8 encoding preservation.
@@ -89,8 +84,12 @@ func test_event_is_crash() -> void:
 
 ## SentrySDK.capture_event() should return a non-empty event ID, which must match the ID returned by the get_last_event_id() call.
 func test_capture_event() -> void:
+	# Ensure events are not discarded.
+	SentrySDK._set_before_send(func(ev): return ev)
+
 	var event := SentrySDK.create_event()
 	var event_id := SentrySDK.capture_event(event)
+
 	assert_str(event_id).is_not_empty()
 	assert_str(event_id).is_equal(event.id)
 	assert_str(SentrySDK.get_last_event_id()).is_not_empty()

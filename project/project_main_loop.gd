@@ -8,6 +8,9 @@ extends SceneTree
 
 
 func _initialize() -> void:
+	if _is_running_tests():
+		return
+
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		print("INFO: [ProjectMainLoop] Initializing SDK from GDScript")
 
@@ -34,3 +37,7 @@ func _on_before_send_to_sentry(ev: SentryEvent) -> SentryEvent:
 		print("INFO: [ProjectMainLoop] Discarding event with message 'junk'")
 		return null
 	return ev
+
+
+func _is_running_tests() -> bool:
+	return "res://addons/gdUnit4/src/core/runners/GdUnitTestRunner.tscn" in OS.get_cmdline_args()

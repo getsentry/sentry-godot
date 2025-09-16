@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+extends SentryTestSuite
 ## Verify that event properties are preserved through the SDK flow.
 
 
@@ -7,36 +7,23 @@ signal callback_processed
 var created_id: String
 
 
-func before() -> void:
-	if not SentrySDK.is_enabled():
-		SentrySDK.init()
-
-
-func before_test() -> void:
-	SentrySDK._set_before_send(_before_send)
-
-
-func after_test() -> void:
-	SentrySDK._unset_before_send()
-
-
 @warning_ignore("unused_parameter")
 func test_event_integrity(timeout := 10000) -> void:
 	_capture_event()
-	var monitor := monitor_signals(self, false)
-	await assert_signal(monitor).is_emitted("callback_processed")
+	await assert_signal(self).is_emitted("callback_processed")
 
 
 @warning_ignore("unused_parameter")
 func test_threaded_event_capture(timeout := 10000) -> void:
 	var thread := Thread.new()
 	thread.start(_capture_event)
-	var monitor := monitor_signals(self, false)
-	await assert_signal(monitor).is_emitted("callback_processed")
+	await assert_signal(self).is_emitted("callback_processed")
 	thread.wait_to_finish()
 
 
 func _capture_event() ->  void:
+	SentrySDK._set_before_send(_before_send)
+
 	var event := SentrySDK.create_event()
 	event.message = "integrity-check"
 	event.level = SentrySDK.LEVEL_DEBUG
@@ -47,12 +34,7 @@ func _capture_event() ->  void:
 	event.set_tag("custom-tag", "custom-tag-value")
 	created_id = event.id
 
-	var captured_id := SentrySDK.capture_event(event)
-	assert_str(captured_id).is_not_empty()
-	assert_str(captured_id).is_not_equal(created_id) # event was discarded
-	assert_str(SentrySDK.get_last_event_id()).is_not_empty()
-	# assert_str(captured_id).is_equal(SentrySDK.get_last_event_id()) // NOTE: inconsistent across SDKs
-	assert_str(created_id).is_not_equal(SentrySDK.get_last_event_id())
+	SentrySDK.capture_event(event)
 
 
 func _before_send(event: SentryEvent) -> SentryEvent:

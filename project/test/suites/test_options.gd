@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+extends SentryTestSuite
 ## Basic tests for the SentryOptions class.
 
 
@@ -6,6 +6,7 @@ var options: SentryOptions
 
 
 func before_test() -> void:
+	super()
 	options = SentryOptions.new()
 
 
@@ -95,7 +96,7 @@ func test_callback_properties(property: String, test_parameters := [
 	["before_send"],
 	["before_capture_screenshot"]
 ]) -> void:
-	var callback := func(a1): pass
+	var callback := func(_a): pass
 	var prev: Callable = options.get(property)
 	options.set(property, callback)
 	assert_that(options.get(property)).is_equal(callback)

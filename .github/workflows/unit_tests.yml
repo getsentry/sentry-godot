@@ -52,13 +52,28 @@ jobs:
         timeout-minutes: 5
         run: |
           # Exit status codes: 0 - success, 100 - ends with test failures, 101 - ends with test warnings.
-          ${GODOT} --headless --path project/ -s -d "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" --ignoreHeadlessMode -c -a test/suites/
+          ${GODOT} --headless --debug --path project/ \
+              --script "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" \
+              --ignoreHeadlessMode \
+              --continue \
+              --add test/suites/
 
       - name: Run isolated tests
         if: success() || failure()
         shell: pwsh
         timeout-minutes: 5
         run: ./scripts/run-isolated-tests.ps1
+
+      - name: Run JSONAssert tests
+        if: success() || failure()
+        shell: bash
+        timeout-minutes: 2
+        run: |
+          ${GODOT} --headless --debug --path project/ \
+              --script "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" \
+              --ignoreHeadlessMode \
+              --continue \
+              --add test/util/json_assert/
 
       - name: Upload results
         if: always() # do this step even if the tests fail

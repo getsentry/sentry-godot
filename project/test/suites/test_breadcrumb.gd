@@ -1,4 +1,4 @@
-extends GdUnitTestSuite
+extends SentryTestSuite
 ## Test SentryBreadcrumb class properties and methods.
 
 
