@@ -69,7 +69,7 @@ func test_user_data_after_remove() -> void:
 
 	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
 
-	assert_json(json).describe("User structure contains only the automatic ID") \
+	assert_json(json).describe("User structure contains only the automatic ID or nothing") \
 		.either() \
 			.must_not_contain("/user") \
 		.or_else() \
