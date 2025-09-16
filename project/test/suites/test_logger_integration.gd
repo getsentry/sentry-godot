@@ -35,35 +35,6 @@ func test_gdscript_error_event_structure() -> void:
 		.exactly(1)
 
 
-func test_logger_warnings_and_prints_create_breadcrumbs() -> void:
-	# NOTE: Assuming that logger_messages_as_breadcrumbs is enabled
-	#		and warning events are disabled (the default).
-	# TODO: move to isolation ???
-
-	# We expect print() and push_warning() to become breadcrumbs and not create events.
-	print("Debug message")
-	push_warning("Warning message")
-	push_error("Final error message")
-
-	var json: String = await wait_for_captured_event_json()
-	assert_int(captured_events.size()).is_equal(1).override_failure_message("expected a single event")
-
-	# NOTE: messages_as_breadcrumbs is disabled in SentryTestSuite – so we shouldn't test this here.
-	#assert_json(json).describe("print() should appear as the pre-last breadcrumb") \
-		#.at("/breadcrumbs/-2") \
-		#.containing("message", "Debug message\n") \
-		#.must_contain("level", "info") \
-		#.must_contain("category", "log") \
-		#.exactly(1)
-
-	assert_json(json).describe("Warning should appear as the last breadcrumb") \
-		.at("/breadcrumbs/-1") \
-		.containing("message", "Warning message") \
-		.must_contain("level", "warning") \
-		.must_contain("category", "error") \
-		.verify()
-
-
 func test_past_errors_appear_as_breadcrumbs() -> void:
 	push_error("first error")
 	await wait_for_captured_event_json()
