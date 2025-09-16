@@ -1,5 +1,5 @@
 extends SentryTestSuite
-## Test contexts with events.
+## Test contexts interface with JSON validation.
 
 
 func test_set_context_basic() -> void:
@@ -20,7 +20,7 @@ func test_set_context_basic() -> void:
 		.must_contain("match_id", "match_abc123") \
 		.must_contain("game_mode", "battle_royale") \
 		.must_contain("players_remaining", 15) \
-		.exactly(1)
+		.verify()
 
 
 func test_set_context_with_complex_data() -> void:
@@ -41,15 +41,16 @@ func test_set_context_with_complex_data() -> void:
 		.must_contain("name", "TestPlayer") \
 		.must_contain("level", 42) \
 		.must_contain("active", true) \
-		.exactly(1)
+		.verify()
 
 	assert_json(json).describe("Verify array contents") \
 		.at("/contexts/player_data/inventory") \
 		.is_array() \
+		.has_size(3) \
 		.must_contain("/0", "sword") \
 		.must_contain("/1", "potion") \
 		.must_contain("/2", "magic_key") \
-		.exactly(1)
+		.verify()
 
 
 func test_empty_context_is_captured() -> void:
@@ -85,7 +86,7 @@ func test_set_context_overwrite() -> void:
 		.must_contain("level", "forest_2") \
 		.must_contain("score", 2500) \
 		.must_not_contain("checkpoint") \
-		.exactly(1)
+		.verify()
 
 
 func test_special_characters_in_context() -> void:
@@ -104,7 +105,7 @@ func test_special_characters_in_context() -> void:
 		.must_contain("unicode_text", "Hello 世界! 🚀") \
 		.must_contain("symbols", "!@#$%^&*()") \
 		.must_contain("quotes", "He said \"Hello\"") \
-		.exactly(1)
+		.verify()
 
 	assert_json(json).describe("Verify special characters in array data") \
 		.at("/contexts/special_chars/array") \
@@ -132,7 +133,7 @@ func test_edge_values_in_context() -> void:
 		.must_contain("empty_string", "") \
 		.must_contain("zero_value", 0) \
 		.must_contain("false_value", false) \
-		.exactly(1)
+		.verify()
 
 
 func test_multiple_contexts_in_single_event() -> void:
@@ -160,21 +161,21 @@ func test_multiple_contexts_in_single_event() -> void:
 		.must_contain("level", "dungeon_3") \
 		.must_contain("difficulty", "hard") \
 		.must_contain("score", 15750) \
-		.exactly(1)
+		.verify()
 
 	assert_json(json).describe("Verify player progress context") \
 		.at("/contexts/player_progress") \
 		.must_contain("character_level", 25) \
 		.must_contain("xp", 45000) \
 		.must_contain("gold", 1250) \
-		.exactly(1)
+		.verify()
 
 	assert_json(json).describe("Verify game settings context") \
 		.at("/contexts/game_settings") \
 		.must_contain("graphics_quality", "high") \
 		.must_contain("sound_enabled", true) \
 		.must_contain("language", "en") \
-		.exactly(1)
+		.verify()
 
 
 func test_default_contexts_presence() -> void:
