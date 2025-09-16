@@ -212,23 +212,23 @@ func test_event_json_level_attribute() -> void:
 
 	expected_levels.append("debug")
 	SentrySDK.capture_message("Test level", SentrySDK.LEVEL_DEBUG)
-	assert_signal(self).is_emitted("event_captured")
+	await assert_signal(self).is_emitted("event_captured")
 
 	expected_levels.append("info")
 	SentrySDK.capture_message("Test level", SentrySDK.LEVEL_INFO)
-	assert_signal(self).is_emitted("event_captured")
+	await assert_signal(self).is_emitted("event_captured")
 
 	expected_levels.append("warning")
 	SentrySDK.capture_message("Test level", SentrySDK.LEVEL_WARNING)
-	assert_signal(self).is_emitted("event_captured")
+	await assert_signal(self).is_emitted("event_captured")
 
 	expected_levels.append("error")
 	SentrySDK.capture_message("Test level", SentrySDK.LEVEL_ERROR)
-	assert_signal(self).is_emitted("event_captured")
+	await assert_signal(self).is_emitted("event_captured")
 
 	expected_levels.append("fatal")
 	SentrySDK.capture_message("Test level", SentrySDK.LEVEL_FATAL)
-	assert_signal(self).is_emitted("event_captured")
+	await assert_signal(self).is_emitted("event_captured")
 
 	for i in captured_events.size():
 		var json: String = captured_events[i]
