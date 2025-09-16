@@ -122,7 +122,7 @@ func test_gdscript_error_stacktrace_basic() -> void:
 		.with_objects() \
 		.containing("platform", "gdscript") \
 		.containing("lineno", expected_line) \
-		.must_contain("filename", get_script().resource_path) \
+		.containing("filename", get_script().resource_path) \
 		.at_least(1)
 
 
@@ -185,8 +185,6 @@ func test_local_variables_capture() -> void:
 
 	push_error("Variable capture test")
 
-	# TODO: Check if disabling variables removes them also from the frames in isolated testing.
-
 	var json: String = await wait_for_captured_event_json()
 
 	assert_json(json).describe("Stacktrace contains some frames") \
@@ -209,6 +207,7 @@ func test_local_variables_capture() -> void:
 
 func test_exception_value_with_utf8() -> void:
 	push_error("Error with UTF-8: 世界 🌍")
+
 	var json: String = await wait_for_captured_event_json()
 
 	assert_json(json).describe("UTF-8 characters are preserved in error messages") \
