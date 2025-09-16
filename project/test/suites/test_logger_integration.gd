@@ -13,6 +13,10 @@ func test_gdscript_error_event_structure() -> void:
 		.must_contain("event_id") \
 		.must_contain("timestamp") \
 		.must_contain("level", "error") \
+		.verify()
+
+	assert_json(json).describe("Logger event has logger attribute") \
+		.at("/") \
 		.must_contain("logger", "SentryLogger") \
 		.verify()
 
