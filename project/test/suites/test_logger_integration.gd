@@ -1,6 +1,6 @@
 extends SentryTestSuite
 ## Test SentryLogger error capture with detailed JSON validation.
-## NOTE: Additional logger tests can be found in test/isolation/ with filenames beginning with "test_logger_".
+## NOTE: Additional logger tests can be found in test/isolated/ with filenames beginning with "test_logger_".
 
 
 func test_gdscript_error_event_structure() -> void:
