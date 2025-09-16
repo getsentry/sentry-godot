@@ -44,10 +44,13 @@ func before() -> void:
 		init_sdk()
 
 
-## Override this method in isolation tests to customize SDK initialization.
+## Override this method in isolated tests to customize SDK initialization.
+##
+## NOTE: An isolated test suite executes in a separate run and typically
+## customizes SDK options for specific testing scenarios.
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.logger_messages_as_breadcrumbs = false  # this may interfere with our tests
+		options.logger_messages_as_breadcrumbs = false  # this option may interfere with our normal testing
 	)
 
 
