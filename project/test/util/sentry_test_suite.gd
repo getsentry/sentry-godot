@@ -41,9 +41,17 @@ func wait_for_captured_event_json() -> String:
 func before() -> void:
 	# NOTE: Make sure to call super() if overriding.
 	if not SentrySDK.is_enabled():
-		SentrySDK.init(func(options: SentryOptions) -> void:
-			options.logger_messages_as_breadcrumbs = false  # this may interfere with our tests
-		)
+		init_sdk()
+
+
+## Override this method in isolated tests to customize SDK initialization.
+##
+## NOTE: An isolated test suite executes in a separate run and typically
+## customizes SDK options for specific testing scenarios.
+func init_sdk() -> void:
+	SentrySDK.init(func(options: SentryOptions) -> void:
+		options.logger_messages_as_breadcrumbs = false  # this option may interfere with our normal testing
+	)
 
 
 func after() -> void:
