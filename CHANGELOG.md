@@ -10,6 +10,12 @@
 
 - Strip invisible characters from logger breadcrumbs ([#359](https://github.com/getsentry/sentry-godot/pull/359))
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.55.1 to v8.56.0 ([#361](https://github.com/getsentry/sentry-godot/pull/361))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8560)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.1...8.56.0)
+
 ## 1.0.0-beta.2
 
 ### Breaking changes
