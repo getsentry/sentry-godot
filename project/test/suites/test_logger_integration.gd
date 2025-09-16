@@ -125,8 +125,15 @@ func test_gdscript_error_stacktrace_basic() -> void:
 
 
 func test_gdscript_error_stacktrace_deep() -> void:
-	var backtrace: ScriptBacktrace = Engine.capture_script_backtraces(true)[0]
+	var backtraces: Array[ScriptBacktrace] = Engine.capture_script_backtraces(true)
 	push_error("Stacktrace frames test")
+
+	# Find GDScript backtrace
+	var backtrace: ScriptBacktrace
+	for bt in backtraces:
+		if bt.get_language_name() == "GDScript":
+			backtrace = bt
+			break
 
 	# Collect info from backtrace
 	var frames: Array[Dictionary]
