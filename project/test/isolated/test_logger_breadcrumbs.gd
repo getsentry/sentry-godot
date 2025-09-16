@@ -19,14 +19,14 @@ func test_logger_warnings_and_prints_create_breadcrumbs() -> void:
 
 	assert_json(json).describe("print() should appear as the pre-last breadcrumb") \
 		.at("/breadcrumbs/-2") \
-		.containing("message", "Debug message\n") \
+		.must_contain("message", "Debug message") \
 		.must_contain("level", "info") \
 		.must_contain("category", "log") \
-		.exactly(1)
+		.verify()
 
 	assert_json(json).describe("Warning should appear as the last breadcrumb") \
 		.at("/breadcrumbs/-1") \
-		.containing("message", "Warning message") \
+		.must_contain("message", "Warning message") \
 		.must_contain("level", "warning") \
 		.must_contain("category", "error") \
 		.verify()
