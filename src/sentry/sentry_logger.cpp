@@ -173,6 +173,43 @@ inline void _hash_combine(std::size_t &p_hash, const T &p_value) {
 	p_hash ^= hasher(p_value) + 0x9e3779b9 + (p_hash << 6) + (p_hash >> 2);
 }
 
+String _strip_invisible(const String &p_text) {
+	String result;
+
+	int i = 0;
+	int length = p_text.length();
+
+	while (i < length) {
+		char32_t c = p_text[i];
+
+		// Detect ANSI escape sequences: ESC (0x1B) + '['
+		if (c == 0x1B && i + 1 < length && p_text[i + 1] == '[') {
+			i += 2;
+			// Skip until we reach a final byte (0x40-0x7E) aka [A-Za-z0-9].
+			while (i < length) {
+				char32_t cc = p_text[i];
+				if (cc >= 0x40 && cc <= 0x7E) {
+					i++;
+					break;
+				}
+				i++;
+			}
+			continue;
+		}
+
+		// Skip control characters (ASCII < 0x20 or DEL 0x7F)
+		if (c < 0x20 || c == 0x7F) {
+			i++;
+			continue;
+		}
+
+		result += c;
+		i++;
+	}
+
+	return result;
+}
+
 } // unnamed namespace
 
 namespace sentry {
@@ -350,14 +387,21 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 		return;
 	}
 
+	String processed_message = _strip_invisible(p_message);
+
+	if (processed_message.is_empty()) {
+		// Don't add empty breadcrumb.
+		return;
+	}
+
 	// Filtering: Check message prefixes to skip certain messages (e.g., Sentry's own debug output).
 	for (const String &prefix : filter_by_prefix) {
-		if (p_message.begins_with(prefix)) {
+		if (processed_message.begins_with(prefix)) {
 			return;
 		}
 	}
 
-	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(p_message);
+	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(processed_message);
 	crumb->set_category("log");
 	crumb->set_level(p_error ? sentry::Level::LEVEL_ERROR : sentry::Level::LEVEL_INFO);
 	crumb->set_type("debug");
