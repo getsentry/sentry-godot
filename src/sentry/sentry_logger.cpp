@@ -315,6 +315,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 			frames
 		};
 		ev->add_exception(exception);
+		ev->set_logger(logger_name);
 		SentrySDK::get_singleton()->capture_event(ev);
 	}
 
@@ -386,6 +387,8 @@ void SentryLogger::_notification(int p_what) {
 }
 
 SentryLogger::SentryLogger() {
+	logger_name = "SentryLogger";
+
 	// Filtering setup.
 	filter_by_prefix = {
 		// Sentry messages
