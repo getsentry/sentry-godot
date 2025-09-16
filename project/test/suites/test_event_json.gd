@@ -60,8 +60,22 @@ func test_event_json_has_proper_platform() -> void:
 
 	assert_json(json).describe("check platform") \
 		.at("/platform") \
-		# TODO: check specific platform values
-		.must_be("PipBoy") \
+		.must_satisfy("event.platform value",
+			func(candidate) -> bool:
+				if candidate is not String:
+					return false
+				match OS.get_name():
+					"Windows", "Linux":
+						return candidate == "native"
+					"macOS", "iOS":
+						return candidate == "cocoa"
+					"Android":
+						return candidate == "java"
+					"Web":
+						return candidate == "javascript"
+					_:
+						return false
+				) \
 		.verify()
 
 
