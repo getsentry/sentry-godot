@@ -47,11 +47,11 @@ func test_breadcrumbs_order() -> void:
 		.at("/breadcrumbs/-1") \
 		.is_object() \
 		.must_contain("message", "Second breadcrumb") \
-		.exactly(1)
+		.verify()
 	assert_json(json).at("/breadcrumbs/-2") \
 		.is_object() \
 		.must_contain("message", "First breadcrumb") \
-		.exactly(1)
+		.verify()
 
 
 func test_breadcrumbs_with_utf8() -> void:
@@ -88,10 +88,10 @@ func test_breadcrumbs_with_complex_nested_data() -> void:
 	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
 
 	assert_json(json).describe("Breadcrumb retains complex nested data") \
-		.at("/breadcrumbs") \
-		.is_array() \
-		.with_objects() \
-		.containing("message", "Player stats updated") \
+		.at("/breadcrumbs/-1") \
+		.is_object() \
+		.is_not_empty() \
+		.must_contain("message", "Player stats updated") \
 		.must_contain("category", "gameplay") \
 		.must_contain("level", "debug") \
 		.must_contain("type", "info") \
@@ -100,4 +100,4 @@ func test_breadcrumbs_with_complex_nested_data() -> void:
 			"level_complete": false,
 			"experience_gained": 125.5,
 		}) \
-		.exactly(1)
+		.verify()
