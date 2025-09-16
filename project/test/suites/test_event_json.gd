@@ -61,6 +61,7 @@ func test_event_json_has_proper_platform() -> void:
 	assert_json(json).describe("check platform") \
 		.at("/platform") \
 		# TODO: check specific platform values
+		.must_be("PipBoy") \
 		.verify()
 
 
