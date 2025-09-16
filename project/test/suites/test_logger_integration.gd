@@ -59,7 +59,7 @@ func test_logger_warnings_and_prints_create_breadcrumbs() -> void:
 		.containing("message", "Warning message") \
 		.must_contain("level", "warning") \
 		.must_contain("category", "error") \
-		.exactly(1)
+		.verify()
 
 
 func test_past_errors_appear_as_breadcrumbs() -> void:
@@ -76,7 +76,7 @@ func test_past_errors_appear_as_breadcrumbs() -> void:
 		.containing("message", "first error") \
 		.must_contain("level", "error") \
 		.must_contain("category", "error") \
-		.exactly(1)
+		.verify()
 
 	assert_json(second_event).describe("Second (aka current) error should NOT be in breadcrumbs") \
 		.at("/breadcrumbs/") \
@@ -160,7 +160,7 @@ func test_gdscript_error_stacktrace_deep() -> void:
 			.must_contain("context_line") \
 			.must_contain("pre_context") \
 			.must_contain("post_context") \
-			.exactly(1)
+			.verify()
 
 
 func test_local_variables_capture() -> void:
