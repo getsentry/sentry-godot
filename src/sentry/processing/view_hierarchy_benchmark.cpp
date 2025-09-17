@@ -119,7 +119,7 @@ void benchmark_view_hierarchy_performance() {
 	// Test with original small hierarchy first
 	print_line("=== TESTING WITH ORIGINAL SMALL HIERARCHY ===");
 
-	const int NUM_ITERATIONS = 5;
+	const int NUM_ITERATIONS = 50;
 	double original_total_time = 0;
 	double optimized_total_time = 0;
 
