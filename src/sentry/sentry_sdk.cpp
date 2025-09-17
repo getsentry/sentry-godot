@@ -122,6 +122,7 @@ void SentrySDK::destroy_singleton() {
 void SentrySDK::init(const Callable &p_configuration_callback) {
 	ERR_FAIL_COND_MSG(internal_sdk->is_enabled(), "Attempted to initialize SentrySDK that is already initialized");
 
+	// TODO: REMOVE THESE LINES!
 	sentry::benchmark_view_hierarchy_performance();
 	return;
 
