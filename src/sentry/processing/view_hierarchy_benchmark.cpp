@@ -1,7 +1,7 @@
 #include "view_hierarchy_benchmark.h"
 
 #include "view_hierarchy.h"
-#include "view_hierarchy_optimized.h"
+#include "view_hierarchy_builder.h"
 
 #include <chrono>
 #include <godot_cpp/classes/engine.hpp>

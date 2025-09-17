@@ -1,4 +1,4 @@
-#include "view_hierarchy_optimized.h"
+#include "view_hierarchy_builder.h"
 
 #include "sentry/util/fast_string_builder.h"
 
