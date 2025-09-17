@@ -46,7 +46,7 @@ public:
 
 	void print_performance() const {
 		double microseconds = get_elapsed_microseconds();
-		print_line(operation_name + String(" took: ") + String::num(microseconds, 1) + String(" us"));
+		print_line(operation_name + String(" took: ") + String::num_int64(microseconds) + String(" us"));
 	}
 };
 
@@ -57,14 +57,14 @@ Node *create_test_hierarchy(Node *parent, int depth, int children_per_node, int 
 
 	for (int i = 0; i < children_per_node; i++) {
 		Node *child = memnew(Node);
-		child->set_name(String("TestNode_") + String::num(depth) + String("_") + String::num(i));
+		child->set_name(String("TestNode_") + String::num_int64(depth) + String("_") + String::num_int64(i));
 		parent->add_child(child);
 		total_nodes++;
 
 		// Add some with scripts and scene paths occasionally
 		if (i % 3 == 0) {
 			// Simulate having a scene file path
-			child->set_scene_file_path(String("res://test_scenes/node_") + String::num(i) + String(".tscn"));
+			child->set_scene_file_path(String("res://test_scenes/node_") + String::num_int64(i) + String(".tscn"));
 		}
 
 		// Recursively create children
@@ -128,7 +128,7 @@ void benchmark_view_hierarchy_performance() {
 
 	print_line("\n--- Original Implementation ---");
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
-		PerformanceTimer timer(String("Original iteration ") + String::num(i + 1), true);
+		PerformanceTimer timer(String("Original iteration ") + String::num_int64(i + 1), true);
 		String result = build_view_hierarchy_json();
 		original_total_time += timer.get_elapsed_microseconds();
 		print_line(String("Original result: ") + String::num_int64(result.length()) + String(" chars"));
@@ -138,7 +138,7 @@ void benchmark_view_hierarchy_performance() {
 
 	print_line("\n--- Optimized Implementation ---");
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
-		PerformanceTimer timer(String("Optimized iteration ") + String::num(i + 1), true);
+		PerformanceTimer timer(String("Optimized iteration ") + String::num_int64(i + 1), true);
 		String result = builder.build_json();
 		optimized_total_time += timer.get_elapsed_microseconds();
 		print_line(String("Optimized result: ") + String::num_int64(result.length()) + String(" chars"));
@@ -180,21 +180,21 @@ void benchmark_view_hierarchy_performance() {
 	// Benchmark original implementation on large hierarchy
 	print_line("\n--- Original Implementation (Large Hierarchy) ---");
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
-		PerformanceTimer timer(String("Original large iteration ") + String::num(i + 1), true);
+		PerformanceTimer timer(String("Original large iteration ") + String::num_int64(i + 1), true);
 		String result = build_view_hierarchy_json();
 		print_line("Original JSON length: ", result.length());
 		original_total_time += timer.get_elapsed_microseconds();
-		print_line(String("Original large result: ") + String::num(result.length()) + String(" chars"));
+		print_line(String("Original large result: ") + String::num_int64(result.length()) + String(" chars"));
 	}
 
 	// Benchmark optimized implementation on large hierarchy
 	print_line("\n--- Optimized Implementation (Large Hierarchy) ---");
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
-		PerformanceTimer timer(String("Optimized large iteration ") + String::num(i + 1), true);
+		PerformanceTimer timer(String("Optimized large iteration ") + String::num_int64(i + 1), true);
 		String result = builder.build_json();
 		print_line("Optimized JSON length: ", result.length());
 		optimized_total_time += timer.get_elapsed_microseconds();
-		print_line(String("Optimized large result: ") + String::num(result.length()) + String(" chars"));
+		print_line(String("Optimized large result: ") + String::num_int64(result.length()) + String(" chars"));
 	}
 
 	// Large hierarchy performance summary
