@@ -5,7 +5,7 @@
 #include "sentry/contexts.h"
 #include "sentry/disabled/disabled_sdk.h"
 #include "sentry/processing/screenshot_processor.h"
-#include "sentry/processing/view_hierarchy.h"
+#include "sentry/processing/view_hierarchy_benchmark.h"
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"

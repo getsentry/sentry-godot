@@ -1,4 +1,7 @@
+#include "view_hierarchy_benchmark.h"
+
 #include "view_hierarchy.h"
+#include "view_hierarchy_optimized.h"
 
 #include <chrono>
 #include <godot_cpp/classes/engine.hpp>
@@ -89,10 +92,6 @@ void cleanup_test_hierarchy(Node *root) {
 
 namespace sentry {
 
-// Forward declarations from main file
-String build_view_hierarchy_json();
-String build_view_hierarchy_json_optimized();
-
 // Performance comparison function
 void benchmark_view_hierarchy_performance() {
 	print_line("\n=== VIEW HIERARCHY PERFORMANCE BENCHMARK ===");
@@ -181,6 +180,7 @@ void benchmark_view_hierarchy_performance() {
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		PerformanceTimer timer(String("Original large iteration ") + String::num(i + 1), true);
 		String result = build_view_hierarchy_json();
+		print_line("Original JSON length: ", result.length());
 		original_total_time += timer.get_elapsed_microseconds();
 		print_line(String("Original large result: ") + String::num(result.length()) + String(" chars"));
 	}
@@ -190,6 +190,7 @@ void benchmark_view_hierarchy_performance() {
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		PerformanceTimer timer(String("Optimized large iteration ") + String::num(i + 1), true);
 		String result = build_view_hierarchy_json_optimized();
+		print_line("Optimized JSON length: ", result.length());
 		optimized_total_time += timer.get_elapsed_microseconds();
 		print_line(String("Optimized large result: ") + String::num(result.length()) + String(" chars"));
 	}

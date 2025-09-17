@@ -9,13 +9,6 @@ namespace sentry {
 
 godot::String build_view_hierarchy_json();
 
-// Individual implementations for benchmarking
-godot::String build_view_hierarchy_json();
-godot::String build_view_hierarchy_json_optimized();
-
-// Performance measurement functions (debug builds only) - defined in view_hierarchy_benchmark.cpp
-void benchmark_view_hierarchy_performance();
-
 } //namespace sentry
 
 #endif // SENTRY_VIEW_HIERARCHY_H
