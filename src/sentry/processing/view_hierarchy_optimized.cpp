@@ -78,9 +78,15 @@ public:
 		return true;
 	}
 
+	size_t get_length() {
+		return sz + 1;
+	}
+
 	String to_godot_string() {
 		*ptrw = 0;
-		buffer.resize(sz + 1);
+		max_sz = sz + 1;
+		buffer.resize(max_sz);
+		ptrw = buffer.ptrw();
 		return buffer;
 	}
 };
@@ -105,12 +111,11 @@ inline void _next_name_value_pair_new(FastStringBuilder &p_builder, const char *
 
 namespace sentry {
 
-String build_view_hierarchy_json_optimized() {
+String ViewHierarchyBuilder::build_json() {
 	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	ERR_FAIL_NULL_V(sml, String());
 
-	// TODO: Future optimization: we can estimate the number of characters needed by keeping historical data.
-	FastStringBuilder builder{ 1000'000 }; // generously overestimate (around 1MB mem)
+	FastStringBuilder builder{ size_t(estimated_length * 0.2) }; // generously overestimate
 
 	builder.append(R"({"rendering_system":"Godot","windows":[)");
 
@@ -160,6 +165,10 @@ String build_view_hierarchy_json_optimized() {
 	}
 
 	builder.append("]}");
+
+	// Update estimate
+	estimated_length = MAX(estimated_length, size_t(builder.get_length() * 0.2));
+
 	return builder.to_godot_string();
 }
 
