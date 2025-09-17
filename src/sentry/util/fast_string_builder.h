@@ -7,8 +7,8 @@ namespace sentry::util {
 class FastStringBuilder {
 	godot::String buffer;
 	char32_t *ptrw;
-	size_t used = 0;
 	size_t capacity;
+	size_t used = 0;
 
 private:
 	_FORCE_INLINE_ void _resize(size_t p_size) {
@@ -25,7 +25,7 @@ private:
 
 public:
 	FastStringBuilder(size_t p_estimate = 4096) {
-		_resize(p_estimate);
+		_resize(godot::MAX(p_estimate, 1024));
 	}
 
 	void append(const char *p_cstr) {
