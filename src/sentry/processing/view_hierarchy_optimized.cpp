@@ -90,7 +90,7 @@ String ViewHierarchyBuilder::build_json() {
 	builder.append("]}");
 
 	// Update estimate
-	estimated_length = MAX(estimated_length, size_t(builder.get_length() * 0.2));
+	estimated_length = MAX(estimated_length, size_t(builder.get_length() * 1.2));
 
 	return builder.to_string();
 }
