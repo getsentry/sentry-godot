@@ -15,6 +15,10 @@ func _ready() -> void:
 	_init_level_choice_popup()
 	_update_user_info()
 
+	var bm = ViewHierarchyBenchmarkNode.new()
+	add_child(bm)
+
+
 
 func _init_level_choice_popup() -> void:
 	var popup: PopupMenu = level_choice.get_popup()
