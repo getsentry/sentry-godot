@@ -114,8 +114,7 @@ void benchmark_view_hierarchy_performance() {
 		return;
 	}
 
-	// Do it once.
-	build_view_hierarchy_json();
+	ViewHierarchyBuilder builder;
 
 	// Test with original small hierarchy first
 	print_line("=== TESTING WITH ORIGINAL SMALL HIERARCHY ===");
@@ -133,8 +132,6 @@ void benchmark_view_hierarchy_performance() {
 		original_total_time += timer.get_elapsed_microseconds();
 		print_line(String("Original result: ") + String::num_int64(result.length()) + String(" chars"));
 	}
-
-	ViewHierarchyBuilder builder;
 
 	print_line("\n--- Optimized Implementation ---");
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
