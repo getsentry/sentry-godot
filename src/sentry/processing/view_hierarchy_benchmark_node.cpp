@@ -168,7 +168,7 @@ void ViewHierarchyBenchmarkNode::process_frame() {
 
 			// Sample once per frame
 			frame_start_time = std::chrono::high_resolution_clock::now();
-			String result = builder->build_json();
+			auto buffer = builder->build_json();
 			auto current_time = std::chrono::high_resolution_clock::now();
 			auto duration = std::chrono::duration_cast<std::chrono::microseconds>(current_time - frame_start_time);
 			double elapsed_us = static_cast<double>(duration.count());
@@ -176,7 +176,7 @@ void ViewHierarchyBenchmarkNode::process_frame() {
 			optimized_total_time += elapsed_us;
 			print_line(String("Frame ") + String::num_int64(current_iteration + 1) + String("/") + String::num_int64(total_iterations) +
 					String(" - Optimized: ") + String::num_int64(elapsed_us) + String(" us, ") +
-					String::num_int64(result.length()) + String(" chars"));
+					String::num_int64(buffer.get_used()) + String(" chars"));
 
 			current_iteration++;
 			if (current_iteration >= total_iterations) {
@@ -244,7 +244,7 @@ void ViewHierarchyBenchmarkNode::process_frame() {
 
 			// Sample once per frame
 			frame_start_time = std::chrono::high_resolution_clock::now();
-			String result = builder->build_json();
+			auto buffer = builder->build_json();
 			auto current_time = std::chrono::high_resolution_clock::now();
 			auto duration = std::chrono::duration_cast<std::chrono::microseconds>(current_time - frame_start_time);
 			double elapsed_us = static_cast<double>(duration.count());
@@ -252,7 +252,7 @@ void ViewHierarchyBenchmarkNode::process_frame() {
 			optimized_large_total_time += elapsed_us;
 			print_line(String("Frame ") + String::num_int64(current_iteration + 1) + String("/") + String::num_int64(total_iterations) +
 					String(" - Optimized (large): ") + String::num_int64(elapsed_us) + String(" us, ") +
-					String::num_int64(result.length()) + String(" chars"));
+					String::num_int64(buffer.get_used()) + String(" chars"));
 
 			current_iteration++;
 			if (current_iteration >= total_iterations) {

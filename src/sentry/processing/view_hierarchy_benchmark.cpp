@@ -136,9 +136,9 @@ void benchmark_view_hierarchy_performance() {
 	print_line("\n--- Optimized Implementation ---");
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		PerformanceTimer timer(String("Optimized iteration ") + String::num_int64(i + 1), true);
-		String result = builder.build_json();
+		auto buffer = builder.build_json();
 		optimized_total_time += timer.get_elapsed_microseconds();
-		print_line(String("Optimized result: ") + String::num_int64(result.length()) + String(" chars"));
+		print_line(String("Optimized result: ") + String::num_int64(buffer.get_used()) + String(" chars"));
 	}
 
 	// Performance summary
@@ -188,10 +188,10 @@ void benchmark_view_hierarchy_performance() {
 	print_line("\n--- Optimized Implementation (Large Hierarchy) ---");
 	for (int i = 0; i < NUM_ITERATIONS; i++) {
 		PerformanceTimer timer(String("Optimized large iteration ") + String::num_int64(i + 1), true);
-		String result = builder.build_json();
-		print_line("Optimized JSON length: ", result.length());
+		auto buffer = builder.build_json();
+		print_line("Optimized JSON length: ", String::num_uint64(buffer.get_used()));
 		optimized_total_time += timer.get_elapsed_microseconds();
-		print_line(String("Optimized large result: ") + String::num_int64(result.length()) + String(" chars"));
+		print_line(String("Optimized large result: ") + String::num_int64(buffer.get_used()) + String(" chars"));
 	}
 
 	// Large hierarchy performance summary
