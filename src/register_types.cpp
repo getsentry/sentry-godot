@@ -3,7 +3,6 @@
 #include "sentry/disabled/disabled_event.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/sentry_event_processor.h"
-#include "sentry/processing/view_hierarchy_benchmark_node.h"
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/runtime_config.h"
 #include "sentry/sentry_attachment.h"
@@ -57,7 +56,6 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
 	GDREGISTER_INTERNAL_CLASS(ViewHierarchyProcessor);
-	GDREGISTER_CLASS(ViewHierarchyBenchmarkNode);
 	GDREGISTER_INTERNAL_CLASS(SentryLogger);
 
 #ifdef SDK_NATIVE
