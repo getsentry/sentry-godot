@@ -37,7 +37,7 @@ Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p
 #ifdef DEBUG_ENABLED
 	auto end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-	sentry::util::print_debug("Capturing scene tree data took ", duration.count(), " usec");
+	sentry::util::print_debug("Capturing scene tree data took ", (int64_t)duration.count(), " usec");
 #endif
 
 	return p_event;
