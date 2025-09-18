@@ -3,6 +3,7 @@
 #include "sentry/common_defs.h"
 #include "sentry/util/print.h"
 
+#include <chrono>
 #include <cstdio>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
