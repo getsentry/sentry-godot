@@ -4,6 +4,7 @@
 #include "sentry/processing/view_hierarchy.h"
 #include "sentry/util/print.h"
 
+#include <cstdio>
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
