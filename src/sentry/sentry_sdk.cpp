@@ -5,7 +5,6 @@
 #include "sentry/contexts.h"
 #include "sentry/disabled/disabled_sdk.h"
 #include "sentry/processing/screenshot_processor.h"
-#include "sentry/processing/view_hierarchy_benchmark.h"
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
@@ -121,10 +120,6 @@ void SentrySDK::destroy_singleton() {
 
 void SentrySDK::init(const Callable &p_configuration_callback) {
 	ERR_FAIL_COND_MSG(internal_sdk->is_enabled(), "Attempted to initialize SentrySDK that is already initialized");
-
-	// TODO: REMOVE THESE LINES!
-	sentry::benchmark_view_hierarchy_performance();
-	return;
 
 #if SDK_ANDROID
 	if (OS::get_singleton()->has_feature("editor")) {
