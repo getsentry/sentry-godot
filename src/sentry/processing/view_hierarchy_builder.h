@@ -1,15 +1,19 @@
 #pragma once
 
+#include "sentry/util/utf8_buffer.h"
+
 #include <godot_cpp/variant/string.hpp>
 
 namespace sentry {
 
 class ViewHierarchyBuilder {
 private:
-	size_t estimated_length = 300'000; // set generous initial estimate
+	// Initial estimated buffer size for JSON serialization (bytes).
+	// This value is adjusted based on past data to minimize reallocations.
+	size_t estimated_buffer_size = 262'144;
 
 public:
-	godot::String build_json();
+	sentry::util::UTF8Buffer build_json();
 };
 
 } //namespace sentry

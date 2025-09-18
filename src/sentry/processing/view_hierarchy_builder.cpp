@@ -1,7 +1,5 @@
 #include "view_hierarchy_builder.h"
 
-#include "sentry/util/fast_string_builder.h"
-
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/node.hpp>
@@ -14,7 +12,7 @@ using namespace godot;
 
 namespace {
 
-inline void _start_name_value_pair_new(sentry::util::FastStringBuilder &p_builder, const char *p_name, const String &p_value) {
+inline void _start_name_value_pair_new(sentry::util::UTF8Buffer &p_builder, const char *p_name, const String &p_value) {
 	p_builder.append("\"");
 	p_builder.append(p_name);
 	p_builder.append("\":\"");
@@ -22,7 +20,7 @@ inline void _start_name_value_pair_new(sentry::util::FastStringBuilder &p_builde
 	p_builder.append("\"");
 }
 
-inline void _next_name_value_pair_new(sentry::util::FastStringBuilder &p_builder, const char *p_name, const String &p_value) {
+inline void _next_name_value_pair_new(sentry::util::UTF8Buffer &p_builder, const char *p_name, const String &p_value) {
 	p_builder.append(",\"");
 	p_builder.append(p_name);
 	p_builder.append("\":\"");
@@ -34,13 +32,13 @@ inline void _next_name_value_pair_new(sentry::util::FastStringBuilder &p_builder
 
 namespace sentry {
 
-String ViewHierarchyBuilder::build_json() {
+sentry::util::UTF8Buffer ViewHierarchyBuilder::build_json() {
 	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-	ERR_FAIL_NULL_V(sml, String());
+	ERR_FAIL_NULL_V(sml, ::sentry::util::UTF8Buffer(0));
 
-	sentry::util::FastStringBuilder builder{ size_t(estimated_length * 0.2) }; // generously overestimate
+	sentry::util::UTF8Buffer buffer{ size_t(estimated_buffer_size) };
 
-	builder.append(R"({"rendering_system":"Godot","windows":[)");
+	buffer.append(R"({"rendering_system":"Godot","windows":[)");
 
 	List<Node *> stack;
 	List<int> hierarchy;
@@ -50,49 +48,49 @@ String ViewHierarchyBuilder::build_json() {
 	}
 
 	while (!stack.is_empty()) {
-		if (builder.ends_with("}")) {
-			builder.append(",{");
+		if (buffer.ends_with("}")) {
+			buffer.append(",{");
 		} else {
-			builder.append("{");
+			buffer.append("{");
 		}
 
 		Node *node = stack.back()->get();
 		stack.pop_back();
 
-		_start_name_value_pair_new(builder, "name", node->get_name());
-		_next_name_value_pair_new(builder, "class", node->get_class());
+		_start_name_value_pair_new(buffer, "name", node->get_name());
+		_next_name_value_pair_new(buffer, "class", node->get_class());
 
 		String scene_path = node->get_scene_file_path();
 		if (!scene_path.is_empty()) {
-			_next_name_value_pair_new(builder, "scene", scene_path);
+			_next_name_value_pair_new(buffer, "scene", scene_path);
 		}
 
 		const Ref<Script> &scr = node->get_script();
 		if (scr.is_valid()) {
-			_next_name_value_pair_new(builder, "script", scr.is_valid() ? scr->get_path() : String());
+			_next_name_value_pair_new(buffer, "script", scr.is_valid() ? scr->get_path() : String());
 		}
 
 		if (node->get_child_count()) {
-			builder.append(",\"children\":[");
+			buffer.append(",\"children\":[");
 			for (int i = node->get_child_count() - 1; i >= 0; i--) {
 				stack.push_back(node->get_child(i));
 			}
 			hierarchy.push_back(node->get_child_count());
 		} else {
-			builder.append("}");
+			buffer.append("}");
 			while (!hierarchy.is_empty() && (--hierarchy.back()->get()) == 0) {
-				builder.append("]}");
+				buffer.append("]}");
 				hierarchy.pop_back();
 			}
 		}
 	}
 
-	builder.append("]}");
+	buffer.append("]}");
 
 	// Update estimate
-	estimated_length = MAX(estimated_length, size_t(builder.get_length() * 1.2));
+	estimated_buffer_size = MAX(estimated_buffer_size, buffer.get_capacity());
 
-	return builder.to_string();
+	return buffer;
 }
 
 } //namespace sentry

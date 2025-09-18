@@ -65,6 +65,10 @@ public:
 		return write - start;
 	}
 
+	size_t get_capacity() {
+		return capacity;
+	}
+
 	void resize(size_t p_size) {
 		capacity = p_size;
 		size_t used = get_used();
