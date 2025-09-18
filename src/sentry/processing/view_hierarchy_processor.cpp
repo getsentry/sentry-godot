@@ -4,7 +4,6 @@
 #include "sentry/util/print.h"
 
 #include <cstdio>
-#include <filesystem>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 
@@ -15,7 +14,7 @@ Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p
 	auto start = std::chrono::high_resolution_clock::now();
 #endif
 
-	std::filesystem::remove(json_file_path.ptr());
+	std::remove(json_file_path.ptr());
 
 	if (OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id()) {
 		sentry::util::print_debug("Skipping scene tree capture - can only be performed on the main thread");
