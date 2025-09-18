@@ -1,25 +1,21 @@
 #include "view_hierarchy_processor.h"
 
 #include "sentry/common_defs.h"
-#include "sentry/processing/view_hierarchy.h"
 #include "sentry/util/print.h"
 
 #include <cstdio>
-#include <godot_cpp/classes/dir_access.hpp>
-#include <godot_cpp/classes/file_access.hpp>
+#include <filesystem>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/time.hpp>
 
 namespace sentry {
 
 Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p_event) {
 #ifdef DEBUG_ENABLED
-	uint64_t start = Time::get_singleton()->get_ticks_usec();
+	auto start = std::chrono::high_resolution_clock::now();
 #endif
 
-	String path = "user://" SENTRY_VIEW_HIERARCHY_FN;
-	DirAccess::remove_absolute(path);
+	std::filesystem::remove(json_file_path.ptr());
 
 	if (OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id()) {
 		sentry::util::print_debug("Skipping scene tree capture - can only be performed on the main thread");
@@ -40,8 +36,9 @@ Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p
 	}
 
 #ifdef DEBUG_ENABLED
-	uint64_t end = Time::get_singleton()->get_ticks_usec();
-	sentry::util::print_debug("Capturing scene tree data took ", end - start, " usec");
+	auto end = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	sentry::util::print_debug("Capturing scene tree data took ", duration.count(), " usec");
 #endif
 
 	return p_event;
