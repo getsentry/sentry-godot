@@ -30,9 +30,9 @@ public:
 			write = start;
 			capacity = p_capacity;
 		} else {
-			p_capacity = 0;
 			start = nullptr;
 			write = nullptr;
+			capacity = 0;
 		}
 	}
 
