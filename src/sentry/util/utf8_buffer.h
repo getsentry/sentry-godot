@@ -15,7 +15,11 @@ private:
 
 	void _ensure_capacity(size_t p_expected) {
 		if (p_expected > capacity) {
-			resize(p_expected * 2);
+			size_t new_capacity = capacity * 2;
+			while (p_expected > new_capacity) {
+				new_capacity = new_capacity * 2;
+			}
+			resize(new_capacity);
 		}
 	}
 
