@@ -20,7 +20,8 @@
 			If [code]true[/code], enables automatic capture of scene tree hierarchy data with each event.
 		</member>
 		<member name="attach_screenshot" type="bool" setter="set_attach_screenshot" getter="is_attach_screenshot_enabled" default="false">
-			If [code]true[/code], enables automatic screenshot capture for events meeting or exceeding the [member screenshot_level] threshold. By default, only fatal events trigger screenshots. Setting a lower [member screenshot_level] threshold may impact performance in the frames the screenshots are taken.
+			If [code]true[/code], enables automatic screenshot capture for events meeting or exceeding the [member screenshot_level] threshold. By default, only fatal events trigger screenshots.
+			[b]Warning[/b]: This feature is experimental and may impact performance when screenshots are captured. Not recommended for production.
 		</member>
 		<member name="before_capture_screenshot" type="Callable" setter="set_before_capture_screenshot" getter="get_before_capture_screenshot" default="Callable()">
 			If assigned, this callback runs before a screenshot is captured. It takes [SentryEvent] as a parameter and returns [code]false[/code] to skip capturing the screenshot, or [code]true[/code] to capture the screenshot.
