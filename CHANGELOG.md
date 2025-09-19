@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Other changes
+
+- Marked screenshot option as experimental and not recommended for production use ([#375](https://github.com/getsentry/sentry-godot/pull/375))
+  - Note: we plan to improve it.
+
 ## 1.0.0-beta.3
 
 ### Breaking changes
