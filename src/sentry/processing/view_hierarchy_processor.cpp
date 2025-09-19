@@ -26,9 +26,9 @@ Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p
 
 	FILE *f = std::fopen(json_file_path.ptr(), "wb");
 	if (f) {
-		size_t written = std::fwrite(json_buffer.ptr(), 1, json_buffer.get_used(), f);
-		if (written != json_buffer.get_used()) {
-			sentry::util::print_error(vformat("Failed to write scene tree data - only wrote %d bytes out of %d", (int64_t)written, (int64_t)json_buffer.get_used()));
+		size_t written = std::fwrite(json_buffer.ptr(), 1, json_buffer.get_size(), f);
+		if (written != json_buffer.get_size()) {
+			sentry::util::print_error(vformat("Failed to write scene tree data - only wrote %d bytes out of %d", (int64_t)written, (int64_t)json_buffer.get_size()));
 		}
 		std::fclose(f);
 	} else {

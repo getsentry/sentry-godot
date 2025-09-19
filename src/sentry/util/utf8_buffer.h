@@ -9,9 +9,9 @@ namespace sentry::util {
 // Best practice: generously over-estimate initial capacity to minimize reallocations.
 class UTF8Buffer {
 private:
-	size_t capacity;
-	char *start;
-	char *write;
+	size_t capacity = 0;
+	char *start = nullptr;
+	char *write = nullptr;
 
 	void _ensure_capacity(size_t p_expected) {
 		if (p_expected > capacity) {
@@ -19,7 +19,7 @@ private:
 			while (p_expected > new_capacity) {
 				new_capacity = new_capacity * 2;
 			}
-			resize(new_capacity);
+			reserve(new_capacity);
 		}
 	}
 
@@ -29,10 +29,6 @@ public:
 			start = (char *)memalloc(p_capacity);
 			write = start;
 			capacity = p_capacity;
-		} else {
-			start = nullptr;
-			write = nullptr;
-			capacity = 0;
 		}
 	}
 
@@ -61,7 +57,7 @@ public:
 		return start;
 	}
 
-	size_t get_used() {
+	size_t get_size() {
 		return write - start;
 	}
 
@@ -69,19 +65,16 @@ public:
 		return capacity;
 	}
 
-	void resize(size_t p_size) {
+	void reserve(size_t p_size) {
 		capacity = p_size;
-		size_t used = get_used();
-		char *new_buffer = (char *)memalloc(capacity);
-		memcpy(new_buffer, start, used);
-		memfree(start);
-		start = new_buffer;
+		size_t used = get_size();
+		start = (char *)memrealloc(start, capacity);
 		write = start + used;
 	}
 
 	void append(const char *p_cstr) {
 		const size_t length = strlen(p_cstr);
-		_ensure_capacity(get_used() + length + 1);
+		_ensure_capacity(get_size() + length + 1);
 
 		const char *src = p_cstr;
 		const char *end = p_cstr + length;
@@ -93,7 +86,7 @@ public:
 
 	void append(const godot::String &p_str) {
 		const size_t length = p_str.length();
-		_ensure_capacity(get_used() + length * 4 + 1); // ensure maximum theoretical
+		_ensure_capacity(get_size() + length * 4 + 1); // ensure maximum theoretical
 
 		// To UTF-8
 		for (size_t i = 0; i < length; ++i) {
@@ -118,7 +111,7 @@ public:
 
 	bool ends_with(const char *p_suffix) {
 		int suffix_len = strlen(p_suffix);
-		if (suffix_len > get_used()) {
+		if (suffix_len > get_size()) {
 			return false;
 		}
 
