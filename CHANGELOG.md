@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- Improve scene tree data capture performance ([#373](https://github.com/getsentry/sentry-godot/pull/373))
+
 ## 1.0.0-beta.3
 
 ### Breaking changes
