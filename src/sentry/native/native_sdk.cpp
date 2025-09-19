@@ -12,6 +12,7 @@
 #include "sentry/util/print.h"
 #include "sentry/util/screenshot.h"
 
+#include <cstdio>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
