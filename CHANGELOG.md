@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+
+- The `attach_screenshot` and `screenshot_level` options have moved to the experimental section while we're still improving things. If you previously had it enabled, you will need to re-enable it in its new location. They're currently not recommended for production use. ([#375](https://github.com/getsentry/sentry-godot/pull/375))
+
+
 ## 1.0.0-beta.3
 
 ### Breaking changes
