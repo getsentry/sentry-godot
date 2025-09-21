@@ -169,6 +169,33 @@ String CocoaSDK::get_last_event_id() {
 }
 
 String CocoaSDK::capture_error(const String &p_type, const String &p_value, Level p_level, const Vector<StackFrame> &p_frames) {
+	// Log automatic error capture (from SentryLogger)
+	print_line("sentry-cocoa: capture_error called (automatic error)");
+	print_line("sentry-cocoa: Error type: " + p_type);
+	print_line("sentry-cocoa: Error value: " + p_value);
+	print_line("sentry-cocoa: Error level: " + String::num_int64(p_level));
+	if (p_frames.size() > 0) {
+		print_line("sentry-cocoa: Error file: " + p_frames[0].filename + ":" + String::num_int64(p_frames[0].lineno));
+	}
+	
+	// Filter out specific error messages
+	static const String filtered_errors[] = {
+		"NavigationMesh is already baking",
+		"Property agent_max_climb is floored to cell_height voxel units and loses precision",
+		"use Array, Dictionary or Object",
+		"Result: {}",
+		"Cannot get class"
+	};
+	static const int filtered_errors_count = sizeof(filtered_errors) / sizeof(filtered_errors[0]);
+	
+	for (int i = 0; i < filtered_errors_count; i++) {
+		if (p_value.contains(filtered_errors[i])) {
+			print_line("sentry-cocoa: Filtering out error: " + filtered_errors[i]);
+			last_uuid = "filtered-error-" + String::num_int64(i);
+			return last_uuid;
+		}
+	}
+	
 	// Create a new event
 	ObjCSentryEvent *event = [[ObjCSentryEvent alloc] init];
 
