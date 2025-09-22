@@ -6,6 +6,10 @@
 
 - Improve scene tree data capture performance ([#373](https://github.com/getsentry/sentry-godot/pull/373))
 
+### Other changes
+
+- Demo: Add "Run tests" button instead of running tests on start on mobile platforms ([#379](https://github.com/getsentry/sentry-godot/pull/379))
+
 ## 1.0.0-beta.3
 
 ### Breaking changes
