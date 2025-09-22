@@ -37,11 +37,10 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 size_flags_stretch_ratio = 1.4
-current_tab = 2
+current_tab = 0
 tab_focus_mode = 0
 
 [node name="Enrich Events" parent="VBoxContainer/VBoxContainer/TabContainer" instance=ExtResource("3_p64qd")]
-visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -52,6 +51,7 @@ metadata/_tab_index = 1
 
 [node name="Tests" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/TabContainer"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 metadata/_tab_index = 2
 
