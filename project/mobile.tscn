@@ -37,7 +37,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 size_flags_stretch_ratio = 1.4
-current_tab = 1
+current_tab = 2
 tab_focus_mode = 0
 
 [node name="Enrich Events" parent="VBoxContainer/VBoxContainer/TabContainer" instance=ExtResource("3_p64qd")]
@@ -46,8 +46,26 @@ layout_mode = 2
 metadata/_tab_index = 0
 
 [node name="Capture Events" parent="VBoxContainer/VBoxContainer/TabContainer" instance=ExtResource("2_xux57")]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 1
+
+[node name="Tests" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/TabContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="Header - Mobile Tests" type="Label" parent="VBoxContainer/VBoxContainer/TabContainer/Tests"]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = "MOBILE TESTS"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="RunTestsButton" type="Button" parent="VBoxContainer/VBoxContainer/TabContainer/Tests"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Run mobile tests"
 
 [node name="OutputPane" parent="VBoxContainer/VBoxContainer" instance=ExtResource("4_xux57")]
 layout_mode = 2
@@ -55,3 +73,5 @@ layout_mode = 2
 [node name="Spacer2" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+
+[connection signal="pressed" from="VBoxContainer/VBoxContainer/TabContainer/Tests/RunTestsButton" to="." method="_on_run_tests_button_pressed"]
