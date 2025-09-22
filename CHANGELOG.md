@@ -6,6 +6,9 @@
 
 - The `attach_screenshot` and `screenshot_level` options have moved to the experimental section while we're still improving things. If you previously had it enabled, you will need to re-enable it in its new location. They're currently not recommended for production use. ([#375](https://github.com/getsentry/sentry-godot/pull/375))
 
+### Improvements
+
+- Improve scene tree data capture performance ([#373](https://github.com/getsentry/sentry-godot/pull/373))
 
 ## 1.0.0-beta.3
 
