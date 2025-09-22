@@ -89,8 +89,9 @@ public:
 		_ensure_capacity(get_size() + length * 4 + 1); // ensure maximum theoretical
 
 		// To UTF-8
+		const char32_t *read = p_str.ptr();
 		for (size_t i = 0; i < length; ++i) {
-			char32_t c = p_str[i];
+			char32_t c = read[i];
 			if (c <= 0x7F) { // 1 byte
 				*(write++) = static_cast<char>(c);
 			} else if (c <= 0x7FF) { // 2 bytes
