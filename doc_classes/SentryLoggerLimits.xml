@@ -14,13 +14,13 @@
 			This serves as a safety measure to prevent the SDK from overloading a single frame.
 		</member>
 		<member name="repeated_error_window_ms" type="int" setter="set_repeated_error_window_ms" getter="get_repeated_error_window_ms" default="1000">
-			Specifies the minimum time interval in milliseconds between two identical errors. If exceeded, no further errors from the same line of code with the identical message will be captured until the next interval. Set to [code]0[/code] to disable this feature.
+			Specifies the minimum time interval in milliseconds between two identical errors. If exceeded, no further errors from the same line of code with the identical message will be captured until the next interval. Set to [code]0[/code] to disable this limit.
 		</member>
 		<member name="throttle_events" type="int" setter="set_throttle_events" getter="get_throttle_events" default="20">
 			Specifies the maximum number of events allowed within a sliding time window of [member throttle_window_ms] milliseconds. If exceeded, errors will be captured as breadcrumbs only until capacity is freed.
 		</member>
 		<member name="throttle_window_ms" type="int" setter="set_throttle_window_ms" getter="get_throttle_window_ms" default="10000">
-			Specifies the time window in milliseconds for [member throttle_events].
+			Specifies the time window in milliseconds for [member throttle_events]. Set to [code]0[/code] to disable this limit.
 		</member>
 	</members>
 </class>
