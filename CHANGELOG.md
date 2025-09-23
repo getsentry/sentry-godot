@@ -10,6 +10,10 @@
 
 - Improve scene tree data capture performance ([#373](https://github.com/getsentry/sentry-godot/pull/373))
 
+### Fixes
+
+- Fixed setting `throttle_window_ms` to 0 should disable it ([#382](https://github.com/getsentry/sentry-godot/pull/382))
+
 ### Other changes
 
 - Demo: Add "Run tests" button instead of running tests on start on mobile platforms ([#379](https://github.com/getsentry/sentry-godot/pull/379))
