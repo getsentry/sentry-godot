@@ -13,6 +13,7 @@
 ### Other changes
 
 - Demo: Add "Run tests" button instead of running tests on start on mobile platforms ([#379](https://github.com/getsentry/sentry-godot/pull/379))
+- Add "build_android_lib" option to SConstruct ([#384](https://github.com/getsentry/sentry-godot/pull/384))
 
 ### Dependencies
 
