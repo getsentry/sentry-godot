@@ -14,6 +14,12 @@
 
 - Demo: Add "Run tests" button instead of running tests on start on mobile platforms ([#379](https://github.com/getsentry/sentry-godot/pull/379))
 
+### Dependencies
+
+- Bump Sentry Android from v8.21.1 to v8.22.0 ([#380](https://github.com/getsentry/sentry-godot/pull/380))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8220)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.21.1...8.22.0)
+
 ## 1.0.0-beta.3
 
 ### Breaking changes
