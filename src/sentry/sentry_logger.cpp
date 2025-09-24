@@ -300,7 +300,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 		bool is_spammy_error = it != error_timepoints.end() && now - it->second < limits.repeated_error_window;
 
 		bool within_frame_limit = frame_events < limits.events_per_frame;
-		bool within_throttling_limit = event_times.size() < limits.throttle_events;
+		bool within_throttling_limit = event_times.size() < limits.throttle_events || limits.throttle_window.count() == 0;
 
 		as_event = SentryOptions::get_singleton()->should_capture_event((GodotErrorType)p_error_type) &&
 				within_frame_limit &&
