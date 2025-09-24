@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import subprocess
+import sys
 from enum import Enum
 
 
@@ -57,6 +58,7 @@ def add_custom_bool_option(name, description, default=False):
 
 # Define our custom options
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
+add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
 
 # Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
 # Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
@@ -232,6 +234,35 @@ else:
     )
     Default(library)
 
+# *** Build Android lib
+
+if sys.platform.startswith("win"):
+    gradle_cmd = "gradlew.bat assemble"
+else:
+    gradle_cmd = "./gradlew assemble"
+
+# Use new environment importing current shell's env for greater compatibility.
+env_gradle = Environment(ENV = os.environ)
+
+android_lib = env_gradle.Command(
+    target=[
+        "project/addons/sentry/bin/android/sentry_android_godot_plugin.debug.aar",
+        "project/addons/sentry/bin/android/sentry_android_godot_plugin.release.aar"
+    ],
+    source=[Dir("android_lib/")],
+    action=[gradle_cmd]
+)
+env_gradle.NoCache(android_lib)
+env_gradle.AlwaysBuild(android_lib)
+
+Alias("android_lib", android_lib)
+
+if env.get("build_android_lib", False):
+    Default(android_lib)
+    Depends(android_lib, library)
+
+
+# *** Add help for optional targets.
 
 Help("""
 Optional targets:
@@ -240,6 +271,9 @@ ios_framework: Create iOS XCFramework from device and simulator builds.
                Usage: scons target=template_release platform=ios ios_framework
                Note: Requires both device and simulator builds to exist, and it
                      doesn't trigger a build.
+
+android_lib: Build Android bridge library.
+             Usage: scons target=template_release platform=android android_lib
 """)
 
 

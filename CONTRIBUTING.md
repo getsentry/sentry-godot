@@ -70,6 +70,12 @@ To build Android targets:
 scons target=editor debug_symbols=yes platform=android
 ```
 
+You can perform both steps by adding `build_android_lib=yes` option to scons command:
+
+```bash
+scons target=editor debug_symbols=yes platform=android build_android_lib=yes
+```
+
 ### iOS
 
 Building for iOS requires making separate builds for device and simulator architectures, then combining them into an XCFramework using the `generate_ios_framework=yes` option:
