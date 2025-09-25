@@ -6,8 +6,6 @@ Sentry for Godot helps you monitor your game's health during QA and after releas
 
 ![issue-example](./.github/issue_example.png)
 
-🚧 **Preview Phase** - This SDK is currently in 1.0 preview phase as we work towards a stable 1.0.0 release. While functional, some features may be incomplete, subject to change or missing.
-
 **Feedback Welcome**: We'd love to hear about your experience! Share feedback and ask questions in [Discussions](https://github.com/getsentry/sentry-godot/discussions).
 
 
@@ -32,7 +30,7 @@ Support for additional platforms and architectures may be added in future releas
 
 ## Getting started
 
-Pre-built extension libraries with the demo project are available in [**Releases**](https://github.com/getsentry/sentry-godot/releases), including 1.0.0 pre-release versions.
+Pre-built extension libraries with the demo project are available in [**Releases**](https://github.com/getsentry/sentry-godot/releases).
 
 Check the official [Sentry SDK documentation](https://docs.sentry.io/platforms/godot/) to get started.
 
