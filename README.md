@@ -18,6 +18,8 @@ Sentry for Godot helps you monitor your game's health during QA and after releas
 | `1.x` releases | Godot 4.5 or later     |
 | `0.x` releases | Godot 4.3 or later     |
 
+For upgrade instructions between major versions, see the [Migration Guide](https://docs.sentry.io/platforms/godot/migration/).
+
 ## Supported platforms and architectures
 
 - **Windows**: x86_64, x86_32
