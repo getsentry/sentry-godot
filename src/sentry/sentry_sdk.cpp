@@ -129,7 +129,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 #endif
 
 	sentry::util::print_debug("Initializing Sentry SDK");
-	internal_sdk->init(_get_global_attachments(), p_configuration_callback);
+	internal_sdk->init(_get_global_attachments(), p_configuration_callback, user);
 
 	if (internal_sdk->is_enabled()) {
 		if (is_auto_initializing) {
@@ -332,7 +332,6 @@ void SentrySDK::prepare_and_auto_initialize() {
 			user->infer_ip_address();
 		}
 	}
-	set_user(user);
 
 	// Verify project settings and notify user via errors if there are any issues (deferred).
 	callable_mp_static(_verify_project_settings).call_deferred();

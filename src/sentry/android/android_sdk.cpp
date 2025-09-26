@@ -134,7 +134,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
+void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback, const Ref<SentryUser> &p_user) {
 	ERR_FAIL_NULL(android_plugin);
 
 	if (p_configuration_callback.is_valid()) {
@@ -149,6 +149,8 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 				is_view_hierarchy ? "application/json" : String(),
 				is_view_hierarchy ? "event.view_hierarchy" : String());
 	}
+
+	set_user(p_user);
 
 	android_plugin->call(ANDROID_SN(init),
 			before_send_handler->get_instance_id(),

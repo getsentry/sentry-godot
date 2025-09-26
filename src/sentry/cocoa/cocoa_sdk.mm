@@ -141,7 +141,7 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}];
 }
 
-void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
+void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback, const Ref<SentryUser> &p_user) {
 	[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
 
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
@@ -182,6 +182,21 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 				ERR_CONTINUE(att == nil);
 				[scope addAttachment:att];
 			}
+
+			// Initialize user.
+			if (p_user.is_valid()) {
+				objc::SentryUser *user = [[objc::SentryUser alloc] init];
+
+				user.userId = string_to_objc_or_nil_if_empty(p_user->get_id());
+				user.username = string_to_objc_or_nil_if_empty(p_user->get_username());
+				user.email = string_to_objc_or_nil_if_empty(p_user->get_email());
+				user.ipAddress = string_to_objc_or_nil_if_empty(p_user->get_ip_address());
+
+				[scope setUser:user];
+			} else {
+				[scope setUser:nil];
+			}
+
 			return scope;
 		};
 

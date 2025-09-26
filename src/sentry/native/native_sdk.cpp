@@ -267,7 +267,7 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
+void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback, const Ref<SentryUser> &p_user) {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
@@ -331,6 +331,8 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 	sentry_options_set_before_send(options, _handle_before_send, NULL);
 	sentry_options_set_on_crash(options, _handle_on_crash, NULL);
 	sentry_options_set_logger(options, _log_native_message, NULL);
+
+	set_user(p_user);
 
 	int err = sentry_init(options);
 	initialized = (err == 0);
