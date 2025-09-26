@@ -60,11 +60,16 @@ void AndroidSDK::remove_tag(const String &p_key) {
 
 void AndroidSDK::set_user(const Ref<SentryUser> &p_user) {
 	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(setUser),
-			p_user->get_id(),
-			p_user->get_username(),
-			p_user->get_email(),
-			p_user->get_ip_address());
+
+	if (p_user.is_valid()) {
+		android_plugin->call(ANDROID_SN(setUser),
+				p_user->get_id(),
+				p_user->get_username(),
+				p_user->get_email(),
+				p_user->get_ip_address());
+	} else {
+		remove_user();
+	}
 }
 
 void AndroidSDK::remove_user() {
@@ -134,7 +139,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
+void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback, const Ref<SentryUser> &p_user) {
 	ERR_FAIL_NULL(android_plugin);
 
 	if (p_configuration_callback.is_valid()) {
@@ -159,6 +164,12 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 			SentryOptions::get_singleton()->get_environment(),
 			SentryOptions::get_singleton()->get_sample_rate(),
 			SentryOptions::get_singleton()->get_max_breadcrumbs());
+
+	if (is_enabled()) {
+		set_user(p_user);
+	} else {
+		ERR_PRINT("Sentry: Failed to initialize Android SDK.");
+	}
 }
 
 void AndroidSDK::close() {

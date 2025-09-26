@@ -144,27 +144,29 @@ void NativeSDK::remove_tag(const String &p_key) {
 }
 
 void NativeSDK::set_user(const Ref<SentryUser> &p_user) {
-	ERR_FAIL_NULL(p_user);
+	if (p_user.is_valid()) {
+		sentry_value_t user_data = sentry_value_new_object();
 
-	sentry_value_t user_data = sentry_value_new_object();
-
-	if (!p_user->get_id().is_empty()) {
-		sentry_value_set_by_key(user_data, "id",
-				sentry_value_new_string(p_user->get_id().utf8()));
+		if (!p_user->get_id().is_empty()) {
+			sentry_value_set_by_key(user_data, "id",
+					sentry_value_new_string(p_user->get_id().utf8()));
+		}
+		if (!p_user->get_username().is_empty()) {
+			sentry_value_set_by_key(user_data, "username",
+					sentry_value_new_string(p_user->get_username().utf8()));
+		}
+		if (!p_user->get_email().is_empty()) {
+			sentry_value_set_by_key(user_data, "email",
+					sentry_value_new_string(p_user->get_email().utf8()));
+		}
+		if (!p_user->get_ip_address().is_empty()) {
+			sentry_value_set_by_key(user_data, "ip_address",
+					sentry_value_new_string(p_user->get_ip_address().utf8()));
+		}
+		sentry_set_user(user_data);
+	} else {
+		remove_user();
 	}
-	if (!p_user->get_username().is_empty()) {
-		sentry_value_set_by_key(user_data, "username",
-				sentry_value_new_string(p_user->get_username().utf8()));
-	}
-	if (!p_user->get_email().is_empty()) {
-		sentry_value_set_by_key(user_data, "email",
-				sentry_value_new_string(p_user->get_email().utf8()));
-	}
-	if (!p_user->get_ip_address().is_empty()) {
-		sentry_value_set_by_key(user_data, "ip_address",
-				sentry_value_new_string(p_user->get_ip_address().utf8()));
-	}
-	sentry_set_user(user_data);
 }
 
 void NativeSDK::remove_user() {
@@ -267,7 +269,7 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
+void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback, const Ref<SentryUser> &p_user) {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
@@ -335,7 +337,9 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 	int err = sentry_init(options);
 	initialized = (err == 0);
 
-	if (err != 0) {
+	if (is_enabled()) {
+		set_user(p_user);
+	} else {
 		ERR_PRINT("Sentry: Failed to initialize native SDK. Error code: " + itos(err));
 	}
 }
