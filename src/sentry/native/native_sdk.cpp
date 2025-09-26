@@ -275,10 +275,10 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 
 	if (p_configuration_callback.is_valid()) {
 		p_configuration_callback.call(SentryOptions::get_singleton());
+	}
 
-		if (SentryOptions::get_singleton()->is_send_default_pii_enabled() && p_user->get_ip_address().is_empty()) {
-			p_user->infer_ip_address();
-		}
+	if (SentryOptions::get_singleton()->is_send_default_pii_enabled() && p_user->get_ip_address().is_empty()) {
+		p_user->infer_ip_address();
 	}
 
 	sentry_options_t *options = sentry_options_new();

@@ -144,10 +144,10 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 
 	if (p_configuration_callback.is_valid()) {
 		p_configuration_callback.call(SentryOptions::get_singleton());
+	}
 
-		if (SentryOptions::get_singleton()->is_send_default_pii_enabled() && p_user->get_ip_address().is_empty()) {
-			p_user->infer_ip_address();
-		}
+	if (SentryOptions::get_singleton()->is_send_default_pii_enabled() && p_user->get_ip_address().is_empty()) {
+		p_user->infer_ip_address();
 	}
 
 	for (const String &path : p_global_attachments) {
