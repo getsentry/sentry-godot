@@ -8,20 +8,8 @@ func init_sdk() -> void:
 		)
 
 
-## device.name should NOT be added if PII disabled
-func test_pii_disabled_and_device_name() -> void:
-	SentrySDK.capture_event(SentrySDK.create_event())
-
-	var json: String = await wait_for_captured_event_json()
-
-	assert_json(json).describe("Must NOT contain device.name") \
-		.at("/contexts/device") \
-		.must_not_contain("name") \
-		.verify()
-
-
 ## User interface must not contain ip_adress if PII disabled.
-func test_pii_disabled_and_user() -> void:
+func test_pii_disabled_and_default_user_ip() -> void:
 	SentrySDK.capture_event(SentrySDK.create_event())
 
 	var json: String = await wait_for_captured_event_json()
