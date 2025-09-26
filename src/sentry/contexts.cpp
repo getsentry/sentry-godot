@@ -56,6 +56,9 @@ String _screen_orientation_as_string(int32_t p_screen) {
 
 String _get_hostname() {
 #ifdef LINUX_ENABLED
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 255
+#endif
 	char buffer[HOST_NAME_MAX + 1];
 	if (gethostname(buffer, sizeof(buffer)) == 0) {
 		buffer[sizeof(buffer) - 1] = '\0'; // ensure termination
