@@ -214,6 +214,10 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 			}
 		};
 	}];
+
+	if (!is_enabled()) {
+		ERR_PRINT("Sentry: Failed to initialize Cocoa SDK.");
+	}
 }
 
 void CocoaSDK::close() {

@@ -332,12 +332,12 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 	sentry_options_set_on_crash(options, _handle_on_crash, NULL);
 	sentry_options_set_logger(options, _log_native_message, NULL);
 
-	set_user(p_user);
-
 	int err = sentry_init(options);
 	initialized = (err == 0);
 
-	if (err != 0) {
+	if (is_enabled()) {
+		set_user(p_user);
+	} else {
 		ERR_PRINT("Sentry: Failed to initialize native SDK. Error code: " + itos(err));
 	}
 }

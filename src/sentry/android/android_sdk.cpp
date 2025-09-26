@@ -150,8 +150,6 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 				is_view_hierarchy ? "event.view_hierarchy" : String());
 	}
 
-	set_user(p_user);
-
 	android_plugin->call(ANDROID_SN(init),
 			before_send_handler->get_instance_id(),
 			SentryOptions::get_singleton()->get_dsn(),
@@ -161,6 +159,12 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 			SentryOptions::get_singleton()->get_environment(),
 			SentryOptions::get_singleton()->get_sample_rate(),
 			SentryOptions::get_singleton()->get_max_breadcrumbs());
+
+	if (is_enabled()) {
+		set_user(p_user);
+	} else {
+		ERR_PRINT("Sentry: Failed to initialize Android SDK.");
+	}
 }
 
 void AndroidSDK::close() {
