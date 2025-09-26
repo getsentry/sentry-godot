@@ -56,16 +56,17 @@ String _screen_orientation_as_string(int32_t p_screen) {
 
 String _get_hostname() {
 #ifdef LINUX_ENABLED
-	char hostname[HOST_NAME_MAX + 1];
-	if (gethostname(hostname, sizeof(hostname)) == 0) {
-		return String::utf8(hostname);
+	char buffer[HOST_NAME_MAX + 1];
+	if (gethostname(buffer, sizeof(buffer)) == 0) {
+		buffer[sizeof(buffer) - 1] = '\0'; // ensure termination
+		return String::utf8(buffer);
 	}
 #elif WINDOWS_ENABLED
-	WCHAR buffer[MAX_COMPUTERNAME_LENGTH + 1];
+	wchar_t buffer[MAX_COMPUTERNAME_LENGTH + 1];
 	DWORD size = sizeof(buffer) / sizeof(buffer[0]);
 
 	if (GetComputerNameW(buffer, &size)) {
-		return String::utf16((const char16_t *)buffer);
+		return String::utf16(reinterpret_cast<const char16_t *>(buffer), size);
 	}
 #endif
 	return String();
