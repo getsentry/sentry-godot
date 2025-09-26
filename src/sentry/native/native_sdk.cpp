@@ -144,27 +144,29 @@ void NativeSDK::remove_tag(const String &p_key) {
 }
 
 void NativeSDK::set_user(const Ref<SentryUser> &p_user) {
-	ERR_FAIL_NULL(p_user);
+	if (p_user.is_valid()) {
+		sentry_value_t user_data = sentry_value_new_object();
 
-	sentry_value_t user_data = sentry_value_new_object();
-
-	if (!p_user->get_id().is_empty()) {
-		sentry_value_set_by_key(user_data, "id",
-				sentry_value_new_string(p_user->get_id().utf8()));
+		if (!p_user->get_id().is_empty()) {
+			sentry_value_set_by_key(user_data, "id",
+					sentry_value_new_string(p_user->get_id().utf8()));
+		}
+		if (!p_user->get_username().is_empty()) {
+			sentry_value_set_by_key(user_data, "username",
+					sentry_value_new_string(p_user->get_username().utf8()));
+		}
+		if (!p_user->get_email().is_empty()) {
+			sentry_value_set_by_key(user_data, "email",
+					sentry_value_new_string(p_user->get_email().utf8()));
+		}
+		if (!p_user->get_ip_address().is_empty()) {
+			sentry_value_set_by_key(user_data, "ip_address",
+					sentry_value_new_string(p_user->get_ip_address().utf8()));
+		}
+		sentry_set_user(user_data);
+	} else {
+		remove_user();
 	}
-	if (!p_user->get_username().is_empty()) {
-		sentry_value_set_by_key(user_data, "username",
-				sentry_value_new_string(p_user->get_username().utf8()));
-	}
-	if (!p_user->get_email().is_empty()) {
-		sentry_value_set_by_key(user_data, "email",
-				sentry_value_new_string(p_user->get_email().utf8()));
-	}
-	if (!p_user->get_ip_address().is_empty()) {
-		sentry_value_set_by_key(user_data, "ip_address",
-				sentry_value_new_string(p_user->get_ip_address().utf8()));
-	}
-	sentry_set_user(user_data);
 }
 
 void NativeSDK::remove_user() {
