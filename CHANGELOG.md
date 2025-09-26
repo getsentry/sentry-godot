@@ -14,6 +14,7 @@
 
 - Fixed setting `throttle_window_ms` to 0 should disable it ([#382](https://github.com/getsentry/sentry-godot/pull/382))
 - Fixed failing to set initial user on Apple platforms ([#390](https://github.com/getsentry/sentry-godot/pull/390))
+- Ensure `user.ip_address` defaults to auto with `send_default_pii` on ([#392](https://github.com/getsentry/sentry-godot/pull/392))
 
 ### Other changes
 
