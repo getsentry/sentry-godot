@@ -1,4 +1,6 @@
 extends SentryTestSuite
+## Test `send_default_pii` option enabled
+
 
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
