@@ -13,6 +13,7 @@
 ### Fixes
 
 - Fixed setting `throttle_window_ms` to 0 should disable it ([#382](https://github.com/getsentry/sentry-godot/pull/382))
+- Fixed failing to set initial user on Apple platforms ([#390](https://github.com/getsentry/sentry-godot/pull/390))
 
 ### Other changes
 
