@@ -7,6 +7,10 @@ func init_sdk() -> void:
 
 
 func test_device_name() -> void:
+	if OS.get_name() == "macOS":
+		# Note: device.name is not reported by Cocoa SDK
+		return
+
 	SentrySDK.capture_event(SentrySDK.create_event())
 
 	var json: String = await wait_for_captured_event_json()
