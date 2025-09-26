@@ -66,7 +66,7 @@ String _get_hostname() {
 	DWORD size = sizeof(buffer) / sizeof(buffer[0]);
 
 	if (GetComputerNameW(buffer, &size)) {
-		return String::utf16(reinterpret_cast<const char16_t *>(buffer), size);
+		return String::utf16((const char16_t *)(buffer), size);
 	}
 #endif
 	return String();
