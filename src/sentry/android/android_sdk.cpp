@@ -60,11 +60,16 @@ void AndroidSDK::remove_tag(const String &p_key) {
 
 void AndroidSDK::set_user(const Ref<SentryUser> &p_user) {
 	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(setUser),
-			p_user->get_id(),
-			p_user->get_username(),
-			p_user->get_email(),
-			p_user->get_ip_address());
+
+	if (p_user.is_valid()) {
+		android_plugin->call(ANDROID_SN(setUser),
+				p_user->get_id(),
+				p_user->get_username(),
+				p_user->get_email(),
+				p_user->get_ip_address());
+	} else {
+		remove_user();
+	}
 }
 
 void AndroidSDK::remove_user() {
