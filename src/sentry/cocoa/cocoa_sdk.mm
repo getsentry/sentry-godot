@@ -147,6 +147,10 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
 		if (p_configuration_callback.is_valid()) {
 			p_configuration_callback.call(SentryOptions::get_singleton());
+
+			if (SentryOptions::get_singleton()->is_send_default_pii_enabled() && p_user->get_ip_address().is_empty()) {
+				p_user->infer_ip_address();
+			}
 		}
 
 		options.dsn = string_to_objc(SentryOptions::get_singleton()->get_dsn());

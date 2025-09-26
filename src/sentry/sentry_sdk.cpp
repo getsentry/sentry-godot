@@ -328,9 +328,6 @@ void SentrySDK::prepare_and_auto_initialize() {
 	if (user.is_null()) {
 		user.instantiate();
 		user->set_id(runtime_config->get_installation_id());
-		if (SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
-			user->infer_ip_address();
-		}
 	}
 
 	// Verify project settings and notify user via errors if there are any issues (deferred).
