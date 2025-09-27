@@ -22,9 +22,9 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v8.56.0 to v8.56.1 ([#383](https://github.com/getsentry/sentry-godot/pull/383))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8561)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.56.0...8.56.1)
+- Bump Cocoa SDK from v8.56.0 to v8.56.2 ([#383](https://github.com/getsentry/sentry-godot/pull/383), [#393](https://github.com/getsentry/sentry-godot/pull/393))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8562)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.56.0...8.56.2)
 
 - Bump Sentry Android from v8.21.1 to v8.22.0 ([#380](https://github.com/getsentry/sentry-godot/pull/380))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8220)
