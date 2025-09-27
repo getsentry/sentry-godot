@@ -33,6 +33,9 @@
 - Bump Native SDK from v0.10.1 to v0.11.1 ([#374](https://github.com/getsentry/sentry-godot/pull/374), [#385](https://github.com/getsentry/sentry-godot/pull/385))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0111)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.10.1...0.11.1)
+- Bump gdUnit 4 from v5.1.0 to v5.1.1 ([#377](https://github.com/getsentry/sentry-godot/pull/377))
+  - [changelog](https://github.com/MikeSchulze/gdUnit4/blob/master/CHANGELOG.md#v511)
+  - [diff](https://github.com/MikeSchulze/gdUnit4/compare/v5.1.0...v5.1.1)
 
 ## 1.0.0-beta.3
 
