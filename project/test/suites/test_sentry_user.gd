@@ -34,3 +34,12 @@ func test_sentry_user_id_generation() -> void:
 	assert_int(id1.length()).is_greater(4)
 	assert_int(id2.length()).is_greater(4)
 	assert_str(id2).is_not_equal(id1).override_failure_message("Newly-generated ID should be different")
+
+
+func test_default_user_id() -> void:
+	var default1 := SentryUser.create_default()
+	var default2 := SentryUser.create_default()
+
+	assert_str(default1.id).is_not_empty()
+	assert_str(default2.id).is_not_empty()
+	assert_str(default1.id).is_equal(default2.id).override_failure_message("Default user instance should contain the same persisted ID (unique per installation)")
