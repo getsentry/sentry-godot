@@ -2,6 +2,19 @@ extends SentryTestSuite
 ## Test SentryUser class.
 
 
+func test_sentry_user_properties() -> void:
+	var user := SentryUser.new()
+	user.id = "custom_id"
+	user.email = "bob@example.com"
+	user.username = "bob"
+	user.ip_address = "127.0.0.1"
+
+	assert_str(user.id).is_equal("custom_id")
+	assert_str(user.email).is_equal("bob@example.com")
+	assert_str(user.username).is_equal("bob")
+	assert_str(user.ip_address).is_equal("127.0.0.1")
+
+
 ## SentryUser IP address should contain correct value when IP address is inferred.
 func test_sentry_user_ip_inferring() -> void:
 	var user := SentryUser.new()
