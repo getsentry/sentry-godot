@@ -23,6 +23,8 @@ protected:
 	String _to_string() const;
 
 public:
+	static Ref<SentryUser> create_default();
+
 	void set_id(const String &p_user_id) { id = p_user_id; }
 	String get_id() const { return id; }
 

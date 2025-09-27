@@ -11,6 +11,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="create_default" qualifiers="static">
+			<return type="SentryUser" />
+			<description>
+				Creates a default user data instance. This method assigns a randomly generated UUID to [member id] and persists it in a file on the user's device.
+				If [member SentryOptions.send_default_pii] is set to [code]true[/code], the [member ip_address] will be initialized with [code]{{auto}}[/code]. In this case, the IP address is automatically inferred from the connection between your game and Sentry's server.
+			</description>
+		</method>
 		<method name="duplicate">
 			<return type="SentryUser" />
 			<description>

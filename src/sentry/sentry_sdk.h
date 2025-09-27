@@ -34,12 +34,11 @@ private:
 
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
-	Ref<SentryUser> user;
-	Ref<Mutex> user_mutex;
 	Ref<SentryLogger> logger;
 	bool is_auto_initializing = false;
 
 	void _init_contexts();
+	void _init_user();
 	PackedStringArray _get_global_attachments();
 	void _auto_initialize();
 	void _demo_helper_crash_app();
@@ -55,6 +54,7 @@ public:
 	static SentrySDK *get_singleton() { return singleton; }
 
 	_FORCE_INLINE_ std::shared_ptr<sentry::InternalSDK> get_internal_sdk() const { return internal_sdk; }
+	_FORCE_INLINE_ Ref<RuntimeConfig> get_runtime_config() const { return runtime_config; }
 
 	// * Exported API
 
@@ -70,7 +70,6 @@ public:
 	void remove_tag(const String &p_key);
 
 	void set_user(const Ref<SentryUser> &p_user);
-	Ref<SentryUser> get_user() const;
 	void remove_user();
 
 	String capture_message(const String &p_message, sentry::Level p_level = sentry::LEVEL_INFO);

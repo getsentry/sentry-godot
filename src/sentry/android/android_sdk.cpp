@@ -139,7 +139,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback, const Ref<SentryUser> &p_user) {
+void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	ERR_FAIL_NULL(android_plugin);
 
 	if (p_configuration_callback.is_valid()) {
@@ -166,7 +166,7 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 			SentryOptions::get_singleton()->get_max_breadcrumbs());
 
 	if (is_enabled()) {
-		set_user(p_user);
+		set_user(SentryUser::create_default());
 	} else {
 		ERR_PRINT("Sentry: Failed to initialize Android SDK.");
 	}

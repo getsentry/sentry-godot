@@ -141,7 +141,7 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}];
 }
 
-void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback, const Ref<SentryUser> &p_user) {
+void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
 
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
@@ -183,19 +183,14 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 				[scope addAttachment:att];
 			}
 
-			// Initialize user.
-			if (p_user.is_valid()) {
-				objc::SentryUser *user = [[objc::SentryUser alloc] init];
-
-				user.userId = string_to_objc_or_nil_if_empty(p_user->get_id());
-				user.username = string_to_objc_or_nil_if_empty(p_user->get_username());
-				user.email = string_to_objc_or_nil_if_empty(p_user->get_email());
-				user.ipAddress = string_to_objc_or_nil_if_empty(p_user->get_ip_address());
-
-				[scope setUser:user];
-			} else {
-				[scope setUser:nil];
-			}
+			// Initialize default user.
+			Ref<SentryUser> user = SentryUser::create_default();
+			objc::SentryUser *objc_user = [[objc::SentryUser alloc] init];
+			objc_user.userId = string_to_objc_or_nil_if_empty(user->get_id());
+			objc_user.username = string_to_objc_or_nil_if_empty(user->get_username());
+			objc_user.email = string_to_objc_or_nil_if_empty(user->get_email());
+			objc_user.ipAddress = string_to_objc_or_nil_if_empty(user->get_ip_address());
+			[scope setUser:objc_user];
 
 			return scope;
 		};

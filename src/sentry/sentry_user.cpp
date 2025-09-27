@@ -1,10 +1,25 @@
 #include "sentry_user.h"
 
+#include "sentry/sentry_options.h"
+#include "sentry/sentry_sdk.h"
 #include "sentry/uuid.h"
 
 #include <godot_cpp/variant/packed_string_array.hpp>
 
 namespace sentry {
+
+Ref<SentryUser> SentryUser::create_default() {
+	Ref<SentryUser> user;
+	user.instantiate();
+
+	user->set_id(SentrySDK::get_singleton()->get_runtime_config()->get_installation_id());
+
+	if (SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
+		user->infer_ip_address();
+	}
+
+	return user;
+}
 
 bool SentryUser::is_empty() const {
 	return id.is_empty() && username.is_empty() && email.is_empty() && ip_address.is_empty();
@@ -42,6 +57,8 @@ Ref<SentryUser> SentryUser::duplicate() {
 }
 
 void SentryUser::_bind_methods() {
+	ClassDB::bind_static_method("SentryUser", D_METHOD("create_default"), &SentryUser::create_default);
+
 	// Setters / getters
 	ClassDB::bind_method(D_METHOD("set_id", "id"), &SentryUser::set_id);
 	ClassDB::bind_method(D_METHOD("get_id"), &SentryUser::get_id);
