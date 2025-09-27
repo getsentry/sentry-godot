@@ -5,6 +5,7 @@
 ### Breaking changes
 
 - The `attach_screenshot` and `screenshot_level` options have moved to the experimental section while we're still improving things. If you previously had it enabled, you will need to re-enable it in its new location. They're currently not recommended for production use. ([#375](https://github.com/getsentry/sentry-godot/pull/375))
+- Remove `SentrySDK.get_user()` from API and ensure `user.ip_address` defaults to auto when `send_default_pii` is ON ([#392](https://github.com/getsentry/sentry-godot/pull/392))
 
 ### Improvements
 
@@ -14,7 +15,6 @@
 
 - Fixed setting `throttle_window_ms` to 0 should disable it ([#382](https://github.com/getsentry/sentry-godot/pull/382))
 - Fixed failing to set initial user on Apple platforms ([#390](https://github.com/getsentry/sentry-godot/pull/390))
-- Ensure `user.ip_address` defaults to auto with `send_default_pii` on ([#392](https://github.com/getsentry/sentry-godot/pull/392))
 
 ### Other changes
 
