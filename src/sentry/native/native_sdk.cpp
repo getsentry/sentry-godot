@@ -171,7 +171,6 @@ void NativeSDK::set_user(const Ref<SentryUser> &p_user) {
 
 void NativeSDK::remove_user() {
 	sentry_remove_user();
-	user.unref();
 }
 
 Ref<SentryBreadcrumb> NativeSDK::create_breadcrumb() {
