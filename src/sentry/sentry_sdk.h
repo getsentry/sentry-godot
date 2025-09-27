@@ -34,7 +34,6 @@ private:
 
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
-	Ref<SentryUser> initial_user;
 	Ref<SentryLogger> logger;
 	bool is_auto_initializing = false;
 
