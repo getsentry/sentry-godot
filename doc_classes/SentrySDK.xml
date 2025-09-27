@@ -62,12 +62,6 @@
 				Returns the ID of the last captured event.
 			</description>
 		</method>
-		<method name="get_user" qualifiers="const">
-			<return type="SentryUser" />
-			<description>
-				Returns the currently set user. See [SentryUser].
-			</description>
-		</method>
 		<method name="init">
 			<return type="void" />
 			<param index="0" name="configuration_callback" type="Callable" default="Callable()" />

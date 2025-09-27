@@ -171,6 +171,7 @@ void NativeSDK::set_user(const Ref<SentryUser> &p_user) {
 
 void NativeSDK::remove_user() {
 	sentry_remove_user();
+	user.unref();
 }
 
 Ref<SentryBreadcrumb> NativeSDK::create_breadcrumb() {
@@ -269,16 +270,12 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback, const Ref<SentryUser> &p_user) {
+void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	if (p_configuration_callback.is_valid()) {
 		p_configuration_callback.call(SentryOptions::get_singleton());
-	}
-
-	if (SentryOptions::get_singleton()->is_send_default_pii_enabled() && p_user.is_valid() && p_user->get_ip_address().is_empty()) {
-		p_user->infer_ip_address();
 	}
 
 	sentry_options_t *options = sentry_options_new();
@@ -342,7 +339,7 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 	initialized = (err == 0);
 
 	if (is_enabled()) {
-		set_user(p_user);
+		set_user(SentryUser::create_default());
 	} else {
 		ERR_PRINT("Sentry: Failed to initialize native SDK. Error code: " + itos(err));
 	}

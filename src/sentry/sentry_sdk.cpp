@@ -129,7 +129,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 #endif
 
 	sentry::util::print_debug("Initializing Sentry SDK");
-	internal_sdk->init(_get_global_attachments(), p_configuration_callback, user);
+	internal_sdk->init(_get_global_attachments(), p_configuration_callback);
 
 	if (internal_sdk->is_enabled()) {
 		if (is_auto_initializing) {
@@ -198,29 +198,10 @@ void SentrySDK::remove_tag(const String &p_key) {
 }
 
 void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
-	MutexLock lock(*user_mutex.ptr());
-
-	user = p_user;
-
-	if (user.is_null()) {
-		user.instantiate();
-	}
-
-	if (user->is_empty()) {
-		internal_sdk->remove_user();
-	} else {
-		internal_sdk->set_user(p_user);
-	}
-}
-
-Ref<SentryUser> SentrySDK::get_user() const {
-	MutexLock lock(*user_mutex.ptr());
-	return user.is_valid() ? user->duplicate() : nullptr;
+	internal_sdk->set_user(p_user);
 }
 
 void SentrySDK::remove_user() {
-	MutexLock lock(*user_mutex.ptr());
-	user.instantiate();
 	internal_sdk->remove_user();
 }
 
@@ -324,12 +305,6 @@ void SentrySDK::prepare_and_auto_initialize() {
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
 
-	// Initialize user.
-	if (user.is_null()) {
-		user.instantiate();
-		user->set_id(runtime_config->get_installation_id());
-	}
-
 	// Verify project settings and notify user via errors if there are any issues (deferred).
 	callable_mp_static(_verify_project_settings).call_deferred();
 
@@ -384,7 +359,6 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &SentrySDK::set_tag);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &SentrySDK::remove_tag);
 	ClassDB::bind_method(D_METHOD("set_user", "user"), &SentrySDK::set_user);
-	ClassDB::bind_method(D_METHOD("get_user"), &SentrySDK::get_user);
 	ClassDB::bind_method(D_METHOD("remove_user"), &SentrySDK::remove_user);
 	ClassDB::bind_method(D_METHOD("create_event"), &SentrySDK::create_event);
 	ClassDB::bind_method(D_METHOD("capture_event", "event"), &SentrySDK::capture_event);
@@ -400,8 +374,6 @@ void SentrySDK::_bind_methods() {
 SentrySDK::SentrySDK() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(SentryOptions::get_singleton());
-
-	user_mutex.instantiate();
 
 #ifdef SDK_NATIVE
 	internal_sdk = std::make_shared<sentry::native::NativeSDK>();
