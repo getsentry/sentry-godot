@@ -90,6 +90,8 @@ elif platform == "macos":
 # Crashpad handler
 if platform == "windows":
     build_targets.append(File(f"sentry-native/install/bin/crashpad_handler.exe"))
+    build_targets.append(File(f"sentry-native/install/bin/crashpad_wer.dll"))
+    build_targets.append(File(f"sentry-native/install/bin/crashpad_wer.pdb"))
 else:
     build_targets.append(File(f"sentry-native/install/bin/crashpad_handler"))
 
