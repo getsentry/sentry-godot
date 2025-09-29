@@ -13,7 +13,7 @@ var _event_level: SentrySDK.Level
 func _ready() -> void:
 	level_choice.get_popup().id_pressed.connect(_on_level_choice_id_pressed)
 	_init_level_choice_popup()
-	_update_user_info()
+	_init_user_info()
 
 
 func _init_level_choice_popup() -> void:
@@ -27,10 +27,10 @@ func _init_level_choice_popup() -> void:
 	_on_level_choice_id_pressed(SentrySDK.LEVEL_INFO)
 
 
-func _update_user_info() -> void:
-	# The user info is persisted in the user data directory (referenced by "user://"),
-	# so it will be loaded again on subsequent launches.
-	var user: SentryUser = SentrySDK.get_user()
+func _init_user_info() -> void:
+	var user := SentryUser.create_default()
+	SentrySDK.set_user(user)
+	
 	username.text = user.username
 	email.text = user.email
 	user_id.text = user.id
@@ -63,15 +63,14 @@ func _on_crash_button_pressed() -> void:
 
 func _on_set_user_button_pressed() -> void:
 	DemoOutput.print_info("Setting user info...")
-	var sentry_user := SentryUser.new()
-	sentry_user.id = user_id.text
-	sentry_user.username = username.text
-	sentry_user.email = email.text
+	var user := SentryUser.new()
+	user.id = user_id.text
+	user.username = username.text
+	user.email = email.text
 	if infer_ip.button_pressed:
-		sentry_user.infer_ip_address()
-	SentrySDK.set_user(sentry_user)
-	DemoOutput.print_extra(str(sentry_user))
-	_update_user_info()
+		user.infer_ip_address()
+	SentrySDK.set_user(user)
+	DemoOutput.print_extra(str(user))
 
 
 func _on_gen_script_error_pressed() -> void:
