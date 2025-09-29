@@ -199,6 +199,14 @@ def CopyCrashpadHandler(self, target_dir):
             target_dir.File("crashpad_handler.pdb"),
             source_dir.File("crashpad_handler.pdb")
         )
+        copy_file_action(
+            target_dir.File("crashpad_wer.dll"),
+            source_dir.File("crashpad_wer.dll")
+        )
+        copy_file_action(
+            target_dir.File("crashpad_wer.pdb"),
+            source_dir.File("crashpad_wer.pdb")
+        )
     else:
         copy_file_action(
             target_dir.File("crashpad_handler"),
