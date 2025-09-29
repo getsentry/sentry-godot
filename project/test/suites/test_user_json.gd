@@ -4,17 +4,10 @@ extends SentryTestSuite
 var _old_user: SentryUser
 
 
-func before_test() -> void:
-	super()
-	# Save user
-	_old_user = SentrySDK.get_user()
-
-
 func after_test() -> void:
 	super()
-	# Restore user
-	if SentrySDK.get_user() != _old_user:
-		SentrySDK.set_user(_old_user)
+	# Restore generic user
+	SentrySDK.set_user(SentryUser.create_default())
 
 
 func test_full_user_data_in_captured_events() -> void:
