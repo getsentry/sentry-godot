@@ -59,7 +59,7 @@ def add_custom_bool_option(name, description, default=False):
 # Define our custom options
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
-add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported: macOS)", True)
+add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS)", True)
 
 # Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
 # Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
@@ -277,10 +277,7 @@ def separate_debug_symbols(target, source, env):
 
 if env.get("separate_debug_symbols", True):
     from SCons.Script import Action
-    if platform == "ios":
-        env.AddPostAction(device_lib, Action(separate_debug_symbols))
-        env.AddPostAction(simulator_lib, Action(separate_debug_symbols))
-    elif platform == "macos":
+    if platform in ["macos", "ios"]:
         env.AddPostAction(library, Action(separate_debug_symbols))
 
 # *** Add help for optional targets.
