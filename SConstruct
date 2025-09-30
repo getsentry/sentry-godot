@@ -59,6 +59,7 @@ def add_custom_bool_option(name, description, default=False):
 # Define our custom options
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
+add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported: macOS)", True)
 
 # Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
 # Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
@@ -261,6 +262,26 @@ if env.get("build_android_lib", False):
     Default(android_lib)
     Depends(android_lib, library)
 
+
+# *** Separate debug symbols
+
+def separate_debug_symbols(target, source, env):
+    if platform in ["macos", "ios"]:
+        target_path = str(target[0])
+        target_name = os.path.basename(target_path)
+        if target_name.endswith(".dylib"):
+            target_name = os.path.splitext(target_name)[0]
+        dsym_path = f"{out_dir}/dSYMs/{target_name}.dSYM"
+        os.system(f"dsymutil \"{target_path}\" -o \"{dsym_path}\"")
+        os.system(f"strip -u -r \"{target_path}\"")
+
+if env.get("separate_debug_symbols", True):
+    from SCons.Script import Action
+    if platform == "ios":
+        env.AddPostAction(device_lib, Action(separate_debug_symbols))
+        env.AddPostAction(simulator_lib, Action(separate_debug_symbols))
+    elif platform == "macos":
+        env.AddPostAction(library, Action(separate_debug_symbols))
 
 # *** Add help for optional targets.
 
