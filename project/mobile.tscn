@@ -49,23 +49,28 @@ metadata/_tab_index = 0
 layout_mode = 2
 metadata/_tab_index = 1
 
-[node name="Tests" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/TabContainer"]
+[node name="Tools" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/TabContainer"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 metadata/_tab_index = 2
 
-[node name="Header - Mobile Tests" type="Label" parent="VBoxContainer/VBoxContainer/TabContainer/Tests"]
+[node name="Header - Actions" type="Label" parent="VBoxContainer/VBoxContainer/TabContainer/Tools"]
 custom_minimum_size = Vector2(0, 40.505)
 layout_mode = 2
-text = "MOBILE TESTS"
+text = "Actions"
 horizontal_alignment = 1
 vertical_alignment = 2
 
-[node name="RunTestsButton" type="Button" parent="VBoxContainer/VBoxContainer/TabContainer/Tests"]
+[node name="RunTestsButton" type="Button" parent="VBoxContainer/VBoxContainer/TabContainer/Tools"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Run mobile tests"
+
+[node name="TestDiverseContextButton" type="Button" parent="VBoxContainer/VBoxContainer/TabContainer/Tools"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Test diverse context"
 
 [node name="OutputPane" parent="VBoxContainer/VBoxContainer" instance=ExtResource("4_xux57")]
 layout_mode = 2
@@ -74,4 +79,5 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[connection signal="pressed" from="VBoxContainer/VBoxContainer/TabContainer/Tests/RunTestsButton" to="." method="_on_run_tests_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/VBoxContainer/TabContainer/Tools/RunTestsButton" to="." method="_on_run_tests_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/VBoxContainer/TabContainer/Tools/TestDiverseContextButton" to="." method="_on_test_diverse_context_button_pressed"]
