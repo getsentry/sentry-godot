@@ -11,7 +11,7 @@
 
 - Improve scene tree data capture performance ([#373](https://github.com/getsentry/sentry-godot/pull/373))
 - Set device.name to OS hostname on Windows/Linux dedicated servers ([#391](https://github.com/getsentry/sentry-godot/pull/391))
-- Disable logger when crashing on Native ([#398](https://github.com/getsentry/sentry-godot/pull/398))
+- Prevent usage of Godot logger during crash handling on Windows/Linux ([#398](https://github.com/getsentry/sentry-godot/pull/398))
 
 ### Fixes
 
