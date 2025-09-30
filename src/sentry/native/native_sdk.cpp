@@ -288,6 +288,7 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 	sentry_options_set_sample_rate(options, SentryOptions::get_singleton()->get_sample_rate());
 	sentry_options_set_max_breadcrumbs(options, SentryOptions::get_singleton()->get_max_breadcrumbs());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
+	sentry_options_set_logger_enabled_when_crashed(options, false);
 
 	// Establish handler path.
 	String handler_fn;
