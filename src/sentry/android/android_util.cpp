@@ -19,8 +19,8 @@ Variant sanitize_variant(const Variant &p_value, int p_depth) {
 
 			const Array &keys = old_dict.keys();
 			for (int i = 0; i < keys.size(); i++) {
-				const String &key = keys[i];
-				new_dict[key] = sanitize_variant(old_dict[key], p_depth + 1);
+				const Variant &key = keys[i];
+				new_dict[key.stringify()] = sanitize_variant(old_dict[key], p_depth + 1);
 			}
 
 			return new_dict;
