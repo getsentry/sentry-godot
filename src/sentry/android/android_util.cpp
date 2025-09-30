@@ -55,7 +55,6 @@ Variant sanitize_variant(const Variant &p_value, int p_depth) {
 
 			return arr;
 		} break;
-		case Variant::NIL:
 		case Variant::VECTOR2:
 		case Variant::VECTOR2I:
 		case Variant::RECT2:
