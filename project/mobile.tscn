@@ -58,7 +58,7 @@ metadata/_tab_index = 2
 [node name="Header - Actions" type="Label" parent="VBoxContainer/VBoxContainer/TabContainer/Tools"]
 custom_minimum_size = Vector2(0, 40.505)
 layout_mode = 2
-text = "Actions"
+text = "ACTIONS"
 horizontal_alignment = 1
 vertical_alignment = 2
 
