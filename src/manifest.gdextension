@@ -51,11 +51,13 @@ linux.x86_32 = {
 }
 
 windows.x86_64 = {
-	"res://addons/sentry/bin/windows/x86_64/crashpad_handler.exe" : ""
+	"res://addons/sentry/bin/windows/x86_64/crashpad_handler.exe" : "",
+	"res://addons/sentry/bin/windows/x86_64/crashpad_wer.dll": ""
 }
 
 windows.x86_32 = {
-	"res://addons/sentry/bin/windows/x86_32/crashpad_handler.exe" : ""
+	"res://addons/sentry/bin/windows/x86_32/crashpad_handler.exe" : "",
+	"res://addons/sentry/bin/windows/x86_32/crashpad_wer.dll": ""
 }
 
 macos.debug = {

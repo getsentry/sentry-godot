@@ -89,9 +89,11 @@ elif platform == "macos":
 
 # Crashpad handler
 if platform == "windows":
-    build_targets.append(File(f"sentry-native/install/bin/crashpad_handler.exe"))
+    build_targets.append(File("sentry-native/install/bin/crashpad_handler.exe"))
+    build_targets.append(File("sentry-native/install/bin/crashpad_wer.dll"))
+    build_targets.append(File("sentry-native/install/bin/crashpad_wer.pdb"))
 else:
-    build_targets.append(File(f"sentry-native/install/bin/crashpad_handler"))
+    build_targets.append(File("sentry-native/install/bin/crashpad_handler"))
 
 # Other defines
 env.Append(CPPDEFINES=["SENTRY_BUILD_STATIC", "SDK_NATIVE"])
@@ -198,6 +200,14 @@ def CopyCrashpadHandler(self, target_dir):
         copy_file_action(
             target_dir.File("crashpad_handler.pdb"),
             source_dir.File("crashpad_handler.pdb")
+        )
+        copy_file_action(
+            target_dir.File("crashpad_wer.dll"),
+            source_dir.File("crashpad_wer.dll")
+        )
+        copy_file_action(
+            target_dir.File("crashpad_wer.pdb"),
+            source_dir.File("crashpad_wer.pdb")
         )
     else:
         copy_file_action(
