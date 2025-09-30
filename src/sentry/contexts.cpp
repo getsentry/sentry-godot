@@ -13,6 +13,15 @@
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/time.hpp>
 
+#ifdef LINUX_ENABLED
+#include <limits.h>
+#include <unistd.h>
+#endif // LINUX_ENABLED
+
+#ifdef WINDOWS_ENABLED
+#include <windows.h>
+#endif // WINDOWS_ENABLED
+
 namespace {
 
 String _screen_orientation_as_string(int32_t p_screen) {
@@ -45,6 +54,27 @@ String _screen_orientation_as_string(int32_t p_screen) {
 	}
 }
 
+String _get_hostname() {
+#ifdef LINUX_ENABLED
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 255
+#endif
+	char buffer[HOST_NAME_MAX + 1];
+	if (gethostname(buffer, sizeof(buffer)) == 0) {
+		buffer[sizeof(buffer) - 1] = '\0'; // ensure termination
+		return String::utf8(buffer);
+	}
+#elif WINDOWS_ENABLED
+	wchar_t buffer[MAX_COMPUTERNAME_LENGTH + 1];
+	DWORD size = sizeof(buffer) / sizeof(buffer[0]);
+
+	if (GetComputerNameW(buffer, &size)) {
+		return String::utf16((const char16_t *)(buffer), size);
+	}
+#endif
+	return String();
+}
+
 } // unnamed namespace
 
 namespace sentry::contexts {
@@ -62,9 +92,9 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 		device_context["orientation"] = orientation;
 	}
 
-	if (SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
-		// TODO: Need platform-specific solutions - this doesn't work well.
-		String host = OS::get_singleton()->get_environment("HOST");
+	// Set device.name to hostname if server.
+	if (SentryOptions::get_singleton()->is_send_default_pii_enabled() && OS::get_singleton()->has_feature("dedicated_server")) {
+		String host = _get_hostname();
 		if (!host.is_empty()) {
 			device_context["name"] = host;
 		}

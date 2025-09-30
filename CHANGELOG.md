@@ -10,6 +10,7 @@
 ### Improvements
 
 - Improve scene tree data capture performance ([#373](https://github.com/getsentry/sentry-godot/pull/373))
+- Set device.name to OS hostname on Windows/Linux dedicated servers ([#391](https://github.com/getsentry/sentry-godot/pull/391))
 
 ### Fixes
 
