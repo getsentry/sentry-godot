@@ -2,7 +2,7 @@
 Tool to separate debug symbols.
 """
 
-from SCons.Script import Builder, Dir, File, Clean, Exit
+from SCons.Script import Builder, Dir, File, Clean, Exit, Action
 import os.path
 
 
@@ -66,8 +66,7 @@ def command(env, source):
     result = env.Command(
         symbols_path,
         source,
-        separate_debug_symbols,
-        cmdstr = "Separate debug symbols"
+        Action(separate_debug_symbols, cmdstr="Separating debug symbols: $SOURCE -> $TARGET")
     )
     Clean(symbols_path, symbols_path)
     return result
