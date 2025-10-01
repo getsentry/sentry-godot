@@ -11,6 +11,7 @@
 
 - Improve scene tree data capture performance ([#373](https://github.com/getsentry/sentry-godot/pull/373))
 - Set device.name to OS hostname on Windows/Linux dedicated servers ([#391](https://github.com/getsentry/sentry-godot/pull/391))
+- Add build option to separate debug symbols, and separate GDExtension and crashpad_handler symbols in the official builds ([#399](https://github.com/getsentry/sentry-godot/pull/399))
 
 ### Fixes
 
