@@ -137,7 +137,9 @@ if internal_sdk == SDK.NATIVE:
     Default(deploy_crashpad_handler)
 
     if env["separate_debug_symbols"] and platform == "linux":
-        Default(env.SeparateDebugSymbols(deploy_crashpad_handler))
+        handler_path = str(deploy_crashpad_handler[0])
+        symbols_path = f"{handler_path}.debug"
+        Default(env.SeparateDebugSymbols(File(symbols_path), File(handler_path)))
 
 
 # *** Utilize sentry-cocoa.
@@ -247,8 +249,17 @@ else:
 
 if env["separate_debug_symbols"]:
     # Note: Windows/MSVC separates by default.
-    if platform in ["macos", "ios", "linux"]:
-        separate_symbols = env.SeparateDebugSymbols(library)
+    lib_path = str(library[0])
+    if platform in ["macos", "ios"]:
+        lib_name = os.path.basename(lib_path)
+        if lib_name.endswith(".dylib"):
+            lib_name = os.path.splitext(lib_name)[0]
+        dsym_path = f"{out_dir}/dSYMs/{lib_name}.dSYM"
+        separate_symbols = env.SeparateDebugSymbols(Dir(dsym_path), File(lib_path))
+        Default(separate_symbols)
+    elif platform == "linux":
+        symbols_path = f"{lib_path}.debug"
+        separate_symbols = env.SeparateDebugSymbols(File(symbols_path), File(lib_path))
         Default(separate_symbols)
 
 

@@ -6,21 +6,6 @@ from SCons.Script import Builder, Dir, File, Clean, Exit, Action
 import os.path
 
 
-def get_symbols_path(env, source):
-    source_path = str(source[0])
-    platform = env['platform']
-    out_dir = env['out_dir']
-
-    if platform in ["macos", "ios"]:
-        source_name = os.path.basename(source_path)
-        if source_name.endswith(".dylib"):
-            source_name = os.path.splitext(source_name)[0]
-        return Dir(f"{out_dir}/dSYMs/{source_name}.dSYM")
-    elif platform == "linux":
-        return File(f"{source_path}.debug")
-    return ""
-
-
 def separate_debug_symbols(target, source, env):
     platform = env['platform']
     out_dir = env['out_dir']
@@ -59,16 +44,18 @@ def separate_debug_symbols(target, source, env):
         if err != 0:
             print(f"ERROR: Failed to add debug link (exit code {err})")
             Exit(1)
+    else:
+        print("ERROR: Can't separate debug symbols on this platform")
+        Exit(1)
 
 
-def command(env, source):
-    symbols_path = get_symbols_path(env, source)
+def command(env, target, source):
     result = env.Command(
-        symbols_path,
+        target,
         source,
         Action(separate_debug_symbols, cmdstr="Separating debug symbols: $SOURCE -> $TARGET")
     )
-    Clean(symbols_path, symbols_path)
+    Clean(target, target)
     return result
 
 
