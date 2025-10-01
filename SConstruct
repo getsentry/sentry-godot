@@ -135,7 +135,7 @@ if internal_sdk == SDK.NATIVE:
     deploy_crashpad_handler = env.CopyCrashpadHandler(out_dir)
     Default(deploy_crashpad_handler)
 
-    if env['separate_debug_symbols'] and platform == "linux":
+    if env["separate_debug_symbols"] and platform == "linux":
         env.AddPostAction(deploy_crashpad_handler, Action(separate_debug_symbols))
 
 
