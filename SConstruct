@@ -197,15 +197,11 @@ if platform == "ios":
         extra += ".simulator"
 
     temp_dir = "project/addons/sentry/bin/ios/temp"
-    lib_path = f"{temp_dir}/libsentry.{platform}.{build_type}.{arch}{extra}.dylib"
+    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}"
+    lib_path = f"{temp_dir}/{lib_name}.dylib"
 
-    library = env.SharedLibrary(
-        lib_path,
-        source=sources,
-    )
-
+    library = env.SharedLibrary(lib_path, source=sources)
     Default(library)
-    Clean(library, File(lib_path))
 
     # Generate XCFramework for iOS GDExtension libs if requested
     device_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.arm64.dylib"
@@ -225,10 +221,10 @@ if platform == "ios":
 elif platform == "macos":
     # *** Build macOS shared library.
 
-    library = env.SharedLibrary(
-        f"{out_dir}/libsentry.{platform}.{build_type}.framework/libsentry.{platform}.{build_type}{extra}",
-        source=sources,
-    )
+    lib_name = f"libsentry.{platform}.{build_type}{extra}"
+    lib_path = f"{out_dir}/{lib_name}.framework/{lib_name}"
+
+    library = env.SharedLibrary(lib_path, source=sources)
     Default(library)
 
 else:
@@ -238,10 +234,10 @@ else:
     if env["threads"] is False:
         extra += ".nothreads"
 
-    library = env.SharedLibrary(
-        f"{out_dir}/libsentry.{platform}.{build_type}.{arch}{extra}{shlib_suffix}",
-        source=sources,
-    )
+    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}"
+    lib_path = f"{out_dir}/{lib_name}{shlib_suffix}"
+
+    library = env.SharedLibrary(lib_path, source=sources)
     Default(library)
 
 
@@ -249,12 +245,8 @@ else:
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
     # Note: Windows/MSVC separates by default.
-    lib_path = str(library[0])
     if platform in ["macos", "ios"]:
-        lib_name = os.path.basename(lib_path)
-        if lib_name.endswith(".dylib"):
-            lib_name = os.path.splitext(lib_name)[0]
-        dsym_path = f"{out_dir}/dSYMs/{lib_name}.dSYM"
+        dsym_path = f"{out_dir}/dSYMs/{lib_name}.framework.dSYM"
         separate_symbols = env.SeparateDebugSymbols(Dir(dsym_path), File(lib_path))
         Default(separate_symbols)
     elif platform == "linux":
