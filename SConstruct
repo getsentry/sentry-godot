@@ -124,6 +124,7 @@ elif internal_sdk == SDK.NATIVE:
     # Separate arch dirs to avoid crashpad handler filename conflicts.
     out_dir += "/" + arch
 out_dir = Dir(out_dir)
+env['out_dir'] = out_dir
 
 
 # *** Build sentry-native.
