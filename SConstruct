@@ -3,6 +3,8 @@ import os
 import subprocess
 import sys
 from enum import Enum
+from utils import separate_debug_symbols
+from SCons.Script import Action
 
 
 # *** Settings.
@@ -121,6 +123,7 @@ elif internal_sdk == SDK.NATIVE:
     # Separate arch dirs to avoid crashpad handler filename conflicts.
     out_dir += "/" + arch
 out_dir = Dir(out_dir)
+env['out_dir'] = out_dir
 
 
 # *** Build sentry-native.
@@ -131,6 +134,9 @@ if internal_sdk == SDK.NATIVE:
     # Deploy crashpad handler to project directory.
     deploy_crashpad_handler = env.CopyCrashpadHandler(out_dir)
     Default(deploy_crashpad_handler)
+
+    if env['separate_debug_symbols']:
+        env.AddPostAction(deploy_crashpad_handler, Action(separate_debug_symbols))
 
 
 # *** Utilize sentry-cocoa.
@@ -236,6 +242,13 @@ else:
     Default(library)
 
 
+# *** Separate GDExtension debug symbols
+
+if env.get("separate_debug_symbols", True):
+    if platform in ["macos", "ios", "linux"]:
+        env.AddPostAction(library, Action(separate_debug_symbols))
+
+
 # *** Build Android lib
 
 if sys.platform.startswith("win"):
@@ -262,57 +275,6 @@ Alias("android_lib", android_lib)
 if env.get("build_android_lib", False):
     Default(android_lib)
     Depends(android_lib, library)
-
-
-# *** Separate debug symbols
-
-def separate_debug_symbols(target, source, env):
-    target_path = str(target[0])
-
-    def run(cmd):
-        err = os.system(cmd)
-        return os.WEXITSTATUS(err)
-
-    if platform in ["macos", "ios"]:
-        target_name = os.path.basename(target_path)
-        if target_name.endswith(".dylib"):
-            target_name = os.path.splitext(target_name)[0]
-        dsym_path = f"{out_dir}/dSYMs/{target_name}.dSYM"
-
-        err = run(f'dsymutil "{target_path}" -o "{dsym_path}"')
-        if err != 0:
-            print(f"ERROR: Failed to split debug symbols (exit code {err})")
-            Exit(1)
-
-        err = run(f'strip -u -r "{target_path}"')
-        if err != 0:
-            print(f"ERROR: Failed to strip debug symbols (exit code {err})")
-            Exit(1)
-    elif platform == "linux":
-        debug_path = f"{target_path}.debug"
-
-        err = run(f'objcopy --only-keep-debug --compress-debug-sections=zlib "{target_path}" "{debug_path}"')
-        if err != 0:
-            print(f"ERROR: Failed to split debug symbols (exit code {err})")
-            Exit(1)
-
-        err = run(f'strip --strip-debug --strip-unneeded "{target_path}"')
-        if err != 0:
-            print(f"ERROR: Failed to strip debug symbols (exit code {err})")
-            Exit(1)
-
-        err = run(f'objcopy --add-gnu-debuglink="{debug_path}" "{target_path}"')
-        if err != 0:
-            print(f"ERROR: Failed to add debug link (exit code {err})")
-            Exit(1)
-
-if env.get("separate_debug_symbols", True):
-    from SCons.Script import Action
-    if platform in ["macos", "ios"]:
-        env.AddPostAction(library, Action(separate_debug_symbols))
-    if platform == "linux":
-        env.AddPostAction(library, Action(separate_debug_symbols))
-        env.AddPostAction(deploy_crashpad_handler, Action(separate_debug_symbols))
 
 
 # *** Add help for optional targets.
