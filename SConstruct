@@ -289,7 +289,7 @@ def separate_debug_symbols(target, source, env):
             Exit(1)
     elif platform == "linux":
         debug_path = f"{target_path}.debug"
-        err = run(f'objcopy --only-keep-debug --compress-debug-sections=zstd "{target_path}" "{debug_path}"')
+        err = run(f'objcopy --only-keep-debug --compress-debug-sections=zlib "{target_path}" "{debug_path}"')
         if err != 0:
             print(f"ERROR: Failed to split debug symbols (exit code {err})")
             Exit(1)
