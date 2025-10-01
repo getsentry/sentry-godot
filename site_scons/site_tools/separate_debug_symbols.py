@@ -2,7 +2,7 @@
 Tool to separate debug symbols.
 """
 
-from SCons.Script import Builder, Copy, Dir, Clean
+from SCons.Script import Builder, Copy, Dir, File Clean, Exit
 import os.path
 
 
