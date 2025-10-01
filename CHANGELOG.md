@@ -11,13 +11,15 @@
 
 - Improve scene tree data capture performance ([#373](https://github.com/getsentry/sentry-godot/pull/373))
 - Set device.name to OS hostname on Windows/Linux dedicated servers ([#391](https://github.com/getsentry/sentry-godot/pull/391))
-- Add build option to separate debug symbols, and separate GDExtension and crashpad_handler symbols in the official builds ([#399](https://github.com/getsentry/sentry-godot/pull/399))
+- Prevent usage of Godot logger during crash handling on Windows/Linux ([#398](https://github.com/getsentry/sentry-godot/pull/398))
+- Add build option to separate debug symbols for GDExtension and crashpad_handler, and do it in the official builds ([#399](https://github.com/getsentry/sentry-godot/pull/399))
 
 ### Fixes
 
 - Fixed setting `throttle_window_ms` to 0 should disable it ([#382](https://github.com/getsentry/sentry-godot/pull/382))
 - Fixed failing to set initial user on Apple platforms ([#390](https://github.com/getsentry/sentry-godot/pull/390))
 - Added missing `crashpad_wer.dll` to Windows builds and export dependencies ([#396](https://github.com/getsentry/sentry-godot/pull/396))
+- Sanitize Variant values on Android, and fix custom context and local variables missing or null on Android ([#397](https://github.com/getsentry/sentry-godot/pull/397))
 
 ### Other changes
 

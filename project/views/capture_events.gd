@@ -30,7 +30,7 @@ func _init_level_choice_popup() -> void:
 func _init_user_info() -> void:
 	var user := SentryUser.create_default()
 	SentrySDK.set_user(user)
-	
+
 	username.text = user.username
 	email.text = user.email
 	user_id.text = user.id
