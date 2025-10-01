@@ -266,26 +266,43 @@ if env.get("build_android_lib", False):
 # *** Separate debug symbols
 
 def separate_debug_symbols(target, source, env):
+    target_path = str(target[0])
+
     if platform in ["macos", "ios"]:
-        target_path = str(target[0])
         target_name = os.path.basename(target_path)
         if target_name.endswith(".dylib"):
             target_name = os.path.splitext(target_name)[0]
         dsym_path = f"{out_dir}/dSYMs/{target_name}.dSYM"
 
-        err = os.system(f"dsymutil \"{target_path}\" -o \"{dsym_path}\"")
+        err = os.system(f'dsymutil "{target_path}" -o "{dsym_path}"')
         if err != 0:
             print(f"ERROR: Failed to split debug symbols (exit code {err})")
             Exit(1)
 
-        err = os.system(f"strip -u -r \"{target_path}\"")
+        err = os.system(f'strip -u -r "{target_path}"')
+        if err != 0:
+            print(f"ERROR: Failed to strip debug symbols (exit code {err})")
+            Exit(1)
+    elif platform == "linux":
+        debug_path = f"{target_path}.debug"
+        err = os.system(f'objcopy --only-keep-debug --compress-debug-sections=zstd "{target_path}" "{debug_path}"')
+        if err != 0:
+            print(f"ERROR: Failed to split debug symbols (exit code {err})")
+            Exit(1)
+
+        err = os.system(f'strip --strip-debug --strip-unneeded "{target_path}"')
         if err != 0:
             print(f"ERROR: Failed to strip debug symbols (exit code {err})")
             Exit(1)
 
+        err = os.system(f'objcopy --add-gnu-debuglink="{debug_path}" "{target_path}"')
+        if err != 0:
+            print(f"ERROR: Failed to add debug link (exit code {err})")
+            Exit(1)
+
 if env.get("separate_debug_symbols", True):
     from SCons.Script import Action
-    if platform in ["macos", "ios"]:
+    if platform in ["macos", "ios", "linux"]:
         env.AddPostAction(library, Action(separate_debug_symbols))
 
 # *** Add help for optional targets.
