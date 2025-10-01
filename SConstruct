@@ -79,6 +79,9 @@ env = SConscript("modules/godot-cpp/SConstruct")
 platform = env["platform"]
 arch = env["arch"]
 
+# Register tools
+env.Tool("separate_debug_symbols")
+
 # Restore original ARGUMENTS and add custom options to environment
 ARGUMENTS.clear()
 ARGUMENTS.update(original_arguments)
@@ -245,8 +248,10 @@ else:
 # *** Separate GDExtension debug symbols
 
 if env["separate_debug_symbols"]:
+    # Note: Windows/MSVC separates by default.
     if platform in ["macos", "ios", "linux"]:
-        env.AddPostAction(library, Action(separate_debug_symbols))
+        separate_symbols = env.SeparateDebugSymbols(library)
+        Default(separate_symbols)
 
 
 # *** Build Android lib
