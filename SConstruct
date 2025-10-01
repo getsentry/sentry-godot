@@ -3,8 +3,6 @@ import os
 import subprocess
 import sys
 from enum import Enum
-from utils import separate_debug_symbols
-from SCons.Script import Action
 
 
 # *** Settings.
@@ -139,7 +137,7 @@ if internal_sdk == SDK.NATIVE:
     Default(deploy_crashpad_handler)
 
     if env["separate_debug_symbols"] and platform == "linux":
-        env.AddPostAction(deploy_crashpad_handler, Action(separate_debug_symbols))
+        Default(env.SeparateDebugSymbols(deploy_crashpad_handler))
 
 
 # *** Utilize sentry-cocoa.
