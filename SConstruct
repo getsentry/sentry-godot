@@ -247,7 +247,7 @@ else:
 
 # *** Separate GDExtension debug symbols
 
-if env["separate_debug_symbols"]:
+if env["debug_symbols"] and env["separate_debug_symbols"]:
     # Note: Windows/MSVC separates by default.
     lib_path = str(library[0])
     if platform in ["macos", "ios"]:
