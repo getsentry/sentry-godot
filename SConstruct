@@ -135,7 +135,7 @@ if internal_sdk == SDK.NATIVE:
     deploy_crashpad_handler = env.CopyCrashpadHandler(out_dir)
     Default(deploy_crashpad_handler)
 
-    if env['separate_debug_symbols']:
+    if env['separate_debug_symbols'] and platform == "linux":
         env.AddPostAction(deploy_crashpad_handler, Action(separate_debug_symbols))
 
 
@@ -215,7 +215,7 @@ if platform == "ios":
     )
     Alias("ios_framework", ios_framework)
 
-    if env.get("generate_ios_framework", False):
+    if env["generate_ios_framework"]:
         env.Depends(ios_framework, library)
         Default(ios_framework)
 
@@ -244,7 +244,7 @@ else:
 
 # *** Separate GDExtension debug symbols
 
-if env.get("separate_debug_symbols", True):
+if env["separate_debug_symbols"]:
     if platform in ["macos", "ios", "linux"]:
         env.AddPostAction(library, Action(separate_debug_symbols))
 
@@ -272,7 +272,7 @@ env_gradle.AlwaysBuild(android_lib)
 
 Alias("android_lib", android_lib)
 
-if env.get("build_android_lib", False):
+if env["build_android_lib"]:
     Default(android_lib)
     Depends(android_lib, library)
 
