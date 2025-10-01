@@ -1,6 +1,7 @@
 #include "android_event.h"
 
 #include "android_string_names.h"
+#include "android_util.h"
 
 namespace sentry::android {
 
@@ -104,7 +105,8 @@ String AndroidEvent::get_tag(const String &p_key) {
 
 void AndroidEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
-	android_plugin->call(ANDROID_SN(eventMergeContext), event_handle, p_key, p_value);
+	android_plugin->call(ANDROID_SN(eventMergeContext),
+			event_handle, p_key, sanitize_variant(p_value));
 }
 
 void AndroidEvent::add_exception(const Exception &p_exception) {
@@ -128,7 +130,7 @@ void AndroidEvent::add_exception(const Exception &p_exception) {
 		if (!frame.vars.is_empty()) {
 			Dictionary variables;
 			for (auto var : frame.vars) {
-				variables[var.first] = var.second;
+				variables[var.first] = sanitize_variant(var.second);
 			}
 			data["vars"] = variables;
 		}

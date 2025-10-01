@@ -17,6 +17,7 @@
 - Fixed setting `throttle_window_ms` to 0 should disable it ([#382](https://github.com/getsentry/sentry-godot/pull/382))
 - Fixed failing to set initial user on Apple platforms ([#390](https://github.com/getsentry/sentry-godot/pull/390))
 - Added missing `crashpad_wer.dll` to Windows builds and export dependencies ([#396](https://github.com/getsentry/sentry-godot/pull/396))
+- Sanitize Variant values on Android, and fix custom context and local variables missing or null on Android ([#397](https://github.com/getsentry/sentry-godot/pull/397))
 
 ### Other changes
 

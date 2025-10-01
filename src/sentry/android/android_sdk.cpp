@@ -3,6 +3,7 @@
 #include "android_breadcrumb.h"
 #include "android_event.h"
 #include "android_string_names.h"
+#include "android_util.h"
 #include "sentry/common_defs.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/sentry_attachment.h"
@@ -40,7 +41,7 @@ void SentryAndroidBeforeSendHandler::_bind_methods() {
 
 void AndroidSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(setContext), p_key, p_value);
+	android_plugin->call(ANDROID_SN(setContext), p_key, sanitize_variant(p_value));
 }
 
 void AndroidSDK::remove_context(const String &p_key) {
