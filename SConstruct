@@ -248,12 +248,10 @@ if env["debug_symbols"] and env["separate_debug_symbols"]:
     # Note: Windows/MSVC separates by default.
     if platform in ["macos", "ios"]:
         dsym_path = f"{out_dir}/dSYMs/{lib_name}.framework.dSYM"
-        separate_symbols = env.SeparateDebugSymbols(Dir(dsym_path), File(lib_path))
-        Default(separate_symbols)
+        env.SeparateDebugSymbols(Dir(dsym_path), library)
     elif platform in ["linux", "android"]:
         symbols_path = f"{lib_path}.debug"
-        separate_symbols = env.SeparateDebugSymbols(File(symbols_path), File(lib_path))
-        Default(separate_symbols)
+        env.SeparateDebugSymbols(File(symbols_path), library)
 
 
 # *** Build Android lib

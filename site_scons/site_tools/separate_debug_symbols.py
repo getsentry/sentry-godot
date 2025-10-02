@@ -1,55 +1,57 @@
 """
 Tool to separate debug symbols.
+
+Adds SeparateDebugSymbols pseudo-builder that registers a post-action for splitting
+symbols, with a cleanup.
 """
 
 from SCons.Script import Clean, Exit, Action
+import os
 
-
-def separate_debug_symbols(target, source, env):
+def separate_debug_symbols(target, source, env, symbols_path):
     platform = env["platform"]
 
-    target_path = str(target[0])
-    source_path = str(source[0])
+    binary_path = str(target[0])
 
     if platform in ["macos", "ios"]:
-        err = env.Execute(f'dsymutil "{source_path}" -o "{target_path}"')
+        err = env.Execute(f'dsymutil "{binary_path}" -o "{symbols_path}"')
         if err != 0:
             print(f"ERROR: Failed to split debug symbols (exit code {err})")
             Exit(1)
 
-        err = env.Execute(f'strip -u -r "{source_path}"')
+        err = env.Execute(f'strip -u -r "{binary_path}"')
         if err != 0:
             print(f"ERROR: Failed to strip debug symbols (exit code {err})")
             Exit(1)
 
     elif platform == "linux":
-        err = env.Execute(f'objcopy --only-keep-debug --compress-debug-sections=zlib "{source_path}" "{target_path}"')
+        err = env.Execute(f'objcopy --only-keep-debug --compress-debug-sections=zlib "{binary_path}" "{symbols_path}"')
         if err != 0:
             print(f"ERROR: Failed to split debug symbols (exit code {err})")
             Exit(1)
 
-        err = env.Execute(f'strip --strip-debug --strip-unneeded "{source_path}"')
+        err = env.Execute(f'strip --strip-debug --strip-unneeded "{binary_path}"')
         if err != 0:
             print(f"ERROR: Failed to strip debug symbols (exit code {err})")
             Exit(1)
 
-        err = env.Execute(f'objcopy --add-gnu-debuglink="{target_path}" "{source_path}"')
+        err = env.Execute(f'objcopy --add-gnu-debuglink="{symbols_path}" "{binary_path}"')
         if err != 0:
             print(f"ERROR: Failed to add debug link (exit code {err})")
             Exit(1)
 
     elif platform == "android":
-        err = env.Execute(f'llvm-objcopy --only-keep-debug --compress-debug-sections=zlib "{source_path}" "{target_path}"')
+        err = env.Execute(f'llvm-objcopy --only-keep-debug --compress-debug-sections=zlib "{binary_path}" "{symbols_path}"')
         if err != 0:
             print(f"ERROR: Failed to split debug symbols (exit code {err})")
             Exit(1)
 
-        err = env.Execute(f'llvm-strip --strip-unneeded "{source_path}"')
+        err = env.Execute(f'llvm-strip --strip-unneeded "{binary_path}"')
         if err != 0:
             print(f"ERROR: Failed to strip debug symbols (exit code {err})")
             Exit(1)
 
-        err = env.Execute(f'llvm-objcopy --add-gnu-debuglink="{target_path}" "{source_path}"')
+        err = env.Execute(f'llvm-objcopy --add-gnu-debuglink="{symbols_path}" "{binary_path}"')
         if err != 0:
             print(f"ERROR: Failed to add debug link (exit code {err})")
             Exit(1)
@@ -59,14 +61,14 @@ def separate_debug_symbols(target, source, env):
         Exit(1)
 
 
-def command(env, target, source):
-    result = env.Command(
-        target,
-        source,
-        Action(separate_debug_symbols, cmdstr="Separating debug symbols: $SOURCE -> $TARGET")
-    )
-    Clean(target, target)
-    return result
+def command(env, symbols_path, binary):
+    # Closure captures symbols_path
+    def action(target, source, env):
+        separate_debug_symbols(target, source, env, symbols_path)
+
+    env.AddPostAction(binary, Action(action, cmdstr=f"Separating debug symbols: {binary} -> {symbols_path}"))
+    env.Clean(binary, symbols_path)
+    return binary
 
 
 def generate(env):
