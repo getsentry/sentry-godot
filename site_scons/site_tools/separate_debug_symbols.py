@@ -4,7 +4,6 @@ Tool to separate debug symbols.
 
 from SCons.Script import Builder, Dir, File, Clean, Exit, Action
 import os
-import os.path
 
 
 def separate_debug_symbols(target, source, env):
