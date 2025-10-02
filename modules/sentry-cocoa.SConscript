@@ -413,10 +413,11 @@ def DeploySentryCocoa(self, target_dir):
         )
 
         # Debug symbols
-        target_dsym_path = target_dir_path / "dSYMs" / "Sentry.framework.dSYM"
-        source_dsym_path = source_xcframework / "macos-arm64_x86_64" / "dSYMs" / "Sentry.framework.dSYM"
         commands.append(
-            env.Copy(Dir(target_dsym_path), Dir(source_dsym_path))
+            env.Copy(
+                Dir(target_dir_path / "dSYMs" / "Sentry.framework.dSYM"),
+                Dir(source_xcframework / "macos-arm64_x86_64" / "dSYMs" / "Sentry.framework.dSYM")
+            )
         )
 
     else:
