@@ -12,7 +12,9 @@ def copy_command(env, target, source):
         source,
         Copy("$TARGET", "$SOURCE")
     )
-    Clean(target, target)
+    # SCons doesn't clean non-empty directories: we enforce it here.
+    # NOTE: It's important to pass target as Dir() for this to work.
+    Clean(result, target)
     return result
 
 
