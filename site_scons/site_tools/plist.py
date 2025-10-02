@@ -16,7 +16,7 @@ def generate_framework_plist(target, source, env):
     bundle_package_type = env.get("bundle_package_type", "FMWK")  # FMWK or BNDL
     bundle_min_system = env.get("bundle_min_system", env.get("macos_deployment_target", "10.13"))
 
-    # Split numeric version for CFBundleVersion
+    platforms_content = "\n".join(f"        <string>{p}</string>" for p in bundle_platforms)
 
     content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -36,7 +36,7 @@ def generate_framework_plist(target, source, env):
     <string>{bundle_version_string}</string>
     <key>CFBundleSupportedPlatforms</key>
     <array>
-{"\n".join(f"        <string>{p}</string>" for p in bundle_platforms)}
+{platforms_content}
     </array>
     <key>CFBundleVersion</key>
     <string>{bundle_version}</string>
