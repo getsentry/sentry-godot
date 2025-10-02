@@ -232,7 +232,7 @@ elif platform == "macos":
     plist_path = f"{out_dir}/{lib_name}.framework/Resources/Info.plist"
     plist = env.FrameworkPlist(File(plist_path), File("SConstruct"),
         bundle_executable=lib_name,
-        bundle_identifier=f"io.sentry.libsentry.{build_type}",
+        bundle_identifier=f"io.sentry.SentryForGodot.{build_type}",
         bundle_version=VERSION,
         bundle_platforms=["MacOSX"]
     )
