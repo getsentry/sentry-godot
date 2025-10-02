@@ -8,10 +8,11 @@ symbols, with a cleanup.
 from SCons.Script import Clean, Exit, Action
 import os
 
-def separate_debug_symbols(target, source, env, symbols_path):
+def separate_debug_symbols(target, source, env, p_symbols_path):
     platform = env["platform"]
 
     binary_path = str(target[0])
+    symbols_path = str(p_symbols_path)
 
     if platform in ["macos", "ios"]:
         err = env.Execute(f'dsymutil "{binary_path}" -o "{symbols_path}"')
@@ -46,7 +47,7 @@ def separate_debug_symbols(target, source, env, symbols_path):
             print(f"ERROR: Failed to split debug symbols (exit code {err})")
             Exit(1)
 
-        err = env.Execute(f'llvm-strip --strip-unneeded "{binary_path}"')
+        err = env.Execute(f'llvm-strip --strip-debug --strip-unneeded "{binary_path}"')
         if err != 0:
             print(f"ERROR: Failed to strip debug symbols (exit code {err})")
             Exit(1)
