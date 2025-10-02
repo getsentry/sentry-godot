@@ -9,7 +9,6 @@ import os.path
 
 def separate_debug_symbols(target, source, env):
     platform = env["platform"]
-    out_dir = env["out_dir"]
 
     target_path = str(target[0])
     source_path = str(source[0])
