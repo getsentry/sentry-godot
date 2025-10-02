@@ -76,6 +76,9 @@ env = SConscript("modules/godot-cpp/SConstruct")
 platform = env["platform"]
 arch = env["arch"]
 
+# Register tools
+env.Tool("copy")
+
 # Restore original ARGUMENTS and add custom options to environment
 ARGUMENTS.clear()
 ARGUMENTS.update(original_arguments)
