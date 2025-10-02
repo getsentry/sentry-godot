@@ -350,12 +350,12 @@ def CreateXCFrameworkFromSlices(self, target_path, slice_dirs):
         return 0
 
     xcframework = env.Command(
-        target_path,
+        Dir(target_path),
         slice_dirs,
         create_framework_from_slices_action
     )
     env.AlwaysBuild(xcframework)
-    Clean(xcframework, target_path)
+    Clean(xcframework, Dir(target_path))
 
     return xcframework
 
@@ -366,48 +366,68 @@ def DeploySentryCocoa(self, target_dir):
     platform = env["platform"]
     project_root = Path(env.Dir("#").abspath)
     source_xcframework = project_root / "modules/sentry-cocoa/Sentry-Dynamic.xcframework"
-    target_dir_path = str(target_dir) if hasattr(target_dir, 'abspath') else target_dir
+    target_dir_path = Path(str(target_dir))
+
+    commands = []
 
     if platform == "ios":
         slice_dirs = [
             source_xcframework / "ios-arm64",
             source_xcframework / "ios-arm64_x86_64-simulator"
         ]
-        target_path = Path(target_dir_path) / "Sentry.xcframework"
+        target_framework = target_dir_path / "Sentry.xcframework"
 
-        return env.CreateXCFrameworkFromSlices(
-            target_path=target_path,
-            slice_dirs=slice_dirs
+        commands.append(
+            env.CreateXCFrameworkFromSlices(
+                target_path=target_framework,
+                slice_dirs=slice_dirs
+            )
+        )
+        Clean(commands, Dir(target_framework))
+
+        # Debug symbols
+        commands.append(
+            env.Copy(
+                Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64.framework.dSYM"),
+                Dir(source_xcframework / "ios-arm64" / "dSYMs" / "Sentry.framework.dSYM"),
+            )
+        )
+
+        commands.append(
+            env.Copy(
+                Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64_x86_64-simulator.framework.dSYM"),
+                Dir(source_xcframework / "ios-arm64_x86_64-simulator" / "dSYMs" / "Sentry.framework.dSYM")
+            )
         )
 
     elif platform == "macos":
         source_framework = source_xcframework / "macos-arm64_x86_64/Sentry.framework"
-        target_path = Path(target_dir_path) / "Sentry.framework"
+        target_framework = target_dir_path / "Sentry.framework"
 
         # Copy only the binary and "Resources" dir -- we don't need to export headers or modules.
-        cocoa_sources = [
-            source_framework / "Sentry",
-            source_framework / "Resources"
-        ]
+        commands.append(
+            env.Copy(File(target_framework / "Sentry"), File(source_framework / "Sentry"))
+        )
+        commands.append(
+            env.Copy(Dir(target_framework / "Resources"), Dir(source_framework / "Resources"))
+        )
 
-        deploy_commands = []
-        for src in cocoa_sources:
-            if src.exists():
-                dest = target_path / src.name
-                deploy_commands.append(
-                    env.Command(
-                        dest,
-                        src,
-                        Copy("$TARGET", "$SOURCE")
-                    )
-                )
-        Clean(deploy_commands, Dir(target_path))
-        return deploy_commands
+        # Debug symbols
+        commands.append(
+            env.Copy(
+                Dir(target_dir_path / "dSYMs" / "Sentry.framework.dSYM"),
+                Dir(source_xcframework / "macos-arm64_x86_64" / "dSYMs" / "Sentry.framework.dSYM")
+            )
+        )
+
     else:
         print("ERROR: Unexpected platform: ", platform)
         Exit(1)
 
+    return commands
 
+
+# Export pseudo-builders
 env.AddMethod(CreateXCFrameworkFromLibs, "CreateXCFrameworkFromLibs")
 env.AddMethod(CreateXCFrameworkFromSlices, "CreateXCFrameworkFromSlices")
 env.AddMethod(DeploySentryCocoa, "DeploySentryCocoa")
