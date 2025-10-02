@@ -59,6 +59,7 @@ def add_custom_bool_option(name, description, default=False):
 # Define our custom options
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
+add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux)", True)
 
 # Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
 # Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
@@ -78,6 +79,7 @@ arch = env["arch"]
 
 # Register tools
 env.Tool("copy")
+env.Tool("separate_debug_symbols")
 
 # Restore original ARGUMENTS and add custom options to environment
 ARGUMENTS.clear()
@@ -133,6 +135,11 @@ if internal_sdk == SDK.NATIVE:
     # Deploy crashpad handler to project directory.
     deploy_crashpad_handler = env.CopyCrashpadHandler(out_dir)
     Default(deploy_crashpad_handler)
+
+    if env["separate_debug_symbols"] and platform == "linux":
+        handler_path = str(deploy_crashpad_handler[0])
+        symbols_path = f"{handler_path}.debug"
+        Default(env.SeparateDebugSymbols(File(symbols_path), File(handler_path)))
 
 
 # *** Utilize sentry-cocoa.
@@ -190,15 +197,11 @@ if platform == "ios":
         extra += ".simulator"
 
     temp_dir = "project/addons/sentry/bin/ios/temp"
-    lib_path = f"{temp_dir}/libsentry.{platform}.{build_type}.{arch}{extra}.dylib"
+    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}"
+    lib_path = f"{temp_dir}/{lib_name}.dylib"
 
-    library = env.SharedLibrary(
-        lib_path,
-        source=sources,
-    )
-
+    library = env.SharedLibrary(lib_path, source=sources)
     Default(library)
-    Clean(library, File(lib_path))
 
     # Generate XCFramework for iOS GDExtension libs if requested
     device_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.arm64.dylib"
@@ -211,17 +214,17 @@ if platform == "ios":
     )
     Alias("ios_framework", ios_framework)
 
-    if env.get("generate_ios_framework", False):
+    if env["generate_ios_framework"]:
         env.Depends(ios_framework, library)
         Default(ios_framework)
 
 elif platform == "macos":
     # *** Build macOS shared library.
 
-    library = env.SharedLibrary(
-        f"{out_dir}/libsentry.{platform}.{build_type}.framework/libsentry.{platform}.{build_type}{extra}",
-        source=sources,
-    )
+    lib_name = f"libsentry.{platform}.{build_type}{extra}"
+    lib_path = f"{out_dir}/{lib_name}.framework/{lib_name}"
+
+    library = env.SharedLibrary(lib_path, source=sources)
     Default(library)
 
 else:
@@ -231,11 +234,26 @@ else:
     if env["threads"] is False:
         extra += ".nothreads"
 
-    library = env.SharedLibrary(
-        f"{out_dir}/libsentry.{platform}.{build_type}.{arch}{extra}{shlib_suffix}",
-        source=sources,
-    )
+    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}"
+    lib_path = f"{out_dir}/{lib_name}{shlib_suffix}"
+
+    library = env.SharedLibrary(lib_path, source=sources)
     Default(library)
+
+
+# *** Separate GDExtension debug symbols
+
+if env["debug_symbols"] and env["separate_debug_symbols"]:
+    # Note: Windows/MSVC separates by default.
+    if platform in ["macos", "ios"]:
+        dsym_path = f"{out_dir}/dSYMs/{lib_name}.framework.dSYM"
+        separate_symbols = env.SeparateDebugSymbols(Dir(dsym_path), File(lib_path))
+        Default(separate_symbols)
+    elif platform == "linux":
+        symbols_path = f"{lib_path}.debug"
+        separate_symbols = env.SeparateDebugSymbols(File(symbols_path), File(lib_path))
+        Default(separate_symbols)
+
 
 # *** Build Android lib
 
@@ -260,7 +278,7 @@ env_gradle.AlwaysBuild(android_lib)
 
 Alias("android_lib", android_lib)
 
-if env.get("build_android_lib", False):
+if env["build_android_lib"]:
     Default(android_lib)
     Depends(android_lib, library)
 
