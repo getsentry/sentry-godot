@@ -80,6 +80,7 @@ arch = env["arch"]
 # Register tools
 env.Tool("copy")
 env.Tool("separate_debug_symbols")
+env.Tool("plist")
 
 # Restore original ARGUMENTS and add custom options to environment
 ARGUMENTS.clear()
@@ -226,6 +227,17 @@ elif platform == "macos":
 
     library = env.SharedLibrary(lib_path, source=sources)
     Default(library)
+
+    # Create Info.plist
+    plist_path = f"{out_dir}/{lib_name}.framework/Resources/Info.plist"
+    plist = env.FrameworkPlist(File(plist_path), File("SConstruct"),
+        bundle_executable=lib_name,
+        bundle_identifier=f"io.sentry.SentryForGodot.{build_type}",
+        bundle_version=VERSION,
+        bundle_platforms=["MacOSX"]
+    )
+    Depends(plist, library)
+    Default(plist)
 
 else:
     # *** Build shared library on other platforms.
