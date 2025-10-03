@@ -20,7 +20,8 @@ jobs:
     env:
       APPLE_CERT_PATH: /tmp/certs.p12
       APPLE_API_KEY_PATH: /tmp/apple_key.json
-      DO_CODESIGN: ${{ startsWith(github.ref, 'refs/heads/release/') && '1' || '0' }}
+      # DO_CODESIGN: ${{ startsWith(github.ref, 'refs/heads/release/') && '1' || '0' }}
+      DO_CODESIGN: 1
 
     steps:
       - name: Checkout repo
@@ -63,10 +64,10 @@ jobs:
         run: |
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework/libsentry.macos.debug
+            artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework/
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/libsentry.macos.release
+            artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
             artifact/addons/sentry/bin/macos/Sentry.framework
@@ -74,11 +75,11 @@ jobs:
       - name: Notarize macOS binaries
         if: env.DO_CODESIGN == '1'
         run: |
-          zip libsentry.macos.debug.zip artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework/libsentry.macos.debug
+          zip libsentry.macos.debug.zip artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework/
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentry.macos.debug.zip
 
-          zip libsentry.macos.release.zip artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/libsentry.macos.release
+          zip libsentry.macos.release.zip artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentry.macos.release.zip
 
