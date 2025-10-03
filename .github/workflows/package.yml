@@ -20,7 +20,8 @@ jobs:
     env:
       APPLE_CERT_PATH: /tmp/certs.p12
       APPLE_API_KEY_PATH: /tmp/apple_key.json
-      DO_CODESIGN: ${{ startsWith(github.ref, 'refs/heads/release/') && '1' || '0' }}
+      # DO_CODESIGN: ${{ startsWith(github.ref, 'refs/heads/release/') && '1' || '0' }}
+      DO_CODESIGN: 1
 
     steps:
       - name: Checkout repo
