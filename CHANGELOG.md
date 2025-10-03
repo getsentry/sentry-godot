@@ -14,6 +14,7 @@
 - Prevent usage of Godot logger during crash handling on Windows/Linux ([#398](https://github.com/getsentry/sentry-godot/pull/398))
 - Add missing Cocoa SDK symbols to builds ([#401](https://github.com/getsentry/sentry-godot/pull/401))
 - Add build option to separate debug symbols for GDExtension and crashpad_handler, and do it in the official builds ([#399](https://github.com/getsentry/sentry-godot/pull/399))
+- Support separating debug symbols of Android targets ([#404](https://github.com/getsentry/sentry-godot/pull/404))
 - Generate Info.plist for macOS during build ([#403](https://github.com/getsentry/sentry-godot/pull/403))
 
 ### Fixes

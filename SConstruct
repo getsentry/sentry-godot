@@ -59,7 +59,7 @@ def add_custom_bool_option(name, description, default=False):
 # Define our custom options
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
-add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux)", True)
+add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux, Android)", True)
 
 # Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
 # Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
@@ -172,6 +172,7 @@ if internal_sdk == SDK.NATIVE:
 elif internal_sdk == SDK.ANDROID:
     sources += Glob("src/sentry/android/*.cpp")
     env.Append(CPPDEFINES=["SDK_ANDROID"])
+    env.Append(LINKFLAGS="-Wl,--build-id=sha1")  # Add Build ID to binaries.
 elif internal_sdk == SDK.COCOA:
     sources += Glob("src/sentry/cocoa/*.cpp")
     sources += Glob("src/sentry/cocoa/*.mm")
@@ -259,12 +260,10 @@ if env["debug_symbols"] and env["separate_debug_symbols"]:
     # Note: Windows/MSVC separates by default.
     if platform in ["macos", "ios"]:
         dsym_path = f"{out_dir}/dSYMs/{lib_name}.framework.dSYM"
-        separate_symbols = env.SeparateDebugSymbols(Dir(dsym_path), File(lib_path))
-        Default(separate_symbols)
-    elif platform == "linux":
+        env.SeparateDebugSymbols(Dir(dsym_path), library)
+    elif platform in ["linux", "android"]:
         symbols_path = f"{lib_path}.debug"
-        separate_symbols = env.SeparateDebugSymbols(File(symbols_path), File(lib_path))
-        Default(separate_symbols)
+        env.SeparateDebugSymbols(File(symbols_path), library)
 
 
 # *** Build Android lib
