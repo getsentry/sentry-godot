@@ -74,20 +74,25 @@ jobs:
       - name: Notarize macOS binaries
         if: env.DO_CODESIGN == '1'
         run: |
-          zip -r libsentry.macos.debug.zip artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework/
+          cd artifact/addons/sentry/bin/macos/
+
+          zip -r libsentry.macos.debug.zip libsentry.macos.debug.framework
           rcodesign notary-submit --wait \
             --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentry.macos.debug.zip
+          rm libsentry.macos.debug.zip
 
-          zip -r libsentry.macos.release.zip artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/
+          zip -r libsentry.macos.release.zip libsentry.macos.release.framework
           rcodesign notary-submit --wait \
             --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentry.macos.release.zip
+          rm libsentry.macos.release.zip
 
-          zip -r Sentry.framework.zip artifact/addons/sentry/bin/macos/Sentry.framework
+          zip -r Sentry.framework.zip Sentry.framework
           rcodesign notary-submit --wait \
             --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             Sentry.framework.zip
+          rm Sentry.framework.zip
 
       - name: Prepare artifact
         shell: bash
