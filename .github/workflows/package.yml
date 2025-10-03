@@ -64,10 +64,10 @@ jobs:
         run: |
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework/
+            artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/
+            artifact/addons/sentry/bin/macos/libsentry.macos.release.framework
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
             artifact/addons/sentry/bin/macos/Sentry.framework
@@ -75,11 +75,11 @@ jobs:
       - name: Notarize macOS binaries
         if: env.DO_CODESIGN == '1'
         run: |
-          zip libsentry.macos.debug.zip artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework/
+          zip -r libsentry.macos.debug.zip artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework/
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentry.macos.debug.zip
 
-          zip libsentry.macos.release.zip artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/
+          zip -r libsentry.macos.release.zip artifact/addons/sentry/bin/macos/libsentry.macos.release.framework/
           rcodesign notary-submit --wait --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             libsentry.macos.release.zip
 
