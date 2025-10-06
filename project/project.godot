@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Sentry demo project"
-config/version="1.0.0-beta.3"
+config/version="1.0.0"
 run/main_scene="uid://cqiowj0jydds1"
 run/main_loop_type="ProjectMainLoop"
 config/features=PackedStringArray("4.5")
