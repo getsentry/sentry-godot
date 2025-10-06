@@ -100,8 +100,6 @@ runs:
         scons project/addons/gdUnit4
         echo "Applying gdUnit4 patch"
         cd modules/gdUnit4
-        # NOTE: Patching gdUnit4 as it errors out in Godot 4.5.
-        git apply ../gdunit4.patch
 
     - name: Prepare project
       shell: bash
