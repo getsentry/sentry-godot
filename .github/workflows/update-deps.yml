@@ -30,6 +30,7 @@ jobs:
       name: ${{ matrix.name }}
       path: ${{ matrix.path }}
       pr-strategy: update
+      changelog-entry: ${{ matrix.path == 'modules/gdUnit4' && 'false' || 'true }}
     secrets:
       api-token: ${{ secrets.CI_DEPLOY_KEY }}
 
