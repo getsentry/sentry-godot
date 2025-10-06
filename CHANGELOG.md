@@ -43,8 +43,6 @@
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0112)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.10.1...0.11.2)
 
-- Manually upgrade gdUnit4 to v6.0.0 ([#407](https://github.com/getsentry/sentry-godot/pull/407))
-
 ## 1.0.0-beta.3
 
 ### Breaking changes
