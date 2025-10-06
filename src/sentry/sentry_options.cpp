@@ -87,6 +87,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/experimental/screenshot_level"), p_options->screenshot_level, false);
+	_define_setting("sentry/experimental/enable_logs", p_options->enable_logs, false);
 }
 
 void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) {
@@ -127,6 +128,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/experimental/screenshot_level", p_options->screenshot_level);
+	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/experimental/enable_logs", p_options->enable_logs);
 }
 
 void SentryOptions::_init_debug_option(DebugMode p_mode) {
@@ -188,6 +190,8 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "sample_rate"), set_sample_rate, get_sample_rate);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "max_breadcrumbs"), set_max_breadcrumbs, get_max_breadcrumbs);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "send_default_pii"), set_send_default_pii, is_send_default_pii_enabled);
+
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_logs"), set_enable_logs, is_logs_enabled);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_log"), set_attach_log, is_attach_log_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_screenshot"), set_attach_screenshot, is_attach_screenshot_enabled);

@@ -60,6 +60,8 @@ private:
 	int max_breadcrumbs = 100;
 	bool send_default_pii = false;
 
+	bool enable_logs = false;
+
 	bool attach_log = true;
 	bool attach_screenshot = false;
 	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
@@ -123,6 +125,9 @@ public:
 
 	_FORCE_INLINE_ bool is_send_default_pii_enabled() const { return send_default_pii; }
 	_FORCE_INLINE_ void set_send_default_pii(bool p_enabled) { send_default_pii = p_enabled; }
+
+	_FORCE_INLINE_ bool is_logs_enabled() const { return enable_logs; }
+	_FORCE_INLINE_ void set_enable_logs(bool p_enabled) { enable_logs = p_enabled; }
 
 	_FORCE_INLINE_ bool is_attach_log_enabled() const { return attach_log; }
 	_FORCE_INLINE_ void set_attach_log(bool p_enabled) { attach_log = p_enabled; }
