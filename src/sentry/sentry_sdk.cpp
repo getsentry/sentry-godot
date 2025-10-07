@@ -160,6 +160,10 @@ void SentrySDK::close() {
 	}
 }
 
+void SentrySDK::log(const String &p_body, sentry::Level p_level, const Array &p_params, const Dictionary &p_attributes) {
+	internal_sdk->log(p_level, p_body, p_params, p_attributes);
+}
+
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
 	return internal_sdk->capture_message(p_message, p_level);
 }
@@ -360,6 +364,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &SentrySDK::remove_tag);
 	ClassDB::bind_method(D_METHOD("set_user", "user"), &SentrySDK::set_user);
 	ClassDB::bind_method(D_METHOD("remove_user"), &SentrySDK::remove_user);
+	ClassDB::bind_method(D_METHOD("log", "body", "level", "params", "attributes"), &SentrySDK::log);
 	ClassDB::bind_method(D_METHOD("create_event"), &SentrySDK::create_event);
 	ClassDB::bind_method(D_METHOD("capture_event", "event"), &SentrySDK::capture_event);
 	ClassDB::bind_method(D_METHOD("add_attachment", "attachment"), &SentrySDK::add_attachment);

@@ -18,6 +18,27 @@
 
 using namespace godot;
 
+namespace {
+
+NSObject *_as_attribute(const Variant &p_value) {
+	switch (p_value.get_type()) {
+		case Variant::BOOL: {
+			return [NSNumber numberWithBool:(bool)p_value];
+		} break;
+		case Variant::INT: {
+			return [NSNumber numberWithLongLong:(int64_t)p_value];
+		} break;
+		case Variant::FLOAT: {
+			return [NSNumber numberWithDouble:(double)p_value];
+		} break;
+		default: {
+			return [NSString stringWithUTF8String:p_value.stringify().utf8()];
+		} break;
+	}
+}
+
+} // unnamed namespace
+
 namespace sentry::cocoa {
 
 void CocoaSDK::set_context(const String &p_key, const Dictionary &p_value) {
@@ -77,6 +98,69 @@ void CocoaSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	Ref<CocoaBreadcrumb> crumb = p_breadcrumb;
 	ERR_FAIL_COND(crumb.is_null());
 	[objc::SentrySDK addBreadcrumb:crumb->get_cocoa_breadcrumb()];
+}
+
+void CocoaSDK::log(Level p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+	if (p_body.is_empty()) {
+		return;
+	}
+
+	String body = p_body;
+
+	NSMutableDictionary *attributes = nil;
+	bool has_params = !p_params.is_empty();
+	bool has_attributes = !p_attributes.is_empty();
+
+	if (has_params || has_attributes) {
+		attributes = [[NSMutableDictionary alloc] initWithCapacity:p_params.size() + p_attributes.size() + 1];
+
+		if (has_params) {
+			[attributes setObject:string_to_objc(body) forKey:@"sentry.message.template"];
+			for (int i = 0; i < p_params.size(); i++) {
+				NSString *objc_key = [NSString stringWithFormat:@"sentry.message.parameter.%d", i];
+				NSObject *objc_value = _as_attribute(p_params[i]);
+				[attributes setObject:objc_value forKey:objc_key];
+			}
+			body = body % p_params;
+		}
+
+		if (has_attributes) {
+			const Array &keys = p_attributes.keys();
+			for (int i = 0; i < keys.size(); i++) {
+				const String &key = keys[i];
+				const NSString *objc_key = [NSString stringWithUTF8String:key.utf8()];
+				const NSObject *objc_value = _as_attribute(p_attributes[key]);
+				[attributes setObject:objc_value forKey:objc_key];
+			}
+		}
+	}
+
+	switch (p_level) {
+		case Level::LEVEL_DEBUG: {
+			[[objc::SentrySDK logger] debug:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		case Level::LEVEL_INFO: {
+			[[objc::SentrySDK logger] info:string_to_objc(body)
+								attributes:attributes];
+		} break;
+		case Level::LEVEL_WARNING: {
+			[[objc::SentrySDK logger] warn:string_to_objc(body)
+								attributes:attributes];
+		} break;
+		case Level::LEVEL_ERROR: {
+			[[objc::SentrySDK logger] error:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		case Level::LEVEL_FATAL: {
+			[[objc::SentrySDK logger] fatal:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		default: {
+			[[objc::SentrySDK logger] debug:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+	}
 }
 
 String CocoaSDK::capture_message(const String &p_message, Level p_level) {
@@ -165,6 +249,8 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
+
+		options.experimental.enableLogs = SentryOptions::get_singleton()->get_enable_logs();
 
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments

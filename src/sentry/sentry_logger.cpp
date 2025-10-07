@@ -377,7 +377,10 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 }
 
 void SentryLogger::_log_message(const String &p_message, bool p_error) {
-	if (!SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled()) {
+	bool as_log = SentryOptions::get_singleton()->get_enable_logs();
+	bool as_breadcrumb = SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled();
+
+	if (!as_log && !as_breadcrumb) {
 		return;
 	}
 
@@ -403,11 +406,19 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 		}
 	}
 
-	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(processed_message);
-	crumb->set_category("log");
-	crumb->set_level(p_error ? sentry::Level::LEVEL_ERROR : sentry::Level::LEVEL_INFO);
-	crumb->set_type("debug");
-	SentrySDK::get_singleton()->add_breadcrumb(crumb);
+	sentry::Level level = p_error ? sentry::Level::LEVEL_ERROR : sentry::Level::LEVEL_INFO;
+
+	if (as_log) {
+		SentrySDK::get_singleton()->get_internal_sdk()->log(level, processed_message, Array(), log_attributes);
+	}
+
+	if (as_breadcrumb) {
+		Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(processed_message);
+		crumb->set_category("log");
+		crumb->set_level(level);
+		crumb->set_type("debug");
+		SentrySDK::get_singleton()->add_breadcrumb(crumb);
+	}
 }
 
 void SentryLogger::_bind_methods() {
@@ -433,6 +444,8 @@ void SentryLogger::_notification(int p_what) {
 
 SentryLogger::SentryLogger() {
 	logger_name = "SentryLogger";
+
+	log_attributes["sentry.origin"] = "auto.godot.logger";
 
 	// Filtering setup.
 	filter_by_prefix = {
