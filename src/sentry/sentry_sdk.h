@@ -72,7 +72,8 @@ public:
 	void set_user(const Ref<SentryUser> &p_user);
 	void remove_user();
 
-	void log(const String &p_body, sentry::Level p_level = sentry::LEVEL_INFO, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
+	// Temporary API: for testing only.
+	void log(sentry::Level p_level, const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
 
 	String capture_message(const String &p_message, sentry::Level p_level = sentry::LEVEL_INFO);
 	String get_last_event_id() const;
