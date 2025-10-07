@@ -8,6 +8,7 @@
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
+#include "sentry/sentry_godot_logger.h"
 #include "sentry/sentry_logger.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
@@ -48,6 +49,7 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 	GDREGISTER_CLASS(SentryUser);
 	GDREGISTER_CLASS(SentryTimestamp);
+	GDREGISTER_CLASS(SentryLogger);
 	GDREGISTER_CLASS(SentrySDK);
 	GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
 	GDREGISTER_ABSTRACT_CLASS(SentryEvent);
@@ -56,7 +58,7 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
 	GDREGISTER_INTERNAL_CLASS(ViewHierarchyProcessor);
-	GDREGISTER_INTERNAL_CLASS(SentryLogger);
+	GDREGISTER_INTERNAL_CLASS(SentryGodotLogger);
 
 #ifdef SDK_NATIVE
 	GDREGISTER_INTERNAL_CLASS(native::NativeEvent);

@@ -9,6 +9,7 @@
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
 #include "sentry/util/print.h"
+#include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/engine.hpp>
@@ -141,10 +142,10 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 		}
 
 		if (SentryOptions::get_singleton()->is_logger_enabled()) {
-			if (logger.is_null()) {
-				logger.instantiate();
+			if (godot_logger.is_null()) {
+				godot_logger.instantiate();
 			}
-			OS::get_singleton()->add_logger(logger);
+			OS::get_singleton()->add_logger(godot_logger);
 		}
 	}
 }
@@ -152,16 +153,12 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 void SentrySDK::close() {
 	if (internal_sdk->is_enabled()) {
 		sentry::util::print_debug("Shutting down Sentry SDK");
-		if (logger.is_valid()) {
-			OS::get_singleton()->remove_logger(logger);
-			logger.unref();
+		if (godot_logger.is_valid()) {
+			OS::get_singleton()->remove_logger(godot_logger);
+			godot_logger.unref();
 		}
 		internal_sdk->close();
 	}
-}
-
-void SentrySDK::log(sentry::Level p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
-	internal_sdk->log(p_level, p_body, p_params, p_attributes);
 }
 
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
@@ -338,9 +335,9 @@ void SentrySDK::prepare_and_auto_initialize() {
 void SentrySDK::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PREDELETE: {
-			if (logger.is_valid()) {
-				OS::get_singleton()->remove_logger(logger);
-				logger.unref();
+			if (godot_logger.is_valid()) {
+				OS::get_singleton()->remove_logger(godot_logger);
+				godot_logger.unref();
 			}
 		} break;
 	}
@@ -364,7 +361,6 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &SentrySDK::remove_tag);
 	ClassDB::bind_method(D_METHOD("set_user", "user"), &SentrySDK::set_user);
 	ClassDB::bind_method(D_METHOD("remove_user"), &SentrySDK::remove_user);
-	ClassDB::bind_method(D_METHOD("log", "level", "body", "params", "attributes"), &SentrySDK::log);
 	ClassDB::bind_method(D_METHOD("create_event"), &SentrySDK::create_event);
 	ClassDB::bind_method(D_METHOD("capture_event", "event"), &SentrySDK::capture_event);
 	ClassDB::bind_method(D_METHOD("add_attachment", "attachment"), &SentrySDK::add_attachment);
@@ -374,11 +370,15 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
 	ClassDB::bind_method(D_METHOD("_get_before_send"), &SentrySDK::get_before_send);
 	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
+
+	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "logger"), get_logger);
 }
 
 SentrySDK::SentrySDK() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(SentryOptions::get_singleton());
+
+	logger = memnew(SentryLogger);
 
 #ifdef SDK_NATIVE
 	internal_sdk = std::make_shared<sentry::native::NativeSDK>();

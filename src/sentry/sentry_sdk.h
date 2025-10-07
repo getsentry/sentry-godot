@@ -1,12 +1,13 @@
 #ifndef SENTRY_SINGLETON_H
 #define SENTRY_SINGLETON_H
 
-#include "runtime_config.h"
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
+#include "sentry/runtime_config.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
+#include "sentry/sentry_godot_logger.h"
 #include "sentry/sentry_logger.h"
 #include "sentry/sentry_options.h"
 
@@ -34,8 +35,11 @@ private:
 
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
-	Ref<SentryLogger> logger;
+	Ref<SentryGodotLogger> godot_logger;
 	bool is_auto_initializing = false;
+
+	// Public API logs interface
+	SentryLogger *logger = nullptr;
 
 	void _init_contexts();
 	void _init_user();
@@ -72,8 +76,7 @@ public:
 	void set_user(const Ref<SentryUser> &p_user);
 	void remove_user();
 
-	// Temporary API: for testing only.
-	void log(sentry::Level p_level, const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
+	_FORCE_INLINE_ SentryLogger *get_logger() const { return logger; }
 
 	String capture_message(const String &p_message, sentry::Level p_level = sentry::LEVEL_INFO);
 	String get_last_event_id() const;
@@ -94,6 +97,8 @@ public:
 	SentrySDK();
 	~SentrySDK();
 };
+
+#define INTERNAL_SDK() (SentrySDK::get_singleton()->get_internal_sdk())
 
 } // namespace sentry
 
