@@ -119,6 +119,29 @@ inline String _uuid_as_string(sentry_uuid_t p_uuid) {
 	return str;
 }
 
+sentry_value_t _as_attribute(const Variant &p_value) {
+	sentry_value_t obj = sentry_value_new_object();
+	switch (p_value.get_type()) {
+		case Variant::BOOL: {
+			sentry_value_set_by_key(obj, "type", sentry_value_new_string("boolean"));
+			sentry_value_set_by_key(obj, "value", sentry_value_new_bool((bool)p_value));
+		} break;
+		case Variant::INT: {
+			sentry_value_set_by_key(obj, "type", sentry_value_new_string("integer"));
+			sentry_value_set_by_key(obj, "value", sentry_value_new_int64((int64_t)p_value));
+		} break;
+		case Variant::FLOAT: {
+			sentry_value_set_by_key(obj, "type", sentry_value_new_string("double"));
+			sentry_value_set_by_key(obj, "value", sentry_value_new_double((double)p_value));
+		} break;
+		default: {
+			sentry_value_set_by_key(obj, "type", sentry_value_new_string("string"));
+			sentry_value_set_by_key(obj, "value", sentry_value_new_string(p_value.stringify().utf8()));
+		} break;
+	}
+	return obj;
+}
+
 } // unnamed namespace
 
 namespace sentry::native {
@@ -184,6 +207,66 @@ void NativeSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	sentry_value_t native_crumb = crumb->get_native_breadcrumb();
 	sentry_value_incref(native_crumb); // give ownership to native
 	sentry_add_breadcrumb(native_crumb);
+}
+
+void NativeSDK::log(Level p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+	if (p_body.is_empty()) {
+		return;
+	}
+
+	String body = p_body;
+
+	// BLOCKER: Unable to pass structured information to native without support for attributes.
+
+	// sentry_value_t log_entry = sentry_value_new_object();
+	// sentry_value_set_by_key(log_entry, "level",
+	// 		sentry_value_new_string(level_to_cstring(p_level)));
+
+	bool has_params = !p_params.is_empty();
+	// bool has_attributes = !p_attributes.is_empty();
+
+	// if (has_params || has_attributes) {
+	// 	sentry_value_t attributes = sentry_value_new_object();
+
+	if (has_params) {
+		// sentry_value_set_by_key(attributes, "sentry.message.template",
+		// 		_as_attribute(body));
+		// for (int i = 0; i < p_params.size(); i++) {
+		// 	char key_buffer[64];
+		// 	snprintf(key_buffer, sizeof(key_buffer), "sentry.message.parameter.%d", i);
+		// 	sentry_value_set_by_key(attributes, key_buffer, _as_attribute(p_params[i]));
+		// }
+
+		body = body % p_params;
+	}
+
+	// 	if (has_attributes) {
+	// 		const Array &keys = p_attributes.keys();
+	// 		for (int i = 0; i < keys.size(); i++) {
+	// 			const String &key = keys[i];
+	// 			sentry_value_set_by_key(attributes, key.utf8(),
+	// 					_as_attribute(p_attributes[key]));
+	// 		}
+	// 	}
+	// }
+
+	switch (p_level) {
+		case Level::LEVEL_DEBUG: {
+			sentry_log_debug(body.utf8());
+		} break;
+		case Level::LEVEL_INFO: {
+			sentry_log_info(body.utf8());
+		} break;
+		case Level::LEVEL_WARNING: {
+			sentry_log_warn(body.utf8());
+		} break;
+		case Level::LEVEL_ERROR: {
+			sentry_log_error(body.utf8());
+		} break;
+		case Level::LEVEL_FATAL: {
+			sentry_log_fatal(body.utf8());
+		} break;
+	}
 }
 
 String NativeSDK::capture_message(const String &p_message, Level p_level) {
