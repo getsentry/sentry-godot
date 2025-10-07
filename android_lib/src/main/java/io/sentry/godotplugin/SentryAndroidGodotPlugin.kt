@@ -6,10 +6,12 @@ import io.sentry.Breadcrumb
 import io.sentry.Hint
 import io.sentry.ISerializer
 import io.sentry.Sentry
+import io.sentry.SentryAttributes
 import io.sentry.SentryEvent
 import io.sentry.SentryLevel
 import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
+import io.sentry.logger.SentryLogParameters
 import io.sentry.protocol.Message
 import io.sentry.protocol.SentryException
 import io.sentry.protocol.SentryStackFrame
@@ -132,6 +134,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         environment: String,
         sampleRate: Float,
         maxBreadcrumbs: Int,
+        enableLogs: Boolean
     ) {
         Log.v(TAG, "Initializing Sentry Android")
         SentryAndroid.init(godot.getActivity()!!.applicationContext) { options ->
@@ -144,6 +147,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             options.maxBreadcrumbs = maxBreadcrumbs
             options.sdkVersion?.name = "sentry.java.android.godot"
             options.nativeSdkName = "sentry.native.android.godot"
+            options.logs.isEnabled = enableLogs
             options.beforeSend =
                 SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
                     Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
@@ -235,6 +239,16 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun addBreadcrumb(handle: Int) {
         val crumb = getBreadcrumb(handle) ?: return
         Sentry.addBreadcrumb(crumb)
+    }
+
+    @UsedByGodot
+    fun log(level: Int, body: String, attributes: Dictionary) {
+        val sentryAttributes = SentryAttributes.fromMap(attributes)
+        Sentry.logger().log(
+            level.toSentryLogLevel(),
+            SentryLogParameters.create(sentryAttributes),
+            body
+        )
     }
 
     @UsedByGodot

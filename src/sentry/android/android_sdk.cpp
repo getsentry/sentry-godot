@@ -15,6 +15,33 @@
 
 using namespace godot;
 
+namespace {
+
+Dictionary _as_attribute(const Variant &p_value) {
+	Dictionary attr;
+	switch (p_value.get_type()) {
+		case Variant::BOOL: {
+			attr["type"] = "boolean";
+			attr["value"] = p_value;
+		} break;
+		case Variant::INT: {
+			attr["type"] = "integer";
+			attr["value"] = p_value;
+		} break;
+		case Variant::FLOAT: {
+			attr["type"] = "double";
+			attr["value"] = p_value;
+		} break;
+		default: {
+			attr["type"] = "string";
+			attr["value"] = p_value.stringify();
+		} break;
+	}
+	return attr;
+}
+
+} // unnamed namespace
+
 namespace sentry::android {
 
 void SentryAndroidBeforeSendHandler::_initialize(Object *p_android_plugin) {
@@ -92,6 +119,40 @@ void AndroidSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	android_plugin->call(ANDROID_SN(addBreadcrumb), crumb->get_handle());
 }
 
+void AndroidSDK::log(Level p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+	ERR_FAIL_NULL(android_plugin);
+
+	if (p_body.is_empty()) {
+		return;
+	}
+
+	String body = p_body;
+
+	bool has_params = !p_params.is_empty();
+	bool has_attributes = !p_attributes.is_empty();
+
+	Dictionary attributes;
+
+	if (has_params) {
+		attributes["sentry.message.template"] = _as_attribute(body);
+		for (int i = 0; i < p_params.size(); i++) {
+			String key = "sentry.message.parameter." + itos(i);
+			attributes[key] = _as_attribute(p_params[i]);
+		}
+		body = body % p_params;
+	}
+
+	if (has_attributes) {
+		const Array &keys = p_attributes.keys();
+		for (int i = 0; i < keys.size(); i++) {
+			const String &key = keys[i];
+			attributes[key] = _as_attribute(p_attributes[key]);
+		}
+	}
+
+	android_plugin->call(ANDROID_SN(log), p_level, body, attributes);
+}
+
 String AndroidSDK::capture_message(const String &p_message, Level p_level) {
 	ERR_FAIL_NULL_V(android_plugin, String());
 	return android_plugin->call(ANDROID_SN(captureMessage), p_message, p_level);
@@ -164,7 +225,8 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 			SentryOptions::get_singleton()->get_dist(),
 			SentryOptions::get_singleton()->get_environment(),
 			SentryOptions::get_singleton()->get_sample_rate(),
-			SentryOptions::get_singleton()->get_max_breadcrumbs());
+			SentryOptions::get_singleton()->get_max_breadcrumbs(),
+			SentryOptions::get_singleton()->get_enable_logs());
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());

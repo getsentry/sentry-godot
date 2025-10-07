@@ -1,6 +1,7 @@
 package io.sentry.godotplugin
 
 import io.sentry.SentryLevel
+import io.sentry.SentryLogLevel
 import java.util.Date
 import java.time.Instant
 
@@ -12,6 +13,16 @@ fun Int.toSentryLevel(): SentryLevel =
         3 -> SentryLevel.ERROR
         4 -> SentryLevel.FATAL
         else -> SentryLevel.ERROR
+    }
+
+fun Int.toSentryLogLevel(): SentryLogLevel =
+    when (this) {
+        0 -> SentryLogLevel.DEBUG
+        1 -> SentryLogLevel.INFO
+        2 -> SentryLogLevel.WARN
+        3 -> SentryLogLevel.ERROR
+        4 -> SentryLogLevel.FATAL
+        else -> SentryLogLevel.DEBUG
     }
 
 fun SentryLevel.toInt(): Int =

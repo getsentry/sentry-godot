@@ -37,6 +37,7 @@ public:
 	StringName setUser;
 	StringName removeUser;
 	StringName addBreadcrumb;
+	StringName log;
 	StringName captureMessage;
 	StringName getLastEventId;
 	StringName captureError;
