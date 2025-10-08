@@ -8,6 +8,10 @@ void SentryLogger::log(LogLevel p_level, const String &p_body, const Array &p_pa
 	INTERNAL_SDK()->log(p_level, p_body, p_params, p_attributes);
 }
 
+void SentryLogger::trace(const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+	INTERNAL_SDK()->log(LOG_LEVEL_TRACE, p_body, p_params, p_attributes);
+}
+
 void SentryLogger::debug(const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
 	INTERNAL_SDK()->log(LOG_LEVEL_DEBUG, p_body, p_params, p_attributes);
 }
@@ -30,6 +34,7 @@ void SentryLogger::fatal(const String &p_body, const Array &p_params, const Dict
 
 void SentryLogger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("log", "level", "body", "params", "attributes"), &SentryLogger::log, DEFVAL(Array()), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("trace", "body", "params", "attributes"), &SentryLogger::trace, DEFVAL(Array()), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("debug", "body", "params", "attributes"), &SentryLogger::debug, DEFVAL(Array()), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("info", "body", "params", "attributes"), &SentryLogger::info, DEFVAL(Array()), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("warn", "body", "params", "attributes"), &SentryLogger::warn, DEFVAL(Array()), DEFVAL(Dictionary()));
