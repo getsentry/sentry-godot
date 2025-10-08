@@ -13,6 +13,7 @@ using namespace godot;
 
 namespace sentry {
 
+// Logger integration options.
 class SentryLoggerLimits : public RefCounted {
 	GDCLASS(SentryLoggerLimits, RefCounted);
 
@@ -31,6 +32,19 @@ protected:
 	static void _bind_methods();
 };
 
+// Experimental options.
+class SentryExperimental : public RefCounted {
+	GDCLASS(SentryExperimental, RefCounted);
+
+public:
+	SIMPLE_PROPERTY(bool, enable_logs, false);
+	SIMPLE_PROPERTY(Callable, before_send_log, Callable());
+
+protected:
+	static void _bind_methods();
+};
+
+// Main Sentry options.
 class SentryOptions : public RefCounted {
 	GDCLASS(SentryOptions, RefCounted);
 
@@ -60,8 +74,6 @@ private:
 	int max_breadcrumbs = 100;
 	bool send_default_pii = false;
 
-	bool enable_logs = false;
-
 	bool attach_log = true;
 	bool attach_screenshot = false;
 	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
@@ -74,6 +86,8 @@ private:
 	BitField<GodotErrorMask> logger_event_mask = int(GodotErrorMask::MASK_ALL_EXCEPT_WARNING);
 	BitField<GodotErrorMask> logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
 	Ref<SentryLoggerLimits> logger_limits;
+
+	Ref<SentryExperimental> experimental;
 
 	Callable before_send;
 	Callable before_capture_screenshot;
@@ -170,6 +184,8 @@ public:
 
 	_FORCE_INLINE_ Callable get_before_capture_screenshot() const { return before_capture_screenshot; }
 	_FORCE_INLINE_ void set_before_capture_screenshot(const Callable &p_before_capture_screenshot) { before_capture_screenshot = p_before_capture_screenshot; }
+
+	_FORCE_INLINE_ Ref<SentryExperimental> get_experimental() const { return experimental; }
 
 	void add_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	void remove_event_processor(const Ref<SentryEventProcessor> &p_processor);

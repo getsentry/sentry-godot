@@ -45,6 +45,7 @@ using namespace sentry;
 
 void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryLoggerLimits);
+	GDREGISTER_CLASS(SentryExperimental);
 	GDREGISTER_CLASS(SentryOptions);
 	GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 	GDREGISTER_CLASS(SentryUser);

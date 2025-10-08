@@ -49,6 +49,13 @@ void SentryLoggerLimits::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryLoggerLimits, Variant::INT, throttle_window_ms);
 }
 
+// *** SentryExperimental
+
+void SentryExperimental::_bind_methods() {
+	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::BOOL, enable_logs);
+	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::CALLABLE, before_send_log);
+}
+
 // *** SentryOptions
 
 Ref<SentryOptions> SentryOptions::singleton = nullptr;
@@ -87,7 +94,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/experimental/screenshot_level"), p_options->screenshot_level, false);
-	_define_setting("sentry/experimental/enable_logs", p_options->enable_logs, false);
+	_define_setting("sentry/experimental/enable_logs", p_options->get_experimental()->enable_logs, false);
 }
 
 void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) {
@@ -128,7 +135,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/experimental/screenshot_level", p_options->screenshot_level);
-	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/experimental/enable_logs", p_options->enable_logs);
+	p_options->get_experimental()->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/experimental/enable_logs", p_options->get_experimental()->enable_logs);
 }
 
 void SentryOptions::_init_debug_option(DebugMode p_mode) {
@@ -209,6 +216,8 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send"), set_before_send, get_before_send);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_capture_screenshot"), set_before_capture_screenshot, get_before_capture_screenshot);
 
+	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);
+
 	{
 		using namespace sentry;
 		BIND_BITFIELD_FLAG(MASK_NONE);
@@ -220,7 +229,9 @@ void SentryOptions::_bind_methods() {
 }
 
 SentryOptions::SentryOptions() {
-	logger_limits.instantiate(); // Ensure limits are initialized.
+	logger_limits.instantiate();
+	experimental.instantiate();
+
 	environment = sentry::environment::detect_godot_environment();
 	_init_debug_option(DEBUG_DEFAULT);
 }
