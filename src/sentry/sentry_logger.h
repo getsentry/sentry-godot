@@ -8,6 +8,7 @@ using namespace godot;
 
 namespace sentry {
 
+// Public interface for Sentry structured logging.
 class SentryLogger : public Object {
 	GDCLASS(SentryLogger, Object);
 
