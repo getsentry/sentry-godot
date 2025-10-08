@@ -14,6 +14,8 @@ func _ready() -> void:
 		"meaning.of.life": 42
 	})
 
+	SentrySDK.logger.info("Hello")
+
 
 func _on_add_breadcrumb_button_pressed() -> void:
 	var crumb := SentryBreadcrumb.create(breadcrumb_message.text)
