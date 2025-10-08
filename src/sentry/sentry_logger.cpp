@@ -29,12 +29,12 @@ void SentryLogger::fatal(const String &p_body, const Array &p_params, const Dict
 }
 
 void SentryLogger::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("log", "level", "body", "params", "attributes"), &SentryLogger::log);
-	ClassDB::bind_method(D_METHOD("debug", "body", "params", "attributes"), &SentryLogger::debug);
-	ClassDB::bind_method(D_METHOD("info", "body", "params", "attributes"), &SentryLogger::info);
-	ClassDB::bind_method(D_METHOD("warn", "body", "params", "attributes"), &SentryLogger::warn);
-	ClassDB::bind_method(D_METHOD("error", "body", "params", "attributes"), &SentryLogger::error);
-	ClassDB::bind_method(D_METHOD("fatal", "body", "params", "attributes"), &SentryLogger::fatal);
+	ClassDB::bind_method(D_METHOD("log", "level", "body", "params", "attributes"), &SentryLogger::log, DEFVAL(Array()), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("debug", "body", "params", "attributes"), &SentryLogger::debug, DEFVAL(Array()), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("info", "body", "params", "attributes"), &SentryLogger::info, DEFVAL(Array()), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("warn", "body", "params", "attributes"), &SentryLogger::warn, DEFVAL(Array()), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("error", "body", "params", "attributes"), &SentryLogger::error, DEFVAL(Array()), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("fatal", "body", "params", "attributes"), &SentryLogger::fatal, DEFVAL(Array()), DEFVAL(Dictionary()));
 }
 
 SentryLogger::SentryLogger() {}
