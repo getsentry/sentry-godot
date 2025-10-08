@@ -17,27 +17,9 @@ using namespace godot;
 
 namespace {
 
-Dictionary _as_attribute(const Variant &p_value) {
-	Dictionary attr;
-	switch (p_value.get_type()) {
-		case Variant::BOOL: {
-			attr["type"] = "boolean";
-			attr["value"] = p_value;
-		} break;
-		case Variant::INT: {
-			attr["type"] = "integer";
-			attr["value"] = p_value;
-		} break;
-		case Variant::FLOAT: {
-			attr["type"] = "double";
-			attr["value"] = p_value;
-		} break;
-		default: {
-			attr["type"] = "string";
-			attr["value"] = p_value.stringify();
-		} break;
-	}
-	return attr;
+inline Variant _as_attribute(const Variant &p_value) {
+	Variant::Type type = p_value.get_type();
+	return (type < Variant::BOOL || type > Variant::STRING) ? (Variant)p_value.stringify() : p_value;
 }
 
 } // unnamed namespace
@@ -134,7 +116,7 @@ void AndroidSDK::log(LogLevel p_level, const String &p_body, const Array &p_para
 	Dictionary attributes;
 
 	if (has_params) {
-		attributes["sentry.message.template"] = _as_attribute(body);
+		attributes["sentry.message.template"] = body;
 		for (int i = 0; i < p_params.size(); i++) {
 			String key = "sentry.message.parameter." + itos(i);
 			attributes[key] = _as_attribute(p_params[i]);
