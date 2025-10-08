@@ -17,7 +17,7 @@ func test_gdscript_error_event_structure() -> void:
 
 	assert_json(json).describe("Logger event has logger attribute") \
 		.at("/") \
-		.must_contain("logger", "SentryLogger") \
+		.must_contain("logger", "SentryGodotLogger") \
 		.verify()
 
 	assert_json(json).describe("Logger error event contains exception data") \
