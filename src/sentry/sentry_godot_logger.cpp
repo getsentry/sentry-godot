@@ -406,13 +406,13 @@ void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 		}
 	}
 
-	sentry::Level level = p_error ? sentry::Level::LEVEL_ERROR : sentry::Level::LEVEL_INFO;
-
 	if (as_log) {
+		sentry::LogLevel level = p_error ? LOG_LEVEL_ERROR : LOG_LEVEL_INFO;
 		SentrySDK::get_singleton()->get_internal_sdk()->log(level, processed_message, Array(), log_attributes);
 	}
 
 	if (as_breadcrumb) {
+		sentry::Level level = p_error ? LEVEL_ERROR : LEVEL_INFO;
 		Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(processed_message);
 		crumb->set_category("log");
 		crumb->set_level(level);

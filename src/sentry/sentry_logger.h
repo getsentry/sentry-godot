@@ -1,8 +1,9 @@
 #pragma once
 
-#include "sentry/level.h"
+#include "sentry/log_level.h"
 
 #include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/core/binder_common.hpp>
 
 using namespace godot;
 
@@ -12,11 +13,15 @@ namespace sentry {
 class SentryLogger : public Object {
 	GDCLASS(SentryLogger, Object);
 
+public:
+	using LogLevel = ::sentry::LogLevel;
+
 protected:
 	static void _bind_methods();
 
 public:
-	void log(sentry::Level p_level, const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
+	void log(LogLevel p_level, const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
+	void trace(const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
 	void debug(const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
 	void info(const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
 	void warn(const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
@@ -27,3 +32,5 @@ public:
 };
 
 } // namespace sentry
+
+VARIANT_ENUM_CAST(sentry::SentryLogger::LogLevel);

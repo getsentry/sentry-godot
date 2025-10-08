@@ -209,7 +209,7 @@ void NativeSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	sentry_add_breadcrumb(native_crumb);
 }
 
-void NativeSDK::log(Level p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+void NativeSDK::log(LogLevel p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
 	if (p_body.is_empty()) {
 		return;
 	}
@@ -251,19 +251,22 @@ void NativeSDK::log(Level p_level, const String &p_body, const Array &p_params, 
 	// }
 
 	switch (p_level) {
-		case Level::LEVEL_DEBUG: {
+		case LOG_LEVEL_TRACE: {
+			sentry_log_trace(body.utf8());
+		} break;
+		case LOG_LEVEL_DEBUG: {
 			sentry_log_debug(body.utf8());
 		} break;
-		case Level::LEVEL_INFO: {
+		case LOG_LEVEL_INFO: {
 			sentry_log_info(body.utf8());
 		} break;
-		case Level::LEVEL_WARNING: {
+		case LOG_LEVEL_WARN: {
 			sentry_log_warn(body.utf8());
 		} break;
-		case Level::LEVEL_ERROR: {
+		case LOG_LEVEL_ERROR: {
 			sentry_log_error(body.utf8());
 		} break;
-		case Level::LEVEL_FATAL: {
+		case LOG_LEVEL_FATAL: {
 			sentry_log_fatal(body.utf8());
 		} break;
 	}

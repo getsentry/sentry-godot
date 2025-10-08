@@ -100,7 +100,7 @@ void CocoaSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	[objc::SentrySDK addBreadcrumb:crumb->get_cocoa_breadcrumb()];
 }
 
-void CocoaSDK::log(Level p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+void CocoaSDK::log(LogLevel p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
 	if (p_body.is_empty()) {
 		return;
 	}
@@ -136,23 +136,27 @@ void CocoaSDK::log(Level p_level, const String &p_body, const Array &p_params, c
 	}
 
 	switch (p_level) {
-		case Level::LEVEL_DEBUG: {
+		case LOG_LEVEL_TRACE: {
+			[[objc::SentrySDK logger] trace:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		case LOG_LEVEL_DEBUG: {
 			[[objc::SentrySDK logger] debug:string_to_objc(body)
 								 attributes:attributes];
 		} break;
-		case Level::LEVEL_INFO: {
+		case LOG_LEVEL_INFO: {
 			[[objc::SentrySDK logger] info:string_to_objc(body)
 								attributes:attributes];
 		} break;
-		case Level::LEVEL_WARNING: {
+		case LOG_LEVEL_WARN: {
 			[[objc::SentrySDK logger] warn:string_to_objc(body)
 								attributes:attributes];
 		} break;
-		case Level::LEVEL_ERROR: {
+		case LOG_LEVEL_ERROR: {
 			[[objc::SentrySDK logger] error:string_to_objc(body)
 								 attributes:attributes];
 		} break;
-		case Level::LEVEL_FATAL: {
+		case LOG_LEVEL_FATAL: {
 			[[objc::SentrySDK logger] fatal:string_to_objc(body)
 								 attributes:attributes];
 		} break;

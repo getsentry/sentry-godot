@@ -119,7 +119,7 @@ void AndroidSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	android_plugin->call(ANDROID_SN(addBreadcrumb), crumb->get_handle());
 }
 
-void AndroidSDK::log(Level p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+void AndroidSDK::log(LogLevel p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
 	ERR_FAIL_NULL(android_plugin);
 
 	if (p_body.is_empty()) {

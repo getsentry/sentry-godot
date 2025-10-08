@@ -2,6 +2,7 @@
 #define INTERNAL_SDK_H
 
 #include "sentry/level.h"
+#include "sentry/log_level.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
@@ -31,7 +32,7 @@ public:
 	// TODO: Consider adding the following function.
 	// virtual void clear_breadcrumbs() = 0;
 
-	virtual void log(Level p_level, const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary()) = 0;
+	virtual void log(LogLevel p_level, const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary()) = 0;
 
 	virtual String capture_message(const String &p_message, Level p_level) = 0;
 	virtual String get_last_event_id() = 0;

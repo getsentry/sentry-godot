@@ -17,12 +17,13 @@ fun Int.toSentryLevel(): SentryLevel =
 
 fun Int.toSentryLogLevel(): SentryLogLevel =
     when (this) {
-        0 -> SentryLogLevel.DEBUG
-        1 -> SentryLogLevel.INFO
-        2 -> SentryLogLevel.WARN
-        3 -> SentryLogLevel.ERROR
-        4 -> SentryLogLevel.FATAL
-        else -> SentryLogLevel.DEBUG
+        0 -> SentryLogLevel.TRACE
+        1 -> SentryLogLevel.DEBUG
+        2 -> SentryLogLevel.INFO
+        3 -> SentryLogLevel.WARN
+        4 -> SentryLogLevel.ERROR
+        5 -> SentryLogLevel.FATAL
+        else -> SentryLogLevel.INFO
     }
 
 fun SentryLevel.toInt(): Int =
