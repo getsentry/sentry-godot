@@ -140,9 +140,6 @@ public:
 	_FORCE_INLINE_ bool is_send_default_pii_enabled() const { return send_default_pii; }
 	_FORCE_INLINE_ void set_send_default_pii(bool p_enabled) { send_default_pii = p_enabled; }
 
-	_FORCE_INLINE_ bool get_enable_logs() const { return enable_logs; }
-	_FORCE_INLINE_ void set_enable_logs(bool p_enabled) { enable_logs = p_enabled; }
-
 	_FORCE_INLINE_ bool is_attach_log_enabled() const { return attach_log; }
 	_FORCE_INLINE_ void set_attach_log(bool p_enabled) { attach_log = p_enabled; }
 
