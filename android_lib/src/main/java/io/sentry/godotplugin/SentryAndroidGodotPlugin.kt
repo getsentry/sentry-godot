@@ -243,12 +243,16 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun log(level: Int, body: String, attributes: Dictionary) {
-        val sentryAttributes = SentryAttributes.fromMap(attributes)
-        Sentry.logger().log(
-            level.toSentryLogLevel(),
-            SentryLogParameters.create(sentryAttributes),
-            body
-        )
+        if (attributes.isEmpty()) {
+            Sentry.logger().log(level.toSentryLogLevel(), body)
+        } else {
+            val sentryAttributes = SentryAttributes.fromMap(attributes)
+            Sentry.logger().log(
+                level.toSentryLogLevel(),
+                SentryLogParameters.create(sentryAttributes),
+                body
+            )
+        }
     }
 
     @UsedByGodot
