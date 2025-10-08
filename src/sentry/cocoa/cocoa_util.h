@@ -71,6 +71,8 @@ _FORCE_INLINE_ NSNumber *double_to_objc(double p_num) {
 }
 
 NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth = 0);
+godot::Variant variant_from_objc(const NSObject *p_object);
+
 NSDictionary *dictionary_to_objc(const godot::Dictionary &p_dictionary);
 NSArray<NSString *> *string_array_to_objc(const godot::PackedStringArray &p_array);
 

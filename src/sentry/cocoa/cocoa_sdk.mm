@@ -3,9 +3,11 @@
 #include "cocoa_breadcrumb.h"
 #include "cocoa_event.h"
 #include "cocoa_includes.h"
+#include "cocoa_log.h"
 #include "cocoa_util.h"
 #include "sentry/common_defs.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
 #include "sentry/util/print.h"
@@ -298,6 +300,18 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 				return event;
 			}
 		};
+
+		if (SentryOptions::get_singleton()->get_experimental()->before_send_log.is_valid()) {
+			options.beforeSendLog = ^objc::SentryLog *(objc::SentryLog *log) {
+				Ref<CocoaLog> log_obj = memnew(CocoaLog(log));
+				Ref<CocoaLog> processed = sentry::process_log(log_obj);
+
+				if (unlikely(processed.is_null())) {
+					return nil;
+				}
+				return log;
+			};
+		}
 	}];
 
 	if (!is_enabled()) {

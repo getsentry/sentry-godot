@@ -2,6 +2,8 @@
 
 #include "sentry/common_defs.h"
 
+#include <cstring>
+
 using namespace godot;
 
 namespace sentry::cocoa {
@@ -73,6 +75,50 @@ NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 			return [NSString stringWithUTF8String:String(p_value).utf8()];
 		}
 	}
+}
+
+godot::Variant variant_from_objc(const NSObject *p_value) {
+	if ([p_value isKindOfClass:[NSNull class]]) {
+		return Variant();
+	} else if ([p_value isKindOfClass:[NSNumber class]]) {
+		NSNumber *num = (NSNumber *)p_value;
+		const char *t = [num objCType];
+
+		if (strcmp(t, @encode(bool)) == 0 || strcmp(t, @encode(char)) == 0) {
+			return [num boolValue];
+		} else if (strcmp(t, @encode(double))) {
+			return [num doubleValue];
+		} else if (strcmp(t, @encode(int64_t)) || strcmp(t, @encode(long long))) {
+			return [num longLongValue];
+		} else if (strcmp(t, @encode(int))) {
+			return [num intValue];
+		} else if (strcmp(t, @encode(float))) {
+			return [num floatValue];
+		} else {
+			ERR_PRINT("Sentry: Failed to convert NSNumber to Variant. Returning null.");
+			return Variant();
+		}
+	} else if ([p_value isKindOfClass:[NSString class]]) {
+		NSString *str = (NSString *)p_value;
+		return String::utf8(str.UTF8String, str.length);
+	} else if ([p_value isKindOfClass:[NSDictionary class]]) {
+		godot::Dictionary godot_dict;
+		NSDictionary *objc_dict = (NSDictionary *)p_value;
+		for (id key in objc_dict) {
+			godot_dict[variant_from_objc(key)] = variant_from_objc(objc_dict[key]);
+		}
+		return godot_dict;
+	} else if ([p_value isKindOfClass:[NSArray class]]) {
+		godot::Array godot_array;
+		NSArray *objc_array = (NSArray *)p_value;
+		for (id element in objc_array) {
+			godot_array.push_back(variant_from_objc(element));
+		}
+		return godot_array;
+	}
+
+	ERR_PRINT("Sentry: Failed to convert ObjectiveC value to Variant. Returning null.");
+	return Variant();
 }
 
 NSDictionary *dictionary_to_objc(const godot::Dictionary &p_dictionary) {
