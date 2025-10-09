@@ -86,13 +86,13 @@ godot::Variant variant_from_objc(const NSObject *p_value) {
 
 		if (strcmp(t, @encode(bool)) == 0 || strcmp(t, @encode(char)) == 0) {
 			return [num boolValue];
-		} else if (strcmp(t, @encode(double))) {
+		} else if (strcmp(t, @encode(double)) == 0) {
 			return [num doubleValue];
-		} else if (strcmp(t, @encode(int64_t)) || strcmp(t, @encode(long long))) {
+		} else if (strcmp(t, @encode(int64_t)) == 0 || strcmp(t, @encode(long long)) == 0) {
 			return [num longLongValue];
-		} else if (strcmp(t, @encode(int))) {
+		} else if (strcmp(t, @encode(int)) == 0) {
 			return [num intValue];
-		} else if (strcmp(t, @encode(float))) {
+		} else if (strcmp(t, @encode(float)) == 0) {
 			return [num floatValue];
 		} else {
 			ERR_PRINT("Sentry: Failed to convert NSNumber to Variant. Returning null.");
