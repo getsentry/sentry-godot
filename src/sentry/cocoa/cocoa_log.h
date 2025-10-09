@@ -22,6 +22,8 @@ public:
 
 	virtual Variant get_attribute(const String &p_name) const override;
 	virtual void set_attribute(const String &p_name, const Variant &p_value) override;
+	virtual void add_attributes(const Dictionary &p_attributes) override;
+	virtual void remove_attribute(const String &p_name) const override;
 
 	CocoaLog();
 	CocoaLog(objc::SentryLog *p_log);
