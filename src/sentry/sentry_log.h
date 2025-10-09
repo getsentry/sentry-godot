@@ -3,6 +3,7 @@
 #include "sentry/log_level.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/core/binder_common.hpp>
 
 using namespace godot;
 
@@ -11,6 +12,9 @@ namespace sentry {
 // Represents Sentry structured log entry.
 class SentryLog : public RefCounted {
 	GDCLASS(SentryLog, RefCounted);
+
+public:
+	using LogLevel = ::sentry::LogLevel;
 
 protected:
 	static void _bind_methods();
@@ -31,3 +35,5 @@ public:
 };
 
 } //namespace sentry
+
+VARIANT_ENUM_CAST(sentry::SentryLog::LogLevel);

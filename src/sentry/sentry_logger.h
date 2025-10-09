@@ -3,7 +3,6 @@
 #include "sentry/log_level.h"
 
 #include <godot_cpp/classes/object.hpp>
-#include <godot_cpp/core/binder_common.hpp>
 
 using namespace godot;
 
@@ -12,9 +11,6 @@ namespace sentry {
 // Public interface for Sentry structured logging.
 class SentryLogger : public Object {
 	GDCLASS(SentryLogger, Object);
-
-public:
-	using LogLevel = ::sentry::LogLevel;
 
 protected:
 	static void _bind_methods();
@@ -32,5 +28,3 @@ public:
 };
 
 } // namespace sentry
-
-VARIANT_ENUM_CAST(sentry::SentryLogger::LogLevel);

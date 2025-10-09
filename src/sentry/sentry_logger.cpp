@@ -1,5 +1,6 @@
 #include "sentry_logger.h"
 
+#include "sentry/sentry_log.h" // Needed for VariantCaster<LogLevel>
 #include "sentry/sentry_sdk.h"
 
 namespace sentry {
@@ -40,13 +41,6 @@ void SentryLogger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("warn", "body", "params", "attributes"), &SentryLogger::warn, DEFVAL(Array()), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("error", "body", "params", "attributes"), &SentryLogger::error, DEFVAL(Array()), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("fatal", "body", "params", "attributes"), &SentryLogger::fatal, DEFVAL(Array()), DEFVAL(Dictionary()));
-
-	BIND_ENUM_CONSTANT(LOG_LEVEL_TRACE);
-	BIND_ENUM_CONSTANT(LOG_LEVEL_DEBUG);
-	BIND_ENUM_CONSTANT(LOG_LEVEL_INFO);
-	BIND_ENUM_CONSTANT(LOG_LEVEL_WARN);
-	BIND_ENUM_CONSTANT(LOG_LEVEL_ERROR);
-	BIND_ENUM_CONSTANT(LOG_LEVEL_FATAL);
 }
 
 SentryLogger::SentryLogger() {}
