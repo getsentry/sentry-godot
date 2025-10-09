@@ -8,7 +8,7 @@ using namespace godot;
 
 namespace sentry {
 
-// Represents Sentry log entry.
+// Represents Sentry structured log entry.
 class SentryLog : public RefCounted {
 	GDCLASS(SentryLog, RefCounted);
 
@@ -25,7 +25,7 @@ public:
 	virtual Variant get_attribute(const String &p_name) const = 0;
 	virtual void set_attribute(const String &p_name, const Variant &p_value) = 0;
 	virtual void add_attributes(const Dictionary &p_attributes) = 0;
-	virtual void remove_attribute(const String &p_name) const = 0;
+	virtual void remove_attribute(const String &p_name) = 0;
 
 	virtual ~SentryLog() = default;
 };

@@ -1,14 +1,16 @@
 #pragma once
 
-#include "sentry/cocoa/cocoa_includes.h"
 #include "sentry/sentry_log.h"
 
-namespace sentry::cocoa {
+#include "sentry.h"
 
-class CocoaLog : public sentry::SentryLog {
-	GDCLASS(CocoaLog, SentryLog)
+namespace sentry::native {
+
+class NativeLog : public SentryLog {
+	GDCLASS(NativeLog, SentryLog);
+
 private:
-	objc::SentryLog *cocoa_log;
+	sentry_value_t native_log;
 
 protected:
 	static void _bind_methods() {}
@@ -25,9 +27,9 @@ public:
 	virtual void add_attributes(const Dictionary &p_attributes) override;
 	virtual void remove_attribute(const String &p_name) override;
 
-	CocoaLog();
-	CocoaLog(objc::SentryLog *p_log);
-	virtual ~CocoaLog() override;
+	NativeLog();
+	NativeLog(sentry_value_t p_native_log);
+	virtual ~NativeLog() override;
 };
 
-} // namespace sentry::cocoa
+} //namespace sentry::native

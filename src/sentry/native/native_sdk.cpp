@@ -5,8 +5,10 @@
 #include "sentry/level.h"
 #include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
+#include "sentry/native/native_log.h"
 #include "sentry/native/native_util.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
 #include "sentry/util/print.h"
@@ -21,6 +23,7 @@
 namespace {
 
 using NativeEvent = sentry::native::NativeEvent;
+using NativeLog = sentry::native::NativeLog;
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, false));
@@ -32,6 +35,19 @@ sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closu
 		return sentry_value_new_null();
 	} else {
 		return event;
+	}
+}
+
+sentry_value_t _handle_before_send_log(sentry_value_t p_value, void *p_user_data) {
+	Ref<NativeLog> log_obj = memnew(NativeLog(p_value));
+	Ref<NativeLog> processed = sentry::process_log(log_obj);
+
+	if (unlikely(processed.is_null())) {
+		// Discard event.
+		sentry_value_decref(p_value);
+		return sentry_value_new_null();
+	} else {
+		return p_value;
 	}
 }
 
@@ -117,29 +133,6 @@ inline String _uuid_as_string(sentry_uuid_t p_uuid) {
 	char str[37];
 	sentry_uuid_as_string(&p_uuid, str);
 	return str;
-}
-
-sentry_value_t _as_attribute(const Variant &p_value) {
-	sentry_value_t obj = sentry_value_new_object();
-	switch (p_value.get_type()) {
-		case Variant::BOOL: {
-			sentry_value_set_by_key(obj, "type", sentry_value_new_string("boolean"));
-			sentry_value_set_by_key(obj, "value", sentry_value_new_bool((bool)p_value));
-		} break;
-		case Variant::INT: {
-			sentry_value_set_by_key(obj, "type", sentry_value_new_string("integer"));
-			sentry_value_set_by_key(obj, "value", sentry_value_new_int64((int64_t)p_value));
-		} break;
-		case Variant::FLOAT: {
-			sentry_value_set_by_key(obj, "type", sentry_value_new_string("double"));
-			sentry_value_set_by_key(obj, "value", sentry_value_new_double((double)p_value));
-		} break;
-		default: {
-			sentry_value_set_by_key(obj, "type", sentry_value_new_string("string"));
-			sentry_value_set_by_key(obj, "value", sentry_value_new_string(p_value.stringify().utf8()));
-		} break;
-	}
-	return obj;
 }
 
 } // unnamed namespace
@@ -230,11 +223,11 @@ void NativeSDK::log(LogLevel p_level, const String &p_body, const Array &p_param
 
 	if (has_params) {
 		// sentry_value_set_by_key(attributes, "sentry.message.template",
-		// 		_as_attribute(body));
+		// 		variant_to_attribute(body));
 		// for (int i = 0; i < p_params.size(); i++) {
 		// 	char key_buffer[64];
 		// 	snprintf(key_buffer, sizeof(key_buffer), "sentry.message.parameter.%d", i);
-		// 	sentry_value_set_by_key(attributes, key_buffer, _as_attribute(p_params[i]));
+		// 	sentry_value_set_by_key(attributes, key_buffer, variant_to_attribute(p_params[i]));
 		// }
 
 		body = body % p_params;
@@ -245,7 +238,7 @@ void NativeSDK::log(LogLevel p_level, const String &p_body, const Array &p_param
 	// 		for (int i = 0; i < keys.size(); i++) {
 	// 			const String &key = keys[i];
 	// 			sentry_value_set_by_key(attributes, key.utf8(),
-	// 					_as_attribute(p_attributes[key]));
+	// 					variant_to_attribute(p_attributes[key]));
 	// 		}
 	// 	}
 	// }
@@ -421,6 +414,11 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 	sentry_options_set_before_send(options, _handle_before_send, NULL);
 	sentry_options_set_on_crash(options, _handle_on_crash, NULL);
 	sentry_options_set_logger(options, _log_native_message, NULL);
+
+	const Callable &before_send_log = SentryOptions::get_singleton()->get_experimental()->get_before_send_log();
+	if (before_send_log.is_valid()) {
+		sentry_options_set_before_send_log(options, _handle_before_send_log, NULL);
+	}
 
 	int err = sentry_init(options);
 	initialized = (err == 0);

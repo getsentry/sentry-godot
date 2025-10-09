@@ -101,7 +101,7 @@ void CocoaLog::add_attributes(const Dictionary &p_attributes) {
 	cocoa_log.attributes = mut_attributes;
 }
 
-void CocoaLog::remove_attribute(const String &p_name) const {
+void CocoaLog::remove_attribute(const String &p_name) {
 	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy];
 	[mut_attributes removeObjectForKey:string_to_objc(p_name)];
 	cocoa_log.attributes = mut_attributes;
