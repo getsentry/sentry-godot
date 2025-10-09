@@ -22,6 +22,7 @@
 #ifdef SDK_NATIVE
 #include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
+#include "sentry/native/native_log.h"
 #endif // SDK_NATIVE
 
 #ifdef SDK_ANDROID
@@ -67,6 +68,7 @@ void register_runtime_classes() {
 #ifdef SDK_NATIVE
 	GDREGISTER_INTERNAL_CLASS(native::NativeEvent);
 	GDREGISTER_INTERNAL_CLASS(native::NativeBreadcrumb);
+	GDREGISTER_INTERNAL_CLASS(native::NativeLog);
 #endif
 
 #ifdef SDK_ANDROID
