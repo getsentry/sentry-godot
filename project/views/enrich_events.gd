@@ -9,12 +9,7 @@ extends VBoxContainer
 
 
 func _ready() -> void:
-	SentrySDK.logger.debug("Starting %s at %d usec", ["SentrySDK", Time.get_ticks_usec()], {
-		"hello": "world!",
-		"meaning.of.life": 42
-	})
-
-	SentrySDK.logger.info("Hello")
+	pass
 
 
 func _on_add_breadcrumb_button_pressed() -> void:
