@@ -78,6 +78,16 @@ AndroidStringNames::AndroidStringNames() {
 	breadcrumbGetLevel = StringName("breadcrumbGetLevel");
 	breadcrumbSetData = StringName("breadcrumbSetData");
 	breadcrumbGetTimestamp = StringName("breadcrumbGetTimestamp");
+
+	// Logs.
+	releaseLog = StringName("releaseLog");
+	logSetLevel = StringName("logSetLevel");
+	logGetLevel = StringName("logGetLevel");
+	logSetBody = StringName("logSetBody");
+	logGetBody = StringName("logGetBody");
+	logGetAttribute = StringName("logGetAttribute");
+	logSetAttribute = StringName("logSetAttribute");
+	logSetAttributes = StringName("logSetAttributes");
 }
 
 } //namespace sentry::android

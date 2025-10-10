@@ -2,10 +2,12 @@
 
 #include "android_breadcrumb.h"
 #include "android_event.h"
+#include "android_log.h"
 #include "android_string_names.h"
 #include "android_util.h"
 #include "sentry/common_defs.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/util/print.h"
 
@@ -25,6 +27,8 @@ inline Variant _as_attribute(const Variant &p_value) {
 } // unnamed namespace
 
 namespace sentry::android {
+
+// *** SentryAndroidBeforeSendHandler
 
 void SentryAndroidBeforeSendHandler::_initialize(Object *p_android_plugin) {
 	android_plugin = p_android_plugin;
@@ -47,6 +51,30 @@ void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
 void SentryAndroidBeforeSendHandler::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("before_send"), &SentryAndroidBeforeSendHandler::_before_send);
 }
+
+// *** SentryAndroidBeforeSendLogHandler
+
+void SentryAndroidBeforeSendLogHandler::_initialize(Object *p_android_plugin) {
+	android_plugin = p_android_plugin;
+}
+
+void SentryAndroidBeforeSendLogHandler::_before_send_log(int32_t p_handle) {
+	Ref<AndroidLog> log_obj = memnew(AndroidLog(android_plugin, p_handle));
+	log_obj->set_as_borrowed();
+
+	Ref<AndroidLog> processed = sentry::process_log(log_obj);
+
+	if (processed.is_null()) {
+		// Discard log.
+		android_plugin->call(ANDROID_SN(releaseLog), p_handle);
+	}
+}
+
+void SentryAndroidBeforeSendLogHandler::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("before_send_log"), &SentryAndroidBeforeSendLogHandler::_before_send_log);
+}
+
+// *** AndroidSDK
 
 void AndroidSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_NULL(android_plugin);
@@ -208,7 +236,8 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 			SentryOptions::get_singleton()->get_environment(),
 			SentryOptions::get_singleton()->get_sample_rate(),
 			SentryOptions::get_singleton()->get_max_breadcrumbs(),
-			SentryOptions::get_singleton()->get_experimental()->get_enable_logs());
+			SentryOptions::get_singleton()->get_experimental()->get_enable_logs(),
+			SentryOptions::get_singleton()->get_experimental()->before_send_log.is_valid() ? before_send_log_handler->get_instance_id() : 0);
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());
@@ -235,6 +264,9 @@ AndroidSDK::AndroidSDK() {
 
 	before_send_handler = memnew(SentryAndroidBeforeSendHandler);
 	before_send_handler->_initialize(android_plugin);
+
+	before_send_log_handler = memnew(SentryAndroidBeforeSendLogHandler);
+	before_send_log_handler->_initialize(android_plugin);
 }
 
 AndroidSDK::~AndroidSDK() {
@@ -243,8 +275,11 @@ AndroidSDK::~AndroidSDK() {
 	}
 
 	AndroidStringNames::destroy_singleton();
-	if (before_send_handler != nullptr) {
+	if (before_send_handler) {
 		memdelete(before_send_handler);
+	}
+	if (before_send_log_handler) {
+		memdelete(before_send_log_handler);
 	}
 }
 

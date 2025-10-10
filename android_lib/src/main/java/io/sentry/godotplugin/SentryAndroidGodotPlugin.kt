@@ -9,6 +9,9 @@ import io.sentry.Sentry
 import io.sentry.SentryAttributes
 import io.sentry.SentryEvent
 import io.sentry.SentryLevel
+import io.sentry.SentryLogEvent
+import io.sentry.SentryLogEventAttributeValue
+import io.sentry.SentryLogLevel
 import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
 import io.sentry.logger.SentryLogParameters
@@ -51,6 +54,12 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
+    private val logsByHandle = object : ThreadLocal<MutableMap<Int, SentryLogEvent>>() {
+        override fun initialValue(): MutableMap<Int, SentryLogEvent> {
+            return mutableMapOf()
+        }
+    }
+
     private fun getEvent(eventHandle: Int): SentryEvent? {
         val event: SentryEvent? = eventsByHandle.get()?.get(eventHandle)
         if (event == null) {
@@ -73,6 +82,14 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             Log.e(TAG, "Internal Error -- Breadcrumb not found: $breadcrumbHandle")
         }
         return crumb
+    }
+
+    private fun getLog(logHandle: Int): SentryLogEvent? {
+        var logEvent: SentryLogEvent? = logsByHandle.get()?.get(logHandle)
+        if (logEvent == null) {
+            Log.e(TAG, "Internal Error -- SentryLogEvent not found: $logHandle")
+        }
+        return logEvent
     }
 
     private fun registerEvent(event: SentryEvent): Int {
@@ -120,6 +137,21 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         return handle
     }
 
+    private fun registerLog(logEvent: SentryLogEvent): Int {
+        var logsMap = logsByHandle.get() ?: run {
+            Log.e(TAG, "Internal Error -- logsMap is null")
+            return 0
+        }
+
+        var handle = Random.nextInt()
+        while (logsMap.containsKey(handle)) {
+            handle = Random.nextInt()
+        }
+
+        logsMap[handle] = logEvent
+        return handle
+    }
+
     override fun getPluginName(): String {
         return "SentryAndroidGodotPlugin"
     }
@@ -134,7 +166,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         environment: String,
         sampleRate: Float,
         maxBreadcrumbs: Int,
-        enableLogs: Boolean
+        enableLogs: Boolean,
+        beforeSendLogHandlerId: Long
     ) {
         Log.v(TAG, "Initializing Sentry Android")
         SentryAndroid.init(godot.getActivity()!!.applicationContext) { options ->
@@ -155,7 +188,16 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                     Callable.call(beforeSendHandlerId, "before_send", handle)
                     eventsByHandle.get()?.remove(handle) // Returns the event or null if it was discarded.
                 }
+            if (beforeSendLogHandlerId != 0L) {
+                options.logs.beforeSend =
+                    SentryOptions.Logs.BeforeSendLogCallback { logEvent ->
+                        val handle: Int = registerLog(logEvent)
+                        Callable.call(beforeSendLogHandlerId, "before_send_log", handle)
+                        logsByHandle.get()?.remove(handle) // Returns the log or null if it was discarded.
+                    }
             }
+
+        }
     }
 
     @UsedByGodot
@@ -561,6 +603,46 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun breadcrumbGetTimestamp(handle: Int): Long {
         val crumb = getBreadcrumb(handle) ?: return 0
         return crumb.timestamp.toMicros()
+    }
+
+    @UsedByGodot
+    fun releaseLog(handle: Int) {
+        val logsMap = logsByHandle.get() ?: run {
+            Log.e(TAG, "Internal Error -- logsByHandle is null")
+            return
+        }
+
+        logsMap.remove(handle)
+    }
+
+    @UsedByGodot
+    fun logSetLevel(handle: Int, level: Int) {
+        getLog(handle)?.level = level.toSentryLogLevel()
+    }
+
+    @UsedByGodot
+    fun logGetLevel(handle: Int): Int {
+        return getLog(handle)?.level?.toInt() ?: SentryLogLevel.INFO.toInt()
+    }
+
+    @UsedByGodot
+    fun logSetBody(handle: Int, body: String) {
+        getLog(handle)?.body = body
+    }
+
+    @UsedByGodot
+    fun logGetBody(handle: Int): String {
+        return getLog(handle)?.body ?: ""
+    }
+
+    @UsedByGodot
+    fun logGetAttribute(handle: Int, name: String): Any? {
+        return getLog(handle)?.attributes?.get(name)?.value
+    }
+
+    @UsedByGodot
+    fun logSetAttribute(handle: Int, name: String, type: String, value: Any) {
+        getLog(handle)?.attributes?.set(name, SentryLogEventAttributeValue(type, value))
     }
 
 }

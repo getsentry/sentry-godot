@@ -90,6 +90,16 @@ public:
 	StringName breadcrumbGetLevel;
 	StringName breadcrumbSetData;
 	StringName breadcrumbGetTimestamp;
+
+	// Logs.
+	StringName releaseLog;
+	StringName logSetLevel;
+	StringName logGetLevel;
+	StringName logSetBody;
+	StringName logGetBody;
+	StringName logGetAttribute;
+	StringName logSetAttribute;
+	StringName logSetAttributes;
 };
 
 } //namespace sentry::android

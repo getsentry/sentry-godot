@@ -35,6 +35,16 @@ fun SentryLevel.toInt(): Int =
         SentryLevel.FATAL -> 4
     }
 
+fun SentryLogLevel.toInt(): Int =
+    when (this) {
+        SentryLogLevel.TRACE -> 0
+        SentryLogLevel.DEBUG -> 1
+        SentryLogLevel.INFO -> 2
+        SentryLogLevel.WARN -> 3
+        SentryLogLevel.ERROR -> 4
+        SentryLogLevel.FATAL -> 5
+    }
+
 fun Long.microsecondsToTimestamp(): Date {
     val millis = this / 1_000
     return Date(millis)

@@ -22,11 +22,27 @@ protected:
 	static void _bind_methods();
 };
 
+class SentryAndroidBeforeSendLogHandler : public Object {
+	GDCLASS(SentryAndroidBeforeSendLogHandler, Object);
+	friend class AndroidSDK;
+
+private:
+	Object *android_plugin = nullptr;
+
+	void _initialize(Object *p_android_plugin);
+
+	void _before_send_log(int32_t p_log_handle);
+
+protected:
+	static void _bind_methods();
+};
+
 // Internal SDK utilizing Sentry Android (sentry-java repo).
 class AndroidSDK : public InternalSDK {
 private:
 	Object *android_plugin = nullptr;
 	SentryAndroidBeforeSendHandler *before_send_handler = nullptr;
+	SentryAndroidBeforeSendLogHandler *before_send_log_handler = nullptr;
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
