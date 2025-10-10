@@ -406,6 +406,9 @@ SentrySDK::SentrySDK() {
 
 SentrySDK::~SentrySDK() {
 	singleton = nullptr;
+
+	memdelete(logger);
+	logger = nullptr;
 }
 
 } // namespace sentry
