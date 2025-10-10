@@ -11,7 +11,7 @@ func init_sdk() -> void:
 
 func _before_send_log(entry: SentryLog) -> SentryLog:
 	log_processed.emit(entry)
-	return null
+	return entry
 
 
 func test_structured_logs_with_print() -> void:
