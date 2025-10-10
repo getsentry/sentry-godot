@@ -85,7 +85,7 @@ Variant NativeLog::get_attribute(const String &p_name) const {
 	} else if (strcmp(type_cstr, "string") == 0) {
 		return String::utf8(sentry_value_as_string(value));
 	} else {
-		WARN_PRINT("Sentry: Unexpected native attribute type string");
+		WARN_PRINT("Sentry: Unexpected native attribute type string \"" + String(type_cstr) + "\"");
 		return Variant();
 	}
 }
