@@ -73,6 +73,7 @@ func test_capture_event() -> void:
 
 func test_structured_logs() -> void:
 	var logs: Array[Dictionary] = []
+
 	Engine.get_main_loop().before_send_log.connect(func(entry: SentryLog):
 		var data := {
 			"level": entry.level,
