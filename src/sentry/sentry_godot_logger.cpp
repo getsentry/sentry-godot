@@ -41,6 +41,20 @@ public:
 	~RecursionGuard() { (*counter_ptr)--; }
 };
 
+// Sets a thread-local flag indicating that we are currently logging a message.
+// This prevents debug output from being logged within another log operation,
+// which can cause errors in Godot.
+class LoggingMessageScope {
+public:
+	LoggingMessageScope() {
+		sentry::util::is_logging_message = true;
+	}
+
+	~LoggingMessageScope() {
+		sentry::util::is_logging_message = false;
+	}
+};
+
 bool _get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) {
 	if (p_file.is_empty()) {
 		return false;
@@ -377,6 +391,8 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 }
 
 void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
+	LoggingMessageScope logging_message_scope;
+
 	bool as_log = SentryOptions::get_singleton()->get_experimental()->get_enable_logs();
 	bool as_breadcrumb = SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled();
 
