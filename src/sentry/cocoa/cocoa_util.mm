@@ -100,7 +100,7 @@ godot::Variant variant_from_objc(const NSObject *p_value) {
 		}
 	} else if ([p_value isKindOfClass:[NSString class]]) {
 		NSString *str = (NSString *)p_value;
-		return String::utf8(str.UTF8String, str.length);
+		return String::utf8(str.UTF8String);
 	} else if ([p_value isKindOfClass:[NSDictionary class]]) {
 		godot::Dictionary godot_dict;
 		NSDictionary *objc_dict = (NSDictionary *)p_value;
