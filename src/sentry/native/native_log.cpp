@@ -2,6 +2,8 @@
 
 #include "native_util.h"
 
+#include "sentry/util/print.h"
+
 namespace sentry::native {
 
 LogLevel NativeLog::get_level() const {
@@ -18,14 +20,14 @@ LogLevel NativeLog::get_level() const {
 		return LOG_LEVEL_DEBUG;
 	} else if (strcmp(level_cstr, "info") == 0) {
 		return LOG_LEVEL_INFO;
-	} else if (strcmp(level_cstr, "warning") == 0) {
+	} else if (strcmp(level_cstr, "warn") == 0) {
 		return LOG_LEVEL_WARN;
 	} else if (strcmp(level_cstr, "error") == 0) {
 		return LOG_LEVEL_ERROR;
 	} else if (strcmp(level_cstr, "fatal") == 0) {
 		return LOG_LEVEL_FATAL;
 	} else {
-		WARN_PRINT("Sentry: Unexpected native structured log level value.");
+		WARN_PRINT("Sentry: Unexpected native structured log level value \"" + String(level_cstr) + "\"");
 		return LOG_LEVEL_INFO;
 	}
 }
@@ -72,6 +74,10 @@ Variant NativeLog::get_attribute(const String &p_name) const {
 	}
 
 	sentry_value_t attr = sentry_value_get_by_key(attributes, p_name.utf8());
+	if (sentry_value_is_null(attr)) {
+		return Variant();
+	}
+
 	sentry_value_t value = sentry_value_get_by_key(attr, "value");
 	sentry_value_t type = sentry_value_get_by_key(attr, "type");
 	const char *type_cstr = sentry_value_as_string(type);
