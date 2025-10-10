@@ -67,6 +67,9 @@ void NativeLog::set_body(const String &p_body) {
 
 Variant NativeLog::get_attribute(const String &p_name) const {
 	sentry_value_t attributes = sentry_value_get_by_key(native_log, "attributes");
+	if (sentry_value_is_null(attributes)) {
+		return Variant();
+	}
 
 	sentry_value_t attr = sentry_value_get_by_key(attributes, p_name.utf8());
 	sentry_value_t value = sentry_value_get_by_key(attr, "value");
@@ -91,12 +94,23 @@ void NativeLog::set_attribute(const String &p_name, const Variant &p_value) {
 	if (p_name.is_empty()) {
 		return;
 	}
+
 	sentry_value_t attributes = sentry_value_get_by_key(native_log, "attributes");
+	if (sentry_value_is_null(attributes)) {
+		attributes = sentry_value_new_object();
+		sentry_value_set_by_key(native_log, "attributes", attributes);
+	}
+
 	sentry_value_set_by_key(attributes, p_name.utf8(), variant_to_attribute(p_value));
 }
 
 void NativeLog::add_attributes(const Dictionary &p_attributes) {
 	sentry_value_t attributes = sentry_value_get_by_key(native_log, "attributes");
+	if (sentry_value_is_null(attributes)) {
+		attributes = sentry_value_new_object();
+		sentry_value_set_by_key(native_log, "attributes", attributes);
+	}
+
 	const Array &keys = p_attributes.keys();
 	for (const String &key : keys) {
 		sentry_value_set_by_key(attributes, key.utf8(), variant_to_attribute(p_attributes[key]));
