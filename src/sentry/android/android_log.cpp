@@ -28,7 +28,8 @@ void AndroidLog::set_body(const String &p_body) {
 
 Variant AndroidLog::get_attribute(const String &p_name) const {
 	ERR_FAIL_NULL_V(android_plugin, Variant());
-	return android_plugin->call(ANDROID_SN(logGetAttribute), handle, p_name);
+	Dictionary result = android_plugin->call(ANDROID_SN(logGetAttribute), handle, p_name);
+	return result["value"];
 }
 
 void AndroidLog::set_attribute(const String &p_name, const Variant &p_value) {

@@ -636,8 +636,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun logGetAttribute(handle: Int, name: String): Any? {
-        return getLog(handle)?.attributes?.get(name)?.value
+    fun logGetAttribute(handle: Int, name: String): Dictionary {
+        // NOTE: Use Dictionary container for the value to avoid object wrapper creation.
+        var attr = getLog(handle)?.attributes?.get(name) ?: return Dictionary()
+        val result = Dictionary()
+        result["type"] = attr.type
+        result["value"] = attr.value
+        return result
     }
 
     @UsedByGodot
