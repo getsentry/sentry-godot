@@ -57,12 +57,12 @@ void AndroidLog::set_attribute(const String &p_name, const Variant &p_value) {
 
 void AndroidLog::add_attributes(const Dictionary &p_attributes) {
 	ERR_FAIL_NULL(android_plugin);
-	WARN_PRINT("Not implemented");
+	android_plugin->call(ANDROID_SN(logAddAttributes), handle, p_attributes);
 }
 
 void AndroidLog::remove_attribute(const String &p_name) {
 	ERR_FAIL_NULL(android_plugin);
-	WARN_PRINT("Not implemented");
+	android_plugin->call(ANDROID_SN(logRemoveAttribute), handle, p_name);
 }
 
 AndroidLog::AndroidLog() {

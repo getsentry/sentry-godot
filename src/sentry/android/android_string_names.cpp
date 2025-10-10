@@ -87,7 +87,8 @@ AndroidStringNames::AndroidStringNames() {
 	logGetBody = StringName("logGetBody");
 	logGetAttribute = StringName("logGetAttribute");
 	logSetAttribute = StringName("logSetAttribute");
-	logSetAttributes = StringName("logSetAttributes");
+	logAddAttributes = StringName("logAddAttributes");
+	logRemoveAttribute = StringName("logRemoveAttribute");
 }
 
 } //namespace sentry::android

@@ -99,7 +99,8 @@ public:
 	StringName logGetBody;
 	StringName logGetAttribute;
 	StringName logSetAttribute;
-	StringName logSetAttributes;
+	StringName logAddAttributes;
+	StringName logRemoveAttribute;
 };
 
 } //namespace sentry::android
