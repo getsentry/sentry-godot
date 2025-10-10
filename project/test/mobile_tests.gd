@@ -12,6 +12,7 @@ func run_tests() -> void:
 
 	test_capture_message()
 	test_capture_event()
+	test_structured_logs()
 
 	SentrySDK._set_before_send(prev)
 
@@ -70,6 +71,51 @@ func test_capture_event() -> void:
 	SentrySDK.capture_event(ev)
 
 
+func test_structured_logs() -> void:
+	var logs: Array[Dictionary] = []
+	Engine.get_main_loop().before_send_log.connect(func(entry: SentryLog):
+		var data := {
+			"level": entry.level,
+			"body": entry.body,
+			"sentry.message.template": entry.get_attribute("sentry.message.template"),
+			"sentry.message.parameter.0": entry.get_attribute("sentry.message.parameter.0"),
+			"sentry.message.parameter.1": entry.get_attribute("sentry.message.parameter.1"),
+			"a1": entry.get_attribute("a1"),
+			"a2": entry.get_attribute("a2")
+		}
+		logs.append(data)
+	)
+
+	print("Test 123")
+	var last_log: Dictionary = logs[-1]
+	assert_equal(last_log.body, "Test 123", "structured_logs(): log.body with print()")
+	assert_equal(last_log.level, SentryLog.LOG_LEVEL_INFO, "structured_logs(): log.level with print()")
+
+	printerr("Test 123")
+	last_log = logs[-1]
+	assert_equal(last_log.body, "Test 123", "structured_logs(): log.body with printerr()")
+	assert_equal(last_log.level, SentryLog.LOG_LEVEL_ERROR, "structured_logs(): log.level with printerr()")
+
+	for level in [SentryLog.LOG_LEVEL_TRACE, SentryLog.LOG_LEVEL_DEBUG, SentryLog.LOG_LEVEL_INFO,
+			SentryLog.LOG_LEVEL_WARN, SentryLog.LOG_LEVEL_ERROR, SentryLog.LOG_LEVEL_FATAL]:
+		SentrySDK.logger.log(level, "Test 123")
+		last_log = logs[-1]
+		assert_equal(last_log.level, level, "structured_logs(): log.level=%d with logger.log()" % level)
+
+	SentrySDK.logger.info("%s %d", ["Test", 123])
+	last_log = logs[-1]
+	assert_equal(last_log["sentry.message.template"], "%s %d", "structured_logs(): log.template with logger.info()")
+	assert_equal(last_log["sentry.message.parameter.0"], "Test", "structured_logs(): log.parameter.0 with logger.info()")
+	assert_equal(last_log["sentry.message.parameter.1"], 123, "structured_logs(): log.parameter.1 with logger.info()")
+
+	SentrySDK.logger.debug("Test SDK", [], {
+		"a1": "Hello 世界! 👋",
+		"a2": 42
+	})
+	last_log = logs[-1]
+	assert_equal(last_log["a1"], "Hello 世界! 👋", "structured_logs(): log.attributes.a1 with logger.debug()")
+	assert_equal(last_log["a2"], 42, "structured_logs(): log.attributes.a2 with logger.debug()")
+
 # --------------------------------------------------------------------------------------------------
 
 func assert_true(predicate: bool, name: String) -> void:
@@ -90,7 +136,7 @@ func assert_false(predicate: bool, name: String) -> void:
 
 
 func assert_equal(a, b, name: String) -> void:
-	if a == b:
+	if typeof(a) == typeof(b) and a == b:
 		_passed(name)
 	else:
 		_failed(name)
