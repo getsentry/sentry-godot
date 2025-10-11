@@ -2,8 +2,10 @@
 #define SENTRY_PRINT_H
 
 #include "sentry/level.h"
+#include "sentry/logging/state.h"
 #include "sentry/sentry_options.h"
 
+#include <cstdio>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
@@ -12,7 +14,52 @@ using namespace godot;
 namespace sentry::logging {
 
 template <typename... Args>
+void print_no_logger(sentry::Level p_level, const Variant &p_arg1, const Args &...p_args) {
+	if (!SentryOptions::get_singleton()->is_debug_enabled() && p_level < sentry::LEVEL_ERROR) {
+		return;
+	}
+	if (SentryOptions::get_singleton()->get_diagnostic_level() > p_level) {
+		return;
+	}
+
+	// Print level prefix
+	switch (p_level) {
+		case LEVEL_DEBUG: {
+			fputs("Sentry: DEBUG: ", stdout);
+		} break;
+		case LEVEL_INFO: {
+			fputs("Sentry: INFO: ", stdout);
+		} break;
+		case LEVEL_WARNING: {
+			fputs("Sentry: WARNING: ", stdout);
+		} break;
+		case LEVEL_ERROR: {
+			fputs("Sentry: ERROR: ", stdout);
+		} break;
+		case LEVEL_FATAL: {
+			fputs("Sentry: FATAL: ", stdout);
+		} break;
+	}
+
+	// Print first argument
+	fputs(Variant(p_arg1).stringify().utf8().get_data(), stdout);
+
+	// Print remaining arguments
+	(fputs(Variant(p_args).stringify().utf8().get_data(), stdout), ...);
+
+	fputc('\n', stdout);
+	fflush(stdout);
+}
+
+template <typename... Args>
 void print(sentry::Level p_level, const Variant &p_arg1, const Args &...p_args) {
+	if (sentry::logging::in_message_logging) {
+		// We shouldn't print anything to logger when another message is being logged,
+		// because it can cause runtime errors in Godot.
+		print_no_logger(p_level, p_arg1, p_args...);
+		return;
+	}
+
 	if (!SentryOptions::get_singleton()->is_debug_enabled() && p_level < sentry::LEVEL_ERROR) {
 		return;
 	}

@@ -1,6 +1,7 @@
 #include "sentry_godot_logger.h"
 
 #include "sentry/logging/print.h"
+#include "sentry/logging/state.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
 
@@ -377,7 +378,11 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 }
 
 void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
-	if (!SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled()) {
+	sentry::logging::MessageScope message_scope;
+
+	bool as_breadcrumb = SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled();
+
+	if (!as_breadcrumb) {
 		return;
 	}
 
@@ -403,11 +408,14 @@ void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 		}
 	}
 
-	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(processed_message);
-	crumb->set_category("log");
-	crumb->set_level(p_error ? sentry::Level::LEVEL_ERROR : sentry::Level::LEVEL_INFO);
-	crumb->set_type("debug");
-	SentrySDK::get_singleton()->add_breadcrumb(crumb);
+	if (as_breadcrumb) {
+		sentry::Level level = p_error ? LEVEL_ERROR : LEVEL_INFO;
+		Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(processed_message);
+		crumb->set_category("log");
+		crumb->set_level(level);
+		crumb->set_type("debug");
+		SentrySDK::get_singleton()->add_breadcrumb(crumb);
+	}
 }
 
 void SentryGodotLogger::_bind_methods() {
