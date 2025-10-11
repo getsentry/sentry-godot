@@ -14,6 +14,18 @@ using namespace godot;
 
 namespace sentry::logging {
 
+/**
+ * Implements the Godot Logger interface to capture and process Godot's internal
+ * stream of errors and messages for Sentry integration.
+ *
+ * This logger receives Godot's logging output and converts it into appropriate
+ * Sentry telemetry:
+ * - Errors are converted to Sentry events with exception data and also breadcrumbs
+ * - Messages are processed into structured logs and/or breadcrumbs based on configuration
+ *
+ * Features include throttling, repeated error suppression, and filtering to
+ * ensure better performance and signal-to-noise ratio in Sentry.
+ */
 class SentryGodotLogger : public Logger {
 	GDCLASS(SentryGodotLogger, Logger);
 
