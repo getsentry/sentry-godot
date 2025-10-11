@@ -4,7 +4,7 @@
 
 ### Improvements
 
-- Detect when we're inside message logging to prevent SDK print operations through the Godot logger and avoid runtime errors. ([#414](https://github.com/getsentry/sentry-godot/pull/414))
+- Detect when we're inside message logging to prevent SDK print operations through the Godot logger and avoid related runtime errors. ([#414](https://github.com/getsentry/sentry-godot/pull/414))
 
 ## 1.0.0
 
