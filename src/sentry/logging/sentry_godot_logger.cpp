@@ -1,8 +1,8 @@
-#include "sentry_logger.h"
+#include "sentry_godot_logger.h"
 
+#include "sentry/logging/print.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
-#include "sentry/util/print.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
@@ -51,19 +51,19 @@ bool _get_script_context(const String &p_file, int p_line, String &r_context_lin
 	// ! Note: Script source code context is only automatically provided if GDScript is exported as text (not binary tokens).
 
 	if (script.is_null()) {
-		sentry::util::print_error("Failed to load script ", p_file);
+		sentry::logging::print_error("Failed to load script ", p_file);
 		return false;
 	}
 
 	String source_code = script->get_source_code();
 	if (source_code.is_empty()) {
-		sentry::util::print_debug("Script source not available ", p_file.utf8().ptr());
+		sentry::logging::print_debug("Script source not available ", p_file.utf8().ptr());
 		return false;
 	}
 
 	PackedStringArray lines = script->get_source_code().split("\n");
 	if (lines.size() < p_line) {
-		sentry::util::print_error("Script source is smaller than the referenced line, lineno: ", p_line);
+		sentry::logging::print_error("Script source is smaller than the referenced line, lineno: ", p_line);
 		return false;
 	}
 
@@ -213,9 +213,9 @@ String _strip_invisible(const String &p_text) {
 
 } // unnamed namespace
 
-namespace sentry {
+namespace sentry::logging {
 
-std::size_t SentryLogger::ErrorKeyHash::operator()(const ErrorKey &p_key) const {
+std::size_t SentryGodotLogger::ErrorKeyHash::operator()(const ErrorKey &p_key) const {
 	CharString message_cstr = p_key.message.utf8();
 	CharString filename_cstr = p_key.file.utf8();
 
@@ -228,27 +228,27 @@ std::size_t SentryLogger::ErrorKeyHash::operator()(const ErrorKey &p_key) const 
 	return hash_value;
 }
 
-void SentryLogger::_connect_process_frame() {
+void SentryGodotLogger::_connect_process_frame() {
 	MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
-	ERR_FAIL_NULL_MSG(main_loop, "SentryLogger: Failed to connect to \"process_frame\" signal - main loop is null.");
+	ERR_FAIL_NULL_MSG(main_loop, "SentryGodotLogger: Failed to connect to \"process_frame\" signal - main loop is null.");
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
-	ERR_FAIL_NULL_MSG(scene_tree, "SentryLogger: Failed to connect to \"process_frame\" signal - expected SceneTree instance as main loop.");
+	ERR_FAIL_NULL_MSG(scene_tree, "SentryGodotLogger: Failed to connect to \"process_frame\" signal - expected SceneTree instance as main loop.");
 
-	Callable callable = callable_mp(this, &SentryLogger::_process_frame);
+	Callable callable = callable_mp(this, &SentryGodotLogger::_process_frame);
 	if (!scene_tree->is_connected("process_frame", callable)) {
 		scene_tree->connect("process_frame", callable);
 	}
 }
 
-void SentryLogger::_disconnect_process_frame() {
+void SentryGodotLogger::_disconnect_process_frame() {
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-	Callable callable = callable_mp(this, &SentryLogger::_process_frame);
+	Callable callable = callable_mp(this, &SentryGodotLogger::_process_frame);
 	if (scene_tree && scene_tree->is_connected("process_frame", callable)) {
 		scene_tree->disconnect("process_frame", callable);
 	}
 }
 
-void SentryLogger::_process_frame() {
+void SentryGodotLogger::_process_frame() {
 	// NOTE: It's important not to push errors from within this function to avoid deadlocks.
 	std::lock_guard lock{ error_mutex };
 
@@ -267,14 +267,14 @@ void SentryLogger::_process_frame() {
 	}
 }
 
-void SentryLogger::_log_error(const String &p_function, const String &p_file, int32_t p_line,
+void SentryGodotLogger::_log_error(const String &p_function, const String &p_file, int32_t p_line,
 		const String &p_code, const String &p_rationale, bool p_editor_notify, int32_t p_error_type,
 		const TypedArray<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	static thread_local uint32_t num_entries = 0;
 	constexpr uint32_t MAX_ENTRIES = 5;
 	RecursionGuard feedback_loop_guard{ &num_entries, MAX_ENTRIES };
 	if (!feedback_loop_guard.can_enter()) {
-		ERR_PRINT_ONCE("SentryLogger::_log_error() feedback loop detected.");
+		ERR_PRINT_ONCE("SentryGodotLogger::_log_error() feedback loop detected.");
 		return;
 	}
 
@@ -322,11 +322,11 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 	}
 
 	if (!as_breadcrumb && !as_event) {
-		sentry::util::print_debug("error capture skipped due to limits");
+		sentry::logging::print_debug("error capture skipped due to limits");
 		return;
 	}
 
-	sentry::util::print_debug(
+	sentry::logging::print_debug(
 			"Capturing error: ", error_message,
 			"\n   at: ", p_function, " (", p_file, ":", p_line, ")",
 			"\n   event: ", as_event, "  breadcrumb: ", as_breadcrumb);
@@ -376,7 +376,7 @@ void SentryLogger::_log_error(const String &p_function, const String &p_file, in
 	}
 }
 
-void SentryLogger::_log_message(const String &p_message, bool p_error) {
+void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 	if (!SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled()) {
 		return;
 	}
@@ -385,7 +385,7 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 	constexpr uint32_t MAX_ENTRIES = 5;
 	RecursionGuard feedback_loop_guard{ &num_entries, MAX_ENTRIES };
 	if (!feedback_loop_guard.can_enter()) {
-		ERR_PRINT_ONCE("SentryLogger::_log_message() feedback loop detected.");
+		ERR_PRINT_ONCE("SentryGodotLogger::_log_message() feedback loop detected.");
 		return;
 	}
 
@@ -410,11 +410,11 @@ void SentryLogger::_log_message(const String &p_message, bool p_error) {
 	SentrySDK::get_singleton()->add_breadcrumb(crumb);
 }
 
-void SentryLogger::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_connect_process_frame"), &SentryLogger::_connect_process_frame);
+void SentryGodotLogger::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_connect_process_frame"), &SentryGodotLogger::_connect_process_frame);
 }
 
-void SentryLogger::_notification(int p_what) {
+void SentryGodotLogger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
@@ -431,8 +431,8 @@ void SentryLogger::_notification(int p_what) {
 	}
 }
 
-SentryLogger::SentryLogger() {
-	logger_name = "SentryLogger";
+SentryGodotLogger::SentryGodotLogger() {
+	logger_name = "SentryGodotLogger";
 
 	// Filtering setup.
 	filter_by_prefix = {
@@ -448,10 +448,10 @@ SentryLogger::SentryLogger() {
 	limits.throttle_window = std::chrono::milliseconds{ logger_limits->throttle_window_ms };
 }
 
-SentryLogger::~SentryLogger() {
+SentryGodotLogger::~SentryGodotLogger() {
 	if (!Engine::get_singleton()) {
 		return;
 	}
 }
 
-} // namespace sentry
+} //namespace sentry::logging

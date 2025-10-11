@@ -12,10 +12,10 @@
 
 using namespace godot;
 
-namespace sentry {
+namespace sentry::logging {
 
-class SentryLogger : public Logger {
-	GDCLASS(SentryLogger, Logger);
+class SentryGodotLogger : public Logger {
+	GDCLASS(SentryGodotLogger, Logger);
 
 private:
 	using GodotErrorType = sentry::GodotErrorType;
@@ -71,10 +71,10 @@ public:
 	virtual void _log_error(const String &p_function, const String &p_file, int32_t p_line, const String &p_code, const String &p_rationale, bool p_editor_notify, int32_t p_error_type, const TypedArray<Ref<ScriptBacktrace>> &p_script_backtraces) override;
 	virtual void _log_message(const String &p_message, bool p_error) override;
 
-	SentryLogger();
-	~SentryLogger();
+	SentryGodotLogger();
+	~SentryGodotLogger();
 };
 
-} // namespace sentry
+} //namespace sentry::logging
 
 #endif // SENTRY_LOGGER_H

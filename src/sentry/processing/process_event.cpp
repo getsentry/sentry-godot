@@ -1,9 +1,9 @@
 #include "process_event.h"
 
 #include "sentry/contexts.h"
+#include "sentry/logging/print.h"
 #include "sentry/processing/sentry_event_processor.h"
 #include "sentry/sentry_options.h"
-#include "sentry/util/print.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
@@ -16,11 +16,11 @@ namespace sentry {
 
 Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 	if (p_event.is_null()) {
-		sentry::util::print_error("attempted to process a null event");
+		sentry::logging::print_error("attempted to process a null event");
 		return nullptr;
 	}
 
-	sentry::util::print_debug("processing event ", p_event->get_id());
+	sentry::logging::print_debug("processing event ", p_event->get_id());
 
 	Ref<SentryEvent> event = p_event;
 
@@ -36,7 +36,7 @@ Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 		if (event.is_null()) {
 			return event;
 		} else if (event != p_event) {
-			sentry::util::print_error("event processor returned a different event object – discarding processor result");
+			sentry::logging::print_error("event processor returned a different event object – discarding processor result");
 			event = p_event; // Reset to original event
 		}
 	}
@@ -52,15 +52,15 @@ Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 				ERR_PRINT("Sentry: before_send callback must return the same event object or null.");
 				first_print = false;
 			} else {
-				sentry::util::print_error("before_send callback must return the same event object or null.");
+				sentry::logging::print_error("before_send callback must return the same event object or null.");
 			}
 			return p_event;
 		}
 
 		if (event.is_valid()) {
-			sentry::util::print_debug("before_send processed ", p_event->get_id());
+			sentry::logging::print_debug("before_send processed ", p_event->get_id());
 		} else {
-			sentry::util::print_debug("before_send discarded ", p_event->get_id());
+			sentry::logging::print_debug("before_send discarded ", p_event->get_id());
 		}
 	}
 

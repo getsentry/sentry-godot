@@ -9,7 +9,7 @@
 
 using namespace godot;
 
-namespace sentry::util {
+namespace sentry::logging {
 
 template <typename... Args>
 void print(sentry::Level p_level, const Variant &p_arg1, const Args &...p_args) {
@@ -66,16 +66,16 @@ void print_fatal(const Variant &p_arg1, const Args &...p_args) {
 
 #define FAIL_COND_V_PRINT_ERROR(m_cond, m_ret, m_msg) \
 	if (m_cond) {                                     \
-		sentry::util::print_error(m_msg);             \
+		sentry::logging::print_error(m_msg);          \
 		return m_ret;                                 \
 	}
 
 #define FAIL_COND_PRINT_ERROR(m_cond, m_msg) \
 	if (m_cond) {                            \
-		sentry::util::print_error(m_msg);    \
+		sentry::logging::print_error(m_msg); \
 		return;                              \
 	}
 
-} //namespace sentry::util
+} //namespace sentry::logging
 
 #endif // SENTRY_PRINT_H
