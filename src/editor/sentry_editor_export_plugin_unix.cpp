@@ -2,7 +2,7 @@
 
 #if defined(TOOLS_ENABLED) && !defined(WINDOWS_ENABLED)
 
-#include "sentry/util/print.h"
+#include "sentry/logging/print.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/file_access.hpp>
@@ -25,7 +25,7 @@ void _set_executable_permissions(const String &p_path) {
 	if (perm != new_perm) {
 		Error err = FileAccess::set_unix_permissions(p_path, new_perm);
 		if (err != OK && err != ERR_UNAVAILABLE) {
-			sentry::util::print_warning("Failed to set executable permissions for: " + p_path);
+			sentry::logging::print_warning("Failed to set executable permissions for: " + p_path);
 		}
 	}
 }

@@ -4,10 +4,10 @@
 #include "runtime_config.h"
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
+#include "sentry/logging/sentry_godot_logger.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
-#include "sentry/sentry_logger.h"
 #include "sentry/sentry_options.h"
 
 #include <godot_cpp/classes/mutex.hpp>
@@ -34,7 +34,7 @@ private:
 
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
-	Ref<SentryLogger> logger;
+	Ref<sentry::logging::SentryGodotLogger> godot_logger;
 	bool is_auto_initializing = false;
 
 	void _init_contexts();

@@ -1,8 +1,8 @@
 #include "screenshot_processor.h"
 
 #include "sentry/common_defs.h"
+#include "sentry/logging/print.h"
 #include "sentry/sentry_options.h"
-#include "sentry/util/print.h"
 #include "sentry/util/screenshot.h" // TODO: incorporate
 
 #include <godot_cpp/classes/dir_access.hpp>
@@ -15,7 +15,7 @@ namespace sentry {
 
 Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_event) {
 	if (p_event.is_null()) {
-		sentry::util::print_error("internal error: can't process null event");
+		sentry::logging::print_error("internal error: can't process null event");
 		return nullptr;
 	}
 
@@ -29,7 +29,7 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 		std::lock_guard lock{ mutex };
 
 		if (current_frame == last_screenshot_frame) {
-			sentry::util::print_debug("skipping screenshot – already taken");
+			sentry::logging::print_debug("skipping screenshot – already taken");
 			return p_event;
 		}
 
@@ -38,7 +38,7 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 	}
 
 	if (OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id()) {
-		sentry::util::print_debug("skipping screenshot – can only be performed on the main thread");
+		sentry::logging::print_debug("skipping screenshot – can only be performed on the main thread");
 		return p_event;
 	}
 
@@ -55,7 +55,7 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 			return p_event;
 		}
 		if (result.operator bool() == false) {
-			sentry::util::print_debug("cancelled screenshot: before_capture_screenshot returned false");
+			sentry::logging::print_debug("cancelled screenshot: before_capture_screenshot returned false");
 			return p_event;
 		}
 	}
@@ -64,7 +64,7 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 	last_screenshot_frame = current_frame;
 	mutex.unlock();
 
-	sentry::util::print_debug("taking screenshot");
+	sentry::logging::print_debug("taking screenshot");
 	PackedByteArray buffer = sentry::util::take_screenshot();
 
 	Ref<FileAccess> f = FileAccess::open(screenshot_path, FileAccess::WRITE);
@@ -73,7 +73,7 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 		f->flush();
 		f->close();
 	} else {
-		sentry::util::print_error("failed to save ", screenshot_path);
+		sentry::logging::print_error("failed to save ", screenshot_path);
 	}
 
 	return p_event;
