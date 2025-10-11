@@ -1,5 +1,5 @@
 extends SentryTestSuite
-## Test SentryLogger error capture with detailed JSON validation.
+## Test SentryGodotLogger error capture with detailed JSON validation.
 ## NOTE: Additional logger tests can be found in test/isolated/ with filenames beginning with "test_logger_".
 
 
@@ -17,7 +17,7 @@ func test_gdscript_error_event_structure() -> void:
 
 	assert_json(json).describe("Logger event has logger attribute") \
 		.at("/") \
-		.must_contain("logger", "SentryLogger") \
+		.must_contain("logger", "SentryGodotLogger") \
 		.verify()
 
 	assert_json(json).describe("Logger error event contains exception data") \
