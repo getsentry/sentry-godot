@@ -12,7 +12,7 @@
 
 using namespace godot;
 
-namespace sentry {
+namespace sentry::logging {
 
 /**
  * Implements the Godot Logger interface to capture and process Godot's internal
@@ -88,6 +88,6 @@ public:
 	~SentryGodotLogger();
 };
 
-} // namespace sentry
+} //namespace sentry::logging
 
 #endif // SENTRY_LOGGER_H

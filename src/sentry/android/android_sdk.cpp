@@ -6,10 +6,10 @@
 #include "android_string_names.h"
 #include "android_util.h"
 #include "sentry/common_defs.h"
+#include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
-#include "sentry/util/print.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -35,7 +35,7 @@ void SentryAndroidBeforeSendHandler::_initialize(Object *p_android_plugin) {
 }
 
 void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
-	sentry::util::print_debug("handling before_send: ", p_event_handle);
+	sentry::logging::print_debug("handling before_send: ", p_event_handle);
 
 	Ref<AndroidEvent> event_obj = memnew(AndroidEvent(android_plugin, p_event_handle));
 	event_obj->set_as_borrowed();
@@ -194,7 +194,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND(p_attachment.is_null());
 
 	if (p_attachment->get_path().is_empty()) {
-		sentry::util::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
+		sentry::logging::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
 		android_plugin->call(ANDROID_SN(addBytesAttachment),
 				p_attachment->get_bytes(),
 				p_attachment->get_filename(),
@@ -202,7 +202,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 				String());
 	} else {
 		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
-		sentry::util::print_debug("attaching file: ", absolute_path);
+		sentry::logging::print_debug("attaching file: ", absolute_path);
 		android_plugin->call(ANDROID_SN(addFileAttachment),
 				absolute_path,
 				p_attachment->get_filename(),

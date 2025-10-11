@@ -4,11 +4,11 @@
 #include "sentry/common_defs.h"
 #include "sentry/contexts.h"
 #include "sentry/disabled/disabled_sdk.h"
+#include "sentry/logging/print.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
-#include "sentry/util/print.h"
 #include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
@@ -92,7 +92,7 @@ void _fix_unix_executable_permissions(const String &p_path) {
 	if (perm != new_perm) {
 		godot::Error err = FileAccess::set_unix_permissions(p_path, new_perm);
 		if (err != OK && err != ERR_UNAVAILABLE) {
-			sentry::util::print_error(vformat("Failed to set executable permissions for %s (error code %d)", p_path, err));
+			sentry::logging::print_error(vformat("Failed to set executable permissions for %s (error code %d)", p_path, err));
 		}
 	}
 }
@@ -129,7 +129,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	}
 #endif
 
-	sentry::util::print_debug("Initializing Sentry SDK");
+	sentry::logging::print_debug("Initializing Sentry SDK");
 	internal_sdk->init(_get_global_attachments(), p_configuration_callback);
 
 	if (internal_sdk->is_enabled()) {
@@ -152,7 +152,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 
 void SentrySDK::close() {
 	if (internal_sdk->is_enabled()) {
-		sentry::util::print_debug("Shutting down Sentry SDK");
+		sentry::logging::print_debug("Shutting down Sentry SDK");
 		if (godot_logger.is_valid()) {
 			OS::get_singleton()->remove_logger(godot_logger);
 			godot_logger.unref();
@@ -212,7 +212,7 @@ void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary 
 }
 
 void SentrySDK::_init_contexts() {
-	sentry::util::print_debug("initializing contexts");
+	sentry::logging::print_debug("initializing contexts");
 
 #ifdef SDK_NATIVE
 	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
@@ -260,36 +260,36 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 }
 
 void SentrySDK::_auto_initialize() {
-	sentry::util::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
+	sentry::logging::print_debug("starting Sentry SDK version " + String(SENTRY_GODOT_SDK_VERSION));
 
 	bool should_enable = true;
 
 	if (!SentryOptions::get_singleton()->is_auto_init_enabled()) {
 		should_enable = false;
-		sentry::util::print_debug("Automatic initialization is disabled in the project settings.");
+		sentry::logging::print_debug("Automatic initialization is disabled in the project settings.");
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		should_enable = false;
-		sentry::util::print_debug("Automatic initialization is disabled in the editor.");
+		sentry::logging::print_debug("Automatic initialization is disabled in the editor.");
 	}
 
 	if (!Engine::get_singleton()->is_editor_hint() && OS::get_singleton()->has_feature("editor") && SentryOptions::get_singleton()->should_skip_auto_init_on_editor_play()) {
 		should_enable = false;
-		sentry::util::print_debug("Automatic initialization is disabled when project is played from the editor. Tip: This can be changed in the project settings.");
+		sentry::logging::print_debug("Automatic initialization is disabled when project is played from the editor. Tip: This can be changed in the project settings.");
 	}
 
 	if (SentryOptions::get_singleton()->get_dsn().is_empty()) {
 		should_enable = false;
-		sentry::util::print_debug("Automatic initialization is disabled because no DSN was provided. Tip: You can obtain a DSN from Sentry's dashboard and add it in the project settings.");
+		sentry::logging::print_debug("Automatic initialization is disabled because no DSN was provided. Tip: You can obtain a DSN from Sentry's dashboard and add it in the project settings.");
 	}
 
 	if (!should_enable) {
-		sentry::util::print_info("Automatic initialization is disabled! Operations with Sentry SDK will result in no-ops.");
+		sentry::logging::print_info("Automatic initialization is disabled! Operations with Sentry SDK will result in no-ops.");
 		return;
 	}
 
-	sentry::util::print_debug("Proceeding with automatic initialization.");
+	sentry::logging::print_debug("Proceeding with automatic initialization.");
 
 	is_auto_initializing = true;
 	init();
@@ -298,7 +298,7 @@ void SentrySDK::_auto_initialize() {
 
 void SentrySDK::_demo_helper_crash_app() {
 	char *ptr = (char *)1;
-	sentry::util::print_fatal("Crash by access violation ", ptr); // this is going to crash the app
+	sentry::logging::print_fatal("Crash by access violation ", ptr); // this is going to crash the app
 }
 
 void SentrySDK::prepare_and_auto_initialize() {
@@ -384,14 +384,14 @@ SentrySDK::SentrySDK() {
 	internal_sdk = std::make_shared<sentry::native::NativeSDK>();
 #elif SDK_ANDROID
 	if (unlikely(OS::get_singleton()->has_feature("editor"))) {
-		sentry::util::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
+		sentry::logging::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
 		internal_sdk = std::make_shared<DisabledSDK>();
 	} else {
 		auto sdk = std::make_shared<sentry::android::AndroidSDK>();
 		if (sdk->has_android_plugin()) {
 			internal_sdk = sdk;
 		} else {
-			sentry::util::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
+			sentry::logging::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
 			internal_sdk = std::make_shared<DisabledSDK>();
 		}
 	}
@@ -399,7 +399,7 @@ SentrySDK::SentrySDK() {
 	internal_sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
 #else
 	// Unsupported platform
-	sentry::util::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
+	sentry::logging::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
 	internal_sdk = std::make_shared<DisabledSDK>();
 #endif
 }

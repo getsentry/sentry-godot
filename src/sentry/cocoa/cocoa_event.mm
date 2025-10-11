@@ -1,7 +1,7 @@
 #include "cocoa_event.h"
 
 #include "cocoa_util.h"
-#include "sentry/util/print.h"
+#include "sentry/logging/print.h"
 
 #include <godot_cpp/classes/os.hpp>
 

@@ -1,8 +1,9 @@
 #include "sentry_godot_logger.h"
 
+#include "sentry/logging/print.h"
+#include "sentry/logging/state.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
-#include "sentry/util/print.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
@@ -41,20 +42,6 @@ public:
 	~RecursionGuard() { (*counter_ptr)--; }
 };
 
-// Sets a thread-local flag indicating that we are currently logging a message.
-// This prevents debug output from being logged within another log operation,
-// which can cause errors in Godot.
-class LoggingMessageScope {
-public:
-	LoggingMessageScope() {
-		sentry::util::is_logging_message = true;
-	}
-
-	~LoggingMessageScope() {
-		sentry::util::is_logging_message = false;
-	}
-};
-
 bool _get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) {
 	if (p_file.is_empty()) {
 		return false;
@@ -65,19 +52,19 @@ bool _get_script_context(const String &p_file, int p_line, String &r_context_lin
 	// ! Note: Script source code context is only automatically provided if GDScript is exported as text (not binary tokens).
 
 	if (script.is_null()) {
-		sentry::util::print_error("Failed to load script ", p_file);
+		sentry::logging::print_error("Failed to load script ", p_file);
 		return false;
 	}
 
 	String source_code = script->get_source_code();
 	if (source_code.is_empty()) {
-		sentry::util::print_debug("Script source not available ", p_file.utf8().ptr());
+		sentry::logging::print_debug("Script source not available ", p_file.utf8().ptr());
 		return false;
 	}
 
 	PackedStringArray lines = script->get_source_code().split("\n");
 	if (lines.size() < p_line) {
-		sentry::util::print_error("Script source is smaller than the referenced line, lineno: ", p_line);
+		sentry::logging::print_error("Script source is smaller than the referenced line, lineno: ", p_line);
 		return false;
 	}
 
@@ -227,7 +214,7 @@ String _strip_invisible(const String &p_text) {
 
 } // unnamed namespace
 
-namespace sentry {
+namespace sentry::logging {
 
 std::size_t SentryGodotLogger::ErrorKeyHash::operator()(const ErrorKey &p_key) const {
 	CharString message_cstr = p_key.message.utf8();
@@ -336,11 +323,11 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 	}
 
 	if (!as_breadcrumb && !as_event) {
-		sentry::util::print_debug("error capture skipped due to limits");
+		sentry::logging::print_debug("error capture skipped due to limits");
 		return;
 	}
 
-	sentry::util::print_debug(
+	sentry::logging::print_debug(
 			"Capturing error: ", error_message,
 			"\n   at: ", p_function, " (", p_file, ":", p_line, ")",
 			"\n   event: ", as_event, "  breadcrumb: ", as_breadcrumb);
@@ -391,7 +378,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 }
 
 void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
-	LoggingMessageScope logging_message_scope;
+	sentry::logging::MessageScope message_scope;
 
 	bool as_log = SentryOptions::get_singleton()->get_experimental()->get_enable_logs();
 	bool as_breadcrumb = SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled();
@@ -483,4 +470,4 @@ SentryGodotLogger::~SentryGodotLogger() {
 	}
 }
 
-} // namespace sentry
+} //namespace sentry::logging

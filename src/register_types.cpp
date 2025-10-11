@@ -1,6 +1,7 @@
 #include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_plugin.h"
 #include "sentry/disabled/disabled_event.h"
+#include "sentry/logging/sentry_godot_logger.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/sentry_event_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
@@ -8,7 +9,6 @@
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
-#include "sentry/sentry_godot_logger.h"
 #include "sentry/sentry_log.h"
 #include "sentry/sentry_logger.h"
 #include "sentry/sentry_options.h"
@@ -64,7 +64,7 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
 	GDREGISTER_INTERNAL_CLASS(ViewHierarchyProcessor);
-	GDREGISTER_INTERNAL_CLASS(SentryGodotLogger);
+	GDREGISTER_INTERNAL_CLASS(logging::SentryGodotLogger);
 
 #ifdef SDK_NATIVE
 	GDREGISTER_INTERNAL_CLASS(native::NativeEvent);

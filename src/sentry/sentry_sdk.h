@@ -3,11 +3,11 @@
 
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
+#include "sentry/logging/sentry_godot_logger.h"
 #include "sentry/runtime_config.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
-#include "sentry/sentry_godot_logger.h"
 #include "sentry/sentry_logger.h"
 #include "sentry/sentry_options.h"
 
@@ -35,7 +35,7 @@ private:
 
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
-	Ref<SentryGodotLogger> godot_logger;
+	Ref<sentry::logging::SentryGodotLogger> godot_logger;
 	bool is_auto_initializing = false;
 
 	// Public API logs interface

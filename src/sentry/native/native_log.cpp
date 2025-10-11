@@ -2,7 +2,7 @@
 
 #include "native_util.h"
 
-#include "sentry/util/print.h"
+#include "sentry/logging/print.h"
 
 namespace sentry::native {
 

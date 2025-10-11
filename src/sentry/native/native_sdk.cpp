@@ -3,6 +3,7 @@
 #include "sentry.h"
 #include "sentry/common_defs.h"
 #include "sentry/level.h"
+#include "sentry/logging/print.h"
 #include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_log.h"
@@ -11,7 +12,6 @@
 #include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
-#include "sentry/util/print.h"
 #include "sentry/util/screenshot.h"
 
 #include <cstdio>
@@ -121,7 +121,7 @@ void _log_native_message(sentry_level_t level, const char *message, va_list args
 	}
 
 	if (accepted) {
-		sentry::util::print(sentry::native::native_to_level(level), String(buffer));
+		sentry::logging::print(sentry::native::native_to_level(level), String(buffer));
 	}
 
 	if (buffer != initial_buffer) {
@@ -317,7 +317,7 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 	if (!p_attachment->get_path().is_empty()) {
 		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
-		sentry::util::print_debug(vformat("attaching file: %s", absolute_path));
+		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
 
 		native_attachment = sentry_attach_file(absolute_path.utf8());
 
@@ -331,7 +331,7 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		PackedByteArray bytes = p_attachment->get_bytes();
 		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
 
-		sentry::util::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
+		sentry::logging::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
 
 		native_attachment = sentry_attach_bytes(
 				reinterpret_cast<const char *>(bytes.ptr()),
@@ -402,7 +402,7 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 	}
 
 	for (const String &path : p_global_attachments) {
-		sentry::util::print_debug("adding attachment \"", path, "\"");
+		sentry::logging::print_debug("adding attachment \"", path, "\"");
 		if (path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
 			sentry_options_add_view_hierarchy(options, path.utf8());
 		} else {

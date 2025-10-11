@@ -2,6 +2,7 @@
 #define SENTRY_PRINT_H
 
 #include "sentry/level.h"
+#include "sentry/logging/state.h"
 #include "sentry/sentry_options.h"
 
 #include <cstdio>
@@ -10,9 +11,7 @@
 
 using namespace godot;
 
-namespace sentry::util {
-
-extern thread_local bool is_logging_message;
+namespace sentry::logging {
 
 template <typename... Args>
 void print_no_logger(sentry::Level p_level, const Variant &p_arg1, const Args &...p_args) {
@@ -54,7 +53,7 @@ void print_no_logger(sentry::Level p_level, const Variant &p_arg1, const Args &.
 
 template <typename... Args>
 void print(sentry::Level p_level, const Variant &p_arg1, const Args &...p_args) {
-	if (is_logging_message) {
+	if (sentry::logging::in_message_logging) {
 		// We shouldn't print anything to logger when another message is being logged,
 		// because it can cause runtime errors in Godot.
 		print_no_logger(p_level, p_arg1, p_args...);
@@ -114,16 +113,16 @@ void print_fatal(const Variant &p_arg1, const Args &...p_args) {
 
 #define FAIL_COND_V_PRINT_ERROR(m_cond, m_ret, m_msg) \
 	if (m_cond) {                                     \
-		sentry::util::print_error(m_msg);             \
+		sentry::logging::print_error(m_msg);          \
 		return m_ret;                                 \
 	}
 
 #define FAIL_COND_PRINT_ERROR(m_cond, m_msg) \
 	if (m_cond) {                            \
-		sentry::util::print_error(m_msg);    \
+		sentry::logging::print_error(m_msg); \
 		return;                              \
 	}
 
-} //namespace sentry::util
+} //namespace sentry::logging
 
 #endif // SENTRY_PRINT_H

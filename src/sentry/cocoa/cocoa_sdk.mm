@@ -6,11 +6,11 @@
 #include "cocoa_log.h"
 #include "cocoa_util.h"
 #include "sentry/common_defs.h"
+#include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
-#include "sentry/util/print.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -206,7 +206,7 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		ERR_FAIL_NULL(ProjectSettings::get_singleton());
 		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
 
-		sentry::util::print_debug(vformat("attaching file: %s", absolute_path));
+		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
 
 		String filename = p_attachment->get_filename().is_empty() ? p_attachment->get_path().get_file() : p_attachment->get_filename();
 		attachment_objc = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(absolute_path)
@@ -217,7 +217,7 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
 		NSData *bytes_objc = [NSData dataWithBytes:bytes.ptr() length:bytes.size()];
 
-		sentry::util::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
+		sentry::logging::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
 
 		attachment_objc = [[objc::SentryAttachment alloc] initWithData:bytes_objc
 															  filename:string_to_objc(p_attachment->get_filename())
@@ -261,7 +261,7 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments
 			for (const String &path : p_global_attachments) {
-				sentry::util::print_debug("adding attachment \"", path, "\"");
+				sentry::logging::print_debug("adding attachment \"", path, "\"");
 				objc::SentryAttachment *att = nil;
 				if (path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
 					// TODO: Can't specify attachmentType!
