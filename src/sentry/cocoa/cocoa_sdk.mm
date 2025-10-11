@@ -3,12 +3,14 @@
 #include "cocoa_breadcrumb.h"
 #include "cocoa_event.h"
 #include "cocoa_includes.h"
+#include "cocoa_log.h"
 #include "cocoa_util.h"
 #include "sentry/common_defs.h"
+#include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
-#include "sentry/util/print.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -17,6 +19,27 @@
 #import <Sentry/PrivateSentrySDKOnly.h>
 
 using namespace godot;
+
+namespace {
+
+NSObject *_as_attribute(const Variant &p_value) {
+	switch (p_value.get_type()) {
+		case Variant::BOOL: {
+			return [NSNumber numberWithBool:(bool)p_value];
+		} break;
+		case Variant::INT: {
+			return [NSNumber numberWithLongLong:(int64_t)p_value];
+		} break;
+		case Variant::FLOAT: {
+			return [NSNumber numberWithDouble:(double)p_value];
+		} break;
+		default: {
+			return [NSString stringWithUTF8String:p_value.stringify().utf8()];
+		} break;
+	}
+}
+
+} // unnamed namespace
 
 namespace sentry::cocoa {
 
@@ -79,6 +102,73 @@ void CocoaSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	[objc::SentrySDK addBreadcrumb:crumb->get_cocoa_breadcrumb()];
 }
 
+void CocoaSDK::log(LogLevel p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+	if (p_body.is_empty()) {
+		return;
+	}
+
+	String body = p_body;
+
+	NSMutableDictionary *attributes = nil;
+	bool has_params = !p_params.is_empty();
+	bool has_attributes = !p_attributes.is_empty();
+
+	if (has_params || has_attributes) {
+		attributes = [[NSMutableDictionary alloc] initWithCapacity:p_params.size() + p_attributes.size() + 1];
+
+		if (has_params) {
+			[attributes setObject:string_to_objc(body) forKey:@"sentry.message.template"];
+			for (int i = 0; i < p_params.size(); i++) {
+				NSString *objc_key = [NSString stringWithFormat:@"sentry.message.parameter.%d", i];
+				NSObject *objc_value = _as_attribute(p_params[i]);
+				[attributes setObject:objc_value forKey:objc_key];
+			}
+			body = body % p_params;
+		}
+
+		if (has_attributes) {
+			const Array &keys = p_attributes.keys();
+			for (int i = 0; i < keys.size(); i++) {
+				const String &key = keys[i];
+				const NSString *objc_key = [NSString stringWithUTF8String:key.utf8()];
+				const NSObject *objc_value = _as_attribute(p_attributes[key]);
+				[attributes setObject:objc_value forKey:objc_key];
+			}
+		}
+	}
+
+	switch (p_level) {
+		case LOG_LEVEL_TRACE: {
+			[[objc::SentrySDK logger] trace:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		case LOG_LEVEL_DEBUG: {
+			[[objc::SentrySDK logger] debug:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		case LOG_LEVEL_INFO: {
+			[[objc::SentrySDK logger] info:string_to_objc(body)
+								attributes:attributes];
+		} break;
+		case LOG_LEVEL_WARN: {
+			[[objc::SentrySDK logger] warn:string_to_objc(body)
+								attributes:attributes];
+		} break;
+		case LOG_LEVEL_ERROR: {
+			[[objc::SentrySDK logger] error:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		case LOG_LEVEL_FATAL: {
+			[[objc::SentrySDK logger] fatal:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		default: {
+			[[objc::SentrySDK logger] debug:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+	}
+}
+
 String CocoaSDK::capture_message(const String &p_message, Level p_level) {
 	objc::SentryId *event_id = [objc::SentrySDK captureMessage:string_to_objc(p_message)
 												withScopeBlock:^(objc::SentryScope *scope) {
@@ -116,7 +206,7 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		ERR_FAIL_NULL(ProjectSettings::get_singleton());
 		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
 
-		sentry::util::print_debug(vformat("attaching file: %s", absolute_path));
+		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
 
 		String filename = p_attachment->get_filename().is_empty() ? p_attachment->get_path().get_file() : p_attachment->get_filename();
 		attachment_objc = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(absolute_path)
@@ -127,7 +217,7 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
 		NSData *bytes_objc = [NSData dataWithBytes:bytes.ptr() length:bytes.size()];
 
-		sentry::util::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
+		sentry::logging::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
 
 		attachment_objc = [[objc::SentryAttachment alloc] initWithData:bytes_objc
 															  filename:string_to_objc(p_attachment->get_filename())
@@ -166,10 +256,12 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
 
+		options.experimental.enableLogs = SentryOptions::get_singleton()->get_experimental()->get_enable_logs();
+
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments
 			for (const String &path : p_global_attachments) {
-				sentry::util::print_debug("adding attachment \"", path, "\"");
+				sentry::logging::print_debug("adding attachment \"", path, "\"");
 				objc::SentryAttachment *att = nil;
 				if (path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
 					// TODO: Can't specify attachmentType!
@@ -208,6 +300,18 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 				return event;
 			}
 		};
+
+		if (SentryOptions::get_singleton()->get_experimental()->before_send_log.is_valid()) {
+			options.beforeSendLog = ^objc::SentryLog *(objc::SentryLog *log) {
+				Ref<CocoaLog> log_obj = memnew(CocoaLog(log));
+				Ref<CocoaLog> processed = sentry::process_log(log_obj);
+
+				if (unlikely(processed.is_null())) {
+					return nil;
+				}
+				return log;
+			};
+		}
 	}];
 
 	if (!is_enabled()) {

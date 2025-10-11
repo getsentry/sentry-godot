@@ -7,6 +7,9 @@ extends SceneTree
 ##      under `application/run/main_loop_type`.
 
 
+signal before_send_log(log_entry)
+
+
 func _initialize() -> void:
 	if _is_running_tests():
 		return
@@ -20,6 +23,7 @@ func _initialize() -> void:
 
 		# Set up event callbacks
 		options.before_send = _on_before_send_to_sentry
+		options.experimental.before_send_log = _on_before_send_log_to_sentry
 	)
 
 	# Post-initialize
@@ -37,6 +41,12 @@ func _on_before_send_to_sentry(ev: SentryEvent) -> SentryEvent:
 		print("INFO: [ProjectMainLoop] Discarding event with message 'junk'")
 		return null
 	return ev
+
+
+## before_send_log
+func _on_before_send_log_to_sentry(entry: SentryLog) -> SentryLog:
+	before_send_log.emit(entry)
+	return entry
 
 
 func _is_running_tests() -> bool:

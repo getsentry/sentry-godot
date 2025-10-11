@@ -4,12 +4,12 @@
 
 #include "editor/sentry_editor_export_plugin_android.h"
 #include "editor/sentry_editor_export_plugin_unix.h"
-#include "sentry/util/print.h"
+#include "sentry/logging/print.h"
 
 void SentryEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			sentry::util::print_debug("adding export plugins");
+			sentry::logging::print_debug("adding export plugins");
 
 			if (android_export_plugin.is_null()) {
 				android_export_plugin = Ref(memnew(SentryEditorExportPluginAndroid));

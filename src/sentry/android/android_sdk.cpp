@@ -2,12 +2,14 @@
 
 #include "android_breadcrumb.h"
 #include "android_event.h"
+#include "android_log.h"
 #include "android_string_names.h"
 #include "android_util.h"
 #include "sentry/common_defs.h"
+#include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
-#include "sentry/util/print.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -15,14 +17,25 @@
 
 using namespace godot;
 
+namespace {
+
+inline Variant _as_attribute(const Variant &p_value) {
+	Variant::Type type = p_value.get_type();
+	return (type < Variant::BOOL || type > Variant::STRING) ? (Variant)p_value.stringify() : p_value;
+}
+
+} // unnamed namespace
+
 namespace sentry::android {
+
+// *** SentryAndroidBeforeSendHandler
 
 void SentryAndroidBeforeSendHandler::_initialize(Object *p_android_plugin) {
 	android_plugin = p_android_plugin;
 }
 
 void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
-	sentry::util::print_debug("handling before_send: ", p_event_handle);
+	sentry::logging::print_debug("handling before_send: ", p_event_handle);
 
 	Ref<AndroidEvent> event_obj = memnew(AndroidEvent(android_plugin, p_event_handle));
 	event_obj->set_as_borrowed();
@@ -38,6 +51,30 @@ void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
 void SentryAndroidBeforeSendHandler::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("before_send"), &SentryAndroidBeforeSendHandler::_before_send);
 }
+
+// *** SentryAndroidBeforeSendLogHandler
+
+void SentryAndroidBeforeSendLogHandler::_initialize(Object *p_android_plugin) {
+	android_plugin = p_android_plugin;
+}
+
+void SentryAndroidBeforeSendLogHandler::_before_send_log(int32_t p_handle) {
+	Ref<AndroidLog> log_obj = memnew(AndroidLog(android_plugin, p_handle));
+	log_obj->set_as_borrowed();
+
+	Ref<AndroidLog> processed = sentry::process_log(log_obj);
+
+	if (processed.is_null()) {
+		// Discard log.
+		android_plugin->call(ANDROID_SN(releaseLog), p_handle);
+	}
+}
+
+void SentryAndroidBeforeSendLogHandler::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("before_send_log"), &SentryAndroidBeforeSendLogHandler::_before_send_log);
+}
+
+// *** AndroidSDK
 
 void AndroidSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_NULL(android_plugin);
@@ -92,6 +129,40 @@ void AndroidSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	android_plugin->call(ANDROID_SN(addBreadcrumb), crumb->get_handle());
 }
 
+void AndroidSDK::log(LogLevel p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+	ERR_FAIL_NULL(android_plugin);
+
+	if (p_body.is_empty()) {
+		return;
+	}
+
+	String body = p_body;
+
+	bool has_params = !p_params.is_empty();
+	bool has_attributes = !p_attributes.is_empty();
+
+	Dictionary attributes;
+
+	if (has_params) {
+		attributes["sentry.message.template"] = body;
+		for (int i = 0; i < p_params.size(); i++) {
+			String key = "sentry.message.parameter." + itos(i);
+			attributes[key] = _as_attribute(p_params[i]);
+		}
+		body = body % p_params;
+	}
+
+	if (has_attributes) {
+		const Array &keys = p_attributes.keys();
+		for (int i = 0; i < keys.size(); i++) {
+			const String &key = keys[i];
+			attributes[key] = _as_attribute(p_attributes[key]);
+		}
+	}
+
+	android_plugin->call(ANDROID_SN(log), p_level, body, attributes);
+}
+
 String AndroidSDK::capture_message(const String &p_message, Level p_level) {
 	ERR_FAIL_NULL_V(android_plugin, String());
 	return android_plugin->call(ANDROID_SN(captureMessage), p_message, p_level);
@@ -123,7 +194,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND(p_attachment.is_null());
 
 	if (p_attachment->get_path().is_empty()) {
-		sentry::util::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
+		sentry::logging::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
 		android_plugin->call(ANDROID_SN(addBytesAttachment),
 				p_attachment->get_bytes(),
 				p_attachment->get_filename(),
@@ -131,7 +202,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 				String());
 	} else {
 		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
-		sentry::util::print_debug("attaching file: ", absolute_path);
+		sentry::logging::print_debug("attaching file: ", absolute_path);
 		android_plugin->call(ANDROID_SN(addFileAttachment),
 				absolute_path,
 				p_attachment->get_filename(),
@@ -164,7 +235,9 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 			SentryOptions::get_singleton()->get_dist(),
 			SentryOptions::get_singleton()->get_environment(),
 			SentryOptions::get_singleton()->get_sample_rate(),
-			SentryOptions::get_singleton()->get_max_breadcrumbs());
+			SentryOptions::get_singleton()->get_max_breadcrumbs(),
+			SentryOptions::get_singleton()->get_experimental()->get_enable_logs(),
+			SentryOptions::get_singleton()->get_experimental()->before_send_log.is_valid() ? before_send_log_handler->get_instance_id() : 0);
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());
@@ -191,6 +264,9 @@ AndroidSDK::AndroidSDK() {
 
 	before_send_handler = memnew(SentryAndroidBeforeSendHandler);
 	before_send_handler->_initialize(android_plugin);
+
+	before_send_log_handler = memnew(SentryAndroidBeforeSendLogHandler);
+	before_send_log_handler->_initialize(android_plugin);
 }
 
 AndroidSDK::~AndroidSDK() {
@@ -199,8 +275,11 @@ AndroidSDK::~AndroidSDK() {
 	}
 
 	AndroidStringNames::destroy_singleton();
-	if (before_send_handler != nullptr) {
+	if (before_send_handler) {
 		memdelete(before_send_handler);
+	}
+	if (before_send_log_handler) {
+		memdelete(before_send_log_handler);
 	}
 }
 

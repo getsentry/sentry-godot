@@ -1,6 +1,6 @@
 #include "level.h"
 
-#include "sentry/util/print.h"
+#include "sentry/logging/print.h"
 
 namespace sentry {
 
@@ -38,7 +38,7 @@ Level int_to_level(int p_value) {
 		case 4:
 			return Level::LEVEL_FATAL;
 		default:
-			sentry::util::print_error("Internal Error: Unexpected SentryLevel integer value: " + godot::String::num_int64(p_value));
+			sentry::logging::print_error("Internal Error: Unexpected SentryLevel integer value: " + godot::String::num_int64(p_value));
 			return Level::LEVEL_ERROR;
 	}
 }
