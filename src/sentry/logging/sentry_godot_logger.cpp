@@ -280,6 +280,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 	}
 
 	String error_message = p_rationale.is_empty() ? p_code : p_rationale;
+	String error_type = error_type_as_string[int(p_error_type)];
 
 	ErrorKey error_key;
 	error_key.message = error_message;
@@ -290,6 +291,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 
 	bool as_event = false;
 	bool as_breadcrumb = false;
+	bool as_log = false;
 
 	{
 		std::lock_guard lock{ error_mutex };
@@ -309,6 +311,8 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 				!is_spammy_error;
 		as_breadcrumb = SentryOptions::get_singleton()->should_capture_breadcrumb((GodotErrorType)p_error_type) &&
 				!is_spammy_error;
+		as_log = SentryOptions::get_singleton()->get_experimental()->get_enable_logs() &&
+				!is_spammy_error;
 
 		if (as_event) {
 			// We decided to capture the error as event (it's happening).
@@ -322,7 +326,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 		}
 	}
 
-	if (!as_breadcrumb && !as_event) {
+	if (!as_breadcrumb && !as_event && !as_log) {
 		sentry::logging::print_debug("error capture skipped due to limits");
 		return;
 	}
@@ -330,7 +334,9 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 	sentry::logging::print_debug(
 			"Capturing error: ", error_message,
 			"\n   at: ", p_function, " (", p_file, ":", p_line, ")",
-			"\n   event: ", as_event, "  breadcrumb: ", as_breadcrumb);
+			"\n   event: ", as_event, "  breadcrumb: ", as_breadcrumb, "  log: ", as_log);
+
+	String event_uuid;
 
 	// Capture error as event.
 	if (as_event) {
@@ -349,13 +355,13 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 		Ref<SentryEvent> ev = SentrySDK::get_singleton()->create_event();
 		ev->set_level(sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type));
 		SentryEvent::Exception exception = {
-			error_type_as_string[int(p_error_type)],
+			error_type,
 			error_message,
 			frames
 		};
 		ev->add_exception(exception);
 		ev->set_logger(logger_name);
-		SentrySDK::get_singleton()->capture_event(ev);
+		event_uuid = SentrySDK::get_singleton()->capture_event(ev);
 	}
 
 	// Capture error as breadcrumb.
@@ -366,7 +372,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 		data["line"] = p_line;
 		data["code"] = p_code;
 		data["rationale"] = p_rationale;
-		data["error_type"] = String(error_type_as_string[int(p_error_type)]);
+		data["error_type"] = error_type;
 
 		Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(error_message);
 		crumb->set_level(sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type));
@@ -374,6 +380,25 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 		crumb->set_category("error");
 		crumb->set_data(data);
 		SentrySDK::get_singleton()->add_breadcrumb(crumb);
+	}
+
+	// Capture as structured log.
+	if (as_log) {
+		// TODO: Add also as arguments?
+		String body = vformat("%s: %s\n   at: %s (%s:%d)",
+				error_type,
+				error_message,
+				p_function,
+				p_file,
+				p_line);
+		if (as_event) {
+			// TODO: Should just leave it as attribute?
+			body += "\n   event_id: " + event_uuid;
+		}
+		LogLevel log_level = sentry::get_sentry_log_level_for_godot_error_type((GodotErrorType)p_error_type);
+		Dictionary attributes;
+		attributes["sentry.event_id"] = event_uuid;
+		SentrySDK::get_singleton()->get_internal_sdk()->log(log_level, body, Array(), attributes);
 	}
 }
 
