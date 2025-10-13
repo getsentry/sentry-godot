@@ -384,7 +384,6 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 
 	// Capture as structured log.
 	if (as_log) {
-		// TODO: Add also as arguments?
 		String body = vformat("%s: %s\n   at: %s (%s:%d)",
 				error_type,
 				error_message,
@@ -395,9 +394,22 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 			// TODO: Should just leave it as attribute?
 			body += "\n   event_id: " + event_uuid;
 		}
+
 		LogLevel log_level = sentry::get_sentry_log_level_for_godot_error_type((GodotErrorType)p_error_type);
+
 		Dictionary attributes;
 		attributes["sentry.event_id"] = event_uuid;
+		attributes["error.function"] = p_function;
+		attributes["error.file"] = p_file;
+		attributes["error.line"] = p_line;
+		attributes["error.type"] = error_type;
+		if (!p_code.is_empty()) {
+			attributes["error.code"] = p_code;
+		}
+		if (!p_rationale.is_empty()) {
+			attributes["error.rationale"] = p_rationale;
+		}
+
 		SentrySDK::get_singleton()->get_internal_sdk()->log(log_level, body, Array(), attributes);
 	}
 }
