@@ -231,9 +231,9 @@ std::size_t SentryGodotLogger::ErrorKeyHash::operator()(const ErrorKey &p_key) c
 
 void SentryGodotLogger::_connect_process_frame() {
 	MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
-	ERR_FAIL_NULL_MSG(main_loop, "SentryLogger: Failed to connect to \"process_frame\" signal - main loop is null.");
+	ERR_FAIL_NULL_MSG(main_loop, "SentryGodotLogger: Failed to connect to \"process_frame\" signal - main loop is null.");
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
-	ERR_FAIL_NULL_MSG(scene_tree, "SentryLogger: Failed to connect to \"process_frame\" signal - expected SceneTree instance as main loop.");
+	ERR_FAIL_NULL_MSG(scene_tree, "SentryGodotLogger: Failed to connect to \"process_frame\" signal - expected SceneTree instance as main loop.");
 
 	Callable callable = callable_mp(this, &SentryGodotLogger::_process_frame);
 	if (!scene_tree->is_connected("process_frame", callable)) {

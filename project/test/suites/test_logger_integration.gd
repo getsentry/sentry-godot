@@ -1,5 +1,5 @@
 extends SentryTestSuite
-## Test SentryLogger error capture with detailed JSON validation.
+## Test SentryGodotLogger error capture with detailed JSON validation.
 ## NOTE: Additional logger tests can be found in test/isolated/ with filenames beginning with "test_logger_".
 
 
