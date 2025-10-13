@@ -1,6 +1,6 @@
 #include "sentry_timestamp.h"
 
-#include "sentry/util/print.h"
+#include "sentry/logging/print.h"
 #include "sentry/util/simple_bind.h"
 
 #include <cstdio>
@@ -54,7 +54,7 @@ Ref<SentryTimestamp> SentryTimestamp::parse_rfc3339_cstr(const char *p_formatted
 	if (cur[0] == '.') {
 		int32_t fractional = 0;
 		if (sscanf(cur, ".%9d%n", &fractional, &num_consumed) < 1 || num_consumed > 10) {
-			sentry::util::print_error("Timestamp parsing needs 1-9 fractional digits.");
+			sentry::logging::print_error("Timestamp parsing needs 1-9 fractional digits.");
 			return Ref<SentryTimestamp>();
 		}
 		cur += num_consumed;
@@ -78,13 +78,13 @@ Ref<SentryTimestamp> SentryTimestamp::parse_rfc3339_cstr(const char *p_formatted
 		int offset_hours, offset_minutes;
 
 		if (sscanf(cur, "%*c%2d:%2d%n", &offset_hours, &offset_minutes, &num_consumed) < 2 || num_consumed != 6) {
-			sentry::util::print_error("Invalid timezone offset format. Expected +HH:MM or -HH:MM");
+			sentry::logging::print_error("Invalid timezone offset format. Expected +HH:MM or -HH:MM");
 			return Ref<SentryTimestamp>();
 		}
 
 		timezone_offset_seconds = sign * (offset_hours * 3600 + offset_minutes * 60);
 	} else {
-		sentry::util::print_error("Invalid timezone format. Expected 'Z', '+HH:MM', or '-HH:MM'");
+		sentry::logging::print_error("Invalid timezone format. Expected 'Z', '+HH:MM', or '-HH:MM'");
 		return Ref<SentryTimestamp>();
 	}
 
@@ -153,7 +153,7 @@ String SentryTimestamp::to_rfc3339() const {
 #endif
 
 	if (!tm || tm->tm_year > 9000) {
-		sentry::util::print_error("Failed to format timestamp");
+		sentry::logging::print_error("Failed to format timestamp");
 		return String();
 	}
 
