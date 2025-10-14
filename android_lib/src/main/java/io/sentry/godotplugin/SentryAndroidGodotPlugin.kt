@@ -10,8 +10,10 @@ import io.sentry.SentryEvent
 import io.sentry.SentryLevel
 import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
+import io.sentry.protocol.Feedback
 import io.sentry.protocol.Message
 import io.sentry.protocol.SentryException
+import io.sentry.protocol.SentryId
 import io.sentry.protocol.SentryStackFrame
 import io.sentry.protocol.SentryStackTrace
 import io.sentry.protocol.User
@@ -273,6 +275,17 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
         val id = Sentry.captureEvent(event)
         return id.toString()
+    }
+
+    @UsedByGodot
+    fun captureFeedback(message: String, contactEmail: String, name: String, associatedEventId: String) {
+        val feedback = Feedback(message)
+        feedback.contactEmail = contactEmail.ifEmpty { null }
+        feedback.name = name.ifEmpty { null }
+        if (associatedEventId.isNotEmpty()) {
+            feedback.setAssociatedEventId(SentryId(associatedEventId))
+        }
+        Sentry.captureFeedback(feedback)
     }
 
     @UsedByGodot
