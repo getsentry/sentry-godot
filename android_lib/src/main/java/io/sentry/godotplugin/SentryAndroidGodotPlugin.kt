@@ -472,6 +472,21 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun eventGetExceptionCount(eventHandle: Int): Int {
+        return getEvent(eventHandle)?.exceptions?.size ?: 0
+    }
+
+    @UsedByGodot
+    fun eventSetExceptionValue(eventHandle: Int, index: Int, value: String) {
+        getEvent(eventHandle)?.exceptions?.get(index)?.value = value
+    }
+
+    @UsedByGodot
+    fun eventGetExceptionValue(eventHandle: Int, index: Int): String {
+        return getEvent(eventHandle)?.exceptions?.get(index)?.value ?: ""
+    }
+
+    @UsedByGodot
     fun createBreadcrumb(): Int {
         val crumb = Breadcrumb()
         val handle = registerBreadcrumb(crumb)

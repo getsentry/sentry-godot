@@ -75,6 +75,9 @@ public:
 	StringName releaseException;
 	StringName exceptionAppendStackFrame;
 	StringName eventAddException;
+	StringName eventGetExceptionCount;
+	StringName eventSetExceptionValue;
+	StringName eventGetExceptionValue;
 
 	// Breadcrumbs.
 	StringName createBreadcrumb;
