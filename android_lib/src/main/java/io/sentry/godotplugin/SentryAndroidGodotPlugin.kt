@@ -478,12 +478,12 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventSetExceptionValue(eventHandle: Int, index: Int, value: String) {
-        getEvent(eventHandle)?.exceptions?.get(index)?.value = value
+        getEvent(eventHandle)?.exceptions?.getOrNull(index)?.value = value
     }
 
     @UsedByGodot
     fun eventGetExceptionValue(eventHandle: Int, index: Int): String {
-        return getEvent(eventHandle)?.exceptions?.get(index)?.value ?: ""
+        return getEvent(eventHandle)?.exceptions?.getOrNull(index)?.value ?: ""
     }
 
     @UsedByGodot
