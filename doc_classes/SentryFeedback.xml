@@ -4,6 +4,8 @@
 		Represents user feedback in Sentry.
 	</brief_description>
 	<description>
+		[SentryFeedback] allows you to collect and send user feedback to Sentry. Create an instance of this class, set the required [member message] and optional fields, then submit it using [method SentrySDK.capture_feedback].
+		To learn more, visit [url=https://docs.sentry.io/platforms/godot/user-feedback/]User Feedback[/url] documentation.
 	</description>
 	<tutorials>
 	</tutorials>
