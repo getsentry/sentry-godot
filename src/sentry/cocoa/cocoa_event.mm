@@ -263,6 +263,34 @@ void CocoaEvent::add_exception(const Exception &p_exception) {
 	[mut_exceptions addObject:cocoa_exception];
 }
 
+int CocoaEvent::get_exception_count() const {
+	ERR_FAIL_NULL_V(cocoa_event, 0);
+
+	if (cocoa_event.exceptions == nil) {
+		return 0;
+	}
+	return (int)cocoa_event.exceptions.count;
+}
+
+void CocoaEvent::set_exception_value(int index, const String &p_value) {
+	ERR_FAIL_NULL(cocoa_event);
+
+	if (cocoa_event.exceptions == nil || cocoa_event.exceptions.count <= index) {
+		WARN_PRINT("Sentry: Exception with index " + itos(index) + " not found.");
+		return;
+	}
+	cocoa_event.exceptions[index].value = string_to_objc(p_value);
+}
+
+String CocoaEvent::get_exception_value(int index) const {
+	ERR_FAIL_NULL_V(cocoa_event, String());
+
+	if (cocoa_event.exceptions == nil || cocoa_event.exceptions.count <= index) {
+		return String();
+	}
+	return string_from_objc(cocoa_event.exceptions[index].value);
+}
+
 bool CocoaEvent::is_crash() const {
 	ERR_FAIL_NULL_V(cocoa_event, false);
 

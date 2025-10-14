@@ -51,6 +51,10 @@ public:
 
 	virtual void add_exception(const Exception &p_exception) override;
 
+	virtual int get_exception_count() const override;
+	virtual void set_exception_value(int index, const String &p_value) override;
+	virtual String get_exception_value(int index) const override;
+
 	virtual bool is_crash() const override;
 
 	virtual String to_json() const override;

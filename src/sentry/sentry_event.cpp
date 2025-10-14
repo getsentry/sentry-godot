@@ -38,6 +38,10 @@ void SentryEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "release"), "set_release", "get_release");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dist"), "set_dist", "get_dist");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "environment"), "set_environment", "get_environment");
+
+	ClassDB::bind_method(D_METHOD("get_exception_count"), &SentryEvent::get_exception_count);
+	ClassDB::bind_method(D_METHOD("set_exception_value", "index", "value"), &SentryEvent::set_exception_value);
+	ClassDB::bind_method(D_METHOD("get_exception_value", "index"), &SentryEvent::get_exception_value);
 }
 
 } // namespace sentry
