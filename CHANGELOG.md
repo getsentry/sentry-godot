@@ -4,7 +4,7 @@
 
 ### Features
 
-- Allow accessing event exception values in `before_send` handler ([#415](https://github.com/getsentry/sentry-godot/pull/415))
+- Access event exception values in `before_send` handler ([#415](https://github.com/getsentry/sentry-godot/pull/415))
 
 ### Improvements
 
