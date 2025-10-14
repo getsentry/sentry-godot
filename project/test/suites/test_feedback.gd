@@ -11,7 +11,7 @@ func test_feedback_properties() -> void:
 
 	assert_str(feedback.name).is_empty()
 	feedback.name = "Bob"
-	assert_str(feedback.name).is_equal(feedback.name)
+	assert_str(feedback.name).is_equal("Bob")
 
 	assert_str(feedback.contact_email).is_empty()
 	feedback.contact_email = "bob@example.com"
