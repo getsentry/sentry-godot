@@ -272,23 +272,23 @@ int CocoaEvent::get_exception_count() const {
 	return (int)cocoa_event.exceptions.count;
 }
 
-void CocoaEvent::set_exception_value(int index, const String &p_value) {
+void CocoaEvent::set_exception_value(int p_index, const String &p_value) {
 	ERR_FAIL_NULL(cocoa_event);
 
-	if (cocoa_event.exceptions == nil || cocoa_event.exceptions.count <= index) {
-		WARN_PRINT("Sentry: Exception with index " + itos(index) + " not found.");
+	if (cocoa_event.exceptions == nil || cocoa_event.exceptions.count <= p_index) {
+		WARN_PRINT("Sentry: Exception with index " + itos(p_index) + " not found.");
 		return;
 	}
-	cocoa_event.exceptions[index].value = string_to_objc(p_value);
+	cocoa_event.exceptions[p_index].value = string_to_objc(p_value);
 }
 
-String CocoaEvent::get_exception_value(int index) const {
+String CocoaEvent::get_exception_value(int p_index) const {
 	ERR_FAIL_NULL_V(cocoa_event, String());
 
-	if (cocoa_event.exceptions == nil || cocoa_event.exceptions.count <= index) {
+	if (cocoa_event.exceptions == nil || cocoa_event.exceptions.count <= p_index) {
 		return String();
 	}
-	return string_from_objc(cocoa_event.exceptions[index].value);
+	return string_from_objc(cocoa_event.exceptions[p_index].value);
 }
 
 bool CocoaEvent::is_crash() const {

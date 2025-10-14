@@ -56,8 +56,8 @@ public:
 	virtual void add_exception(const Exception &p_exception) override {}
 
 	virtual int get_exception_count() const override { return 0; }
-	virtual void set_exception_value(int index, const String &p_value) override {}
-	virtual String get_exception_value(int index) const override { return String(); }
+	virtual void set_exception_value(int p_index, const String &p_value) override {}
+	virtual String get_exception_value(int p_index) const override { return String(); }
 
 	virtual bool is_crash() const override { return false; }
 
