@@ -239,7 +239,7 @@ int NativeEvent::get_exception_count() const {
 void NativeEvent::set_exception_value(int p_index, const String &p_value) {
 	sentry_value_t exception = sentry_value_get_by_key(native_event, "exception");
 	sentry_value_t values = sentry_value_get_by_key(exception, "values");
-	if (p_index >= sentry_value_get_length(values)) {
+	if (p_index < 0 || p_index >= sentry_value_get_length(values)) {
 		WARN_PRINT("Sentry: Exception with index " + itos(p_index) + " not found.");
 		return;
 	}
@@ -250,7 +250,7 @@ void NativeEvent::set_exception_value(int p_index, const String &p_value) {
 String NativeEvent::get_exception_value(int p_index) const {
 	sentry_value_t exception = sentry_value_get_by_key(native_event, "exception");
 	sentry_value_t values = sentry_value_get_by_key(exception, "values");
-	if (p_index >= sentry_value_get_length(values)) {
+	if (p_index < 0 || p_index >= sentry_value_get_length(values)) {
 		return String();
 	}
 	sentry_value_t exc = sentry_value_get_by_index(values, p_index);
