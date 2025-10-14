@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Allow accessing event exception values in `before_send` handler ([#415](https://github.com/getsentry/sentry-godot/pull/415))
+
 ### Improvements
 
 - Detect when we're inside message logging to prevent SDK print operations through the Godot logger which cause runtime errors. ([#414](https://github.com/getsentry/sentry-godot/pull/414))
