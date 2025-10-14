@@ -26,6 +26,15 @@ func _initialize() -> void:
 	# SentrySDK.add_attachment(...)
 	# ...
 
+	# TODO: DELETEME
+	push_error("Level transition failed")
+	var feedback := SentryFeedback.new()
+	feedback.name = "Bob"
+	feedback.contact_email = "bob@example.com"
+	feedback.message = "Something happened"
+	feedback.associated_event_id = SentrySDK.get_last_event_id()
+	SentrySDK.capture_feedback(feedback)
+
 
 ## before_send example
 func _on_before_send_to_sentry(ev: SentryEvent) -> SentryEvent:
