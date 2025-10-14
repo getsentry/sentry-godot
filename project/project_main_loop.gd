@@ -30,11 +30,13 @@ func _initialize() -> void:
 ## before_send example
 func _on_before_send_to_sentry(ev: SentryEvent) -> SentryEvent:
 	print("INFO: [ProjectMainLoop] Processing event: ", ev.id)
-	if ev.message.contains("Bruno"):
+	var error_message: String = ev.get_exception_value(0)
+	if error_message.contains("Bruno"):
 		print("INFO: [ProjectMainLoop] Removing sensitive information from the event")
-		ev.message = ev.message.replace("Bruno", "REDACTED")
-	elif ev.get_exception_value(0) == "Spammy error":
-		print("INFO: [ProjectMainLoop] Discarding event with error message 'Spammy error'")
+		var redacted_message := error_message.replace("Bruno", "REDACTED")
+		ev.set_exception_value(0, redacted_message)
+	elif error_message == "junk":
+		print("INFO: [ProjectMainLoop] Discarding event with error message 'junk'")
 		return null
 	return ev
 
