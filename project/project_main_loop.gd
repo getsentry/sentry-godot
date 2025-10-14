@@ -33,8 +33,8 @@ func _on_before_send_to_sentry(ev: SentryEvent) -> SentryEvent:
 	if ev.message.contains("Bruno"):
 		print("INFO: [ProjectMainLoop] Removing sensitive information from the event")
 		ev.message = ev.message.replace("Bruno", "REDACTED")
-	elif ev.message == "junk":
-		print("INFO: [ProjectMainLoop] Discarding event with message 'junk'")
+	elif ev.get_exception_value(0) == "Spammy error":
+		print("INFO: [ProjectMainLoop] Discarding event with error message 'Spammy error'")
 		return null
 	return ev
 
