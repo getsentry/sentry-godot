@@ -41,7 +41,7 @@
 			<param index="0" name="feedback" type="SentryFeedback" />
 			<description>
 				Captures user [param feedback] and sends it to Sentry. The feedback can optionally be associated with a specific error event if the [member SentryFeedback.associated_event_id] is set.
-				For more information, see the [SentryFeedback] class and visit the [url=https://docs.sentry.io/platforms/godot/user-feedback/]User Feedback documentation[/url].
+				For more information, see [SentryFeedback] class and visit [url=https://docs.sentry.io/platforms/godot/user-feedback/]User Feedback documentation[/url].
 			</description>
 		</method>
 		<method name="capture_message">
