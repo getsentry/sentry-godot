@@ -6,6 +6,12 @@
 
 - Detect when we're inside message logging to prevent SDK print operations through the Godot logger which cause runtime errors. ([#414](https://github.com/getsentry/sentry-godot/pull/414))
 
+### Dependencies
+
+- Bump Native SDK from v0.11.2 to v0.11.3 ([#420](https://github.com/getsentry/sentry-godot/pull/420))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0113)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.11.2...0.11.3)
+
 ## 1.0.0
 
 ### Breaking changes
