@@ -40,7 +40,7 @@ runs:
           version="$GODOT_VERSION_OVERRIDE"
         else
           major_minor=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1/p' project/addons/sentry/sentry.gdextension)
-          version="${major_minor}$-stable"
+          version="${major_minor}-stable"
         fi
 
         echo "Using Godot version: $version"
