@@ -6,6 +6,12 @@
 
 - Detect when we're inside message logging to prevent SDK print operations through the Godot logger which cause runtime errors. ([#414](https://github.com/getsentry/sentry-godot/pull/414))
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.56.2 to v8.57.0 ([#419](https://github.com/getsentry/sentry-godot/pull/419))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8570)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.56.2...8.57.0)
+
 ## 1.0.0
 
 ### Breaking changes
