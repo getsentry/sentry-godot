@@ -74,6 +74,10 @@ public:
 
 	virtual void add_exception(const Exception &p_exception) = 0;
 
+	virtual int get_exception_count() const = 0;
+	virtual void set_exception_value(int p_index, const String &p_value) = 0;
+	virtual String get_exception_value(int p_index) const = 0;
+
 	virtual bool is_crash() const = 0;
 
 	virtual String to_json() const = 0;

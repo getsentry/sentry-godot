@@ -227,6 +227,37 @@ void NativeEvent::add_exception(const Exception &p_exception) {
 	sentry_event_add_exception(native_event, native_exception);
 }
 
+int NativeEvent::get_exception_count() const {
+	sentry_value_t exception = sentry_value_get_by_key(native_event, "exception");
+	sentry_value_t values = sentry_value_get_by_key(exception, "values");
+	if (sentry_value_is_null(values)) {
+		return 0;
+	}
+	return sentry_value_get_length(values);
+}
+
+void NativeEvent::set_exception_value(int p_index, const String &p_value) {
+	sentry_value_t exception = sentry_value_get_by_key(native_event, "exception");
+	sentry_value_t values = sentry_value_get_by_key(exception, "values");
+	if (p_index < 0 || p_index >= sentry_value_get_length(values)) {
+		WARN_PRINT("Sentry: Exception with index " + itos(p_index) + " not found.");
+		return;
+	}
+	sentry_value_t exc = sentry_value_get_by_index(values, p_index);
+	sentry_value_set_by_key(exc, "value", sentry_value_new_string(p_value.utf8()));
+}
+
+String NativeEvent::get_exception_value(int p_index) const {
+	sentry_value_t exception = sentry_value_get_by_key(native_event, "exception");
+	sentry_value_t values = sentry_value_get_by_key(exception, "values");
+	if (p_index < 0 || p_index >= sentry_value_get_length(values)) {
+		return String();
+	}
+	sentry_value_t exc = sentry_value_get_by_index(values, p_index);
+	sentry_value_t value = sentry_value_get_by_key(exc, "value");
+	return sentry_value_as_string(value);
+}
+
 bool NativeEvent::is_crash() const {
 	return _is_crash;
 }

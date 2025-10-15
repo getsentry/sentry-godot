@@ -12,6 +12,7 @@ func run_tests() -> void:
 
 	test_capture_message()
 	test_capture_event()
+	test_with_error()
 
 	SentrySDK._set_before_send(prev)
 
@@ -69,6 +70,17 @@ func test_capture_event() -> void:
 
 	SentrySDK.capture_event(ev)
 
+
+func test_with_error() -> void:
+	SentrySDK._set_before_send(
+		func (event: SentryEvent) -> SentryEvent:
+			assert_true(event.get_exception_count() >= 1, "with_error(): exception count should be at least 1")
+			assert_equal(event.get_exception_value(0), "Error 123", "with_error(): exception value matches")
+			event.set_exception_value(0, "New value")
+			assert_equal(event.get_exception_value(0), "New value", "with_error(): exception value override matches")
+			return null
+	)
+	push_error("Error 123")
 
 # --------------------------------------------------------------------------------------------------
 

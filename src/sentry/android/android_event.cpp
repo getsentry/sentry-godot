@@ -142,6 +142,21 @@ void AndroidEvent::add_exception(const Exception &p_exception) {
 	android_plugin->call(ANDROID_SN(releaseException), exception_handle);
 }
 
+int AndroidEvent::get_exception_count() const {
+	ERR_FAIL_NULL_V(android_plugin, 0);
+	return android_plugin->call(ANDROID_SN(eventGetExceptionCount), event_handle);
+}
+
+void AndroidEvent::set_exception_value(int p_index, const String &p_value) {
+	ERR_FAIL_NULL(android_plugin);
+	android_plugin->call(ANDROID_SN(eventSetExceptionValue), event_handle, p_index, p_value);
+}
+
+String AndroidEvent::get_exception_value(int p_index) const {
+	ERR_FAIL_NULL_V(android_plugin, String());
+	return android_plugin->call(ANDROID_SN(eventGetExceptionValue), event_handle, p_index);
+}
+
 bool AndroidEvent::is_crash() const {
 	ERR_FAIL_NULL_V(android_plugin, false);
 	return android_plugin->call(ANDROID_SN(eventIsCrash), event_handle);
