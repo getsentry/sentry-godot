@@ -145,4 +145,27 @@ Level cstring_to_level(const CharString &p_cstring) {
 	}
 }
 
+sentry_value_t variant_to_attribute(const Variant &p_value) {
+	sentry_value_t obj = sentry_value_new_object();
+	switch (p_value.get_type()) {
+		case Variant::BOOL: {
+			sentry_value_set_by_key(obj, "type", sentry_value_new_string("boolean"));
+			sentry_value_set_by_key(obj, "value", sentry_value_new_bool((bool)p_value));
+		} break;
+		case Variant::INT: {
+			sentry_value_set_by_key(obj, "type", sentry_value_new_string("integer"));
+			sentry_value_set_by_key(obj, "value", sentry_value_new_int64((int64_t)p_value));
+		} break;
+		case Variant::FLOAT: {
+			sentry_value_set_by_key(obj, "type", sentry_value_new_string("double"));
+			sentry_value_set_by_key(obj, "value", sentry_value_new_double((double)p_value));
+		} break;
+		default: {
+			sentry_value_set_by_key(obj, "type", sentry_value_new_string("string"));
+			sentry_value_set_by_key(obj, "value", sentry_value_new_string(p_value.stringify().utf8()));
+		} break;
+	}
+	return obj;
+}
+
 } // namespace sentry::native

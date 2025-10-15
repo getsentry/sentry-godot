@@ -37,6 +37,7 @@ public:
 	StringName setUser;
 	StringName removeUser;
 	StringName addBreadcrumb;
+	StringName log;
 	StringName captureMessage;
 	StringName getLastEventId;
 	StringName captureError;
@@ -89,6 +90,17 @@ public:
 	StringName breadcrumbGetLevel;
 	StringName breadcrumbSetData;
 	StringName breadcrumbGetTimestamp;
+
+	// Logs.
+	StringName releaseLog;
+	StringName logSetLevel;
+	StringName logGetLevel;
+	StringName logSetBody;
+	StringName logGetBody;
+	StringName logGetAttribute;
+	StringName logSetAttribute;
+	StringName logAddAttributes;
+	StringName logRemoveAttribute;
 };
 
 } //namespace sentry::android

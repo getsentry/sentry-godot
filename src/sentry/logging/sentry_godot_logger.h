@@ -34,6 +34,7 @@ private:
 	using TimePoint = std::chrono::high_resolution_clock::time_point;
 
 	String logger_name;
+	Dictionary log_attributes;
 
 	struct Limits {
 		int events_per_frame;
