@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add user feedback API for collecting and sending user feedback to Sentry ([#418](https://github.com/getsentry/sentry-godot/pull/418))
+
 ### Improvements
 
 - Detect when we're inside message logging to prevent SDK print operations through the Godot logger which cause runtime errors. ([#414](https://github.com/getsentry/sentry-godot/pull/414))
