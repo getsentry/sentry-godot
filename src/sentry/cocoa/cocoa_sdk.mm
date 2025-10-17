@@ -185,6 +185,8 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
 
+		options.appHangTimeoutInterval = 5; // 5 seconds
+
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments
 			for (const String &path : p_global_attachments) {
