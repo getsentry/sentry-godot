@@ -1,9 +1,7 @@
 extends Control
-## User feedback GUI.
-##
 ## Complete example of User Feedback integration.
 ##
-## Tip: Add "user_feedback_gui.tscn" to your UI CanvasLayer and call show() when needed.
+## Usage: Add "user_feedback_gui.tscn" to your UI scene and call show() when needed.
 ##
 ## See "user_feedback_form.gd" for more details.
 
