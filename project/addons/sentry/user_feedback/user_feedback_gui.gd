@@ -14,6 +14,19 @@ extends Container
 		_update_form()
 
 
+## Whether to display name input field.
+@export var enable_name_input: bool = true:
+	set(value):
+		enable_name_input = value
+		_update_form()
+
+## Whether to display email input field.
+@export var enable_email_input: bool = true:
+	set(value):
+		enable_email_input = value
+		_update_form()
+
+
 ## Minimum number of words required in the feedback message before the feedback can be submitted.
 @export var minimum_words: int = 2:
 	set(value):
@@ -23,6 +36,7 @@ extends Container
 ## Limit the maximum size that the form can have.
 @export var maximum_size := Vector2(600, 600)
 
+## Offset from the top to position the form.
 @export var top_offset: float = 40.0
 
 func _ready():
@@ -39,6 +53,8 @@ func _update_form():
 		var form := %UserFeedbackForm
 		form.show_logo = show_logo
 		form.minimum_words = minimum_words
+		form.enable_email_input = enable_email_input
+		form.enable_name_input = enable_name_input
 
 
 ## Centers children horizontally at the top of the screen with an offset.

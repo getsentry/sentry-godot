@@ -25,7 +25,19 @@ signal feedback_cancelled()
 @export var show_logo: bool = true:
 	set(value):
 		show_logo = value
-		_update_logo()
+		_update_controls()
+
+## Whether to display name input field.
+@export var enable_name_input: bool = true:
+	set(value):
+		enable_name_input = value
+		_update_controls()
+
+## Whether to display email input field.
+@export var enable_email_input: bool = true:
+	set(value):
+		enable_email_input = value
+		_update_controls()
 
 ## Minimum number of words required in the feedback message before the feedback can be submitted.
 @export var minimum_words: int = 2
@@ -39,13 +51,15 @@ signal feedback_cancelled()
 
 
 func _ready() -> void:
-	_update_logo()
+	_update_controls()
 	_on_message_edit_text_changed()
 
 
-func _update_logo() -> void:
+func _update_controls() -> void:
 	if is_node_ready():
 		%Logo.visible = show_logo
+		%EmailSection.visible = enable_email_input
+		%NameSection.visible = enable_name_input
 
 
 func _on_submit_button_pressed() -> void:

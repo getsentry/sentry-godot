@@ -65,6 +65,7 @@ wrap_mode = 1
 tab_input_mode = false
 
 [node name="NameSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer/NameSection"]
@@ -78,6 +79,7 @@ size_flags_horizontal = 3
 placeholder_text = "Your name (optional)"
 
 [node name="EmailSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="EmailLabel" type="Label" parent="MarginContainer/VBoxContainer/EmailSection"]
