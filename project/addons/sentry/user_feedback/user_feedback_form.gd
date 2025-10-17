@@ -1,23 +1,41 @@
 extends PanelContainer
 ## User Feedback Form
 ##
-## This is a reference user feedback form implementation.
+## A customizable user feedback panel for use with Sentry SDK.
+## The feedback form automatically handles message validation, character limits, and
+## integrates with SentrySDK for feedback submission.
 ##
-## Tip: Copy folder with this feedback form into your project and customize it to your needs.
+## Usage:
+## 1. Copy the folder with this feedback form into your project to customize it.
+## 2. Customize the form as needed, you can tweak the theme file to change the looks.
+## 3. Integrate the panel into your existing UI hierarchy.
+##
+## Files:
+## - user_feedback_form.tscn: Feedback form for integrating into existing UI.
+## - user_feedback_gui.tscn: Ready to use integration example.
+## - sentry_theme.tres: Reference UI theme file.
 
 
+## Emitted when feedback is successfully submitted after the user clicks the "Submit" button.
 signal feedback_submitted(feedback: SentryFeedback)
+## Emitted when feedback is cancelled after the user clicks the "Cancel" button.
 signal feedback_cancelled()
 
+## Whether to display Sentry logo in the top right corner.
 @export var show_logo: bool = true:
 	set(value):
 		show_logo = value
 		_update_logo()
 
-@onready var message_edit: TextEdit = %MessageEdit
-@onready var name_edit: LineEdit = %NameEdit
-@onready var email_edit: LineEdit = %EmailEdit
-@onready var submit_button: Button = %SubmitButton
+## Minimum number of words required in the feedback message before the feedback can be submitted.
+@export var minimum_words: int = 2
+
+
+@onready var _message_edit: TextEdit = %MessageEdit
+@onready var _name_edit: LineEdit = %NameEdit
+@onready var _email_edit: LineEdit = %EmailEdit
+@onready var _submit_button: Button = %SubmitButton
+@onready var _character_counter: Label = %CharacterCounter
 
 
 func _ready() -> void:
@@ -30,21 +48,28 @@ func _update_logo() -> void:
 
 func _on_submit_button_pressed() -> void:
 	var feedback := SentryFeedback.new()
-	feedback.message = message_edit.text
-	feedback.name = name_edit.text
-	feedback.contact_email = email_edit.text
+	feedback.message = _message_edit.text
+	feedback.name = _name_edit.text
+	feedback.contact_email = _email_edit.text
 
 	SentrySDK.capture_feedback(feedback)
 
 	feedback_submitted.emit(feedback)
 
 	# Reset feedback message
-	message_edit.text = ""
+	_message_edit.text = ""
 
 
 func _on_message_edit_text_changed() -> void:
-	var message: String = message_edit.text
-	submit_button.disabled = _count_words(message) < 2
+	var message: String = _message_edit.text
+	if message.length() > 4096:
+		var col: int = _message_edit.get_caret_column()
+		message = message.substr(0, 4096)
+		_message_edit.text = message
+		_message_edit.set_caret_column(col)
+	_submit_button.disabled = _count_words(message) < minimum_words
+	_character_counter.text = str(message.length()) + "/4096"
+	_character_counter.visible = message.length() > 3000
 
 
 func _count_words(text: String) -> int:

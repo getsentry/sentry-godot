@@ -11,14 +11,15 @@ var _event_level: SentrySDK.Level
 
 var _user_feedback_gui: Control
 
+
 func _ready() -> void:
-	_init_user_feedback_popup()
+	_init_user_feedback_gui()
 	_init_level_choice_popup()
 	_init_user_info()
 
 
-## Initialize User Feedback popup
-func _init_user_feedback_popup() -> void:
+## Initialize User Feedback UI
+func _init_user_feedback_gui() -> void:
 	_user_feedback_gui = load("res://addons/sentry/user_feedback/user_feedback_gui.tscn").instantiate()
 	_user_feedback_gui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	get_owner().add_child.call_deferred(_user_feedback_gui)

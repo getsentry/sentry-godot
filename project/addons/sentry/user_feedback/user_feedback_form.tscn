@@ -38,9 +38,19 @@ expand_mode = 3
 custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 
-[node name="MessageLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="MessageLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 text = "Message"
+
+[node name="CharacterCounter" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 10
+text = "0/4096"
 
 [node name="MessageEdit" type="TextEdit" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
@@ -51,9 +61,6 @@ size_flags_vertical = 3
 placeholder_text = "Tell us about your issue"
 wrap_mode = 1
 tab_input_mode = false
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
 
 [node name="Spacer1" type="Control" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 12)
