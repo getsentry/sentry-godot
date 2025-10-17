@@ -40,6 +40,7 @@ signal feedback_cancelled()
 
 func _ready() -> void:
 	_update_logo()
+	_on_message_edit_text_changed()
 
 
 func _update_logo() -> void:
