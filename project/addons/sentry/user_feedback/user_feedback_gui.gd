@@ -36,7 +36,7 @@ extends Container
 ## Limit the maximum size that the form can have.
 @export var maximum_size := Vector2(600, 600)
 
-## Offset from the top to position the form.
+## Vertical offset from the top edge of the container to position the form.
 @export var top_offset: float = 40.0
 
 func _ready():
@@ -70,10 +70,10 @@ func _resize_children() -> void:
 		var ofs: Vector2 = ((size - new_sz) / 2.0).floor()
 		ofs.y = top_offset
 
+		# Override size constraints when expand & fill flags are set to use all available space.
 		if c.size_flags_vertical == SIZE_EXPAND_FILL:
 			new_sz.y = size.y
 			ofs.y = 0
-
 		if c.size_flags_horizontal == SIZE_EXPAND_FILL:
 			new_sz.x = size.x
 			ofs.x = 0
