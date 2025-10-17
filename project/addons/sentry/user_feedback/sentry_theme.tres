@@ -206,7 +206,7 @@ corner_detail = 5
 anti_aliasing = false
 
 [resource]
-default_font_size = 24
+default_font_size = 20
 ActionButton/base_type = &"Button"
 ActionButton/colors/font_color = Color(1, 1, 1, 1)
 ActionButton/colors/font_focus_color = Color(1, 1, 1, 1)
@@ -238,7 +238,7 @@ Button/styles/hover = SubResource("StyleBoxFlat_gix2e")
 Button/styles/normal = SubResource("StyleBoxFlat_7qvkq")
 Button/styles/pressed = SubResource("StyleBoxFlat_6xjsq")
 HeaderMedium/colors/font_color = Color(0.24313726, 0.20392157, 0.27450982, 1)
-HeaderMedium/font_sizes/font_size = 30
+HeaderMedium/font_sizes/font_size = 26
 Label/colors/font_color = Color(0.24313726, 0.20392157, 0.27450982, 1)
 Label/colors/font_outline_color = Color(0, 0, 0, 0)
 Label/colors/font_shadow_color = Color(0, 0, 0, 0)
