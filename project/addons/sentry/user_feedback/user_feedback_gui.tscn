@@ -37,7 +37,6 @@ custom_minimum_size = Vector2(600, 800)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 6
-show_logo = null
 
 [node name="SubmitButton" parent="VBoxContainer/UserFeedbackForm/MarginContainer/VBoxContainer/Actions" index="1"]
 theme_type_variation = &"ActionButton"

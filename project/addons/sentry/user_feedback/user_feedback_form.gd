@@ -43,7 +43,8 @@ func _ready() -> void:
 
 
 func _update_logo() -> void:
-	%Logo.visible = show_logo
+	if is_node_ready():
+		%Logo.visible = show_logo
 
 
 func _on_submit_button_pressed() -> void:
