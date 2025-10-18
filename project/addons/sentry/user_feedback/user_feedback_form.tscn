@@ -114,6 +114,7 @@ size_flags_horizontal = 6
 disabled = true
 text = "Submit"
 
+[connection signal="visibility_changed" from="." to="." method="_on_visibility_changed"]
 [connection signal="text_changed" from="MarginContainer/VBoxContainer/MessageSection/MessageEdit" to="." method="_on_message_edit_text_changed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/Actions/CancelButton" to="." method="_on_cancel_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/Actions/SubmitButton" to="." method="_on_submit_button_pressed"]

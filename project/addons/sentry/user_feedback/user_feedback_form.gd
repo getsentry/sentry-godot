@@ -99,3 +99,8 @@ func _count_words(text: String) -> int:
 
 func _on_cancel_button_pressed() -> void:
 	feedback_cancelled.emit()
+
+
+func _on_visibility_changed() -> void:
+	if visible:
+		_message_edit.grab_focus()
