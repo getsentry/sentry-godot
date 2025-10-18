@@ -46,7 +46,7 @@ extends Container
 @export var auto_scale_enable: bool = true
 
 ## Master resolution used as reference for UI scaling calculations.
-## When auto_scale_ui is enabled, the UI will scale proportionally based on
+## When auto_scale_enable is ON, the UI will scale proportionally based on
 ## the ratio between the current viewport height and this resolution.
 @export var auto_scale_master_resolution: int = 1080
 
@@ -131,8 +131,9 @@ func _rescale_theme(scale_factor: float) -> void:
 
 	var th: Theme = _original_theme.duplicate()
 
-	th.default_font_size = floori(20 * scale_factor)
-	th.set_font_size("font_size", "HeaderMedium", floori(26 * scale_factor))
+	var font_size: int = th.default_font_size
+	th.default_font_size = floori(font_size * scale_factor)
+	th.set_font_size("font_size", "HeaderMedium", floori(font_size * 1.3 * scale_factor))
 
 	# Resize stylebox items
 	for theme_type in th.get_stylebox_type_list():
