@@ -39,6 +39,7 @@ extends Container
 ## Vertical offset from the top edge of the container to position the form.
 @export var top_offset: float = 40.0
 
+
 func _ready():
 	_update_form()
 
@@ -48,7 +49,12 @@ func _notification(what: int) -> void:
 		_resize_children()
 
 
-func _update_form():
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		DisplayServer.virtual_keyboard_hide()
+
+
+func _update_form() -> void:
 	if is_node_ready():
 		var form := %UserFeedbackForm
 		form.show_logo = show_logo
