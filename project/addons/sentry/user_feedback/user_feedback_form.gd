@@ -102,5 +102,5 @@ func _on_cancel_button_pressed() -> void:
 
 
 func _on_visibility_changed() -> void:
-	if visible:
+	if visible and _message_edit:
 		_message_edit.grab_focus()
