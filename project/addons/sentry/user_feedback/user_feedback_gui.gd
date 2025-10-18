@@ -59,6 +59,8 @@ func _ready():
 
 
 func _gui_input(event: InputEvent) -> void:
+	if not visible:
+		return
 	if event is InputEventScreenTouch:
 		# Hide virtual keyboard when user taps outside the feedback UI.
 		DisplayServer.virtual_keyboard_hide()
