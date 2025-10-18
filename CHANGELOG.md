@@ -5,6 +5,7 @@
 ### Features
 
 - Add user feedback API for collecting and sending user feedback to Sentry ([#418](https://github.com/getsentry/sentry-godot/pull/418))
+- Add customizable User Feedback form that can be used for feedback submission, and as an example for custom implementations ([#422](https://github.com/getsentry/sentry-godot/pull/422))
 
 ### Improvements
 

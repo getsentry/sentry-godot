@@ -1,0 +1,120 @@
+[gd_scene load_steps=3 format=3 uid="uid://bdn5fqm81rhy6"]
+
+[ext_resource type="Script" uid="uid://dmtkflr7lmh5h" path="res://addons/sentry/user_feedback/user_feedback_form.gd" id="1_0vncv"]
+[ext_resource type="Texture2D" uid="uid://d0o3nt85ac67i" path="res://addons/sentry/user_feedback/logo.svg" id="2_useou"]
+
+[node name="UserFeedbackForm" type="PanelContainer"]
+offset_right = 376.0
+offset_bottom = 327.0
+script = ExtResource("1_0vncv")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_type_variation = &"MainBoxContainer"
+
+[node name="Title" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/Title"]
+layout_mode = 2
+theme_type_variation = &"HeaderMedium"
+text = "Give Feedback"
+
+[node name="Logo" type="TextureRect" parent="MarginContainer/VBoxContainer/Title"]
+unique_name_in_owner = true
+texture_filter = 3
+layout_mode = 2
+size_flags_horizontal = 10
+texture = ExtResource("2_useou")
+expand_mode = 3
+
+[node name="MessageSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MessageSection"]
+layout_mode = 2
+
+[node name="MessageLabel" type="Label" parent="MarginContainer/VBoxContainer/MessageSection/HBoxContainer"]
+layout_mode = 2
+text = "Message"
+
+[node name="CharacterCounter" type="Label" parent="MarginContainer/VBoxContainer/MessageSection/HBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 10
+text = "0/4096"
+
+[node name="MessageEdit" type="TextEdit" parent="MarginContainer/VBoxContainer/MessageSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+placeholder_text = "Tell us about your issue"
+wrap_mode = 1
+tab_input_mode = false
+
+[node name="NameSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer/NameSection"]
+layout_mode = 2
+text = "Name"
+
+[node name="NameEdit" type="LineEdit" parent="MarginContainer/VBoxContainer/NameSection"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Your name (optional)"
+
+[node name="EmailSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="EmailLabel" type="Label" parent="MarginContainer/VBoxContainer/EmailSection"]
+layout_mode = 2
+text = "Email"
+
+[node name="EmailEdit" type="LineEdit" parent="MarginContainer/VBoxContainer/EmailSection"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Contact email (optional)"
+
+[node name="Spacer3" type="Control" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+
+[node name="Actions" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="CancelButton" type="Button" parent="MarginContainer/VBoxContainer/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 6
+text = "Cancel"
+
+[node name="SubmitButton" type="Button" parent="MarginContainer/VBoxContainer/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 6
+disabled = true
+text = "Submit"
+
+[connection signal="visibility_changed" from="." to="." method="_on_visibility_changed"]
+[connection signal="text_changed" from="MarginContainer/VBoxContainer/MessageSection/MessageEdit" to="." method="_on_message_edit_text_changed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/Actions/CancelButton" to="." method="_on_cancel_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/Actions/SubmitButton" to="." method="_on_submit_button_pressed"]

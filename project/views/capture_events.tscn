@@ -83,6 +83,18 @@ text = "CAPTURE EVENTS"
 horizontal_alignment = 1
 vertical_alignment = 2
 
+[node name="UserFeedback" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="UserFeedback"]
+layout_mode = 2
+text = "User feedback:"
+
+[node name="UserFeedbackButton" type="Button" parent="UserFeedback"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Show User Feedback Form"
+
 [node name="MessageEvent" type="HBoxContainer" parent="."]
 layout_mode = 2
 
@@ -107,14 +119,14 @@ flat = false
 layout_mode = 2
 text = "Capture Event"
 
-[node name="Crash2" type="HBoxContainer" parent="."]
+[node name="Crash" type="HBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Crash2"]
+[node name="Label" type="Label" parent="Crash"]
 layout_mode = 2
 text = "Crash program: "
 
-[node name="CrashButton" type="Button" parent="Crash2"]
+[node name="CrashButton" type="Button" parent="Crash"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "CRASH!"
@@ -122,5 +134,6 @@ text = "CRASH!"
 [connection signal="pressed" from="SetUserButton" to="." method="_on_set_user_button_pressed"]
 [connection signal="pressed" from="GenerateErrors/GenScriptError" to="." method="_on_gen_script_error_pressed"]
 [connection signal="pressed" from="GenerateErrors/GenNativeError" to="." method="_on_gen_native_error_pressed"]
+[connection signal="pressed" from="UserFeedback/UserFeedbackButton" to="." method="_on_user_feedback_button_pressed"]
 [connection signal="pressed" from="MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
-[connection signal="pressed" from="Crash2/CrashButton" to="." method="_on_crash_button_pressed"]
+[connection signal="pressed" from="Crash/CrashButton" to="." method="_on_crash_button_pressed"]

@@ -1,0 +1,35 @@
+[gd_scene load_steps=4 format=3 uid="uid://d3cll30toja8f"]
+
+[ext_resource type="Script" uid="uid://b7c0cq2oneiwv" path="res://addons/sentry/user_feedback/user_feedback_gui.gd" id="1_jugy2"]
+[ext_resource type="PackedScene" uid="uid://bdn5fqm81rhy6" path="res://addons/sentry/user_feedback/user_feedback_form.tscn" id="1_t8jgq"]
+[ext_resource type="Theme" uid="uid://bw0anqwp7xj8t" path="res://addons/sentry/user_feedback/sentry_theme.tres" id="1_u3uht"]
+
+[node name="UserFeedbackGUI" type="Container"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+theme = ExtResource("1_u3uht")
+script = ExtResource("1_jugy2")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+color = Color(0, 0, 0, 0.22745098)
+
+[node name="UserFeedbackForm" parent="." instance=ExtResource("1_t8jgq")]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 1
+
+[node name="SubmitButton" parent="UserFeedbackForm/MarginContainer/VBoxContainer/Actions" index="1"]
+theme_type_variation = &"ActionButton"
+
+[connection signal="feedback_cancelled" from="UserFeedbackForm" to="." method="_on_user_feedback_form_feedback_cancelled"]
+[connection signal="feedback_submitted" from="UserFeedbackForm" to="." method="_on_user_feedback_form_feedback_submitted"]
+
+[editable path="UserFeedbackForm"]
