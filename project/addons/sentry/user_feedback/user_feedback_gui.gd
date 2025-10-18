@@ -26,21 +26,29 @@ extends Container
 		enable_email_input = value
 		_update_form()
 
-## Enabling this option allows feedback UI to scale for different resolutions.
-## Note: The default theme is mastered for 1080p viewport resolution.
-@export var auto_scale_ui: bool = true
-
 ## Minimum number of words required in the feedback message before the feedback can be submitted.
 @export var minimum_words: int = 2:
 	set(value):
 		minimum_words = value
 		_update_form()
 
-## Maximum size constraint for the feedback form (measured in 1080p reference resolution).
-@export var maximum_reference_size := Vector2(600, 600)
+## Maximum size constraint for the feedback form (measured in reference resolution).
+@export var maximum_form_size := Vector2(600, 600)
 
-## Vertical offset from the top edge of the container to position the form (measured in 1080p reference resolution).
+## Vertical offset from the top edge of the container to position the form (measured in reference resolution).
 @export var top_offset: float = 40.0
+
+
+@export_group("Auto Scale UI", "auto_scale")
+
+## Enabling this option allows feedback UI to scale for different resolutions.
+## Note: The default theme is mastered for 1080p viewport resolution.
+@export var auto_scale_enable: bool = true
+
+## Master resolution used as reference for UI scaling calculations.
+## When auto_scale_ui is enabled, the UI will scale proportionally based on
+## the ratio between the current viewport height and this resolution.
+@export var auto_scale_master_resolution: int = 1080
 
 
 @onready var _original_theme: Theme = theme
@@ -70,15 +78,16 @@ func _update_form() -> void:
 		form.enable_name_input = enable_name_input
 
 
-## Centers children horizontally at the top of the screen with an offset.
+## Centers children horizontally at the top of the screen with an offset,
+## and optionally rescales for actual viewport resolution.
 func _resize_children() -> void:
 	var sz := get_size();
 
 	# Calculate scale factor
 	var scale_xy: float = 1.0
-	if auto_scale_ui:
+	if auto_scale_enable:
 		var vp_size: Vector2 = get_viewport().get_visible_rect().size
-		scale_xy = vp_size.y / 1080.0
+		scale_xy = vp_size.y / auto_scale_master_resolution
 		_rescale_theme(scale_xy)
 
 	for i in get_child_count():
@@ -87,8 +96,8 @@ func _resize_children() -> void:
 			continue
 
 		var new_sz := Vector2(
-			minf(sz.x, maximum_reference_size.x * scale_xy),
-			minf(sz.y - top_offset * scale_xy, maximum_reference_size.y * scale_xy))
+			minf(sz.x, maximum_form_size.x * scale_xy),
+			minf(sz.y - top_offset * scale_xy, maximum_form_size.y * scale_xy))
 		new_sz = new_sz.floor()
 
 		var ofs: Vector2 = ((size - new_sz) / 2.0).floor()
