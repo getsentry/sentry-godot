@@ -43,6 +43,7 @@ public:
 	StringName createEvent;
 	StringName releaseEvent;
 	StringName captureEvent;
+	StringName captureFeedback;
 	StringName addFileAttachment;
 	StringName addBytesAttachment;
 

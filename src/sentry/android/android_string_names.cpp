@@ -31,6 +31,7 @@ AndroidStringNames::AndroidStringNames() {
 	createEvent = StringName("createEvent");
 	releaseEvent = StringName("releaseEvent");
 	captureEvent = StringName("captureEvent");
+	captureFeedback = StringName("captureFeedback");
 	addFileAttachment = StringName("addFileAttachment");
 	addBytesAttachment = StringName("addBytesAttachment");
 
