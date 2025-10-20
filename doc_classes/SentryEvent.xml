@@ -19,7 +19,7 @@
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the value of the exception at the specified [param index].
+				Returns the exception value (error message) at the specified [param index], or an empty string if [param index] is out of bounds.
 			</description>
 		</method>
 		<method name="get_tag">
