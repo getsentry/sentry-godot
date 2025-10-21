@@ -5,7 +5,6 @@
 
 #include <chrono>
 #include <deque>
-#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/logger.hpp>
 #include <godot_cpp/classes/script_backtrace.hpp>
 #include <mutex>

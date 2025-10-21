@@ -5,6 +5,7 @@
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
 
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/script.hpp>
