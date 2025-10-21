@@ -9,6 +9,7 @@
 ### Improvements
 
 - Detect when we're inside message logging to prevent SDK print operations through the Godot logger which cause runtime errors. ([#414](https://github.com/getsentry/sentry-godot/pull/414))
+- Relax throttling limits on app startup ([#423](https://github.com/getsentry/sentry-godot/pull/423))
 
 ### Dependencies
 
