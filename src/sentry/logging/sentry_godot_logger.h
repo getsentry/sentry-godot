@@ -41,14 +41,7 @@ private:
 		std::chrono::milliseconds repeated_error_window;
 		std::chrono::milliseconds throttle_window;
 		int throttle_events;
-	} normal_limits;
-
-	// Special limits applied during application startup when higher error density is expected.
-	Limits startup_limits;
-
-	_FORCE_INLINE_ Limits _get_limits() const {
-		return !Engine::get_singleton() || Engine::get_singleton()->get_process_frames() < 10 ? startup_limits : normal_limits;
-	}
+	} limits;
 
 	struct ErrorKey {
 		String message;
@@ -81,6 +74,9 @@ private:
 	void _connect_process_frame();
 	void _disconnect_process_frame();
 	void _process_frame();
+
+	void _apply_startup_limits();
+	void _apply_normal_limits();
 
 protected:
 	static void _bind_methods();

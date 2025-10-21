@@ -252,10 +252,16 @@ void SentryGodotLogger::_process_frame() {
 	// NOTE: It's important not to push errors from within this function to avoid deadlocks.
 	std::lock_guard lock{ error_mutex };
 
+	// After 10 frames have passed, switch from startup limits (more permissive)
+	// to normal limits for error throttling. This allows capturing more errors
+	// during application startup when higher error density is expected.
+	Engine *engine = Engine::get_singleton();
+	if (engine && engine->get_process_frames() == 10) {
+		_apply_normal_limits();
+	}
+
 	// Reset per-frame counter.
 	frame_events = 0;
-
-	Limits limits = _get_limits();
 
 	// Throttling: Remove time points outside of the throttling window.
 	auto now = std::chrono::high_resolution_clock::now();
@@ -267,6 +273,24 @@ void SentryGodotLogger::_process_frame() {
 	if (unlikely(error_timepoints.size() > 100)) {
 		error_timepoints.clear();
 	}
+}
+
+void SentryGodotLogger::_apply_startup_limits() {
+	Ref<SentryLoggerLimits> logger_limits = SentryOptions::get_singleton()->get_logger_limits();
+
+	limits.events_per_frame = MAX(30, logger_limits->events_per_frame);
+	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->repeated_error_window_ms };
+	limits.throttle_events = MAX(30, logger_limits->throttle_events);
+	limits.throttle_window = std::chrono::milliseconds{ 0 };
+}
+
+void SentryGodotLogger::_apply_normal_limits() {
+	Ref<SentryLoggerLimits> logger_limits = SentryOptions::get_singleton()->get_logger_limits();
+
+	limits.events_per_frame = logger_limits->events_per_frame;
+	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->repeated_error_window_ms };
+	limits.throttle_events = logger_limits->throttle_events;
+	limits.throttle_window = std::chrono::milliseconds{ logger_limits->throttle_window_ms };
 }
 
 void SentryGodotLogger::_log_error(const String &p_function, const String &p_file, int32_t p_line,
@@ -294,8 +318,6 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 
 	{
 		std::lock_guard lock{ error_mutex };
-
-		Limits limits = _get_limits();
 
 		// Reject errors based on per-source-line throttling window to prevent
 		// repetitive logging caused by loops or errors recurring in each frame.
@@ -451,18 +473,13 @@ SentryGodotLogger::SentryGodotLogger() {
 		"Sentry: "
 	};
 
-	// Cache limits.
-	Ref<SentryLoggerLimits> logger_limits = SentryOptions::get_singleton()->get_logger_limits();
-	normal_limits.events_per_frame = logger_limits->events_per_frame;
-	normal_limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->repeated_error_window_ms };
-	normal_limits.throttle_events = logger_limits->throttle_events;
-	normal_limits.throttle_window = std::chrono::milliseconds{ logger_limits->throttle_window_ms };
-
-	// Special limits applied during application startup when higher error density is expected.
-	startup_limits.events_per_frame = MAX(30, normal_limits.events_per_frame);
-	startup_limits.repeated_error_window = normal_limits.repeated_error_window;
-	startup_limits.throttle_events = MAX(30, normal_limits.throttle_events);
-	startup_limits.throttle_window = std::chrono::milliseconds{ 0 };
+	// Limits.
+	if (!Engine::get_singleton() || Engine::get_singleton()->get_process_frames() < 10) {
+		// Special limits are applied during application startup when higher error density is expected.
+		_apply_startup_limits();
+	} else {
+		_apply_normal_limits();
+	}
 }
 
 SentryGodotLogger::~SentryGodotLogger() {
