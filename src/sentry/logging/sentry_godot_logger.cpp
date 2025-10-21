@@ -475,7 +475,7 @@ SentryGodotLogger::SentryGodotLogger() {
 
 	// Limits.
 	if (!Engine::get_singleton() || Engine::get_singleton()->get_process_frames() < 10) {
-		// Special limits are applied during application startup when higher error density is expected.
+		// Apply special limits during application startup when higher error density is expected.
 		_apply_startup_limits();
 	} else {
 		_apply_normal_limits();
