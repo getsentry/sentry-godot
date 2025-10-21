@@ -485,8 +485,7 @@ void SentryGodotLogger::_notification(int p_what) {
 SentryGodotLogger::SentryGodotLogger() {
 	logger_name = "SentryGodotLogger";
 
-	// TODO: Update according to spec.
-	log_attributes["sentry.origin"] = "auto.godot.logger";
+	log_attributes["sentry.origin"] = "auto.log.godot";
 
 	// Filtering setup.
 	filter_by_prefix = {
