@@ -84,6 +84,8 @@ public:
 	Ref<SentryEvent> create_event() const;
 	String capture_event(const Ref<SentryEvent> &p_event);
 
+	void capture_feedback(const Ref<SentryFeedback> &p_feedback);
+
 	void add_attachment(const Ref<SentryAttachment> &p_attachment);
 
 	// * Hidden API methods -- used in testing

@@ -2,9 +2,23 @@
 
 ## Unreleased
 
+### Features
+
+- Add user feedback API for collecting and sending user feedback to Sentry ([#418](https://github.com/getsentry/sentry-godot/pull/418))
+- Access event exception values in `before_send` handler ([#415](https://github.com/getsentry/sentry-godot/pull/415))
+
 ### Improvements
 
 - Detect when we're inside message logging to prevent SDK print operations through the Godot logger which cause runtime errors. ([#414](https://github.com/getsentry/sentry-godot/pull/414))
+
+### Dependencies
+
+- Bump Native SDK from v0.11.2 to v0.11.3 ([#420](https://github.com/getsentry/sentry-godot/pull/420))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0113)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.11.2...0.11.3)
+- Bump Cocoa SDK from v8.56.2 to v8.57.0 ([#419](https://github.com/getsentry/sentry-godot/pull/419))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8570)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.56.2...8.57.0)
 
 ## 1.0.0
 

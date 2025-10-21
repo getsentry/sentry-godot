@@ -309,6 +309,31 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	return _uuid_as_string(uuid);
 }
 
+void NativeSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
+	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
+	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
+
+	sentry_value_t feedback = sentry_value_new_object();
+
+	sentry_value_set_by_key(feedback, "message",
+			sentry_value_new_string(p_feedback->get_message().utf8()));
+
+	if (!p_feedback->get_contact_email().is_empty()) {
+		sentry_value_set_by_key(feedback, "contact_email",
+				sentry_value_new_string(p_feedback->get_contact_email().utf8()));
+	}
+	if (!p_feedback->get_name().is_empty()) {
+		sentry_value_set_by_key(feedback, "name",
+				sentry_value_new_string(p_feedback->get_name().utf8()));
+	}
+	if (!p_feedback->get_associated_event_id().is_empty()) {
+		sentry_value_set_by_key(feedback, "associated_event_id",
+				sentry_value_new_string(p_feedback->get_associated_event_id().ascii()));
+	}
+
+	sentry_capture_feedback(feedback);
+}
+
 void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());

@@ -44,6 +44,7 @@ public:
 	StringName createEvent;
 	StringName releaseEvent;
 	StringName captureEvent;
+	StringName captureFeedback;
 	StringName addFileAttachment;
 	StringName addBytesAttachment;
 
@@ -76,6 +77,9 @@ public:
 	StringName releaseException;
 	StringName exceptionAppendStackFrame;
 	StringName eventAddException;
+	StringName eventGetExceptionCount;
+	StringName eventSetExceptionValue;
+	StringName eventGetExceptionValue;
 
 	// Breadcrumbs.
 	StringName createBreadcrumb;

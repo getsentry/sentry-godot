@@ -9,6 +9,19 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_exception_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of exceptions stored in this event. When multiple exceptions are present, they represent a chain of related exceptions ordered from oldest to newest.
+			</description>
+		</method>
+		<method name="get_exception_value" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the exception value (error message) at the specified [param index], or an empty string if [param index] is out of bounds.
+			</description>
+		</method>
 		<method name="get_tag">
 			<return type="String" />
 			<param index="0" name="key" type="String" />
@@ -28,6 +41,14 @@
 			<param index="0" name="key" type="String" />
 			<description>
 				Removes the tag with the specified [param key].
+			</description>
+		</method>
+		<method name="set_exception_value">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="value" type="String" />
+			<description>
+				Sets the value of the exception at the specified [param index].
 			</description>
 		</method>
 		<method name="set_tag">

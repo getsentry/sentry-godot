@@ -6,6 +6,7 @@
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
+#include "sentry/sentry_feedback.h"
 #include "sentry/sentry_user.h"
 
 #include <godot_cpp/variant/dictionary.hpp>
@@ -39,6 +40,8 @@ public:
 
 	virtual Ref<SentryEvent> create_event() = 0;
 	virtual String capture_event(const Ref<SentryEvent> &p_event) = 0;
+
+	virtual void capture_feedback(const Ref<SentryFeedback> &p_feedback) = 0;
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) = 0;
 

@@ -38,7 +38,7 @@ func test_throttling_limits() -> void:
 	assert_int(_num_events).is_equal(2)
 
 	# Wait for throttling window to expire.
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.1).timeout
 
 	push_error("dummy-error")
 	push_error("dummy-error")

@@ -15,8 +15,10 @@ import io.sentry.SentryLogLevel
 import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
 import io.sentry.logger.SentryLogParameters
+import io.sentry.protocol.Feedback
 import io.sentry.protocol.Message
 import io.sentry.protocol.SentryException
+import io.sentry.protocol.SentryId
 import io.sentry.protocol.SentryStackFrame
 import io.sentry.protocol.SentryStackTrace
 import io.sentry.protocol.User
@@ -336,6 +338,17 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun captureFeedback(message: String, contactEmail: String, name: String, associatedEventId: String) {
+        val feedback = Feedback(message)
+        feedback.contactEmail = contactEmail.ifEmpty { null }
+        feedback.name = name.ifEmpty { null }
+        if (associatedEventId.isNotEmpty()) {
+            feedback.setAssociatedEventId(SentryId(associatedEventId))
+        }
+        Sentry.captureFeedback(feedback)
+    }
+
+    @UsedByGodot
     fun eventGetId(eventHandle: Int): String {
         val id = getEvent(eventHandle)?.eventId ?: return ""
         return id.toString()
@@ -529,6 +542,21 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             event.exceptions = mutableListOf()
         }
         event.exceptions?.add(exception)
+    }
+
+    @UsedByGodot
+    fun eventGetExceptionCount(eventHandle: Int): Int {
+        return getEvent(eventHandle)?.exceptions?.size ?: 0
+    }
+
+    @UsedByGodot
+    fun eventSetExceptionValue(eventHandle: Int, index: Int, value: String) {
+        getEvent(eventHandle)?.exceptions?.getOrNull(index)?.value = value
+    }
+
+    @UsedByGodot
+    fun eventGetExceptionValue(eventHandle: Int, index: Int): String {
+        return getEvent(eventHandle)?.exceptions?.getOrNull(index)?.value ?: ""
     }
 
     @UsedByGodot
