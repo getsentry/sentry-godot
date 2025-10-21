@@ -147,6 +147,7 @@
 	<members>
 		<member name="logger" type="SentryLogger" setter="" getter="get_logger">
 			Provides access to Sentry's structured logging API. Use this to send log messages to Sentry when [member SentryExperimental.enable_logs] is enabled. The dedicated logger API offers methods for different log levels and enables you to capture structured data with your log messages.
+			See [SentryLogger] for more details.
 		</member>
 	</members>
 	<constants>

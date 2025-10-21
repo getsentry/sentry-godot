@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SentryLog" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		Sentry Logs entry.
+		Log entry in Sentry.
 	</brief_description>
 	<description>
-		[SentryLog] represents a structured log entry in Sentry Logs.
-		To learn more about Sentry Logs, visit the [url=https://docs.sentry.io/product/explore/logs/]Sentry Logs[/url] product guide.
+		[SentryLog] represents a single entry in Sentry Logs (aka structured logging).
+		To learn more about logs in Sentry, visit the [url=https://docs.sentry.io/product/explore/logs/]Sentry Logs[/url] product guide.
 	</description>
 	<tutorials>
 	</tutorials>
