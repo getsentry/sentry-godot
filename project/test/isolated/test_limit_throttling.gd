@@ -27,6 +27,10 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 
 ## Only two errors should be logged within the assigned time window.
 func test_throttling_limits() -> void:
+	# Wait for special startup limits to expire.
+	while Engine.get_process_frames() < 10:
+		await get_tree().process_frame
+
 	monitor_signals(self, false)
 
 	push_error("dummy-error")
