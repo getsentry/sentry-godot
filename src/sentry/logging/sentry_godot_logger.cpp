@@ -5,7 +5,6 @@
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
 
-#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/script.hpp>
@@ -256,6 +255,8 @@ void SentryGodotLogger::_process_frame() {
 	// Reset per-frame counter.
 	frame_events = 0;
 
+	Limits limits = _get_limits();
+
 	// Throttling: Remove time points outside of the throttling window.
 	auto now = std::chrono::high_resolution_clock::now();
 	while (event_times.size() && now - event_times.front() >= limits.throttle_window) {
@@ -293,6 +294,8 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 
 	{
 		std::lock_guard lock{ error_mutex };
+
+		Limits limits = _get_limits();
 
 		// Reject errors based on per-source-line throttling window to prevent
 		// repetitive logging caused by loops or errors recurring in each frame.
@@ -450,10 +453,16 @@ SentryGodotLogger::SentryGodotLogger() {
 
 	// Cache limits.
 	Ref<SentryLoggerLimits> logger_limits = SentryOptions::get_singleton()->get_logger_limits();
-	limits.events_per_frame = logger_limits->events_per_frame;
-	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->repeated_error_window_ms };
-	limits.throttle_events = logger_limits->throttle_events;
-	limits.throttle_window = std::chrono::milliseconds{ logger_limits->throttle_window_ms };
+	normal_limits.events_per_frame = logger_limits->events_per_frame;
+	normal_limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->repeated_error_window_ms };
+	normal_limits.throttle_events = logger_limits->throttle_events;
+	normal_limits.throttle_window = std::chrono::milliseconds{ logger_limits->throttle_window_ms };
+
+	// Special limits applied during application startup when higher error density is expected.
+	startup_limits.events_per_frame = MAX(30, normal_limits.events_per_frame);
+	startup_limits.repeated_error_window = normal_limits.repeated_error_window;
+	startup_limits.throttle_events = MAX(30, normal_limits.throttle_events);
+	startup_limits.throttle_window = std::chrono::milliseconds{ 0 };
 }
 
 SentryGodotLogger::~SentryGodotLogger() {

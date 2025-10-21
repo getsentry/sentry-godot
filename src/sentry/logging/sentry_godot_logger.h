@@ -5,6 +5,7 @@
 
 #include <chrono>
 #include <deque>
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/logger.hpp>
 #include <godot_cpp/classes/script_backtrace.hpp>
 #include <mutex>
@@ -40,7 +41,14 @@ private:
 		std::chrono::milliseconds repeated_error_window;
 		std::chrono::milliseconds throttle_window;
 		int throttle_events;
-	} limits;
+	} normal_limits;
+
+	// Special limits applied during application startup when higher error density is expected.
+	Limits startup_limits;
+
+	_FORCE_INLINE_ Limits _get_limits() const {
+		return Engine::get_singleton()->get_process_frames() < 10 ? startup_limits : normal_limits;
+	}
 
 	struct ErrorKey {
 		String message;
