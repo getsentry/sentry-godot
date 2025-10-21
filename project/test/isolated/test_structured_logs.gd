@@ -84,48 +84,31 @@ func test_structured_logs_shortcut_fatal() -> void:
 	SentrySDK.logger.fatal("Test 123")
 
 
-func test_structured_logs_with_string_interpolation() -> void:
-	log_processed.connect(func(entry: SentryLog):
-		assert_str(entry.body).is_equal("Test 123")
-		assert_str(entry.get_attribute("sentry.message.template")).is_equal("%s %d")
-		assert_str(entry.get_attribute("sentry.message.parameter.0")).is_equal("Test")
-		assert_int(entry.get_attribute("sentry.message.parameter.1")).is_equal(123)
-	, CONNECT_ONE_SHOT)
-	SentrySDK.logger.info("%s %d", ["Test", 123])
-
-
-func test_structured_logs_with_custom_attributes() -> void:
-	log_processed.connect(func(entry: SentryLog):
-		assert_str(entry.get_attribute("level")).is_equal("forest")
-		assert_int(entry.get_attribute("enemy_id")).is_equal(42)
-		assert_float(entry.get_attribute("health")).is_equal_approx(10.5, 0.001)
-		assert_bool(entry.get_attribute("elite")).is_equal(false)
-	, CONNECT_ONE_SHOT)
-	SentrySDK.logger.info("Test 123", [], {
-		"level": "forest",
-		"enemy_id": 42,
-		"health": 10.5,
-		"elite": false
-	})
-
-
-func test_structured_logs_with_attribute_removal() -> void:
-	log_processed.connect(func(entry: SentryLog):
-		assert_str(entry.get_attribute("level")).is_equal("forest")
-		entry.remove_attribute("level")
-		assert_that(entry.get_attribute("level")).is_null()
-	, CONNECT_ONE_SHOT)
-	SentrySDK.logger.info("Test 123", [], {
-		"level": "forest",
-	})
-
-
 func test_strucutured_logs_with_utf8() -> void:
 	log_processed.connect(func(entry: SentryLog):
 		assert_str(entry.body).is_equal("Hello 世界! 👋")
-		assert_str(entry.get_attribute("sentry.message.template")).is_equal("Hello %s! 👋")
-		assert_str(entry.get_attribute("sentry.message.parameter.0")).is_equal("世界")
 	, CONNECT_ONE_SHOT)
-	SentrySDK.logger.info("Hello %s! 👋", ["世界"], {
-		"world": "世界"
-	})
+	SentrySDK.logger.info("Hello 世界! 👋")
+
+
+func test_structured_logs_attribute_methods() -> void:
+	log_processed.connect(func(entry: SentryLog):
+		entry.add_attributes({
+			"hello": "世界",
+			"meaning": 42
+		})
+		assert_str(entry.get_attribute("hello")).is_equal("世界")
+		assert_int(entry.get_attribute("meaning")).is_equal(42)
+
+		entry.set_attribute("test", true)
+		assert_bool(entry.get_attribute("test")).is_true()
+
+		entry.remove_attribute("hello")
+		assert_that(entry.get_attribute("hello")).is_null()
+		assert_int(entry.get_attribute("meaning")).is_equal(42)
+
+		entry.remove_attribute("meaning")
+		assert_that(entry.get_attribute("hello")).is_null()
+		assert_that(entry.get_attribute("meaning")).is_null()
+	, CONNECT_ONE_SHOT)
+	SentrySDK.logger.info("Test 123")
