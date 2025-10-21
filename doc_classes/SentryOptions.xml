@@ -63,6 +63,9 @@
 			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a configuration callback using manual initialization (see [method SentrySDK.init]).
 			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/environments/]Environments documentation[/url].
 		</member>
+		<member name="experimental" type="SentryExperimental" setter="" getter="get_experimental">
+			Configures experimental features. Use this to enable and configure features that are not yet stable or generally available in Sentry.
+		</member>
 		<member name="logger_breadcrumb_mask" type="int" setter="set_logger_breadcrumb_mask" getter="get_logger_breadcrumb_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="15">
 			Specifies the types of errors captured as breadcrumbs. Accepts a single value or a bitwise combination of [enum GodotErrorMask] masks.
 		</member>

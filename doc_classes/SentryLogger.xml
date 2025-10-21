@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryLogger" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Sends log messages to Sentry.
+	</brief_description>
+	<description>
+		A dedicated API for logging messages to Sentry's structured logging system. Access this API through [member SentrySDK.logger]. [SentryLogger] provides methods for different log levels (trace, debug, info, warn, error, fatal) and enables structured data capture with your log messages.
+		[b]Note:[/b] The [member SentryExperimental.enable_logs] option in [member SentryOptions.experimental] must be enabled for logging functionality to work.
+		[codeblock]
+		SentrySDK.logger.info("Info message")
+		[/codeblock]
+		To learn more about logs in Sentry, check out the [url=https://docs.sentry.io/product/explore/logs/]Sentry Logs[/url] product guide.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="debug">
+			<return type="void" />
+			<param index="0" name="body" type="String" />
+			<description>
+				Logs a debug message.
+			</description>
+		</method>
+		<method name="error">
+			<return type="void" />
+			<param index="0" name="body" type="String" />
+			<description>
+				Logs an error message.
+			</description>
+		</method>
+		<method name="fatal">
+			<return type="void" />
+			<param index="0" name="body" type="String" />
+			<description>
+				Logs a fatal message.
+			</description>
+		</method>
+		<method name="info">
+			<return type="void" />
+			<param index="0" name="body" type="String" />
+			<description>
+				Logs an info message.
+			</description>
+		</method>
+		<method name="log">
+			<return type="void" />
+			<param index="0" name="level" type="int" enum="SentryLog.LogLevel" />
+			<param index="1" name="body" type="String" />
+			<description>
+				Logs a message with the specified level. See [enum SentryLog.LogLevel].
+				[codeblock]
+				SentrySDK.logger.log(SentryLog.LOG_LEVEL_DEBUG, "Debug message")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="trace">
+			<return type="void" />
+			<param index="0" name="body" type="String" />
+			<description>
+				Logs a trace message.
+			</description>
+		</method>
+		<method name="warn">
+			<return type="void" />
+			<param index="0" name="body" type="String" />
+			<description>
+				Logs a warning message.
+			</description>
+		</method>
+	</methods>
+</class>
