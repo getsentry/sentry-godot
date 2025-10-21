@@ -47,7 +47,7 @@ private:
 	Limits startup_limits;
 
 	_FORCE_INLINE_ Limits _get_limits() const {
-		return Engine::get_singleton()->get_process_frames() < 10 ? startup_limits : normal_limits;
+		return !Engine::get_singleton() || Engine::get_singleton()->get_process_frames() < 10 ? startup_limits : normal_limits;
 	}
 
 	struct ErrorKey {
