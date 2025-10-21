@@ -4,7 +4,14 @@ extends SentryTestSuite
 
 signal callback_processed
 
+var before_send: Callable # (event: SentryEvent) -> SentryEvent
+
 var created_id: String
+
+
+func _before_send(event: SentryEvent) -> SentryEvent:
+	callback_processed.emit.call_deferred()
+	return before_send.call(event)
 
 
 @warning_ignore("unused_parameter")
@@ -34,18 +41,30 @@ func _capture_event() ->  void:
 	event.set_tag("custom-tag", "custom-tag-value")
 	created_id = event.id
 
+	before_send = func(ev: SentryEvent) -> SentryEvent:
+		assert_str(ev.message).is_equal("integrity-check")
+		assert_int(ev.level).is_equal(SentrySDK.LEVEL_DEBUG)
+		assert_str(ev.logger).is_equal("custom-logger")
+		assert_str(ev.release).is_equal("custom-release")
+		assert_str(ev.dist).is_equal("custom-dist")
+		assert_str(ev.environment).is_equal("custom-environment")
+		assert_str(ev.get_tag("custom-tag")).is_equal("custom-tag-value")
+		assert_str(ev.id).is_equal(created_id)
+		assert_bool(ev.is_crash()).is_false()
+		return null
+
 	SentrySDK.capture_event(event)
 
 
-func _before_send(event: SentryEvent) -> SentryEvent:
-	assert_str(event.message).is_equal("integrity-check")
-	assert_int(event.level).is_equal(SentrySDK.LEVEL_DEBUG)
-	assert_str(event.logger).is_equal("custom-logger")
-	assert_str(event.release).is_equal("custom-release")
-	assert_str(event.dist).is_equal("custom-dist")
-	assert_str(event.environment).is_equal("custom-environment")
-	assert_str(event.get_tag("custom-tag")).is_equal("custom-tag-value")
-	assert_str(event.id).is_equal(created_id)
-	assert_bool(event.is_crash()).is_false()
-	callback_processed.emit.call_deferred()
-	return null # discard event
+func test_event_exception_interface() -> void:
+	var error_message := "Testing 123"
+
+	before_send = func(ev: SentryEvent) -> SentryEvent:
+		assert_int(ev.get_exception_count()).is_greater_equal(1)
+		assert_str(ev.get_exception_value(0)).is_equal("Testing 123")
+		ev.set_exception_value(0, "New value")
+		assert_str(ev.get_exception_value(0)).is_equal("New value")
+		return null
+
+	push_error(error_message)
+	await assert_signal(self).is_emitted("callback_processed")
