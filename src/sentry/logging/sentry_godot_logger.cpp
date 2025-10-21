@@ -410,7 +410,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 			attributes["error.rationale"] = p_rationale;
 		}
 
-		SentrySDK::get_singleton()->get_internal_sdk()->log(log_level, body, Array(), attributes);
+		SentrySDK::get_singleton()->get_internal_sdk()->log(log_level, body, attributes);
 	}
 }
 
@@ -448,7 +448,7 @@ void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 
 	if (as_log) {
 		sentry::LogLevel level = p_error ? LOG_LEVEL_ERROR : LOG_LEVEL_INFO;
-		SentrySDK::get_singleton()->get_internal_sdk()->log(level, processed_message, Array(), log_attributes);
+		SentrySDK::get_singleton()->get_internal_sdk()->log(level, processed_message, log_attributes);
 	}
 
 	if (as_breadcrumb) {
@@ -485,6 +485,7 @@ void SentryGodotLogger::_notification(int p_what) {
 SentryGodotLogger::SentryGodotLogger() {
 	logger_name = "SentryGodotLogger";
 
+	// TODO: Update according to spec.
 	log_attributes["sentry.origin"] = "auto.godot.logger";
 
 	// Filtering setup.

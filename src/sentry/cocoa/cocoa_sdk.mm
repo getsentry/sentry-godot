@@ -102,7 +102,7 @@ void CocoaSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	[objc::SentrySDK addBreadcrumb:crumb->get_cocoa_breadcrumb()];
 }
 
-void CocoaSDK::log(LogLevel p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+void CocoaSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
 	if (p_body.is_empty()) {
 		return;
 	}
@@ -110,30 +110,16 @@ void CocoaSDK::log(LogLevel p_level, const String &p_body, const Array &p_params
 	String body = p_body;
 
 	NSMutableDictionary *attributes = nil;
-	bool has_params = !p_params.is_empty();
-	bool has_attributes = !p_attributes.is_empty();
 
-	if (has_params || has_attributes) {
-		attributes = [[NSMutableDictionary alloc] initWithCapacity:p_params.size() + p_attributes.size() + 1];
+	if (!p_attributes.is_empty()) {
+		attributes = [[NSMutableDictionary alloc] initWithCapacity:p_attributes.size() + 1];
 
-		if (has_params) {
-			[attributes setObject:string_to_objc(body) forKey:@"sentry.message.template"];
-			for (int i = 0; i < p_params.size(); i++) {
-				NSString *objc_key = [NSString stringWithFormat:@"sentry.message.parameter.%d", i];
-				NSObject *objc_value = _as_attribute(p_params[i]);
-				[attributes setObject:objc_value forKey:objc_key];
-			}
-			body = body % p_params;
-		}
-
-		if (has_attributes) {
-			const Array &keys = p_attributes.keys();
-			for (int i = 0; i < keys.size(); i++) {
-				const String &key = keys[i];
-				const NSString *objc_key = [NSString stringWithUTF8String:key.utf8()];
-				const NSObject *objc_value = _as_attribute(p_attributes[key]);
-				[attributes setObject:objc_value forKey:objc_key];
-			}
+		const Array &keys = p_attributes.keys();
+		for (int i = 0; i < keys.size(); i++) {
+			const String &key = keys[i];
+			const NSString *objc_key = [NSString stringWithUTF8String:key.utf8()];
+			const NSObject *objc_value = _as_attribute(p_attributes[key]);
+			[attributes setObject:objc_value forKey:objc_key];
 		}
 	}
 

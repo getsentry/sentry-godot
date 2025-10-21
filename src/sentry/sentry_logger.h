@@ -16,13 +16,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	void log(LogLevel p_level, const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
-	void trace(const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
-	void debug(const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
-	void info(const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
-	void warn(const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
-	void error(const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
-	void fatal(const String &p_body, const Array &p_params = Array(), const Dictionary &p_attributes = Dictionary());
+	void log(LogLevel p_level, const String &p_body);
+	void trace(const String &p_body);
+	void debug(const String &p_body);
+	void info(const String &p_body);
+	void warn(const String &p_body);
+	void error(const String &p_body);
+	void fatal(const String &p_body);
 
 	SentryLogger();
 };

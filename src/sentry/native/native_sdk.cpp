@@ -202,46 +202,15 @@ void NativeSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	sentry_add_breadcrumb(native_crumb);
 }
 
-void NativeSDK::log(LogLevel p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+void NativeSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
 	if (p_body.is_empty()) {
 		return;
 	}
 
 	String body = p_body;
 
-	// BLOCKER: Unable to pass structured information to native without support for attributes.
-
-	// sentry_value_t log_entry = sentry_value_new_object();
-	// sentry_value_set_by_key(log_entry, "level",
-	// 		sentry_value_new_string(level_to_cstring(p_level)));
-
-	bool has_params = !p_params.is_empty();
-	// bool has_attributes = !p_attributes.is_empty();
-
-	// if (has_params || has_attributes) {
-	// 	sentry_value_t attributes = sentry_value_new_object();
-
-	if (has_params) {
-		// sentry_value_set_by_key(attributes, "sentry.message.template",
-		// 		variant_to_attribute(body));
-		// for (int i = 0; i < p_params.size(); i++) {
-		// 	char key_buffer[64];
-		// 	snprintf(key_buffer, sizeof(key_buffer), "sentry.message.parameter.%d", i);
-		// 	sentry_value_set_by_key(attributes, key_buffer, variant_to_attribute(p_params[i]));
-		// }
-
-		body = body % p_params;
-	}
-
-	// 	if (has_attributes) {
-	// 		const Array &keys = p_attributes.keys();
-	// 		for (int i = 0; i < keys.size(); i++) {
-	// 			const String &key = keys[i];
-	// 			sentry_value_set_by_key(attributes, key.utf8(),
-	// 					variant_to_attribute(p_attributes[key]));
-	// 		}
-	// 	}
-	// }
+	// TODO: Native doesn't support passing attributes yet.
+	// See:  https://github.com/getsentry/sentry-native/issues/1405
 
 	switch (p_level) {
 		case LOG_LEVEL_TRACE: {

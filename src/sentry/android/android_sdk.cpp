@@ -129,7 +129,7 @@ void AndroidSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	android_plugin->call(ANDROID_SN(addBreadcrumb), crumb->get_handle());
 }
 
-void AndroidSDK::log(LogLevel p_level, const String &p_body, const Array &p_params, const Dictionary &p_attributes) {
+void AndroidSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
 	ERR_FAIL_NULL(android_plugin);
 
 	if (p_body.is_empty()) {
@@ -138,21 +138,9 @@ void AndroidSDK::log(LogLevel p_level, const String &p_body, const Array &p_para
 
 	String body = p_body;
 
-	bool has_params = !p_params.is_empty();
-	bool has_attributes = !p_attributes.is_empty();
-
 	Dictionary attributes;
 
-	if (has_params) {
-		attributes["sentry.message.template"] = body;
-		for (int i = 0; i < p_params.size(); i++) {
-			String key = "sentry.message.parameter." + itos(i);
-			attributes[key] = _as_attribute(p_params[i]);
-		}
-		body = body % p_params;
-	}
-
-	if (has_attributes) {
+	if (!p_attributes.is_empty()) {
 		const Array &keys = p_attributes.keys();
 		for (int i = 0; i < keys.size(); i++) {
 			const String &key = keys[i];
