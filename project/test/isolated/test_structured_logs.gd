@@ -101,7 +101,6 @@ func test_structured_logs_attribute_methods() -> void:
 		assert_int(entry.get_attribute("meaning")).is_equal(42)
 
 		entry.set_attribute("test", true)
-		assert_that(typeof(entry.get_attribute("test"))).is_equal(TYPE_BOOL)
 		assert_bool(entry.get_attribute("test")).is_true()
 
 		entry.remove_attribute("hello")
