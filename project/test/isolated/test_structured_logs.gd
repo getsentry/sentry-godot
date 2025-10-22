@@ -94,18 +94,23 @@ func test_strucutured_logs_with_utf8() -> void:
 func test_structured_logs_attribute_methods() -> void:
 	log_processed.connect(func(entry: SentryLog):
 		entry.add_attributes({
-			"hello": "世界",
-			"meaning": 42
+			"hello": "世界", # string
+			"meaning": 42 # integer
 		})
 		assert_str(entry.get_attribute("hello")).is_equal("世界")
 		assert_int(entry.get_attribute("meaning")).is_equal(42)
 
-		entry.set_attribute("test", true)
+		assert_str(entry.get_attribute("hello")).is_equal("世界")
+		assert_int(entry.get_attribute("meaning")).is_equal(42)
+
+		entry.set_attribute("test", true) # boolean
 		assert_bool(entry.get_attribute("test")).is_true()
+
+		entry.set_attribute("PI", 3.14) # double
+		assert_float(entry.get_attribute("PI")).is_equal_approx(3.14, 0.001)
 
 		entry.remove_attribute("hello")
 		assert_that(entry.get_attribute("hello")).is_null()
-		assert_int(entry.get_attribute("meaning")).is_equal(42)
 
 		entry.remove_attribute("meaning")
 		assert_that(entry.get_attribute("hello")).is_null()
