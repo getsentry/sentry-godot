@@ -13,7 +13,7 @@ using namespace godot;
 
 namespace sentry {
 
-// Logger integration options.
+// Godot logger integration limits.
 class SentryLoggerLimits : public RefCounted {
 	GDCLASS(SentryLoggerLimits, RefCounted);
 
