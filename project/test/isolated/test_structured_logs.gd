@@ -44,6 +44,14 @@ func test_structured_logs_levels() -> void:
 		SentrySDK.logger.log(level, "Test 123")
 
 
+func test_structured_logs_shortcut_trace() -> void:
+	log_processed.connect(func(entry: SentryLog):
+		assert_str(entry.body).is_equal("Test 123")
+		assert_int(entry.level).is_equal(SentryLog.LOG_LEVEL_TRACE)
+	, CONNECT_ONE_SHOT)
+	SentrySDK.logger.trace("Test 123")
+
+
 func test_structured_logs_shortcut_debug() -> void:
 	log_processed.connect(func(entry: SentryLog):
 		assert_str(entry.body).is_equal("Test 123")
