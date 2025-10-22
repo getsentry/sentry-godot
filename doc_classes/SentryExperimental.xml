@@ -13,7 +13,7 @@
 		<member name="before_send_log" type="Callable" setter="set_before_send_log" getter="get_before_send_log" default="Callable()">
 			If assigned, this callback will be called before sending a log message to Sentry. It can be used to modify the log message or prevent it from being sent.
 			[codeblock]
-			func _before_send_log(log_entry: SentryLog) -> SentryLog:
+			func _before_send_log(log_entry: SentryLog) -&gt; SentryLog:
 				# Filter junk.
 				if log_entry.body == "Junk message":
 					return null
