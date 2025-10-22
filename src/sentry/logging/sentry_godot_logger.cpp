@@ -398,11 +398,13 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 		LogLevel log_level = sentry::get_sentry_log_level_for_godot_error_type((GodotErrorType)p_error_type);
 
 		Dictionary attributes;
-		attributes["sentry.event_id"] = event_uuid;
 		attributes["error.function"] = p_function;
 		attributes["error.file"] = p_file;
 		attributes["error.line"] = p_line;
 		attributes["error.type"] = error_type;
+		if (!event_uuid.is_empty()) {
+			attributes["sentry.event_id"] = event_uuid;
+		}
 		if (!p_code.is_empty()) {
 			attributes["error.code"] = p_code;
 		}
