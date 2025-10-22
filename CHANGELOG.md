@@ -5,11 +5,13 @@
 ### Features
 
 - Add user feedback API for collecting and sending user feedback to Sentry ([#418](https://github.com/getsentry/sentry-godot/pull/418))
+- Access event exception values in `before_send` handler ([#415](https://github.com/getsentry/sentry-godot/pull/415))
 - Add customizable User Feedback form that can be used for feedback submission, and as an example for custom implementations ([#422](https://github.com/getsentry/sentry-godot/pull/422))
 
 ### Improvements
 
 - Detect when we're inside message logging to prevent SDK print operations through the Godot logger which cause runtime errors. ([#414](https://github.com/getsentry/sentry-godot/pull/414))
+- Relax throttling limits on app startup ([#423](https://github.com/getsentry/sentry-godot/pull/423))
 
 ### Dependencies
 
