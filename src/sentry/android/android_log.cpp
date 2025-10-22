@@ -35,7 +35,7 @@ Variant AndroidLog::get_attribute(const String &p_name) const {
 void AndroidLog::set_attribute(const String &p_name, const Variant &p_value) {
 	ERR_FAIL_NULL(android_plugin);
 
-	String value = p_value;
+	Variant value = p_value;
 	String type;
 	switch (p_value.get_type()) {
 		case Variant::BOOL: {
@@ -48,7 +48,7 @@ void AndroidLog::set_attribute(const String &p_name, const Variant &p_value) {
 			type = "double";
 		} break;
 		default: {
-			value = p_value.stringify();
+			value = (Variant)p_value.stringify();
 			type = "string";
 		} break;
 	}
