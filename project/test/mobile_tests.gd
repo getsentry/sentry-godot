@@ -87,6 +87,7 @@ func test_with_error() -> void:
 func test_structured_logs() -> void:
 	var logs: Array[Dictionary] = []
 
+	# NOTE: before_send_log is defined in project_main_loop.gd
 	Engine.get_main_loop().before_send_log.connect(func(entry: SentryLog):
 		var data := {
 			"level": entry.level,
