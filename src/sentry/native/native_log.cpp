@@ -44,7 +44,7 @@ void NativeLog::set_level(LogLevel p_level) {
 			sentry_value_set_by_key(native_log, "level", sentry_value_new_string("info"));
 		} break;
 		case LOG_LEVEL_WARN: {
-			sentry_value_set_by_key(native_log, "level", sentry_value_new_string("warning"));
+			sentry_value_set_by_key(native_log, "level", sentry_value_new_string("warn"));
 		} break;
 		case LOG_LEVEL_ERROR: {
 			sentry_value_set_by_key(native_log, "level", sentry_value_new_string("error"));
