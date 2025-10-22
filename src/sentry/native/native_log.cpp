@@ -83,7 +83,7 @@ Variant NativeLog::get_attribute(const String &p_name) const {
 	const char *type_cstr = sentry_value_as_string(type);
 
 	if (strcmp(type_cstr, "boolean") == 0) {
-		return (bool)sentry_value_as_int32(value);
+		return (bool)sentry_value_is_true(value);
 	} else if (strcmp(type_cstr, "integer") == 0) {
 		return sentry_value_as_int64(value);
 	} else if (strcmp(type_cstr, "double") == 0) {
