@@ -22,21 +22,21 @@ signal feedback_submitted(feedback: SentryFeedback)
 signal feedback_cancelled()
 
 ## Whether to display Sentry logo in the top right corner.
-@export var show_logo: bool = true:
+@export var logo_visible: bool = true:
 	set(value):
-		show_logo = value
+		logo_visible = value
 		_update_controls()
 
 ## Whether to display name input field.
-@export var enable_name_input: bool = true:
+@export var name_visible: bool = true:
 	set(value):
-		enable_name_input = value
+		name_visible = value
 		_update_controls()
 
 ## Whether to display email input field.
-@export var enable_email_input: bool = true:
+@export var email_visible: bool = true:
 	set(value):
-		enable_email_input = value
+		email_visible = value
 		_update_controls()
 
 ## Minimum number of words required in the feedback message before the feedback can be submitted.
@@ -57,9 +57,9 @@ func _ready() -> void:
 
 func _update_controls() -> void:
 	if is_node_ready():
-		%Logo.visible = show_logo
-		%EmailSection.visible = enable_email_input
-		%NameSection.visible = enable_name_input
+		%Logo.visible = logo_visible
+		%EmailSection.visible = email_visible
+		%NameSection.visible = name_visible
 
 
 func _on_submit_button_pressed() -> void:

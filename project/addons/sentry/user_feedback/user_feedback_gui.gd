@@ -8,22 +8,22 @@ extends Container
 
 
 ## Whether to display Sentry logo in the top right corner.
-@export var show_logo: bool = true:
+@export var logo_visible: bool = true:
 	set(value):
-		show_logo = value
+		logo_visible = value
 		_update_form()
 
 
 ## Whether to display name input field.
-@export var enable_name_input: bool = true:
+@export var name_visible: bool = true:
 	set(value):
-		enable_name_input = value
+		name_visible = value
 		_update_form()
 
 ## Whether to display email input field.
-@export var enable_email_input: bool = true:
+@export var email_visible: bool = true:
 	set(value):
-		enable_email_input = value
+		email_visible = value
 		_update_form()
 
 ## Minimum number of words required in the feedback message before the feedback can be submitted.
@@ -74,10 +74,10 @@ func _notification(what: int) -> void:
 func _update_form() -> void:
 	if is_node_ready():
 		var form := %UserFeedbackForm
-		form.show_logo = show_logo
+		form.logo_visible = logo_visible
+		form.email_visible = email_visible
+		form.name_visible = name_visible
 		form.minimum_words = minimum_words
-		form.enable_email_input = enable_email_input
-		form.enable_name_input = enable_name_input
 
 
 ## Centers children horizontally at the top of the screen with an offset,
