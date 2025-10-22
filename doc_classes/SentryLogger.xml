@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SentryLogger" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		Sends log messages to Sentry.
+		Send log messages to Sentry.
 	</brief_description>
 	<description>
 		A dedicated API for logging messages to Sentry's structured logging system. Access this API through [member SentrySDK.logger]. [SentryLogger] provides methods for different log levels (trace, debug, info, warn, error, fatal) and enables structured data capture with your log messages.
