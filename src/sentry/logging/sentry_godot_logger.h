@@ -74,6 +74,9 @@ private:
 	void _disconnect_process_frame();
 	void _process_frame();
 
+	void _apply_startup_limits();
+	void _apply_normal_limits();
+
 protected:
 	static void _bind_methods();
 

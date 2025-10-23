@@ -107,6 +107,25 @@ String CocoaSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	return event_id ? string_from_objc(event_id.sentryIdString) : String();
 }
 
+void CocoaSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
+	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
+	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
+
+	objc::SentryId *id = nil;
+
+	if (!p_feedback->get_associated_event_id().is_empty()) {
+		id = [[objc::SentryId alloc] initWithUUIDString:string_to_objc(p_feedback->get_associated_event_id())];
+	}
+
+	objc::SentryFeedback *cocoa_feedback = [[objc::SentryFeedback alloc] initWithMessage:string_to_objc(p_feedback->get_message())
+																					name:string_to_objc_or_nil_if_empty(p_feedback->get_name())
+																				   email:string_to_objc_or_nil_if_empty(p_feedback->get_contact_email())
+																				  source:SentryFeedbackSourceCustom
+																	   associatedEventId:id
+																			 attachments:nil];
+	[objc::SentrySDK captureFeedback:cocoa_feedback];
+}
+
 void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
 

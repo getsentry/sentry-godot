@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryFeedback" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Represents user feedback in Sentry.
+	</brief_description>
+	<description>
+		[SentryFeedback] allows you to collect and send user feedback to Sentry. Create an instance of this class, set the required [member message] and optional fields, then submit it using [method SentrySDK.capture_feedback].
+		To learn more, visit [url=https://docs.sentry.io/platforms/godot/user-feedback/]User Feedback[/url] documentation.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="associated_event_id" type="String" setter="set_associated_event_id" getter="get_associated_event_id" default="&quot;&quot;">
+			The identifier of an error event in the same project. [i]Optional[/i].
+			Use this to explicitly link a related error in the feedback UI.
+		</member>
+		<member name="contact_email" type="String" setter="set_contact_email" getter="get_contact_email" default="&quot;&quot;">
+			The email of the user who submitted the feedback. [i]Optional[/i].
+			If excluded, Sentry attempts to fill this in with user context. Anonymous feedbacks (no name or email) are still accepted.
+		</member>
+		<member name="message" type="String" setter="set_message" getter="get_message" default="&quot;&quot;">
+			Comments of the user, describing what happened and/or sharing feedback. [i]Required[/i].
+			The max length is 4096 characters.
+		</member>
+		<member name="name" type="String" setter="set_name" getter="get_name" default="&quot;&quot;">
+			The name of the user who submitted the feedback. [i]Optional[/i].
+			If excluded, Sentry attempts to fill this in with user context. Anonymous feedbacks (no name or email) are still accepted.
+		</member>
+	</members>
+</class>

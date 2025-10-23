@@ -32,13 +32,18 @@ runs:
     - name: Set up Godot
       shell: bash
       env:
-        # Set pre-release version status here (e.g. "beta1");
-        # for release version, set to "stable".
-        RELEASE_STATUS: stable
+        # Set Godot version override here (e.g. "4.5.1-stable").
+        GODOT_VERSION_OVERRIDE: 4.5.1-stable
         ARCH: ${{ inputs.arch }}
       run: |
-        major_minor=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1/p' project/addons/sentry/sentry.gdextension)
-        version=${major_minor}-${RELEASE_STATUS}
+        if [[ -n "$GODOT_VERSION_OVERRIDE" ]]; then
+          version="$GODOT_VERSION_OVERRIDE"
+        else
+          major_minor=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1/p' project/addons/sentry/sentry.gdextension)
+          version="${major_minor}-stable"
+        fi
+
+        echo "Using Godot version: $version"
 
         if [[ "$RUNNER_OS" == "Windows" ]]; then
           if [[ "$ARCH" == "x86_32" ]]; then
