@@ -11,6 +11,8 @@
 ### Improvements
 
 - Detect when we're inside message logging to prevent SDK print operations through the Godot logger which cause runtime errors. ([#414](https://github.com/getsentry/sentry-godot/pull/414))
+- Relax throttling limits on app startup ([#423](https://github.com/getsentry/sentry-godot/pull/423))
+- Set app hang timeout to 5s on Apple platforms ([#416](https://github.com/getsentry/sentry-godot/pull/416))
 
 ### Dependencies
 
@@ -20,6 +22,9 @@
 - Bump Cocoa SDK from v8.56.2 to v8.57.0 ([#419](https://github.com/getsentry/sentry-godot/pull/419))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8570)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.56.2...8.57.0)
+- Bump Sentry Android from v8.23.0 to v8.24.0 ([#424](https://github.com/getsentry/sentry-godot/pull/424))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8240)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.23.0...8.24.0)
 
 ## 1.0.0
 

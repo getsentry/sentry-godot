@@ -261,6 +261,7 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
 
+		options.appHangTimeoutInterval = 5; // 5 seconds
 		options.experimental.enableLogs = SentryOptions::get_singleton()->get_experimental()->get_enable_logs();
 
 		options.initialScope = ^(objc::SentryScope *scope) {

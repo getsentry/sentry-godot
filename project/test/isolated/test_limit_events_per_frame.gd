@@ -26,6 +26,10 @@ func _before_send(_ev: SentryEvent) -> SentryEvent:
 
 ## Only one error should be logged within 1 processed frame.
 func test_events_per_frame_limit() -> void:
+	# Wait for special startup limits to expire.
+	while Engine.get_process_frames() < 10:
+		await get_tree().process_frame
+
 	monitor_signals(self, false)
 
 	push_error("dummy-error")
