@@ -30,6 +30,7 @@ using SentryStacktrace = ::SentryStacktrace;
 using SentryFrame = ::SentryFrame;
 using SentryThread = ::SentryThread;
 using SentryFeedback = ::SentryFeedback;
+using SentryLog = ::SentryLog;
 
 } // namespace objc
 
@@ -37,8 +38,11 @@ using SentryFeedback = ::SentryFeedback;
 
 // In C++ context, make objc::SentryEvent an alias to void
 namespace objc {
+
 using SentryEvent = void;
 using SentryBreadcrumb = void;
+using SentryLog = void;
+
 } // namespace objc
 
 #endif // __OBJC__

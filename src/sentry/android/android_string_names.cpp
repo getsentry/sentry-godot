@@ -25,6 +25,7 @@ AndroidStringNames::AndroidStringNames() {
 	setUser = StringName("setUser");
 	removeUser = StringName("removeUser");
 	addBreadcrumb = StringName("addBreadcrumb");
+	log = StringName("log");
 	captureMessage = StringName("captureMessage");
 	getLastEventId = StringName("getLastEventId");
 	captureError = StringName("captureError");
@@ -81,6 +82,17 @@ AndroidStringNames::AndroidStringNames() {
 	breadcrumbGetLevel = StringName("breadcrumbGetLevel");
 	breadcrumbSetData = StringName("breadcrumbSetData");
 	breadcrumbGetTimestamp = StringName("breadcrumbGetTimestamp");
+
+	// Logs.
+	releaseLog = StringName("releaseLog");
+	logSetLevel = StringName("logSetLevel");
+	logGetLevel = StringName("logGetLevel");
+	logSetBody = StringName("logSetBody");
+	logGetBody = StringName("logGetBody");
+	logGetAttribute = StringName("logGetAttribute");
+	logSetAttribute = StringName("logSetAttribute");
+	logAddAttributes = StringName("logAddAttributes");
+	logRemoveAttribute = StringName("logRemoveAttribute");
 }
 
 } //namespace sentry::android
