@@ -10,6 +10,8 @@
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
 #include "sentry/sentry_feedback.h"
+#include "sentry/sentry_log.h"
+#include "sentry/sentry_logger.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_user.h"
@@ -21,17 +23,20 @@
 #ifdef SDK_NATIVE
 #include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
+#include "sentry/native/native_log.h"
 #endif // SDK_NATIVE
 
 #ifdef SDK_ANDROID
 #include "sentry/android/android_breadcrumb.h"
 #include "sentry/android/android_event.h"
+#include "sentry/android/android_log.h"
 #include "sentry/android/android_sdk.h"
 #endif // SDK_ANDROID
 
 #ifdef SDK_COCOA
 #include "sentry/cocoa/cocoa_breadcrumb.h"
 #include "sentry/cocoa/cocoa_event.h"
+#include "sentry/cocoa/cocoa_log.h"
 #endif // SDK_COCOA
 
 #ifdef TOOLS_ENABLED
@@ -45,15 +50,18 @@ using namespace sentry;
 
 void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryLoggerLimits);
+	GDREGISTER_CLASS(SentryExperimental);
 	GDREGISTER_CLASS(SentryOptions);
 	GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 	GDREGISTER_CLASS(SentryUser);
 	GDREGISTER_CLASS(SentryTimestamp);
+	GDREGISTER_CLASS(SentryLogger);
 	GDREGISTER_CLASS(SentryFeedback);
 	GDREGISTER_CLASS(SentrySDK);
 	GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
 	GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 	GDREGISTER_ABSTRACT_CLASS(SentryBreadcrumb);
+	GDREGISTER_ABSTRACT_CLASS(SentryLog);
 	GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
@@ -63,17 +71,21 @@ void register_runtime_classes() {
 #ifdef SDK_NATIVE
 	GDREGISTER_INTERNAL_CLASS(native::NativeEvent);
 	GDREGISTER_INTERNAL_CLASS(native::NativeBreadcrumb);
+	GDREGISTER_INTERNAL_CLASS(native::NativeLog);
 #endif
 
 #ifdef SDK_ANDROID
 	GDREGISTER_INTERNAL_CLASS(android::AndroidEvent);
 	GDREGISTER_INTERNAL_CLASS(android::AndroidBreadcrumb);
+	GDREGISTER_INTERNAL_CLASS(android::AndroidLog);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendHandler);
+	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendLogHandler);
 #endif
 
 #ifdef SDK_COCOA
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaEvent);
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaBreadcrumb);
+	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaLog);
 #endif
 }
 

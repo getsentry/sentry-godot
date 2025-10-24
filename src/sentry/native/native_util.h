@@ -34,6 +34,8 @@ _FORCE_INLINE_ void sentry_value_set_or_remove_string_by_key(sentry_value_t valu
 	}
 }
 
+sentry_value_t variant_to_attribute(const Variant &p_value);
+
 } //namespace sentry::native
 
 #endif // NATIVE_UTIL_H

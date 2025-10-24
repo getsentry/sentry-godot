@@ -3,10 +3,12 @@
 #include "cocoa_breadcrumb.h"
 #include "cocoa_event.h"
 #include "cocoa_includes.h"
+#include "cocoa_log.h"
 #include "cocoa_util.h"
 #include "sentry/common_defs.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
 
@@ -17,6 +19,27 @@
 #import <Sentry/PrivateSentrySDKOnly.h>
 
 using namespace godot;
+
+namespace {
+
+NSObject *_as_attribute(const Variant &p_value) {
+	switch (p_value.get_type()) {
+		case Variant::BOOL: {
+			return [NSNumber numberWithBool:(bool)p_value];
+		} break;
+		case Variant::INT: {
+			return [NSNumber numberWithLongLong:(int64_t)p_value];
+		} break;
+		case Variant::FLOAT: {
+			return [NSNumber numberWithDouble:(double)p_value];
+		} break;
+		default: {
+			return [NSString stringWithUTF8String:p_value.stringify().utf8()];
+		} break;
+	}
+}
+
+} // unnamed namespace
 
 namespace sentry::cocoa {
 
@@ -77,6 +100,59 @@ void CocoaSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	Ref<CocoaBreadcrumb> crumb = p_breadcrumb;
 	ERR_FAIL_COND(crumb.is_null());
 	[objc::SentrySDK addBreadcrumb:crumb->get_cocoa_breadcrumb()];
+}
+
+void CocoaSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
+	if (p_body.is_empty()) {
+		return;
+	}
+
+	String body = p_body;
+
+	NSMutableDictionary *attributes = nil;
+
+	if (!p_attributes.is_empty()) {
+		attributes = [[NSMutableDictionary alloc] initWithCapacity:p_attributes.size() + 1];
+
+		const Array &keys = p_attributes.keys();
+		for (int i = 0; i < keys.size(); i++) {
+			const String &key = keys[i];
+			const NSString *objc_key = [NSString stringWithUTF8String:key.utf8()];
+			const NSObject *objc_value = _as_attribute(p_attributes[key]);
+			[attributes setObject:objc_value forKey:objc_key];
+		}
+	}
+
+	switch (p_level) {
+		case LOG_LEVEL_TRACE: {
+			[[objc::SentrySDK logger] trace:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		case LOG_LEVEL_DEBUG: {
+			[[objc::SentrySDK logger] debug:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		case LOG_LEVEL_INFO: {
+			[[objc::SentrySDK logger] info:string_to_objc(body)
+								attributes:attributes];
+		} break;
+		case LOG_LEVEL_WARN: {
+			[[objc::SentrySDK logger] warn:string_to_objc(body)
+								attributes:attributes];
+		} break;
+		case LOG_LEVEL_ERROR: {
+			[[objc::SentrySDK logger] error:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		case LOG_LEVEL_FATAL: {
+			[[objc::SentrySDK logger] fatal:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+		default: {
+			[[objc::SentrySDK logger] debug:string_to_objc(body)
+								 attributes:attributes];
+		} break;
+	}
 }
 
 String CocoaSDK::capture_message(const String &p_message, Level p_level) {
@@ -186,6 +262,7 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 		options.attachStacktrace = false;
 
 		options.appHangTimeoutInterval = 5; // 5 seconds
+		options.experimental.enableLogs = SentryOptions::get_singleton()->get_experimental()->get_enable_logs();
 
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments
@@ -229,6 +306,18 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 				return event;
 			}
 		};
+
+		if (SentryOptions::get_singleton()->get_experimental()->before_send_log.is_valid()) {
+			options.beforeSendLog = ^objc::SentryLog *(objc::SentryLog *log) {
+				Ref<CocoaLog> log_obj = memnew(CocoaLog(log));
+				Ref<CocoaLog> processed = sentry::process_log(log_obj);
+
+				if (unlikely(processed.is_null())) {
+					return nil;
+				}
+				return log;
+			};
+		}
 	}];
 
 	if (!is_enabled()) {

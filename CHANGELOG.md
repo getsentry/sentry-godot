@@ -6,6 +6,7 @@
 
 - Add user feedback API for collecting and sending user feedback to Sentry ([#418](https://github.com/getsentry/sentry-godot/pull/418))
 - Access event exception values in `before_send` handler ([#415](https://github.com/getsentry/sentry-godot/pull/415))
+- Add support for Structured Logging ([#409](https://github.com/getsentry/sentry-godot/pull/409))
 
 ### Improvements
 

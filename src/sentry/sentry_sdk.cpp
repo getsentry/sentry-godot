@@ -9,6 +9,7 @@
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
+#include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/engine.hpp>
@@ -379,11 +380,15 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
 	ClassDB::bind_method(D_METHOD("_get_before_send"), &SentrySDK::get_before_send);
 	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
+
+	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "logger"), get_logger);
 }
 
 SentrySDK::SentrySDK() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(SentryOptions::get_singleton());
+
+	logger = memnew(SentryLogger);
 
 #ifdef SDK_NATIVE
 	internal_sdk = std::make_shared<sentry::native::NativeSDK>();
@@ -411,6 +416,9 @@ SentrySDK::SentrySDK() {
 
 SentrySDK::~SentrySDK() {
 	singleton = nullptr;
+
+	memdelete(logger);
+	logger = nullptr;
 }
 
 } // namespace sentry

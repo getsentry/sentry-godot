@@ -6,8 +6,10 @@
 #include "sentry/logging/print.h"
 #include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
+#include "sentry/native/native_log.h"
 #include "sentry/native/native_util.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
 #include "sentry/util/screenshot.h"
@@ -21,6 +23,7 @@
 namespace {
 
 using NativeEvent = sentry::native::NativeEvent;
+using NativeLog = sentry::native::NativeLog;
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, false));
@@ -32,6 +35,19 @@ sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closu
 		return sentry_value_new_null();
 	} else {
 		return event;
+	}
+}
+
+sentry_value_t _handle_before_send_log(sentry_value_t p_value, void *p_user_data) {
+	Ref<NativeLog> log_obj = memnew(NativeLog(p_value));
+	Ref<NativeLog> processed = sentry::process_log(log_obj);
+
+	if (unlikely(processed.is_null())) {
+		// Discard event.
+		sentry_value_decref(p_value);
+		return sentry_value_new_null();
+	} else {
+		return p_value;
 	}
 }
 
@@ -186,6 +202,38 @@ void NativeSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	sentry_add_breadcrumb(native_crumb);
 }
 
+void NativeSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
+	if (p_body.is_empty()) {
+		return;
+	}
+
+	String body = p_body;
+
+	// TODO: Native doesn't support passing attributes yet.
+	// See:  https://github.com/getsentry/sentry-native/issues/1405
+
+	switch (p_level) {
+		case LOG_LEVEL_TRACE: {
+			sentry_log_trace(body.utf8());
+		} break;
+		case LOG_LEVEL_DEBUG: {
+			sentry_log_debug(body.utf8());
+		} break;
+		case LOG_LEVEL_INFO: {
+			sentry_log_info(body.utf8());
+		} break;
+		case LOG_LEVEL_WARN: {
+			sentry_log_warn(body.utf8());
+		} break;
+		case LOG_LEVEL_ERROR: {
+			sentry_log_error(body.utf8());
+		} break;
+		case LOG_LEVEL_FATAL: {
+			sentry_log_fatal(body.utf8());
+		} break;
+	}
+}
+
 String NativeSDK::capture_message(const String &p_message, Level p_level) {
 	sentry_value_t event = sentry_value_new_message_event(
 			native::level_to_native(p_level),
@@ -314,6 +362,7 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 	sentry_options_set_max_breadcrumbs(options, SentryOptions::get_singleton()->get_max_breadcrumbs());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
 	sentry_options_set_logger_enabled_when_crashed(options, false);
+	sentry_options_set_enable_logs(options, SentryOptions::get_singleton()->get_experimental()->get_enable_logs());
 
 	// Establish handler path.
 	String handler_fn;
@@ -359,6 +408,11 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 	sentry_options_set_before_send(options, _handle_before_send, NULL);
 	sentry_options_set_on_crash(options, _handle_on_crash, NULL);
 	sentry_options_set_logger(options, _log_native_message, NULL);
+
+	const Callable &before_send_log = SentryOptions::get_singleton()->get_experimental()->get_before_send_log();
+	if (before_send_log.is_valid()) {
+		sentry_options_set_before_send_log(options, _handle_before_send_log, NULL);
+	}
 
 	int err = sentry_init(options);
 	initialized = (err == 0);
