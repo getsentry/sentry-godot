@@ -9,11 +9,21 @@ extends VBoxContainer
 
 var _event_level: SentrySDK.Level
 
+var _user_feedback_gui: Control
+
 
 func _ready() -> void:
-	level_choice.get_popup().id_pressed.connect(_on_level_choice_id_pressed)
+	_init_user_feedback_gui()
 	_init_level_choice_popup()
 	_init_user_info()
+
+
+## Initialize User Feedback UI
+func _init_user_feedback_gui() -> void:
+	_user_feedback_gui = load("res://addons/sentry/user_feedback/user_feedback_gui.tscn").instantiate()
+	_user_feedback_gui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	get_owner().add_child.call_deferred(_user_feedback_gui)
+	_user_feedback_gui.hide()
 
 
 func _init_level_choice_popup() -> void:
@@ -24,6 +34,7 @@ func _init_level_choice_popup() -> void:
 	popup.add_item("ERROR", SentrySDK.LEVEL_ERROR)
 	popup.add_item("FATAL", SentrySDK.LEVEL_FATAL)
 
+	popup.id_pressed.connect(_on_level_choice_id_pressed)
 	_on_level_choice_id_pressed(SentrySDK.LEVEL_INFO)
 
 
@@ -84,3 +95,7 @@ func _on_gen_script_error_pressed() -> void:
 func _on_gen_native_error_pressed() -> void:
 	DemoOutput.print_info("Generating native Godot error (in C++ unit)...")
 	load("res://file_does_not_exist")
+
+
+func _on_user_feedback_button_pressed() -> void:
+	_user_feedback_gui.show()
