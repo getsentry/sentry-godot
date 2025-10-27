@@ -14,6 +14,7 @@
 - Detect when we're inside message logging to prevent SDK print operations through the Godot logger which cause runtime errors. ([#414](https://github.com/getsentry/sentry-godot/pull/414))
 - Relax throttling limits on app startup ([#423](https://github.com/getsentry/sentry-godot/pull/423))
 - Set app hang timeout to 5s on Apple platforms ([#416](https://github.com/getsentry/sentry-godot/pull/416))
+- Add app hang tracking options and disable this feature by default ([#429](https://github.com/getsentry/sentry-godot/pull/429))
 
 ### Dependencies
 
