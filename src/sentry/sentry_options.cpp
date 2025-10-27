@@ -210,7 +210,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_scene_tree"), set_attach_scene_tree, is_attach_scene_tree_enabled);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), set_app_hang_tracking, is_app_hang_tracking_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_seconds"), set_app_hang_timeout_sec, get_app_hang_timeout_sec);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), set_app_hang_timeout_sec, get_app_hang_timeout_sec);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, is_logger_include_source_enabled);
