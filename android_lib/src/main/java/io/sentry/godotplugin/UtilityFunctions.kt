@@ -50,8 +50,14 @@ fun Long.microsecondsToTimestamp(): Date {
     return Date(millis)
 }
 
-
 fun Date.toMicros(): Long {
     val date: Date = this@toMicros
     return date.time * 1000
 }
+
+fun Any?.toIntOrThrow(): Int =
+    when (this) {
+        is Int -> this
+        is Long -> this.toInt()
+        else -> throw IllegalArgumentException("Expected Int or Long, got ${this?.let { it::class } ?: "null"}")
+    }
