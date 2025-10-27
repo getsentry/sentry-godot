@@ -18,6 +18,7 @@
 		</member>
 		<member name="app_hang_tracking" type="bool" setter="set_app_hang_tracking" getter="is_app_hang_tracking_enabled" default="false">
 			If [code]true[/code], enables automatic detection and reporting of application hangs. The SDK will monitor the main thread and report hang events when it becomes unresponsive for longer than the duration specified in [member app_hang_timeout_sec]. This helps identify performance issues where the application becomes frozen or unresponsive.
+			[b]Note:[/b] This feature is only supported on Android, iOS, and macOS platforms.
 		</member>
 		<member name="attach_log" type="bool" setter="set_attach_log" getter="is_attach_log_enabled" default="true">
 			If [code]true[/code], the SDK will attach the Godot log file to the event.
