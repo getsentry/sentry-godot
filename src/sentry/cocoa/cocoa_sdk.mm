@@ -258,10 +258,12 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 			options.dist = string_to_objc(dist);
 		}
 
+		options.enableAppHangTracking = SentryOptions::get_singleton()->is_app_hang_tracking_enabled();
+		options.appHangTimeoutInterval = SentryOptions::get_singleton()->get_app_hang_timeout_sec();
+
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
 
-		options.appHangTimeoutInterval = 5; // 5 seconds
 		options.experimental.enableLogs = SentryOptions::get_singleton()->get_experimental()->get_enable_logs();
 
 		options.initialScope = ^(objc::SentryScope *scope) {
