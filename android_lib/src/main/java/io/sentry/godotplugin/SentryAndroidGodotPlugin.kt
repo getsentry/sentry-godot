@@ -160,45 +160,56 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun init(
+        optionsData: Dictionary,
         beforeSendHandlerId: Long,
-        dsn: String,
-        debug: Boolean,
-        release: String,
-        dist: String,
-        environment: String,
-        sampleRate: Float,
-        maxBreadcrumbs: Int,
-        enableLogs: Boolean,
         beforeSendLogHandlerId: Long
     ) {
         Log.v(TAG, "Initializing Sentry Android")
-        SentryAndroid.init(godot.getActivity()!!.applicationContext) { options ->
-            options.dsn = dsn.ifEmpty { null }
-            options.isDebug = debug
-            options.release = release.ifEmpty { null }
-            options.dist = dist.ifEmpty { null }
-            options.environment = environment.ifEmpty { null }
-            options.sampleRate = sampleRate.toDouble()
-            options.maxBreadcrumbs = maxBreadcrumbs
-            options.sdkVersion?.name = "sentry.java.android.godot"
-            options.nativeSdkName = "sentry.native.android.godot"
-            options.logs.isEnabled = enableLogs
-            options.beforeSend =
-                SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
-                    Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
-                    val handle: Int = registerEvent(event)
-                    Callable.call(beforeSendHandlerId, "before_send", handle)
-                    eventsByHandle.get()?.remove(handle) // Returns the event or null if it was discarded.
-                }
-            if (beforeSendLogHandlerId != 0L) {
-                options.logs.beforeSend =
-                    SentryOptions.Logs.BeforeSendLogCallback { logEvent ->
-                        val handle: Int = registerLog(logEvent)
-                        Callable.call(beforeSendLogHandlerId, "before_send_log", handle)
-                        logsByHandle.get()?.remove(handle) // Returns the log or null if it was discarded.
-                    }
-            }
 
+        try {
+            val dsn = optionsData["dsn"] as String
+            val debug = optionsData["debug"] as Boolean
+            val release = optionsData["release"] as String
+            val dist = optionsData["dist"] as String
+            val environment = optionsData["environment"] as String
+            val sampleRate = optionsData["sample_rate"] as Double
+            val maxBreadcrumbs = optionsData["max_breadcrumbs"].toIntOrThrow()
+            val enableLogs = optionsData["enable_logs"] as Boolean
+            val appHangTracking = optionsData["app_hang_tracking"] as Boolean
+            val appHangTimeoutSec = optionsData["app_hang_timeout_sec"] as Double
+
+            SentryAndroid.init(godot.getActivity()!!.applicationContext) { options ->
+                options.dsn = dsn.ifEmpty { null }
+                options.isDebug = debug
+                options.release = release.ifEmpty { null }
+                options.dist = dist.ifEmpty { null }
+                options.environment = environment.ifEmpty { null }
+                options.sampleRate = sampleRate.toDouble()
+                options.maxBreadcrumbs = maxBreadcrumbs
+                options.sdkVersion?.name = "sentry.java.android.godot"
+                options.nativeSdkName = "sentry.native.android.godot"
+                options.logs.isEnabled = enableLogs
+                options.isAnrEnabled = appHangTracking
+                options.anrTimeoutIntervalMillis = (appHangTimeoutSec * 1000.0).toLong()
+                options.beforeSend =
+                    SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
+                        Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
+                        val handle: Int = registerEvent(event)
+                        Callable.call(beforeSendHandlerId, "before_send", handle)
+                        eventsByHandle.get()?.remove(handle) // Returns the event or null if it was discarded.
+                    }
+                if (beforeSendLogHandlerId != 0L) {
+                    options.logs.beforeSend =
+                        SentryOptions.Logs.BeforeSendLogCallback { logEvent ->
+                            val handle: Int = registerLog(logEvent)
+                            Callable.call(beforeSendLogHandlerId, "before_send_log", handle)
+                            logsByHandle.get()?.remove(handle) // Returns the log or null if it was discarded.
+                        }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing Sentry for Android", e)
+            return
         }
     }
 

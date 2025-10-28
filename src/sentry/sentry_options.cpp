@@ -79,6 +79,9 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/attach_log", p_options->attach_log, false);
 	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
 
+	_define_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking, false);
+	_define_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec, false);
+
 	_define_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
 	_define_setting("sentry/logger/include_variables", p_options->logger_include_variables, false);
@@ -120,6 +123,9 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
 	p_options->attach_scene_tree = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
+
+	p_options->app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking);
+	p_options->app_hang_timeout_sec = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec);
 
 	p_options->logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	p_options->logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", p_options->logger_include_source);
@@ -202,6 +208,9 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_screenshot"), set_attach_screenshot, is_attach_screenshot_enabled);
 	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("screenshot_level"), set_screenshot_level, get_screenshot_level);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_scene_tree"), set_attach_scene_tree, is_attach_scene_tree_enabled);
+
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), set_app_hang_tracking, is_app_hang_tracking_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), set_app_hang_timeout_sec, get_app_hang_timeout_sec);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, is_logger_include_source_enabled);
