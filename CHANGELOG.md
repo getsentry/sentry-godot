@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Native SDK from v0.11.3 to v0.12.0 ([#431](https://github.com/getsentry/sentry-godot/pull/431))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0120)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.11.3...0.12.0)
+
 ## 1.1.0
 
 ### Features
