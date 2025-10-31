@@ -85,6 +85,14 @@ func _on_set_user_button_pressed() -> void:
 
 
 func _on_gen_script_error_pressed() -> void:
+	_generate_script_error()
+
+
+func _on_gen_native_error_pressed() -> void:
+	_generate_native_error()
+
+
+func _generate_script_error() -> void:
 	DemoOutput.print_info("Generating GDScript error...")
 	# The following line should generate 2 errors:
 	# script parse error and failed to load script.
@@ -92,7 +100,7 @@ func _on_gen_script_error_pressed() -> void:
 	var ScriptWithErrors = load("res://script_with_errors.gd")
 
 
-func _on_gen_native_error_pressed() -> void:
+func _generate_native_error() -> void:
 	DemoOutput.print_info("Generating native Godot error (in C++ unit)...")
 	load("res://file_does_not_exist")
 

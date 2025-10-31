@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3 uid="uid://cywnvytpa2bec"]
+
+[ext_resource type="Script" uid="uid://5i2jwygne6je" path="res://views/tools.gd" id="1_wuhpo"]
+
+[node name="Tools" type="VBoxContainer"]
+script = ExtResource("1_wuhpo")
+metadata/_tab_index = 2
+
+[node name="Header - Actions" type="Label" parent="."]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = "ACTIONS"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="RunTestsButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Run unit tests"
+
+[node name="TestDiverseContextButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Test diverse context"
+
+[connection signal="pressed" from="RunTestsButton" to="." method="_on_run_tests_button_pressed"]
+[connection signal="pressed" from="TestDiverseContextButton" to="." method="_on_test_diverse_context_button_pressed"]

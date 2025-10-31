@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://dpppyaeqgrcn1"]
+[gd_scene load_steps=7 format=3 uid="uid://dpppyaeqgrcn1"]
 
 [ext_resource type="Script" uid="uid://cw2874mkwddfr" path="res://mobile.gd" id="1_bj8h8"]
 [ext_resource type="PackedScene" uid="uid://bxi26vu5tlqas" path="res://views/capture_events.tscn" id="2_xux57"]
 [ext_resource type="PackedScene" uid="uid://dyoaec2d7uung" path="res://views/enrich_events.tscn" id="3_p64qd"]
+[ext_resource type="PackedScene" uid="uid://cywnvytpa2bec" path="res://views/tools.tscn" id="4_p64qd"]
 [ext_resource type="PackedScene" uid="uid://dllqhtd731wtc" path="res://views/output_pane.tscn" id="4_xux57"]
 
 [sub_resource type="Theme" id="Theme_bj8h8"]
@@ -49,28 +50,10 @@ metadata/_tab_index = 0
 layout_mode = 2
 metadata/_tab_index = 1
 
-[node name="Tools" type="VBoxContainer" parent="VBoxContainer/VBoxContainer/TabContainer"]
+[node name="Tools" parent="VBoxContainer/VBoxContainer/TabContainer" instance=ExtResource("4_p64qd")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-metadata/_tab_index = 2
-
-[node name="Header - Actions" type="Label" parent="VBoxContainer/VBoxContainer/TabContainer/Tools"]
-custom_minimum_size = Vector2(0, 40.505)
-layout_mode = 2
-text = "ACTIONS"
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="RunTestsButton" type="Button" parent="VBoxContainer/VBoxContainer/TabContainer/Tools"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Run mobile tests"
-
-[node name="TestDiverseContextButton" type="Button" parent="VBoxContainer/VBoxContainer/TabContainer/Tools"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Test diverse context"
 
 [node name="OutputPane" parent="VBoxContainer/VBoxContainer" instance=ExtResource("4_xux57")]
 layout_mode = 2
@@ -78,6 +61,3 @@ layout_mode = 2
 [node name="Spacer2" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
-
-[connection signal="pressed" from="VBoxContainer/VBoxContainer/TabContainer/Tools/RunTestsButton" to="." method="_on_run_tests_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/VBoxContainer/TabContainer/Tools/TestDiverseContextButton" to="." method="_on_test_diverse_context_button_pressed"]
