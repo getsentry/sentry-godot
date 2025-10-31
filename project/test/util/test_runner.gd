@@ -211,5 +211,5 @@ class Fmt:
 	static func warning(text: String) -> String: return colored(text, Color.GOLDENROD)
 	static func error(text: String) -> String: return colored(text, Color.RED)
 
-	static func suite(text: String) -> String: return colored(text, Color.DARK_CYAN)
+	static func suite(text: String) -> String: return colored(text, Color.MEDIUM_PURPLE)
 	static func case(text: String) -> String: return colored(text, Color.CYAN)
