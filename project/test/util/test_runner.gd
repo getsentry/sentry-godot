@@ -14,6 +14,7 @@ signal finished(result_code)
 enum Result {
 	SUCCESS = 0,
 	FAILURE = 100,
+	WARNINGS = 101,
 	DIDNT_RUN = 200,
 	TESTS_NOT_FOUND = 204
 }
@@ -23,13 +24,14 @@ class Stats:
 	var num_total: int = 0
 	var num_failed: int = 0
 	var num_errors: int = 0
+	var num_warnings: int = 0
 	var num_skipped: int = 0
 	var num_flaky: int = 0
 
 	func clear():
 		num_total = 0
-		num_errors = 0
 		num_failed = 0
+		num_errors = 0
 		num_skipped = 0
 		num_flaky = 0
 
@@ -59,6 +61,8 @@ func get_exit_code() -> int:
 		return Result.DIDNT_RUN
 	elif stats.num_failed > 0 or stats.num_errors > 0:
 		return Result.FAILURE
+	elif stats.num_warnings > 0:
+		return Result.WARNINGS
 	return Result.SUCCESS
 
 
@@ -125,6 +129,7 @@ func _on_gdunit_event(event: GdUnitEvent) -> void:
 			stats.num_failed += suite_stats.num_failed
 			stats.num_skipped += suite_stats.num_skipped
 			stats.num_flaky += suite_stats.num_flaky
+			stats.num_warnings += suite_stats.num_warnings
 
 		GdUnitEvent.TESTCASE_BEFORE:
 			var test := _test_session.find_test_by_id(event.guid())
@@ -137,6 +142,7 @@ func _on_gdunit_event(event: GdUnitEvent) -> void:
 			suite_stats.num_failed +=  event.failed_count()
 			suite_stats.num_skipped += event.skipped_count()
 			suite_stats.num_flaky += 1 if event.is_flaky() else 0
+			suite_stats.num_warnings += 1 if event.is_warning() else 0
 
 			var test := _test_session.find_test_by_id(event.guid())
 			if event.is_success():
