@@ -50,13 +50,12 @@ jobs:
       - name: Run tests
         shell: bash
         timeout-minutes: 5
+        env:
+          SENTRY_TEST: 1
+          SENTRY_TEST_INCLUDE: "res://test/suites/"
         run: |
-          # Exit status codes: 0 - success, 100 - ends with test failures, 101 - ends with test warnings.
-          ${GODOT} --headless --debug --path project/ \
-              --script "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" \
-              --ignoreHeadlessMode \
-              --continue \
-              --add test/suites/
+          # Exit status codes: 0 - success, 100 - ends with test failures, 101 - ends with test warnings, 204 - no tests found.
+          ${GODOT} --headless --debug --path project/
 
       - name: Run isolated tests
         if: success() || failure()
