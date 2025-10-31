@@ -1,0 +1,90 @@
+name: 🧪 Android tests
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test-android:
+    name: Export project for Android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: false # don't initialize submodules automatically
+
+      - name: Prepare testing
+        uses: ./.github/actions/prepare-testing
+        with:
+          arch: x86_64
+
+      # TODO: move to prepare testing
+      - name: Download Android template
+        shell: bash
+        env:
+          GODOT_VERSION: 4.5.1-stable
+        run: |
+          archive_file=Godot_v${GODOT_VERSION}_export_templates.tpz
+          url=https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/${archive_file}
+          curl -L -o templates.zip "${url}"
+          unzip templates.zip
+          rm templates.zip
+          mv templates/android_source.zip exports/android_source.zip
+          rm -rf templates/
+
+          # TODO: need to cache it
+
+          mkdir android_source/
+          cd android_source/
+          unzip ../exports/android_source.zip
+          cd ..
+
+          mkdir project/android/
+          mv android_source project/android/build
+
+          ls -lR project/android/
+
+      - name: Export project
+        shell: bash
+        timeout-minutes: 5
+        env:
+          SENTRY_TEST: 1
+          SENTRY_TEST_INCLUDE: "res://test/suites/"
+        run: |
+          cp exports/export_presets.cfg project/export_presets.cfg
+          mkdir -p exports/android/
+          ${GODOT} --path project/ --headless --export-debug "Android CI" ${GITHUB_WORKSPACE}/exports/android.apk
+
+          ls -lR exports/
+
+      # - name: Run Android Tests
+      #   uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v2.33.0
+      #   timeout-minutes: 30
+      #   with:
+      #     api-level: 30
+      #     target: "google_apis"
+      #     channel: "stable"
+      #     force-avd-creation: true
+      #     disable-animations: true
+      #     disable-spellchecker: true
+      #     emulator-options: >
+      #       -no-window
+      #       -no-snapshot-save
+      #       -gpu swiftshader_indirect
+      #       -noaudio
+      #       -no-boot-anim
+      #       -camera-back none
+      #       -camera-front none
+      #       -timezone US/Pacific
+      #     arch: x86_64
+      #     script: |
+      #       adb wait-for-device
+      #       adb shell input keyevent 82
+      #       adb devices -l
+      #       adb install exports/android.apk
+      #       adb shell am start -n io.sentry.godot.project/com.godot.game.GodotApp \
+      #           --es env SENTRY_TEST=1 \
+      #           --es env SENTRY_TEST_INCLUDE="res://test/suites/"
