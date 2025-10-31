@@ -4,12 +4,10 @@ const MOBILE_TESTS_FILE := "res://test/mobile_tests.gd"
 
 
 func _ready() -> void:
-	%RunTestsButton.visible = FileAccess.file_exists(MOBILE_TESTS_FILE)
+	%RunTestsButton.visible = DirAccess.dir_exists_absolute("res://test/suites/")
 
 
 func _on_run_tests_button_pressed() -> void:
-	#var tests = load(MOBILE_TESTS_FILE).new()
-	#tests.run_tests()
 	var test_runner = load("res://test/util/test_runner.gd").new()
 	test_runner.include_tests("res://test/suites/")
 	add_child(test_runner)
