@@ -11,9 +11,8 @@ void SentryLogger::log(LogLevel p_level, const String &p_body, const Dictionary 
 	if (!p_params.is_empty()) {
 		attributes["sentry.message.template"] = p_body;
 		for (const Variant &key : p_params.keys()) {
-			String str_key = key.stringify();
-			String param_key = "sentry.message.parameter." + str_key;
-			attributes[param_key] = p_params[key];
+			String attr_key = "sentry.message.parameter." + key.stringify();
+			attributes[attr_key] = p_params[key];
 		}
 		body = p_body.format(p_params);
 	}
