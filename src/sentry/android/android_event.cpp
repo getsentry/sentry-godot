@@ -148,7 +148,7 @@ void AndroidEvent::add_exception(const Exception &p_exception) {
 	Dictionary thread_data;
 	thread_data["thread_id"] = thread_id;
 	thread_data["main"] = is_main;
-	thread_data["crashed"] = is_main;
+	thread_data["crashed"] = true;
 	thread_data["current"] = true;
 	thread_data["frames"] = st_frames_data;
 
