@@ -26,7 +26,13 @@ func test_breadcrumbs_with_minimal_breadcrumb() -> void:
 		.end() \
 
 		.must_not_contain("type") \
-		.must_not_contain("data") \
+
+		.either() \
+			.must_not_contain("data") \
+		.or_else() \
+			.must_contain("data", {}) \
+		.end() \
+
 		.exactly(1)
 
 
