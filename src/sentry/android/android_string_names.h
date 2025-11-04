@@ -73,8 +73,6 @@ public:
 	StringName eventToJson;
 
 	// Exceptions.
-	StringName createException;
-	StringName releaseException;
 	StringName eventAddException;
 	StringName eventGetExceptionCount;
 	StringName eventSetExceptionValue;

@@ -61,8 +61,6 @@ AndroidStringNames::AndroidStringNames() {
 	eventToJson = StringName("eventToJson");
 
 	// Exceptions.
-	createException = StringName("createException");
-	releaseException = StringName("releaseException");
 	eventAddException = StringName("eventAddException");
 	eventGetExceptionCount = StringName("eventGetExceptionCount");
 	eventSetExceptionValue = StringName("eventSetExceptionValue");
