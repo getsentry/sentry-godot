@@ -75,7 +75,6 @@ public:
 	// Exceptions.
 	StringName createException;
 	StringName releaseException;
-	StringName exceptionAppendStackFrame;
 	StringName eventAddException;
 	StringName eventGetExceptionCount;
 	StringName eventSetExceptionValue;

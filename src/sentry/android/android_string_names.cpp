@@ -63,7 +63,6 @@ AndroidStringNames::AndroidStringNames() {
 	// Exceptions.
 	createException = StringName("createException");
 	releaseException = StringName("releaseException");
-	exceptionAppendStackFrame = StringName("exceptionAppendStackFrame");
 	eventAddException = StringName("eventAddException");
 	eventGetExceptionCount = StringName("eventGetExceptionCount");
 	eventSetExceptionValue = StringName("eventSetExceptionValue");
