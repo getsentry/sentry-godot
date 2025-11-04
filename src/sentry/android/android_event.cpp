@@ -153,7 +153,7 @@ void AndroidEvent::add_exception(const Exception &p_exception) {
 	thread_data["frames"] = st_frames_data;
 
 	android_plugin->call(ANDROID_SN(eventAddException), event_handle, exception_handle);
-	android_plugin->call(ANDROID_SN(eventAddStackTrace), event_handle, exception_handle, thread_data);
+	android_plugin->call(ANDROID_SN(eventAddThreadStackTrace), event_handle, exception_handle, thread_data);
 	android_plugin->call(ANDROID_SN(releaseException), exception_handle);
 }
 

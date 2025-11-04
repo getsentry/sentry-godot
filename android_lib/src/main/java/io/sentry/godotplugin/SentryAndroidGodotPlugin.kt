@@ -521,7 +521,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun eventAddStackTrace(eventHandle: Int, exceptionHandle: Int, threadData: Dictionary) {
+    fun eventAddThreadStackTrace(eventHandle: Int, exceptionHandle: Int, threadData: Dictionary) {
         val event = getEvent(eventHandle) ?: return
         val exception = getException(exceptionHandle) ?: return
 

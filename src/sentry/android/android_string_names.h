@@ -79,7 +79,7 @@ public:
 	StringName eventGetExceptionCount;
 	StringName eventSetExceptionValue;
 	StringName eventGetExceptionValue;
-	StringName eventAddStackTrace;
+	StringName eventAddThreadStackTrace;
 
 	// Breadcrumbs.
 	StringName createBreadcrumb;
