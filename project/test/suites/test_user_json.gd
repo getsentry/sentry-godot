@@ -125,7 +125,7 @@ func test_user_transitions_and_minimal_data() -> void:
 		.is_object() \
 		.is_not_empty() \
 		.must_contain("email", "email.only@game.com") \
-		.must_not_contain("id") \
+		.must_not_contain("id", "player_001") \
 		.must_not_contain("username") \
 		.must_not_contain("ip_address") \
 		.verify()
@@ -142,7 +142,7 @@ func test_user_transitions_and_minimal_data() -> void:
 		.is_object() \
 		.is_not_empty() \
 		.must_contain("username", "UsernameOnly") \
-		.must_not_contain("id") \
+		.must_not_contain("id", "player_001") \
 		.must_not_contain("email") \
 		.must_not_contain("ip_address") \
 		.verify()
