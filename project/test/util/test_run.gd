@@ -5,9 +5,16 @@ extends RefCounted
 ## - SENTRY_TEST_INCLUDE    ';'-separated list of paths to include in testing
 
 
+func should_run() -> bool:
+	_populate_env_from_android_intent()
+	return OS.get_environment("SENTRY_TEST") == "1"
+
+
 func execute() -> void:
 	print(">>> Initializing testing")
 	var scene_tree := Engine.get_main_loop() as SceneTree
+	await scene_tree.process_frame
+
 	var included_paths: PackedStringArray = _get_included_paths()
 	print(" -- Tests included: ", included_paths)
 
@@ -33,3 +40,25 @@ func execute() -> void:
 func _get_included_paths() -> PackedStringArray:
 	var include_paths: String = OS.get_environment("SENTRY_TEST_INCLUDE")
 	return include_paths.split(";", false)
+
+
+## Populate environment variables from Android intent extras.
+func _populate_env_from_android_intent():
+	if Engine.has_singleton("AndroidRuntime"):
+		var android_runtime = Engine.get_singleton("AndroidRuntime")
+		var activity = android_runtime.getActivity()
+		if not activity:
+			return
+		var intent = activity.getIntent()
+		if not intent:
+			return
+		var extras = intent.getExtras()
+		if not extras:
+			return
+		var keys = extras.keySet().toArray()
+		for i in range(keys.size()):
+			var key: String = keys[i].toString()
+			var value: String = extras.get(key).toString()
+			if key.begins_with("SENTRY"):
+				OS.set_environment(key, value)
+				print("Added ", key, "=", value)
