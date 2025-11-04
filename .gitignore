@@ -10,7 +10,6 @@ project/.godot/
 
 # Export related
 exports/
-!exports/export_preset.cfg
 
 # Source tree
 src/gen/
