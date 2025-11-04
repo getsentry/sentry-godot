@@ -525,7 +525,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         val exception = SentryException()
         exception.type = type
         exception.value = value
-        exception.threadId = threadId.toLongOrNull()
+        exception.threadId = threadId
 
         if (event.exceptions == null) {
             event.exceptions = mutableListOf()
