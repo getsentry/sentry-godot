@@ -565,8 +565,9 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
         if (event.threads == null) {
             event.threads = mutableListOf(thread)
+        } else {
+            event.threads?.add(thread)
         }
-        event.threads?.add(thread)
     }
 
     @UsedByGodot
