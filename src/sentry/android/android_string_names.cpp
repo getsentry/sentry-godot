@@ -61,14 +61,11 @@ AndroidStringNames::AndroidStringNames() {
 	eventToJson = StringName("eventToJson");
 
 	// Exceptions.
-	createException = StringName("createException");
-	releaseException = StringName("releaseException");
-	exceptionAppendStackFrame = StringName("exceptionAppendStackFrame");
 	eventAddException = StringName("eventAddException");
 	eventGetExceptionCount = StringName("eventGetExceptionCount");
 	eventSetExceptionValue = StringName("eventSetExceptionValue");
 	eventGetExceptionValue = StringName("eventGetExceptionValue");
-	eventAddStackTrace = StringName("eventAddStackTrace");
+	eventAddThreadStackTrace = StringName("eventAddThreadStackTrace");
 
 	// Breadcrumbs.
 	createBreadcrumb = StringName("createBreadcrumb");

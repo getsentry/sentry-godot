@@ -115,9 +115,7 @@ void AndroidEvent::merge_context(const String &p_key, const Dictionary &p_value)
 void AndroidEvent::add_exception(const Exception &p_exception) {
 	ERR_FAIL_NULL(android_plugin);
 
-	int32_t exception_handle = android_plugin->call(ANDROID_SN(createException), p_exception.type, p_exception.value);
-
-	Array st_frames_data;
+	Array stacktrace_frames;
 	for (const StackFrame &frame : p_exception.frames) {
 		Dictionary frame_data;
 		frame_data["filename"] = frame.filename;
@@ -139,7 +137,7 @@ void AndroidEvent::add_exception(const Exception &p_exception) {
 			frame_data["vars"] = variables;
 		}
 
-		st_frames_data.append(frame_data);
+		stacktrace_frames.append(frame_data);
 	}
 
 	uint64_t thread_id = godot::OS::get_singleton()->get_thread_caller_id();
@@ -148,14 +146,12 @@ void AndroidEvent::add_exception(const Exception &p_exception) {
 	Dictionary thread_data;
 	thread_data["thread_id"] = thread_id;
 	thread_data["main"] = is_main;
-	thread_data["crashed"] = is_main;
+	thread_data["crashed"] = true;
 	thread_data["current"] = true;
-	thread_data["frames"] = st_frames_data;
+	thread_data["frames"] = stacktrace_frames;
 
-	android_plugin->call(ANDROID_SN(eventAddException), event_handle, exception_handle);
-	sentry::logging::print_debug("Adding stack trace data: ", thread_data);
-	android_plugin->call(ANDROID_SN(eventAddStackTrace), event_handle, exception_handle, thread_data);
-	android_plugin->call(ANDROID_SN(releaseException), exception_handle);
+	android_plugin->call(ANDROID_SN(eventAddException), event_handle, p_exception.type, p_exception.value, thread_id);
+	android_plugin->call(ANDROID_SN(eventAddThreadStackTrace), event_handle, thread_data);
 }
 
 int AndroidEvent::get_exception_count() const {

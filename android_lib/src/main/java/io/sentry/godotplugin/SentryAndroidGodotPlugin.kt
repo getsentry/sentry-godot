@@ -45,12 +45,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
-    private val exceptionsByHandle = object : ThreadLocal<MutableMap<Int, SentryException>>() {
-        override fun initialValue(): MutableMap<Int, SentryException> {
-            return mutableMapOf()
-        }
-    }
-
     private val breadcrumbsByHandle = object : ThreadLocal<MutableMap<Int, Breadcrumb>>() {
         override fun initialValue(): MutableMap<Int, Breadcrumb> {
             return mutableMapOf()
@@ -69,14 +63,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             Log.e(TAG, "Internal Error -- SentryEvent not found: $eventHandle")
         }
         return event
-    }
-
-    private fun getException(exceptionHandle: Int): SentryException? {
-        val exception: SentryException? = exceptionsByHandle.get()?.get(exceptionHandle)
-        if (exception == null) {
-            Log.e(TAG, "Internal Error -- SentryException not found: $exceptionHandle")
-        }
-        return exception
     }
 
     private fun getBreadcrumb(breadcrumbHandle: Int): Breadcrumb? {
@@ -107,21 +93,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
 
         eventsMap[handle] = event
-        return handle
-    }
-
-    private fun registerException(exception: SentryException): Int {
-        val exceptionsMap = exceptionsByHandle.get() ?: run {
-            Log.e(TAG, "Internal Error -- exceptionsByHandle is null")
-            return 0
-        }
-
-        var handle = Random.nextInt()
-        while (exceptionsMap.containsKey(handle)) {
-            handle = Random.nextInt()
-        }
-
-        exceptionsMap[handle] = exception
         return handle
     }
 
@@ -502,28 +473,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun createException(type: String, value: String): Int {
-        val exception = SentryException()
-        exception.type = type
-        exception.value = value
-        return registerException(exception)
-    }
-
-    @UsedByGodot
-    fun releaseException(exceptionHandle: Int) {
-        val exceptionsMap = exceptionsByHandle.get()
-        if (exceptionsMap == null) {
-            Log.e(TAG, "Internal Error -- exceptionsByHandle is null")
-            return
-        }
-
-        exceptionsMap.remove(exceptionHandle)
-    }
-
-    @UsedByGodot
-    fun eventAddStackTrace(eventHandle: Int, exceptionHandle: Int, threadData: Dictionary) {
+    fun eventAddThreadStackTrace(eventHandle: Int, threadData: Dictionary) {
         val event = getEvent(eventHandle) ?: return
-        val exception = getException(exceptionHandle) ?: return
 
         val stackTrace = SentryStackTrace()
         stackTrace.frames = mutableListOf()
@@ -555,48 +506,26 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
         val thread = SentryThread()
         thread.stacktrace = stackTrace
+        thread.id = threadData["thread_id"].toLongOrNull()
         thread.isMain = threadData["main"] as? Boolean
         thread.isCrashed = threadData["crashed"] as? Boolean
         thread.isCurrent = threadData["current"] as? Boolean
 
         if (event.threads == null) {
-            event.threads = mutableListOf(thread)
+            event.threads = mutableListOf()
         }
         event.threads?.add(thread)
-
-        exception.threadId = threadData["thread_id"].toLongOrNull()
     }
 
     @UsedByGodot
-    fun eventAppendStackFrame(eventHandle: Int, exceptionHandle: Int, frameData: Dictionary) {
-        val exception = getException(exceptionHandle) ?: return
-        val frame = SentryStackFrame().apply {
-            filename = frameData["filename"] as? String
-            function = frameData["function"] as? String
-            lineno = frameData["lineno"] as? Int
-            isInApp = frameData["in_app"] as? Boolean
-            platform = frameData["platform"] as? String
-
-            if (frameData.containsKey("context_line")) {
-                contextLine = frameData["context_line"] as? String
-                preContext = (frameData["pre_context"] as? Array<*>)?.map { it as String }
-                postContext = (frameData["post_context"] as? Array<*>)?.map { it as String }
-            }
-
-            if (frameData.containsKey("vars")) {
-                vars = frameData["vars"] as? Dictionary
-            }
-        }
-
-
-
-        exception.stacktrace?.frames?.add(frame)
-    }
-
-    @UsedByGodot
-    fun eventAddException(eventHandle: Int, exceptionHandle: Int) {
+    fun eventAddException(eventHandle: Int, type: String, value: String, threadId: Long) {
         val event = getEvent(eventHandle) ?: return
-        val exception = getException(exceptionHandle) ?: return
+
+        val exception = SentryException()
+        exception.type = type
+        exception.value = value
+        exception.threadId = threadId
+
         if (event.exceptions == null) {
             event.exceptions = mutableListOf()
         }
