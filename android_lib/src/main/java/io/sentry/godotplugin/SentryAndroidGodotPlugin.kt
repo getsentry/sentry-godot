@@ -21,6 +21,7 @@ import io.sentry.protocol.SentryException
 import io.sentry.protocol.SentryId
 import io.sentry.protocol.SentryStackFrame
 import io.sentry.protocol.SentryStackTrace
+import io.sentry.protocol.SentryThread
 import io.sentry.protocol.User
 import org.godotengine.godot.Dictionary
 import org.godotengine.godot.Godot
@@ -505,8 +506,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         val exception = SentryException()
         exception.type = type
         exception.value = value
-        exception.stacktrace = SentryStackTrace()
-        exception.stacktrace?.frames = mutableListOf()
         return registerException(exception)
     }
 
@@ -522,7 +521,54 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun exceptionAppendStackFrame(exceptionHandle: Int, frameData: Dictionary) {
+    fun eventAddStackTrace(eventHandle: Int, exceptionHandle: Int, threadData: Dictionary) {
+        val event = getEvent(eventHandle) ?: return
+        val exception = getException(exceptionHandle) ?: return
+
+        val stackTrace = SentryStackTrace()
+        stackTrace.frames = mutableListOf()
+
+        val framesData = threadData["frames"] as Array<*>
+
+        for (el in framesData) {
+            val frameData = el as Dictionary
+            val frame = SentryStackFrame().apply {
+                filename = frameData["filename"] as? String
+                function = frameData["function"] as? String
+                lineno = frameData["lineno"] as? Int
+                isInApp = frameData["in_app"] as? Boolean
+                platform = frameData["platform"] as? String
+
+                if (frameData.containsKey("context_line")) {
+                    contextLine = frameData["context_line"] as? String
+                    preContext = (frameData["pre_context"] as? Array<*>)?.map { it as String }
+                    postContext = (frameData["post_context"] as? Array<*>)?.map { it as String }
+                }
+
+                if (frameData.containsKey("vars")) {
+                    vars = frameData["vars"] as? Dictionary
+                }
+            }
+
+            stackTrace.frames?.add(frame)
+        }
+
+        val thread = SentryThread()
+        thread.stacktrace = stackTrace
+        thread.isMain = threadData["main"] as? Boolean
+        thread.isCrashed = threadData["crashed"] as? Boolean
+        thread.isCurrent = threadData["current"] as? Boolean
+
+        if (event.threads == null) {
+            event.threads = mutableListOf(thread)
+        }
+        event.threads?.add(thread)
+
+        exception.threadId = threadData["thread_id"].toLongOrNull()
+    }
+
+    @UsedByGodot
+    fun eventAppendStackFrame(eventHandle: Int, exceptionHandle: Int, frameData: Dictionary) {
         val exception = getException(exceptionHandle) ?: return
         val frame = SentryStackFrame().apply {
             filename = frameData["filename"] as? String
@@ -541,6 +587,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 vars = frameData["vars"] as? Dictionary
             }
         }
+
+
 
         exception.stacktrace?.frames?.add(frame)
     }

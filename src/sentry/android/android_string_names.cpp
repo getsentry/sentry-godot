@@ -68,6 +68,7 @@ AndroidStringNames::AndroidStringNames() {
 	eventGetExceptionCount = StringName("eventGetExceptionCount");
 	eventSetExceptionValue = StringName("eventSetExceptionValue");
 	eventGetExceptionValue = StringName("eventGetExceptionValue");
+	eventAddStackTrace = StringName("eventAddStackTrace");
 
 	// Breadcrumbs.
 	createBreadcrumb = StringName("createBreadcrumb");

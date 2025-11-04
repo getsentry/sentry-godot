@@ -2,6 +2,9 @@
 
 #include "android_string_names.h"
 #include "android_util.h"
+#include "sentry/logging/print.h"
+
+#include <godot_cpp/classes/os.hpp>
 
 namespace sentry::android {
 
@@ -114,17 +117,18 @@ void AndroidEvent::add_exception(const Exception &p_exception) {
 
 	int32_t exception_handle = android_plugin->call(ANDROID_SN(createException), p_exception.type, p_exception.value);
 
+	Array st_frames_data;
 	for (const StackFrame &frame : p_exception.frames) {
-		Dictionary data;
-		data["filename"] = frame.filename;
-		data["function"] = frame.function;
-		data["lineno"] = frame.lineno;
-		data["in_app"] = frame.in_app;
-		data["platform"] = frame.platform;
+		Dictionary frame_data;
+		frame_data["filename"] = frame.filename;
+		frame_data["function"] = frame.function;
+		frame_data["lineno"] = frame.lineno;
+		frame_data["in_app"] = frame.in_app;
+		frame_data["platform"] = frame.platform;
 		if (!frame.context_line.is_empty()) {
-			data["context_line"] = frame.context_line;
-			data["pre_context"] = frame.pre_context;
-			data["post_context"] = frame.post_context;
+			frame_data["context_line"] = frame.context_line;
+			frame_data["pre_context"] = frame.pre_context;
+			frame_data["post_context"] = frame.post_context;
 		}
 
 		if (!frame.vars.is_empty()) {
@@ -132,13 +136,25 @@ void AndroidEvent::add_exception(const Exception &p_exception) {
 			for (auto var : frame.vars) {
 				variables[var.first] = sanitize_variant(var.second);
 			}
-			data["vars"] = variables;
+			frame_data["vars"] = variables;
 		}
 
-		android_plugin->call(ANDROID_SN(exceptionAppendStackFrame), exception_handle, data);
+		st_frames_data.append(frame_data);
 	}
 
+	uint64_t thread_id = godot::OS::get_singleton()->get_thread_caller_id();
+	bool is_main = godot::OS::get_singleton()->get_main_thread_id() == thread_id;
+
+	Dictionary thread_data;
+	thread_data["thread_id"] = thread_id;
+	thread_data["main"] = is_main;
+	thread_data["crashed"] = is_main;
+	thread_data["current"] = true;
+	thread_data["frames"] = st_frames_data;
+
 	android_plugin->call(ANDROID_SN(eventAddException), event_handle, exception_handle);
+	sentry::logging::print_debug("Adding stack trace data: ", thread_data);
+	android_plugin->call(ANDROID_SN(eventAddStackTrace), event_handle, exception_handle, thread_data);
 	android_plugin->call(ANDROID_SN(releaseException), exception_handle);
 }
 
