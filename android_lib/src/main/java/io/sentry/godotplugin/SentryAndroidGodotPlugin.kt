@@ -512,10 +512,9 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         thread.isCurrent = threadData["current"] as? Boolean
 
         if (event.threads == null) {
-            event.threads = mutableListOf(thread)
-        } else {
-            event.threads?.add(thread)
+            event.threads = mutableListOf()
         }
+        event.threads?.add(thread)
     }
 
     @UsedByGodot
