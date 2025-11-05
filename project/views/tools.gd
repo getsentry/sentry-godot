@@ -60,16 +60,3 @@ func _on_test_diverse_context_button_pressed() -> void:
 	SentrySDK.set_context("diverse_context", context)
 	DemoOutput.print_info("Added context with diverse values.")
 	SentrySDK.capture_message("Test diverse context")
-	if OS.get_name() == "Android":
-		# Check if we should run gdUnit4 tests or the simple Android tests
-		var run_gdunit_tests = OS.get_environment("SENTRY_RUN_GDUNIT_TESTS")
-		if run_gdunit_tests == "true":
-			# Load and run the mobile test runner scene
-			var mobile_test_scene = load("res://mobile_test.tscn").instantiate()
-			get_tree().root.add_child(mobile_test_scene)
-			# Hide the current mobile demo UI
-			visible = false
-		else:
-			# Run the original simple Android tests
-			var tests = load("res://test/test_on_android.gd").new()
-			tests.run_tests()
