@@ -104,46 +104,40 @@ run_tests() {
 
 	# Start logcat, streaming to stdout and monitoring for completion
 	local exit_code=1  # Default general failure
-	local start_time=$(date +%s)
-	local last_pid_check=$start_time
 
 	# Process logcat output
 	while IFS= read -r line; do
 	    echo "$line"
 
-	    # Check for test completion
+	    # Check for test run completion
 	    if echo "$line" | grep -q ">>> Test run complete with code:"; then
 	        exit_code=$(echo "$line" | sed 's/.*>>> Test run complete with code: \([0-9]*\).*/\1/')
-	        msg "Test run completion detected"
+			timeout 2 cat || true  # Continue reading for a bit in case there are remaining logs
+			break
+	    fi
+
+	    # Check Godot exit condition
+		if echo "$line" | grep -q "OnGodotTerminating"; then
+            timeout 2 cat || true  # Continue reading for a bit in case there are remaining logs
 	        break
 	    fi
+	done < <(timeout $TEST_TIMEOUT adb logcat --pid=$pid -s Godot,godot,sentry-godot)
 
-	    # Check timeout
-	    local current_time=$(date +%s)
-	    local elapsed=$((current_time - start_time))
-	    if [ $elapsed -ge $TEST_TIMEOUT ]; then
-	        error "Test run timed out after $TEST_TIMEOUT seconds"
-	        exit_code=124  # Timeout exit code
-	        break
-	    fi
-
-	    # Check if process still running (every 5 seconds)
-	    if [ $((current_time - last_pid_check)) -ge 5 ]; then
-	        local current_pid=$(adb shell pidof io.sentry.godot.project 2>/dev/null || echo "")
-	        last_pid_check=$current_time
-	        if [ -z "$current_pid" ] || [ "$current_pid" != "$pid" ]; then
-	            error "App process has stopped"
-	            # Continue reading for a bit in case there are remaining logs
-	            timeout 3 cat || true
-	            exit_code=2  # Process died without completion
-	            break
-	        fi
-	    fi
-	done < <(adb logcat --pid=$pid -s Godot,godot,sentry-godot)
-
+	# Check if never finished
 	if [ $exit_code -eq 1 ]; then
-	    error "Test run was interrupted or failed to complete properly!"
+  		error "Test run was interrupted or failed to complete properly!"
 	fi
+
+    # Check if process still running
+    local current_pid=$(adb shell pidof io.sentry.godot.project 2>/dev/null || echo "")
+    if [ -n "$current_pid" ] && [ "$current_pid" = "$pid" ]; then
+    	if [ $exit_code -eq 0 ]; then
+        	exit_code=88
+     	fi
+        error "Godot app process still running"
+    fi
+
+	msg "Test run finished with code: $exit_code"
 
 	return $exit_code
 }
@@ -185,7 +179,7 @@ for test_path in "${TEST_PATHS[@]}"; do
     fi
 
     # Small delay between tests
-    sleep 2
+    sleep 1
 done
 
 # Summary
