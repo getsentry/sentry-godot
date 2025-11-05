@@ -73,13 +73,11 @@ public:
 	StringName eventToJson;
 
 	// Exceptions.
-	StringName createException;
-	StringName releaseException;
-	StringName exceptionAppendStackFrame;
 	StringName eventAddException;
 	StringName eventGetExceptionCount;
 	StringName eventSetExceptionValue;
 	StringName eventGetExceptionValue;
+	StringName eventAddThreadStackTrace;
 
 	// Breadcrumbs.
 	StringName createBreadcrumb;
