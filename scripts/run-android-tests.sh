@@ -56,7 +56,7 @@ run_tests() {
 			msg "Device lockscreen is unlocked and ready"
 			break
 		elif [ $i -eq $LOCKSCREEN_RETRIES ]; then
-			error "Device lockscreen still active after $LOCKSCREEN_RETRIES attempts. Exiting."
+			error "Device lockscreen still active after $LOCKSCREEN_RETRIES attempts. Aborting."
 			exit 1
 		fi
 		msg "Device lockscreen is active, please unlock it..."
