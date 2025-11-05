@@ -200,5 +200,5 @@ if [ ${#FAILED_TESTS[@]} -gt 0 ]; then
     done
 fi
 
-highlight "Overall test run finished with exit code: $OVERALL_EXIT_CODE"
+highlight "Test execution finished with code: $OVERALL_EXIT_CODE"
 exit $OVERALL_EXIT_CODE
