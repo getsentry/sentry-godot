@@ -43,7 +43,7 @@ func test_event_timestamp() -> void:
 	var custom_timestamp := SentryTimestamp.from_microseconds_since_unix_epoch(1612325106123456)
 	event.timestamp = custom_timestamp
 	# millisecond precision on some platforms
-	assert_int(event.timestamp.microseconds_since_unix_epoch).is_between(1612325106123000, 1612325106124456)
+	assert_int(event.timestamp.microseconds_since_unix_epoch).is_between(1612325106123000, 1612325106123456)
 
 	# Test assigning timestamp from current time
 	var current_timestamp := SentryTimestamp.from_unix_time(Time.get_unix_time_from_system())
