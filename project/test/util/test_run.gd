@@ -65,7 +65,8 @@ func _populate_env_from_android_intent():
 		var keys = extras.keySet().toArray()
 		for i in range(keys.size()):
 			var key: String = keys[i].toString()
-			var value: String = extras.get(key).toString()
+			var raw_value = extras.get(key)
+			var value: String = raw_value.toString() if raw_value != null else ""
 			if key.begins_with("SENTRY"):
 				OS.set_environment(key, value)
 				print("Added \"%s\" environment variable from Android intent." % key)
