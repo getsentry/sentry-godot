@@ -46,7 +46,7 @@ fi
 abort_on_error "Godot export failed"
 
 # Install APK (allow multiple attempts)
-highlight "Installing APK..."
+highlight "\nInstalling APK..."
 adb kill-server 2>/dev/null
 for i in $(seq 1 $INSTALL_RETRIES); do
 	msg "Waiting for Android device..."
@@ -151,10 +151,10 @@ run_tests() {
 
 # Discover isolated test suites and add normal suites as first item
 TEST_PATHS=("res://test/suites/")
+highlight "\nLooking for isolated test suites..."
 TEST_PATHS+=($(find project/test/isolated -name "test_*.gd" -type f | sort))
 abort_on_error "Failed to find isolated test suites"
-
-highlight "Found $((${#TEST_PATHS[@]} - 1)) isolated test suites."
+msg "Found $((${#TEST_PATHS[@]} - 1)) isolated test suites."
 
 OVERALL_EXIT_CODE=0
 FAILED_TESTS=()
