@@ -32,6 +32,7 @@ class Stats:
 		num_total = 0
 		num_failed = 0
 		num_errors = 0
+		num_warnings = 0
 		num_skipped = 0
 		num_flaky = 0
 
@@ -138,11 +139,11 @@ func _on_gdunit_event(event: GdUnitEvent) -> void:
 
 		GdUnitEvent.TESTCASE_AFTER:
 			suite_stats.num_total += 1
-			suite_stats.num_errors += event.error_count()
 			suite_stats.num_failed +=  event.failed_count()
+			suite_stats.num_errors += event.error_count()
+			suite_stats.num_warnings += 1 if event.is_warning() else 0
 			suite_stats.num_skipped += event.skipped_count()
 			suite_stats.num_flaky += 1 if event.is_flaky() else 0
-			suite_stats.num_warnings += 1 if event.is_warning() else 0
 
 			var test := _test_session.find_test_by_id(event.guid())
 			if event.is_success():
