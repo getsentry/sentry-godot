@@ -9,6 +9,9 @@ func init_sdk() -> void:
 
 
 func test_logger_warnings_and_prints_create_breadcrumbs() -> void:
+	# Wait a small amount of time to dodge initial device events on Android.
+	await get_tree().create_timer(0.5).timeout
+
 	# We expect print() and push_warning() to become breadcrumbs and not create events.
 	print("Debug message")
 	push_warning("Warning message")
