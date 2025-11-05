@@ -2,7 +2,8 @@ extends RefCounted
 ## Execute tests based on ENV variables and quit.
 ##
 ## Environment variables:
-## - SENTRY_TEST_INCLUDE    ';'-separated list of paths to include in testing
+## - SENTRY_TEST=1 -- enter testing mode
+## - SENTRY_TEST_INCLUDE -- ';'-separated list of paths to include in testing
 
 
 func should_run() -> bool:
