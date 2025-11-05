@@ -1,6 +1,5 @@
 extends VBoxContainer
 
-const MOBILE_TESTS_FILE := "res://test/mobile_tests.gd"
 
 
 func _ready() -> void:

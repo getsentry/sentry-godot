@@ -7,22 +7,36 @@
 # - Android SDK with ADB (Android Debug Bridge) tools
 # - Android device connected and authorized for debugging
 
+highlight() {
+    echo -e "\033[1;34m$1\033[0m"
+}
+
+msg() {
+    echo -e "\033[1m$1\033[0m"
+}
+
+error() {
+    echo -e "\033[1;31m$1\033[0m"
+}
+
 set -e
+
+highlight "Exporting project..."
 
 # Export project to "exports/android.apk".
 godot=$(command -v godot || echo "$GODOT")
 "$godot" --path project --headless --install-android-build-template --export-debug "Android CI" ../exports/android.apk
 
 # Install APK (allow multiple attempts)
-echo "Installing APK..."
+highlight "Installing APK..."
 for i in {1..5}; do
     if adb install ./exports/android.apk; then
         break
     elif [ $i -eq 5 ]; then
-        echo "Failed to install APK after 5 attempts"
+        msg "Failed to install APK after 5 attempts"
         exit 1
     else
-        echo "Install attempt $i failed, retrying..."
+        error "Install attempt $i failed, retrying..."
         sleep 1
     fi
 done
@@ -31,25 +45,25 @@ done
 for i in {1..10}; do
     LOCK_STATE=$(adb shell dumpsys window | grep mDreamingLockscreen)
     if echo "$LOCK_STATE" | grep -q "mDreamingLockscreen=false"; then
-        echo "Device lockscreen is unlocked and ready"
+        msg "Device lockscreen is unlocked and ready"
         break
     fi
-    echo "Device lockscreen is active, please unlock it..."
+    msg "Device lockscreen is active, please unlock it..."
     sleep 2
 done
 
-echo "Launching APK..."
+highlight "Launching APK..."
 adb shell am start -n io.sentry.godot.project/com.godot.game.GodotApp --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "res://test/suites/"
 
 # Get PID
 sleep 1
 PID=$(adb shell pidof io.sentry.godot.project)
 if [ -z "$PID" ]; then
-    echo "Failed to get PID of the app"
+    error "Failed to get PID of the app"
     exit 3
 fi
 
-echo "Reading logs..."
+highlight "Reading logs..."
 
 # Start logcat, streaming to stdout and monitoring for completion
 EXIT_CODE=1  # Default general failure
@@ -63,7 +77,7 @@ while IFS= read -r line; do
     # Check for test completion
     if echo "$line" | grep -q ">>> Test run complete with code:"; then
         EXIT_CODE=$(echo "$line" | sed 's/.*>>> Test run complete with code: \([0-9]*\).*/\1/')
-        echo "Test completion detected" >&2
+        msg "Test run completion detected"
         break
     fi
 
@@ -71,7 +85,7 @@ while IFS= read -r line; do
     CURRENT_TIME=$(date +%s)
     ELAPSED=$((CURRENT_TIME - START_TIME))
     if [ $ELAPSED -ge 120 ]; then
-        echo "Testing timed out after 2 minutes" >&2
+        error "Test run timed out after 2 minutes"
         EXIT_CODE=124  # Timeout exit code
         break
     fi
@@ -81,7 +95,7 @@ while IFS= read -r line; do
         CURRENT_PID=$(adb shell pidof io.sentry.godot.project 2>/dev/null || echo "")
         LAST_PID_CHECK=$CURRENT_TIME
         if [ -z "$CURRENT_PID" ] || [ "$CURRENT_PID" != "$PID" ]; then
-            echo "App process has stopped" >&2
+            error "App process has stopped"
             # Continue reading for a bit in case there are remaining logs
             timeout 3 cat || true
             EXIT_CODE=2  # Process died without completion
@@ -91,8 +105,8 @@ while IFS= read -r line; do
 done < <(adb logcat --pid=$PID -s Godot,godot,sentry-godot)
 
 if [ $EXIT_CODE -eq 1 ]; then
-    echo "Test run was interrupted or failed to complete properly!" >&2
+    error "Test run was interrupted or failed to complete properly!"
 fi
 
-echo "Test run completed with exit code: $EXIT_CODE" >&2
+highlight "Test run finished with exit code: $EXIT_CODE"
 exit $EXIT_CODE
