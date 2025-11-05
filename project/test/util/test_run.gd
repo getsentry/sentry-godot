@@ -5,6 +5,8 @@ extends RefCounted
 ## - SENTRY_TEST=1 -- enter testing mode
 ## - SENTRY_TEST_INCLUDE -- ';'-separated list of paths to include in testing
 
+const DEFAULT_TESTS := "res://test/suites/"
+
 
 func should_run() -> bool:
 	_populate_env_from_android_intent()
@@ -17,6 +19,10 @@ func execute() -> void:
 	await scene_tree.process_frame
 
 	var included_paths: PackedStringArray = _get_included_paths()
+	if included_paths.is_empty():
+		# Include default tests if specs not provided.
+		included_paths.push_back(DEFAULT_TESTS)
+
 	print(" -- Tests included: ", included_paths)
 
 	# Remove all existing nodes.
