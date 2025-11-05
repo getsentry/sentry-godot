@@ -10,6 +10,7 @@
 # Configuration
 TEST_TIMEOUT=120  # seconds
 INSTALL_RETRIES=5
+LAUNCH_RETRIES=3
 LOCKSCREEN_RETRIES=20
 
 # Formatted output
@@ -17,6 +18,21 @@ highlight() { echo -e "\033[1;34m$1\033[0m"; }
 msg() { echo -e "\033[1m$1\033[0m"; }
 error() { echo -e "\033[1;31m$1\033[0m"; }
 success() { echo -e "\033[1;32m$1\033[0m"; }
+
+# Check exit code of previous command and abort with message if non-zero
+abort_on_error() {
+    local exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+        error "$1 (exit code: $exit_code). Aborting."
+        exit $exit_code
+    fi
+}
+
+# Exit with code 1 and message
+abort() {
+	error "$1. Aborting."
+	exit 1
+}
 
 highlight "Exporting project..."
 
@@ -27,6 +43,7 @@ if [ -z "$godot" ] || [ ! -x "$godot" ]; then
     exit 1
 fi
 "$godot" --path project --headless --install-android-build-template --export-debug "Android CI" ../exports/android.apk
+abort_on_error "Godot export failed"
 
 # Install APK (allow multiple attempts)
 highlight "Installing APK..."
@@ -36,8 +53,7 @@ for i in $(seq 1 $INSTALL_RETRIES); do
     if adb wait-for-device && adb install ./exports/android.apk; then
         break
     elif [ $i -eq $INSTALL_RETRIES ]; then
-        msg "Failed to install APK after $INSTALL_RETRIES attempts"
-        exit 1
+        abort "Failed to install APK after $INSTALL_RETRIES attempts"
     else
         error "Install attempt $i failed, retrying..."
         sleep 1
@@ -56,15 +72,25 @@ run_tests() {
 			msg "Device lockscreen is unlocked and ready"
 			break
 		elif [ $i -eq $LOCKSCREEN_RETRIES ]; then
-			error "Device lockscreen still active after $LOCKSCREEN_RETRIES attempts. Aborting."
-			exit 1
+			abort "Device lockscreen still active after $LOCKSCREEN_RETRIES attempts"
 		fi
 		msg "Device lockscreen is active, please unlock it..."
 		sleep 2
 	done
 
 	highlight "Launching APK..."
-	adb shell am start -n io.sentry.godot.project/com.godot.game.GodotApp --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "$tests"
+	for i in $(seq 1 $LAUNCH_RETRIES); do
+		adb shell am start -n io.sentry.godot.project/com.godot.game.GodotApp --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "$tests"
+		if [ $? -eq 0 ]; then
+			# Success
+			break
+		elif [ $i -eq $LAUNCH_RETRIES ]; then
+			abort "Failed to launch APK after $LAUNCH_RETRIES attempts"
+		else
+			error "Launch attempt $i failed, retrying..."
+			sleep 1
+		fi
+	done
 
 	# Get PID
 	sleep 1
@@ -126,6 +152,7 @@ run_tests() {
 # Discover isolated test suites and add normal suites as first item
 TEST_PATHS=("res://test/suites/")
 TEST_PATHS+=($(find project/test/isolated -name "test_*.gd" -type f | sort))
+abort_on_error "Failed to find isolated test suites"
 
 highlight "Found $((${#TEST_PATHS[@]} - 1)) isolated tests."
 
