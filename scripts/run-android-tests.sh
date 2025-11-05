@@ -25,6 +25,10 @@ highlight "Exporting project..."
 
 # Export project to "exports/android.apk".
 godot=$(command -v godot || echo "$GODOT")
+if [ -z "$godot" ] || [ ! -x "$godot" ]; then
+    error "Godot executable not found. Please ensure 'godot' is in PATH or set GODOT environment variable."
+    exit 1
+fi
 "$godot" --path project --headless --install-android-build-template --export-debug "Android CI" ../exports/android.apk
 
 # Install APK (allow multiple attempts)
