@@ -181,7 +181,7 @@ for test_path in "${TEST_PATHS[@]}"; do
     else
         FAILED_TESTS+=("$godot_path")
         error "✗ FAILED: $godot_path (exit code: $test_exit_code)"
-        OVERALL_EXIT_CODE=1
+        OVERALL_EXIT_CODE=100
     fi
 
     # Small delay between tests
