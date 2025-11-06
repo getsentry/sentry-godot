@@ -74,49 +74,30 @@ void SentryAndroidBeforeSendLogHandler::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("before_send_log"), &SentryAndroidBeforeSendLogHandler::_before_send_log);
 }
 
-// *** SentryAndroidPluginDestroyedHandler
-
-void SentryAndroidPluginDestroyedHandler::_initialize(std::function<void()> p_callback) {
-	callback = p_callback;
-}
-
-void SentryAndroidPluginDestroyedHandler::_notify_plugin_destroyed() {
-	callback();
-}
-
-void SentryAndroidPluginDestroyedHandler::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("notify_plugin_destroyed"), &SentryAndroidPluginDestroyedHandler::_notify_plugin_destroyed);
-}
-
 // *** AndroidSDK
 
-void AndroidSDK::_notify_plugin_destroyed() {
-	sentry::logging::print_debug("Android bridge plugin destroyed");
-	plugin_alive.store(false);
-}
-
 void AndroidSDK::set_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND(!_is_plugin_alive());
+	ERR_FAIL_NULL(android_plugin);
 	android_plugin->call(ANDROID_SN(setContext), p_key, sanitize_variant(p_value));
 }
 
 void AndroidSDK::remove_context(const String &p_key) {
-	ERR_FAIL_COND(!_is_plugin_alive());
+	ERR_FAIL_NULL(android_plugin);
 	android_plugin->call(ANDROID_SN(removeContext), p_key);
 }
 
 void AndroidSDK::set_tag(const String &p_key, const String &p_value) {
-	ERR_FAIL_COND(!_is_plugin_alive());
+	ERR_FAIL_NULL(android_plugin);
 	android_plugin->call(ANDROID_SN(setTag), p_key, p_value);
 }
 
 void AndroidSDK::remove_tag(const String &p_key) {
-	ERR_FAIL_COND(!_is_plugin_alive());
+	ERR_FAIL_NULL(android_plugin);
 	android_plugin->call(ANDROID_SN(removeTag), p_key);
 }
 
 void AndroidSDK::set_user(const Ref<SentryUser> &p_user) {
-	ERR_FAIL_COND(!_is_plugin_alive());
+	ERR_FAIL_NULL(android_plugin);
 
 	if (p_user.is_valid()) {
 		android_plugin->call(ANDROID_SN(setUser),
@@ -130,26 +111,26 @@ void AndroidSDK::set_user(const Ref<SentryUser> &p_user) {
 }
 
 void AndroidSDK::remove_user() {
-	ERR_FAIL_COND(!_is_plugin_alive());
+	ERR_FAIL_NULL(android_plugin);
 	android_plugin->call(ANDROID_SN(removeUser));
 }
 
 Ref<SentryBreadcrumb> AndroidSDK::create_breadcrumb() {
-	ERR_FAIL_COND_V(!_is_plugin_alive(), nullptr);
+	ERR_FAIL_NULL_V(android_plugin, nullptr);
 	int32_t handle = android_plugin->call(ANDROID_SN(createBreadcrumb));
 	Ref<AndroidBreadcrumb> crumb = memnew(AndroidBreadcrumb(android_plugin, handle));
 	return crumb;
 }
 
 void AndroidSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
-	ERR_FAIL_COND(!_is_plugin_alive());
+	ERR_FAIL_NULL(android_plugin);
 	Ref<AndroidBreadcrumb> crumb = p_breadcrumb;
 	ERR_FAIL_COND(crumb.is_null());
 	android_plugin->call(ANDROID_SN(addBreadcrumb), crumb->get_handle());
 }
 
 void AndroidSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
-	ERR_FAIL_COND(!_is_plugin_alive());
+	ERR_FAIL_NULL(android_plugin);
 
 	if (p_body.is_empty()) {
 		return;
@@ -171,24 +152,24 @@ void AndroidSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p
 }
 
 String AndroidSDK::capture_message(const String &p_message, Level p_level) {
-	ERR_FAIL_COND_V(!_is_plugin_alive(), String());
+	ERR_FAIL_NULL_V(android_plugin, String());
 	return android_plugin->call(ANDROID_SN(captureMessage), p_message, p_level);
 }
 
 String AndroidSDK::get_last_event_id() {
-	ERR_FAIL_COND_V(!_is_plugin_alive(), String());
+	ERR_FAIL_NULL_V(android_plugin, String());
 	return android_plugin->call(ANDROID_SN(getLastEventId));
 }
 
 Ref<SentryEvent> AndroidSDK::create_event() {
-	ERR_FAIL_COND_V(!_is_plugin_alive(), nullptr);
+	ERR_FAIL_NULL_V(android_plugin, nullptr);
 	int32_t event_handle = android_plugin->call(ANDROID_SN(createEvent));
 	Ref<AndroidEvent> event = memnew(AndroidEvent(android_plugin, event_handle));
 	return event;
 }
 
 String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
-	ERR_FAIL_COND_V(!_is_plugin_alive(), String());
+	ERR_FAIL_NULL_V(android_plugin, String());
 	ERR_FAIL_COND_V(p_event.is_null(), String());
 	Ref<AndroidEvent> android_event = p_event;
 	ERR_FAIL_COND_V(android_event.is_null(), String());
@@ -198,7 +179,7 @@ String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
 }
 
 void AndroidSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
-	ERR_FAIL_COND(!_is_plugin_alive());
+	ERR_FAIL_NULL(android_plugin);
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
 	android_plugin->call(ANDROID_SN(captureFeedback),
@@ -209,7 +190,6 @@ void AndroidSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 }
 
 void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
-	ERR_FAIL_COND(!_is_plugin_alive());
 	ERR_FAIL_COND(p_attachment.is_null());
 
 	if (p_attachment->get_path().is_empty()) {
@@ -231,7 +211,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 }
 
 void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
-	ERR_FAIL_COND(!_is_plugin_alive());
+	ERR_FAIL_NULL(android_plugin);
 
 	if (p_configuration_callback.is_valid()) {
 		p_configuration_callback.call(SentryOptions::get_singleton());
@@ -284,15 +264,7 @@ AndroidSDK::AndroidSDK() {
 	AndroidStringNames::create_singleton();
 
 	android_plugin = Engine::get_singleton()->get_singleton("SentryAndroidGodotPlugin");
-	plugin_alive.store(android_plugin != nullptr);
-
 	ERR_FAIL_NULL_MSG(android_plugin, "Sentry: Unable to locate SentryAndroidGodotPlugin singleton.");
-
-	plugin_destroyed_handler = memnew(SentryAndroidPluginDestroyedHandler);
-	plugin_destroyed_handler->_initialize([this]() {
-		_notify_plugin_destroyed();
-	});
-	android_plugin->call("registerDestroyHandler", plugin_destroyed_handler->get_instance_id());
 
 	before_send_handler = memnew(SentryAndroidBeforeSendHandler);
 	before_send_handler->_initialize(android_plugin);
@@ -305,15 +277,9 @@ AndroidSDK::~AndroidSDK() {
 	AndroidStringNames::destroy_singleton();
 	if (before_send_handler) {
 		memdelete(before_send_handler);
-		before_send_handler = nullptr;
 	}
 	if (before_send_log_handler) {
 		memdelete(before_send_log_handler);
-		before_send_log_handler = nullptr;
-	}
-	if (plugin_destroyed_handler) {
-		memdelete(plugin_destroyed_handler);
-		plugin_destroyed_handler = nullptr;
 	}
 	android_plugin = nullptr;
 }
