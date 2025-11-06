@@ -274,7 +274,6 @@ AndroidSDK::AndroidSDK() {
 }
 
 AndroidSDK::~AndroidSDK() {
-	android_plugin = nullptr;
 	AndroidStringNames::destroy_singleton();
 	if (before_send_handler) {
 		memdelete(before_send_handler);
@@ -282,6 +281,7 @@ AndroidSDK::~AndroidSDK() {
 	if (before_send_log_handler) {
 		memdelete(before_send_log_handler);
 	}
+	android_plugin = nullptr;
 }
 
 } //namespace sentry::android
