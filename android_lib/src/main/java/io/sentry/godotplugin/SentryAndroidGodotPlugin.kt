@@ -130,20 +130,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         return "SentryAndroidGodotPlugin"
     }
 
-    private var destroyHandlerId: Long = 0
-
-    @UsedByGodot
-    fun registerDestroyHandler(handlerId: Long) {
-        destroyHandlerId = handlerId
-    }
-
-    override fun onMainDestroy() {
-        if (destroyHandlerId != 0L) {
-            Callable.call(destroyHandlerId, "notify_plugin_destroyed")
-        }
-        super.onMainDestroy()
-    }
-
     @UsedByGodot
     fun init(
         optionsData: Dictionary,
