@@ -8,7 +8,7 @@
 # - Android device connected and authorized for debugging
 
 # Configuration
-TEST_TIMEOUT=120  # seconds
+TEST_TIMEOUT=60  # seconds
 INSTALL_RETRIES=5
 LAUNCH_RETRIES=3
 LOCKSCREEN_RETRIES=20
@@ -17,6 +17,7 @@ LOCKSCREEN_RETRIES=20
 highlight() { echo -e "\033[1;34m$1\033[0m"; }
 msg() { echo -e "\033[1m$1\033[0m"; }
 error() { echo -e "\033[1;31m$1\033[0m"; }
+warning() { echo -e "\033[1;33m$1\033[0m"; }
 success() { echo -e "\033[1;32m$1\033[0m"; }
 
 # Check exit code of previous command and abort with message if non-zero
@@ -93,17 +94,18 @@ run_tests() {
 	done
 
 	# Get PID
-	sleep 1
+	sleep 2
 	local pid=$(adb shell pidof io.sentry.godot.project)
 	if [ -z "$pid" ]; then
 	    error "Failed to get PID of the app"
 	    return 3
 	fi
 
+	# Start logcat, streaming to stdout and monitoring for completion
 	highlight "Reading logs..."
 
-	# Start logcat, streaming to stdout and monitoring for completion
 	local exit_code=1  # Default general failure
+	local clean_exit=0
 
 	# Process logcat output
 	while IFS= read -r line; do
@@ -112,16 +114,16 @@ run_tests() {
 	    # Check for test run completion
 	    if echo "$line" | grep -q ">>> Test run complete with code:"; then
 	        exit_code=$(echo "$line" | sed 's/.*>>> Test run complete with code: \([0-9]*\).*/\1/')
-			timeout 2 cat || true  # Continue reading for a bit in case there are remaining logs
-			break
+			# Not quitting yet -- waiting for Godot to terminate.
 	    fi
 
 	    # Check Godot exit condition
 		if echo "$line" | grep -q "OnGodotTerminating"; then
+			clean_exit=1
             timeout 2 cat || true  # Continue reading for a bit in case there are remaining logs
 	        break
 	    fi
-	done < <(timeout $TEST_TIMEOUT adb logcat --pid=$pid -s Godot,godot,sentry-godot)
+	done < <(timeout $TEST_TIMEOUT adb logcat --pid=$pid -s Godot,godot,sentry-godot,sentry-native)
 
 	# Check if never finished
 	if [ $exit_code -eq 1 ]; then
@@ -135,6 +137,9 @@ run_tests() {
         	exit_code=88
      	fi
         error "Godot app process still running"
+    # Check if not exited cleanly
+	elif [ $clean_exit -eq 0 ]; then
+		warning "Unclean exit detected. Godot possibly crashed."
     fi
 
 	msg "Test run finished with code: $exit_code"
