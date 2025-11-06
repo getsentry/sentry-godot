@@ -72,6 +72,9 @@ func after_test() -> void:
 
 
 func _before_send(event: SentryEvent) -> SentryEvent:
+	if event.is_crash():
+		# Likely processing previous crash.
+		return event
 	captured_events.append(event.to_json())
 	event_captured.emit()
 	return null
