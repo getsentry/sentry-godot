@@ -24,7 +24,7 @@ success() { echo -e "\033[1;32m$1\033[0m"; }
 abort_on_error() {
     local exit_code=$?
     if [ $exit_code -ne 0 ]; then
-        error "$1 (exit code: $exit_code). Aborting."
+        error "$1 (exit code $exit_code). Aborting."
         exit $exit_code
     fi
 }
@@ -75,7 +75,7 @@ run_tests() {
 		elif [ $i -eq $LOCKSCREEN_RETRIES ]; then
 			abort "Device lockscreen still active after $LOCKSCREEN_RETRIES attempts"
 		fi
-		msg "Device lockscreen is active, please unlock it..."
+		warning "Device lockscreen is active, please unlock it..."
 		sleep 2
 	done
 
@@ -159,10 +159,10 @@ OVERALL_EXIT_CODE=0
 FAILED_TESTS=()
 PASSED_TESTS=()
 
-# Run each test path perform a separate run
+# For each test path perform a separate run
 for test_path in "${TEST_PATHS[@]}"; do
     if [[ "$test_path" == "res://test/suites/" ]]; then
-        # First item is the test suites
+        # First item is the normal test suites
         godot_path="$test_path"
     else
         # Convert file path to Godot resource path for isolated tests

@@ -47,7 +47,7 @@ var _included_tests := PackedStringArray()
 ## Initialize test execution
 func init_runner() -> void:
 	print_rich(Fmt.step(), Fmt.prominent("Initializing test runner..."))
-	_test_cases = _discover_tests()
+	_discover_tests()
 	if _test_cases.is_empty():
 		print_rich(Fmt.error("No test cases found!"))
 		_finish(Result.TESTS_NOT_FOUND)

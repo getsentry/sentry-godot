@@ -1,5 +1,5 @@
 extends VBoxContainer
-
+## A collection of dev tools accessible through buttons in the demo project.
 
 
 func _ready() -> void:
