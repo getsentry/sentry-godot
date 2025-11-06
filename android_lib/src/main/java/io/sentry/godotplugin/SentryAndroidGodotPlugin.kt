@@ -662,8 +662,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun logSetAttribute(handle: Int, name: String, type: String, value: Any) {
+    fun logSetAttribute(handle: Int, attributeData: Dictionary) {
         val log = getLog(handle) ?: return
+        val name = attributeData["name"] as String
+        val type = attributeData["type"] as String
+        val value = attributeData["value"]
         val logAttributes = log.attributes ?: HashMap<String, SentryLogEventAttributeValue>().also { log.attributes = it }
         logAttributes[name] = SentryLogEventAttributeValue(type, value)
     }
