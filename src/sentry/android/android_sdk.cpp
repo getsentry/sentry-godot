@@ -274,10 +274,7 @@ AndroidSDK::AndroidSDK() {
 }
 
 AndroidSDK::~AndroidSDK() {
-	if (is_enabled()) {
-		close();
-	}
-
+	android_plugin = nullptr;
 	AndroidStringNames::destroy_singleton();
 	if (before_send_handler) {
 		memdelete(before_send_handler);
