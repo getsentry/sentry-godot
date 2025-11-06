@@ -154,7 +154,7 @@ OVERALL_EXIT_CODE=0
 FAILED_TESTS=()
 PASSED_TESTS=()
 
-# Run each test file separately
+# Run each test path perform a separate run
 for test_path in "${TEST_PATHS[@]}"; do
     if [[ "$test_path" == "res://test/suites/" ]]; then
         # First item is the test suites
@@ -178,7 +178,7 @@ for test_path in "${TEST_PATHS[@]}"; do
         OVERALL_EXIT_CODE=100
     fi
 
-    # Small delay between tests
+    # Small delay between runs
     sleep 1
 done
 
