@@ -1,6 +1,9 @@
 extends Node
 
 func _ready() -> void:
+	SentrySDK.logger.info("Starting UI on {platform}", {
+		platform=OS.get_name()
+	})
 	if OS.get_name() in ["Android", "iOS"]:
 		get_tree().change_scene_to_file.call_deferred("res://mobile.tscn")
 	else:
