@@ -3,6 +3,9 @@
 
 #include "sentry/internal_sdk.h"
 
+#include <atomic>
+#include <functional>
+
 using namespace godot;
 
 namespace sentry::android {
@@ -37,12 +40,33 @@ protected:
 	static void _bind_methods();
 };
 
+class SentryAndroidPluginDestroyedHandler : public Object {
+	GDCLASS(SentryAndroidPluginDestroyedHandler, Object);
+	friend class AndroidSDK;
+
+private:
+	std::function<void()> callback;
+
+	void _initialize(std::function<void()> p_callback);
+
+	void _notify_plugin_destroyed();
+
+protected:
+	static void _bind_methods();
+};
+
 // Internal SDK utilizing Sentry Android (sentry-java repo).
 class AndroidSDK : public InternalSDK {
 private:
 	Object *android_plugin = nullptr;
+	std::atomic<bool> plugin_alive;
+	_FORCE_INLINE_ bool _is_plugin_alive() const { return plugin_alive.load(); }
+
 	SentryAndroidBeforeSendHandler *before_send_handler = nullptr;
 	SentryAndroidBeforeSendLogHandler *before_send_log_handler = nullptr;
+	SentryAndroidPluginDestroyedHandler *plugin_destroyed_handler = nullptr;
+
+	void _notify_plugin_destroyed();
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
