@@ -7,6 +7,12 @@
 - Fixed SentryLog.set_attribute() not working on Android ([#438](https://github.com/getsentry/sentry-godot/pull/438))
 - Fixed occasional crash on exit on Android ([#439](https://github.com/getsentry/sentry-godot/pull/439))
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.57.0 to v8.57.2 ([#432](https://github.com/getsentry/sentry-godot/pull/432))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8572)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.0...8.57.2)
+
 ## 1.1.0
 
 ### Features
