@@ -12,6 +12,9 @@
 - Bump Cocoa SDK from v8.57.0 to v8.57.2 ([#432](https://github.com/getsentry/sentry-godot/pull/432))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8572)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.0...8.57.2)
+- Bump Native SDK from v0.11.3 to v0.12.1 ([#431](https://github.com/getsentry/sentry-godot/pull/431))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0121)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.11.3...0.12.1)
 
 ## 1.1.0
 
