@@ -6,6 +6,7 @@
 
 - Fixed SentryLog.set_attribute() not working on Android ([#438](https://github.com/getsentry/sentry-godot/pull/438))
 - Fixed occasional crash on exit on Android ([#439](https://github.com/getsentry/sentry-godot/pull/439))
+- Initialize attributes dict in CocoaSDK::log unconditionally ([#440](https://github.com/getsentry/sentry-godot/pull/440))
 
 ### Dependencies
 

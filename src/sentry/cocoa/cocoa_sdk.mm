@@ -109,11 +109,8 @@ void CocoaSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_a
 
 	String body = p_body;
 
-	NSMutableDictionary *attributes = nil;
-
+	NSMutableDictionary *attributes = [[NSMutableDictionary alloc] initWithCapacity:p_attributes.size()];
 	if (!p_attributes.is_empty()) {
-		attributes = [[NSMutableDictionary alloc] initWithCapacity:p_attributes.size() + 1];
-
 		const Array &keys = p_attributes.keys();
 		for (int i = 0; i < keys.size(); i++) {
 			const String &key = keys[i];
