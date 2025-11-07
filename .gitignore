@@ -9,7 +9,8 @@ project/android/
 project/.godot/
 
 # Export related
-exports/
+exports/*
+!exports/export_presets.cfg
 
 # Source tree
 src/gen/
