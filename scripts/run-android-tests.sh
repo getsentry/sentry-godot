@@ -91,7 +91,7 @@ highlight "\nInstalling APK..."
 adb kill-server 2>/dev/null
 for i in $(seq 1 $INSTALL_RETRIES); do
 	msg "Waiting for Android device..."
-    if adb wait-for-device && adb install ./exports/android.apk; then
+    if adb wait-for-device && adb install -r ./exports/android.apk; then
         break
     elif [ $i -eq $INSTALL_RETRIES ]; then
         abort "Failed to install APK after $INSTALL_RETRIES attempts"
