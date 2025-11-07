@@ -30,10 +30,8 @@ jobs:
           archive_file=Godot_v${GODOT_VERSION}_export_templates.tpz
           url=https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/${archive_file}
           curl -L -o templates.zip "${url}"
-          unzip templates.zip
+          unzip templates.zip android_source.zip -d exports/
           rm templates.zip
-          mv templates/android_source.zip exports/android_source.zip
-          rm -rf templates/
 
           # TODO: need to cache it
 
