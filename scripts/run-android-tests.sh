@@ -181,6 +181,7 @@ run_tests() {
         	exit_code=88
      	fi
         error "Godot app process still running"
+        adb shell am force-stop io.sentry.godot.project
     # Check if not exited cleanly
 	elif [ $clean_exit -eq 0 ]; then
 		warning "Unclean exit detected. Godot possibly crashed."
