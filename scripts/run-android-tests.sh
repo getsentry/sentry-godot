@@ -7,6 +7,7 @@ INSTALL_RETRIES=5
 LAUNCH_RETRIES=3
 LOCKSCREEN_RETRIES=20
 LOGCAT_FILTERS="Godot,godot,sentry-godot,sentry-native"
+EXPORT_PRESET="Android CI"
 
 # Formatted output
 highlight() { echo -e "\033[1;34m$1\033[0m"; }
@@ -83,7 +84,7 @@ if [ -z "$godot" ] || [ ! -x "$godot" ]; then
     error "Godot executable not found. Please ensure 'godot' is in PATH or set GODOT environment variable."
     exit 1
 fi
-"$godot" --path project --headless --install-android-build-template --export-debug "Android CI" ../exports/android.apk
+"$godot" --path project --headless --install-android-build-template --export-debug "$EXPORT_PRESET" ../exports/android.apk
 abort_on_error "Godot export failed"
 
 # Install APK (allow multiple attempts)

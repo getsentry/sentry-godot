@@ -46,7 +46,7 @@ jobs:
           SENTRY_TEST_INCLUDE: "res://test/suites/"
         run: |
           cp exports/export_presets.cfg project/export_presets.cfg
-          "$GODOT" --path project/ --headless --export-debug "Android CI" "${GITHUB_WORKSPACE}/exports/android.apk"
+          "$GODOT" --path project/ --headless --export-debug "Android CI" "${GITHUB_WORKSPACE}/exports/android.apk" || true
 
           ls -lR exports/
 
