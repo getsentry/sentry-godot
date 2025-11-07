@@ -30,8 +30,8 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             # First non-option argument is GODOT_VERSION
-            if [[ -z "$GODOT_VERSION" ]]; then
-                GODOT_VERSION="$1"
+            if [[ -z "$godot_version" ]]; then
+                godot_version="$1"
             else
                 echo "Error: Unexpected argument '$1'"
                 echo ""
@@ -43,17 +43,17 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Check if required argument is provided
-if [[ -z "$GODOT_VERSION" ]]; then
+if [[ -z "$godot_version" ]]; then
     echo "Error: GODOT_VERSION argument is required"
     echo ""
     usage
 fi
 
-echo "Installing Android template for Godot version: $GODOT_VERSION"
+echo "Installing Android template for Godot version: $godot_version"
 
 # Download Godot templates
-archive_file=Godot_v${GODOT_VERSION}_export_templates.tpz
-url=https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/${archive_file}
+archive_file=Godot_v${godot_version}_export_templates.tpz
+url=https://github.com/godotengine/godot-builds/releases/download/${godot_version}/${archive_file}
 echo "Downloading templates from: $url"
 curl -L -o templates.zip "${url}"
 
