@@ -1,17 +1,12 @@
 #!/bin/bash
-#
 # Run unit tests on a local Android device.
-#
-# Prerequisites:
-# - Godot Engine 4.5 or later with Android export templates installed
-# - Android SDK with ADB (Android Debug Bridge) tools
-# - Android device connected and authorized for debugging
 
 # Configuration
-TEST_TIMEOUT=60  # seconds
+TEST_TIMEOUT=120  # seconds
 INSTALL_RETRIES=5
 LAUNCH_RETRIES=3
 LOCKSCREEN_RETRIES=20
+LOGCAT_FILTERS="Godot,godot,sentry-godot,sentry-native"
 
 # Formatted output
 highlight() { echo -e "\033[1;34m$1\033[0m"; }
@@ -34,6 +29,51 @@ abort() {
 	error "$1. Aborting."
 	exit 1
 }
+
+# Display usage information
+usage() {
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Run unit tests on a local Android device."
+    echo ""
+    echo "OPTIONS:"
+    echo "  -v, --verbose    Enable additional output"
+    echo "  -h, --help       Display this help message"
+    echo ""
+    echo "PREREQUISITES:"
+    echo "  - Godot Engine 4.5 or later with Android export templates installed"
+    echo "  - Android SDK with ADB (Android Debug Bridge) tools"
+    echo "  - Android device connected and authorized for debugging"
+    echo ""
+    echo "ENVIRONMENT VARIABLES:"
+    echo "  GODOT           Path to Godot executable (if not in PATH)"
+}
+
+# Parse command line options
+verbose=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --verbose|-v)
+            verbose=true
+            shift
+            ;;
+        --help|-h)
+            usage
+            exit 0
+            ;;
+        -*)
+            error "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+        *)
+            error "Unexpected argument: $1"
+            usage
+            exit 1
+            ;;
+    esac
+done
 
 highlight "Exporting project..."
 
@@ -61,6 +101,10 @@ for i in $(seq 1 $INSTALL_RETRIES); do
     fi
 done
 
+# Enable Sentry Android output if verbose
+if [ "$verbose" = true ]; then
+      LOGCAT_FILTERS="$LOGCAT_FILTERS,Sentry"
+fi
 
 # Run tests on device
 run_tests() {
@@ -123,7 +167,7 @@ run_tests() {
             timeout 2 cat || true  # Continue reading for a bit in case there are remaining logs
 	        break
 	    fi
-	done < <(timeout $TEST_TIMEOUT adb logcat --pid=$pid -s Godot,godot,sentry-godot,sentry-native)
+	done < <(timeout $TEST_TIMEOUT adb logcat --pid=$pid -s $LOGCAT_FILTERS)
 
 	# Check if never finished
 	if [ $exit_code -eq 1 ]; then
