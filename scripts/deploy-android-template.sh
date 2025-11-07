@@ -62,12 +62,12 @@ rm -f exports/android_source.zip
 unzip -j templates.zip templates/android_source.zip -d exports/
 rm templates.zip
 
-echo "Installing Android Gradle project..."
-rm -rf project/android/
-mkdir -p project/android/build
-unzip exports/android_source.zip -d project/android/build
+# echo "Installing Android Gradle project..."
+# rm -rf project/android/
+# mkdir -p project/android/build
+# unzip exports/android_source.zip -d project/android/build
 
-echo "Adding version metadata..."
-echo "../exports/android_source.zip [$(md5sum exports/android_source.zip | cut -d' ' -f1)]" > project/android/.build_version
+# echo "Adding version metadata..."
+# echo "../exports/android_source.zip [$(md5sum exports/android_source.zip | cut -d' ' -f1)]" > project/android/.build_version
 
-echo "Android build template deployed successfully!"
+# echo "Android build template deployed successfully!"
