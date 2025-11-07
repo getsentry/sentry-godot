@@ -44,6 +44,8 @@ jobs:
 
           mkdir project/android/
           mv android_source project/android/build
+          # NOTE: Godot expects build version file
+          echo "../exports/android_source.zip [$(md5sum exports/android_source.zip | cut -d' ' -f1)]" > project/android/.build_version
 
           ls -lR project/android/
 
