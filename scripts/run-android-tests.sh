@@ -197,6 +197,12 @@ TEST_PATHS=("res://test/suites/")
 highlight "\nLooking for isolated test suites..."
 TEST_PATHS+=($(find project/test/isolated -name "test_*.gd" -type f | sort))
 abort_on_error "Failed to find isolated test suites"
+
+# Check if any isolated tests were found
+if [ ${#TEST_PATHS[@]} -eq 1 ]; then
+    abort "No isolated test files found in project/test/isolated"
+fi
+
 msg "Found $((${#TEST_PATHS[@]} - 1)) isolated test suites."
 
 OVERALL_EXIT_CODE=0
