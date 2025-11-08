@@ -6,6 +6,7 @@ TEST_TIMEOUT=120  # seconds
 INSTALL_RETRIES=5
 LAUNCH_RETRIES=3
 LOCKSCREEN_RETRIES=20
+PID_RETRIES=10
 LOGCAT_FILTERS="Godot,godot,sentry-godot,sentry-native"
 EXPORT_PRESET="Android CI"
 
@@ -139,11 +140,17 @@ run_tests() {
 	done
 
 	# Get PID
-	sleep 2
-	local pid=$(adb shell pidof io.sentry.godot.project)
+	local pid=""
+	for i in $(seq 1 $PID_RETRIES); do
+		pid=$(adb shell pidof io.sentry.godot.project)
+		if [ -n "$pid" ]; then
+			break
+		fi
+		sleep 1
+	done
 	if [ -z "$pid" ]; then
-	    error "Failed to get PID of the app"
-	    return 3
+		error "Failed to get PID of the app"
+		return 3
 	fi
 
 	# Start logcat, streaming to stdout and monitoring for completion
@@ -177,7 +184,7 @@ run_tests() {
 
     # Check if process still running
     local current_pid=$(adb shell pidof io.sentry.godot.project 2>/dev/null || echo "")
-    if [ -n "$current_pid" ] && [ "$current_pid" = "$pid" ]; then
+    if [ -n "$current_pid" ]; then
     	if [ $exit_code -eq 0 ]; then
         	exit_code=88
      	fi
