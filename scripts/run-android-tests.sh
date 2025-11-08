@@ -10,6 +10,24 @@ PID_RETRIES=10
 LOGCAT_FILTERS="Godot,godot,sentry-godot,sentry-native"
 EXPORT_PRESET="Android CI"
 
+usage() {
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Run unit tests on a local Android device."
+    echo ""
+    echo "OPTIONS:"
+    echo "  -v, --verbose    Enable additional output"
+    echo "  -h, --help       Display this help message"
+    echo ""
+    echo "PREREQUISITES:"
+    echo "  - Godot Engine 4.5 or later with Android export templates installed"
+    echo "  - Android SDK with ADB (Android Debug Bridge) tools"
+    echo "  - Android device connected and authorized for debugging"
+    echo ""
+    echo "ENVIRONMENT VARIABLES:"
+    echo "  GODOT           Path to Godot executable (if not in PATH)"
+}
+
 # Formatted output
 highlight() { echo -e "\033[1;34m$1\033[0m"; }
 msg() { echo -e "\033[1m$1\033[0m"; }
@@ -30,25 +48,6 @@ abort_on_error() {
 abort() {
 	error "$1. Aborting."
 	exit 1
-}
-
-# Display usage information
-usage() {
-    echo "Usage: $0 [OPTIONS]"
-    echo ""
-    echo "Run unit tests on a local Android device."
-    echo ""
-    echo "OPTIONS:"
-    echo "  -v, --verbose    Enable additional output"
-    echo "  -h, --help       Display this help message"
-    echo ""
-    echo "PREREQUISITES:"
-    echo "  - Godot Engine 4.5 or later with Android export templates installed"
-    echo "  - Android SDK with ADB (Android Debug Bridge) tools"
-    echo "  - Android device connected and authorized for debugging"
-    echo ""
-    echo "ENVIRONMENT VARIABLES:"
-    echo "  GODOT           Path to Godot executable (if not in PATH)"
 }
 
 # Parse command line options
@@ -85,7 +84,9 @@ if [ -z "$godot" ] || [ ! -x "$godot" ]; then
     error "Godot executable not found. Please ensure 'godot' is in PATH or set GODOT environment variable."
     exit 1
 fi
+
 "$godot" --path project --headless --install-android-build-template --export-debug "$EXPORT_PRESET" ../exports/android.apk
+
 if [ $? -ne 0 ]; then
     warning "Godot export process returned an error. Proceeding anyway..."
 fi
@@ -150,6 +151,7 @@ run_tests() {
 		fi
 		sleep 1
 	done
+
 	if [ -z "$pid" ]; then
 		error "Failed to get PID of the app"
 		return 3
