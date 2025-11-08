@@ -249,7 +249,7 @@ for test_path in "${TEST_PATHS[@]}"; do
 done
 
 # Summary
-highlight "\nTest Summary"
+highlight "\nFinal Results"
 msg "Passed: ${#PASSED_TESTS[@]}"
 msg "Failed: ${#FAILED_TESTS[@]}"
 
