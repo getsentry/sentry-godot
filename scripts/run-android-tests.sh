@@ -86,7 +86,9 @@ if [ -z "$godot" ] || [ ! -x "$godot" ]; then
     exit 1
 fi
 "$godot" --path project --headless --install-android-build-template --export-debug "$EXPORT_PRESET" ../exports/android.apk
-# abort_on_error "Godot export failed"
+if [ $? -ne 0 ]; then
+    warning "Godot export process returned an error. Proceeding anyway..."
+fi
 
 # Install APK (allow multiple attempts)
 highlight "\nInstalling APK..."
