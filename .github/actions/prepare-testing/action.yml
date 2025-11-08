@@ -122,7 +122,16 @@ runs:
     - name: Deploy Android build template
       if: inputs.android == 'true'
       shell: bash
-      run: ./scripts/deploy-android-template.sh $GODOT_VERSION
+      run: |
+        # Download Godot templates
+        archive_file=Godot_v${GODOT_VERSION}_export_templates.tpz
+        url=https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/${archive_file}
+        echo "Downloading templates from: $url"
+        curl -L -o templates.zip "${url}"
+
+        echo "Extracting Android source template..."
+        unzip -j templates.zip templates/android_source.zip -d exports/
+        rm templates.zip
 
     - name: Prepare project
       shell: bash
