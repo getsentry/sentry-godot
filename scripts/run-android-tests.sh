@@ -47,10 +47,14 @@ abort_on_error() {
     fi
 }
 
-# Exit with code 1 and message
+# Exit with code and message
 abort() {
     error "$1. Aborting."
-    exit 1
+    if [ $# -ge 2 ]; then
+        exit $2
+    else
+        exit 1
+    fi
 }
 
 # Parse command line options
@@ -84,8 +88,7 @@ highlight "Exporting project..."
 # Export project to "exports/android.apk".
 godot=$(command -v godot || echo "$GODOT")
 if [ -z "$godot" ] || [ ! -x "$godot" ]; then
-    error "Godot executable not found. Please ensure 'godot' is in PATH or set GODOT environment variable."
-    exit 1
+    abort "Godot executable not found. Please ensure 'godot' is in PATH or set GODOT environment variable."
 fi
 
 github "::group::Export log"
@@ -97,6 +100,11 @@ github "::endgroup::"
 
 if [ $export_err -ne 0 ]; then
     warning "Godot export process returned an error. Proceeding anyway..."
+fi
+
+# Check if APK was exported successfully
+if [ ! -f "./exports/android.apk" ]; then
+    abort "APK file not found at ./exports/android.apk. Export failed! Aborting..."
 fi
 
 # Install APK (allow multiple attempts)
@@ -162,8 +170,7 @@ run_tests() {
     done
 
     if [ -z "$pid" ]; then
-        error "Failed to get PID of the app"
-        return 3
+        abort "Failed to get PID of the app" 3
     fi
 
     echo "PID: $pid"
@@ -229,7 +236,7 @@ run_tests() {
         error "Godot app process still running"
         adb shell am force-stop $PACKAGE_NAME
         # Wait for process to quit
-        while adb shell kill -0 "$current_pid"; do
+        while adb shell "[ -d /proc/$current_pid ]" >/dev/null 2>&1; do
           sleep 1
         done
     # Check if not exited cleanly
