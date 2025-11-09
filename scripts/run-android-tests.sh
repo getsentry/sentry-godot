@@ -7,6 +7,7 @@ INSTALL_RETRIES=5
 LAUNCH_RETRIES=3
 LOCKSCREEN_RETRIES=20
 PID_RETRIES=10
+PACKAGE_NAME="io.sentry.godot.project"
 LOGCAT_FILTERS="Godot,godot,sentry-godot,sentry-native"
 EXPORT_PRESET="Android CI"
 
@@ -131,7 +132,7 @@ run_tests() {
 
     highlight "Launching APK..."
     for i in $(seq 1 $LAUNCH_RETRIES); do
-        adb shell am start -n io.sentry.godot.project/com.godot.game.GodotApp --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "$tests"
+        adb shell am start -n $PACKAGE_NAME/com.godot.game.GodotApp -W --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "$tests"
         if [ $? -eq 0 ]; then
             # Success
             break
@@ -146,7 +147,7 @@ run_tests() {
     # Get PID
     local pid=""
     for i in $(seq 1 $PID_RETRIES); do
-        pid=$(adb shell pidof io.sentry.godot.project)
+        pid=$(adb shell pidof $PACKAGE_NAME)
         if [ -n "$pid" ]; then
             break
         fi
@@ -158,6 +159,8 @@ run_tests() {
         return 3
     fi
 
+    echo "PID: $pid"
+
     # Start logcat, streaming to stdout and monitoring for completion
     highlight "Reading logs..."
     local exit_code=1  # Default general failure
@@ -167,9 +170,10 @@ run_tests() {
     # Function to monitor Android app process and kill logcat if it dies
     monitor_app() {
         while true; do
-            local app_pid=$(adb shell pidof io.sentry.godot.project 2>/dev/null || echo "")
+            local app_pid=$(adb shell pidof $PACKAGE_NAME 2>/dev/null || echo "")
             if [ -z "$app_pid" ]; then
-                # App died, kill logcat
+                sleep 10  # start a timer to kill logcat
+                warning "App died, killing logcat"
                 pkill --full "$logcat_cmd" 2>/dev/null || true
                 break
             fi
@@ -210,13 +214,13 @@ run_tests() {
     wait $monitor_pid 2>/dev/null || true
 
     # Check if process still running
-    local current_pid=$(adb shell pidof io.sentry.godot.project 2>/dev/null || echo "")
+    local current_pid=$(adb shell pidof $PACKAGE_NAME 2>/dev/null || echo "")
     if [ -n "$current_pid" ]; then
         if [ $exit_code -eq 0 ]; then
             exit_code=88
         fi
         error "Godot app process still running"
-        adb shell am force-stop io.sentry.godot.project
+        adb shell am force-stop $PACKAGE_NAME
         # Wait for process to quit
         while adb shell kill -0 "$current_pid"; do
           sleep 1
