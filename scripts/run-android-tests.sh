@@ -91,10 +91,11 @@ fi
 github "::group::Export log"
 
 "$godot" --path project --headless --install-android-build-template --export-debug "$EXPORT_PRESET" ../exports/android.apk
+export_err=$?
 
 github "::endgroup::"
 
-if [ $? -ne 0 ]; then
+if [ $export_err -ne 0 ]; then
     warning "Godot export process returned an error. Proceeding anyway..."
 fi
 
