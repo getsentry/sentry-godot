@@ -160,32 +160,54 @@ run_tests() {
 
     # Start logcat, streaming to stdout and monitoring for completion
     highlight "Reading logs..."
-
     local exit_code=1  # Default general failure
     local clean_exit=0
+    local logcat_cmd="timeout $TEST_TIMEOUT adb logcat --pid=$pid -s $LOGCAT_FILTERS"
+
+    # Function to monitor Android app process and kill logcat if it dies
+    monitor_app() {
+        while true; do
+            local app_pid=$(adb shell pidof io.sentry.godot.project 2>/dev/null || echo "")
+            if [ -z "$app_pid" ]; then
+                # App died, kill logcat
+                pkill --full "$logcat_cmd" 2>/dev/null || true
+                break
+            fi
+            sleep 1
+        done
+    }
+
+    # Start monitoring in background
+    monitor_app &
+    local monitor_pid=$!
 
     # Process logcat output
     while IFS= read -r line; do
         echo "$line"
 
-        # Check for test run completion
-        if echo "$line" | grep -q ">>> Test run complete with code:"; then
-            exit_code=$(echo "$line" | sed 's/.*>>> Test run complete with code: \([0-9]*\).*/\1/')
-            # Not quitting yet -- waiting for Godot to terminate.
-        fi
-
-        # Check Godot exit condition
-        if echo "$line" | grep -q "OnGodotTerminating"; then
-            clean_exit=1
-            timeout 2 cat || true  # Continue reading for a bit in case there are remaining logs
-            break
-        fi
-    done < <(timeout $TEST_TIMEOUT adb logcat --pid=$pid -s $LOGCAT_FILTERS)
+        case "$line" in
+            # Check for test run completion
+            *">>> Test run complete with code:"*)
+                exit_code=$(echo "$line" | sed 's/.*>>> Test run complete with code: \([0-9]*\).*/\1/')
+                # Not quitting yet -- waiting for Godot to terminate.
+                ;;
+            # Check Godot exit condition
+            *"OnGodotTerminating"*)
+                clean_exit=1
+                timeout 2 cat || true # Continue reading for a bit in case there are remaining logs
+                break
+                ;;
+        esac
+    done < <($logcat_cmd)
 
     # Check if never finished
     if [ $exit_code -eq 1 ]; then
         error "Test run was interrupted or failed to complete properly!"
     fi
+
+    # Kill app monitor
+    kill $monitor_pid 2>/dev/null || true
+    wait $monitor_pid 2>/dev/null || true
 
     # Check if process still running
     local current_pid=$(adb shell pidof io.sentry.godot.project 2>/dev/null || echo "")
@@ -195,6 +217,10 @@ run_tests() {
         fi
         error "Godot app process still running"
         adb shell am force-stop io.sentry.godot.project
+        # Wait for process to quit
+        while adb shell kill -0 "$current_pid"; do
+          sleep 1
+        done
     # Check if not exited cleanly
     elif [ $clean_exit -eq 0 ]; then
         warning "Unclean exit detected. Godot possibly crashed."
