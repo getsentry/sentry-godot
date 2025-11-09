@@ -35,6 +35,8 @@ msg() { echo -e "\033[1m$1\033[0m"; }
 error() { echo -e "\033[1;31m$1\033[0m"; }
 warning() { echo -e "\033[1;33m$1\033[0m"; }
 success() { echo -e "\033[1;32m$1\033[0m"; }
+github() { [ "$GITHUB_ACTIONS" = "true" ] && echo $1; }
+blankline() { echo " "; }
 
 # Check exit code of previous command and abort with message if non-zero
 abort_on_error() {
@@ -93,7 +95,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Install APK (allow multiple attempts)
-echo ""
+blankline
 highlight "Installing APK..."
 adb kill-server 2>/dev/null
 for i in $(seq 1 $INSTALL_RETRIES); do
@@ -238,7 +240,7 @@ run_tests() {
 
 # Discover isolated test suites and add normal suites as first item
 TEST_PATHS=("res://test/suites/")
-echo ""
+blankline
 highlight "Looking for isolated test suites..."
 TEST_PATHS+=($(find project/test/isolated -name "test_*.gd" -type f | sort))
 
@@ -263,11 +265,14 @@ for test_path in "${TEST_PATHS[@]}"; do
         godot_path="res://${test_path#project/}"
     fi
 
-    echo ""
+    blankline
     highlight "Running tests: $godot_path"
+    github "::group::Test log $godot_path"
 
     run_tests "$godot_path"
     test_exit_code=$?
+
+    github "::endgroup::"
 
     if [ $test_exit_code -eq 0 ]; then
         PASSED_TESTS+=("$godot_path")
@@ -283,7 +288,7 @@ for test_path in "${TEST_PATHS[@]}"; do
 done
 
 # Summary
-echo ""
+blankline
 highlight "Final Results"
 msg "Passed: ${#PASSED_TESTS[@]}"
 msg "Failed: ${#FAILED_TESTS[@]}"
