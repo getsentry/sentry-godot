@@ -92,7 +92,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # Install APK (allow multiple attempts)
-highlight "\nInstalling APK..."
+echo ""
+highlight "Installing APK..."
 adb kill-server 2>/dev/null
 for i in $(seq 1 $INSTALL_RETRIES); do
 	msg "Waiting for Android device..."
@@ -207,7 +208,8 @@ run_tests() {
 
 # Discover isolated test suites and add normal suites as first item
 TEST_PATHS=("res://test/suites/")
-highlight "\nLooking for isolated test suites..."
+echo ""
+highlight "Looking for isolated test suites..."
 TEST_PATHS+=($(find project/test/isolated -name "test_*.gd" -type f | sort))
 abort_on_error "Failed to find isolated test suites"
 
@@ -232,7 +234,8 @@ for test_path in "${TEST_PATHS[@]}"; do
         godot_path="res://${test_path#project/}"
     fi
 
-    highlight "\nRunning tests: $godot_path"
+    echo ""
+    highlight "Running tests: $godot_path"
 
     run_tests "$godot_path"
     test_exit_code=$?
@@ -251,7 +254,8 @@ for test_path in "${TEST_PATHS[@]}"; do
 done
 
 # Summary
-highlight "\nFinal Results"
+echo ""
+highlight "Final Results"
 msg "Passed: ${#PASSED_TESTS[@]}"
 msg "Failed: ${#FAILED_TESTS[@]}"
 
