@@ -46,8 +46,8 @@ abort_on_error() {
 
 # Exit with code 1 and message
 abort() {
-	error "$1. Aborting."
-	exit 1
+    error "$1. Aborting."
+    exit 1
 }
 
 # Parse command line options
@@ -96,7 +96,7 @@ echo ""
 highlight "Installing APK..."
 adb kill-server 2>/dev/null
 for i in $(seq 1 $INSTALL_RETRIES); do
-	msg "Waiting for Android device..."
+    msg "Waiting for Android device..."
     if adb wait-for-device && adb install -r ./exports/android.apk; then
         break
     elif [ $i -eq $INSTALL_RETRIES ]; then
@@ -114,95 +114,95 @@ fi
 
 # Run tests on device
 run_tests() {
-	local tests=$1
+    local tests=$1
 
-	# Wait for device lockscreen to be unlocked
-	for i in $(seq 1 $LOCKSCREEN_RETRIES); do
-		local lock_state=$(adb shell dumpsys window | grep mDreamingLockscreen)
-		if echo "$lock_state" | grep -q "mDreamingLockscreen=false"; then
-			msg "Device lockscreen is unlocked and ready"
-			break
-		elif [ $i -eq $LOCKSCREEN_RETRIES ]; then
-			abort "Device lockscreen still active after $LOCKSCREEN_RETRIES attempts"
-		fi
-		warning "Device lockscreen is active, please unlock it..."
-		sleep 2
-	done
+    # Wait for device lockscreen to be unlocked
+    for i in $(seq 1 $LOCKSCREEN_RETRIES); do
+        local lock_state=$(adb shell dumpsys window | grep mDreamingLockscreen)
+        if echo "$lock_state" | grep -q "mDreamingLockscreen=false"; then
+            msg "Device lockscreen is unlocked and ready"
+            break
+        elif [ $i -eq $LOCKSCREEN_RETRIES ]; then
+            abort "Device lockscreen still active after $LOCKSCREEN_RETRIES attempts"
+        fi
+        warning "Device lockscreen is active, please unlock it..."
+        sleep 2
+    done
 
-	highlight "Launching APK..."
-	for i in $(seq 1 $LAUNCH_RETRIES); do
-		adb shell am start -n io.sentry.godot.project/com.godot.game.GodotApp --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "$tests"
-		if [ $? -eq 0 ]; then
-			# Success
-			break
-		elif [ $i -eq $LAUNCH_RETRIES ]; then
-			abort "Failed to launch APK after $LAUNCH_RETRIES attempts"
-		else
-			error "Launch attempt $i failed, retrying..."
-			sleep 1
-		fi
-	done
+    highlight "Launching APK..."
+    for i in $(seq 1 $LAUNCH_RETRIES); do
+        adb shell am start -n io.sentry.godot.project/com.godot.game.GodotApp --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "$tests"
+        if [ $? -eq 0 ]; then
+            # Success
+            break
+        elif [ $i -eq $LAUNCH_RETRIES ]; then
+            abort "Failed to launch APK after $LAUNCH_RETRIES attempts"
+        else
+            error "Launch attempt $i failed, retrying..."
+            sleep 1
+        fi
+    done
 
-	# Get PID
-	local pid=""
-	for i in $(seq 1 $PID_RETRIES); do
-		pid=$(adb shell pidof io.sentry.godot.project)
-		if [ -n "$pid" ]; then
-			break
-		fi
-		sleep 1
-	done
+    # Get PID
+    local pid=""
+    for i in $(seq 1 $PID_RETRIES); do
+        pid=$(adb shell pidof io.sentry.godot.project)
+        if [ -n "$pid" ]; then
+            break
+        fi
+        sleep 1
+    done
 
-	if [ -z "$pid" ]; then
-		error "Failed to get PID of the app"
-		return 3
-	fi
+    if [ -z "$pid" ]; then
+        error "Failed to get PID of the app"
+        return 3
+    fi
 
-	# Start logcat, streaming to stdout and monitoring for completion
-	highlight "Reading logs..."
+    # Start logcat, streaming to stdout and monitoring for completion
+    highlight "Reading logs..."
 
-	local exit_code=1  # Default general failure
-	local clean_exit=0
+    local exit_code=1  # Default general failure
+    local clean_exit=0
 
-	# Process logcat output
-	while IFS= read -r line; do
-	    echo "$line"
+    # Process logcat output
+    while IFS= read -r line; do
+        echo "$line"
 
-	    # Check for test run completion
-	    if echo "$line" | grep -q ">>> Test run complete with code:"; then
-	        exit_code=$(echo "$line" | sed 's/.*>>> Test run complete with code: \([0-9]*\).*/\1/')
-			# Not quitting yet -- waiting for Godot to terminate.
-	    fi
+        # Check for test run completion
+        if echo "$line" | grep -q ">>> Test run complete with code:"; then
+            exit_code=$(echo "$line" | sed 's/.*>>> Test run complete with code: \([0-9]*\).*/\1/')
+            # Not quitting yet -- waiting for Godot to terminate.
+        fi
 
-	    # Check Godot exit condition
-		if echo "$line" | grep -q "OnGodotTerminating"; then
-			clean_exit=1
+        # Check Godot exit condition
+        if echo "$line" | grep -q "OnGodotTerminating"; then
+            clean_exit=1
             timeout 2 cat || true  # Continue reading for a bit in case there are remaining logs
-	        break
-	    fi
-	done < <(timeout $TEST_TIMEOUT adb logcat --pid=$pid -s $LOGCAT_FILTERS)
+            break
+        fi
+    done < <(timeout $TEST_TIMEOUT adb logcat --pid=$pid -s $LOGCAT_FILTERS)
 
-	# Check if never finished
-	if [ $exit_code -eq 1 ]; then
-  		error "Test run was interrupted or failed to complete properly!"
-	fi
+    # Check if never finished
+    if [ $exit_code -eq 1 ]; then
+        error "Test run was interrupted or failed to complete properly!"
+    fi
 
     # Check if process still running
     local current_pid=$(adb shell pidof io.sentry.godot.project 2>/dev/null || echo "")
     if [ -n "$current_pid" ]; then
-    	if [ $exit_code -eq 0 ]; then
-        	exit_code=88
-     	fi
+        if [ $exit_code -eq 0 ]; then
+            exit_code=88
+        fi
         error "Godot app process still running"
         adb shell am force-stop io.sentry.godot.project
     # Check if not exited cleanly
-	elif [ $clean_exit -eq 0 ]; then
-		warning "Unclean exit detected. Godot possibly crashed."
+    elif [ $clean_exit -eq 0 ]; then
+        warning "Unclean exit detected. Godot possibly crashed."
     fi
 
-	msg "Test run finished with code: $exit_code"
+    msg "Test run finished with code: $exit_code"
 
-	return $exit_code
+    return $exit_code
 }
 
 
