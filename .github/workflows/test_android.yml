@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   test-android:
-    name: Export project for Android
+    name: Test Android export
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo

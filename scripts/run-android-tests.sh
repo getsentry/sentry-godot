@@ -211,7 +211,6 @@ TEST_PATHS=("res://test/suites/")
 echo ""
 highlight "Looking for isolated test suites..."
 TEST_PATHS+=($(find project/test/isolated -name "test_*.gd" -type f | sort))
-abort_on_error "Failed to find isolated test suites"
 
 # Check if any isolated tests were found
 if [ ${#TEST_PATHS[@]} -eq 1 ]; then
