@@ -34,13 +34,13 @@ usage() {
 }
 
 # Formatted output
-highlight() { echo -e "\033[1;34m$1\033[0m"; }
-msg() { echo -e "\033[1m$1\033[0m"; }
-error() { echo -e "\033[1;31m$1\033[0m"; }
-warning() { echo -e "\033[1;33m$1\033[0m"; }
-success() { echo -e "\033[1;32m$1\033[0m"; }
-github() { [ "$GITHUB_ACTIONS" = "true" ] && echo $1; }
-blankline() { echo " "; }
+highlight() { printf '\033[1;34m%s\033[0m\n' "$1"; }
+msg()       { printf '\033[1m%s\033[0m\n' "$1"; }
+error()     { printf '\033[1;31m%s\033[0m\n' "$1"; }
+warning()   { printf '\033[1;33m%s\033[0m\n' "$1"; }
+success()   { printf '\033[1;32m%s\033[0m\n' "$1"; }
+github()    { [ "$GITHUB_ACTIONS" = "true" ] && printf '%s\n' "$1"; }
+blankline() { printf ' \n'; }
 
 # Check exit code of previous command and abort with message if non-zero
 abort_on_error() {
@@ -139,7 +139,7 @@ run_tests() {
     # Wait for device lockscreen to be unlocked
     for i in $(seq 1 $LOCKSCREEN_RETRIES); do
         local lock_state=$(adb shell dumpsys window | grep mDreamingLockscreen)
-        if echo "$lock_state" | grep -q "mDreamingLockscreen=false"; then
+        if [[ "$lock_state" == *"mDreamingLockscreen=false"* ]]; then
             msg "Device lockscreen is unlocked and ready"
             break
         elif [ $i -eq $LOCKSCREEN_RETRIES ]; then
