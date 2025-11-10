@@ -7,9 +7,13 @@ INSTALL_RETRIES=5
 LAUNCH_RETRIES=3
 LOCKSCREEN_RETRIES=20
 PID_RETRIES=10
-PACKAGE_NAME="io.sentry.godot.project"
 LOGCAT_FILTERS="Godot,godot,sentry-godot,sentry-native"
 EXPORT_PRESET="Android CI"
+
+# Launch configuration
+PACKAGE="io.sentry.godot.project"
+ACTIVITY="com.godot.game.GodotApp"
+COMPONENT="$PACKAGE/$ACTIVITY"
 
 usage() {
     echo "Usage: $0 [OPTIONS]"
@@ -148,7 +152,8 @@ run_tests() {
 
     highlight "Launching APK..."
     for i in $(seq 1 $LAUNCH_RETRIES); do
-        adb shell am start -n $PACKAGE_NAME/com.godot.game.GodotApp -W --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "$tests"
+    	# -W: wait to complete, -S: force stop the app before starting activity
+        adb shell am start -W -S -n $COMPONENT --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "$tests"
         if [ $? -eq 0 ]; then
             # Success
             break
@@ -164,7 +169,7 @@ run_tests() {
     # Get PID
     local pid=""
     for i in $(seq 1 $PID_RETRIES); do
-        pid=$(adb shell pidof $PACKAGE_NAME)
+        pid=$(adb shell pidof $PACKAGE)
         if [ -n "$pid" ]; then
             break
         fi
@@ -187,7 +192,7 @@ run_tests() {
     # Function to monitor Android app process and kill logcat if it dies
     monitor_app() {
         while true; do
-            local app_pid=$(adb shell pidof $PACKAGE_NAME 2>/dev/null || echo "")
+            local app_pid=$(adb shell pidof $PACKAGE 2>/dev/null || echo "")
             if [ -z "$app_pid" ]; then
                 sleep 10  # start a timer to kill logcat
                 warning "App died, killing logcat"
@@ -231,13 +236,13 @@ run_tests() {
     wait $monitor_pid 2>/dev/null || true
 
     # Check if process still running
-    local current_pid=$(adb shell pidof $PACKAGE_NAME 2>/dev/null || echo "")
+    local current_pid=$(adb shell pidof $PACKAGE 2>/dev/null || echo "")
     if [ -n "$current_pid" ]; then
         if [ $exit_code -eq 0 ]; then
             exit_code=88
         fi
         error "Godot app process still running"
-        adb shell am force-stop $PACKAGE_NAME
+        adb shell am force-stop $PACKAGE
         # Wait for process to quit
         while adb shell "[ -d /proc/$current_pid ]" >/dev/null 2>&1; do
           sleep 1
