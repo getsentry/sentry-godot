@@ -152,12 +152,23 @@ run_tests() {
 
     highlight "Launching APK..."
     for i in $(seq 1 $LAUNCH_RETRIES); do
-    	# -W: wait to complete, -S: force stop the app before starting activity
-        adb shell am start -W -S -n $COMPONENT --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "$tests"
-        if [ $? -eq 0 ]; then
+        # -W: wait to complete, -S: force stop the app before starting activity
+        launch_output=$(adb shell am start -W -S -n $COMPONENT --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "$tests" 2>&1)
+        launch_err=$?
+        printf "%s\n" "$launch_output"
+
+        if [[ $launch_err -ne 0 ]]; then
+            error "Launch attempt failed with code: $launch_err"
+        elif [[ "$launch_output" != *"LaunchState: COLD"* ]]; then
+            error "Expected COLD launch but got different launch state from output"
+        elif [[ "$launch_output" != *"Activity: $COMPONENT"* ]]; then
+            error "Expected activity '$COMPONENT' but got different activity from launch output"
+        else
             # Success
             break
-        elif [ $i -eq $LAUNCH_RETRIES ]; then
+        fi
+
+        if [[ $i -eq $LAUNCH_RETRIES ]]; then
             error "Failed to launch APK after $LAUNCH_RETRIES attempts"
             return 1
         else
