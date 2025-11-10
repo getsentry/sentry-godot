@@ -99,7 +99,7 @@ fi
 
 github "::group::Export log"
 
-"$godot" --path project --headless --install-android-build-template --export-debug "$EXPORT_PRESET" ../exports/android.apk
+"$godot" --verbose --headless --path project --install-android-build-template --export-debug "$EXPORT_PRESET" ../exports/android.apk
 export_err=$?
 
 github "::endgroup::"
