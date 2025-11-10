@@ -175,8 +175,8 @@ run_tests() {
             return 1
         else
             error "Launch attempt $i failed, retrying..."
-            adb shell am force-stop $PACKAGE 2>/dev/null || true
-            adb shell pm clear $PACKAGE 2>/dev/null || true
+            adb shell am force-stop "$PACKAGE" 2>/dev/null || true
+            adb shell pm clear "$PACKAGE" 2>/dev/null || true
             sleep 2
         fi
     done
