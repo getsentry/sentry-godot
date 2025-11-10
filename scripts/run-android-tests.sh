@@ -4,7 +4,7 @@
 # Configuration
 TEST_TIMEOUT=120  # seconds
 INSTALL_RETRIES=5
-LAUNCH_RETRIES=3
+LAUNCH_RETRIES=5
 LOCKSCREEN_RETRIES=20
 PID_RETRIES=10
 LOGCAT_FILTERS="Godot,godot,sentry-godot,sentry-native"
@@ -31,6 +31,8 @@ usage() {
     echo ""
     echo "ENVIRONMENT VARIABLES:"
     echo "  GODOT           Path to Godot executable (if not in PATH)"
+    echo "  ANDROID_HOME    Path to Android SDK (or set up Android SDK in Godot settings)"
+    echo "  JAVA_HOME       Path to Java 17 (or set up Java SDK in Godot settings)"
 }
 
 # Formatted output
@@ -173,7 +175,9 @@ run_tests() {
             return 1
         else
             error "Launch attempt $i failed, retrying..."
-            sleep 1
+            adb shell am force-stop $PACKAGE 2>/dev/null || true
+            adb shell pm clear $PACKAGE 2>/dev/null || true
+            sleep 2
         fi
     done
 
