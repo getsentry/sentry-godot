@@ -139,7 +139,8 @@ run_tests() {
             msg "Device lockscreen is unlocked and ready"
             break
         elif [ $i -eq $LOCKSCREEN_RETRIES ]; then
-            abort "Device lockscreen still active after $LOCKSCREEN_RETRIES attempts"
+            error "Device lockscreen still active after $LOCKSCREEN_RETRIES attempts"
+            return 1
         fi
         warning "Device lockscreen is active, please unlock it..."
         sleep 2
@@ -152,7 +153,8 @@ run_tests() {
             # Success
             break
         elif [ $i -eq $LAUNCH_RETRIES ]; then
-            abort "Failed to launch APK after $LAUNCH_RETRIES attempts"
+            error "Failed to launch APK after $LAUNCH_RETRIES attempts"
+            return 1
         else
             error "Launch attempt $i failed, retrying..."
             sleep 1
@@ -170,7 +172,8 @@ run_tests() {
     done
 
     if [ -z "$pid" ]; then
-        abort "Failed to get PID of the app" 3
+        error "Failed to get PID of the app"
+        return 1
     fi
 
     echo "PID: $pid"
