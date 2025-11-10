@@ -8,7 +8,7 @@ LAUNCH_RETRIES=5
 LOCKSCREEN_RETRIES=20
 PID_RETRIES=10
 LOGCAT_FILTERS="Godot,godot,sentry-godot,sentry-native"
-EXPORT_PRESET="Android CI"
+EXPORT_PRESET="Android Tests"
 
 # Launch configuration
 PACKAGE="io.sentry.godot.project"
@@ -28,6 +28,8 @@ usage() {
     echo "  - Godot Engine 4.5 or later with Android export templates installed"
     echo "  - Android SDK with ADB (Android Debug Bridge) tools"
     echo "  - Android device connected and authorized for debugging"
+    echo "  - Export preset for Android named 'Android Tests'"
+    echo "    (see exports/export_presets.cfg)."
     echo ""
     echo "ENVIRONMENT VARIABLES:"
     echo "  GODOT           Path to Godot executable (if not in PATH)"
