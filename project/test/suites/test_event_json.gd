@@ -255,16 +255,10 @@ func test_event_json_sdk_interface() -> void:
 		.must_end_with(".godot") \
 		.verify()
 
+	var version_regex := RegEx.create_from_string("^\\d+\\.\\d+\\.\\d+(?:-[a-zA-Z]+\\.\\d+)?$")
 	assert_json(json).describe("Has SDK version with semantic versioning format") \
 		.at("/sdk/version") \
 		.is_string() \
 		.is_not_empty() \
-		.must_satisfy("valid version string", func(candidate) -> bool:
-			if not candidate is String:
-				return false
-			for part in candidate.split("."):
-				if not part.is_valid_int() or part.to_int() < 0:
-					return false
-			return true
-			) \
+		.must_match_regex(version_regex) \
 		.verify()
