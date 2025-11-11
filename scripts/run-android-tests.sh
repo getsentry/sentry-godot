@@ -15,6 +15,9 @@ PACKAGE="io.sentry.godot.project"
 ACTIVITY="com.godot.game.GodotApp"
 COMPONENT="$PACKAGE/$ACTIVITY"
 
+# Special exit codes
+EXIT_PROCESS_STILL_RUNNING_AFTER_TESTS=88
+
 usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
@@ -202,8 +205,8 @@ run_tests() {
 
     # Start logcat, streaming to stdout and monitoring for completion
     highlight "Reading logs..."
-    local exit_code=1  # Default general failure
-    local clean_exit=0
+    local exit_code=1  # Default to general failure
+    local clean_exit=false
     local logcat_cmd="timeout $TEST_TIMEOUT adb logcat --pid=$pid -s $LOGCAT_FILTERS"
 
     # Function to monitor Android app process and kill logcat if it dies
@@ -236,7 +239,7 @@ run_tests() {
                 ;;
             # Check Godot exit condition
             *"OnGodotTerminating"*)
-                clean_exit=1
+                clean_exit=true
                 timeout 2 cat || true # Continue reading for a bit in case there are remaining logs
                 break
                 ;;
@@ -255,17 +258,14 @@ run_tests() {
     # Check if process still running
     local current_pid=$(adb shell pidof $PACKAGE 2>/dev/null || echo "")
     if [ -n "$current_pid" ]; then
-        if [ $exit_code -eq 0 ]; then
-            exit_code=88
+        if [ $exit_code -eq 0 || $exit_code -eq 1 ]; then
+            exit_code=$EXIT_PROCESS_STILL_RUNNING_AFTER_TESTS
         fi
         error "Godot app process still running"
         adb shell am force-stop $PACKAGE
-        # Wait for process to quit
-        while adb shell "[ -d /proc/$current_pid ]" >/dev/null 2>&1; do
-          sleep 1
-        done
+        adb shell pm clear "$PACKAGE" 2>/dev/null
     # Check if not exited cleanly
-    elif [ $clean_exit -eq 0 ]; then
+    elif [[ "$clean_exit" == "false" ]]; then
         warning "Unclean exit detected. Godot possibly crashed."
     fi
 
