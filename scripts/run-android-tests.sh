@@ -276,9 +276,9 @@ run_tests() {
 
 
 # Discover isolated test suites and add normal suites as first item
-TEST_PATHS=("res://test/suites/")
 blankline
 highlight "Looking for isolated test suites..."
+TEST_PATHS=("res://test/suites/")
 TEST_PATHS+=($(find project/test/isolated -name "test_*.gd" -type f | sort))
 
 # Check if any isolated tests were found

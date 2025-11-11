@@ -30,6 +30,7 @@ func test_breadcrumbs_with_minimal_breadcrumb() -> void:
 		.either() \
 			.must_not_contain("data") \
 		.or_else() \
+			# NOTE: Android always adds data field, even if empty.
 			.must_contain("data", {}) \
 		.end() \
 

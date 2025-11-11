@@ -41,7 +41,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@b530d96654c385303d652368551fb075bc2f0b6b # pin@v2.35.0
         timeout-minutes: 30
         with:
-          api-level: 30
+          api-level: 34
           target: "google_apis"
           channel: "stable"
           force-avd-creation: true
