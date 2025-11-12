@@ -1,11 +1,11 @@
 class_name CLICommands
 extends Node
-## CLI commands implementation for testing Sentry SDK
-##
-## Contains the actual command functions that can be executed via CLI. [br]
+## Contains command functions that can be executed via CLI. [br]
 ##
 ## Usage: [br]
 ##     godot --headless --path ./project -- COMMAND [ARGS...]
+##
+## Use "godot --headless --path ./project -- help" to list available commands.
 
 
 var exit_code: int
