@@ -11,7 +11,8 @@ signal before_send_log(log_entry)
 
 
 func _initialize() -> void:
-	if await _run_tests_if_needed():
+	if _is_running_tests_from_editor() or _is_running_cli_command():
+		# Not a normal start -- don't initialize Sentry.
 		return
 
 	SentrySDK.init(func(options: SentryOptions) -> void:
@@ -53,6 +54,10 @@ func _on_before_send_log_to_sentry(entry: SentryLog) -> SentryLog:
 
 func _is_running_tests_from_editor() -> bool:
 	return "res://addons/gdUnit4/src/core/runners/GdUnitTestRunner.tscn" in OS.get_cmdline_args()
+
+
+func _is_running_cli_command() -> bool:
+	return OS.get_cmdline_user_args().size() > 0
 
 
 ## Returns true if tests being executed. [i]Async.[/i]
