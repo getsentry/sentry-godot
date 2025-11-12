@@ -28,23 +28,9 @@ func check_and_execute_cli() -> bool:
 ## Registers all available commands with the parser.
 func _register_available_commands() -> void:
 	_parser.add_command("help", _cmd_help, "Show available commands")
-	_parser.add_command("message-capture", _cmd_message_capture, "Capture a test message to Sentry")
 	_parser.add_command("crash-capture", _cmd_crash_capture, "Generate a controlled crash for testing")
+	_parser.add_command("message-capture", _cmd_message_capture, "Capture a test message to Sentry")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
-
-
-## Initializes Sentry.
-func _init_sentry() -> void:
-	print("Initializing Sentry...")
-
-	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.debug = true
-		options.release = "sentry-godot-cli-test@1.0.0"
-		options.environment = "cli-testing"
-	)
-
-	# Wait for Sentry to initialize
-	await get_tree().create_timer(0.3).timeout
 
 
 ## Shows available commands and their arguments.
@@ -53,11 +39,34 @@ func _cmd_help() -> int:
 	return 0
 
 
-## Captures a test message to Sentry.
-func _cmd_message_capture(p_message: String = "Test message from CLI", p_level: String = "info") -> int:
-	print("Capturing message: '%s' with level: %s" % [p_message, p_level])
-
+## Generates a controlled crash for testing.
+func _cmd_crash_capture() -> int:
 	_init_sentry()
+	_add_integration_test_context("crash-capture")
+
+	await get_tree().create_timer(0.5).timeout
+
+	print("Triggering controlled crash...")
+
+	# NOTE: Borrowing UUID generation from SentryUser class.
+	var uuid_gen := SentryUser.new()
+	uuid_gen.generate_new_id()
+	SentrySDK.set_tag("test.crash_id", uuid_gen.id)
+
+	_print_test_result("crash-capture", true, "Pre-crash setup complete")
+	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("About to trigger controlled crash"))
+
+	# Use the same crash method as the demo
+	SentrySDK._demo_helper_crash_app()
+	return 0
+
+
+## Captures a test message to Sentry.
+func _cmd_message_capture(p_message: String = "Integration test message", p_level: String = "info") -> int:
+	_init_sentry()
+	_add_integration_test_context("message-capture")
+
+	print("Capturing message: '%s' with level: %s" % [p_message, p_level])
 
 	var level: SentrySDK.Level
 	match p_level.to_lower():
@@ -72,18 +81,7 @@ func _cmd_message_capture(p_message: String = "Test message from CLI", p_level: 
 
 	var event_id := SentrySDK.capture_message(p_message, level)
 	print("EVENT_CAPTURED: ", event_id)
-	return 0
-
-
-## Generates a controlled crash for testing.
-func _cmd_crash_capture() -> int:
-	_init_sentry()
-
-	print("Generating crash...")
-	await get_tree().create_timer(0.5).timeout
-
-	# Use the same crash method as the demo
-	SentrySDK._demo_helper_crash_app()
+	_print_test_result("message-capture", true, "Test complete")
 	return 0
 
 
@@ -113,3 +111,40 @@ func _cmd_run_tests(tests: String = "res://test/suites/") -> int:
 	else:
 		printerr("Error: Test runner not found")
 		return 1
+
+
+## Initializes Sentry for integration testing.
+func _init_sentry() -> void:
+	print("Initializing Sentry...")
+
+	SentrySDK.init(func(options: SentryOptions) -> void:
+		options.debug = true
+		options.release = "test-app@1.0.0"
+		options.environment = "integration-test"
+	)
+
+	# Wait for Sentry to initialize
+	await get_tree().create_timer(0.3).timeout
+
+
+## Add additional context for integration tests.
+func _add_integration_test_context(p_command: String) -> void:
+	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("Integration test started"))
+
+	var user := SentryUser.new()
+	user.id = "test-user-123"
+	user.username = "ps-tester"
+	SentrySDK.set_user(user)
+
+	SentrySDK.set_tag("test.suite", "integration")
+	SentrySDK.set_tag("test.type", p_command)
+
+	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("Context configuration finished"))
+
+
+func _print_test_result(test_name: String, success: bool, message: String) -> void:
+	print("TEST_RESULT: {\"test\":\"%s\",\"success\":%s,\"message\":\"%s\"}" % [
+		test_name,
+		success,
+		message
+	])
