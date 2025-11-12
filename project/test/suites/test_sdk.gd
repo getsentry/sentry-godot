@@ -56,3 +56,5 @@ func test_variant_conversion_against_stack_overflow() -> void:
 	var arr: Array = [dict, "another_value"]
 	dict["array"] = arr
 	SentrySDK.set_context("broken_context", dict)
+	# Unset context
+	SentrySDK.set_context("broken_context", {})

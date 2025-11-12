@@ -11,7 +11,7 @@ signal before_send_log(log_entry)
 
 
 func _initialize() -> void:
-	if _is_running_tests():
+	if await _run_tests_if_needed():
 		return
 
 	SentrySDK.init(func(options: SentryOptions) -> void:
@@ -51,5 +51,17 @@ func _on_before_send_log_to_sentry(entry: SentryLog) -> SentryLog:
 	return entry
 
 
-func _is_running_tests() -> bool:
+func _is_running_tests_from_editor() -> bool:
 	return "res://addons/gdUnit4/src/core/runners/GdUnitTestRunner.tscn" in OS.get_cmdline_args()
+
+
+## Returns true if tests being executed. [i]Async.[/i]
+func _run_tests_if_needed() -> bool:
+	if _is_running_tests_from_editor():
+		return true
+	if FileAccess.file_exists("res://test/util/test_run.gd"):
+		var test_run = load("res://test/util/test_run.gd").new()
+		if test_run.should_run():
+			await test_run.execute()
+			return true
+	return false

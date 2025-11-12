@@ -50,6 +50,7 @@ func _capture_event() ->  void:
 		assert_str(ev.environment).is_equal("custom-environment")
 		assert_str(ev.get_tag("custom-tag")).is_equal("custom-tag-value")
 		assert_str(ev.id).is_equal(created_id)
+		assert_str(ev.platform).is_not_empty()
 		assert_bool(ev.is_crash()).is_false()
 		return null
 

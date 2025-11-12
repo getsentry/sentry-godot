@@ -15,6 +15,9 @@ func before() -> void:
 
 
 func _before_send(ev: SentryEvent) -> SentryEvent:
+	if ev.is_crash():
+		# Likely processing previous crash.
+		return ev
 	assert_str(ev.release).is_equal("1.2.3")
 	assert_str(ev.environment).is_equal("testing")
 	callback_processed.emit()
