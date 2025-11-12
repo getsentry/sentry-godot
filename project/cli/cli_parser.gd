@@ -17,6 +17,12 @@ var exit_code: int = 0
 var _commands: Dictionary = {}
 
 
+## Determines whether the CLI parser should execute based on command-line arguments.
+static func should_execute() -> bool:
+	return not OS.get_cmdline_user_args().is_empty() \
+		or not AndroidCLIAdapter.get_command_argv().is_empty()
+
+
 ## Registers a new CLI command with the parser.
 func add_command(p_name: String, p_callable: Callable, p_description: String = "") -> void:
 	_commands[p_name] = {
@@ -32,13 +38,16 @@ func add_command(p_name: String, p_callable: Callable, p_description: String = "
 func check_and_execute_cli() -> bool:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
 
+	if OS.get_name() == "Android":
+		args.append_array(AndroidCLIAdapter.get_command_argv())
+
 	if args.is_empty():
 		return false
 
 	var command_name: String = args[0]
 	var command_args: PackedStringArray = args.slice(1)
 
-	await _run_command(command_name, command_args)
+	exit_code = await _run_command(command_name, command_args)
 	return true
 
 
@@ -78,43 +87,39 @@ func generate_help() -> String:
 
 		help_text += "\n"
 
-	help_text += "Usage: godot --headless --path <project_path> -- <command> [arguments...]\n"
-	help_text += "Example: godot --headless --path ./project -- capture_message \"Hello World\" warning"
+	help_text += "Usage: godot --headless --path <project_path> -- COMMAND [ARGS...]\n"
+	help_text += "Example: godot --headless --path ./project -- message-capture \"Hello, World\""
 
 	return help_text
 
 
-func _abort(p_message: String, p_exit_code := ExitCode.FAILURE) -> void:
-	exit_code = p_exit_code
-	printerr(p_message)
-
-
-func _run_command(p_command_name: String, p_args: Array[String]) -> void:
+func _run_command(p_command_name: String, p_args: Array[String]) -> int:
 	if not _commands.has(p_command_name):
-		_abort("Unknown command: " + p_command_name)
-		print("Use 'help' to see available commands")
-		return
+		printerr("Unknown command: " + p_command_name)
+		printerr("Use 'help' to see available commands")
+		return ExitCode.FAILURE
 
 	var command_data: Dictionary = _commands[p_command_name]
 	var callable: Callable = command_data.callable
 
 	if not callable.is_valid():
-		_abort("Error: Invalid callable for command: " + p_command_name)
-		return
+		printerr("Error: Invalid callable for command: " + p_command_name)
+		return ExitCode.FAILURE
 
 	var method_info := _get_method_info(callable)
 	if method_info.is_empty():
-		_abort("Error: Could not get method info for command: " + p_command_name)
-		return
+		printerr("Error: Could not get method info for command: " + p_command_name)
+		return ExitCode.FAILURE
 
 	# Parse arguments based on function arguments
 	var parse_result := _parse_arguments(method_info, p_args, p_command_name)
 	if not parse_result.success:
-		exit_code = ExitCode.INVALID_ARGUMENTS
-		return # Error already printed in _parse_arguments
+		# Error already printed in _parse_arguments
+		return ExitCode.INVALID_ARGUMENTS
 
 	# Call the function with parsed arguments
-	await callable.callv(parse_result.args)
+	var status: int = await callable.callv(parse_result.args)
+	return status
 
 
 func _get_method_info(p_callable: Callable) -> Dictionary:

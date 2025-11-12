@@ -57,16 +57,4 @@ func _is_running_tests_from_editor() -> bool:
 
 
 func _is_running_cli_command() -> bool:
-	return OS.get_cmdline_user_args().size() > 0
-
-
-## Returns true if tests being executed. [i]Async.[/i]
-func _run_tests_if_needed() -> bool:
-	if _is_running_tests_from_editor():
-		return true
-	if FileAccess.file_exists("res://test/util/test_run.gd"):
-		var test_run = load("res://test/util/test_run.gd").new()
-		if test_run.should_run():
-			await test_run.execute()
-			return true
-	return false
+	return CLIParser.should_execute()
