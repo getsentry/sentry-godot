@@ -59,19 +59,19 @@ func _cmd_message_capture(p_message: String = "Test message from CLI", p_level: 
 
 	_init_sentry()
 
-	var sentry_level: int
+	var level: SentrySDK.Level
 	match p_level.to_lower():
-		"debug": sentry_level = SentrySDK.LEVEL_DEBUG
-		"info": sentry_level = SentrySDK.LEVEL_INFO
-		"warning", "warn": sentry_level = SentrySDK.LEVEL_WARNING
-		"error": sentry_level = SentrySDK.LEVEL_ERROR
-		"fatal": sentry_level = SentrySDK.LEVEL_FATAL
+		"debug": level = SentrySDK.LEVEL_DEBUG
+		"info": level = SentrySDK.LEVEL_INFO
+		"warning", "warn": level = SentrySDK.LEVEL_WARNING
+		"error": level = SentrySDK.LEVEL_ERROR
+		"fatal": level = SentrySDK.LEVEL_FATAL
 		_:
 			printerr("Warning: Unknown level '%s', using INFO" % p_level)
-			sentry_level = SentrySDK.LEVEL_INFO
+			level = SentrySDK.LEVEL_INFO
 
-	var event_id := SentrySDK.capture_message(p_message, sentry_level)
-	print("Message captured with event ID: ", event_id)
+	var event_id := SentrySDK.capture_message(p_message, level)
+	print("EVENT_CAPTURED: ", event_id)
 	return 0
 
 
