@@ -54,6 +54,7 @@ func _cmd_crash_capture() -> int:
 	var uuid_gen := SentryUser.new()
 	uuid_gen.generate_new_id()
 	SentrySDK.set_tag("test.crash_id", uuid_gen.id)
+	print("EVENT_CAPTURED: ", uuid_gen.id)
 
 	_print_test_result("crash-capture", true, "Pre-crash setup complete")
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("About to trigger controlled crash"))
