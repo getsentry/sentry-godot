@@ -55,7 +55,7 @@ func check_and_execute_cli() -> bool:
 func generate_help() -> String:
 	var help_text := "Available commands:\n\n"
 
-	var command_names := _commands.keys()
+	var command_names: Array = _commands.keys()
 	command_names.sort()
 
 	for command_name in command_names:
@@ -72,15 +72,14 @@ func generate_help() -> String:
 			var method_args: Array = method_info.get("args", [])
 			var num_with_defaults: int = method_info.get("default_args", []).size()
 			var required_args: int = method_args.size() - num_with_defaults
-			var arg_strings: Array[String] = []
+			var arg_strings: PackedStringArray = []
 
 			for i in range(method_args.size()):
-				var arg_info = method_args[i]
-				if arg_info.get("name", "") != "self":
-					var type_name := _get_type_name(arg_info.get("type", TYPE_NIL))
-					var arg_name: String = arg_info.get("name", "unknown")
-					var optional := " (optional)" if i >= required_args else ""
-					arg_strings.append("%s: %s%s" % [arg_name, type_name, optional])
+				var arg_info: Dictionary = method_args[i]
+				var type_name: String = _get_type_name(arg_info.get("type", TYPE_NIL))
+				var arg_name: String = arg_info.get("name", "unknown")
+				var optional := " (optional)" if i >= required_args else ""
+				arg_strings.append("%s: %s%s" % [arg_name, type_name, optional])
 
 			if not arg_strings.is_empty():
 				help_text += "    Arguments: %s\n" % ", ".join(arg_strings)
@@ -93,7 +92,7 @@ func generate_help() -> String:
 	return help_text
 
 
-func _run_command(p_command_name: String, p_args: Array[String]) -> int:
+func _run_command(p_command_name: String, p_args: PackedStringArray) -> int:
 	if not _commands.has(p_command_name):
 		printerr("Unknown command: " + p_command_name)
 		printerr("Use 'help' to see available commands")
@@ -106,7 +105,7 @@ func _run_command(p_command_name: String, p_args: Array[String]) -> int:
 		printerr("Error: Invalid callable for command: " + p_command_name)
 		return ExitCode.FAILURE
 
-	var method_info := _get_method_info(callable)
+	var method_info: Dictionary = _get_method_info(callable)
 	if method_info.is_empty():
 		printerr("Error: Could not get method info for command: " + p_command_name)
 		return ExitCode.FAILURE
@@ -143,7 +142,7 @@ func _get_method_info(p_callable: Callable) -> Dictionary:
 	return {}
 
 
-func _parse_arguments(p_method_info: Dictionary, p_args: Array[String], p_command_name: String) -> Dictionary:
+func _parse_arguments(p_method_info: Dictionary, p_args: PackedStringArray, p_command_name: String) -> Dictionary:
 	var method_args: Array = p_method_info.get("args", [])
 	var parsed_args: Array = []
 
@@ -153,12 +152,12 @@ func _parse_arguments(p_method_info: Dictionary, p_args: Array[String], p_comman
 	var required_args: int = max_args - num_with_defaults
 
 	if p_args.size() < required_args or p_args.size() > max_args:
-		var msg := "Error: Command '%s' requires %d arguments, got %d" % [p_command_name, required_args, p_args.size()]
+		var msg := "Error: Command '%s' takes %d arguments (%d required), but got %d" % [p_command_name, max_args, required_args, p_args.size()]
 		if not method_args.is_empty():
 			msg += "\nExpected arguments:"
 			for i in range(method_args.size()):
-				var arg_info = method_args[i]
-				var type_name := _get_type_name(arg_info.get("type", TYPE_NIL))
+				var arg_info: Dictionary = method_args[i]
+				var type_name: String = _get_type_name(arg_info.get("type", TYPE_NIL))
 				var arg_name: String = arg_info.get("name", "unknown")
 				var optional := " (optional)" if i >= required_args else ""
 				msg += "\n  %s (%s)%s" % [arg_name, type_name, optional]

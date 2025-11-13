@@ -1,10 +1,14 @@
 class_name CLICommands
 extends Node
-## Contains command functions that can be executed via CLI. [br]
+## Contains command functions that can be executed via CLI.
 ##
-## Usage: [br]
+## A command must return a POSIX-compliant integer exit code, where 0 indicates success.
+## Exit codes are typically in the range of 0–125.[br][br]
+##
+## Usage:[br]
 ##     godot --headless --path ./project -- COMMAND [ARGS...]
 ##
+## [br][br]
 ## Use "godot --headless --path ./project -- help" to list available commands.
 
 
@@ -14,7 +18,7 @@ var _parser := CLIParser.new()
 
 
 func _ready() -> void:
-	_register_available_commands()
+	_register_commands()
 
 
 ## Checks and executes CLI commands if found.
@@ -26,7 +30,7 @@ func check_and_execute_cli() -> bool:
 
 
 ## Registers all available commands with the parser.
-func _register_available_commands() -> void:
+func _register_commands() -> void:
 	_parser.add_command("help", _cmd_help, "Show available commands")
 	_parser.add_command("crash-capture", _cmd_crash_capture, "Generate a controlled crash for testing")
 	_parser.add_command("message-capture", _cmd_message_capture, "Capture a test message to Sentry")
@@ -65,6 +69,8 @@ func _cmd_crash_capture() -> int:
 func _cmd_message_capture(p_message: String = "Integration test message", p_level: String = "info") -> int:
 	_init_sentry()
 	_add_integration_test_context("message-capture")
+
+	await get_tree().create_timer(0.5).timeout
 
 	print("Capturing message: '%s' with level: %s" % [p_message, p_level])
 
