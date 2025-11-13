@@ -45,10 +45,8 @@ func _cmd_help() -> int:
 
 ## Generates a controlled crash for testing.
 func _cmd_crash_capture() -> int:
-	_init_sentry()
+	await _init_sentry()
 	_add_integration_test_context("crash-capture")
-
-	await get_tree().create_timer(0.5).timeout
 
 	print("Triggering controlled crash...")
 
@@ -67,10 +65,8 @@ func _cmd_crash_capture() -> int:
 
 ## Captures a test message to Sentry.
 func _cmd_message_capture(p_message: String = "Integration test message", p_level: String = "info") -> int:
-	_init_sentry()
+	await _init_sentry()
 	_add_integration_test_context("message-capture")
-
-	await get_tree().create_timer(0.5).timeout
 
 	print("Capturing message: '%s' with level: %s" % [p_message, p_level])
 
@@ -130,7 +126,7 @@ func _init_sentry() -> void:
 	)
 
 	# Wait for Sentry to initialize
-	await get_tree().create_timer(0.3).timeout
+	await get_tree().create_timer(0.5).timeout
 
 
 ## Add additional context for integration tests.
