@@ -100,10 +100,10 @@ func _resize_children() -> void:
 		var new_sz := Vector2(
 			minf(sz.x, maximum_form_size.x * scale_xy),
 			minf(sz.y - top_offset * scale_xy, maximum_form_size.y * scale_xy))
-		new_sz = new_sz.ceil()
+		new_sz = new_sz.floor()
 
-		var ofs: Vector2 = ((size - new_sz) / 2.0).ceil()
-		ofs.y = ceilf(top_offset * scale_xy)
+		var ofs: Vector2 = ((size - new_sz) / 2.0).floor()
+		ofs.y = floorf(top_offset * scale_xy)
 
 		# Override size constraints when expand & fill flags are set to use all available space.
 		if c.size_flags_vertical == SIZE_EXPAND_FILL:
