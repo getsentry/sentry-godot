@@ -124,6 +124,7 @@ func _init_sentry() -> void:
 		options.debug = true
 		options.release = "test-app@1.0.0"
 		options.environment = "integration-test"
+		options.dist = "test-dist"
 	)
 
 	# Wait for Sentry to initialize

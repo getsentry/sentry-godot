@@ -107,20 +107,44 @@ AfterAll {
 }
 
 # Shared test cases between test suites ("Context" items further below)
+# Available parameters: $SentryEvent, $TestType, $RunResult
 $CommonTestCases = @(
+    @{ Name = 'Outputs event ID'; TestBlock = {
+            param($RunResult)
+            $eventId = Get-EventIds -appOutput $RunResult.Output -expectedCount 1
+            $eventId | Should -Not -BeNullOrEmpty
+        }
+    }
+    @{ Name = 'Captures event in sentry.io'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent | Should -Not -BeNullOrEmpty
+        }
+    }
+    @{ Name = 'Has title'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.title | Should -Not -BeNullOrEmpty
+            # NOTE: Commented out, because debug symbols are needed
+            # $SentryEvent.title | Should -Not -Be "<unknown>"
+        }
+    }
     @{ Name = 'Has correct release version'; TestBlock = {
             param($SentryEvent)
             $SentryEvent.release.version | Should -Be 'test-app@1.0.0'
         }
     }
     @{ Name = 'Has correct platform'; TestBlock = {
-            param($SentryEvent, $TestType)
+            param($SentryEvent)
             $SentryEvent.platform | Should -Not -BeNullOrEmpty
             if ($IsLinux -or $IsWindows) {
                 $SentryEvent.platform | Should -Be "native"
             } elseif ($IsMacOS) {
                 $SentryEvent.platform | Should -Be "cocoa"
             }
+        }
+    }
+    @{ Name = 'Has correct dist attribute'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.dist | Should -Be "test-dist"
         }
     }
     @{ Name = 'Has correct integration test tags'; TestBlock = {
@@ -130,12 +154,12 @@ $CommonTestCases = @(
         }
     }
     @{ Name = 'Has correct environment tag'; TestBlock = {
-            param($SentryEvent, $TestType)
+            param($SentryEvent)
             ($SentryEvent.tags | Where-Object { $_.key -eq 'environment' }).value | Should -Be 'integration-test'
         }
     }
     @{ Name = 'Has correct OS tag'; TestBlock = {
-            param($SentryEvent, $TestType)
+            param($SentryEvent)
             if ($IsLinux) {
                 $expectedOS = "Linux"
             } elseif ($IsMacOS) {
@@ -144,6 +168,20 @@ $CommonTestCases = @(
                 $expectedOS = "Windows"
             }
             ($SentryEvent.tags | Where-Object { $_.key -eq 'os' }).value | Should -Match $expectedOS
+        }
+    }
+    @{ Name = 'Contains user information'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.user | Should -Not -BeNullOrEmpty
+            $SentryEvent.user.username | Should -Be 'TestUser'
+            $SentryEvent.user.email | Should -Be 'user-mail@test.abc'
+            $SentryEvent.user.id | Should -Be '12345'
+        }
+    }
+    @{ Name = 'Contains breadcrumbs'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.breadcrumbs | Should -Not -BeNullOrEmpty
+            $SentryEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
         }
     }
 )
@@ -171,13 +209,13 @@ Describe "Desktop Integration Tests" {
             }
         }
 
-        It "Exits with non-zero code" {
-            $runResult.ExitCode | Should -Not -Be 0
+        # Include shared test cases
+        It '<Name>' -ForEach $CommonTestCases {
+            & $testBlock -SentryEvent $runEvent -TestType 'crash-capture' -RunResult $runResult
         }
 
-        It "Outputs event ID" {
-            $crashId = Get-EventIds -appOutput $runResult.Output -expectedCount 1
-            $crashId | Should -Not -BeNullOrEmpty
+        It "Exits with non-zero code" {
+            $runResult.ExitCode | Should -Not -Be 0
         }
 
         It "Completes pre-crash setup" {
@@ -188,32 +226,8 @@ Describe "Desktop Integration Tests" {
             ($runResult.Output | Where-Object { $_ -match 'Triggering controlled crash' }) | Should -Not -BeNullOrEmpty
         }
 
-        It "Captures event in sentry.io" {
-            $runEvent | Should -Not -BeNullOrEmpty
-        }
-
-        It "Has required attributes" {
-            $runEvent.title | Should -Not -BeNullOrEmpty
-            # NOTE: Commented out, because debug symbols are needed
-            # $runEvent.title | Should -Not -Be "<unknown>"
+        It "Has correct type" {
             $runEvent.type | Should -Be "error"
-        }
-
-        It "Has proper platform" {
-            $runEvent.platform | Should -Not -BeNullOrEmpty
-            if ($IsLinux -or $IsWindows) {
-                $runEvent.platform | Should -Be "native"
-            } elseif ($IsMacOS) {
-                $runEvent.platform | Should -Be "cocoa"
-            }
-        }
-
-        It "Has optional attributes" {
-
-            $runEvent.logger | Should -Be "lala"
-            $runEvent.release | Should -Be "my-game@1.0.0"
-            $runEvent.dist | Should -Be "test-dist"
-            $runEvent.environment | Should -Be "testing"
         }
 
         It "Has expected level tag" {
@@ -222,10 +236,6 @@ Describe "Desktop Integration Tests" {
 
         It "Contains mechanism tag" {
             ($runEvent.tags | Where-Object { $_.key -eq 'mechanism' }).value | Should -Not -BeNullOrEmpty
-        }
-
-        It "Has integration test tag" {
-            ($runEvent.tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
         }
 
         It "Contains exception information" {
@@ -254,28 +264,8 @@ Describe "Desktop Integration Tests" {
         It "Contains threads information" {
             $runEvent.threads | Should -Not -BeNullOrEmpty
             $runEvent.threads.values | Should -Not -BeNullOrEmpty
-        }
-
-        It "Contains crashed thread with threadId" {
             $threadId = $runEvent.threads.values | Where-Object { $_.crashed -eq $true } | Select-Object -ExpandProperty id
             $threadId | Should -Not -BeNullOrEmpty
-        }
-
-        It "Contains user information" {
-            $runEvent.user | Should -Not -BeNullOrEmpty
-            $runEvent.user.username | Should -Be 'TestUser'
-            $runEvent.user.email | Should -Be 'user-mail@test.abc'
-            $runEvent.user.id | Should -Be '12345'
-        }
-
-        It "Contains breadcrumbs" {
-            $runEvent.breadcrumbs | Should -Not -BeNullOrEmpty
-            $runEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
-        }
-
-        # Include shared test cases
-        It '<Name>' -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType 'crash-capture'
         }
     }
 
@@ -299,6 +289,10 @@ Describe "Desktop Integration Tests" {
             }
         }
 
+        It '<Name>' -ForEach $CommonTestCases {
+            & $testBlock -SentryEvent $runEvent -TestType 'message-capture' -RunResult $runResult
+        }
+
         It "Exits with code zero" {
             $runResult.ExitCode | Should -Be 0
             $runEvent | ConvertTo-Json -Depth 20 | Out-File -FilePath "message.json"
@@ -317,10 +311,6 @@ Describe "Desktop Integration Tests" {
 
         It "Has expected level tag" {
             ($runEvent.tags | Where-Object { $_.key -eq 'level' }).value | Should -Be 'info'
-        }
-
-        It '<Name>' -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType 'message-capture'
         }
     }
 
