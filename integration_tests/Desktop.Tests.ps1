@@ -106,7 +106,7 @@ AfterAll {
     Disconnect-SentryApi
 }
 
-# Shared test cases among test suites ("Context" items further below)
+# Shared test cases between test suites ("Context" items further below)
 $CommonTestCases = @(
     @{ Name = 'Has correct release version'; TestBlock = {
             param($SentryEvent)
@@ -209,15 +209,18 @@ Describe "Desktop Integration Tests" {
         }
 
         It "Has optional attributes" {
-            $runEvent.level | Should -Be "fatal"  # This is tag
+
             $runEvent.logger | Should -Be "lala"
             $runEvent.release | Should -Be "my-game@1.0.0"
             $runEvent.dist | Should -Be "test-dist"
             $runEvent.environment | Should -Be "testing"
         }
 
-        It "Has expected crash tags" {
+        It "Has expected level tag" {
             ($runEvent.tags | Where-Object { $_.key -eq 'level' }).value | Should -Be 'fatal'
+        }
+
+        It "Contains mechanism tag" {
             ($runEvent.tags | Where-Object { $_.key -eq 'mechanism' }).value | Should -Not -BeNullOrEmpty
         }
 
@@ -270,6 +273,7 @@ Describe "Desktop Integration Tests" {
             $runEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
         }
 
+        # Include shared test cases
         It '<Name>' -ForEach $CommonTestCases {
             & $testBlock -SentryEvent $runEvent -TestType 'crash-capture'
         }
@@ -309,6 +313,10 @@ Describe "Desktop Integration Tests" {
             $runEvent.message | Should -Not -BeNullOrEmpty
             $runEvent.message.formatted | Should -Not -BeNullOrEmpty
             $runEvent.message.formatted | Should -Be $TEST_MESSAGE
+        }
+
+        It "Has expected level tag" {
+            ($runEvent.tags | Where-Object { $_.key -eq 'level' }).value | Should -Be 'info'
         }
 
         It '<Name>' -ForEach $CommonTestCases {
