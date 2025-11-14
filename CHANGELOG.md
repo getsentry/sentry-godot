@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fix User Feedback UI text cursor visibility in default theme ([#445](https://github.com/getsentry/sentry-godot/pull/445))
+
 ## 1.1.1
 
 ### Fixes
