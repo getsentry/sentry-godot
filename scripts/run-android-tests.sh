@@ -160,7 +160,7 @@ run_tests() {
     highlight "Launching APK..."
     for i in $(seq 1 $LAUNCH_RETRIES); do
         # -W: wait to complete, -S: force stop the app before starting activity
-        launch_output=$(adb shell am start -W -S -n $COMPONENT --es SENTRY_TEST 1 --es SENTRY_TEST_INCLUDE "$tests" 2>&1)
+        launch_output=$(adb shell am start -W -S -n $COMPONENT --es command run-tests --es arg0 "$tests" 2>&1)
         launch_err=$?
         printf "%s\n" "$launch_output"
 
