@@ -94,7 +94,6 @@ BeforeAll {
         $script:testPlatform = "Local"
     }
 
-        # -ApiToken "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"
     Connect-SentryApi `
         -ApiToken $authToken `
         -DSN $testDsn

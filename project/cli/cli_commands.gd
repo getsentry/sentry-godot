@@ -135,8 +135,9 @@ func _add_integration_test_context(p_command: String) -> void:
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("Integration test started"))
 
 	var user := SentryUser.new()
-	user.id = "test-user-123"
-	user.username = "ps-tester"
+	user.id = "12345"
+	user.username = "TestUser"
+	user.email = "user-mail@test.abc"
 	SentrySDK.set_user(user)
 
 	SentrySDK.set_tag("test.suite", "integration")
