@@ -189,9 +189,17 @@ $CommonTestCases = @(
             $SentryEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
         }
     }
-    # TODO: test contexts
+    @{ Name = 'Contains SDK information'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.sdk | Should -Not -BeNullOrEmpty
+            $SentryEvent.sdk.name | Should -Not -BeNullOrEmpty
+            $SentryEvent.sdk.version | Should -Not -BeNullOrEmpty
+        }
+    }
+    # TODO: test default contexts
+    # TODO: test Godot contexts
     # TODO: test logger attribute
-    # TODO: test SDK interface
+    # TODO: test presence of known breadcrumbs
 )
 
 Describe "Desktop Integration Tests" {
