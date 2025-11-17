@@ -34,6 +34,7 @@ func _register_commands() -> void:
 	_parser.add_command("help", _cmd_help, "Show available commands")
 	_parser.add_command("crash-capture", _cmd_crash_capture, "Generate a controlled crash for testing")
 	_parser.add_command("message-capture", _cmd_message_capture, "Capture a test message to Sentry")
+	_parser.add_command("runtime-error-capture", _cmd_runtime_error_capture, "Capture Godot runtime error")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
 
 
@@ -85,6 +86,25 @@ func _cmd_message_capture(p_message: String = "Integration test message", p_leve
 	var event_id := SentrySDK.capture_message(p_message, level)
 	print("EVENT_CAPTURED: ", event_id)
 	_print_test_result("message-capture", true, "Test complete")
+	return 0
+
+
+func _cmd_runtime_error_capture() -> int:
+	await _init_sentry()
+	_add_integration_test_context("runtime-error-capture")
+
+	print("Triggering runtime error...")
+	var stack: Array = _trigger_runtime_error()
+	print("EVENT_CAPTURED: ", SentrySDK.get_last_event_id())
+
+	# Print stack frames in expected order and format
+	for frame: Dictionary in stack:
+		print("FRAME: {filename} | {function} | {line}".format({
+			filename=frame.source,
+			function=frame.function,
+			line=frame.line
+		}))
+
 	return 0
 
 
@@ -145,6 +165,15 @@ func _add_integration_test_context(p_command: String) -> void:
 	SentrySDK.set_tag("test.type", p_command)
 
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("Context configuration finished"))
+
+
+func _trigger_runtime_error() -> Array:
+	# NOTE: There should be 5 lines of code before and after push_error(), so we can validate source context.
+	var stack: Array = get_stack()
+	push_error("Runtime error")
+	stack[0].line += 1 # Adjust to actual error line
+	stack.reverse() # Godot stacks are in reverse order
+	return stack
 
 
 func _print_test_result(test_name: String, success: bool, message: String) -> void:

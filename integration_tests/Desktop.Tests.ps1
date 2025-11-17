@@ -336,7 +336,162 @@ Describe "Desktop Integration Tests" {
     }
 
     Context "Runtime Error Capture" {
-        # TODO: Capture and validate Godot runtime error
-        # TODO: Validate script context
+        BeforeAll {
+            # ACT: Run runtime-error-capture action in test application
+            Write-GitHub "::group::Log of runtime-error-capture"
+            $arguments = $testArgs + " runtime-error-capture"
+            $runResult = Invoke-DeviceApp -ExecutablePath $testExecutable -Arguments $arguments
+            Write-GitHub "::endgroup::"
+
+            $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath 'runtime-error-capture-result.json')
+
+            $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
+            Write-Host $eventId
+            if ($eventId)
+            {
+                $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
+            }
+        }
+
+        # Include shared test cases
+        It '<Name>' -ForEach $CommonTestCases {
+            & $testBlock -SentryEvent $runEvent -TestType 'runtime-error-capture' -RunResult $runResult
+        }
+
+        It 'Exits with code zero' {
+            $runResult.ExitCode | Should -Be 0
+        }
+
+        It 'Triggers runtime error' {
+            ($runResult.Output | Where-Object { $_ -match 'Triggering runtime error' }) | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Outputs stack trace frames in correct format' {
+            $frameLines = $runResult.Output | Where-Object { $_ -match '^FRAME: ' }
+            $frameLines | Should -Not -BeNullOrEmpty
+            $frameLines.Count | Should -BeGreaterThan 0
+
+            # Validate frame format: "FRAME: {file} | {function} | {line}"
+            foreach ($frame in $frameLines) {
+                $frame | Should -Match '^FRAME: res://.*\.gd \| \w+ \| \d+$'
+            }
+        }
+
+        It 'Has correct type' {
+            $runEvent.type | Should -Be "error"
+        }
+
+        It 'Has expected level tag' {
+            ($runEvent.tags | Where-Object { $_.key -eq 'level' }).value | Should -Be 'error'
+        }
+
+        It 'Has correct logger tag' {
+            ($runEvent.tags | Where-Object { $_.key -eq 'logger' }).value | Should -Be 'SentryGodotLogger'
+        }
+
+        It 'Contains correct exception data' {
+            $runEvent.exception | Should -Not -BeNullOrEmpty
+            $runEvent.exception.values | Should -HaveCount 1
+            $exception = $runEvent.exception.values[0]
+            $exception | Should -Not -BeNullOrEmpty
+            $exception.type | Should -Not -BeNullOrEmpty
+            $exception.value | Should -Be 'Runtime error'
+        }
+
+        It 'Contains threads data' {
+            # Validate that Sentry event contains corresponding stack information
+            $runEvent.threads | Should -Not -BeNullOrEmpty
+            $runEvent.threads.values | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Has threads with stacktrace frames' {
+            $runEvent.threads | Should -Not -BeNullOrEmpty
+            $runEvent.threads.values | Should -Not -BeNullOrEmpty
+
+            # Find at least one thread with stacktrace frames
+            $threadsWithFrames = $runEvent.threads.values | Where-Object {
+                $_.stacktrace -and $_.stacktrace.frames
+            }
+            $threadsWithFrames | Should -Not -BeNullOrEmpty
+            $threadsWithFrames.Count | Should -BeGreaterThan 0
+        }
+
+        It 'Has threads with GDScript frames with proper attributes' {
+            # Find threads with stacktrace frames
+            $threadsWithFrames = $runEvent.threads.values | Where-Object {
+                $_.stacktrace -and $_.stacktrace.frames
+            }
+
+            $gdscriptFramesFound = $false
+            foreach ($thread in $threadsWithFrames) {
+                $gdscriptFrames = $thread.stacktrace.frames | Where-Object { $_.platform -eq 'gdscript' }
+                if ($gdscriptFrames -and $gdscriptFrames.Count -gt 0) {
+                    $gdscriptFramesFound = $true
+
+                    # Validate each GDScript frame has required attributes
+                    foreach ($frame in $gdscriptFrames) {
+                        $frame.filename | Should -Not -BeNullOrEmpty
+                        $frame.function | Should -Not -BeNullOrEmpty
+                        $frame.lineNo | Should -BeGreaterThan 0
+                        $frame.platform | Should -Be 'gdscript'
+                        $frame.inApp | Should -BeTrue
+                        $frame.context.Count | Should -Be 11  # 1 current line + 5 before + 5 after == 11
+                    }
+                    break
+                }
+            }
+            $gdscriptFramesFound | Should -Be $true -Because "At least one GDScript frame should be present in stacktrace"
+        }
+
+        It 'Has GDScript frames matching expected output frames and order' {
+            # Parse FRAME lines from output
+            $frameLines = $runResult.Output | Where-Object { $_ -match '^FRAME: ' }
+            $frameLines | Should -Not -BeNullOrEmpty
+
+            # Parse expected frame information from output (in order)
+            $expectedFrames = @()
+            foreach ($line in $frameLines) {
+                if ($line -match '^FRAME: ([^|]+) \| ([^|]+) \| (\d+)$') {
+                    $expectedFrames += @{
+                        filename = $matches[1].Trim()
+                        function = $matches[2].Trim()
+                        line = [int]$matches[3].Trim()
+                    }
+                }
+            }
+            $expectedFrames.Count | Should -BeGreaterThan 0
+
+            # Find the current thread and get its GDScript frames
+            $currentThread = $runEvent.threads.values | Where-Object { $_.current -eq $true }
+            $currentThread | Should -Not -BeNullOrEmpty -Because "Should have a current thread"
+            $currentThread.stacktrace | Should -Not -BeNullOrEmpty -Because "Current thread should have stacktrace"
+            # NOTE: "crashed" here means the thread which caused the error, not actually crashed.
+            $currentThread.crashed | Should -BeTrue
+
+            $gdscriptFrames = $currentThread.stacktrace.frames | Where-Object { $_.platform -eq 'gdscript' }
+            $gdscriptFrames.Count | Should -BeGreaterThan 0 -Because "Current thread should have GDScript frames"
+
+            # Validate each expected frame exists and save their positions
+            $framePositions = @()
+            foreach ($expectedFrame in $expectedFrames) {
+                $position = -1
+                for ($i = 0; $i -lt $gdscriptFrames.Count; $i++) {
+                    $frame = $gdscriptFrames[$i]
+                    if ($frame.filename -eq $expectedFrame.filename -and
+                        $frame.function -eq $expectedFrame.function -and
+                        $frame.lineNo -eq $expectedFrame.line) {
+                        $position = $i
+                        break
+                    }
+                }
+                $position | Should -BeGreaterOrEqual 0 -Because "Frame '$($expectedFrame.function)' should exist in stacktrace"
+                $framePositions += $position
+            }
+
+            # Validate frame order
+            for ($i = 1; $i -lt $framePositions.Count; $i++) {
+                $framePositions[$i] | Should -BeGreaterThan $framePositions[$i-1] -Because "Frames should appear in correct order"
+            }
+        }
     }
 }
