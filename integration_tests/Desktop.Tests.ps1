@@ -106,8 +106,12 @@ AfterAll {
     Disconnect-SentryApi
 }
 
-# Shared test cases between test suites ("Context" items further below)
-# Available parameters: $SentryEvent, $TestType, $RunResult
+# Shared test cases between test suites.
+# For test suites, see "Context" items further below.
+# Available parameters:
+# - $SentryEvent: The Sentry event object retrieved from the REST API containing error/message details
+# - $TestType: String indicating the type of test being run (e.g., 'crash-capture', 'message-capture')
+# - $RunResult: Object containing the results of running the test application, including Output and ExitCode
 $CommonTestCases = @(
     @{ Name = 'Outputs event ID'; TestBlock = {
             param($RunResult)
