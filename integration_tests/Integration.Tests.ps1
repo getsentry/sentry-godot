@@ -202,11 +202,13 @@ $CommonTestCases = @(
     }
     # TODO: test default contexts
     # TODO: test Godot contexts
-    # TODO: test logger attribute
     # TODO: test presence of known breadcrumbs
 )
 
-Describe "Desktop Integration Tests" {
+Describe "Platform Integration Tests" {
+    # TODO: structured logs tests
+    # TODO: user feedback tests
+    # TODO: attachment tests: screenshot, VH, log file, and custom attachments
 
     Context "Crash Capture" {
         BeforeAll {
@@ -336,6 +338,8 @@ Describe "Desktop Integration Tests" {
     }
 
     Context "Runtime Error Capture" {
+        # TODO: Test local variables
+        # TODO: Test exact script source context (should we?)
         BeforeAll {
             # ACT: Run runtime-error-capture action in test application
             Write-GitHub "::group::Log of runtime-error-capture"
