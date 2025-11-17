@@ -147,6 +147,11 @@ $CommonTestCases = @(
             $SentryEvent.dist | Should -Be "test-dist"
         }
     }
+    @{ Name = 'Has tags'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.tags | Should -Not -BeNullOrEmpty
+        }
+    }
     @{ Name = 'Has correct integration test tags'; TestBlock = {
             param($SentryEvent, $TestType)
             ($SentryEvent.tags | Where-Object { $_.key -eq 'test.suite' }).value | Should -Be 'integration'
@@ -184,6 +189,9 @@ $CommonTestCases = @(
             $SentryEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
         }
     }
+    # TODO: test contexts
+    # TODO: test logger attribute
+    # TODO: test SDK interface
 )
 
 Describe "Desktop Integration Tests" {
@@ -289,6 +297,7 @@ Describe "Desktop Integration Tests" {
             }
         }
 
+        # Include shared test cases
         It '<Name>' -ForEach $CommonTestCases {
             & $testBlock -SentryEvent $runEvent -TestType 'message-capture' -RunResult $runResult
         }
