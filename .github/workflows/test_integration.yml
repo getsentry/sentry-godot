@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  test-android:
+  integration-tests:
     name: Test ${{matrix.platform}}
     runs-on: ${{matrix.runner}}
     strategy:
