@@ -316,12 +316,6 @@ Describe "Platform Integration Tests" {
             $exception.value | Should -Be 'Runtime error'
         }
 
-        It 'Contains threads data' {
-            # Validate that Sentry event contains corresponding stack information
-            $runEvent.threads | Should -Not -BeNullOrEmpty
-            $runEvent.threads.values | Should -Not -BeNullOrEmpty
-        }
-
         It 'Has threads with stacktrace frames' {
             $runEvent.threads | Should -Not -BeNullOrEmpty
             $runEvent.threads.values | Should -Not -BeNullOrEmpty
