@@ -216,7 +216,14 @@ $CommonTestCases = @(
             $SentryEvent.contexts.device.usable_memory | Should -Not -BeNullOrEmpty
         }
     }
-    # TODO: test default contexts
+    @{ Name = 'Contains OS context'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.contexts.os | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.os.os | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.os.name | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.os.version | Should -Not -BeNullOrEmpty
+        }
+    }
     # TODO: test Godot contexts
     # TODO: test presence of known breadcrumbs
 )
