@@ -33,6 +33,7 @@ func check_and_execute_cli() -> bool:
 func _register_commands() -> void:
 	_parser.add_command("help", _cmd_help, "Show available commands")
 	_parser.add_command("crash-capture", _cmd_crash_capture, "Generate a controlled crash for testing")
+	_parser.add_command("crash-send", _cmd_crash_send, "Process and send crash report from previous session")
 	_parser.add_command("message-capture", _cmd_message_capture, "Capture a test message to Sentry")
 	_parser.add_command("runtime-error-capture", _cmd_runtime_error_capture, "Capture Godot runtime error")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
@@ -62,6 +63,17 @@ func _cmd_crash_capture() -> int:
 
 	# Use the same crash method as the demo
 	SentrySDK._demo_helper_crash_app()
+	return 0
+
+
+## Initializes Sentry to process and send any crash report from previous session.
+func _cmd_crash_send() -> int:
+	print("Initializing Sentry so it can send crash report...")
+	await _init_sentry()
+	_add_integration_test_context("crash-capture")
+	# Wait 10 iterations
+	for i in range(10):
+		await get_tree().process_frame
 	return 0
 
 
@@ -142,10 +154,10 @@ func _init_sentry() -> void:
 
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		options.debug = true
+		options.diagnostic_level = SentrySDK.LEVEL_ERROR
 		options.release = "test-app@1.0.0"
 		options.environment = "integration-test"
 		options.dist = "test-dist"
-		options.diagnostic_level = SentrySDK.LEVEL_WARNING
 	)
 
 	# Wait for Sentry to initialize

@@ -124,6 +124,15 @@ Describe "Platform Integration Tests" {
             $runResult = Invoke-DeviceApp -ExecutablePath $testExecutable -Arguments ($testArgs + " crash-capture")
             Write-GitHub "::endgroup::"
 
+            if ($IsMacOS) {
+             	# Send crash event, and quit after 10 interations.
+            	# NOTE: In Cocoa, crashes are sent during the next application launch.
+             	Write-Debug "Launching again so crash event gets sent..."
+              	Write-GitHub "::group::Log of crash-send"
+            	Invoke-DeviceApp -ExecutablePath $testExecutable -Arguments ($testArgs + " crash-send")
+             	Write-GitHub "::endgroup::"
+            }
+
             # Save result in a file
             $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath 'crash-capture-result.json')
 
@@ -132,7 +141,9 @@ Describe "Platform Integration Tests" {
             {
                 # Retrieve the Sentry event associated with the crash ID,
                 # which will be tested in the following "It" blocks.
+                Write-GitHub "::group::Getting event via REST API"
                 $script:runEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$eventId" -TimeoutSeconds 120
+                Write-GitHub "::endgroup::"
             }
         }
 
@@ -212,7 +223,9 @@ Describe "Platform Integration Tests" {
             Write-Host $eventId
             if ($eventId)
             {
+            	Write-GitHub "::group::Getting event via REST API"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
+                Write-GitHub "::endgroup::"
             }
         }
 
@@ -258,7 +271,9 @@ Describe "Platform Integration Tests" {
             Write-Host $eventId
             if ($eventId)
             {
+                Write-GitHub "::group::Getting event via REST API"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
+                Write-GitHub "::endgroup::"
             }
         }
 
