@@ -2,6 +2,9 @@ name: 🧪 Integration tests
 
 on:
   workflow_call:
+    secrets:
+      SENTRY_API_TOKEN:
+        required: true
 
 permissions:
   contents: read
