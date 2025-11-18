@@ -19,10 +19,13 @@ jobs:
         include:
           - platform: Linux
             runner: ubuntu-latest
+            arch: x86_64
           - platform: Windows
             runner: windows-latest
+            arch: x86_64
           - platform: macOS
             runner: macos-latest
+            arch: universal
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -33,7 +36,7 @@ jobs:
         uses: ./.github/actions/prepare-testing
         timeout-minutes: 15
         with:
-          arch: x86_64
+          arch: ${{ matrix.arch }}
           android: ${{ matrix.platform == 'Android' && 'true' || 'false' }}
 
       - name: Install Pester module for pwsh
