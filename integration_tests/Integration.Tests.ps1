@@ -224,7 +224,15 @@ $CommonTestCases = @(
             $SentryEvent.contexts.os.version | Should -Not -BeNullOrEmpty
         }
     }
-    # TODO: test Godot contexts
+    @{ Name = 'Contains Godot context'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.contexts.godot_engine | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.godot_engine.version | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.godot_engine.version_commit | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.godot_engine.godot_sdk_version | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.godot_performance | Should -Not -BeNullOrEmpty
+        }
+    }
     # TODO: test presence of known breadcrumbs
 )
 
