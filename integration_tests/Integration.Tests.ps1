@@ -200,6 +200,22 @@ $CommonTestCases = @(
             $SentryEvent.sdk.version | Should -Not -BeNullOrEmpty
         }
     }
+    @{ Name = 'Contains app context'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.contexts.app | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.app.app_name | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.app.app_version | Should -Not -BeNullOrEmpty
+        }
+    }
+    @{ Name = 'Contains device context'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.contexts.device | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.device.arch | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.device.cpu_description | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.device.free_memory | Should -Not -BeNullOrEmpty
+            $SentryEvent.contexts.device.usable_memory | Should -Not -BeNullOrEmpty
+        }
+    }
     # TODO: test default contexts
     # TODO: test Godot contexts
     # TODO: test presence of known breadcrumbs
