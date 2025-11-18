@@ -35,8 +35,6 @@ BeforeAll {
         }
     }
 
-    Write-Debug "BEFORE-ALL"
-
     # Create directory for the test results
     New-Item -ItemType Directory -Path "$PSScriptRoot/results/" 2>&1 | Out-Null
     Set-OutputDir -Path "$PSScriptRoot/results/"
@@ -50,7 +48,7 @@ BeforeAll {
     {
         Write-Warning "SENTRY_TEST_EXECUTABLE environment variable is not set. Defaulting to env:GODOT."
         $script:testExecutable = $env:GODOT
-        # For running with godot binary, we need to add these flags...
+        # For running with Godot binary, we need to add these flags...
         $script:testArgs += " --disable-crash-handler --headless --path project --"
     }
     # Validate executable
@@ -105,7 +103,6 @@ BeforeAll {
 }
 
 AfterAll {
-    Write-Debug "AFTER-ALL"
     Disconnect-SentryApi
 }
 
@@ -114,6 +111,7 @@ Describe "Platform Integration Tests" {
     # TODO: structured logs tests
     # TODO: user feedback tests
     # TODO: attachment tests: screenshot, VH, log file, and custom attachments
+    # TODO: if crashes on Cocoa, launch again to send crash event
 
     Context "Crash Capture" {
         BeforeAll {
@@ -124,7 +122,7 @@ Describe "Platform Integration Tests" {
             $runResult = Invoke-DeviceApp -ExecutablePath $testExecutable -Arguments ($testArgs + " crash-capture")
             Write-GitHub "::endgroup::"
 
-            if ($IsMacOS) {
+            if ($IsMacOS -and ($testPlatform -ieq 'Local' -or $testPlatform -ieq 'macOS')) {
              	# Send crash event, and quit after 10 interations.
             	# NOTE: In Cocoa, crashes are sent during the next application launch.
              	Write-Debug "Launching again so crash event gets sent..."
@@ -193,10 +191,6 @@ Describe "Platform Integration Tests" {
             $frames = $runEvent.exception.values[0].stacktrace.frames
             $frames | Should -Not -BeNullOrEmpty
             $frames.Count | Should -BeGreaterThan 5
-        }
-
-        It "Contains expected frames" {
-            # TODO: validate presence of specific frames
         }
 
         It "Contains threads information" {
