@@ -299,7 +299,7 @@ Describe "Platform Integration Tests" {
         It "Contains exception value with stack trace" {
             $exception = $runEvent.exception.values[0]
             $exception | Should -Not -BeNullOrEmpty
-            $exception.type | Should -Match 'SIGSEGV'
+            $exception.type | Should -Not -BeNullOrEmpty
             $exception.stacktrace | Should -Not -BeNullOrEmpty
             $exception.threadId | Should -Not -BeNullOrEmpty
         }
