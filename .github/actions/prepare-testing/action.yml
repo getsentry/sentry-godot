@@ -15,6 +15,7 @@ runs:
     - name: Checkout required submodules
       shell: bash
       run: |
+        git submodule update --init --depth 1 modules/app-runner
         git submodule update --init --depth 1 modules/gdUnit4
         git submodule update --init --depth 1 modules/godot-cpp
         git submodule update --init --depth 1 project/test/util/json_assert
