@@ -233,7 +233,13 @@ $CommonTestCases = @(
             $SentryEvent.contexts.godot_performance | Should -Not -BeNullOrEmpty
         }
     }
-    # TODO: test presence of known breadcrumbs
+    @{ Name = 'Contains expected breadcrumbs'; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
+            $SentryEvent.breadcrumbs.values | Where-Object { $_.message -eq "Integration test started" } | Should -Not -BeNullOrEmpty
+            $SentryEvent.breadcrumbs.values | Where-Object { $_.message -eq "Context configuration finished" } | Should -Not -BeNullOrEmpty
+        }
+    }
 )
 
 Describe "Platform Integration Tests" {
