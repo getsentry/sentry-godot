@@ -145,6 +145,7 @@ func _init_sentry() -> void:
 		options.release = "test-app@1.0.0"
 		options.environment = "integration-test"
 		options.dist = "test-dist"
+		options.diagnostic_level = SentrySDK.LEVEL_WARNING
 	)
 
 	# Wait for Sentry to initialize
