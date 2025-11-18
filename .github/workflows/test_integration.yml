@@ -8,8 +8,8 @@ permissions:
 
 jobs:
   test-android:
-    name: Test {{matrix.platform}}
-    runs-on: { { matrix.runner } }
+    name: Test ${{matrix.platform}}
+    runs-on: ${{matrix.runner}}
     strategy:
       fail-fast: false
       matrix:
