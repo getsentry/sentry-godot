@@ -10,8 +10,8 @@
 #   SENTRY_TEST_PLATFORM: test platform (aka device provider) such as "Local" or "Android"
 
 Set-StrictMode -Version latest
-$ErrorActionPreference = 'Stop'
-$global:DebugPreference = 'Continue'
+$ErrorActionPreference = "Stop"
+$global:DebugPreference = "Continue"
 
 # Import app-runner modules
 . $PSScriptRoot/../modules/app-runner/import-modules.ps1
@@ -19,25 +19,20 @@ $global:DebugPreference = 'Continue'
 # Import shared test cases
 . $PSScriptRoot/CommonTestCases.ps1
 
+
 BeforeAll {
-    function Write-GitHub
-    {
+    function Write-GitHub {
         param (
             [Parameter(Mandatory=$true)]
             [string]$message
         )
-        if ($env:GITHUB_ACTIONS)
-        {
+        if ($env:GITHUB_ACTIONS) {
             Write-Host "${message}"
-        } else
-        {
-            Write-Host "GITHUB: ${message}"
         }
     }
 
     # Run integration test action on device
-    function Invoke-TestAction
-    {
+    function Invoke-TestAction {
         param (
             [Parameter(Mandatory=$true)]
             [string]$Action,
@@ -54,9 +49,9 @@ BeforeAll {
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
 
-        if ($IsMacOS -and $runResult.ExitCode -ne 0 -and ($script:TestSetup.Platform -ieq 'Local' -or $script:TestSetup.Platform -ieq 'macOS')) {
-         	# Send crash event, and quit after 10 interations.
-        	# NOTE: In Cocoa, crashes are sent during the next application launch.
+        # If crashed on macOS, launch again to send crash event.
+        # NOTE: In Cocoa, crashes are sent during the next application launch.
+        if ($IsMacOS -and $runResult.ExitCode -ne 0 -and ($script:TestSetup.Platform -ieq "Local" -or $script:TestSetup.Platform -ieq "macOS")) {
             Write-Debug "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
             Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments ($script:TestSetup.Args + " crash-send")
@@ -80,50 +75,41 @@ BeforeAll {
     }
 
     # Check executable and arguments
-    if ([string]::IsNullOrEmpty($script:TestSetup.Executable))
-    {
+    if ([string]::IsNullOrEmpty($script:TestSetup.Executable)) {
         Write-Warning "SENTRY_TEST_EXECUTABLE environment variable is not set. Defaulting to env:GODOT."
         $script:TestSetup.Executable = $env:GODOT
         # For running with Godot binary, we need to add these flags...
         $script:TestSetup.Args += " --disable-crash-handler --headless --path project --"
     }
     # Validate executable
-    if (-not (Test-Path $script:TestSetup.Executable))
-    {
+    if (-not (Test-Path $script:TestSetup.Executable)) {
         throw "Executable not found at: $($script:TestSetup.Executable)"
     }
 
     # Check DSN
-    if ([string]::IsNullOrEmpty($script:TestSetup.Dsn))
-    {
+    if ([string]::IsNullOrEmpty($script:TestSetup.Dsn)) {
         # Read DSN from project.godot as fallback
         $projectGodotPath = Join-Path $PSScriptRoot "../project/project.godot"
-        if (Test-Path $projectGodotPath)
-        {
+        if (Test-Path $projectGodotPath) {
             Write-Warning "SENTRY_TEST_DSN environment variable is not set. Reading DSN from project.godot..."
             $projectContent = Get-Content $projectGodotPath -Raw
-            if ($projectContent -match 'options/dsn="([^"]+)"')
-            {
+            if ($projectContent -match 'options/dsn="([^"]+)"') {
                 $script:TestSetup.Dsn = $matches[1]
-            } else
-            {
+            } else {
                 throw "Could not find DSN in project.godot file"
             }
-        } else
-        {
+        } else {
             throw "Could not find project.godot file at $projectGodotPath"
         }
     }
 
     # Check auth token
-    if ([string]::IsNullOrEmpty($script:TestSetup.AuthToken))
-    {
+    if ([string]::IsNullOrEmpty($script:TestSetup.AuthToken)) {
         throw "SENTRY_AUTH_TOKEN environment variable is not set."
     }
 
     # Check platform
-    if ([string]::IsNullOrEmpty($script:TestSetup.Platform))
-    {
+    if ([string]::IsNullOrEmpty($script:TestSetup.Platform)) {
         Write-Warning "SENTRY_TEST_PLATFORM environment variable is not set. Defaulting to 'Local'."
         $script:TestSetup.Platform = "Local"
     }
@@ -135,6 +121,7 @@ BeforeAll {
     Connect-Device -Platform $script:TestSetup.Platform
 }
 
+
 AfterAll {
     Disconnect-SentryApi
 }
@@ -144,7 +131,6 @@ Describe "Platform Integration Tests" {
     # TODO: structured logs tests
     # TODO: user feedback tests
     # TODO: attachment tests: screenshot, VH, log file, and custom attachments
-    # TODO: if crashes on Cocoa, launch again to send crash event
 
     Context "Crash Capture" {
         BeforeAll {
@@ -153,19 +139,18 @@ Describe "Platform Integration Tests" {
             $runResult = Invoke-TestAction -Action "crash-capture"
 
             $eventId = Get-EventIds -appOutput $runResult.Output -expectedCount 1
-            if ($eventId)
-            {
+            if ($eventId) {
                 # Retrieve the Sentry event associated with the crash ID,
                 # which will be tested in the following "It" blocks.
-                Write-GitHub "::group::Getting event via REST API"
-                $script:runEvent = Get-SentryTestEvent -TagName 'test.crash_id' -TagValue "$eventId" -TimeoutSeconds 120
+                Write-GitHub "::group::Getting event content"
+                $script:runEvent = Get-SentryTestEvent -TagName "test.crash_id" -TagValue "$eventId" -TimeoutSeconds 120
                 Write-GitHub "::endgroup::"
             }
         }
 
         # Include shared test cases from CommonTestCases.ps1
-        It '<Name>' -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType 'crash-capture' -RunResult $runResult
+        It "<Name>" -ForEach $CommonTestCases {
+            & $testBlock -SentryEvent $runEvent -TestType "crash-capture" -RunResult $runResult
         }
 
         It "Exits with non-zero code" {
@@ -173,11 +158,11 @@ Describe "Platform Integration Tests" {
         }
 
         It "Completes pre-crash setup" {
-            ($runResult.Output | Where-Object { $_ -match 'TEST_RESULT:.*crash-capture.*Pre-crash setup complete' }) | Should -Not -BeNullOrEmpty
+            ($runResult.Output | Where-Object { $_ -match "TEST_RESULT:.*crash-capture.*Pre-crash setup complete" }) | Should -Not -BeNullOrEmpty
         }
 
         It "Triggers a crash" {
-            ($runResult.Output | Where-Object { $_ -match 'Triggering controlled crash' }) | Should -Not -BeNullOrEmpty
+            ($runResult.Output | Where-Object { $_ -match "Triggering controlled crash" }) | Should -Not -BeNullOrEmpty
         }
 
         It "Has correct type" {
@@ -185,11 +170,11 @@ Describe "Platform Integration Tests" {
         }
 
         It "Has expected level tag" {
-            ($runEvent.tags | Where-Object { $_.key -eq 'level' }).value | Should -Be 'fatal'
+            ($runEvent.tags | Where-Object { $_.key -eq "level" }).value | Should -Be "fatal"
         }
 
         It "Contains mechanism tag" {
-            ($runEvent.tags | Where-Object { $_.key -eq 'mechanism' }).value | Should -Not -BeNullOrEmpty
+            ($runEvent.tags | Where-Object { $_.key -eq "mechanism" }).value | Should -Not -BeNullOrEmpty
         }
 
         It "Contains exception information" {
@@ -226,18 +211,16 @@ Describe "Platform Integration Tests" {
             $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs "`"$TEST_MESSAGE`""
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
-            Write-Host $eventId
-            if ($eventId)
-            {
-            	Write-GitHub "::group::Getting event via REST API"
+            if ($eventId) {
+               	Write-GitHub "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
                 Write-GitHub "::endgroup::"
             }
         }
 
         # Include shared test cases from CommonTestCases.ps1
-        It '<Name>' -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType 'message-capture' -RunResult $runResult
+        It "<Name>" -ForEach $CommonTestCases {
+            & $testBlock -SentryEvent $runEvent -TestType "message-capture" -RunResult $runResult
         }
 
         It "Exits with code zero" {
@@ -256,7 +239,7 @@ Describe "Platform Integration Tests" {
         }
 
         It "Has expected level tag" {
-            ($runEvent.tags | Where-Object { $_.key -eq 'level' }).value | Should -Be 'info'
+            ($runEvent.tags | Where-Object { $_.key -eq "level" }).value | Should -Be "info"
         }
     }
 
@@ -267,61 +250,59 @@ Describe "Platform Integration Tests" {
             $runResult = Invoke-TestAction -Action "runtime-error-capture"
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
-            Write-Host $eventId
-            if ($eventId)
-            {
-                Write-GitHub "::group::Getting event via REST API"
+            if ($eventId) {
+                Write-GitHub "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
                 Write-GitHub "::endgroup::"
             }
         }
 
         # Include shared test cases from CommonTestCases.ps1
-        It '<Name>' -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType 'runtime-error-capture' -RunResult $runResult
+        It "<Name>" -ForEach $CommonTestCases {
+            & $testBlock -SentryEvent $runEvent -TestType "runtime-error-capture" -RunResult $runResult
         }
 
-        It 'Exits with code zero' {
+        It "Exits with code zero" {
             $runResult.ExitCode | Should -Be 0
         }
 
-        It 'Triggers runtime error' {
-            ($runResult.Output | Where-Object { $_ -match 'Triggering runtime error' }) | Should -Not -BeNullOrEmpty
+        It "Triggers runtime error" {
+            ($runResult.Output | Where-Object { $_ -match "Triggering runtime error" }) | Should -Not -BeNullOrEmpty
         }
 
-        It 'Outputs stack trace frames in correct format' {
-            $frameLines = $runResult.Output | Where-Object { $_ -match '^FRAME: ' }
+        It "Outputs stack trace frames in correct format" {
+            $frameLines = $runResult.Output | Where-Object { $_ -match "^FRAME: " }
             $frameLines | Should -Not -BeNullOrEmpty
             $frameLines.Count | Should -BeGreaterThan 0
 
             # Validate frame format: "FRAME: {file} | {function} | {line}"
             foreach ($frame in $frameLines) {
-                $frame | Should -Match '^FRAME: res://.*\.gd \| \w+ \| \d+$'
+                $frame | Should -Match "^FRAME: res://.*\.gd \| \w+ \| \d+$"
             }
         }
 
-        It 'Has correct type' {
+        It "Has correct type" {
             $runEvent.type | Should -Be "error"
         }
 
-        It 'Has expected level tag' {
-            ($runEvent.tags | Where-Object { $_.key -eq 'level' }).value | Should -Be 'error'
+        It "Has expected level tag" {
+            ($runEvent.tags | Where-Object { $_.key -eq "level" }).value | Should -Be "error"
         }
 
-        It 'Has correct logger tag' {
-            ($runEvent.tags | Where-Object { $_.key -eq 'logger' }).value | Should -Be 'SentryGodotLogger'
+        It "Has correct logger tag" {
+            ($runEvent.tags | Where-Object { $_.key -eq "logger" }).value | Should -Be "SentryGodotLogger"
         }
 
-        It 'Contains correct exception data' {
+        It "Contains correct exception data" {
             $runEvent.exception | Should -Not -BeNullOrEmpty
             $runEvent.exception.values | Should -HaveCount 1
             $exception = $runEvent.exception.values[0]
             $exception | Should -Not -BeNullOrEmpty
             $exception.type | Should -Not -BeNullOrEmpty
-            $exception.value | Should -Be 'Runtime error'
+            $exception.value | Should -Be "Runtime error"
         }
 
-        It 'Has threads with stacktrace frames' {
+        It "Has threads with stacktrace frames" {
             $runEvent.threads | Should -Not -BeNullOrEmpty
             $runEvent.threads.values | Should -Not -BeNullOrEmpty
 
@@ -333,7 +314,7 @@ Describe "Platform Integration Tests" {
             $threadsWithFrames.Count | Should -BeGreaterThan 0
         }
 
-        It 'Has threads with GDScript frames with proper attributes' {
+        It "Has threads with GDScript frames with proper attributes" {
             # Find threads with stacktrace frames
             $threadsWithFrames = $runEvent.threads.values | Where-Object {
                 $_.stacktrace -and $_.stacktrace.frames
@@ -341,7 +322,7 @@ Describe "Platform Integration Tests" {
 
             $gdscriptFramesFound = $false
             foreach ($thread in $threadsWithFrames) {
-                $gdscriptFrames = $thread.stacktrace.frames | Where-Object { $_.platform -eq 'gdscript' }
+                $gdscriptFrames = $thread.stacktrace.frames | Where-Object { $_.platform -eq "gdscript" }
                 if ($gdscriptFrames -and $gdscriptFrames.Count -gt 0) {
                     $gdscriptFramesFound = $true
 
@@ -350,9 +331,9 @@ Describe "Platform Integration Tests" {
                         $frame.filename | Should -Not -BeNullOrEmpty
                         $frame.function | Should -Not -BeNullOrEmpty
                         $frame.lineNo | Should -BeGreaterThan 0
-                        $frame.platform | Should -Be 'gdscript'
+                        $frame.platform | Should -Be "gdscript"
                         $frame.inApp | Should -BeTrue
-                        $frame.context.Count | Should -Be 11  # 1 current line + 5 before + 5 after == 11
+                        $frame.context.Count | Should -Be 11  # 1 current line + 5 before + 5 after
                     }
                     break
                 }
@@ -360,15 +341,15 @@ Describe "Platform Integration Tests" {
             $gdscriptFramesFound | Should -Be $true -Because "At least one GDScript frame should be present in stacktrace"
         }
 
-        It 'Has GDScript frames matching expected output frames and order' {
+        It "Has GDScript frames matching expected output frames and order" {
             # Parse FRAME lines from output
-            $frameLines = $runResult.Output | Where-Object { $_ -match '^FRAME: ' }
+            $frameLines = $runResult.Output | Where-Object { $_ -match "^FRAME: " }
             $frameLines | Should -Not -BeNullOrEmpty
 
             # Parse expected frame information from output (in order)
             $expectedFrames = @()
             foreach ($line in $frameLines) {
-                if ($line -match '^FRAME: ([^|]+) \| ([^|]+) \| (\d+)$') {
+                if ($line -match "^FRAME: ([^|]+) \| ([^|]+) \| (\d+)$") {
                     $expectedFrames += @{
                         filename = $matches[1].Trim()
                         function = $matches[2].Trim()
@@ -385,7 +366,7 @@ Describe "Platform Integration Tests" {
             # NOTE: "crashed" here means the thread which caused the error, not actually crashed.
             $currentThread.crashed | Should -BeTrue
 
-            $gdscriptFrames = $currentThread.stacktrace.frames | Where-Object { $_.platform -eq 'gdscript' }
+            $gdscriptFrames = $currentThread.stacktrace.frames | Where-Object { $_.platform -eq "gdscript" }
             $gdscriptFrames.Count | Should -BeGreaterThan 0 -Because "Current thread should have GDScript frames"
 
             # Validate each expected frame exists and save their positions
