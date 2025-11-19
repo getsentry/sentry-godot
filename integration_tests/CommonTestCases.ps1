@@ -21,8 +21,6 @@ $CommonTestCases = @(
     @{ Name = 'Has title'; TestBlock = {
             param($SentryEvent)
             $SentryEvent.title | Should -Not -BeNullOrEmpty
-            # NOTE: Commented out, because debug symbols are needed
-            # $SentryEvent.title | Should -Not -Be "<unknown>"
         }
     }
     @{ Name = 'Has correct release version'; TestBlock = {

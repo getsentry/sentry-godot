@@ -6,8 +6,8 @@
 #   SENTRY_TEST_EXECUTABLE: command line to run the project
 #   SENTRY_TEST_ARGS: arguments
 #   SENTRY_TEST_DSN: test DSN
-#   SENTRY_TEST_PLATFORM: test platform (aka device provider) such as "Local" or "Android"
 #   SENTRY_AUTH_TOKEN: authentication token for Sentry API
+#   SENTRY_TEST_PLATFORM: test platform (aka device provider) such as "Local" or "Android"
 
 Set-StrictMode -Version latest
 $ErrorActionPreference = 'Stop'
@@ -39,27 +39,36 @@ BeforeAll {
     New-Item -ItemType Directory -Path "$PSScriptRoot/results/" 2>&1 | Out-Null
     Set-OutputDir -Path "$PSScriptRoot/results/"
 
-    # Initialize test arguments
-    $script:testArgs = $env:SENTRY_TEST_ARGS
+    # Initialize test parameters object
+    $script:TestSetup = [PSCustomObject]@{
+        Executable = $null
+        Args = $null
+        Dsn = $null
+        AuthToken = $null
+        Platform = $null
+    }
 
     # Initialize executable
-    $script:testExecutable = $env:SENTRY_TEST_EXECUTABLE
-    if ([string]::IsNullOrEmpty($script:testExecutable))
+    $script:TestSetup.Executable = $env:SENTRY_TEST_EXECUTABLE
+    if ([string]::IsNullOrEmpty($script:TestSetup.Executable))
     {
         Write-Warning "SENTRY_TEST_EXECUTABLE environment variable is not set. Defaulting to env:GODOT."
-        $script:testExecutable = $env:GODOT
+        $script:TestSetup.Executable = $env:GODOT
         # For running with Godot binary, we need to add these flags...
-        $script:testArgs += " --disable-crash-handler --headless --path project --"
+        $script:TestSetup.Args += " --disable-crash-handler --headless --path project --"
     }
     # Validate executable
-    if (-not (Test-Path $script:testExecutable))
+    if (-not (Test-Path $script:TestSetup.Executable))
     {
-        throw "Executable not found at: $script:testExecutable"
+        throw "Executable not found at: $($script:TestSetup.Executable)"
     }
 
+    # Initialize test arguments
+    $script:TestSetup.Args = $env:SENTRY_TEST_ARGS
+
     # Initialize DSN
-    $script:testDsn = $env:SENTRY_TEST_DSN
-    if ([string]::IsNullOrEmpty($script:testDsn))
+    $script:TestSetup.Dsn = $env:SENTRY_TEST_DSN
+    if ([string]::IsNullOrEmpty($script:TestSetup.Dsn))
     {
         # Read DSN from project.godot as fallback
         $projectGodotPath = Join-Path $PSScriptRoot "../project/project.godot"
@@ -69,7 +78,7 @@ BeforeAll {
             $projectContent = Get-Content $projectGodotPath -Raw
             if ($projectContent -match 'options/dsn="([^"]+)"')
             {
-                $script:testDsn = $matches[1]
+                $script:TestSetup.Dsn = $matches[1]
             } else
             {
                 throw "Could not find DSN in project.godot file"
@@ -81,25 +90,25 @@ BeforeAll {
     }
 
     # Initialize Auth token
-    $authToken = $env:SENTRY_AUTH_TOKEN
-    if ([string]::IsNullOrEmpty($authToken))
+    $script:TestSetup.AuthToken = $env:SENTRY_AUTH_TOKEN
+    if ([string]::IsNullOrEmpty($script:TestSetup.AuthToken))
     {
         throw "SENTRY_AUTH_TOKEN environment variable is not set."
     }
 
     # Initialize platform
-    $script:testPlatform = $env:SENTRY_TEST_PLATFORM
-    if ([string]::IsNullOrEmpty($script:testPlatform))
+    $script:TestSetup.Platform = $env:SENTRY_TEST_PLATFORM
+    if ([string]::IsNullOrEmpty($script:TestSetup.Platform))
     {
         Write-Warning "SENTRY_TEST_PLATFORM environment variable is not set. Defaulting to 'Local'."
-        $script:testPlatform = "Local"
+        $script:TestSetup.Platform = "Local"
     }
 
     Connect-SentryApi `
-        -ApiToken $authToken `
-        -DSN $testDsn
+        -ApiToken $script:TestSetup.AuthToken `
+        -DSN $script:TestSetup.Dsn
 
-    Connect-Device -Platform $testPlatform
+    Connect-Device -Platform $script:TestSetup.Platform
 }
 
 AfterAll {
