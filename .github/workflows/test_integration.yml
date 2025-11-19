@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   integration-tests:
-    name: Test ${{matrix.platform}}
+    name: Test ${{matrix.platform}} ${{matrix.arch}}
     runs-on: ${{matrix.runner}}
     strategy:
       fail-fast: false
@@ -20,9 +20,15 @@ jobs:
           - platform: Linux
             runner: ubuntu-latest
             arch: x86_64
+          - platform: Linux
+            runner: ubuntu-latest
+            arch: x86_32
           - platform: Windows
             runner: windows-latest
             arch: x86_64
+          - platform: Windows
+            runner: windows-latest
+            arch: x86_32
           - platform: macOS
             runner: macos-latest
             arch: universal
