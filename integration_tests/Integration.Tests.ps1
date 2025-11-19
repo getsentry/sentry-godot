@@ -35,6 +35,37 @@ BeforeAll {
         }
     }
 
+    # Run integration test action on device
+    function Invoke-TestAction
+    {
+        param (
+            [Parameter(Mandatory=$true)]
+            [string]$Action,
+            [string]$AdditionalArgs = ""
+        )
+
+        # ACT: Run test action in application on device
+        Write-Debug "Running $Action..."
+        Write-GitHub "::group::Log of $Action"
+        $arguments = $script:TestSetup.Args + " $Action $AdditionalArgs"
+        $runResult = Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments $arguments
+        Write-GitHub "::endgroup::"
+
+        # Save result to JSON file
+        $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
+
+        if ($IsMacOS -and $runResult.ExitCode -ne 0 -and ($script:TestSetup.Platform -ieq 'Local' -or $script:TestSetup.Platform -ieq 'macOS')) {
+         	# Send crash event, and quit after 10 interations.
+        	# NOTE: In Cocoa, crashes are sent during the next application launch.
+            Write-Debug "Running crash-send to ensure crash report is sent..."
+            Write-GitHub "::group::Log of crash-send"
+            Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments ($script:TestSetup.Args + " crash-send")
+            Write-GitHub "::endgroup::"
+        }
+
+        return $runResult
+    }
+
     # Create directory for the test results
     New-Item -ItemType Directory -Path "$PSScriptRoot/results/" 2>&1 | Out-Null
     Set-OutputDir -Path "$PSScriptRoot/results/"
@@ -119,22 +150,7 @@ Describe "Platform Integration Tests" {
         BeforeAll {
             Write-Host "Testing crash-capture..."
 
-            # ACT: Run crash-capture action in test application
-            Write-GitHub "::group::Log of crash-capture"
-            $runResult = Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments ($script:TestSetup.Args + " crash-capture")
-            Write-GitHub "::endgroup::"
-
-            if ($IsMacOS -and ($script:TestSetup.Platform -ieq 'Local' -or $script:TestSetup.Platform -ieq 'macOS')) {
-             	# Send crash event, and quit after 10 interations.
-            	# NOTE: In Cocoa, crashes are sent during the next application launch.
-             	Write-Debug "Launching again so crash event gets sent..."
-              	Write-GitHub "::group::Log of crash-send"
-            	Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments ($script:TestSetup.Args + " crash-send")
-             	Write-GitHub "::endgroup::"
-            }
-
-            # Save result in a file
-            $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath 'crash-capture-result.json')
+            $runResult = Invoke-TestAction -Action "crash-capture"
 
             $eventId = Get-EventIds -appOutput $runResult.Output -expectedCount 1
             if ($eventId)
@@ -207,13 +223,7 @@ Describe "Platform Integration Tests" {
         BeforeAll {
             $script:TEST_MESSAGE = "Test message"
 
-            # ACT: Run message-capture action in test application
-            Write-GitHub "::group::Log of message-capture"
-            $arguments = $script:TestSetup.Args + " message-capture " + "`"$TEST_MESSAGE`""
-            $runResult = Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments $arguments
-            Write-GitHub "::endgroup::"
-
-            $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath 'message-capture-result.json')
+            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs "`"$TEST_MESSAGE`""
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
             Write-Host $eventId
@@ -254,13 +264,7 @@ Describe "Platform Integration Tests" {
         # TODO: Test local variables
         # TODO: Test exact script source context (should we?)
         BeforeAll {
-            # ACT: Run runtime-error-capture action in test application
-            Write-GitHub "::group::Log of runtime-error-capture"
-            $arguments = $script:TestSetup.Args + " runtime-error-capture"
-            $runResult = Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments $arguments
-            Write-GitHub "::endgroup::"
-
-            $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath 'runtime-error-capture-result.json')
+            $runResult = Invoke-TestAction -Action "runtime-error-capture"
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
             Write-Host $eventId
