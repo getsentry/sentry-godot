@@ -70,7 +70,7 @@ func _cmd_crash_capture() -> int:
 func _cmd_crash_send() -> int:
 	print("Initializing Sentry so it can send crash report...")
 	await _init_sentry()
-	_add_integration_test_context("crash-capture")
+	_add_integration_test_context("crash-send")
 	# Wait 10 iterations
 	for i in range(10):
 		await get_tree().process_frame
