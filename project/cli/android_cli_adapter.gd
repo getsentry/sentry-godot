@@ -15,12 +15,10 @@ static func get_command_argv() -> PackedStringArray:
 	var rv := PackedStringArray()
 	var extras: Dictionary = _get_android_intent_extras()
 
-	if extras.has("command"):
-		rv.append(extras["command"])
-		for i in range(10):
-			var key := "arg%d" % i
-			if extras.has(key):
-				rv.append(extras[key])
+	for i in range(10):
+		var key := "arg%d" % i
+		if extras.has(key):
+			rv.append(extras[key])
 	return rv
 
 
