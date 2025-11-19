@@ -230,7 +230,6 @@ Describe "Platform Integration Tests" {
 
         It "Exits with code zero" {
             $runResult.ExitCode | Should -Be 0
-            $runEvent | ConvertTo-Json -Depth 20 | Out-File -FilePath "message.json"
         }
 
         It "Has title" {
