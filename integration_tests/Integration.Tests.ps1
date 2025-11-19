@@ -41,15 +41,14 @@ BeforeAll {
 
     # Initialize test parameters object
     $script:TestSetup = [PSCustomObject]@{
-        Executable = $null
-        Args = $null
-        Dsn = $null
-        AuthToken = $null
-        Platform = $null
+        Executable = $env:SENTRY_TEST_EXECUTABLE
+        Args = $env:SENTRY_TEST_ARGS
+        Dsn = $env:SENTRY_TEST_DSN
+        AuthToken = $env:SENTRY_AUTH_TOKEN
+        Platform = $env:SENTRY_TEST_PLATFORM
     }
 
-    # Initialize executable
-    $script:TestSetup.Executable = $env:SENTRY_TEST_EXECUTABLE
+    # Check executable and arguments
     if ([string]::IsNullOrEmpty($script:TestSetup.Executable))
     {
         Write-Warning "SENTRY_TEST_EXECUTABLE environment variable is not set. Defaulting to env:GODOT."
@@ -63,11 +62,7 @@ BeforeAll {
         throw "Executable not found at: $($script:TestSetup.Executable)"
     }
 
-    # Initialize test arguments
-    $script:TestSetup.Args = $env:SENTRY_TEST_ARGS
-
-    # Initialize DSN
-    $script:TestSetup.Dsn = $env:SENTRY_TEST_DSN
+    # Check DSN
     if ([string]::IsNullOrEmpty($script:TestSetup.Dsn))
     {
         # Read DSN from project.godot as fallback
@@ -89,15 +84,13 @@ BeforeAll {
         }
     }
 
-    # Initialize Auth token
-    $script:TestSetup.AuthToken = $env:SENTRY_AUTH_TOKEN
+    # Check auth token
     if ([string]::IsNullOrEmpty($script:TestSetup.AuthToken))
     {
         throw "SENTRY_AUTH_TOKEN environment variable is not set."
     }
 
-    # Initialize platform
-    $script:TestSetup.Platform = $env:SENTRY_TEST_PLATFORM
+    # Check platform
     if ([string]::IsNullOrEmpty($script:TestSetup.Platform))
     {
         Write-Warning "SENTRY_TEST_PLATFORM environment variable is not set. Defaulting to 'Local'."
@@ -128,15 +121,15 @@ Describe "Platform Integration Tests" {
 
             # ACT: Run crash-capture action in test application
             Write-GitHub "::group::Log of crash-capture"
-            $runResult = Invoke-DeviceApp -ExecutablePath $testExecutable -Arguments ($testArgs + " crash-capture")
+            $runResult = Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments ($script:TestSetup.Args + " crash-capture")
             Write-GitHub "::endgroup::"
 
-            if ($IsMacOS -and ($testPlatform -ieq 'Local' -or $testPlatform -ieq 'macOS')) {
+            if ($IsMacOS -and ($script:TestSetup.Platform -ieq 'Local' -or $script:TestSetup.Platform -ieq 'macOS')) {
              	# Send crash event, and quit after 10 interations.
             	# NOTE: In Cocoa, crashes are sent during the next application launch.
              	Write-Debug "Launching again so crash event gets sent..."
               	Write-GitHub "::group::Log of crash-send"
-            	Invoke-DeviceApp -ExecutablePath $testExecutable -Arguments ($testArgs + " crash-send")
+            	Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments ($script:TestSetup.Args + " crash-send")
              	Write-GitHub "::endgroup::"
             }
 
@@ -216,8 +209,8 @@ Describe "Platform Integration Tests" {
 
             # ACT: Run message-capture action in test application
             Write-GitHub "::group::Log of message-capture"
-            $arguments = $testArgs + " message-capture " + "`"$TEST_MESSAGE`""
-            $runResult = Invoke-DeviceApp -ExecutablePath $testExecutable -Arguments $arguments
+            $arguments = $script:TestSetup.Args + " message-capture " + "`"$TEST_MESSAGE`""
+            $runResult = Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments $arguments
             Write-GitHub "::endgroup::"
 
             $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath 'message-capture-result.json')
@@ -263,8 +256,8 @@ Describe "Platform Integration Tests" {
         BeforeAll {
             # ACT: Run runtime-error-capture action in test application
             Write-GitHub "::group::Log of runtime-error-capture"
-            $arguments = $testArgs + " runtime-error-capture"
-            $runResult = Invoke-DeviceApp -ExecutablePath $testExecutable -Arguments $arguments
+            $arguments = $script:TestSetup.Args + " runtime-error-capture"
+            $runResult = Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments $arguments
             Write-GitHub "::endgroup::"
 
             $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath 'runtime-error-capture-result.json')
