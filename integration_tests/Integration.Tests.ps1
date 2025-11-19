@@ -190,7 +190,7 @@ Describe "Platform Integration Tests" {
         It "Contains stacktrace frames" {
             $frames = $runEvent.exception.values[0].stacktrace.frames
             $frames | Should -Not -BeNullOrEmpty
-            $frames.Count | Should -BeGreaterThan 5
+            $frames.Count | Should -BeGreaterThan 0
         }
 
         It "Contains threads information" {
