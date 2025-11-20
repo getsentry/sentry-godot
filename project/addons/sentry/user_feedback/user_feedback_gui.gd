@@ -134,8 +134,8 @@ func _rescale_theme(scale_factor: float) -> void:
 	var th: Theme = _original_theme.duplicate()
 
 	var font_size: int = th.default_font_size
-	th.default_font_size = floori(font_size * scale_factor)
-	th.set_font_size("font_size", "HeaderMedium", floori(font_size * 1.3 * scale_factor))
+	th.default_font_size = ceili(font_size * scale_factor)
+	th.set_font_size("font_size", "HeaderMedium", ceili(font_size * 1.3 * scale_factor))
 
 	# Resize stylebox items
 	for theme_type in th.get_stylebox_type_list():
@@ -148,7 +148,7 @@ func _rescale_theme(scale_factor: float) -> void:
 	for theme_type in th.get_constant_type_list():
 		for constant_name in th.get_constant_list(theme_type):
 			var c: int = th.get_constant(constant_name, theme_type)
-			c = floori(c * scale_factor)
+			c = ceili(c * scale_factor)
 			th.set_constant(constant_name, theme_type, c)
 
 	theme = th
@@ -158,25 +158,25 @@ func _scale_stylebox(sb: StyleBox, scale_factor: float) -> StyleBox:
 	if sb is StyleBoxFlat:
 		var new_sb: StyleBoxFlat = sb.duplicate()
 
-		new_sb.content_margin_bottom = floorf(new_sb.content_margin_bottom * scale_factor)
-		new_sb.content_margin_right = floorf(new_sb.content_margin_right * scale_factor)
-		new_sb.content_margin_left = floorf(new_sb.content_margin_left * scale_factor)
-		new_sb.content_margin_top = floorf(new_sb.content_margin_top * scale_factor)
+		new_sb.content_margin_bottom = ceilf(new_sb.content_margin_bottom * scale_factor)
+		new_sb.content_margin_right = ceilf(new_sb.content_margin_right * scale_factor)
+		new_sb.content_margin_left = ceilf(new_sb.content_margin_left * scale_factor)
+		new_sb.content_margin_top = ceilf(new_sb.content_margin_top * scale_factor)
 
-		new_sb.border_width_bottom = floorf(new_sb.border_width_bottom * scale_factor)
-		new_sb.border_width_top = floorf(new_sb.border_width_top * scale_factor)
-		new_sb.border_width_left = floorf(new_sb.border_width_left * scale_factor)
-		new_sb.border_width_right = floorf(new_sb.border_width_right * scale_factor)
+		new_sb.border_width_bottom = ceilf(new_sb.border_width_bottom * scale_factor)
+		new_sb.border_width_top = ceilf(new_sb.border_width_top * scale_factor)
+		new_sb.border_width_left = ceilf(new_sb.border_width_left * scale_factor)
+		new_sb.border_width_right = ceilf(new_sb.border_width_right * scale_factor)
 
-		new_sb.corner_radius_bottom_left = floorf(new_sb.corner_radius_bottom_left * scale_factor)
-		new_sb.corner_radius_bottom_right = floorf(new_sb.corner_radius_bottom_right * scale_factor)
-		new_sb.corner_radius_top_left = floorf(new_sb.corner_radius_top_left * scale_factor)
-		new_sb.corner_radius_top_right = floorf(new_sb.corner_radius_top_right * scale_factor)
+		new_sb.corner_radius_bottom_left = ceilf(new_sb.corner_radius_bottom_left * scale_factor)
+		new_sb.corner_radius_bottom_right = ceilf(new_sb.corner_radius_bottom_right * scale_factor)
+		new_sb.corner_radius_top_left = ceilf(new_sb.corner_radius_top_left * scale_factor)
+		new_sb.corner_radius_top_right = ceilf(new_sb.corner_radius_top_right * scale_factor)
 
-		new_sb.expand_margin_bottom = floorf(new_sb.expand_margin_bottom * scale_factor)
-		new_sb.expand_margin_left = floorf(new_sb.expand_margin_left * scale_factor)
-		new_sb.expand_margin_right = floorf(new_sb.expand_margin_right * scale_factor)
-		new_sb.expand_margin_top = floorf(new_sb.expand_margin_top * scale_factor)
+		new_sb.expand_margin_bottom = ceilf(new_sb.expand_margin_bottom * scale_factor)
+		new_sb.expand_margin_left = ceilf(new_sb.expand_margin_left * scale_factor)
+		new_sb.expand_margin_right = ceilf(new_sb.expand_margin_right * scale_factor)
+		new_sb.expand_margin_top = ceilf(new_sb.expand_margin_top * scale_factor)
 
 		return new_sb
 	else:

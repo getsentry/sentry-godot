@@ -24,7 +24,6 @@ color = Color(0, 0, 0, 0.22745098)
 [node name="UserFeedbackForm" parent="." instance=ExtResource("1_t8jgq")]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 1
 
 [node name="SubmitButton" parent="UserFeedbackForm/MarginContainer/VBoxContainer/Actions" index="1"]
 theme_type_variation = &"ActionButton"
