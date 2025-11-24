@@ -8,7 +8,6 @@ extends RefCounted
 ##   arg2: second argument, etc... [br]
 
 
-
 # Reads Android intent extras and returns CLI-style arguments as PackedStringArray.
 # Supports --es command and --es arg0, arg1, arg2...
 static func get_command_argv() -> PackedStringArray:
