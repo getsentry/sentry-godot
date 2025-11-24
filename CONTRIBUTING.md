@@ -142,7 +142,8 @@ For the Android platform, you can also run supporting Android library tests:
 
 ### End-to-End Integration Tests
 
-Integration tests validate end-to-end SDK functionality by running test actions and verifying events are captured in Sentry. Tests are located in `integration_tests/` and use PowerShell with Pester.
+Integration tests validate end-to-end SDK functionality by running test actions and verifying events are captured in Sentry. Tests are located in `integration_tests/` and use PowerShell with Pester testing framework alongside the 
+[`app-runner`](https://github.com/getsentry/app-runner) submodule.
 
 #### Prerequisites
 
@@ -160,7 +161,7 @@ Install-Module -Name Pester -Force -SkipPublisherCheck
 - `SENTRY_TEST_DSN`: Sentry project DSN where test events will be sent (defaults to reading from project.godot)
 - `SENTRY_TEST_EXECUTABLE`: Path to test executable (defaults to `$env:GODOT`)
 - `SENTRY_TEST_ARGS`: Extra command line arguments for the executable
-- `SENTRY_TEST_PLATFORM`: Target platform: Linux, macOS, Windows, Android, etc (see `app-runner` submodule)
+- `SENTRY_TEST_PLATFORM`: Target platform: Linux, macOS, Windows, Android, etc (see [`app-runner`](https://github.com/getsentry/app-runner) submodule)
 
 #### Running Tests
 
