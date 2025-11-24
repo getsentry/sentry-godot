@@ -129,6 +129,8 @@ Once the XML files are regenerated, you can begin updating the documentation for
 
 > 🛈 Our CI automatically runs tests for open PRs.
 
+### Local Tests
+
 Testing is performed using the **gdUnit4** testing framework in GDScript. Unit tests (and other types of tests) are located in the `project/test/` directory. These tests can be executed from the Godot editor, except for isolated tests (see below).
 
 Some tests require isolation, meaning they need specific options to be set and must be executed in a separate process. These tests are located in the `project/test/isolated/` directory. We have a PowerShell script for running such tests in bulk: `scripts/run-isolated-tests.ps1`.
@@ -137,3 +139,34 @@ For the Android platform, you can also run supporting Android library tests:
 ```bash
 ./gradlew test
 ```
+
+### End-to-End Integration Tests
+
+Integration tests validate end-to-end SDK functionality by running test actions and verifying events are captured in Sentry. Tests are located in `integration_tests/` and use PowerShell with Pester.
+
+#### Prerequisites
+
+Install Pester PowerShell module:
+```powershell
+Install-Module -Name Pester -Force -SkipPublisherCheck
+```
+
+#### Environment Variables
+
+**Required:**
+- `SENTRY_AUTH_TOKEN`: Sentry API token for retrieving and validating events
+
+**Optional:**
+- `SENTRY_TEST_DSN`: Sentry project DSN where test events will be sent (defaults to reading from project.godot)
+- `SENTRY_TEST_EXECUTABLE`: Path to test executable (defaults to `$env:GODOT`)
+- `SENTRY_TEST_ARGS`: Extra command line arguments for the executable
+- `SENTRY_TEST_PLATFORM`: Target platform: Linux, macOS, Windows, Android, etc (see `app-runner` submodule)
+
+#### Running Tests
+
+```powershell
+cd integration_tests
+Invoke-Pester -Path Integration.Tests.ps1
+```
+
+Tests validate crash capture, message capture, runtime error capture, and event metadata. Results are saved to `integration_tests/results/`.
