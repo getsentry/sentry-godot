@@ -41,10 +41,8 @@ BeforeAll {
 
         # ACT: Run test action in application on device
         Write-Debug "Running $Action..."
-        Write-GitHub "::group::Log of $Action"
         $arguments = $script:TestSetup.Args + " $Action $AdditionalArgs"
         $runResult = Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments $arguments
-        Write-GitHub "::endgroup::"
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
