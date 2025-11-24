@@ -3,10 +3,9 @@ extends RefCounted
 ## Adapter class that converts Android intent extras into CLI-style arguments.
 ##
 ## Expects Android intent extras as key-value pairs: [br]
-##   command: name of the command to run. [br]
-## 	 arg0: first argument to the command. [br]
-##   arg1: second argument, etc... [br]
-
+##   arg0: name of the command to run. [br]
+##   arg1: first argument to the command. [br]
+##   arg2: second argument, etc... [br]
 
 
 # Reads Android intent extras and returns CLI-style arguments as PackedStringArray.

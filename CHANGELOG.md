@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fix User Feedback UI text cursor visibility in default theme ([#445](https://github.com/getsentry/sentry-godot/pull/445))
+
+### Dependencies
+
+- Bump Sentry Android from v8.25.0 to v8.26.0 ([#444](https://github.com/getsentry/sentry-godot/pull/444))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8260)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.25.0...8.26.0)
+- Bump Cocoa SDK from v8.57.2 to v8.57.3 ([#448](https://github.com/getsentry/sentry-godot/pull/448))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8573)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.2...8.57.3)
+
 ## 1.1.1
 
 ### Fixes
