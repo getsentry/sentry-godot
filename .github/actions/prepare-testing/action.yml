@@ -15,6 +15,7 @@ runs:
     - name: Checkout required submodules
       shell: bash
       run: |
+        git submodule update --init --depth 1 modules/app-runner
         git submodule update --init --depth 1 modules/gdUnit4
         git submodule update --init --depth 1 modules/godot-cpp
         git submodule update --init --depth 1 project/test/util/json_assert
@@ -38,6 +39,19 @@ runs:
       with:
         distribution: temurin
         java-version: 17
+
+    - name: Install Linux dependencies (32-bit)
+      if: runner.os == 'Linux' && inputs.arch == 'x86_32'
+      shell: bash
+      run: |
+        sudo dpkg --add-architecture i386
+        sudo apt-get update
+        sudo apt-get install \
+            libatomic1:i386 \
+            libudev1:i386 \
+            libfontconfig1:i386 \
+            libcurl4-openssl-dev:i386 \
+            zlib1g:i386
 
     - name: Set up Godot
       shell: bash

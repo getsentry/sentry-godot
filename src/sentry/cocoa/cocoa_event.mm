@@ -249,7 +249,7 @@ void CocoaEvent::add_exception(const Exception &p_exception) {
 
 	objc::SentryThread *cocoa_thread = [[objc::SentryThread alloc] initWithThreadId:uint64_to_objc(thread_id)];
 	cocoa_thread.stacktrace = stack_trace;
-	cocoa_thread.crashed = [NSNumber numberWithBool:NO];
+	cocoa_thread.crashed = [NSNumber numberWithBool:YES];
 	cocoa_thread.current = [NSNumber numberWithBool:YES];
 	cocoa_thread.isMain = bool_to_objc(is_main);
 
