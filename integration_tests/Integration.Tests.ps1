@@ -42,22 +42,95 @@ BeforeAll {
         # ACT: Run test action in application on device
         Write-Debug "Running $Action..."
         $arguments = $script:TestSetup.Args + " $Action $AdditionalArgs"
-        $runResult = Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments $arguments
+
+        $execPath = $script:TestSetup.Executable
+
+        # Convert arguments to Android extras if necessary
+        if ($script:TestSetup.Platform -match "$Android") {
+            $arguments = ConvertTo-AndroidExtras -Arguments $arguments
+            $execPath = $script:TestSetup.AndroidComponent
+            Write-Host "Using arguments $arguments"
+        }
+
+        $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
 
         # If crashed on macOS, launch again to send crash event.
         # NOTE: In Cocoa, crashes are sent during the next application launch.
-        if ($IsMacOS -and $runResult.ExitCode -ne 0 -and ($script:TestSetup.Platform -ieq "Local" -or $script:TestSetup.Platform -ieq "macOS")) {
+        if (
+            $script:TestSetup.Platform -in @("AndroidAdb", "AndroidSauceLabs") -or (
+                $IsMacOS -and $runResult.ExitCode -ne 0 -and ($script:TestSetup.Platform -ieq "Local" -or $script:TestSetup.Platform -ieq "macOS")
+            )
+        ) {
             Write-Debug "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
-            Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments ($script:TestSetup.Args + " crash-send")
+            $arguments = ($script:TestSetup.Args + " crash-send")
+            if ($script:TestSetup.Platform -match "$Android") {
+                $arguments = ConvertTo-AndroidExtras -Arguments $arguments
+            }
+            Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
             Write-GitHub "::endgroup::"
         }
 
         return $runResult
     }
+
+    function ConvertTo-AndroidExtras {
+        param (
+            [Parameter(Mandatory=$true)]
+            [string]$Arguments
+        )
+
+        if ([string]::IsNullOrWhiteSpace($Arguments)) {
+            return ""
+        }
+
+        # Split arguments into tokens, respecting quoted strings
+        $tokens = @()
+        $current = ""
+        $inQuotes = $false
+        $escapeNext = $false
+
+        for ($i = 0; $i -lt $Arguments.Length; $i++) {
+            $char = $Arguments[$i]
+
+            if ($escapeNext) {
+                $current += $char
+                $escapeNext = $false
+            }
+            elseif ($char -eq '\') {
+                $escapeNext = $true
+            }
+            elseif ($char -eq '"') {
+                $inQuotes = -not $inQuotes
+            }
+            elseif ($char -eq ' ' -and -not $inQuotes) {
+                if ($current.Length -gt 0) {
+                    $tokens += $current
+                    $current = ""
+                }
+            }
+            else {
+                $current += $char
+            }
+        }
+
+        # Add the last token if it exists
+        if ($current.Length -gt 0) {
+            $tokens += $current
+        }
+
+        # Convert tokens to Android intent extras format
+        $extras = ""
+        for ($i = 0; $i -lt $tokens.Count; $i++) {
+            $extras += " --es arg$i `"$($tokens[$i])`""
+        }
+
+        return $extras.TrimStart()
+    }
+
 
     # Create directory for the test results
     New-Item -ItemType Directory -Path "$PSScriptRoot/results/" 2>&1 | Out-Null
@@ -70,6 +143,7 @@ BeforeAll {
         Dsn = $env:SENTRY_TEST_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
         Platform = $env:SENTRY_TEST_PLATFORM
+        AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
     }
 
     # Check executable and arguments
