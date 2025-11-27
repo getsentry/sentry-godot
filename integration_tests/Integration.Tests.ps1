@@ -46,7 +46,7 @@ BeforeAll {
         $execPath = $script:TestSetup.Executable
 
         # Convert arguments to Android extras if necessary
-        if ($script:TestSetup.Platform -match "$Android") {
+        if ($script:TestSetup.Platform -match "Android") {
             $arguments = ConvertTo-AndroidExtras -Arguments $arguments
             $execPath = $script:TestSetup.AndroidComponent
             Write-Host "Using arguments $arguments"
