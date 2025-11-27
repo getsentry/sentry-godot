@@ -67,12 +67,16 @@ $CommonTestCases = @(
     }
     @{ Name = "Has correct OS tag"; TestBlock = {
             param($SentryEvent)
-            if ($IsLinux) {
+            if ($TestSetup.Platform -ieq "Linux") {
                 $expectedOS = "Linux"
-            } elseif ($IsMacOS) {
+            } elseif ($TestSetup.Platform -ieq "macOS") {
                 $expectedOS = "macOS"
-            } else {
+            } elseif ($TestSetup.Platform -ieq "Windows") {
                 $expectedOS = "Windows"
+            } elseif ($TestSetup.Platform -match "Android") {
+                $expectedOS = "Android"
+            } elseif ($TestSetup.Platform -match "iOS") {
+                $expectedOS = "iOS"
             }
             ($SentryEvent.tags | Where-Object { $_.key -eq "os" }).value | Should -Match $expectedOS
         }
