@@ -222,7 +222,7 @@ Describe "Platform Integration Tests" {
 
         # Include shared test cases from CommonTestCases.ps1
         It "<Name>" -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType "crash-capture" -RunResult $runResult
+            & $testBlock -SentryEvent $runEvent -TestType "crash-capture" -RunResult $runResult -TestSetup $script:TestSetup
         }
 
         It "Exits with non-zero code" {
@@ -292,7 +292,7 @@ Describe "Platform Integration Tests" {
 
         # Include shared test cases from CommonTestCases.ps1
         It "<Name>" -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType "message-capture" -RunResult $runResult
+            & $testBlock -SentryEvent $runEvent -TestType "message-capture" -RunResult $runResult -TestSetup $script:TestSetup
         }
 
         It "Exits with code zero" {
@@ -331,7 +331,7 @@ Describe "Platform Integration Tests" {
 
         # Include shared test cases from CommonTestCases.ps1
         It "<Name>" -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType "runtime-error-capture" -RunResult $runResult
+            & $testBlock -SentryEvent $runEvent -TestType "runtime-error-capture" -RunResult $runResult -TestSetup $script:TestSetup
         }
 
         It "Exits with code zero" {

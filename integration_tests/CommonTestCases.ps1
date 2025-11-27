@@ -5,6 +5,7 @@
 # - $SentryEvent: The Sentry event object retrieved from the REST API containing error/message details
 # - $TestType: String indicating the type of test being run (e.g., "crash-capture", "message-capture")
 # - $RunResult: Object containing the results of running the test application, including Output and ExitCode
+# - $TestSetup: Object containing test setup parameters
 
 $CommonTestCases = @(
     @{ Name = "Outputs event ID"; TestBlock = {
@@ -29,12 +30,17 @@ $CommonTestCases = @(
         }
     }
     @{ Name = "Has correct platform"; TestBlock = {
-            param($SentryEvent)
+            param($SentryEvent, $TestSetup)
             $SentryEvent.platform | Should -Not -BeNullOrEmpty
-            if ($IsLinux -or $IsWindows) {
-                $SentryEvent.platform | Should -Be "native"
-            } elseif ($IsMacOS) {
-                $SentryEvent.platform | Should -Be "cocoa"
+
+            $expectedPlatform = @{
+                "Windows" = "native"
+                "Linux" = "native"
+                "macOS" = "cocoa"
+            }
+
+            if ($expectedPlatform.ContainsKey($TestSetup.Platform)) {
+                $SentryEvent.platform | Should -Be $expectedPlatform[$TestSetup.Platform]
             }
         }
     }
