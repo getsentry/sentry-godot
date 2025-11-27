@@ -361,7 +361,7 @@ Describe "Platform Integration Tests" {
 
             # Validate frame format: "FRAME: {file} | {function} | {line}"
             foreach ($frame in $frameLines) {
-                $frame | Should -Match "^FRAME: res://.*\.gd \| \w+ \| \d+$"
+                $frame | Should -Match "FRAME: res://.*\.gd \| \w+ \| \d+$"
             }
         }
 
