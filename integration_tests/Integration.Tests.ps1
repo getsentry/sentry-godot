@@ -103,7 +103,7 @@ BeforeAll {
             elseif ($char -eq '\') {
                 $escapeNext = $true
             }
-            elseif ($char -eq '"') {
+            elseif ($char -eq '"' -or $char -eq "'") {
                 $inQuotes = -not $inQuotes
             }
             elseif ($char -eq ' ' -and -not $inQuotes) {
@@ -290,7 +290,7 @@ Describe "Platform Integration Tests" {
 
     Context "Message Capture" {
         BeforeAll {
-            $script:TEST_MESSAGE = "Test message"
+            $script:TEST_MESSAGE = "TestMessage"
 
             $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs "`"$TEST_MESSAGE`""
 
