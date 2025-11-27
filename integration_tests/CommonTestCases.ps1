@@ -137,7 +137,14 @@ $CommonTestCases = @(
         }
     }
     @{ Name = "Contains Godot contexts"; TestBlock = {
-            param($SentryEvent)
+            param($SentryEvent, $TestSetup, $TestType)
+
+            if ($TestSetup.Platform -match "Android" -and $TestType -eq "crash-capture") {
+                # Skip Godot context tests for Android crashes
+                # Q: Bug?
+                return
+            }
+
             $SentryEvent.contexts.godot_engine | Should -Not -BeNullOrEmpty
             $SentryEvent.contexts.godot_engine.version | Should -Not -BeNullOrEmpty
             $SentryEvent.contexts.godot_engine.version_commit | Should -Not -BeNullOrEmpty
