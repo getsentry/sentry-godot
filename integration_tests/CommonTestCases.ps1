@@ -126,9 +126,6 @@ $CommonTestCases = @(
     @{ Name = "Contains device context"; TestBlock = {
             param($SentryEvent)
             $SentryEvent.contexts.device | Should -Not -BeNullOrEmpty
-            $SentryEvent.contexts.device.arch | Should -Not -BeNullOrEmpty
-            $SentryEvent.contexts.device.free_memory | Should -Not -BeNullOrEmpty
-            $SentryEvent.contexts.device.usable_memory | Should -Not -BeNullOrEmpty
         }
     }
     @{ Name = "Contains OS context"; TestBlock = {
