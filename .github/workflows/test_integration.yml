@@ -58,7 +58,7 @@ jobs:
         timeout-minutes: 10
         shell: bash
         run: |
-          "${GODOT}" --verbose --headless --path project --install-android-build-template --export-debug "Android Tests" "${GITHUB_WORKSPACE}/exports/android.apk" || true
+          "${GODOT}" --verbose --headless --disable-crash-handler --path project --install-android-build-template --export-debug "Android Tests" "${GITHUB_WORKSPACE}/exports/android.apk" || true
 
       - name: Install Pester module for pwsh
         shell: pwsh
