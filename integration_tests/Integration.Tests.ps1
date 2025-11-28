@@ -354,7 +354,7 @@ Describe "Platform Integration Tests" {
         }
 
         It "Outputs stack trace frames in correct format" {
-            $frameLines = $runResult.Output | Where-Object { $_ -match "FRAME: " }
+            $frameLines = $runResult.Output | Where-Object { $_ -match "FRAME: ([^|]+) \| ([^|]+) \| (\d+)" }
             $frameLines | Should -Not -BeNullOrEmpty
             $frameLines.Count | Should -BeGreaterThan 0
 
