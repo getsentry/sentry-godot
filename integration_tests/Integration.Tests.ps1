@@ -57,12 +57,11 @@ BeforeAll {
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
 
-        # If crashed on macOS, launch again to send crash event.
-        # NOTE: In Cocoa, crashes are sent during the next application launch.
+        # Launch app again to ensure crash report is sent
+        # NOTE: On Cocoa & Android, crashes are sent during the next app launch.
         if (
-            $script:TestSetup.Platform -in @("AndroidAdb", "AndroidSauceLabs") -or (
-                $IsMacOS -and $runResult.ExitCode -ne 0 -and ($script:TestSetup.Platform -ieq "Local" -or $script:TestSetup.Platform -ieq "macOS")
-            )
+            ($Action -eq "crash-capture" -or $runResult.ExitCode -ne 0) -and
+                $script:TestSetup.Platform -in @("macOS", "Local", "AndroidAdb", "AndroidSauceLabs")
         ) {
             Write-Debug "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
