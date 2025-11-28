@@ -1,4 +1,4 @@
-# Helper function used for end-to-end integration testing
+# Helper functions dot-sourced in integration testing
 
 
 function script:Write-GitHub {
