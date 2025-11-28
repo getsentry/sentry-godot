@@ -45,7 +45,7 @@ BeforeAll {
         $execPath = $script:TestSetup.Executable
 
         # Convert arguments to Android extras if necessary
-        if ($script:TestSetup.Platform -match "^Android\w+$") {
+        if ($script:TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
             $arguments = ConvertTo-AndroidExtras -Arguments $arguments
             $execPath = $script:TestSetup.AndroidComponent
             Write-Host "Using arguments $arguments"
@@ -60,12 +60,12 @@ BeforeAll {
         # NOTE: On Cocoa & Android, crashes are sent during the next app launch.
         if (
             ($Action -eq "crash-capture" -or $runResult.ExitCode -ne 0) -and
-                $script:TestSetup.Platform -in @("macOS", "Local", "AndroidAdb", "AndroidSauceLabs")
+                $script:TestSetup.Platform -in @("macOS", "Local", "Adb", "AndroidSauceLabs")
         ) {
             Write-Debug "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
             $arguments = ($script:TestSetup.Args + " crash-send")
-            if ($script:TestSetup.Platform -match "^Android\w+$") {
+            if ($script:TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
                 $arguments = ConvertTo-AndroidExtras -Arguments $arguments
             }
             Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
@@ -226,7 +226,7 @@ Describe "Platform Integration Tests" {
         }
 
         It "Exits with non-zero code" {
-            if ($TestSetup.Platform -match "Android") {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
                 # We don't properly detect exit code on Android
                 return
             }
@@ -275,7 +275,7 @@ Describe "Platform Integration Tests" {
         }
 
         It "Contains threads information" {
-            if ($script:TestSetup.Platform -match "Android") {
+            if ($script:TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
                 # threads info missing on Android
                 # Q: Bug?
                 return
