@@ -42,11 +42,10 @@ BeforeAll {
         # ACT: Run test action in application on device
         Write-Debug "Running $Action..."
         $arguments = $script:TestSetup.Args + " $Action $AdditionalArgs"
-
         $execPath = $script:TestSetup.Executable
 
         # Convert arguments to Android extras if necessary
-        if ($script:TestSetup.Platform -match "Android") {
+        if ($script:TestSetup.Platform -match "^Android\w+$") {
             $arguments = ConvertTo-AndroidExtras -Arguments $arguments
             $execPath = $script:TestSetup.AndroidComponent
             Write-Host "Using arguments $arguments"
@@ -66,7 +65,7 @@ BeforeAll {
             Write-Debug "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
             $arguments = ($script:TestSetup.Args + " crash-send")
-            if ($script:TestSetup.Platform -match "$Android") {
+            if ($script:TestSetup.Platform -match "^Android\w+$") {
                 $arguments = ConvertTo-AndroidExtras -Arguments $arguments
             }
             Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
@@ -190,6 +189,8 @@ BeforeAll {
         -DSN $script:TestSetup.Dsn
 
     Connect-Device -Platform $script:TestSetup.Platform
+
+    Install-DeviceApp -Path (Resolve-Path $script:TestSetup.Executable).Path
 }
 
 
