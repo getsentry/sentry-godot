@@ -74,5 +74,5 @@ jobs:
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           SAUCE_REGION: us-west-1
           SAUCE_DEVICE_NAME: Samsung_Galaxy_S23_15_real_sjc1
-          SAUCE_SESSION_NAME: Godot ${{matrix.test-platform}} E2E Test
+          SAUCE_SESSION_NAME: Godot ${{matrix.test-platform}} E2E Tests
         run: Invoke-Pester -Script integration_tests/Integration.Tests.ps1
