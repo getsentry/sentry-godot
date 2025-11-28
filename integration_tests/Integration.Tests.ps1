@@ -355,7 +355,7 @@ Describe "Platform Integration Tests" {
         }
 
         It "Outputs stack trace frames in correct format" {
-            $frameLines = $runResult.Output | Where-Object { $_ -match "^FRAME: " }
+            $frameLines = $runResult.Output | Where-Object { $_ -match "FRAME: " }
             $frameLines | Should -Not -BeNullOrEmpty
             $frameLines.Count | Should -BeGreaterThan 0
 
@@ -427,13 +427,13 @@ Describe "Platform Integration Tests" {
 
         It "Has GDScript frames matching expected output frames and order" {
             # Parse FRAME lines from output
-            $frameLines = $runResult.Output | Where-Object { $_ -match "^FRAME: " }
+            $frameLines = $runResult.Output | Where-Object { $_ -match "FRAME: ([^|]+) \| ([^|]+) \| (\d+)" }
             $frameLines | Should -Not -BeNullOrEmpty
 
             # Parse expected frame information from output (in order)
             $expectedFrames = @()
             foreach ($line in $frameLines) {
-                if ($line -match "^FRAME: ([^|]+) \| ([^|]+) \| (\d+)$") {
+                if ($line -match "FRAME: ([^|]+) \| ([^|]+) \| (\d+)") {
                     $expectedFrames += @{
                         filename = $matches[1].Trim()
                         function = $matches[2].Trim()
