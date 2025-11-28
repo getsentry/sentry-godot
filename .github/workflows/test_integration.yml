@@ -36,7 +36,7 @@ jobs:
           - test-platform: macOS
             runner: macos-latest
             godot-arch: universal
-          - test-platform: Android
+          - test-platform: AndroidSauceLabs
             runner: ubuntu-latest
             godot-arch: x86_64
             test-executable: ./exports/android.apk
@@ -51,7 +51,14 @@ jobs:
         timeout-minutes: 15
         with:
           arch: ${{ matrix.godot-arch }}
-          android: ${{ matrix.test-platform == 'Android' && 'true' || 'false' }}
+          android: ${{ matrix.test-platform == 'AndroidSauceLabs' && 'true' || 'false' }}
+
+      - name: Export project
+        if: matrix.test-platform == 'AndroidSauceLabs'
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          "${GODOT}" --verbose --headless --path project --install-android-build-template --export-debug "Android Tests" "${GITHUB_WORKSPACE}/exports/android.apk"
 
       - name: Install Pester module for pwsh
         shell: pwsh
