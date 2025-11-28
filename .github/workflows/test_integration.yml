@@ -64,7 +64,7 @@ jobs:
         shell: pwsh
         run: Install-Module -Name Pester -Force -SkipPublisherCheck
 
-      - name: Run integration tests locally
+      - name: Run integration tests
         shell: pwsh
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
@@ -73,6 +73,6 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           SAUCE_REGION: us-west-1
-          SAUCE_DEVICE_NAME: Samsung_Galaxy_S23_15_real_sjc1
+          SAUCE_DEVICE_NAME: Samsung_Galaxy_S23.*
           SAUCE_SESSION_NAME: Godot ${{matrix.test-platform}} E2E Tests
         run: Invoke-Pester -Script integration_tests/Integration.Tests.ps1
