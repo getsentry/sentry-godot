@@ -73,7 +73,7 @@ $CommonTestCases = @(
                 $expectedOS = "macOS"
             } elseif ($TestSetup.Platform -ieq "Windows") {
                 $expectedOS = "Windows"
-            } elseif ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+            } elseif ($TestSetup.IsAndroid) {
                 $expectedOS = "Android"
             } elseif ($TestSetup.Platform -match "iOS") {
                 $expectedOS = "iOS"
@@ -112,7 +112,7 @@ $CommonTestCases = @(
     @{ Name = "Contains app context"; TestBlock = {
             param($SentryEvent, $TestSetup, $TestType)
 
-            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs") -and $TestType -eq "crash-capture") {
+            if ($TestSetup.IsAndroid -and $TestType -eq "crash-capture") {
                 # Skip app context check for Android crashes
                 # Q: Bug?
                 return
@@ -139,7 +139,7 @@ $CommonTestCases = @(
     @{ Name = "Contains Godot contexts"; TestBlock = {
             param($SentryEvent, $TestSetup, $TestType)
 
-            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs") -and $TestType -eq "crash-capture") {
+            if ($TestSetup.IsAndroid -and $TestType -eq "crash-capture") {
                 # Skip Godot context tests for Android crashes
                 # Q: Bug?
                 return

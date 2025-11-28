@@ -19,18 +19,11 @@ $global:DebugPreference = "Continue"
 # Import shared test cases
 . $PSScriptRoot/CommonTestCases.ps1
 
+# Import utility functions
+. $PSScriptRoot/Utils.ps1
+
 
 BeforeAll {
-    function Write-GitHub {
-        param (
-            [Parameter(Mandatory=$true)]
-            [string]$message
-        )
-        if ($env:GITHUB_ACTIONS) {
-            Write-Host "${message}"
-        }
-    }
-
     # Run integration test action on device
     function Invoke-TestAction {
         param (
@@ -45,7 +38,7 @@ BeforeAll {
         $execPath = $script:TestSetup.Executable
 
         # Convert arguments to Android extras if necessary
-        if ($script:TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+        if ($script:TestSetup.IsAndroid) {
             $arguments = ConvertTo-AndroidExtras -Arguments $arguments
             $execPath = $script:TestSetup.AndroidComponent
             Write-Host "Using arguments $arguments"
@@ -65,7 +58,7 @@ BeforeAll {
             Write-Debug "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
             $arguments = ($script:TestSetup.Args + " crash-send")
-            if ($script:TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+            if ($script:TestSetup.IsAndroid) {
                 $arguments = ConvertTo-AndroidExtras -Arguments $arguments
             }
             Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
@@ -75,63 +68,8 @@ BeforeAll {
         return $runResult
     }
 
-    function ConvertTo-AndroidExtras {
-        param (
-            [Parameter(Mandatory=$true)]
-            [string]$Arguments
-        )
-
-        if ([string]::IsNullOrWhiteSpace($Arguments)) {
-            return ""
-        }
-
-        # Split arguments into tokens, respecting quoted strings
-        $tokens = @()
-        $current = ""
-        $inQuotes = $false
-        $escapeNext = $false
-
-        for ($i = 0; $i -lt $Arguments.Length; $i++) {
-            $char = $Arguments[$i]
-
-            if ($escapeNext) {
-                $current += $char
-                $escapeNext = $false
-            }
-            elseif ($char -eq '\') {
-                $escapeNext = $true
-            }
-            elseif ($char -eq '"' -or $char -eq "'") {
-                $inQuotes = -not $inQuotes
-            }
-            elseif ($char -eq ' ' -and -not $inQuotes) {
-                if ($current.Length -gt 0) {
-                    $tokens += $current
-                    $current = ""
-                }
-            }
-            else {
-                $current += $char
-            }
-        }
-
-        # Add the last token if it exists
-        if ($current.Length -gt 0) {
-            $tokens += $current
-        }
-
-        # Convert tokens to Android intent extras format
-        $extras = ""
-        for ($i = 0; $i -lt $tokens.Count; $i++) {
-            $extras += " --es arg$i `"$($tokens[$i])`""
-        }
-
-        return $extras.TrimStart()
-    }
-
-
     # Create directory for the test results
-    New-Item -ItemType Directory -Path "$PSScriptRoot/results/" 2>&1 | Out-Null
+    New-Item -ItemType Directory -Path "$PSScriptRoot/results/" -ErrorAction Continue 2>&1 | Out-Null
     Set-OutputDir -Path "$PSScriptRoot/results/"
 
     # Initialize test parameters object
@@ -142,6 +80,7 @@ BeforeAll {
         AuthToken = $env:SENTRY_AUTH_TOKEN
         Platform = $env:SENTRY_TEST_PLATFORM
         AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
+        IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
     }
 
     # Check executable and arguments
@@ -226,7 +165,7 @@ Describe "Platform Integration Tests" {
         }
 
         It "Exits with non-zero code" {
-            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+            if ($TestSetup.IsAndroid) {
                 # We don't properly detect exit code on Android
                 return
             }
@@ -275,7 +214,7 @@ Describe "Platform Integration Tests" {
         }
 
         It "Contains threads information" {
-            if ($script:TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+            if ($script:TestSetup.IsAndroid) {
                 # threads info missing on Android
                 # Q: Bug?
                 return
