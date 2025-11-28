@@ -58,7 +58,7 @@ jobs:
         timeout-minutes: 10
         shell: bash
         run: |
-          "${GODOT}" --verbose --headless --path project --install-android-build-template --export-debug "Android Tests" "${GITHUB_WORKSPACE}/exports/android.apk"
+          "${GODOT}" --verbose --headless --path project --install-android-build-template --export-debug "Android Tests" "${GITHUB_WORKSPACE}/exports/android.apk" && true
 
       - name: Install Pester module for pwsh
         shell: pwsh
@@ -74,5 +74,5 @@ jobs:
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           SAUCE_REGION: us-west-1
           SAUCE_DEVICE_NAME: Samsung_Galaxy_S23_15_real_sjc1
-          SAUCE_SESSION_NAME: App Runner Godot ${{matrix.test-platform}} Test
+          SAUCE_SESSION_NAME: Godot ${{matrix.test-platform}} E2E Test
         run: Invoke-Pester -Script integration_tests/Integration.Tests.ps1

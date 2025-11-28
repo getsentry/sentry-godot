@@ -128,13 +128,13 @@ BeforeAll {
         -DSN $script:TestSetup.Dsn
 
     Connect-Device -Platform $script:TestSetup.Platform
-
     Install-DeviceApp -Path (Resolve-Path $script:TestSetup.Executable).Path
 }
 
 
 AfterAll {
     Disconnect-SentryApi
+    Disconnect-Device
 }
 
 
