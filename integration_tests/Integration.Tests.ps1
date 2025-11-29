@@ -41,7 +41,6 @@ BeforeAll {
         if ($script:TestSetup.IsAndroid) {
             $arguments = ConvertTo-AndroidExtras -Arguments $arguments
             $execPath = $script:TestSetup.AndroidComponent
-            Write-Host "Using arguments $arguments"
         }
 
         $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
@@ -128,7 +127,7 @@ BeforeAll {
         -DSN $script:TestSetup.Dsn
 
     Connect-Device -Platform $script:TestSetup.Platform
-    Install-DeviceApp -Path (Resolve-Path $script:TestSetup.Executable).Path
+    Install-DeviceApp -Path $script:TestSetup.Executable
 }
 
 
