@@ -6,6 +6,7 @@
             android:value="io.sentry.godotplugin.SentryAndroidGodotPlugin" />
 
         <meta-data android:name="io.sentry.auto-init" android:value="false" />
+        <meta-data android:name="io.sentry.ndk.scope-sync.enable" android:value="true" />
 
     </application>
 </manifest>

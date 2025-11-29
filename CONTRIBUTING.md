@@ -158,10 +158,17 @@ Install-Module -Name Pester -Force -SkipPublisherCheck
 - `SENTRY_AUTH_TOKEN`: Sentry API token for retrieving and validating events
 
 **Optional:**
+- `SENTRY_TEST_PLATFORM`: Target platform: Linux, macOS, Windows, Android, etc (see [`app-runner`](https://github.com/getsentry/app-runner) submodule)
 - `SENTRY_TEST_DSN`: Sentry project DSN where test events will be sent (defaults to reading from project.godot)
 - `SENTRY_TEST_EXECUTABLE`: Path to test executable (defaults to `$env:GODOT`)
 - `SENTRY_TEST_ARGS`: Extra command line arguments for the executable
-- `SENTRY_TEST_PLATFORM`: Target platform: Linux, macOS, Windows, Android, etc (see [`app-runner`](https://github.com/getsentry/app-runner) submodule)
+
+**Sauce Labs:**
+- `SAUCE_USERNAME`: Sauce Labs username for authentication
+- `SAUCE_ACCESS_KEY`: Sauce Labs access key for authentication
+- `SAUCE_REGION`: Sauce Labs region (e.g., `us-west-1`)
+- `SAUCE_DEVICE_NAME`: Target device for testing (e.g., `Samsung_Galaxy_S23_15_real_sjc1`)
+- `SAUCE_SESSION_NAME`: Session identifier (e.g., `Godot E2E Tests`)
 
 #### Running Tests
 
