@@ -141,7 +141,7 @@ $CommonTestCases = @(
 
             if ($TestSetup.IsAndroid -and $TestType -eq "crash-capture") {
                 # Skip Godot context tests for Android crashes
-                # Q: Bug?
+                # NOTE: Contexts don't seem to be synchronized to NDK. Bug?
                 return
             }
 

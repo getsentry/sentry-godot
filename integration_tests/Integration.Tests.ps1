@@ -166,7 +166,7 @@ Describe "Platform Integration Tests" {
 
         It "Exits with non-zero code" {
             if ($TestSetup.IsAndroid) {
-                # We don't properly detect exit code on Android
+                # We don't detect exit code on Android - it's always zero.
                 return
             }
 

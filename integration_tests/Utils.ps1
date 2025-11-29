@@ -26,6 +26,7 @@ function script:ConvertTo-AndroidExtras {
     $tokens = @()
     $current = ""
     $inQuotes = $false
+    $quoteChar = $null
     $escapeNext = $false
 
     for ($i = 0; $i -lt $Arguments.Length; $i++) {
@@ -38,8 +39,13 @@ function script:ConvertTo-AndroidExtras {
         elseif ($char -eq '\') {
             $escapeNext = $true
         }
-        elseif ($char -eq '"' -or $char -eq "'") {
-            $inQuotes = -not $inQuotes
+        elseif (($char -eq '"' -or $char -eq "'") -and -not $inQuotes) {
+            $inQuotes = $true
+            $quoteChar = $char
+        }
+        elseif ($char -eq $quoteChar -and $inQuotes) {
+            $inQuotes = $false
+            $quoteChar = $null
         }
         elseif ($char -eq ' ' -and -not $inQuotes) {
             if ($current.Length -gt 0) {
