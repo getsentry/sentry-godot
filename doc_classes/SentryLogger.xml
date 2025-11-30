@@ -100,7 +100,7 @@
 				Logs an informational message to Sentry. Info logs are used for general application flow and important events. The [param body] is the main log message and can contain format placeholders (e.g., [code]%s[/code], [code]%d[/code]) for use with [param parameters]. The optional [param parameters] array provides positional parameters to substitute into placeholders using Godot's format strings. The optional [param attributes] dictionary adds structured metadata to the log entry.
 				[codeblock]
 				# Simple usage
-				SentrySDK.logger.info("Player Alice joined multiplayer lobby")
+				SentrySDK.logger.info("Player Alice joined lobby with 3 players")
 
 				# With parameters and attributes
 				SentrySDK.logger.info("Player %s joined lobby with %d players", ["Alice", 3], {
