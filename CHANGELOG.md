@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fix User Feedback UI text cursor visibility in default theme ([#445](https://github.com/getsentry/sentry-godot/pull/445))
+- Fix custom tags missing in native crashes on Android ([#454](https://github.com/getsentry/sentry-godot/pull/454))
 
 ### Dependencies
 
