@@ -4,9 +4,7 @@ extends Node
 
 
 func _ready() -> void:
-	SentrySDK.logger.info("Starting UI on {platform}", {
-		platform=OS.get_name()
-	})
+	SentrySDK.logger.info("Starting UI on %s", [OS.get_name()])
 
 	if await cli_commands.check_and_execute_cli():
 		# Quit if a CLI command was executed
