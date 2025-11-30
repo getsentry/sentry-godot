@@ -5,6 +5,9 @@ inputs:
   arch:
     description: Architecture to use for testing.
     required: true
+  android:
+    description: Whether to prepare for Android testing.
+    default: "false"
 
 runs:
   using: "composite"
@@ -12,6 +15,7 @@ runs:
     - name: Checkout required submodules
       shell: bash
       run: |
+        git submodule update --init --depth 1 modules/app-runner
         git submodule update --init --depth 1 modules/gdUnit4
         git submodule update --init --depth 1 modules/godot-cpp
         git submodule update --init --depth 1 project/test/util/json_assert
@@ -29,6 +33,26 @@ runs:
         python --version
         scons --version
 
+    - name: Set up Java 17
+      if: inputs.android == 'true'
+      uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Install Linux dependencies (32-bit)
+      if: runner.os == 'Linux' && inputs.arch == 'x86_32'
+      shell: bash
+      run: |
+        sudo dpkg --add-architecture i386
+        sudo apt-get update
+        sudo apt-get install \
+            libatomic1:i386 \
+            libudev1:i386 \
+            libfontconfig1:i386 \
+            libcurl4-openssl-dev:i386 \
+            zlib1g:i386
+
     - name: Set up Godot
       shell: bash
       env:
@@ -44,6 +68,7 @@ runs:
         fi
 
         echo "Using Godot version: $version"
+        echo "GODOT_VERSION=$version" >> $GITHUB_ENV
 
         if [[ "$RUNNER_OS" == "Windows" ]]; then
           if [[ "$ARCH" == "x86_32" ]]; then
@@ -104,9 +129,26 @@ runs:
       run: |
         scons project/addons/gdUnit4
 
+    - name: Prepare export configuration
+      shell: bash
+      run: cp exports/export_presets.cfg project/export_presets.cfg
+
+    - name: Deploy Android build template
+      if: inputs.android == 'true'
+      shell: bash
+      run: |
+        # Download Godot templates
+        archive_file=Godot_v${GODOT_VERSION}_export_templates.tpz
+        url=https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/${archive_file}
+        echo "Downloading templates from: $url"
+        curl -L -o templates.zip "${url}"
+
+        echo "Extracting Android source template..."
+        unzip -j templates.zip templates/android_source.zip -d exports/
+        rm templates.zip
+
     - name: Prepare project
       shell: bash
-      # timeout-minutes: 5
       run: |
         find project/addons/sentry/bin/ -name "crashpad_handler" -exec chmod 755 "{}" \;
         echo "--- Rebuilding import cache"

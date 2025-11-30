@@ -35,25 +35,29 @@ Variant AndroidLog::get_attribute(const String &p_name) const {
 void AndroidLog::set_attribute(const String &p_name, const Variant &p_value) {
 	ERR_FAIL_NULL(android_plugin);
 
-	Variant value = p_value;
-	String type;
+	Dictionary attr_data;
+	attr_data["name"] = p_name;
+
 	switch (p_value.get_type()) {
 		case Variant::BOOL: {
-			type = "boolean";
+			attr_data["value"] = p_value;
+			attr_data["type"] = "boolean";
 		} break;
 		case Variant::INT: {
-			type = "integer";
+			attr_data["value"] = p_value;
+			attr_data["type"] = "integer";
 		} break;
 		case Variant::FLOAT: {
-			type = "double";
+			attr_data["value"] = p_value;
+			attr_data["type"] = "double";
 		} break;
 		default: {
-			value = (Variant)p_value.stringify();
-			type = "string";
+			attr_data["value"] = p_value.stringify();
+			attr_data["type"] = "string";
 		} break;
 	}
 
-	android_plugin->call(ANDROID_SN(logSetAttribute), handle, p_name, type, value);
+	android_plugin->call(ANDROID_SN(logSetAttribute), handle, attr_data);
 }
 
 void AndroidLog::add_attributes(const Dictionary &p_attributes) {

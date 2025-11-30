@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Sentry demo project"
-config/version="1.1.0"
+config/version="1.1.1"
 run/main_scene="uid://cqiowj0jydds1"
 run/main_loop_type="ProjectMainLoop"
 config/features=PackedStringArray("4.5")
@@ -39,9 +39,15 @@ enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
 [gdunit4]
 
 ui/toolbar/run_overall=true
+hooks/session_hooks=Dictionary[String, bool]({
+"res://addons/gdUnit4/src/core/hooks/GdUnitHtmlReporterTestSessionHook.gd": false,
+"res://addons/gdUnit4/src/core/hooks/GdUnitXMLReporterTestSessionHook.gd": false
+})
 
 [rendering]
 
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
 
 [sentry]

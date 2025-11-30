@@ -30,18 +30,6 @@ jobs:
         with:
           submodules: false # don't initialize submodules automatically
 
-      - name: Install Linux dependencies (32-bit)
-        if: matrix.runner == 'ubuntu-latest' && matrix.arch == 'x86_32'
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
-          sudo apt-get install \
-              libatomic1:i386 \
-              libudev1:i386 \
-              libfontconfig1:i386 \
-              libcurl4-openssl-dev:i386 \
-              zlib1g:i386
-
       - name: Prepare testing
         uses: ./.github/actions/prepare-testing
         with:
@@ -51,12 +39,8 @@ jobs:
         shell: bash
         timeout-minutes: 5
         run: |
-          # Exit status codes: 0 - success, 100 - ends with test failures, 101 - ends with test warnings.
-          ${GODOT} --headless --debug --path project/ \
-              --script "res://addons/gdUnit4/bin/GdUnitCmdTool.gd" \
-              --ignoreHeadlessMode \
-              --continue \
-              --add test/suites/
+          # Exit status codes: 0 - success, 100 - failures, 101 - warnings, 104 - tests not found, 105 - didn't run.
+          ${GODOT} --headless --path project/ -- run-tests "res://test/suites/"
 
       - name: Run isolated tests
         if: success() || failure()
@@ -74,10 +58,3 @@ jobs:
               --ignoreHeadlessMode \
               --continue \
               --add test/util/json_assert/
-
-      - name: Upload results
-        if: always() # do this step even if the tests fail
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{matrix.runner}}-${{matrix.arch}}
-          path: project/reports

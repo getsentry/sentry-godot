@@ -77,26 +77,31 @@ void SentryAndroidBeforeSendLogHandler::_bind_methods() {
 // *** AndroidSDK
 
 void AndroidSDK::set_context(const String &p_key, const Dictionary &p_value) {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 	android_plugin->call(ANDROID_SN(setContext), p_key, sanitize_variant(p_value));
 }
 
 void AndroidSDK::remove_context(const String &p_key) {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 	android_plugin->call(ANDROID_SN(removeContext), p_key);
 }
 
 void AndroidSDK::set_tag(const String &p_key, const String &p_value) {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 	android_plugin->call(ANDROID_SN(setTag), p_key, p_value);
 }
 
 void AndroidSDK::remove_tag(const String &p_key) {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 	android_plugin->call(ANDROID_SN(removeTag), p_key);
 }
 
 void AndroidSDK::set_user(const Ref<SentryUser> &p_user) {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 
 	if (p_user.is_valid()) {
@@ -111,11 +116,13 @@ void AndroidSDK::set_user(const Ref<SentryUser> &p_user) {
 }
 
 void AndroidSDK::remove_user() {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 	android_plugin->call(ANDROID_SN(removeUser));
 }
 
 Ref<SentryBreadcrumb> AndroidSDK::create_breadcrumb() {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL_V(android_plugin, nullptr);
 	int32_t handle = android_plugin->call(ANDROID_SN(createBreadcrumb));
 	Ref<AndroidBreadcrumb> crumb = memnew(AndroidBreadcrumb(android_plugin, handle));
@@ -123,6 +130,7 @@ Ref<SentryBreadcrumb> AndroidSDK::create_breadcrumb() {
 }
 
 void AndroidSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 	Ref<AndroidBreadcrumb> crumb = p_breadcrumb;
 	ERR_FAIL_COND(crumb.is_null());
@@ -130,6 +138,7 @@ void AndroidSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 }
 
 void AndroidSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 
 	if (p_body.is_empty()) {
@@ -152,16 +161,19 @@ void AndroidSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p
 }
 
 String AndroidSDK::capture_message(const String &p_message, Level p_level) {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL_V(android_plugin, String());
 	return android_plugin->call(ANDROID_SN(captureMessage), p_message, p_level);
 }
 
 String AndroidSDK::get_last_event_id() {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL_V(android_plugin, String());
 	return android_plugin->call(ANDROID_SN(getLastEventId));
 }
 
 Ref<SentryEvent> AndroidSDK::create_event() {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL_V(android_plugin, nullptr);
 	int32_t event_handle = android_plugin->call(ANDROID_SN(createEvent));
 	Ref<AndroidEvent> event = memnew(AndroidEvent(android_plugin, event_handle));
@@ -169,6 +181,7 @@ Ref<SentryEvent> AndroidSDK::create_event() {
 }
 
 String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL_V(android_plugin, String());
 	ERR_FAIL_COND_V(p_event.is_null(), String());
 	Ref<AndroidEvent> android_event = p_event;
@@ -179,6 +192,7 @@ String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
 }
 
 void AndroidSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
@@ -190,6 +204,8 @@ void AndroidSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 }
 
 void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
 	ERR_FAIL_COND(p_attachment.is_null());
 
 	if (p_attachment->get_path().is_empty()) {
@@ -211,6 +227,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 }
 
 void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
+	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 
 	if (p_configuration_callback.is_valid()) {
@@ -251,20 +268,23 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 }
 
 void AndroidSDK::close() {
+	Object *android_plugin = _get_android_plugin();
 	if (android_plugin != nullptr) {
 		android_plugin->call(ANDROID_SN(close));
 	}
 }
 
 bool AndroidSDK::is_enabled() const {
+	Object *android_plugin = _get_android_plugin();
 	return android_plugin && android_plugin->call(ANDROID_SN(isEnabled));
 }
 
 AndroidSDK::AndroidSDK() {
 	AndroidStringNames::create_singleton();
 
-	android_plugin = Engine::get_singleton()->get_singleton("SentryAndroidGodotPlugin");
+	Object *android_plugin = Engine::get_singleton()->get_singleton("SentryAndroidGodotPlugin");
 	ERR_FAIL_NULL_MSG(android_plugin, "Sentry: Unable to locate SentryAndroidGodotPlugin singleton.");
+	android_plugin_instance_id = android_plugin->get_instance_id();
 
 	before_send_handler = memnew(SentryAndroidBeforeSendHandler);
 	before_send_handler->_initialize(android_plugin);
@@ -274,10 +294,6 @@ AndroidSDK::AndroidSDK() {
 }
 
 AndroidSDK::~AndroidSDK() {
-	if (is_enabled()) {
-		close();
-	}
-
 	AndroidStringNames::destroy_singleton();
 	if (before_send_handler) {
 		memdelete(before_send_handler);

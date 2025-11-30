@@ -40,9 +40,11 @@ protected:
 // Internal SDK utilizing Sentry Android (sentry-java repo).
 class AndroidSDK : public InternalSDK {
 private:
-	Object *android_plugin = nullptr;
+	uint64_t android_plugin_instance_id = 0;
 	SentryAndroidBeforeSendHandler *before_send_handler = nullptr;
 	SentryAndroidBeforeSendLogHandler *before_send_log_handler = nullptr;
+
+	_FORCE_INLINE_ Object *_get_android_plugin() const { return ObjectDB::get_instance(android_plugin_instance_id); }
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
@@ -73,7 +75,7 @@ public:
 	virtual void close() override;
 	virtual bool is_enabled() const override;
 
-	bool has_android_plugin() const { return android_plugin != nullptr; }
+	bool has_android_plugin() const { return _get_android_plugin() != nullptr; }
 
 	AndroidSDK();
 	virtual ~AndroidSDK() override;

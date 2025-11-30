@@ -1,0 +1,57 @@
+name: 🧪 Integration tests
+
+on:
+  workflow_call:
+    secrets:
+      SENTRY_API_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  integration-tests:
+    name: Test ${{matrix.platform}} ${{matrix.arch}}
+    runs-on: ${{matrix.runner}}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Linux
+            runner: ubuntu-latest
+            arch: x86_64
+          - platform: Linux
+            runner: ubuntu-latest
+            arch: x86_32
+          - platform: Windows
+            runner: windows-latest
+            arch: x86_64
+          - platform: Windows
+            runner: windows-latest
+            arch: x86_32
+          - platform: macOS
+            runner: macos-latest
+            arch: universal
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: false # don't initialize submodules automatically
+
+      - name: Prepare testing
+        uses: ./.github/actions/prepare-testing
+        timeout-minutes: 15
+        with:
+          arch: ${{ matrix.arch }}
+          android: ${{ matrix.platform == 'Android' && 'true' || 'false' }}
+
+      - name: Install Pester module for pwsh
+        shell: pwsh
+        run: Install-Module -Name Pester -Force -SkipPublisherCheck
+
+      - name: Run integration tests locally
+        shell: pwsh
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+          SENTRY_TEST_PLATFORM: ${{ matrix.platform }}
+        run: Invoke-Pester -Script integration_tests/Integration.Tests.ps1

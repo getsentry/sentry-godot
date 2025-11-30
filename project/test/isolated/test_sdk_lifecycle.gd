@@ -5,7 +5,10 @@ extends GdUnitTestSuite
 signal callback_processed
 
 
-func _before_send(_ev: SentryEvent) -> SentryEvent:
+func _before_send(ev: SentryEvent) -> SentryEvent:
+	if ev.is_crash():
+		# Likely processing previous crash.
+		return ev
 	callback_processed.emit()
 	return null
 

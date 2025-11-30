@@ -35,6 +35,18 @@ jobs:
     needs: build-extension
     uses: ./.github/workflows/unit_tests.yml
 
+  test-android:
+    name: 🧪 Android tests
+    needs: build-extension
+    uses: ./.github/workflows/test_android.yml
+
+  test-integration:
+    name: 🧪 Integration tests
+    needs: build-extension
+    uses: ./.github/workflows/test_integration.yml
+    secrets:
+      SENTRY_API_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+
   package:
     name: 📦 Package
     needs: build-extension
@@ -49,7 +61,7 @@ jobs:
   # See issue: https://github.com/getsentry/sentry-godot/issues/41
   cleanup:
     name: 🗑️ Cleanup
-    needs: [package, unit-tests, static-checks]
+    needs: [package, unit-tests, test-android, test-integration, static-checks]
     runs-on: ubuntu-latest
     steps:
       - name: Delete sentry-godot-gdextension artifact

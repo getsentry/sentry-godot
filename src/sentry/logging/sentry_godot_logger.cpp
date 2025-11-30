@@ -297,6 +297,10 @@ void SentryGodotLogger::_apply_normal_limits() {
 void SentryGodotLogger::_log_error(const String &p_function, const String &p_file, int32_t p_line,
 		const String &p_code, const String &p_rationale, bool p_editor_notify, int32_t p_error_type,
 		const TypedArray<Ref<ScriptBacktrace>> &p_script_backtraces) {
+	if (!SentrySDK::get_singleton()) {
+		return;
+	}
+
 	static thread_local uint32_t num_entries = 0;
 	constexpr uint32_t MAX_ENTRIES = 5;
 	RecursionGuard feedback_loop_guard{ &num_entries, MAX_ENTRIES };
@@ -444,6 +448,10 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 
 void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 	sentry::logging::MessageScope message_scope;
+
+	if (!SentrySDK::get_singleton()) {
+		return;
+	}
 
 	bool as_log = SentryOptions::get_singleton()->get_experimental()->get_enable_logs();
 	bool as_breadcrumb = SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled();
