@@ -209,12 +209,9 @@ void NativeSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_
 
 	String body = p_body;
 
-	sentry_value_t attributes;
+	sentry_value_t attributes = sentry_value_new_object();
 
-	if (p_attributes.is_empty()) {
-		attributes = sentry_value_new_null();
-	} else {
-		attributes = sentry_value_new_object();
+	if (!p_attributes.is_empty()) {
 		for (const Variant &key : p_attributes.keys()) {
 			sentry_value_set_by_key(attributes, key.stringify().utf8(),
 					variant_to_attribute(p_attributes[key]));
