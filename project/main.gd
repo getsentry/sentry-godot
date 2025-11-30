@@ -7,7 +7,7 @@ func _ready() -> void:
 	SentrySDK.logger.info("Starting UI on {platform}", {
 		platform=OS.get_name()
 	})
-	if OS.get_name() in ["Android", "iOS"]:
+
 	if await cli_commands.check_and_execute_cli():
 		# Quit if a CLI command was executed
 		get_tree().quit(cli_commands.exit_code)
