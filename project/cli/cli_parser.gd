@@ -48,6 +48,11 @@ func check_and_execute_cli() -> bool:
 	var command_args: PackedStringArray = args.slice(1)
 
 	exit_code = await _run_command(command_name, command_args)
+
+	# Give some time for SDK to flush events
+	var scene_tree := Engine.get_main_loop() as SceneTree
+	await scene_tree.create_timer(1.0).timeout
+
 	return true
 
 
