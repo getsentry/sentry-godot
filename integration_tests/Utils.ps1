@@ -66,7 +66,8 @@ function script:ConvertTo-AndroidExtras {
     # Convert tokens to Android intent extras format
     $extras = ""
     for ($i = 0; $i -lt $tokens.Count; $i++) {
-        $extras += " --es arg$i `"$($tokens[$i])`""
+        $escapedToken = $tokens[$i] -replace '"', '\"'
+        $extras += " --es arg$i `"$escapedToken`""
     }
 
     return $extras.TrimStart()
