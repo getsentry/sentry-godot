@@ -246,6 +246,10 @@ Describe "Platform Integration Tests" {
         }
 
         It "Exits with code zero" {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
             $runResult.ExitCode | Should -Be 0
         }
 
@@ -285,6 +289,10 @@ Describe "Platform Integration Tests" {
         }
 
         It "Exits with code zero" {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
             $runResult.ExitCode | Should -Be 0
         }
 
