@@ -214,8 +214,8 @@ Describe "Platform Integration Tests" {
 
         It "Contains threads information" {
             if ($script:TestSetup.IsAndroid) {
-                # threads info missing on Android
-                # Q: Bug?
+                # Threads info missing on Android
+                # See: https://github.com/getsentry/sentry-java/issues/3295
                 return
             }
 
