@@ -41,6 +41,8 @@ BeforeAll {
         if ($script:TestSetup.IsAndroid) {
             $arguments = ConvertTo-AndroidExtras -Arguments $arguments
             $execPath = $script:TestSetup.AndroidComponent
+        } elseif ($script:TestSetup.Platform -match "iOS") {
+        	$execPath = $script:TestSetup.iOSBundleId
         }
 
         $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
@@ -80,6 +82,7 @@ BeforeAll {
         Platform = $env:SENTRY_TEST_PLATFORM
         AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
         IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
+        iOSBundleId = "io.sentry.godot.project"
     }
 
     # Check executable and arguments
