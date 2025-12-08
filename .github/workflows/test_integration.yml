@@ -60,10 +60,6 @@ jobs:
         run: |
           "${GODOT}" --verbose --headless --disable-crash-handler --path project --install-android-build-template --export-debug "Android Tests" "${GITHUB_WORKSPACE}/exports/android.apk" || true
 
-      - name: Install Pester module for pwsh
-        shell: pwsh
-        run: Install-Module -Name Pester -Force -SkipPublisherCheck
-
       - name: Run integration tests
         shell: pwsh
         env:
