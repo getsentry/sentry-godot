@@ -91,6 +91,8 @@ BeforeAll {
         $script:TestSetup.Executable = $env:GODOT
         # For running with Godot binary, we need to add these flags...
         $script:TestSetup.Args += " --disable-crash-handler --headless --path project --"
+    } else {
+    	$script:TestSetup.Args += " --"
     }
     # Validate executable
     if (-not (Test-Path $script:TestSetup.Executable)) {
