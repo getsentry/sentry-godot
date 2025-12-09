@@ -37,9 +37,9 @@ class SentryExperimental : public RefCounted {
 	GDCLASS(SentryExperimental, RefCounted);
 
 public:
+	// DEPRECATED: The following accessors are deprecated and scheduled for removal.
 	void set_enable_logs(bool p_value);
 	bool get_enable_logs();
-
 	void set_before_send_log(Callable p_value);
 	Callable get_before_send_log();
 

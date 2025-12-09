@@ -65,6 +65,7 @@ void SentryExperimental::set_enable_logs(bool p_value) {
 }
 
 bool SentryExperimental::get_enable_logs() {
+	// DEPRECATED: This accessor is deprecated and will be removed in a future version.
 	return SentryOptions::get_singleton()->get_enable_logs();
 }
 
@@ -74,12 +75,13 @@ void SentryExperimental::set_before_send_log(Callable p_value) {
 }
 
 Callable SentryExperimental::get_before_send_log() {
+	// DEPRECATED: This accessor is deprecated and will be removed in a future version.
 	return SentryOptions::get_singleton()->get_before_send_log();
 }
 
 void SentryExperimental::_bind_methods() {
-	// DEPRECATED: These properties remain for compatibility.
-	//             Remove these in 6 month or in 2.0.
+	// DEPRECATED: These properties are deprecated and remain for compatibility reasons.
+	// TODO: Remove these after June 2026 or in version 2.0.
 	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::BOOL, enable_logs);
 	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::CALLABLE, before_send_log);
 }
