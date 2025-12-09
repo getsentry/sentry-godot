@@ -61,6 +61,10 @@ func _cmd_crash_capture() -> int:
 	_print_test_result("crash-capture", true, "Pre-crash setup complete")
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("About to trigger controlled crash"))
 
+	# Wait for scope to sync with NDK layer on Android
+	# NOTE: On Android, NDK scope sync seems to happen with delay.
+	await get_tree().create_timer(0.5).timeout
+
 	# Use the same crash method as the demo
 	SentrySDK._demo_helper_crash_app()
 	return 0
@@ -153,7 +157,7 @@ func _init_sentry() -> void:
 	print("Initializing Sentry...")
 
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.debug = true
+		options.debug = false
 		options.diagnostic_level = SentrySDK.LEVEL_ERROR
 		options.release = "test-app@1.0.0"
 		options.environment = "integration-test"

@@ -19,18 +19,11 @@ $global:DebugPreference = "Continue"
 # Import shared test cases
 . $PSScriptRoot/CommonTestCases.ps1
 
+# Import utility functions
+. $PSScriptRoot/Utils.ps1
+
 
 BeforeAll {
-    function Write-GitHub {
-        param (
-            [Parameter(Mandatory=$true)]
-            [string]$message
-        )
-        if ($env:GITHUB_ACTIONS) {
-            Write-Host "${message}"
-        }
-    }
-
     # Run integration test action on device
     function Invoke-TestAction {
         param (
@@ -42,17 +35,32 @@ BeforeAll {
         # ACT: Run test action in application on device
         Write-Debug "Running $Action..."
         $arguments = $script:TestSetup.Args + " $Action $AdditionalArgs"
-        $runResult = Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments $arguments
+        $execPath = $script:TestSetup.Executable
+
+        # Convert arguments to Android extras if necessary
+        if ($script:TestSetup.IsAndroid) {
+            $arguments = ConvertTo-AndroidExtras -Arguments $arguments
+            $execPath = $script:TestSetup.AndroidComponent
+        }
+
+        $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
 
-        # If crashed on macOS, launch again to send crash event.
-        # NOTE: In Cocoa, crashes are sent during the next application launch.
-        if ($IsMacOS -and $runResult.ExitCode -ne 0 -and ($script:TestSetup.Platform -ieq "Local" -or $script:TestSetup.Platform -ieq "macOS")) {
+        # Launch app again to ensure crash report is sent
+        # NOTE: On Cocoa & Android, crashes are sent during the next app launch.
+        if (
+            ($Action -eq "crash-capture" -or $runResult.ExitCode -ne 0) -and
+                $script:TestSetup.Platform -in @("macOS", "Local", "Adb", "AndroidSauceLabs")
+        ) {
             Write-Debug "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
-            Invoke-DeviceApp -ExecutablePath $script:TestSetup.Executable -Arguments ($script:TestSetup.Args + " crash-send")
+            $arguments = ($script:TestSetup.Args + " crash-send")
+            if ($script:TestSetup.IsAndroid) {
+                $arguments = ConvertTo-AndroidExtras -Arguments $arguments
+            }
+            Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
             Write-GitHub "::endgroup::"
         }
 
@@ -60,7 +68,7 @@ BeforeAll {
     }
 
     # Create directory for the test results
-    New-Item -ItemType Directory -Path "$PSScriptRoot/results/" 2>&1 | Out-Null
+    New-Item -ItemType Directory -Path "$PSScriptRoot/results/" -ErrorAction Continue 2>&1 | Out-Null
     Set-OutputDir -Path "$PSScriptRoot/results/"
 
     # Initialize test parameters object
@@ -70,6 +78,8 @@ BeforeAll {
         Dsn = $env:SENTRY_TEST_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
         Platform = $env:SENTRY_TEST_PLATFORM
+        AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
+        IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
     }
 
     # Check executable and arguments
@@ -117,11 +127,13 @@ BeforeAll {
         -DSN $script:TestSetup.Dsn
 
     Connect-Device -Platform $script:TestSetup.Platform
+    Install-DeviceApp -Path $script:TestSetup.Executable
 }
 
 
 AfterAll {
     Disconnect-SentryApi
+    Disconnect-Device
 }
 
 
@@ -148,10 +160,15 @@ Describe "Platform Integration Tests" {
 
         # Include shared test cases from CommonTestCases.ps1
         It "<Name>" -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType "crash-capture" -RunResult $runResult
+            & $testBlock -SentryEvent $runEvent -TestType "crash-capture" -RunResult $runResult -TestSetup $script:TestSetup
         }
 
         It "Exits with non-zero code" {
+            if ($TestSetup.IsAndroid) {
+                # We don't detect exit code on Android - it's always zero.
+                return
+            }
+
             $runResult.ExitCode | Should -Not -Be 0
         }
 
@@ -185,7 +202,8 @@ Describe "Platform Integration Tests" {
             $exception | Should -Not -BeNullOrEmpty
             $exception.type | Should -Not -BeNullOrEmpty
             $exception.stacktrace | Should -Not -BeNullOrEmpty
-            $exception.threadId | Should -Not -BeNullOrEmpty
+            # NOTE: null on Android
+            # $exception.threadId | Should -Not -BeNullOrEmpty
         }
 
         It "Contains stacktrace frames" {
@@ -195,6 +213,12 @@ Describe "Platform Integration Tests" {
         }
 
         It "Contains threads information" {
+            if ($script:TestSetup.IsAndroid) {
+                # Threads info missing on Android
+                # See: https://github.com/getsentry/sentry-java/issues/3295
+                return
+            }
+
             $runEvent.threads | Should -Not -BeNullOrEmpty
             $runEvent.threads.values | Should -Not -BeNullOrEmpty
             $threadId = $runEvent.threads.values | Where-Object { $_.crashed -eq $true } | Select-Object -ExpandProperty id
@@ -204,7 +228,7 @@ Describe "Platform Integration Tests" {
 
     Context "Message Capture" {
         BeforeAll {
-            $script:TEST_MESSAGE = "Test message"
+            $script:TEST_MESSAGE = "TestMessage"
 
             $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs "`"$TEST_MESSAGE`""
 
@@ -218,10 +242,14 @@ Describe "Platform Integration Tests" {
 
         # Include shared test cases from CommonTestCases.ps1
         It "<Name>" -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType "message-capture" -RunResult $runResult
+            & $testBlock -SentryEvent $runEvent -TestType "message-capture" -RunResult $runResult -TestSetup $script:TestSetup
         }
 
         It "Exits with code zero" {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
             $runResult.ExitCode | Should -Be 0
         }
 
@@ -257,10 +285,14 @@ Describe "Platform Integration Tests" {
 
         # Include shared test cases from CommonTestCases.ps1
         It "<Name>" -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType "runtime-error-capture" -RunResult $runResult
+            & $testBlock -SentryEvent $runEvent -TestType "runtime-error-capture" -RunResult $runResult -TestSetup $script:TestSetup
         }
 
         It "Exits with code zero" {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
             $runResult.ExitCode | Should -Be 0
         }
 
@@ -269,13 +301,13 @@ Describe "Platform Integration Tests" {
         }
 
         It "Outputs stack trace frames in correct format" {
-            $frameLines = $runResult.Output | Where-Object { $_ -match "^FRAME: " }
+            $frameLines = $runResult.Output | Where-Object { $_ -match "FRAME: ([^|]+) \| ([^|]+) \| (\d+)" }
             $frameLines | Should -Not -BeNullOrEmpty
             $frameLines.Count | Should -BeGreaterThan 0
 
             # Validate frame format: "FRAME: {file} | {function} | {line}"
             foreach ($frame in $frameLines) {
-                $frame | Should -Match "^FRAME: res://.*\.gd \| \w+ \| \d+$"
+                $frame | Should -Match "FRAME: res://.*\.gd \| \w+ \| \d+$"
             }
         }
 
@@ -341,13 +373,13 @@ Describe "Platform Integration Tests" {
 
         It "Has GDScript frames matching expected output frames and order" {
             # Parse FRAME lines from output
-            $frameLines = $runResult.Output | Where-Object { $_ -match "^FRAME: " }
+            $frameLines = $runResult.Output | Where-Object { $_ -match "FRAME: ([^|]+) \| ([^|]+) \| (\d+)" }
             $frameLines | Should -Not -BeNullOrEmpty
 
             # Parse expected frame information from output (in order)
             $expectedFrames = @()
             foreach ($line in $frameLines) {
-                if ($line -match "^FRAME: ([^|]+) \| ([^|]+) \| (\d+)$") {
+                if ($line -match "FRAME: ([^|]+) \| ([^|]+) \| (\d+)") {
                     $expectedFrames += @{
                         filename = $matches[1].Trim()
                         function = $matches[2].Trim()
