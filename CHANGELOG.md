@@ -4,7 +4,7 @@
 
 ### Features
 
-- Structured Logs are now generally available ([#460](https://github.com/getsentry/sentry-godot/pull/460))
+- Structured Logs are generally available now, and enabled by default ([#460](https://github.com/getsentry/sentry-godot/pull/460))
 - String interpolation and custom attributes support in structured logging API ([#435](https://github.com/getsentry/sentry-godot/pull/435))
 
 ### Fixes
