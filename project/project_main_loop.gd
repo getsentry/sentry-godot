@@ -24,7 +24,7 @@ func _initialize() -> void:
 
 		# Set up event callbacks
 		options.before_send = _on_before_send_to_sentry
-		options.experimental.before_send_log = _on_before_send_log_to_sentry
+		options.before_send_log = _on_before_send_log_to_sentry
 	)
 
 	# Post-initialize
