@@ -4,8 +4,8 @@ signal log_processed(entry: SentryLog)
 
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.experimental.enable_logs = true
-		options.experimental.before_send_log = _before_send_log
+		options.enable_logs = true
+		options.before_send_log = _before_send_log
 	)
 
 
