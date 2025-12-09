@@ -60,7 +60,7 @@ void SentryLoggerLimits::_bind_methods() {
 // *** SentryExperimental
 
 void SentryExperimental::set_enable_logs(bool p_value) {
-	WARN_DEPRECATED_MSG("Logs are now generally available. This property is deprecated. Use SentryOptions.enable_logs instead.");
+	WARN_DEPRECATED_MSG("Sentry Logs are now generally available. This property is deprecated. Use SentryOptions.enable_logs instead.");
 	SentryOptions::get_singleton()->set_enable_logs(p_value);
 }
 
@@ -69,7 +69,7 @@ bool SentryExperimental::get_enable_logs() {
 }
 
 void SentryExperimental::set_before_send_log(Callable p_value) {
-	WARN_DEPRECATED_MSG("Logs are now generally available. This property is deprecated. Use SentryOptions.before_send_log instead.");
+	WARN_DEPRECATED_MSG("Sentry Logs are now generally available. This property is deprecated. Use SentryOptions.before_send_log instead.");
 	SentryOptions::get_singleton()->set_before_send_log(p_value);
 }
 
@@ -242,11 +242,11 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("screenshot_level"), set_screenshot_level, get_screenshot_level);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_scene_tree"), set_attach_scene_tree, is_attach_scene_tree_enabled);
 
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), set_app_hang_tracking, is_app_hang_tracking_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), set_app_hang_timeout_sec, get_app_hang_timeout_sec);
-
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_logs"), set_enable_logs, get_enable_logs);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_log"), set_before_send_log, get_before_send_log);
+
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), set_app_hang_tracking, is_app_hang_tracking_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), set_app_hang_timeout_sec, get_app_hang_timeout_sec);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, is_logger_include_source_enabled);
