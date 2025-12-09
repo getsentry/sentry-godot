@@ -5,33 +5,41 @@ on:
     secrets:
       SENTRY_API_TOKEN:
         required: true
+      SAUCE_USERNAME:
+        required: true
+      SAUCE_ACCESS_KEY:
+        required: true
 
 permissions:
   contents: read
 
 jobs:
   integration-tests:
-    name: Test ${{matrix.platform}} ${{matrix.arch}}
+    name: Test ${{matrix.test-platform}} ${{matrix.godot-arch}}
     runs-on: ${{matrix.runner}}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: Linux
+          - test-platform: Linux
             runner: ubuntu-latest
-            arch: x86_64
-          - platform: Linux
+            godot-arch: x86_64
+          - test-platform: Linux
             runner: ubuntu-latest
-            arch: x86_32
-          - platform: Windows
+            godot-arch: x86_32
+          - test-platform: Windows
             runner: windows-latest
-            arch: x86_64
-          - platform: Windows
+            godot-arch: x86_64
+          - test-platform: Windows
             runner: windows-latest
-            arch: x86_32
-          - platform: macOS
+            godot-arch: x86_32
+          - test-platform: macOS
             runner: macos-latest
-            arch: universal
+            godot-arch: universal
+          - test-platform: AndroidSauceLabs
+            runner: ubuntu-latest
+            godot-arch: x86_64
+            test-executable: ./exports/android.apk
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -42,16 +50,25 @@ jobs:
         uses: ./.github/actions/prepare-testing
         timeout-minutes: 15
         with:
-          arch: ${{ matrix.arch }}
-          android: ${{ matrix.platform == 'Android' && 'true' || 'false' }}
+          arch: ${{ matrix.godot-arch }}
+          android: ${{ matrix.test-platform == 'AndroidSauceLabs' && 'true' || 'false' }}
 
-      - name: Install Pester module for pwsh
-        shell: pwsh
-        run: Install-Module -Name Pester -Force -SkipPublisherCheck
+      - name: Export project
+        if: matrix.test-platform == 'AndroidSauceLabs'
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          "${GODOT}" --verbose --headless --disable-crash-handler --path project --install-android-build-template --export-debug "Android Tests" "${GITHUB_WORKSPACE}/exports/android.apk" || true
 
-      - name: Run integration tests locally
+      - name: Run integration tests
         shell: pwsh
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
-          SENTRY_TEST_PLATFORM: ${{ matrix.platform }}
+          SENTRY_TEST_PLATFORM: ${{ matrix.test-platform }}
+          SENTRY_TEST_EXECUTABLE: ${{ matrix.test-executable }}
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          SAUCE_REGION: us-west-1
+          SAUCE_DEVICE_NAME: Samsung_Galaxy_S23.*
+          SAUCE_SESSION_NAME: Godot ${{matrix.test-platform}} E2E Tests
         run: Invoke-Pester -Script integration_tests/Integration.Tests.ps1
