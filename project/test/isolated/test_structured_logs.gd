@@ -128,15 +128,16 @@ func test_structured_logs_with_attribute_removal() -> void:
 	})
 
 
-func test_strucutured_logs_with_utf8() -> void:
+func test_structured_logs_with_utf8() -> void:
 	log_processed.connect(func(entry: SentryLog):
 		assert_str(entry.body).is_equal("Hello 世界! 👋")
 		assert_str(entry.get_attribute("sentry.message.template")).is_equal("Hello %s! 👋")
 		assert_str(entry.get_attribute("sentry.message.parameter.0")).is_equal("世界")
+		assert_str(entry.get_attribute("world")).is_equal("世界")
 	, CONNECT_ONE_SHOT)
 	SentrySDK.logger.info("Hello %s! 👋", ["世界"], {
-			"world": "世界"
-		})
+		"world": "世界"
+	})
 
 func test_structured_logs_attribute_methods() -> void:
 	log_processed.connect(func(entry: SentryLog):
