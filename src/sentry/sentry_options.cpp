@@ -36,6 +36,14 @@ void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_
 	ProjectSettings::get_singleton()->add_property_info(info);
 }
 
+void _migrate_setting(const String &p_old_name, const String &p_new_name) {
+	if (ProjectSettings::get_singleton()->has_setting(p_old_name)) {
+		Variant value = ProjectSettings::get_singleton()->get_setting(p_old_name);
+		ProjectSettings::get_singleton()->set_setting(p_new_name, value);
+		ProjectSettings::get_singleton()->set_setting(p_old_name, Variant());
+	}
+}
+
 } // unnamed namespace
 
 namespace sentry {
@@ -51,7 +59,29 @@ void SentryLoggerLimits::_bind_methods() {
 
 // *** SentryExperimental
 
+void SentryExperimental::set_enable_logs(bool p_value) {
+	WARN_DEPRECATED_MSG("Logs are now generally available. This property is deprecated. Use SentryOptions.enable_logs instead.");
+	SentryOptions::get_singleton()->set_enable_logs(p_value);
+}
+
+bool SentryExperimental::get_enable_logs() {
+	WARN_DEPRECATED_MSG("Logs are now generally available. This property is deprecated. Use SentryOptions.enable_logs instead.");
+	return SentryOptions::get_singleton()->get_enable_logs();
+}
+
+void SentryExperimental::set_before_send_log(Callable p_value) {
+	WARN_DEPRECATED_MSG("Logs are now generally available. This property is deprecated. Use SentryOptions.before_send_log instead.");
+	SentryOptions::get_singleton()->set_before_send_log(p_value);
+}
+
+Callable SentryExperimental::get_before_send_log() {
+	WARN_DEPRECATED_MSG("Logs are now generally available. This property is deprecated. Use SentryOptions.before_send_log instead.");
+	return SentryOptions::get_singleton()->get_before_send_log();
+}
+
 void SentryExperimental::_bind_methods() {
+	// DEPRECATED: These properties remain for compatibility.
+	//             Remove these in 6 month or in 2.0.
 	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::BOOL, enable_logs);
 	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::CALLABLE, before_send_log);
 }
@@ -63,6 +93,10 @@ Ref<SentryOptions> SentryOptions::singleton = nullptr;
 void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options) {
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+
+	// Migrate renamed project settings to their new locations
+	_migrate_setting("sentry/experimental/enable_logs", "sentry/enable_logs");
+	_migrate_setting("sentry/experimental/attach_screenshot", "sentry/attach_screenshot");
 
 	_define_setting("sentry/options/auto_init", p_options->auto_init);
 	_define_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
@@ -82,6 +116,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking, false);
 	_define_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec, false);
 
+	_define_setting("sentry/enable_logs", p_options->enable_logs, false);
+
 	_define_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
 	_define_setting("sentry/logger/include_variables", p_options->logger_include_variables, false);
@@ -97,7 +133,6 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/experimental/screenshot_level"), p_options->screenshot_level, false);
-	_define_setting("sentry/experimental/enable_logs", p_options->get_experimental()->enable_logs, false);
 }
 
 void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) {
@@ -127,6 +162,8 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking);
 	p_options->app_hang_timeout_sec = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec);
 
+	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/enable_logs", p_options->enable_logs);
+
 	p_options->logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	p_options->logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", p_options->logger_include_source);
 	p_options->logger_include_variables = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_variables", p_options->logger_include_variables);
@@ -141,7 +178,6 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/experimental/screenshot_level", p_options->screenshot_level);
-	p_options->get_experimental()->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/experimental/enable_logs", p_options->get_experimental()->enable_logs);
 }
 
 void SentryOptions::_init_debug_option(DebugMode p_mode) {
@@ -211,6 +247,9 @@ void SentryOptions::_bind_methods() {
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), set_app_hang_tracking, is_app_hang_tracking_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), set_app_hang_timeout_sec, get_app_hang_timeout_sec);
+
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_logs"), set_enable_logs, get_enable_logs);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_log"), set_before_send_log, get_before_send_log);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, is_logger_include_source_enabled);
