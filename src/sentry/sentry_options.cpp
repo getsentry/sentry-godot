@@ -65,7 +65,6 @@ void SentryExperimental::set_enable_logs(bool p_value) {
 }
 
 bool SentryExperimental::get_enable_logs() {
-	WARN_DEPRECATED_MSG("Logs are now generally available. This property is deprecated. Use SentryOptions.enable_logs instead.");
 	return SentryOptions::get_singleton()->get_enable_logs();
 }
 
@@ -75,7 +74,6 @@ void SentryExperimental::set_before_send_log(Callable p_value) {
 }
 
 Callable SentryExperimental::get_before_send_log() {
-	WARN_DEPRECATED_MSG("Logs are now generally available. This property is deprecated. Use SentryOptions.before_send_log instead.");
 	return SentryOptions::get_singleton()->get_before_send_log();
 }
 
