@@ -42,10 +42,27 @@ BeforeAll {
             $arguments = ConvertTo-AndroidExtras -Arguments $arguments
             $execPath = $script:TestSetup.AndroidComponent
         } elseif ($script:TestSetup.Platform -match "iOS") {
-        	$execPath = $script:TestSetup.iOSBundleId
+            $execPath = $script:TestSetup.iOSBundleId
         }
 
         $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
+
+        if ($TestSetup.Platform -match "iOS") {
+            $outputFile = Get-OutputFilePath "${Action}-godot.log"
+            Copy-DeviceItem -DevicePath $script:TestSetup.iOSApplicationLogFile -Destination $outputFile
+
+            # Replace runResult.Output with log file contents for iOS
+            if (Test-Path $outputFile) {
+                $logContent = Get-Content -Path $outputFile
+                $runResult = [PSCustomObject]@{
+                    Output = $logContent
+                    ExitCode = $runResult.ExitCode
+                    ProcessId = $runResult.ProcessId
+                    StartTime = $runResult.StartTime
+                    EndTime = $runResult.EndTime
+                }
+            }
+        }
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
@@ -54,7 +71,7 @@ BeforeAll {
         # NOTE: On Cocoa & Android, crashes are sent during the next app launch.
         if (
             ($Action -eq "crash-capture" -or $runResult.ExitCode -ne 0) -and
-                $script:TestSetup.Platform -in @("macOS", "Local", "Adb", "AndroidSauceLabs")
+                $script:TestSetup.Platform -in @("macOS", "Local", "Adb", "AndroidSauceLabs", "iOSSauceLabs")
         ) {
             Write-Debug "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
@@ -83,6 +100,7 @@ BeforeAll {
         AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
         IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
         iOSBundleId = "io.sentry.godot.project"
+        iOSApplicationLogFile = "@io.sentry.godot.project:documents/logs/godot.log"
     }
 
     # Check executable and arguments
@@ -92,7 +110,7 @@ BeforeAll {
         # For running with Godot binary, we need to add these flags...
         $script:TestSetup.Args += " --disable-crash-handler --headless --path project --"
     } else {
-    	$script:TestSetup.Args += " --"
+        $script:TestSetup.Args += " --"
     }
     # Validate executable
     if (-not (Test-Path $script:TestSetup.Executable)) {
@@ -239,7 +257,7 @@ Describe "Platform Integration Tests" {
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
             if ($eventId) {
-               	Write-GitHub "::group::Getting event content"
+                Write-GitHub "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
                 Write-GitHub "::endgroup::"
             }
