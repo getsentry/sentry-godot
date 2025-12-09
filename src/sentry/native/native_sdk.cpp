@@ -209,27 +209,38 @@ void NativeSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_
 
 	String body = p_body;
 
-	// TODO: Native doesn't support passing attributes yet.
-	// See:  https://github.com/getsentry/sentry-native/issues/1405
+	sentry_value_t attributes = sentry_value_new_object();
+
+	if (!p_attributes.is_empty()) {
+		for (const Variant &key : p_attributes.keys()) {
+			sentry_value_set_by_key(attributes, key.stringify().utf8(),
+					variant_to_attribute(p_attributes[key]));
+		}
+	}
 
 	switch (p_level) {
 		case LOG_LEVEL_TRACE: {
-			sentry_log_trace(body.utf8());
+			sentry_log_trace(body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_DEBUG: {
-			sentry_log_debug(body.utf8());
+			sentry_log_debug(body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_INFO: {
-			sentry_log_info(body.utf8());
+			sentry_log_info(body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_WARN: {
-			sentry_log_warn(body.utf8());
+			sentry_log_warn(body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_ERROR: {
-			sentry_log_error(body.utf8());
+			sentry_log_error(body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_FATAL: {
-			sentry_log_fatal(body.utf8());
+			sentry_log_fatal(body.utf8(), attributes);
+		} break;
+		default: {
+			sentry::logging::print_no_logger(LEVEL_WARNING,
+					vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
+			sentry_log_info(body.utf8(), attributes);
 		} break;
 	}
 }
@@ -403,6 +414,8 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 			sentry_options_add_attachment(options, path.utf8());
 		}
 	}
+
+	sentry_options_set_logs_with_attributes(options, true);
 
 	// Hooks.
 	sentry_options_set_before_send(options, _handle_before_send, NULL);

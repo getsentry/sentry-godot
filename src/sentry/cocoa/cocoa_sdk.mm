@@ -146,8 +146,10 @@ void CocoaSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_a
 								 attributes:attributes];
 		} break;
 		default: {
-			[[objc::SentrySDK logger] debug:string_to_objc(body)
-								 attributes:attributes];
+			sentry::logging::print_no_logger(LEVEL_WARNING,
+					vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
+			[[objc::SentrySDK logger] info:string_to_objc(body)
+								attributes:attributes];
 		} break;
 	}
 }

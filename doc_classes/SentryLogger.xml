@@ -4,11 +4,32 @@
 		Send log messages to Sentry.
 	</brief_description>
 	<description>
-		A dedicated API for logging messages to Sentry's structured logging system. Access this API through [member SentrySDK.logger]. [SentryLogger] provides methods for different log levels (trace, debug, info, warn, error, fatal) and enables structured data capture with your log messages.
+		A dedicated API for logging messages to Sentry's structured logging system. Access this API through [member SentrySDK.logger]. [SentryLogger] provides methods for different log levels ([method trace], [method debug], [method info], [method warn], [method error], [method fatal]) and enables structured data capture with your log messages.
 		[b]Note:[/b] The [member SentryExperimental.enable_logs] option in [member SentryOptions.experimental] must be enabled for logging functionality to work.
 		[codeblock]
-		SentrySDK.logger.info("Info message")
+		# Simple messages
+		SentrySDK.logger.info("Game session started")
+		SentrySDK.logger.error("Asset loading failed")
+
+		# Messages with parameters (uses Godot's format strings)
+		SentrySDK.logger.info("Spawned %d enemies in level %s", [5, "forest_1"])
+		SentrySDK.logger.error("Failed to load texture: %s", ["player_sprite.png"])
+		SentrySDK.logger.warn("Player %s has %d health remaining", ["Alice", 75])
+
+		# Messages with structured attributes
+		SentrySDK.logger.warn("Performance warning", [], {
+			"fps": 30,
+			"target_fps": 60
+		})
+		SentrySDK.logger.debug("Player action", [], {
+			"player_id": "p123",
+			"action": "attack"
+		})
+
+		# Using the base log method with different levels
+		SentrySDK.logger.log(SentryLog.LOG_LEVEL_TRACE, "AI state transition")
 		[/codeblock]
+		Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
 		To learn more about logs in Sentry, check out the [url=https://docs.sentry.io/product/explore/logs/]Sentry Logs[/url] product guide.
 	</description>
 	<tutorials>
@@ -17,54 +38,142 @@
 		<method name="debug">
 			<return type="void" />
 			<param index="0" name="body" type="String" />
+			<param index="1" name="parameters" type="Array" default="[]" />
+			<param index="2" name="attributes" type="Dictionary" default="{}" />
 			<description>
-				Logs a debug message.
+				Logs a debug message to Sentry. The [param body] is the main log message and can contain format placeholders (e.g., [code]%s[/code], [code]%d[/code]) for use with [param parameters]. The optional [param parameters] array provides positional values to substitute into placeholders using Godot's format strings. The optional [param attributes] dictionary adds structured metadata to the log entry.
+				Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
+				[codeblock]
+				# Simple usage
+				SentrySDK.logger.debug("Spawning enemies with 5 units")
+
+				# With parameters and attributes
+				SentrySDK.logger.debug("Spawning %s with %d units", ["enemies", 5], {
+					"level": "forest_1",
+					"wave_id": "wave_3"
+				})
+				[/codeblock]
 			</description>
 		</method>
 		<method name="error">
 			<return type="void" />
 			<param index="0" name="body" type="String" />
+			<param index="1" name="parameters" type="Array" default="[]" />
+			<param index="2" name="attributes" type="Dictionary" default="{}" />
 			<description>
-				Logs an error message.
+				Logs an error message to Sentry. The [param body] is the main log message and can contain format placeholders (e.g., [code]%s[/code], [code]%d[/code]) for use with [param parameters]. The optional [param parameters] array provides positional values to substitute into placeholders using Godot's format strings. The optional [param attributes] dictionary adds structured metadata to the log entry.
+				Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
+				[codeblock]
+				# Simple usage
+				SentrySDK.logger.error("Failed to load save file after 3 attempts")
+
+				# With parameters and attributes
+				SentrySDK.logger.error("Failed to load %s after %d attempts", ["save file", 3], {
+					"error_code": "FILE_CORRUPT",
+					"file_path": "saves/player1.save"
+				})
+				[/codeblock]
 			</description>
 		</method>
 		<method name="fatal">
 			<return type="void" />
 			<param index="0" name="body" type="String" />
+			<param index="1" name="parameters" type="Array" default="[]" />
+			<param index="2" name="attributes" type="Dictionary" default="{}" />
 			<description>
-				Logs a fatal message.
+				Logs a fatal message to Sentry. Fatal logs indicate critical errors that may cause the application to crash or become unusable. The [param body] is the main log message and can contain format placeholders (e.g., [code]%s[/code], [code]%d[/code]) for use with [param parameters]. The optional [param parameters] array provides values to substitute into placeholders using Godot's format strings. The optional [param attributes] dictionary adds structured metadata to the log entry.
+				Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
+				[codeblock]
+				# Simple usage
+				SentrySDK.logger.fatal("Save data corrupted: 15 checksums failed in player_profile")
+
+				# With parameters and attributes
+				SentrySDK.logger.fatal("Save data corrupted: %d checksums failed in %s", [15, "player_profile"], {
+					"corrupted_files": 3,
+					"backup_available": false
+				})
+				[/codeblock]
 			</description>
 		</method>
 		<method name="info">
 			<return type="void" />
 			<param index="0" name="body" type="String" />
+			<param index="1" name="parameters" type="Array" default="[]" />
+			<param index="2" name="attributes" type="Dictionary" default="{}" />
 			<description>
-				Logs an info message.
+				Logs an informational message to Sentry. Info logs are used for general application flow and important events. The [param body] is the main log message and can contain format placeholders (e.g., [code]%s[/code], [code]%d[/code]) for use with [param parameters]. The optional [param parameters] array provides positional parameters to substitute into placeholders using Godot's format strings. The optional [param attributes] dictionary adds structured metadata to the log entry.
+				Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
+				[codeblock]
+				# Simple usage
+				SentrySDK.logger.info("Player Alice joined lobby with 3 players")
+
+				# With parameters and attributes
+				SentrySDK.logger.info("Player %s joined lobby with %d players", ["Alice", 3], {
+					"lobby_id": "lobby_456",
+					"player_count": 3
+				})
+				[/codeblock]
 			</description>
 		</method>
 		<method name="log">
 			<return type="void" />
 			<param index="0" name="level" type="int" enum="SentryLog.LogLevel" />
 			<param index="1" name="body" type="String" />
+			<param index="2" name="parameters" type="Array" default="[]" />
+			<param index="3" name="attributes" type="Dictionary" default="{}" />
 			<description>
-				Logs a message with the specified level. See [enum SentryLog.LogLevel].
+				Logs a message with the specified log level to Sentry. This is the base logging method used by all other level-specific methods. The [param level] specifies the log level from [enum SentryLog.LogLevel] (e.g., [constant SentryLog.LOG_LEVEL_INFO], [constant SentryLog.LOG_LEVEL_ERROR]). The [param body] is the main log message and can contain format placeholders (e.g., [code]%s[/code], [code]%d[/code]) for use with [param parameters]. The optional [param parameters] array provides positional parameters to substitute into placeholders using Godot's format strings. The optional [param attributes] dictionary adds structured metadata to the log entry.
+				Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
 				[codeblock]
-				SentrySDK.logger.log(SentryLog.LOG_LEVEL_DEBUG, "Debug message")
+				# Simple usage
+				SentrySDK.logger.log(SentryLog.LOG_LEVEL_WARN, "Performance warning: frame time exceeded 16 ms")
+
+				# With parameters and attributes
+				SentrySDK.logger.log(SentryLog.LOG_LEVEL_WARN, "Performance warning: %s exceeded %d ms", ["frame time", 16], {
+					"actual_time": "25ms",
+					"target_fps": 60
+				})
 				[/codeblock]
 			</description>
 		</method>
 		<method name="trace">
 			<return type="void" />
 			<param index="0" name="body" type="String" />
+			<param index="1" name="parameters" type="Array" default="[]" />
+			<param index="2" name="attributes" type="Dictionary" default="{}" />
 			<description>
-				Logs a trace message.
+				Logs a trace message to Sentry. Trace logs are used for detailed debugging and flow tracking, typically disabled in production. The [param body] is the main log message and can contain format placeholders (e.g., [code]%s[/code], [code]%d[/code]) for use with [param parameters]. The optional [param parameters] array provides positional parameters to substitute into placeholders using Godot's format strings. The optional [param attributes] dictionary adds structured metadata to the log entry.
+				Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
+				[codeblock]
+				# Simple usage
+				SentrySDK.logger.trace("AI behavior tree evaluated with 8 nodes")
+
+				# With parameters and attributes
+				SentrySDK.logger.trace("AI %s evaluated with %d nodes", ["behavior tree", 8], {
+					"ai_id": "enemy_boss",
+					"decision": "attack"
+				})
+				[/codeblock]
 			</description>
 		</method>
 		<method name="warn">
 			<return type="void" />
 			<param index="0" name="body" type="String" />
+			<param index="1" name="parameters" type="Array" default="[]" />
+			<param index="2" name="attributes" type="Dictionary" default="{}" />
 			<description>
-				Logs a warning message.
+				Logs a warning message to Sentry. Warning logs indicate potential issues that don't prevent operation but should be addressed. The [param body] is the main log message and can contain format placeholders (e.g., [code]%s[/code], [code]%d[/code]) for use with [param parameters]. The optional [param parameters] array provides values to substitute into placeholders using Godot's format strings. The optional [param attributes] dictionary adds structured metadata to the log entry.
+				Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
+				[codeblock]
+				# Simple usage
+				SentrySDK.logger.warn("Low ammo warning: pistol has 2 bullets remaining")
+
+				# With parameters and attributes
+				SentrySDK.logger.warn("Low ammo warning: %s has %d bullets remaining", ["pistol", 2], {
+					"weapon_id": "pistol_001",
+					"max_capacity": 15
+				})
+				[/codeblock]
 			</description>
 		</method>
 	</methods>

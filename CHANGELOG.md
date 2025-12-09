@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- String interpolation and custom attributes support in structured logging API ([#435](https://github.com/getsentry/sentry-godot/pull/435))
+
 ### Fixes
 
 - Fix User Feedback UI text cursor visibility in default theme ([#445](https://github.com/getsentry/sentry-godot/pull/445))
