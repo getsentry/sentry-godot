@@ -237,6 +237,11 @@ void NativeSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_
 		case LOG_LEVEL_FATAL: {
 			sentry_log_fatal(body.utf8(), attributes);
 		} break;
+		default: {
+			sentry::logging::print_no_logger(LEVEL_WARNING,
+					vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
+			sentry_log_info(body.utf8(), attributes);
+		} break;
 	}
 }
 
