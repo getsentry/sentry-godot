@@ -95,8 +95,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	// Migrate renamed project settings to their new locations
-	_migrate_setting("sentry/experimental/enable_logs", "sentry/enable_logs");
-	_migrate_setting("sentry/experimental/attach_screenshot", "sentry/attach_screenshot");
+	_migrate_setting("sentry/experimental/enable_logs", "sentry/options/enable_logs");
 
 	_define_setting("sentry/options/auto_init", p_options->auto_init);
 	_define_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
@@ -113,10 +112,10 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/attach_log", p_options->attach_log, false);
 	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
 
+	_define_setting("sentry/options/enable_logs", p_options->enable_logs, false);
+
 	_define_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking, false);
 	_define_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec, false);
-
-	_define_setting("sentry/enable_logs", p_options->enable_logs, false);
 
 	_define_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
@@ -159,10 +158,10 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
 	p_options->attach_scene_tree = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
 
+	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/options/enable_logs", p_options->enable_logs);
+
 	p_options->app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking);
 	p_options->app_hang_timeout_sec = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec);
-
-	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/enable_logs", p_options->enable_logs);
 
 	p_options->logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	p_options->logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", p_options->logger_include_source);
