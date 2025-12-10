@@ -39,11 +39,11 @@ jobs:
           - test-platform: AndroidSauceLabs
             runner: ubuntu-latest
             godot-arch: x86_64
-            test-executable: ${GITHUB_WORKSPACE}/exports/android.apk
+            test-executable: ${{github.workspace}}/exports/android.apk
           - test-platform: iOSSauceLabs
             runner: macos-latest
             godot-arch: universal
-            test-executable: ${GITHUB_WORKSPACE}/exports/ios/ios.ipa
+            test-executable: ${{github.workspace}}/exports/ios/ios.ipa
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
