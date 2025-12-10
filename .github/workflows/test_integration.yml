@@ -39,11 +39,11 @@ jobs:
           - test-platform: AndroidSauceLabs
             runner: ubuntu-latest
             godot-arch: x86_64
-            test-executable: ${{github.workspace}}/exports/android.apk
+            test-executable: exports/android.apk
           - test-platform: iOSSauceLabs
             runner: macos-latest
             godot-arch: universal
-            test-executable: ${{github.workspace}}/exports/ios/ios.ipa
+            test-executable: exports/ios/ios.ipa
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -62,22 +62,22 @@ jobs:
         timeout-minutes: 10
         shell: bash
         run: |
-          "${GODOT}" --verbose --headless --disable-crash-handler --path project --install-android-build-template --export-debug "Android Tests" "${{ matrix.test-executable }}" || true
+          "${GODOT}" --verbose --headless --disable-crash-handler --path project --install-android-build-template --export-debug "Android Tests" "${{github.workspace}}/${{matrix.test-executable}}" || true
 
       - name: Export project on iOS
         if: matrix.test-platform == 'iOSSauceLabs'
         timeout-minutes: 10
         shell: bash
         run: |
-          mkdir -p "$(dirname "${{ matrix.test-executable }}")"
-          "${GODOT}" --verbose --headless --disable-crash-handler --path project --export-debug "iOS Tests" "${{ matrix.test-executable }}" || true
+          mkdir -p "$(dirname "${{github.workspace}}/${{matrix.test-executable}}")"
+          "${GODOT}" --verbose --headless --disable-crash-handler --path project --export-debug "iOS Tests" "${{github.workspace}}/${{matrix.test-executable}}" || true
 
       - name: Run integration tests
         shell: pwsh
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
           SENTRY_TEST_PLATFORM: ${{ matrix.test-platform }}
-          SENTRY_TEST_EXECUTABLE: ${{ matrix.test-executable }}
+          SENTRY_TEST_EXECUTABLE: ${{github.workspace}}/${{matrix.test-executable}}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           SAUCE_REGION: us-west-1
