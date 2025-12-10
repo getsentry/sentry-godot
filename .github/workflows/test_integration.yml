@@ -39,7 +39,11 @@ jobs:
           - test-platform: AndroidSauceLabs
             runner: ubuntu-latest
             godot-arch: x86_64
-            test-executable: ./exports/android.apk
+            test-executable: ${GITHUB_WORKSPACE}/exports/android.apk
+          - test-platform: iOSSauceLabs
+            runner: macos
+            godot-arch: universal
+            test-executable: ${GITHUB_WORKSPACE}/exports/ios/ios.ipa
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -53,12 +57,20 @@ jobs:
           arch: ${{ matrix.godot-arch }}
           android: ${{ matrix.test-platform == 'AndroidSauceLabs' && 'true' || 'false' }}
 
-      - name: Export project
+      - name: Export project on Android
         if: matrix.test-platform == 'AndroidSauceLabs'
         timeout-minutes: 10
         shell: bash
         run: |
-          "${GODOT}" --verbose --headless --disable-crash-handler --path project --install-android-build-template --export-debug "Android Tests" "${GITHUB_WORKSPACE}/exports/android.apk" || true
+          "${GODOT}" --verbose --headless --disable-crash-handler --path project --install-android-build-template --export-debug "Android Tests" "${{ matrix.test-executable }}" || true
+
+      - name: Export project on iOS
+        if: matrix.test-platform == 'iOSSauceLabs'
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          mkdir -p "$(dirname "${{ matrix.test-executable }}")"
+          "${GODOT}" --verbose --headless --disable-crash-handler --path project --export-debug "iOS Tests" "${{ matrix.test-executable }}" || true
 
       - name: Run integration tests
         shell: pwsh
