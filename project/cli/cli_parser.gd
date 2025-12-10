@@ -20,8 +20,7 @@ var _commands: Dictionary = {}
 ## Determines whether the CLI parser should execute based on command-line arguments.
 static func should_execute() -> bool:
 	return not OS.get_cmdline_user_args().is_empty() \
-		or not AndroidCLIAdapter.get_command_argv().is_empty() \
-		or not ConfigFileCLIAdapter.get_command_argv().is_empty()
+		or not AndroidCLIAdapter.get_command_argv().is_empty()
 
 
 ## Registers a new CLI command with the parser.
@@ -41,10 +40,6 @@ func check_and_execute_cli() -> bool:
 
 	if OS.get_name() == "Android":
 		args.append_array(AndroidCLIAdapter.get_command_argv())
-
-	# Read cmdline from config file
-	var conf_args: PackedStringArray = ConfigFileCLIAdapter.get_command_argv()
-	args.append_array(conf_args)
 
 	if args.is_empty():
 		return false
