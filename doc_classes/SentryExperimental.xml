@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="before_send_log" type="Callable" setter="set_before_send_log" getter="get_before_send_log" default="Callable()">
+		<member name="before_send_log" type="Callable" setter="set_before_send_log" getter="get_before_send_log" default="Callable()" deprecated="Logs are now generally available. Use [member SentryOptions.before_send_log] instead.">
 			If assigned, this callback will be called before sending a log message to Sentry. It can be used to modify the log message or prevent it from being sent.
 			[codeblock]
 			func _before_send_log(log_entry: SentryLog) -&gt; SentryLog:
@@ -24,7 +24,7 @@
 				return log_entry
 			[/codeblock]
 		</member>
-		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="false">
+		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="true" deprecated="Logs are now generally available. Use [member SentryOptions.enable_logs] instead.">
 			Enables Sentry structured logging functionality. When enabled, Godot's log messages are automatically captured and sent to Sentry, and you gain access to the dedicated logging APIs available through [member SentrySDK.logger].
 		</member>
 	</members>
