@@ -41,7 +41,7 @@ jobs:
             godot-arch: x86_64
             test-executable: ${GITHUB_WORKSPACE}/exports/android.apk
           - test-platform: iOSSauceLabs
-            runner: macos
+            runner: macos-latest
             godot-arch: universal
             test-executable: ${GITHUB_WORKSPACE}/exports/ios/ios.ipa
     steps:
