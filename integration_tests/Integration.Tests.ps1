@@ -45,24 +45,9 @@ BeforeAll {
             $execPath = $script:TestSetup.iOSBundleId
         }
 
-        $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
-
-        if ($TestSetup.Platform -match "iOS") {
-            $outputFile = Get-OutputFilePath "${Action}-godot.log"
-            Copy-DeviceItem -DevicePath $script:TestSetup.iOSApplicationLogFile -Destination $outputFile
-
-            # Replace runResult.Output with log file contents for iOS
-            if (Test-Path $outputFile) {
-                $logContent = Get-Content -Path $outputFile
-                $runResult = [PSCustomObject]@{
-                    Output = $logContent
-                    ExitCode = $runResult.ExitCode
-                    ProcessId = $runResult.ProcessId
-                    StartTime = $runResult.StartTime
-                    EndTime = $runResult.EndTime
-                }
-            }
-        }
+        # Use log file override for iOS SauceLabs, null for other providers (fallback to system logs)
+        $logFilePath = if ($script:TestSetup.Platform -eq "iOSSauceLabs") { $script:TestSetup.iOSApplicationLogFile } else { $null }
+        $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments -LogFilePath $logFilePath
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
@@ -79,7 +64,7 @@ BeforeAll {
             if ($script:TestSetup.IsAndroid) {
                 $arguments = ConvertTo-AndroidExtras -Arguments $arguments
             }
-            Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
+            Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments -LogFilePath $logFilePath
             Write-GitHub "::endgroup::"
         }
 
