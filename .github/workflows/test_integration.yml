@@ -24,26 +24,35 @@ jobs:
           - test-platform: Linux
             runner: ubuntu-latest
             godot-arch: x86_64
+
           - test-platform: Linux
             runner: ubuntu-latest
             godot-arch: x86_32
+
           - test-platform: Windows
             runner: windows-latest
             godot-arch: x86_64
+
           - test-platform: Windows
             runner: windows-latest
             godot-arch: x86_32
+
           - test-platform: macOS
             runner: macos-latest
             godot-arch: universal
+
           - test-platform: AndroidSauceLabs
             runner: ubuntu-latest
             godot-arch: x86_64
             test-executable: exports/android.apk
+            export-platform: android
+
           - test-platform: iOSSauceLabs
             runner: macos-latest
             godot-arch: universal
             test-executable: exports/ios/ios.ipa
+            export-platform: ios
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -55,17 +64,17 @@ jobs:
         timeout-minutes: 15
         with:
           arch: ${{ matrix.godot-arch }}
-          android: ${{ matrix.test-platform == 'AndroidSauceLabs' && 'true' || 'false' }}
+          export-platform: ${{ matrix.export-platform }}
 
       - name: Export project on Android
-        if: matrix.test-platform == 'AndroidSauceLabs'
+        if: matrix.export-platform == 'android'
         timeout-minutes: 10
         shell: bash
         run: |
           "${GODOT}" --verbose --headless --disable-crash-handler --path project --install-android-build-template --export-debug "Android Tests" "${{github.workspace}}/${{matrix.test-executable}}" || true
 
       - name: Export project on iOS
-        if: matrix.test-platform == 'iOSSauceLabs'
+        if: matrix.export-platform == 'ios'
         timeout-minutes: 10
         shell: bash
         run: |
