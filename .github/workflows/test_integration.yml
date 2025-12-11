@@ -44,13 +44,13 @@ jobs:
           - test-platform: AndroidSauceLabs
             runner: ubuntu-latest
             godot-arch: x86_64
-            test-executable: exports/android.apk
+            test-executable: ./exports/android.apk
             export-platform: android
 
           - test-platform: iOSSauceLabs
             runner: macos-latest
             godot-arch: universal
-            test-executable: exports/ios/ios.ipa
+            test-executable: ./exports/ios/ios.ipa
             export-platform: ios
 
     steps:
@@ -86,7 +86,7 @@ jobs:
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
           SENTRY_TEST_PLATFORM: ${{ matrix.test-platform }}
-          SENTRY_TEST_EXECUTABLE: ${{github.workspace}}/${{matrix.test-executable}}
+          SENTRY_TEST_EXECUTABLE: ${{matrix.test-executable}}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           SAUCE_REGION: us-west-1
