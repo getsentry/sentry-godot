@@ -83,6 +83,7 @@ private:
 	bool attach_scene_tree = false;
 
 	bool enable_logs = true;
+	bool print_logs = true;
 	Callable before_send_log;
 
 	bool app_hang_tracking = false;
@@ -163,6 +164,9 @@ public:
 
 	_FORCE_INLINE_ bool get_enable_logs() const { return enable_logs; }
 	_FORCE_INLINE_ void set_enable_logs(bool p_enabled) { enable_logs = p_enabled; }
+
+	_FORCE_INLINE_ bool is_print_logs_enabled() const { return print_logs; }
+	_FORCE_INLINE_ void set_print_logs(bool p_enabled) { print_logs = p_enabled; }
 
 	_FORCE_INLINE_ Callable get_before_send_log() const { return before_send_log; }
 	_FORCE_INLINE_ void set_before_send_log(const Callable &p_callback) { before_send_log = p_callback; }

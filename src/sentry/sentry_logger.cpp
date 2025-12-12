@@ -23,23 +23,25 @@ void SentryLogger::log(LogLevel p_level, const String &p_body, const Array &p_pa
 
 	INTERNAL_SDK()->log(p_level, body, attributes);
 
-	// Add log to Godot's logging system without triggering recursive logging to Sentry Logs.
-	sentry::logging::skip_logging_messages = true;
-	switch (p_level) {
-		case LOG_LEVEL_TRACE:
-		case LOG_LEVEL_DEBUG:
-		case LOG_LEVEL_INFO: {
-			UtilityFunctions::print(body);
-		} break;
-		case LOG_LEVEL_WARN: {
-			UtilityFunctions::push_warning(body);
-		} break;
-		case LOG_LEVEL_ERROR:
-		case LOG_LEVEL_FATAL: {
-			UtilityFunctions::push_error(body);
-		} break;
+	if (SentryOptions::get_singleton()->is_print_logs_enabled()) {
+		// Add log to Godot's logging system without triggering recursive logging to Sentry Logs.
+		sentry::logging::skip_logging_messages = true;
+		switch (p_level) {
+			case LOG_LEVEL_TRACE:
+			case LOG_LEVEL_DEBUG:
+			case LOG_LEVEL_INFO: {
+				UtilityFunctions::print(body);
+			} break;
+			case LOG_LEVEL_WARN: {
+				UtilityFunctions::push_warning(body);
+			} break;
+			case LOG_LEVEL_ERROR:
+			case LOG_LEVEL_FATAL: {
+				UtilityFunctions::push_error(body);
+			} break;
+		}
+		sentry::logging::skip_logging_messages = false;
 	}
-	sentry::logging::skip_logging_messages = false;
 }
 
 void SentryLogger::trace(const String &p_body, const Array &p_params, const Dictionary &p_attributes) {

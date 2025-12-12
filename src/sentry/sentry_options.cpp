@@ -95,7 +95,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	// Migrate renamed project settings to their new locations
-	_migrate_setting("sentry/experimental/enable_logs", "sentry/options/enable_logs");
+	_migrate_setting("sentry/experimental/enable_logs", "sentry/options/logs/enable_logs");
+	_migrate_setting("sentry/options/enable_logs", "sentry/options/logs/enable_logs");
 
 	_define_setting("sentry/options/auto_init", p_options->auto_init);
 	_define_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
@@ -112,7 +113,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/attach_log", p_options->attach_log, false);
 	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
 
-	_define_setting("sentry/options/enable_logs", p_options->enable_logs, false);
+	_define_setting("sentry/options/logs/enable_logs", p_options->enable_logs, false);
+	_define_setting("sentry/options/logs/print_logs", p_options->print_logs, false);
 
 	_define_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking, false);
 	_define_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec, false);
@@ -158,7 +160,8 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
 	p_options->attach_scene_tree = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
 
-	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/options/enable_logs", p_options->enable_logs);
+	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/options/logs/enable_logs", p_options->enable_logs);
+	p_options->print_logs = ProjectSettings::get_singleton()->get_setting("sentry/options/logs/print_logs", p_options->print_logs);
 
 	p_options->app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking);
 	p_options->app_hang_timeout_sec = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec);
@@ -245,6 +248,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_scene_tree"), set_attach_scene_tree, is_attach_scene_tree_enabled);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_logs"), set_enable_logs, get_enable_logs);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "print_logs"), set_print_logs, is_print_logs_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_log"), set_before_send_log, get_before_send_log);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), set_app_hang_tracking, is_app_hang_tracking_enabled);
