@@ -84,7 +84,6 @@ private:
 
 	bool enable_logs = true;
 	bool print_logs = true;
-	Callable before_send_log;
 
 	bool app_hang_tracking = false;
 	double app_hang_timeout_sec = 5.0;
@@ -101,6 +100,7 @@ private:
 
 	Callable before_send;
 	Callable before_capture_screenshot;
+	Callable before_send_log;
 
 	Vector<Ref<SentryEventProcessor>> event_processors;
 
