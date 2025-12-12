@@ -118,6 +118,7 @@
 		</member>
 		<member name="print_logs" type="bool" setter="set_print_logs" getter="is_print_logs_enabled" default="true">
 			If [code]true[/code], the SDK will print log messages added with [member SentrySDK.logger] API to the Godot console in addition to sending them to Sentry. When disabled, log messages will only be sent to Sentry without appearing in the local console output.
+			[b]Note:[/b] When both [member logger_messages_as_breadcrumbs] and [member print_logs] are enabled, log messages created through the [member SentrySDK.logger] API will be captured as breadcrumbs in addition to being displayed in the console and sent to Sentry as log entries.
 		</member>
 		<member name="release" type="String" setter="set_release" getter="get_release" default="&quot;{app_name}@{app_version}&quot;">
 			Release version of the application. This value must be unique across all projects in your organization. Suggested format is [code]my-game@1.0.0[/code].
