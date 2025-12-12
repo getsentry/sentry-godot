@@ -4,7 +4,7 @@
 
 ### Improvements
 
-- Add logs from SentrySDK.logger to Godot output ([#463](https://github.com/getsentry/sentry-godot/pull/463))
+- Add logs from `SentrySDK.logger` to Godot output ([#463](https://github.com/getsentry/sentry-godot/pull/463))
   - This behavior is enabled by default and can be disabled by setting `SentryOptions.print_logs` to `false`.
 
 ## 1.2.0
