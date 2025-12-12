@@ -1,7 +1,10 @@
 #include "sentry_logger.h"
 
+#include "sentry/logging/state.h"
 #include "sentry/sentry_log.h" // Needed for VariantCaster<LogLevel>
 #include "sentry/sentry_sdk.h"
+
+#include <godot_cpp/variant/utility_functions.hpp>
 
 namespace sentry {
 
@@ -17,7 +20,26 @@ void SentryLogger::log(LogLevel p_level, const String &p_body, const Array &p_pa
 		}
 		body = p_body % p_params;
 	}
+
 	INTERNAL_SDK()->log(p_level, body, attributes);
+
+	// Add log to Godot's logging system without triggering recursive logging to Sentry Logs.
+	sentry::logging::skip_logging_messages = true;
+	switch (p_level) {
+		case LOG_LEVEL_TRACE:
+		case LOG_LEVEL_DEBUG:
+		case LOG_LEVEL_INFO: {
+			UtilityFunctions::print(body);
+		} break;
+		case LOG_LEVEL_WARN: {
+			UtilityFunctions::push_warning(body);
+		} break;
+		case LOG_LEVEL_ERROR:
+		case LOG_LEVEL_FATAL: {
+			UtilityFunctions::push_error(body);
+		} break;
+	}
+	sentry::logging::skip_logging_messages = false;
 }
 
 void SentryLogger::trace(const String &p_body, const Array &p_params, const Dictionary &p_attributes) {

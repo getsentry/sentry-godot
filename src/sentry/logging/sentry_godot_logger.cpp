@@ -453,7 +453,7 @@ void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 		return;
 	}
 
-	bool as_log = SentryOptions::get_singleton()->get_enable_logs();
+	bool as_log = SentryOptions::get_singleton()->get_enable_logs() && !sentry::logging::skip_logging_messages;
 	bool as_breadcrumb = SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled();
 
 	if (!as_log && !as_breadcrumb) {
