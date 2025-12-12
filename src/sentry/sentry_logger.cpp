@@ -32,12 +32,10 @@ void SentryLogger::log(LogLevel p_level, const String &p_body, const Array &p_pa
 			case LOG_LEVEL_INFO: {
 				UtilityFunctions::print(body);
 			} break;
-			case LOG_LEVEL_WARN: {
-				UtilityFunctions::push_warning(body);
-			} break;
+			case LOG_LEVEL_WARN:
 			case LOG_LEVEL_ERROR:
 			case LOG_LEVEL_FATAL: {
-				UtilityFunctions::push_error(body);
+				UtilityFunctions::printerr(body);
 			} break;
 		}
 		sentry::logging::skip_logging_messages = false;
