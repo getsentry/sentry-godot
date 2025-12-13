@@ -21,7 +21,7 @@ jobs:
         timeout-minutes: 15
         with:
           arch: x86_64
-          android: true
+          export-platform: "android"
 
       # Needed for Android emulator
       - name: Enable KVM
