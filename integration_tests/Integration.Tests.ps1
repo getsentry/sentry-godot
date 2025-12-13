@@ -29,17 +29,18 @@ BeforeAll {
         param (
             [Parameter(Mandatory=$true)]
             [string]$Action,
-            [string]$AdditionalArgs = ""
+            [string[]]$AdditionalArgs = @()
         )
 
         # ACT: Run test action in application on device
         Write-Debug "Running $Action..."
-        $arguments = $script:TestSetup.Args + " $Action $AdditionalArgs"
+
+        $args = $script:TestSetup.Args + @($Action) + $AdditionalArgs
         $execPath = $script:TestSetup.Executable
 
         # Convert arguments to Android extras if necessary
         if ($script:TestSetup.IsAndroid) {
-            $arguments = ConvertTo-AndroidExtras -Arguments $arguments
+            $args = ConvertTo-AndroidExtras -Argument $args
             $execPath = $script:TestSetup.AndroidComponent
         } elseif ($script:TestSetup.Platform -match "iOS") {
             $execPath = $script:TestSetup.iOSBundleId
@@ -47,7 +48,7 @@ BeforeAll {
 
         # Use log file override for iOS SauceLabs, null for other providers (fallback to system logs)
         $logFilePath = if ($script:TestSetup.Platform -eq "iOSSauceLabs") { $script:TestSetup.iOSApplicationLogFile } else { $null }
-        $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments -LogFilePath $logFilePath
+        $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $args -LogFilePath $logFilePath
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
@@ -60,11 +61,14 @@ BeforeAll {
         ) {
             Write-Debug "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
-            $arguments = ($script:TestSetup.Args + " crash-send")
+
+            $args = $script:TestSetup.Args + @("crash-send")
+
             if ($script:TestSetup.IsAndroid) {
-                $arguments = ConvertTo-AndroidExtras -Arguments $arguments
+                $args = ConvertTo-AndroidExtras -Arguments $args
             }
-            Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments -LogFilePath $logFilePath
+
+            Invoke-DeviceApp -ExecutablePath $execPath -Arguments $args -LogFilePath $logFilePath
             Write-GitHub "::endgroup::"
         }
 
@@ -78,7 +82,7 @@ BeforeAll {
     # Initialize test parameters object
     $script:TestSetup = [PSCustomObject]@{
         Executable = $env:SENTRY_TEST_EXECUTABLE
-        Args = $env:SENTRY_TEST_ARGS
+        Args = @()
         Dsn = $env:SENTRY_TEST_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
         Platform = $env:SENTRY_TEST_PLATFORM
@@ -93,9 +97,9 @@ BeforeAll {
         Write-Warning "SENTRY_TEST_EXECUTABLE environment variable is not set. Defaulting to env:GODOT."
         $script:TestSetup.Executable = $env:GODOT
         # For running with Godot binary, we need to add these flags...
-        $script:TestSetup.Args += " --disable-crash-handler --headless --path project --"
+        $script:TestSetup.Args += @("--disable-crash-handler", "--headless", "--path", "project", "--")
     } else {
-        $script:TestSetup.Args += " --"
+        $script:TestSetup.Args += @("--")
     }
     # Validate executable
     if (-not (Test-Path $script:TestSetup.Executable)) {
@@ -238,7 +242,7 @@ Describe "Platform Integration Tests" {
         BeforeAll {
             $script:TEST_MESSAGE = "TestMessage"
 
-            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs "`"$TEST_MESSAGE`""
+            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @($TEST_MESSAGE)
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
             if ($eventId) {
