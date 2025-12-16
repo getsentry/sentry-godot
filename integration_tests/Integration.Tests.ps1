@@ -33,7 +33,7 @@ BeforeAll {
         )
 
         # ACT: Run test action in application on device
-        Write-Debug "Running $Action..."
+        Write-Host "Running $Action..."
 
         $args = $script:TestSetup.Args + @($Action) + $AdditionalArgs
         $execPath = $script:TestSetup.Executable
@@ -59,7 +59,7 @@ BeforeAll {
             ($Action -eq "crash-capture" -or $runResult.ExitCode -ne 0) -and
                 $script:TestSetup.Platform -in @("macOS", "Local", "Adb", "AndroidSauceLabs", "iOSSauceLabs")
         ) {
-            Write-Debug "Running crash-send to ensure crash report is sent..."
+            Write-Host "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
 
             $args = $script:TestSetup.Args + @("crash-send")
@@ -242,7 +242,7 @@ Describe "Platform Integration Tests" {
         BeforeAll {
             $script:TEST_MESSAGE = "TestMessage"
 
-            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @($TEST_MESSAGE)
+            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("`"$TEST_MESSAGE`"")
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
             if ($eventId) {
