@@ -156,8 +156,6 @@ Describe "Platform Integration Tests" {
 
     Context "Crash Capture" {
         BeforeAll {
-            Write-Host "Testing crash-capture..."
-
             $runResult = Invoke-TestAction -Action "crash-capture"
 
             $eventId = Get-EventIds -appOutput $runResult.Output -expectedCount 1
@@ -242,7 +240,7 @@ Describe "Platform Integration Tests" {
         BeforeAll {
             $script:TEST_MESSAGE = "TestMessage"
 
-            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("`"$TEST_MESSAGE`"")
+            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("$TEST_MESSAGE")
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
             if ($eventId) {
