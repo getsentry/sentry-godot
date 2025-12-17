@@ -21,7 +21,7 @@ runs:
         git submodule update --init --depth 1 project/test/util/json_assert
 
     - name: Download artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         name: sentry-godot-gdextension
         path: project/

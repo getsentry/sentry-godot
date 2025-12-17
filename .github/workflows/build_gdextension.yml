@@ -292,7 +292,7 @@ jobs:
           scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}} ${{matrix.scons-flags}}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}${{ contains(matrix.scons-flags, 'threads=no') && '.nothreads' || '' }}
           path: |
@@ -319,7 +319,7 @@ jobs:
         run: ./gradlew assemble
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: sentry.android.godot_plugin
           # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
@@ -341,7 +341,7 @@ jobs:
           submodules: recursive
 
       - name: Download iOS artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: sentry.ios.*
           path: project/
@@ -366,7 +366,7 @@ jobs:
           rm -rf project/addons/sentry/bin/ios/temp/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: sentry.ios-framework
           # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
@@ -386,7 +386,7 @@ jobs:
     needs: [build, android-plugin, ios-framework]
     steps:
       - name: Merge artifacts
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@v6
         with:
           name: sentry-godot-gdextension
           pattern: sentry.*
