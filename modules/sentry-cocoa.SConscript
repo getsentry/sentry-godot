@@ -215,6 +215,7 @@ if platform in ["macos", "ios"]:
     env.Append(
         LINKFLAGS=[
             "-framework", "Foundation",
+            "-L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
         ],
         # Enable ARC for Objective-C files
         CCFLAGS=["-fobjc-arc"]
