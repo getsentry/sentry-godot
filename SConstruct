@@ -149,8 +149,8 @@ if internal_sdk == SDK.COCOA:
     env = SConscript("modules/sentry-cocoa.SConscript", exports=["env"])
 
     # Deploy Sentry Cocoa dependency to project directory.
-    deploy_cocoa_xcframework = env.DeploySentryCocoa(out_dir)
-    Default(deploy_cocoa_xcframework)
+    # deploy_cocoa_xcframework = env.DeploySentryCocoa(out_dir)
+    # Default(deploy_cocoa_xcframework)
 
 
 # *** Build GDExtension library.
