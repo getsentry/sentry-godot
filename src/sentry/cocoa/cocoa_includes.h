@@ -5,12 +5,12 @@
 
 #import <MetricKit/MetricKit.h>
 
-#import <Sentry/PrivateSentrySDKOnly.h>
-#import <Sentry/Sentry-Swift.h>
-
 #ifdef IOS_ENABLED
 #import <UIKit/UIKit.h>
 #endif
+
+#import <Sentry/PrivateSentrySDKOnly.h>
+#import <Sentry/Sentry-Swift.h>
 
 namespace objc {
 
