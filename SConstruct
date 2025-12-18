@@ -80,7 +80,6 @@ arch = env["arch"]
 # Register tools
 env.Tool("copy")
 env.Tool("separate_debug_symbols")
-env.Tool("plist")
 
 # Restore original ARGUMENTS and add custom options to environment
 ARGUMENTS.clear()
