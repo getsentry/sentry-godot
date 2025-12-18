@@ -368,8 +368,8 @@ def DeploySentryCocoa(self, target_dir):
     elif platform == "macos":
         source_framework = source_xcframework / "macos-arm64_x86_64/Sentry.framework"
 
-        # Patch install name after copy
         def patch_install_name_action(target, source, env):
+            """Patch install name after copy"""
             lib_path_str = str(target[0])
             print(f"  Patching install name for binary: {lib_name}")
             try:
