@@ -225,21 +225,21 @@ elif platform == "macos":
     # *** Build macOS shared library.
 
     lib_name = f"libsentry.{platform}.{build_type}{extra}"
-    lib_path = f"{out_dir}/{lib_name}.framework/{lib_name}"
+    lib_path = f"{out_dir}/{lib_name}.dylib"
 
     library = env.SharedLibrary(lib_path, source=sources)
     Default(library)
 
     # Create Info.plist
-    plist_path = f"{out_dir}/{lib_name}.framework/Resources/Info.plist"
-    plist = env.FrameworkPlist(File(plist_path), File("SConstruct"),
-        bundle_executable=lib_name,
-        bundle_identifier=f"io.sentry.SentryForGodot.{build_type}",
-        bundle_version=VERSION,
-        bundle_platforms=["MacOSX"]
-    )
-    Depends(plist, library)
-    Default(plist)
+    # plist_path = f"{out_dir}/{lib_name}.framework/Resources/Info.plist"
+    # plist = env.FrameworkPlist(File(plist_path), File("SConstruct"),
+    #     bundle_executable=lib_name,
+    #     bundle_identifier=f"io.sentry.SentryForGodot.{build_type}",
+    #     bundle_version=VERSION,
+    #     bundle_platforms=["MacOSX"]
+    # )
+    # Depends(plist, library)
+    # Default(plist)
 
 else:
     # *** Build shared library on other platforms.

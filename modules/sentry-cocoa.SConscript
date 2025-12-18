@@ -215,7 +215,6 @@ if platform in ["macos", "ios"]:
     env.Append(
         LINKFLAGS=[
             "-framework", "Foundation",
-            "-L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
         ],
         # Enable ARC for Objective-C files
         CCFLAGS=["-fobjc-arc"]
@@ -225,11 +224,30 @@ if platform in ["macos", "ios"]:
 
     if platform == "macos":
         framework_dir = xcframework_path / "macos-arm64_arm64e_x86_64/Sentry.framework"
+        env.Append(
+            LINKFLAGS=[
+                # Swift libraries
+                f"-L{detect_xcode()}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
+            ]
+        )
     else:
         if ios_simulator:
             framework_dir = xcframework_path / "ios-arm64_x86_64-simulator/Sentry.framework"
+            env.Append(
+                LINKFLAGS=[
+                    # Swift libraries
+                    f"-L{detect_xcode()}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator"
+                ]
+            )
         else:
-            framework_dir = xcframework_path / "ios-arm64/Sentry.framework"
+            framework_dir = xcframework_path / "ios-arm64_arm64e/Sentry.framework"
+            env.Append(
+                LINKFLAGS=[
+                    # Swift libraries
+                    f"-L{detect_xcode()}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos"
+                ]
+            )
+
 
     if not framework_dir.exists():
         print(f"ERROR: Sentry.framework is missing at {framework_dir}.")
@@ -373,7 +391,7 @@ def DeploySentryCocoa(self, target_dir):
 
     if platform == "ios":
         slice_dirs = [
-            source_xcframework / "ios-arm64",
+            source_xcframework / "ios-arm64_arm64e",
             source_xcframework / "ios-arm64_x86_64-simulator"
         ]
         target_framework = target_dir_path / "Sentry.xcframework"
@@ -387,19 +405,19 @@ def DeploySentryCocoa(self, target_dir):
         Clean(commands, Dir(target_framework))
 
         # Debug symbols
-        commands.append(
-            env.Copy(
-                Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64.framework.dSYM"),
-                Dir(source_xcframework / "ios-arm64" / "dSYMs" / "Sentry.framework.dSYM"),
-            )
-        )
+        # commands.append(
+        #     env.Copy(
+        #         Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64.framework.dSYM"),
+        #         Dir(source_xcframework / "ios-arm64" / "dSYMs" / "Sentry.framework.dSYM"),
+        #     )
+        # )
 
-        commands.append(
-            env.Copy(
-                Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64_x86_64-simulator.framework.dSYM"),
-                Dir(source_xcframework / "ios-arm64_x86_64-simulator" / "dSYMs" / "Sentry.framework.dSYM")
-            )
-        )
+        # commands.append(
+        #     env.Copy(
+        #         Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64_x86_64-simulator.framework.dSYM"),
+        #         Dir(source_xcframework / "ios-arm64_x86_64-simulator" / "dSYMs" / "Sentry.framework.dSYM")
+        #     )
+        # )
 
     elif platform == "macos":
         source_framework = source_xcframework / "macos-arm64_arm64e_x86_64/Sentry.framework"
