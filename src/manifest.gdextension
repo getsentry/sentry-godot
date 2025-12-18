@@ -61,11 +61,11 @@ windows.x86_32 = {
 }
 
 macos.debug = {
-	"res://addons/sentry/bin/macos/Sentry.framework" : ""
+	"res://addons/sentry/bin/macos/libSentry.dylib" : ""
 }
 
 macos.release = {
-	"res://addons/sentry/bin/macos/Sentry.framework" : ""
+	"res://addons/sentry/bin/macos/libSentry.dylib" : ""
 }
 
 ios.debug = {

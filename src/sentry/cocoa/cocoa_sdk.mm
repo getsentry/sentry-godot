@@ -16,8 +16,6 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/mutex_lock.hpp>
 
-#import <Sentry/PrivateSentrySDKOnly.h>
-
 using namespace godot;
 
 namespace {
