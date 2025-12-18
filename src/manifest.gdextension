@@ -5,8 +5,8 @@ compatibility_minimum = "{compatibility_minimum}"
 
 [libraries]
 
-macos.debug = "res://addons/sentry/bin/macos/libsentry.macos.debug.framework"
-macos.release = "res://addons/sentry/bin/macos/libsentry.macos.release.framework"
+macos.debug = "res://addons/sentry/bin/macos/libsentry.macos.debug.dylib"
+macos.release = "res://addons/sentry/bin/macos/libsentry.macos.release.dylib"
 
 windows.debug.x86_64 = "res://addons/sentry/bin/windows/x86_64/libsentry.windows.debug.x86_64.dll"
 windows.release.x86_64 = "res://addons/sentry/bin/windows/x86_64/libsentry.windows.release.x86_64.dll"

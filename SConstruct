@@ -224,8 +224,8 @@ if platform == "ios":
 elif platform == "macos":
     # *** Build macOS shared library.
 
-    lib_name = f"libsentry.{platform}.{build_type}{extra}"
-    lib_path = f"{out_dir}/{lib_name}.framework/{lib_name}"
+    lib_name = f"libsentry.{platform}.{build_type}{extra}.dylib"
+    lib_path = f"{out_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
     Default(library)
