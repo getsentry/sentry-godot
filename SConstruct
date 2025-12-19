@@ -148,8 +148,8 @@ if internal_sdk == SDK.COCOA:
     env = SConscript("modules/sentry-cocoa.SConscript", exports=["env"])
 
     # Deploy Sentry Cocoa dependency to project directory.
-    deploy_cocoa_xcframework = env.DeploySentryCocoa(out_dir)
-    Default(deploy_cocoa_xcframework)
+    deploy_cocoa = env.DeploySentryCocoa(out_dir)
+    Default(deploy_cocoa)
 
 
 # *** Build GDExtension library.
@@ -203,6 +203,7 @@ if platform == "ios":
     lib_path = f"{temp_dir}/{lib_name}.dylib"
 
     library = env.SharedLibrary(lib_path, source=sources)
+    Depends(library, deploy_cocoa)
     Default(library)
 
     # Generate XCFramework for iOS GDExtension libs if requested
@@ -227,6 +228,7 @@ elif platform == "macos":
     lib_path = f"{out_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
+    Depends(library, deploy_cocoa)
     Default(library)
 
 else:
