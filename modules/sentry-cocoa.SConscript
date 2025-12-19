@@ -96,7 +96,8 @@ def update_cocoa_framework():
             if stored_version == cocoa_version:
                 # Check if framework actually exists
                 xcframework_path = cocoa_dir / "Sentry-Dynamic.xcframework"
-                if xcframework_path.exists():
+                headers_path = cocoa_dir / "macos_include" / "Sentry"
+                if xcframework_path.exists() and headers_path.exists():
                     should_download = False
                     print(f"Detected Sentry Cocoa SDK v{cocoa_version} – up-to-date!")
         except:
