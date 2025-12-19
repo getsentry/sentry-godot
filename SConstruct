@@ -199,8 +199,8 @@ if platform == "ios":
         extra += ".simulator"
 
     temp_dir = "project/addons/sentry/bin/ios/temp"
-    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}"
-    lib_path = f"{temp_dir}/{lib_name}.dylib"
+    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}.dylib"
+    lib_path = f"{temp_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
     Depends(library, deploy_cocoa)
@@ -238,8 +238,8 @@ else:
     if env["threads"] is False:
         extra += ".nothreads"
 
-    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}"
-    lib_path = f"{out_dir}/{lib_name}{shlib_suffix}"
+    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}{shlib_suffix}"
+    lib_path = f"{out_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
     Default(library)
@@ -250,10 +250,10 @@ else:
 if env["debug_symbols"] and env["separate_debug_symbols"]:
     # Note: Windows/MSVC separates by default.
     if platform in ["macos", "ios"]:
-        dsym_path = f"{out_dir}/dSYMs/{lib_name}.framework.dSYM"
+        dsym_path = f"{out_dir}/dSYMs/{lib_name}.dSYM"
         env.SeparateDebugSymbols(Dir(dsym_path), library)
     elif platform in ["linux", "android"]:
-        symbols_path = f"{lib_path}.debug"
+        symbols_path = f"{out_dir}/{lib_name}.debug"
         env.SeparateDebugSymbols(File(symbols_path), library)
 
 
