@@ -103,6 +103,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/dsn", p_options->dsn);
 	_define_setting("sentry/options/release", p_options->release, false);
 	_define_setting("sentry/options/dist", p_options->dist, false);
+	_define_setting("sentry/options/environment", p_options->environment, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
 	_define_setting(sentry::make_level_enum_property("sentry/options/diagnostic_level"), p_options->diagnostic_level);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate, false);
@@ -144,6 +145,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
 	p_options->set_release(ProjectSettings::get_singleton()->get_setting("sentry/options/release", p_options->release));
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/options/dist", p_options->dist);
+	p_options->environment = ProjectSettings::get_singleton()->get_setting("sentry/options/environment", p_options->environment);
 
 	// DebugMode is only used to represent the debug option in the project settings.
 	// The user may also set the `debug` option explicitly in a configuration callback.
@@ -218,6 +220,14 @@ void SentryOptions::set_release(const String &p_release) {
 	release = p_release.format(format_params);
 }
 
+void SentryOptions::set_environment(const String &p_environment) {
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+	// Replace "{auto}" placeholder with auto-detected environment value.
+	Dictionary format_params;
+	format_params["auto"] = environment::detect_godot_environment();
+	release = p_environment.format(format_params);
+}
+
 void SentryOptions::add_event_processor(const Ref<SentryEventProcessor> &p_processor) {
 	ERR_FAIL_COND(p_processor.is_null());
 	event_processors.push_back(p_processor);
@@ -277,7 +287,6 @@ SentryOptions::SentryOptions() {
 	logger_limits.instantiate();
 	experimental.instantiate();
 
-	environment = sentry::environment::detect_godot_environment();
 	_init_debug_option(DEBUG_DEFAULT);
 }
 
