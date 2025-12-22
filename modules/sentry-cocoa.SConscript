@@ -382,6 +382,7 @@ def DeploySentryCocoa(self, target_dir):
                 print(f"  WARNING: Failed to update install name: {e}")
                 print(f"  stdout: {e.stdout}")
                 print(f"  stderr: {e.stderr}")
+                return 1
             return 0
 
         # Copy the framework binary as dylib, and patch install name.
