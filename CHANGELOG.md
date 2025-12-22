@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Improvements
+
+- Switched from shipping frameworks to dylibs on macOS to avoid Windows symlink issues and prevent TestFlight rejections caused by malformed framework bundles ([#468](https://github.com/getsentry/sentry-godot/pull/468))
+
 ### Dependencies
 
 - Bump Sentry Android from v8.28.0 to v8.29.0 ([#465](https://github.com/getsentry/sentry-godot/pull/465))
