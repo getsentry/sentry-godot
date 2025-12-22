@@ -221,10 +221,7 @@ void SentryOptions::set_release(const String &p_release) {
 }
 
 void SentryOptions::set_environment(const String &p_environment) {
-	// Replace "{auto}" placeholder with auto-detected environment value.
-	Dictionary format_params;
-	format_params["auto"] = environment::detect_godot_environment();
-	environment = p_environment.format(format_params);
+	environment = p_environment.replace("{auto}", environment::detect_godot_environment());
 }
 
 void SentryOptions::add_event_processor(const Ref<SentryEventProcessor> &p_processor) {
