@@ -73,70 +73,6 @@ def detect_xcode():
         Exit(1)
 
 
-def flatten_framework(framework_path):
-    """Flatten macOS framework by removing symlinks and versioned structure"""
-    framework_path = Path(framework_path)
-    if not framework_path.exists():
-        print(f"ERROR: Framework not found at {framework_path}")
-        Exit(1)
-
-    versions_dir = framework_path / "Versions"
-    if not versions_dir.exists():
-        # Framework doesn't need flattening.
-        return
-
-    print(f"Flattening framework structure: {framework_path}")
-
-    # 1. Remove all symlinks from the root of the framework
-    for item_path in framework_path.iterdir():
-        if item_path.is_symlink():
-            print(f"  Removing symlink: {item_path.name}")
-            item_path.unlink()
-
-    # 2. Move Versions/A/* to root of the framework
-    version_a_dir = versions_dir / "A"
-    if version_a_dir.exists():
-        print("  Moving contents from Versions/A/ to root")
-        for item_path in version_a_dir.iterdir():
-            dest_path = framework_path / item_path.name
-
-            # Handle potential conflicts
-            if dest_path.exists():
-                print(f"  WARNING: {item_path.name} already exists at root, removing old version")
-                remove_if_exists(dest_path)
-
-            shutil.move(str(item_path), str(dest_path))
-            print(f"    Moved: {item_path.name}")
-    else:
-        print(f"  WARNING: Versions/A directory not found in {framework_path}")
-
-    # 3. Remove Versions/ directory
-    print("  Removing Versions directory")
-    shutil.rmtree(versions_dir)
-
-    # 4. Patch the binary's install name for flattened structure
-    binary_name = framework_path.name.replace('.framework', '')
-    binary_path = framework_path / binary_name
-
-    if not binary_path.exists():
-        print(f"ERROR: Framework binary not found at {binary_path}")
-        Exit(1)
-
-    print(f"  Patching install name for binary: {binary_name}")
-    install_name = f"@rpath/{binary_name}.framework/{binary_name}"
-    cmd = ["install_name_tool", "-id", install_name, str(binary_path)]
-
-    try:
-        subprocess.run(cmd, capture_output=True, text=True, check=True)
-        print(f"  Successfully updated install name to: {install_name}")
-    except subprocess.CalledProcessError as e:
-        print(f"  WARNING: Failed to update install name: {e}")
-        print(f"  stdout: {e.stdout}")
-        print(f"  stderr: {e.stderr}")
-
-    print(f"Framework flattening completed: {framework_path}")
-
-
 def update_cocoa_framework():
     """Updates Sentry Cocoa to the latest version."""
     project_root = Path(env.Dir("#").abspath)
@@ -160,7 +96,8 @@ def update_cocoa_framework():
             if stored_version == cocoa_version:
                 # Check if framework actually exists
                 xcframework_path = cocoa_dir / "Sentry-Dynamic.xcframework"
-                if xcframework_path.exists():
+                headers_path = cocoa_dir / "macos_include" / "Sentry"
+                if xcframework_path.exists() and headers_path.exists():
                     should_download = False
                     print(f"Detected Sentry Cocoa SDK v{cocoa_version} – up-to-date!")
         except:
@@ -184,9 +121,6 @@ def update_cocoa_framework():
             print(f"Extracting {zip_path}")
             extract_zip_with_symlinks(zip_path, cocoa_dir)
 
-            # NOTE: We need to flatten macOS slice due to issues with symlinks on Windows.
-            flatten_framework(cocoa_dir / "Sentry-Dynamic.xcframework" / "macos-arm64_x86_64" / "Sentry.framework")
-
             zip_path.unlink() # delete file
             version_file.write_text(cocoa_version)
 
@@ -195,6 +129,29 @@ def update_cocoa_framework():
         except Exception as e:
             print(f"ERROR: Failed to download Sentry framework: {e}.")
             Exit(1)
+
+        # Prepare headers
+        print("Preparing headers for macOS...")
+        headers_dest = cocoa_dir / "macos_include" / "Sentry"
+        headers_dest.mkdir(parents=True, exist_ok=True)
+        macos_framework = cocoa_dir / "Sentry-Dynamic.xcframework" / "macos-arm64_x86_64" / "Sentry.framework"
+
+        if macos_framework.exists():
+            # Copy Headers
+            headers_source = macos_framework / "Headers"
+            if headers_source.exists():
+                for header_file in headers_source.glob("*.h"):
+                    shutil.copy2(header_file, headers_dest)
+                print(f"  Copied {len(list(headers_source.glob('*.h')))} headers from {headers_source}")
+
+            # Copy PrivateHeaders
+            private_headers_source = macos_framework / "PrivateHeaders"
+            if private_headers_source.exists():
+                for header_file in private_headers_source.glob("*.h"):
+                    shutil.copy2(header_file, headers_dest)
+                print(f"  Copied {len(list(private_headers_source.glob('*.h')))} private headers from {private_headers_source}")
+        else:
+            print(f"WARNING: macOS framework not found at {macos_framework}")
 
 
 update_cocoa_framework()
@@ -224,29 +181,38 @@ if platform in ["macos", "ios"]:
 
     if platform == "macos":
         framework_dir = xcframework_path / "macos-arm64_x86_64/Sentry.framework"
+        env.Append(
+            CPPPATH=f"{project_root}/modules/sentry-cocoa/macos_include/",
+            LIBPATH=f"{project_root}/project/addons/sentry/bin/macos/",
+            LIBS=["Sentry"],
+            LINKFLAGS=[
+                # Load libSentry.dylib from same dir as GDExtension.
+                "-Wl,-rpath,@loader_path/"
+            ]
+        )
     else:
         if ios_simulator:
             framework_dir = xcframework_path / "ios-arm64_x86_64-simulator/Sentry.framework"
         else:
             framework_dir = xcframework_path / "ios-arm64/Sentry.framework"
 
-    if not framework_dir.exists():
-        print(f"ERROR: Sentry.framework is missing at {framework_dir}.")
-        Exit(1)
+        if not framework_dir.exists():
+            print(f"ERROR: iOS framework slice is missing at {framework_dir}.")
+            Exit(1)
 
-    framework_container_dir = framework_dir.parent.absolute()
+        framework_container_dir = framework_dir.parent.absolute()
 
-    env.Append(
-        CPPFLAGS=["-F" + str(framework_container_dir)],
-        LINKFLAGS=[
-            "-framework", "Sentry",
-            "-F" + str(framework_container_dir),
-            # Allow extension to find framework in addons/sentry/ directory.
-            "-Wl,-rpath,@loader_path/..",
-        ]
-    )
+        env.Append(
+            CPPFLAGS=["-F" + str(framework_container_dir)],
+            LINKFLAGS=[
+                "-framework", "Sentry",
+                "-F" + str(framework_container_dir),
+                # Allow extension to find framework in addons/sentry/ directory.
+                "-Wl,-rpath,@loader_path/..",
+            ]
+        )
 
-    print(f"Added {platform} Sentry dynamic framework: {framework_dir}")
+        print(f"Added {platform} Sentry dynamic framework: {framework_dir}")
 
 
 # *** Export pseudo-builders to create xcframeworks
@@ -402,20 +368,41 @@ def DeploySentryCocoa(self, target_dir):
 
     elif platform == "macos":
         source_framework = source_xcframework / "macos-arm64_x86_64/Sentry.framework"
-        target_framework = target_dir_path / "Sentry.framework"
 
-        # Copy only the binary and "Resources" dir -- we don't need to export headers or modules.
+        def patch_install_name_action(target, source, env):
+            """Patch install name after copy"""
+            lib_path_str = str(target[0])
+            print(f"  Patching install name for binary: {lib_name}")
+            try:
+                new_rpath = "@rpath/libSentry.dylib"
+                cmd = ["install_name_tool", "-id", new_rpath, lib_path_str]
+                subprocess.run(cmd, capture_output=True, text=True, check=True)
+                print(f"  Successfully updated install name to: {new_rpath}")
+            except subprocess.CalledProcessError as e:
+                print(f"  WARNING: Failed to update install name: {e}")
+                print(f"  stdout: {e.stdout}")
+                print(f"  stderr: {e.stderr}")
+                return 1
+            return 0
+
+        # Copy the framework binary as dylib, and patch install name.
+        lib_name = "libSentry.dylib"
+        lib_path = target_dir_path / lib_name
         commands.append(
-            env.Copy(File(target_framework / "Sentry"), File(source_framework / "Sentry"))
-        )
-        commands.append(
-            env.Copy(Dir(target_framework / "Resources"), Dir(source_framework / "Resources"))
+            env.Command(
+                File(lib_path),
+                File(source_framework / "Versions/A/Sentry"),
+                [
+                    Copy("$TARGET", "$SOURCE"),
+                    patch_install_name_action
+                ]
+            )
         )
 
         # Debug symbols
         commands.append(
             env.Copy(
-                Dir(target_dir_path / "dSYMs" / "Sentry.framework.dSYM"),
+                Dir(target_dir_path / "dSYMs" / "libSentry.dylib.dSYM"),
                 Dir(source_xcframework / "macos-arm64_x86_64" / "dSYMs" / "Sentry.framework.dSYM")
             )
         )

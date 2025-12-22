@@ -80,7 +80,6 @@ arch = env["arch"]
 # Register tools
 env.Tool("copy")
 env.Tool("separate_debug_symbols")
-env.Tool("plist")
 
 # Restore original ARGUMENTS and add custom options to environment
 ARGUMENTS.clear()
@@ -149,8 +148,8 @@ if internal_sdk == SDK.COCOA:
     env = SConscript("modules/sentry-cocoa.SConscript", exports=["env"])
 
     # Deploy Sentry Cocoa dependency to project directory.
-    deploy_cocoa_xcframework = env.DeploySentryCocoa(out_dir)
-    Default(deploy_cocoa_xcframework)
+    deploy_cocoa = env.DeploySentryCocoa(out_dir)
+    Default(deploy_cocoa)
 
 
 # *** Build GDExtension library.
@@ -200,10 +199,11 @@ if platform == "ios":
         extra += ".simulator"
 
     temp_dir = "project/addons/sentry/bin/ios/temp"
-    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}"
-    lib_path = f"{temp_dir}/{lib_name}.dylib"
+    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}.dylib"
+    lib_path = f"{temp_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
+    Depends(library, deploy_cocoa)
     Default(library)
 
     # Generate XCFramework for iOS GDExtension libs if requested
@@ -224,22 +224,12 @@ if platform == "ios":
 elif platform == "macos":
     # *** Build macOS shared library.
 
-    lib_name = f"libsentry.{platform}.{build_type}{extra}"
-    lib_path = f"{out_dir}/{lib_name}.framework/{lib_name}"
+    lib_name = f"libsentry.{platform}.{build_type}{extra}.dylib"
+    lib_path = f"{out_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
+    Depends(library, deploy_cocoa)
     Default(library)
-
-    # Create Info.plist
-    plist_path = f"{out_dir}/{lib_name}.framework/Resources/Info.plist"
-    plist = env.FrameworkPlist(File(plist_path), File("SConstruct"),
-        bundle_executable=lib_name,
-        bundle_identifier=f"io.sentry.SentryForGodot.{build_type}",
-        bundle_version=VERSION,
-        bundle_platforms=["MacOSX"]
-    )
-    Depends(plist, library)
-    Default(plist)
 
 else:
     # *** Build shared library on other platforms.
@@ -248,8 +238,8 @@ else:
     if env["threads"] is False:
         extra += ".nothreads"
 
-    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}"
-    lib_path = f"{out_dir}/{lib_name}{shlib_suffix}"
+    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}{shlib_suffix}"
+    lib_path = f"{out_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
     Default(library)
@@ -260,10 +250,10 @@ else:
 if env["debug_symbols"] and env["separate_debug_symbols"]:
     # Note: Windows/MSVC separates by default.
     if platform in ["macos", "ios"]:
-        dsym_path = f"{out_dir}/dSYMs/{lib_name}.framework.dSYM"
+        dsym_path = f"{out_dir}/dSYMs/{lib_name}.dSYM"
         env.SeparateDebugSymbols(Dir(dsym_path), library)
     elif platform in ["linux", "android"]:
-        symbols_path = f"{lib_path}.debug"
+        symbols_path = f"{out_dir}/{lib_name}.debug"
         env.SeparateDebugSymbols(File(symbols_path), library)
 
 
