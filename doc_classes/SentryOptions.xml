@@ -84,8 +84,9 @@
 			Enables Sentry's structured logging functionality. When enabled, you gain access to dedicated logging APIs through [member SentrySDK.logger], and Godot's built-in log messages are automatically captured and sent to Sentry Logs.
 			Use [member logger_enabled] and other [code]logger_*[/code] options to control how Godot's error messages and log output (including [code]print()[/code] statements) are captured and processed by Sentry.
 		</member>
-		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;editor_dev&quot;">
+		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;{auto}&quot;">
 			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a configuration callback using manual initialization (see [method SentrySDK.init]).
+			This option defaults to [code]{auto}[/code], which automatically detects the environment based on the current runtime context and sets it to one of the following values: [code]editor_dev[/code], [code]editor_dev_run[/code], [code]export_debug[/code], [code]export_release[/code], or [code]dedicated_server[/code].
 			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/environments/]Environments documentation[/url].
 		</member>
 		<member name="experimental" type="SentryExperimental" setter="" getter="get_experimental">

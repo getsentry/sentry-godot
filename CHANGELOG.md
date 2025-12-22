@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add `environment` option to project settings ([#469](https://github.com/getsentry/sentry-godot/pull/469))
+
 ### Improvements
 
 - Switched from shipping frameworks to dylibs on macOS to avoid Windows symlink issues and prevent TestFlight rejections caused by malformed framework bundles ([#468](https://github.com/getsentry/sentry-godot/pull/468))
