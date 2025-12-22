@@ -221,7 +221,6 @@ void SentryOptions::set_release(const String &p_release) {
 }
 
 void SentryOptions::set_environment(const String &p_environment) {
-	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 	// Replace "{auto}" placeholder with auto-detected environment value.
 	Dictionary format_params;
 	format_params["auto"] = environment::detect_godot_environment();
