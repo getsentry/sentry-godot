@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add `environment` option to project settings ([#469](https://github.com/getsentry/sentry-godot/pull/469))
+
 ### Dependencies
 
 - Bump Sentry Android from v8.28.0 to v8.29.0 ([#465](https://github.com/getsentry/sentry-godot/pull/465))
