@@ -145,7 +145,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
 	p_options->set_release(ProjectSettings::get_singleton()->get_setting("sentry/options/release", p_options->release));
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/options/dist", p_options->dist);
-	p_options->environment = ProjectSettings::get_singleton()->get_setting("sentry/options/environment", p_options->environment);
+	p_options->set_environment(ProjectSettings::get_singleton()->get_setting("sentry/options/environment", p_options->environment));
 
 	// DebugMode is only used to represent the debug option in the project settings.
 	// The user may also set the `debug` option explicitly in a configuration callback.
