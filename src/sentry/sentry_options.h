@@ -72,7 +72,7 @@ private:
 	String dist = "";
 	bool debug = false;
 	sentry::Level diagnostic_level = sentry::LEVEL_DEBUG;
-	String environment;
+	String environment = "{auto}";
 	double sample_rate = 1.0;
 	int max_breadcrumbs = 100;
 	bool send_default_pii = false;
