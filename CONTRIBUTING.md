@@ -161,7 +161,6 @@ Install-Module -Name Pester -Force -SkipPublisherCheck
 - `SENTRY_TEST_PLATFORM`: Target platform: Linux, macOS, Windows, Android, etc (see [`app-runner`](https://github.com/getsentry/app-runner) submodule)
 - `SENTRY_TEST_DSN`: Sentry project DSN where test events will be sent (defaults to reading from project.godot)
 - `SENTRY_TEST_EXECUTABLE`: Path to test executable (defaults to `$env:GODOT`)
-- `SENTRY_TEST_ARGS`: Extra command line arguments for the executable
 
 **Sauce Labs:**
 - `SAUCE_USERNAME`: Sauce Labs username for authentication

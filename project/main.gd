@@ -8,7 +8,12 @@ func _ready() -> void:
 
 	if await cli_commands.check_and_execute_cli():
 		# Quit if a CLI command was executed
-		get_tree().quit(cli_commands.exit_code)
+		if OS.get_name() == "iOS":
+			# NOTE: This is a workaround -- quit() doesn't work on iOS.
+			# See: https://github.com/godotengine/godot/issues/110626
+			OS.kill(OS.get_process_id())
+		else:
+			get_tree().quit(cli_commands.exit_code)
 	elif OS.get_name() in ["Android", "iOS"]:
 		# Continue with mobile UI
 		get_tree().change_scene_to_file.call_deferred("res://mobile.tscn")
