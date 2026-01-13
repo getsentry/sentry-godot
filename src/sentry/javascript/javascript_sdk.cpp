@@ -1,5 +1,7 @@
 #include "javascript_sdk.h"
 
+#include "sentry/sentry_options.h"
+
 #include <godot_cpp/classes/java_script_bridge.hpp>
 
 namespace sentry::javascript {
@@ -51,7 +53,7 @@ void JavaScriptSDK::log(LogLevel p_level, const String &p_body, const Dictionary
 }
 
 String JavaScriptSDK::capture_message(const String &p_message, Level p_level) {
-	WARN_PRINT("JavaScriptSDK::capture_message() not implemented");
+	sentry_bridge->call("captureMessage", String(level_as_cstring(p_level)));
 	// TODO: Implement JavaScript SDK message capture
 	return String();
 }
@@ -85,7 +87,9 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 }
 
 void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
-	WARN_PRINT("JavaScriptSDK::init() not implemented");
+	sentry_bridge->call("init",
+			SentryOptions::get_singleton()->get_dsn(),
+			SentryOptions::get_singleton()->get_release());
 	// TODO: Implement JavaScript SDK initialization
 }
 
