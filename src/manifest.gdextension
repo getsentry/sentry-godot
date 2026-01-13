@@ -28,11 +28,12 @@ android.release.x86_64 = "res://addons/sentry/bin/android/libsentry.android.rele
 ios.debug = "res://addons/sentry/bin/ios/libsentry.ios.debug.xcframework"
 ios.release = "res://addons/sentry/bin/ios/libsentry.ios.release.xcframework"
 
+web.debug.wasm32 = "res://addons/sentry/bin/web/libsentry.web.debug.wasm32.nothreads.wasm"
+web.release.wasm32 = "res://addons/sentry/bin/web/libsentry.web.release.wasm32.nothreads.wasm"
+web.debug.threads.wasm32 = "res://addons/sentry/bin/web/libsentry.web.debug.wasm32.wasm"
+web.release.threads.wasm32 = "res://addons/sentry/bin/web/libsentry.web.release.wasm32.wasm"
+
 ; noop libs for unsupported platforms
-web.debug.wasm32 = "res://addons/sentry/bin/noop/libsentry.web.debug.wasm32.nothreads.wasm"
-web.release.wasm32 = "res://addons/sentry/bin/noop/libsentry.web.release.wasm32.nothreads.wasm"
-web.debug.threads.wasm32 = "res://addons/sentry/bin/noop/libsentry.web.debug.wasm32.wasm"
-web.release.threads.wasm32 = "res://addons/sentry/bin/noop/libsentry.web.release.wasm32.wasm"
 windows.debug.arm64 = "res://addons/sentry/bin/noop/libsentry.windows.debug.arm64.dll"
 windows.release.arm64 = "res://addons/sentry/bin/noop/libsentry.windows.release.arm64.dll"
 linux.debug.arm64 = "res://addons/sentry/bin/noop/libsentry.linux.debug.arm64.so"
