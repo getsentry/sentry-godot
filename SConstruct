@@ -103,6 +103,7 @@ class SDK(Enum):
     NATIVE = 1
     ANDROID = 2
     COCOA = 3
+    JAVASCRIPT = 4
 
 
 if platform in ["linux", "windows"]:
@@ -114,6 +115,8 @@ elif platform in ["macos", "ios"]:
     internal_sdk = SDK.COCOA
 elif platform == "android":
     internal_sdk = SDK.ANDROID
+elif platform == "web":
+    internal_sdk = SDK.JAVASCRIPT
 else:
     internal_sdk = SDK.DISABLED
 
@@ -177,6 +180,9 @@ elif internal_sdk == SDK.COCOA:
     sources += Glob("src/sentry/cocoa/*.cpp")
     sources += Glob("src/sentry/cocoa/*.mm")
     env.Append(CPPDEFINES=["SDK_COCOA"])
+elif internal_sdk == SDK.JAVASCRIPT:
+    sources += Glob("src/sentry/javascript/*.cpp")
+    env.Append(CPPDEFINES=["SDK_JAVASCRIPT"])
 
 # Generate documentation data.
 if env["target"] in ["editor", "template_debug"]:
