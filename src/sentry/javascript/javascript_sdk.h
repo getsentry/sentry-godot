@@ -2,11 +2,17 @@
 
 #include "sentry/internal_sdk.h"
 
+#include <godot_cpp/classes/java_script_object.hpp>
+
+using namespace godot;
+
 namespace sentry::javascript {
 
 // Internal SDK utilizing Sentry for JavaScript.
 class JavaScriptSDK : public InternalSDK {
 private:
+	Ref<JavaScriptObject> sentry_bridge;
+
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void remove_context(const String &p_key) override;
