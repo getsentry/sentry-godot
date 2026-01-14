@@ -18,6 +18,7 @@ enum Level {
 };
 
 godot::CharString level_as_cstring(Level level);
+godot::String level_as_string(Level level);
 godot::PropertyInfo make_level_enum_property(const godot::String &p_name);
 Level int_to_level(int p_value);
 
