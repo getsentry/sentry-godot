@@ -41,6 +41,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/sentry_editor_export_plugin_android.h"
+#include "editor/sentry_editor_export_plugin_web.h"
 #include "editor/sentry_editor_plugin.h"
 #include <godot_cpp/classes/editor_plugin_registration.hpp>
 #endif // TOOLS_ENABLED
@@ -92,6 +93,7 @@ void register_runtime_classes() {
 void register_editor_classes() {
 #ifdef TOOLS_ENABLED
 	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginAndroid);
+	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginWeb);
 	GDREGISTER_INTERNAL_CLASS(SentryEditorPlugin);
 
 #ifndef WINDOWS_ENABLED
