@@ -37,13 +37,20 @@ void JavaScriptSDK::remove_tag(const String &p_key) {
 }
 
 void JavaScriptSDK::set_user(const Ref<SentryUser> &p_user) {
-	WARN_PRINT("JavaScriptSDK::set_user() not implemented");
-	// TODO: Implement JavaScript SDK user setting
+	ERR_FAIL_COND(_get_bridge().is_null());
+	if (p_user.is_null()) {
+		_get_bridge()->call("removeUser");
+	} else {
+		_get_bridge()->call("setUser",
+				p_user->get_id(),
+				p_user->get_username(),
+				p_user->get_email(),
+				p_user->get_ip_address());
+	}
 }
 
 void JavaScriptSDK::remove_user() {
-	WARN_PRINT("JavaScriptSDK::remove_user() not implemented");
-	// TODO: Implement JavaScript SDK user removal
+	_get_bridge()->call("removeUser");
 }
 
 Ref<SentryBreadcrumb> JavaScriptSDK::create_breadcrumb() {

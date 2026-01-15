@@ -52,6 +52,28 @@ window.SentryBridge = {
 		Sentry.removeTag(key);
 	},
 
+	setUser : function(id, username, email, ip) {
+		var user = {};
+		if (id && id != '') {
+			user.id = id;
+		}
+		if (username && username != '') {
+			user.username = username;
+		}
+		if (email && email != '') {
+			user.email = email;
+		}
+		if (ip && ip != '') {
+			user.ip_address = ip;
+		}
+		console.log("setting user ", user);
+		Sentry.setUser(user);
+	},
+
+	removeUser : function() {
+		Sentry.removeUser();
+	},
+
 	captureMessage : function(message) {
 		return Sentry.captureMessage(message);
 	},
