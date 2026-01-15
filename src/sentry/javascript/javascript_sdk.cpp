@@ -3,6 +3,7 @@
 #include "sentry/sentry_options.h"
 
 #include <godot_cpp/classes/java_script_bridge.hpp>
+#include <godot_cpp/classes/json.hpp>
 
 namespace sentry::javascript {
 
@@ -16,23 +17,23 @@ Ref<JavaScriptObject> JavaScriptSDK::_get_bridge() const {
 }
 
 void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) {
-	WARN_PRINT("JavaScriptSDK::set_context() not implemented");
-	// TODO: Implement JavaScript SDK context setting
+	ERR_FAIL_COND(_get_bridge().is_null());
+	_get_bridge()->call("setContext", p_key, JSON::stringify(p_value), String(), false);
 }
 
 void JavaScriptSDK::remove_context(const String &p_key) {
-	WARN_PRINT("JavaScriptSDK::remove_context() not implemented");
-	// TODO: Implement JavaScript SDK context removal
+	ERR_FAIL_COND(_get_bridge().is_null());
+	_get_bridge()->call("removeContext", p_key);
 }
 
 void JavaScriptSDK::set_tag(const String &p_key, const String &p_value) {
-	WARN_PRINT("JavaScriptSDK::set_tag() not implemented");
-	// TODO: Implement JavaScript SDK tag setting
+	ERR_FAIL_COND(_get_bridge().is_null());
+	_get_bridge()->call("setTag", p_key, p_value);
 }
 
 void JavaScriptSDK::remove_tag(const String &p_key) {
-	WARN_PRINT("JavaScriptSDK::remove_tag() not implemented");
-	// TODO: Implement JavaScript SDK tag removal
+	ERR_FAIL_COND(_get_bridge().is_null());
+	_get_bridge()->call("removeTag", p_key);
 }
 
 void JavaScriptSDK::set_user(const Ref<SentryUser> &p_user) {

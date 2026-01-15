@@ -40,6 +40,18 @@ window.SentryBridge = {
 		}
 	},
 
+	removeContext : function(key) {
+		Sentry.removeContext(key);
+	},
+
+	setTag : function(key, val) {
+		Sentry.setTag(key, val);
+	},
+
+	removeTag : function(key) {
+		Sentry.removeTag(key);
+	},
+
 	captureMessage : function(message) {
 		return Sentry.captureMessage(message);
 	},
