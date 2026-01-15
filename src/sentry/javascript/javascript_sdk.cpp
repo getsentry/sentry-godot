@@ -96,10 +96,16 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	ERR_FAIL_COND(_get_bridge().is_null());
+
 	_get_bridge()->call("init",
 			SentryOptions::get_singleton()->get_dsn(),
-			SentryOptions::get_singleton()->get_release());
-	// TODO: Implement JavaScript SDK initialization
+			SentryOptions::get_singleton()->is_debug_enabled(),
+			SentryOptions::get_singleton()->get_release(),
+			SentryOptions::get_singleton()->get_dist(),
+			SentryOptions::get_singleton()->get_environment(),
+			SentryOptions::get_singleton()->get_sample_rate(),
+			SentryOptions::get_singleton()->get_max_breadcrumbs(),
+			SentryOptions::get_singleton()->get_enable_logs());
 }
 
 void JavaScriptSDK::close() {
