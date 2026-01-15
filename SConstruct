@@ -290,6 +290,11 @@ if env["build_android_lib"]:
     Default(android_lib)
     Depends(android_lib, library)
 
+# *** Copy JavaScript bridge
+
+if platform == "web":
+    copy_bridge = env.Copy("project/addons/sentry/web/sentry-bridge.js", "src/sentry/javascript/sentry-bridge.js")
+    Default(copy_bridge)
 
 # *** Add help for optional targets.
 
