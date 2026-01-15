@@ -25,6 +25,8 @@
 #include "sentry/android/android_sdk.h"
 #elif SDK_COCOA
 #include "sentry/cocoa/cocoa_sdk.h"
+#elif SDK_JAVASCRIPT
+#include "sentry/javascript/javascript_sdk.h"
 #endif
 
 using namespace godot;
@@ -407,6 +409,8 @@ SentrySDK::SentrySDK() {
 	}
 #elif SDK_COCOA
 	internal_sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
+#elif SDK_JAVASCRIPT
+	internal_sdk = std::make_shared<sentry::javascript::JavaScriptSDK>();
 #else
 	// Unsupported platform
 	sentry::logging::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
