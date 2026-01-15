@@ -13,7 +13,7 @@ class JavaScriptSDK : public InternalSDK {
 private:
 	Ref<JavaScriptObject> _bridge;
 
-	Ref<JavaScriptObject> _get_bridge();
+	Ref<JavaScriptObject> _get_bridge() const;
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;

@@ -6,10 +6,10 @@
 
 namespace sentry::javascript {
 
-Ref<JavaScriptObject> JavaScriptSDK::_get_bridge() {
+Ref<JavaScriptObject> JavaScriptSDK::_get_bridge() const {
 	if (unlikely(_bridge.is_null())) {
 		ERR_FAIL_NULL_V(JavaScriptBridge::get_singleton(), Ref<JavaScriptObject>());
-		_bridge = JavaScriptBridge::get_singleton()->get_interface("SentryBridge");
+		const_cast<JavaScriptSDK *>(this)->_bridge = JavaScriptBridge::get_singleton()->get_interface("SentryBridge");
 		ERR_FAIL_COND_V_MSG(_bridge.is_null(), Ref<JavaScriptObject>(), "SentryBridge JS interface not found!");
 	}
 	return _bridge;
@@ -114,9 +114,9 @@ void JavaScriptSDK::close() {
 }
 
 bool JavaScriptSDK::is_enabled() const {
-	WARN_PRINT("JavaScriptSDK::is_enabled() not implemented");
-	// TODO: Implement JavaScript SDK enabled check
+	ERR_FAIL_COND_V(_get_bridge().is_null(), false);
 	return false;
+	// return _get_bridge()->call("isEnabled");
 }
 
 JavaScriptSDK::JavaScriptSDK() {
