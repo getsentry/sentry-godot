@@ -6,6 +6,15 @@
 
 namespace sentry::javascript {
 
+Ref<JavaScriptObject> JavaScriptSDK::_get_bridge() {
+	if (unlikely(_bridge.is_null())) {
+		ERR_FAIL_NULL_V(JavaScriptBridge::get_singleton(), Ref<JavaScriptObject>());
+		_bridge = JavaScriptBridge::get_singleton()->get_interface("SentryBridge");
+		ERR_FAIL_COND_V_MSG(_bridge.is_null(), Ref<JavaScriptObject>(), "SentryBridge JS interface not found!");
+	}
+	return _bridge;
+}
+
 void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	WARN_PRINT("JavaScriptSDK::set_context() not implemented");
 	// TODO: Implement JavaScript SDK context setting
@@ -53,9 +62,8 @@ void JavaScriptSDK::log(LogLevel p_level, const String &p_body, const Dictionary
 }
 
 String JavaScriptSDK::capture_message(const String &p_message, Level p_level) {
-	sentry_bridge->call("captureMessage", String(level_as_cstring(p_level)));
-	// TODO: Implement JavaScript SDK message capture
-	return String();
+	ERR_FAIL_COND_V(_get_bridge().is_null(), String());
+	return _get_bridge()->call("captureMessage", p_message, level_as_string(p_level));
 }
 
 String JavaScriptSDK::get_last_event_id() {
@@ -87,7 +95,8 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 }
 
 void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
-	sentry_bridge->call("init",
+	ERR_FAIL_COND(_get_bridge().is_null());
+	_get_bridge()->call("init",
 			SentryOptions::get_singleton()->get_dsn(),
 			SentryOptions::get_singleton()->get_release());
 	// TODO: Implement JavaScript SDK initialization
@@ -105,10 +114,6 @@ bool JavaScriptSDK::is_enabled() const {
 }
 
 JavaScriptSDK::JavaScriptSDK() {
-	ERR_FAIL_NULL(JavaScriptBridge::get_singleton());
-
-	sentry_bridge = JavaScriptBridge::get_singleton()->get_interface("SentryBridge");
-	ERR_FAIL_COND_MSG(sentry_bridge.is_null(), "Failed to initialize JavaScript SDK - SentryBridge interface not found.");
 }
 
 JavaScriptSDK::~JavaScriptSDK() {

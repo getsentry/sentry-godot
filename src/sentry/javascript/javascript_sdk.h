@@ -11,7 +11,9 @@ namespace sentry::javascript {
 // Internal SDK utilizing Sentry for JavaScript.
 class JavaScriptSDK : public InternalSDK {
 private:
-	Ref<JavaScriptObject> sentry_bridge;
+	Ref<JavaScriptObject> _bridge;
+
+	Ref<JavaScriptObject> _get_bridge();
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
