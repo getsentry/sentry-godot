@@ -74,8 +74,8 @@ SentryEditorExportPluginWeb::SentryEditorExportPluginWeb() {
 
 	html_head_comment = "<!-- Automatically added by Sentry SDK -->";
 
-	html_head_content.append("<script src=\"bundle.debug.min.js\" crossorigin=\"anonymous\"></script>");
-	html_head_content.append("<script src=\"wasm.debug.min.js\" crossorigin=\"anonymous\"></script>");
+	// html_head_content.append("<script src=\"bundle.debug.min.js\" crossorigin=\"anonymous\"></script>");
+	// html_head_content.append("<script src=\"wasm.debug.min.js\" crossorigin=\"anonymous\"></script>");
 	html_head_content.append("<script src=\"sentry-bridge.js\" crossorigin=\"anonymous\"></script>");
 }
 
