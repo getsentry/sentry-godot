@@ -211,7 +211,8 @@ Dictionary make_gpu_context() {
 	Dictionary gpu_context = Dictionary();
 
 	ERR_FAIL_NULL_V(OS::get_singleton(), gpu_context);
-	// NOTE: RenderingServer may not be safe to access from a worker thread.
+	// NOTE: This function should not be called from a worker thread --
+	//       RenderingServer may not be safe to access from a worker thread.
 	ERR_FAIL_COND_V(OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id(), gpu_context);
 	ERR_FAIL_NULL_V(RenderingServer::get_singleton(), gpu_context);
 
