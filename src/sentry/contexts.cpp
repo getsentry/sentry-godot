@@ -4,6 +4,8 @@
 #include "sentry/environment.h"
 #include "sentry/sentry_options.h"
 
+#include <atomic>
+
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/engine.hpp>
@@ -23,6 +25,17 @@
 #endif // WINDOWS_ENABLED
 
 namespace {
+
+// Tracks whether engine singletons are fully initialized and safe to access.
+std::atomic<bool> _singletons_ready{ false };
+
+inline void _mark_singletons_ready() {
+	_singletons_ready.store(true, std::memory_order_release);
+}
+
+inline bool _are_singletons_ready() {
+	return _singletons_ready.load(std::memory_order_acquire);
+}
 
 String _screen_orientation_as_string(int32_t p_screen) {
 	ERR_FAIL_NULL_V(DisplayServer::get_singleton(), "");
@@ -398,6 +411,13 @@ Dictionary make_performance_context() {
 
 HashMap<String, Dictionary> make_event_contexts() {
 	HashMap<String, Dictionary> event_contexts;
+
+	if (!_are_singletons_ready()) {
+		// Engine singletons may not be fully initialized yet - skip context enrichment.
+		// This can happen when processing error reports during early SDK initialization.
+		return event_contexts;
+	}
+
 	event_contexts["godot_performance"] = make_performance_context();
 
 #ifdef SDK_NATIVE
@@ -405,6 +425,10 @@ HashMap<String, Dictionary> make_event_contexts() {
 #endif
 
 	return event_contexts;
+}
+
+void mark_singletons_ready() {
+	_mark_singletons_ready();
 }
 
 } //namespace sentry::contexts

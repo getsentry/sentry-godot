@@ -223,6 +223,9 @@ void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary 
 void SentrySDK::_init_contexts() {
 	sentry::logging::print_debug("initializing contexts");
 
+	// Mark engine singletons as ready for access for context enrichment.
+	sentry::contexts::mark_singletons_ready();
+
 #ifdef SDK_NATIVE
 	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
 	internal_sdk->set_context("app", sentry::contexts::make_app_context());
