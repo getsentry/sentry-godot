@@ -4,6 +4,7 @@
 #include "sentry/common_defs.h"
 #include "sentry/contexts.h"
 #include "sentry/disabled/disabled_sdk.h"
+#include "sentry/godot_singletons.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
@@ -224,7 +225,7 @@ void SentrySDK::_init_contexts() {
 	sentry::logging::print_debug("initializing contexts");
 
 	// Mark engine singletons as ready for access for context enrichment.
-	sentry::contexts::mark_singletons_ready();
+	sentry::godot_singletons::mark_as_ready();
 
 #ifdef SDK_NATIVE
 	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));

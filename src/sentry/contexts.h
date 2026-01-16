@@ -27,9 +27,6 @@ Dictionary make_performance_context();
 // Creates contexts that can only be generated right before an event, e.g. performance info.
 HashMap<String, Dictionary> make_event_contexts();
 
-// Marks engine singletons as ready for access. Should be called when singletons are fully initialized.
-void mark_singletons_ready();
-
 } //namespace sentry::contexts
 
 #endif // CONTEXTS_H
