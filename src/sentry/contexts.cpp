@@ -414,7 +414,7 @@ HashMap<String, Dictionary> make_event_contexts() {
 
 	if (!_are_singletons_ready()) {
 		// Engine singletons may not be fully initialized yet - skip context enrichment.
-		// This can happen when processing error reports during early SDK initialization.
+		// This can happen when processing error reports during early engine initialization.
 		return event_contexts;
 	}
 
