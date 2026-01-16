@@ -74,6 +74,43 @@ window.SentryBridge = {
 		Sentry.removeUser();
 	},
 
+	parseAttributes : function(json) {
+		if (json == '') {
+			return {}
+		}
+		try {
+			var attributes = JSON.parse(json);
+		} catch (e) {
+			console.error("Failed to parse attributes JSON:", e);
+			attributes = {};
+		}
+		return attributes;
+	},
+
+	logTrace : function(message, attributesJson) {
+		Sentry.logger().trace(message, parseAttributes(attributesJson));
+	},
+
+	logDebug : function(message, attributesJson) {
+		Sentry.logger().debug(message, parseAttributes(attributesJson));
+	},
+
+	logInfo : function(message, attributesJson) {
+		Sentry.logger().info(message, parseAttributes(attributesJson));
+	},
+
+	logWarning : function(message, attributesJson) {
+		Sentry.logger().warning(message, parseAttributes(attributesJson));
+	},
+
+	logError : function(message, attributesJson) {
+		Sentry.logger().error(message, parseAttributes(attributesJson));
+	},
+
+	logFatal : function(message, attributesJson) {
+		Sentry.logger().fatal(message, parseAttributes(attributesJson));
+	},
+
 	captureMessage : function(message) {
 		return Sentry.captureMessage(message);
 	},
