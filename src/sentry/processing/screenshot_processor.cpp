@@ -1,6 +1,7 @@
 #include "screenshot_processor.h"
 
 #include "sentry/common_defs.h"
+#include "sentry/godot_singletons.h"
 #include "sentry/logging/print.h"
 #include "sentry/sentry_options.h"
 #include "sentry/util/screenshot.h" // TODO: incorporate
@@ -17,10 +18,6 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 	if (p_event.is_null()) {
 		sentry::logging::print_error("internal error: can't process null event");
 		return nullptr;
-	}
-
-	if (!DisplayServer::get_singleton() || DisplayServer::get_singleton()->get_name() == "headless") {
-		return p_event;
 	}
 
 	int32_t current_frame = Engine::get_singleton()->get_frames_drawn();
@@ -42,8 +39,19 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 		return p_event;
 	}
 
+	if (!sentry::godot_singletons::are_ready()) {
+		sentry::logging::print_debug("skipping screenshot – too early in the app lifecycle");
+		return p_event;
+	}
+
+	if (DisplayServer::get_singleton()->get_name() == "headless") {
+		sentry::logging::print_debug("skipping screenshot – headless mode");
+		return p_event;
+	}
+
 	if (p_event->get_level() < SentryOptions::get_singleton()->get_screenshot_level()) {
 		// This check needs to happen after we remove the outdated screenshot file from the drive.
+		sentry::logging::print_debug("skipping screenshot – screenshot level not met");
 		return p_event;
 	}
 
@@ -55,7 +63,7 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 			return p_event;
 		}
 		if (result.operator bool() == false) {
-			sentry::logging::print_debug("cancelled screenshot: before_capture_screenshot returned false");
+			sentry::logging::print_debug("skipping screenshot – before_capture_screenshot returned false");
 			return p_event;
 		}
 	}
