@@ -65,8 +65,35 @@ void JavaScriptSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 }
 
 void JavaScriptSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
-	WARN_PRINT("JavaScriptSDK::log() not implemented");
-	// TODO: Implement JavaScript SDK logging
+	// NOTE: logs are not yet supported in CDN bundle.
+
+	// ERR_FAIL_COND(_get_bridge().is_null());
+
+	// String attr_value;
+	// if (!p_attributes.is_empty()) {
+	// 	attr_value = JSON::stringify(p_attributes);
+	// }
+
+	// switch (p_level) {
+	// 	case LOG_LEVEL_TRACE: {
+	// 		_get_bridge()->call("logTrace", p_body, attr_value);
+	// 	} break;
+	// 	case LOG_LEVEL_DEBUG: {
+	// 		_get_bridge()->call("logDebug", p_body, attr_value);
+	// 	} break;
+	// 	case LOG_LEVEL_INFO: {
+	// 		_get_bridge()->call("logInfo", p_body, attr_value);
+	// 	} break;
+	// 	case LOG_LEVEL_WARN: {
+	// 		_get_bridge()->call("logWarn", p_body, attr_value);
+	// 	} break;
+	// 	case LOG_LEVEL_ERROR: {
+	// 		_get_bridge()->call("logError", p_body, attr_value);
+	// 	} break;
+	// 	case LOG_LEVEL_FATAL: {
+	// 		_get_bridge()->call("logFatal", p_body, attr_value);
+	// 	} break;
+	// }
 }
 
 String JavaScriptSDK::capture_message(const String &p_message, Level p_level) {
