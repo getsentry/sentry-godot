@@ -7,6 +7,9 @@
 - Bump Native SDK from v0.12.2 to v0.12.3 ([#470](https://github.com/getsentry/sentry-godot/pull/470))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0123)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.3)
+- Bump Sentry Android from v8.29.0 to v8.30.0 ([#473](https://github.com/getsentry/sentry-godot/pull/473))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8300)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.29.0...8.30.0)
 
 ## 1.3.0
 
