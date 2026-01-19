@@ -149,7 +149,14 @@ $CommonTestCases = @(
             $SentryEvent.contexts.godot_engine.version | Should -Not -BeNullOrEmpty
             $SentryEvent.contexts.godot_engine.version_commit | Should -Not -BeNullOrEmpty
             $SentryEvent.contexts.godot_engine.godot_sdk_version | Should -Not -BeNullOrEmpty
-            $SentryEvent.contexts.godot_performance | Should -Not -BeNullOrEmpty
+
+            if ($TestSetup.IsCocoa -and $TestType -eq "crash-capture") {
+                # Performance context is excluded from crash events on Apple platforms because crash
+                # processing occurs in a subsequent session where such data is unavailable.
+                $SentryEvent.contexts.godot_performance | Should -BeNullOrEmpty
+            } else {
+            	$SentryEvent.contexts.godot_performance | Should -Not -BeNullOrEmpty
+            }
         }
     }
 )
