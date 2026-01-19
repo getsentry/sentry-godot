@@ -224,7 +224,7 @@ void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary 
 void SentrySDK::_init_contexts() {
 	sentry::logging::print_debug("initializing contexts");
 
-	// Mark engine singletons as ready for access for context enrichment.
+	// Mark Godot engine singletons as safe to access.
 	sentry::godot_singletons::mark_as_ready();
 
 #ifdef SDK_NATIVE
