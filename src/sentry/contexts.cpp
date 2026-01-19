@@ -199,9 +199,6 @@ Dictionary make_gpu_context() {
 	Dictionary gpu_context = Dictionary();
 
 	ERR_FAIL_NULL_V(OS::get_singleton(), gpu_context);
-	// NOTE: This function should not be called from a worker thread --
-	//       RenderingServer may not be safe to access from a worker thread.
-	ERR_FAIL_COND_V(OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id(), gpu_context);
 	ERR_FAIL_NULL_V(RenderingServer::get_singleton(), gpu_context);
 
 	// Note: In headless/server mode, some of these functions return empty strings.
@@ -345,6 +342,7 @@ Dictionary make_performance_context() {
 	ERR_FAIL_NULL_V(OS::get_singleton(), perf_context);
 	ERR_FAIL_NULL_V(Engine::get_singleton(), perf_context);
 	ERR_FAIL_NULL_V(Performance::get_singleton(), perf_context);
+	ERR_FAIL_NULL_V(RenderingServer::get_singleton(), perf_context);
 
 	// * Injecting "Performance" context...
 
@@ -372,23 +370,17 @@ Dictionary make_performance_context() {
 	perf_context["object_orphan_node_count"] = Performance::get_singleton()->get_monitor(Performance::OBJECT_ORPHAN_NODE_COUNT);
 	perf_context["object_resource_count"] = Performance::get_singleton()->get_monitor(Performance::OBJECT_RESOURCE_COUNT);
 
-	bool is_main_thread = OS::get_singleton()->get_thread_caller_id() == OS::get_singleton()->get_main_thread_id();
+	// VRAM usage.
+	uint64_t video_mem_used = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_VIDEO_MEM_USED);
+	perf_context["rendering_video_mem_used"] = String::humanize_size(video_mem_used);
+	uint64_t texture_mem = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_TEXTURE_MEM_USED);
+	perf_context["rendering_texture_mem_used"] = String::humanize_size(texture_mem);
+	uint64_t buffer_mem = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_BUFFER_MEM_USED);
+	perf_context["rendering_buffer_mem_used"] = String::humanize_size(buffer_mem);
 
-	// NOTE: RenderingServer may not be safe to access from a worker thread.
-	// See https://docs.godotengine.org/en/4.5/tutorials/performance/thread_safe_apis.html
-	if (is_main_thread && RenderingServer::get_singleton()) {
-		// VRAM usage.
-		uint64_t video_mem_used = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_VIDEO_MEM_USED);
-		perf_context["rendering_video_mem_used"] = String::humanize_size(video_mem_used);
-		uint64_t texture_mem = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_TEXTURE_MEM_USED);
-		perf_context["rendering_texture_mem_used"] = String::humanize_size(texture_mem);
-		uint64_t buffer_mem = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_BUFFER_MEM_USED);
-		perf_context["rendering_buffer_mem_used"] = String::humanize_size(buffer_mem);
-
-		// Frame statistics.
-		uint64_t draw_calls = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
-		perf_context["rendering_draw_calls"] = draw_calls;
-	}
+	// Frame statistics.
+	uint64_t draw_calls = RenderingServer::get_singleton()->get_rendering_info(RenderingServer::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
+	perf_context["rendering_draw_calls"] = draw_calls;
 
 	// TODO: Collect more useful metrics: physics, navigation, audio...
 	// TODO: Q: Split into categories and make it optional?
@@ -403,7 +395,7 @@ HashMap<String, Dictionary> make_event_contexts() {
 
 	if (!sentry::godot_singletons::are_ready()) {
 		// Engine singletons may not be fully initialized yet - skip context enrichment.
-		// This can happen when processing error reports during early SDK initialization.
+		// This can happen when processing error reports early in the app lifecycle.
 		return event_contexts;
 	}
 
