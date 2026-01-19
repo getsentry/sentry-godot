@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Fix crash on iOS while sending crash reports from previous session ([#475](https://github.com/getsentry/sentry-godot/pull/475))
+- Fix crash when sending crash reports from previous session in exported iOS projects ([#475](https://github.com/getsentry/sentry-godot/pull/475))
 
 ### Dependencies
 
