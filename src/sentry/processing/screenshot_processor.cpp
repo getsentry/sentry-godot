@@ -26,7 +26,7 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 		std::lock_guard lock{ mutex };
 
 		if (current_frame == last_screenshot_frame) {
-			sentry::logging::print_debug("skipping screenshot – already taken");
+			sentry::logging::print_debug("Skipping screenshot - already processed this frame");
 			return p_event;
 		}
 
@@ -35,23 +35,29 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 	}
 
 	if (OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id()) {
-		sentry::logging::print_debug("skipping screenshot – can only be performed on the main thread");
+		sentry::logging::print_debug("Skipping screenshot - can only be performed on the main thread");
 		return p_event;
 	}
 
 	if (!sentry::godot_singletons::are_ready()) {
-		sentry::logging::print_debug("skipping screenshot – too early in the app lifecycle");
+		sentry::logging::print_debug("Skipping screenshot - too early in the app lifecycle");
 		return p_event;
 	}
 
+#if defined(SDK_COCOA) || defined(SDK_ANDROID)
+	if (p_event->is_crash()) {
+		sentry::logging::print_debug("Skipping screenshot - crash from previous session");
+		return p_event;
+	}
+#endif
+
 	if (DisplayServer::get_singleton()->get_name() == "headless") {
-		sentry::logging::print_debug("skipping screenshot – headless mode");
+		sentry::logging::print_debug("Skipping screenshot - headless mode");
 		return p_event;
 	}
 
 	if (p_event->get_level() < SentryOptions::get_singleton()->get_screenshot_level()) {
-		// This check needs to happen after we remove the outdated screenshot file from the drive.
-		sentry::logging::print_debug("skipping screenshot – screenshot level not met");
+		sentry::logging::print_debug("Skipping screenshot - screenshot level not met");
 		return p_event;
 	}
 
@@ -63,7 +69,7 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 			return p_event;
 		}
 		if (result.operator bool() == false) {
-			sentry::logging::print_debug("skipping screenshot – before_capture_screenshot returned false");
+			sentry::logging::print_debug("Skipping screenshot - before_capture_screenshot returned false");
 			return p_event;
 		}
 	}
@@ -72,7 +78,7 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 	last_screenshot_frame = current_frame;
 	mutex.unlock();
 
-	sentry::logging::print_debug("taking screenshot");
+	sentry::logging::print_debug("Taking screenshot");
 	PackedByteArray buffer = sentry::util::take_screenshot();
 
 	Ref<FileAccess> f = FileAccess::open(screenshot_path, FileAccess::WRITE);
@@ -81,7 +87,7 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 		f->flush();
 		f->close();
 	} else {
-		sentry::logging::print_error("failed to save ", screenshot_path);
+		sentry::logging::print_error("Failed to save ", screenshot_path);
 	}
 
 	return p_event;

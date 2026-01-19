@@ -13,7 +13,7 @@ class ScreenshotProcessor : public SentryEventProcessor {
 
 private:
 	String screenshot_path;
-	int32_t last_screenshot_frame = 0;
+	int32_t last_screenshot_frame = -1;
 	std::mutex mutex;
 
 protected:

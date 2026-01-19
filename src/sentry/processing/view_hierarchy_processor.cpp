@@ -22,6 +22,13 @@ Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p
 		return p_event;
 	}
 
+#if defined(SDK_COCOA) || defined(SDK_ANDROID)
+	if (p_event->is_crash()) {
+		sentry::logging::print_debug("Skipping scene tree capture - crash from previous session");
+		return p_event;
+	}
+#endif
+
 	sentry::util::UTF8Buffer json_buffer = view_hierarchy_builder.build_json();
 
 	FILE *f = std::fopen(json_file_path.ptr(), "wb");
