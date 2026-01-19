@@ -29,11 +29,11 @@ Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 	// so we skip enrichment to avoid attaching stale data from the current session.
 	// Native SDK processes crashes in the same session, so enrichment is safe.
 #if defined(SDK_COCOA) || defined(SDK_ANDROID)
-	bool enrich_crashes = false;
+	constexpr bool enrich_crashes = false;
 #else
-	bool enrich_crashes = true;
+	constexpr bool enrich_crashes = true;
 #endif
-	if (!p_event->is_crash() || enrich_crashes) {
+	if (enrich_crashes || !p_event->is_crash()) {
 		HashMap<String, Dictionary> contexts = sentry::contexts::make_event_contexts();
 		for (const auto &kv : contexts) {
 			event->merge_context(kv.key, kv.value);
