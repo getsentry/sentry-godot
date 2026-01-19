@@ -294,7 +294,12 @@ String CocoaEvent::get_exception_value(int p_index) const {
 bool CocoaEvent::is_crash() const {
 	ERR_FAIL_NULL_V(cocoa_event, false);
 
-	return cocoa_event.error != nil;
+	for (SentryException *exception in cocoa_event.exceptions) {
+		if (exception.mechanism != nil) {
+			return true;
+		}
+	}
+	return false;
 }
 
 String CocoaEvent::to_json() const {
