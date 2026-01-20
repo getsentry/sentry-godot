@@ -2,6 +2,7 @@
 
 #include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
+#include "sentry/godot_singletons.h"
 #include "sentry/sentry_options.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
@@ -196,8 +197,9 @@ Dictionary make_app_context() {
 
 Dictionary make_gpu_context() {
 	Dictionary gpu_context = Dictionary();
-	ERR_FAIL_NULL_V(RenderingServer::get_singleton(), gpu_context);
+
 	ERR_FAIL_NULL_V(OS::get_singleton(), gpu_context);
+	ERR_FAIL_NULL_V(RenderingServer::get_singleton(), gpu_context);
 
 	// Note: In headless/server mode, some of these functions return empty strings.
 	String adapter_name = RenderingServer::get_singleton()->get_video_adapter_name();
@@ -390,6 +392,13 @@ Dictionary make_performance_context() {
 
 HashMap<String, Dictionary> make_event_contexts() {
 	HashMap<String, Dictionary> event_contexts;
+
+	if (!sentry::godot_singletons::are_ready()) {
+		// Engine singletons may not be fully initialized yet - skip context enrichment.
+		// This can happen when processing error reports early in the app lifecycle.
+		return event_contexts;
+	}
+
 	event_contexts["godot_performance"] = make_performance_context();
 
 #ifdef SDK_NATIVE

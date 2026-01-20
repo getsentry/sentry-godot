@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix crash when sending crash reports from previous session in exported iOS projects ([#475](https://github.com/getsentry/sentry-godot/pull/475))
+
 ### Dependencies
 
 - Bump Native SDK from v0.12.2 to v0.12.3 ([#470](https://github.com/getsentry/sentry-godot/pull/470))
