@@ -18,6 +18,16 @@ static func get_command_argv() -> PackedStringArray:
 		var key := "arg%d" % i
 		if extras.has(key):
 			rv.append(extras[key])
+
+	# If rv contains "--", return only the subset after "--"
+	var separator_index: int = rv.find("--")
+	if separator_index != -1:
+		# Print which flags were ignored (everything before "--")
+		if separator_index > 0:
+			var ignored_flags = rv.slice(0, separator_index)
+			print("Ignoring flags passed before '--': ", ignored_flags)
+		return rv.slice(separator_index + 1)
+
 	return rv
 
 
