@@ -37,8 +37,11 @@ class SentryExperimental : public RefCounted {
 	GDCLASS(SentryExperimental, RefCounted);
 
 public:
-	SIMPLE_PROPERTY(bool, enable_logs, false);
-	SIMPLE_PROPERTY(Callable, before_send_log, Callable());
+	// DEPRECATED: The following accessors are deprecated and scheduled for removal.
+	void set_enable_logs(bool p_value);
+	bool get_enable_logs();
+	void set_before_send_log(Callable p_value);
+	Callable get_before_send_log();
 
 protected:
 	static void _bind_methods();
@@ -69,7 +72,7 @@ private:
 	String dist = "";
 	bool debug = false;
 	sentry::Level diagnostic_level = sentry::LEVEL_DEBUG;
-	String environment;
+	String environment = "{auto}";
 	double sample_rate = 1.0;
 	int max_breadcrumbs = 100;
 	bool send_default_pii = false;
@@ -78,6 +81,9 @@ private:
 	bool attach_screenshot = false;
 	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
 	bool attach_scene_tree = false;
+
+	bool enable_logs = true;
+	Callable before_send_log;
 
 	bool app_hang_tracking = false;
 	double app_hang_timeout_sec = 5.0;
@@ -126,7 +132,7 @@ public:
 	_FORCE_INLINE_ String get_dist() const { return dist; }
 
 	_FORCE_INLINE_ String get_environment() const { return environment; }
-	_FORCE_INLINE_ void set_environment(const String &p_environment) { environment = p_environment; }
+	void set_environment(const String &p_environment);
 
 	_FORCE_INLINE_ bool is_debug_enabled() const { return debug; }
 	_FORCE_INLINE_ void set_debug_enabled(bool p_enabled) { debug = p_enabled; }
@@ -154,6 +160,12 @@ public:
 
 	_FORCE_INLINE_ void set_attach_scene_tree(bool p_enable) { attach_scene_tree = p_enable; }
 	_FORCE_INLINE_ bool is_attach_scene_tree_enabled() const { return attach_scene_tree; }
+
+	_FORCE_INLINE_ bool get_enable_logs() const { return enable_logs; }
+	_FORCE_INLINE_ void set_enable_logs(bool p_enabled) { enable_logs = p_enabled; }
+
+	_FORCE_INLINE_ Callable get_before_send_log() const { return before_send_log; }
+	_FORCE_INLINE_ void set_before_send_log(const Callable &p_callback) { before_send_log = p_callback; }
 
 	_FORCE_INLINE_ bool is_app_hang_tracking_enabled() const { return app_hang_tracking; }
 	_FORCE_INLINE_ void set_app_hang_tracking(bool p_enabled) { app_hang_tracking = p_enabled; }

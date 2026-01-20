@@ -75,3 +75,6 @@ compile_commands.json
 
 # clang cache
 .cache
+
+# Local Claude Code settings that should not be committed
+.claude/settings.local.json

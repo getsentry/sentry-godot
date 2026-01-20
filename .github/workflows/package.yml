@@ -63,36 +63,24 @@ jobs:
         run: |
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/libsentry.macos.debug.framework
+            artifact/addons/sentry/bin/macos/libsentry.macos.debug.dylib
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/libsentry.macos.release.framework
+            artifact/addons/sentry/bin/macos/libsentry.macos.release.dylib
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/Sentry.framework
+            artifact/addons/sentry/bin/macos/libSentry.dylib
 
       - name: Notarize macOS binaries
         if: env.DO_CODESIGN == '1'
         run: |
           cd artifact/addons/sentry/bin/macos/
 
-          zip -r libsentry.macos.debug.zip libsentry.macos.debug.framework
+          zip -r sentry-godot-dylibs.zip libsentry.macos.debug.dylib libsentry.macos.release.dylib libSentry.dylib
           rcodesign notary-submit --wait \
             --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
-            libsentry.macos.debug.zip
-          rm libsentry.macos.debug.zip
-
-          zip -r libsentry.macos.release.zip libsentry.macos.release.framework
-          rcodesign notary-submit --wait \
-            --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
-            libsentry.macos.release.zip
-          rm libsentry.macos.release.zip
-
-          zip -r Sentry.framework.zip Sentry.framework
-          rcodesign notary-submit --wait \
-            --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
-            Sentry.framework.zip
-          rm Sentry.framework.zip
+            sentry-godot-dylibs.zip
+          rm sentry-godot-dylibs.zip
 
       - name: Prepare artifact
         shell: bash

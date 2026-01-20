@@ -341,7 +341,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 				!is_spammy_error;
 		as_breadcrumb = SentryOptions::get_singleton()->should_capture_breadcrumb((GodotErrorType)p_error_type) &&
 				!is_spammy_error;
-		as_log = SentryOptions::get_singleton()->get_experimental()->get_enable_logs() &&
+		as_log = SentryOptions::get_singleton()->get_enable_logs() &&
 				!is_spammy_error;
 
 		if (as_event) {
@@ -453,7 +453,7 @@ void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 		return;
 	}
 
-	bool as_log = SentryOptions::get_singleton()->get_experimental()->get_enable_logs();
+	bool as_log = SentryOptions::get_singleton()->get_enable_logs();
 	bool as_breadcrumb = SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled();
 
 	if (!as_log && !as_breadcrumb) {

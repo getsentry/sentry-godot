@@ -36,6 +36,14 @@ void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_
 	ProjectSettings::get_singleton()->add_property_info(info);
 }
 
+void _migrate_setting(const String &p_old_name, const String &p_new_name) {
+	if (ProjectSettings::get_singleton()->has_setting(p_old_name)) {
+		Variant value = ProjectSettings::get_singleton()->get_setting(p_old_name);
+		ProjectSettings::get_singleton()->set_setting(p_new_name, value);
+		ProjectSettings::get_singleton()->set_setting(p_old_name, Variant());
+	}
+}
+
 } // unnamed namespace
 
 namespace sentry {
@@ -51,7 +59,29 @@ void SentryLoggerLimits::_bind_methods() {
 
 // *** SentryExperimental
 
+void SentryExperimental::set_enable_logs(bool p_value) {
+	WARN_DEPRECATED_MSG("Sentry Logs are now generally available. This property is deprecated. Use SentryOptions.enable_logs instead.");
+	SentryOptions::get_singleton()->set_enable_logs(p_value);
+}
+
+bool SentryExperimental::get_enable_logs() {
+	// DEPRECATED: This accessor is deprecated and will be removed in a future version.
+	return SentryOptions::get_singleton()->get_enable_logs();
+}
+
+void SentryExperimental::set_before_send_log(Callable p_value) {
+	WARN_DEPRECATED_MSG("Sentry Logs are now generally available. This property is deprecated. Use SentryOptions.before_send_log instead.");
+	SentryOptions::get_singleton()->set_before_send_log(p_value);
+}
+
+Callable SentryExperimental::get_before_send_log() {
+	// DEPRECATED: This accessor is deprecated and will be removed in a future version.
+	return SentryOptions::get_singleton()->get_before_send_log();
+}
+
 void SentryExperimental::_bind_methods() {
+	// DEPRECATED: These properties are deprecated and remain for compatibility reasons.
+	// TODO: Remove these after June 2026 or in version 2.0.
 	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::BOOL, enable_logs);
 	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::CALLABLE, before_send_log);
 }
@@ -64,12 +94,16 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
+	// Migrate renamed project settings to their new locations
+	_migrate_setting("sentry/experimental/enable_logs", "sentry/options/enable_logs");
+
 	_define_setting("sentry/options/auto_init", p_options->auto_init);
 	_define_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
 
 	_define_setting("sentry/options/dsn", p_options->dsn);
 	_define_setting("sentry/options/release", p_options->release, false);
 	_define_setting("sentry/options/dist", p_options->dist, false);
+	_define_setting("sentry/options/environment", p_options->environment, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
 	_define_setting(sentry::make_level_enum_property("sentry/options/diagnostic_level"), p_options->diagnostic_level);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate, false);
@@ -78,6 +112,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/options/attach_log", p_options->attach_log, false);
 	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
+
+	_define_setting("sentry/options/enable_logs", p_options->enable_logs, false);
 
 	_define_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking, false);
 	_define_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec, false);
@@ -97,7 +133,6 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/experimental/screenshot_level"), p_options->screenshot_level, false);
-	_define_setting("sentry/experimental/enable_logs", p_options->get_experimental()->enable_logs, false);
 }
 
 void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) {
@@ -110,6 +145,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
 	p_options->set_release(ProjectSettings::get_singleton()->get_setting("sentry/options/release", p_options->release));
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/options/dist", p_options->dist);
+	p_options->set_environment(ProjectSettings::get_singleton()->get_setting("sentry/options/environment", p_options->environment));
 
 	// DebugMode is only used to represent the debug option in the project settings.
 	// The user may also set the `debug` option explicitly in a configuration callback.
@@ -123,6 +159,8 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
 	p_options->attach_scene_tree = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
+
+	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/options/enable_logs", p_options->enable_logs);
 
 	p_options->app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking);
 	p_options->app_hang_timeout_sec = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec);
@@ -141,7 +179,6 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/experimental/screenshot_level", p_options->screenshot_level);
-	p_options->get_experimental()->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/experimental/enable_logs", p_options->get_experimental()->enable_logs);
 }
 
 void SentryOptions::_init_debug_option(DebugMode p_mode) {
@@ -183,6 +220,10 @@ void SentryOptions::set_release(const String &p_release) {
 	release = p_release.format(format_params);
 }
 
+void SentryOptions::set_environment(const String &p_environment) {
+	environment = p_environment.replace("{auto}", environment::detect_godot_environment());
+}
+
 void SentryOptions::add_event_processor(const Ref<SentryEventProcessor> &p_processor) {
 	ERR_FAIL_COND(p_processor.is_null());
 	event_processors.push_back(p_processor);
@@ -208,6 +249,9 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_screenshot"), set_attach_screenshot, is_attach_screenshot_enabled);
 	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("screenshot_level"), set_screenshot_level, get_screenshot_level);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_scene_tree"), set_attach_scene_tree, is_attach_scene_tree_enabled);
+
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_logs"), set_enable_logs, get_enable_logs);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_log"), set_before_send_log, get_before_send_log);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), set_app_hang_tracking, is_app_hang_tracking_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), set_app_hang_timeout_sec, get_app_hang_timeout_sec);
@@ -239,7 +283,6 @@ SentryOptions::SentryOptions() {
 	logger_limits.instantiate();
 	experimental.instantiate();
 
-	environment = sentry::environment::detect_godot_environment();
 	_init_debug_option(DEBUG_DEFAULT);
 }
 

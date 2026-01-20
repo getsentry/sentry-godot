@@ -251,14 +251,14 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 	optionsData["environment"] = SentryOptions::get_singleton()->get_environment();
 	optionsData["sample_rate"] = SentryOptions::get_singleton()->get_sample_rate();
 	optionsData["max_breadcrumbs"] = SentryOptions::get_singleton()->get_max_breadcrumbs();
-	optionsData["enable_logs"] = SentryOptions::get_singleton()->get_experimental()->get_enable_logs();
+	optionsData["enable_logs"] = SentryOptions::get_singleton()->get_enable_logs();
 	optionsData["app_hang_tracking"] = SentryOptions::get_singleton()->is_app_hang_tracking_enabled();
 	optionsData["app_hang_timeout_sec"] = SentryOptions::get_singleton()->get_app_hang_timeout_sec();
 
 	android_plugin->call(ANDROID_SN(init),
 			optionsData,
 			before_send_handler->get_instance_id(),
-			SentryOptions::get_singleton()->get_experimental()->before_send_log.is_valid() ? before_send_log_handler->get_instance_id() : 0);
+			SentryOptions::get_singleton()->get_before_send_log().is_valid() ? before_send_log_handler->get_instance_id() : 0);
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());

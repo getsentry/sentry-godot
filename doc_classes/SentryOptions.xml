@@ -53,6 +53,20 @@
 			[/codeblock]
 			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/filtering/]Filtering documentation[/url]. Also, check out [url=https://docs.sentry.io/platforms/godot/data-management/sensitive-data/]Scrubbing Sensitive Data[/url].
 		</member>
+		<member name="before_send_log" type="Callable" setter="set_before_send_log" getter="get_before_send_log" default="Callable()">
+			If assigned, this callback will be called before sending a log message to Sentry. It can be used to modify the log message or prevent it from being sent.
+			[codeblock]
+			func _before_send_log(log_entry: SentryLog) -&gt; SentryLog:
+				# Filter junk.
+				if log_entry.body == "Junk message":
+					return null
+				# Remove sensitive information from log messages.
+				log_entry.body = log_entry.body.replace("Bruno", "REDACTED")
+				# Add custom attributes.
+				log_entry.set_attribute("current_scene", current_scene.name)
+				return log_entry
+			[/codeblock]
+		</member>
 		<member name="debug" type="bool" setter="set_debug_enabled" getter="is_debug_enabled" default="true">
 			If [code]true[/code], the SDK will print useful debugging information to standard output. These messages do not appear in the Godot console but can be seen when launching Godot from a terminal.
 			You can control the verbosity using the [member diagnostic_level] option.
@@ -66,8 +80,13 @@
 		<member name="dsn" type="String" setter="set_dsn" getter="get_dsn" default="&quot;&quot;">
 			Data Source Name (DSN): Specifies where the SDK should send the events. If this value is not provided, the SDK will try to read it from the [code]SENTRY_DSN[/code] environment variable. If that variable also does not exist, the SDK will just not send any events.
 		</member>
-		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;editor_dev&quot;">
+		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="true">
+			Enables Sentry's structured logging functionality. When enabled, you gain access to dedicated logging APIs through [member SentrySDK.logger], and Godot's built-in log messages are automatically captured and sent to Sentry Logs.
+			Use [member logger_enabled] and other [code]logger_*[/code] options to control how Godot's error messages and log output (including [code]print()[/code] statements) are captured and processed by Sentry.
+		</member>
+		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;{auto}&quot;">
 			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a configuration callback using manual initialization (see [method SentrySDK.init]).
+			This option defaults to [code]{auto}[/code], which automatically detects the environment based on the current runtime context and sets it to one of the following values: [code]editor_dev[/code], [code]editor_dev_run[/code], [code]export_debug[/code], [code]export_release[/code], or [code]dedicated_server[/code].
 			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/environments/]Environments documentation[/url].
 		</member>
 		<member name="experimental" type="SentryExperimental" setter="" getter="get_experimental">
@@ -77,7 +96,7 @@
 			Specifies the types of errors captured as breadcrumbs. Accepts a single value or a bitwise combination of [enum GodotErrorMask] masks.
 		</member>
 		<member name="logger_enabled" type="bool" setter="set_logger_enabled" getter="is_logger_enabled" default="true">
-			If [code]true[/code], the SDK will capture logged errors as events and/or breadcrumbs, as defined by [member logger_event_mask] and [member logger_breadcrumb_mask]. Crashes are always captured.
+			If [code]true[/code], the SDK will capture logged errors as events, logs and/or breadcrumbs, as defined by [member logger_event_mask] and [member logger_breadcrumb_mask]. Crashes are always captured. See also [member enable_logs].
 		</member>
 		<member name="logger_event_mask" type="int" setter="set_logger_event_mask" getter="get_logger_event_mask" enum="SentryOptions.GodotErrorMask" is_bitfield="true" default="13">
 			Specifies the types of errors captured as events. Accepts a single value or a bitwise combination of [enum GodotErrorMask] masks.
