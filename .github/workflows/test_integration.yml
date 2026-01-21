@@ -80,7 +80,7 @@ jobs:
         run: |
           mkdir -p "$(dirname "${{github.workspace}}/${{matrix.test-executable}}")"
 
-          # Export is expected to fail, because Godot will try to build Xcode project.
+          # TODO: Export fails because Godot attempts to build the Xcode project, which requires a certificate and provisioning profile.
           "${GODOT}" --verbose --headless --disable-crash-handler --path project --export-debug "iOS Tests" "${{github.workspace}}/${{matrix.test-executable}}" || true
 
       - name: Run integration tests
