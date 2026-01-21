@@ -9,7 +9,7 @@ platform :ios do
     setup_ci if is_ci
 
     sync_code_signing(
-      type: "developer_id",
+      type: "development",
       readonly: true,
       app_identifier: [CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)],
     )
