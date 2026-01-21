@@ -263,7 +263,7 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
 
-		options.experimental.enableLogs = SentryOptions::get_singleton()->get_experimental()->get_enable_logs();
+		options.experimental.enableLogs = SentryOptions::get_singleton()->get_enable_logs();
 
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments
@@ -308,7 +308,7 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 			}
 		};
 
-		if (SentryOptions::get_singleton()->get_experimental()->before_send_log.is_valid()) {
+		if (SentryOptions::get_singleton()->get_before_send_log().is_valid()) {
 			options.beforeSendLog = ^objc::SentryLog *(objc::SentryLog *log) {
 				Ref<CocoaLog> log_obj = memnew(CocoaLog(log));
 				Ref<CocoaLog> processed = sentry::process_log(log_obj);

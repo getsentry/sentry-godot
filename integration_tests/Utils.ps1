@@ -28,7 +28,12 @@ function script:ConvertTo-AndroidExtras {
     $extras = @()
     for ($i = 0; $i -lt $Arguments.Count; $i++) {
         $arg = $Arguments[$i]
-        $extras += @("--es", "arg$i", "`"$arg`"")
+        if (-not ($arg[0] -eq '"' -and $arg[-1] -eq '"')) {
+            $arg = "$arg" -replace '"', '\"'
+            $arg = "`"$arg`""
+        }
+
+        $extras += @("--es", "arg$i", $arg)
     }
 
     return $extras

@@ -33,7 +33,7 @@ BeforeAll {
         )
 
         # ACT: Run test action in application on device
-        Write-Debug "Running $Action..."
+        Write-Host "Running $Action..."
 
         $args = $script:TestSetup.Args + @($Action) + $AdditionalArgs
         $execPath = $script:TestSetup.Executable
@@ -59,7 +59,7 @@ BeforeAll {
             ($Action -eq "crash-capture" -or $runResult.ExitCode -ne 0) -and
                 $script:TestSetup.Platform -in @("macOS", "Local", "Adb", "AndroidSauceLabs", "iOSSauceLabs")
         ) {
-            Write-Debug "Running crash-send to ensure crash report is sent..."
+            Write-Host "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
 
             $args = $script:TestSetup.Args + @("crash-send")
@@ -88,6 +88,8 @@ BeforeAll {
         Platform = $env:SENTRY_TEST_PLATFORM
         AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
         IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
+        IsCocoa = ($env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
+            (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS))
         iOSBundleId = "io.sentry.godot.project"
         iOSApplicationLogFile = "@io.sentry.godot.project:documents/logs/godot.log"
     }
@@ -156,8 +158,6 @@ Describe "Platform Integration Tests" {
 
     Context "Crash Capture" {
         BeforeAll {
-            Write-Host "Testing crash-capture..."
-
             $runResult = Invoke-TestAction -Action "crash-capture"
 
             $eventId = Get-EventIds -appOutput $runResult.Output -expectedCount 1
@@ -242,7 +242,7 @@ Describe "Platform Integration Tests" {
         BeforeAll {
             $script:TEST_MESSAGE = "TestMessage"
 
-            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @($TEST_MESSAGE)
+            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("$TEST_MESSAGE")
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
             if ($eventId) {

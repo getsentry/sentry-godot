@@ -2,8 +2,37 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix crash when sending crash reports from previous session in exported iOS projects ([#475](https://github.com/getsentry/sentry-godot/pull/475))
+
+### Dependencies
+
+- Bump Native SDK from v0.12.2 to v0.12.3 ([#470](https://github.com/getsentry/sentry-godot/pull/470))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0123)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.3)
+
+## 1.3.0
+
 ### Features
 
+- Add `environment` option to project settings ([#469](https://github.com/getsentry/sentry-godot/pull/469))
+
+### Improvements
+
+- Switched from shipping frameworks to dylibs on macOS to avoid Windows symlink issues and prevent TestFlight rejections caused by malformed framework bundles ([#468](https://github.com/getsentry/sentry-godot/pull/468))
+
+### Dependencies
+
+- Bump Sentry Android from v8.28.0 to v8.29.0 ([#465](https://github.com/getsentry/sentry-godot/pull/465))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8290)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.28.0...8.29.0)
+
+## 1.2.0
+
+### Features
+
+- Structured Logs are now generally available and enabled by default ([#460](https://github.com/getsentry/sentry-godot/pull/460))
 - String interpolation and custom attributes support in structured logging API ([#435](https://github.com/getsentry/sentry-godot/pull/435))
 
 ### Fixes
@@ -13,9 +42,9 @@
 
 ### Dependencies
 
-- Bump Sentry Android from v8.25.0 to v8.27.1 ([#444](https://github.com/getsentry/sentry-godot/pull/444), [#452](https://github.com/getsentry/sentry-godot/pull/452))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8271)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.25.0...8.27.1)
+- Bump Sentry Android from v8.25.0 to v8.28.0 ([#444](https://github.com/getsentry/sentry-godot/pull/444), [#452](https://github.com/getsentry/sentry-godot/pull/452), [#458](https://github.com/getsentry/sentry-godot/pull/458))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8280)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.25.0...8.28.0)
 - Bump Cocoa SDK from v8.57.2 to v8.57.3 ([#448](https://github.com/getsentry/sentry-godot/pull/448))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8573)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.2...8.57.3)
