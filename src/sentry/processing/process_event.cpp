@@ -16,18 +16,28 @@ namespace sentry {
 
 Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 	if (p_event.is_null()) {
-		sentry::logging::print_error("attempted to process a null event");
+		sentry::logging::print_error("Attempted to process a null event");
 		return nullptr;
 	}
 
-	sentry::logging::print_debug("processing event ", p_event->get_id());
+	sentry::logging::print_debug("Processing event ", p_event->get_id());
 
 	Ref<SentryEvent> event = p_event;
 
-	// Inject contexts
-	HashMap<String, Dictionary> contexts = sentry::contexts::make_event_contexts();
-	for (const auto &kv : contexts) {
-		event->merge_context(kv.key, kv.value);
+	// Inject contexts.
+	// NOTE: On Cocoa/Android, crash reports are processed after app restart,
+	// so we skip enrichment to avoid attaching stale data from the current session.
+	// Native SDK processes crashes in the same session, so enrichment is safe.
+#if defined(SDK_COCOA) || defined(SDK_ANDROID)
+	constexpr bool enrich_crashes = false;
+#else
+	constexpr bool enrich_crashes = true;
+#endif
+	if (enrich_crashes || !p_event->is_crash()) {
+		HashMap<String, Dictionary> contexts = sentry::contexts::make_event_contexts();
+		for (const auto &kv : contexts) {
+			event->merge_context(kv.key, kv.value);
+		}
 	}
 
 	// Event processors
@@ -36,7 +46,7 @@ Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 		if (event.is_null()) {
 			return event;
 		} else if (event != p_event) {
-			sentry::logging::print_error("event processor returned a different event object – discarding processor result");
+			sentry::logging::print_error("Event processor returned a different event object – discarding processor result");
 			event = p_event; // Reset to original event
 		}
 	}

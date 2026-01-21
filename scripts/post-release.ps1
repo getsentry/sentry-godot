@@ -27,7 +27,7 @@ if ($newVersion -match '^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?<status>.*
 
     $nextVersion = "$major.$minor.$patch$status"
 
-    & 'pwsh.\scripts\bump-version.ps1' -prevVersion $newVersion -newVersion $nextVersion
+    & 'pwsh.\scripts\bump-version.ps1' -oldVersion $newVersion -newVersion $nextVersion
 
     git diff --quiet
     if ($LASTEXITCODE -ne 0) {

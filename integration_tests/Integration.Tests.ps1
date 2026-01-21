@@ -29,21 +29,26 @@ BeforeAll {
         param (
             [Parameter(Mandatory=$true)]
             [string]$Action,
-            [string]$AdditionalArgs = ""
+            [string[]]$AdditionalArgs = @()
         )
 
         # ACT: Run test action in application on device
-        Write-Debug "Running $Action..."
-        $arguments = $script:TestSetup.Args + " $Action $AdditionalArgs"
+        Write-Host "Running $Action..."
+
+        $args = $script:TestSetup.Args + @($Action) + $AdditionalArgs
         $execPath = $script:TestSetup.Executable
 
         # Convert arguments to Android extras if necessary
         if ($script:TestSetup.IsAndroid) {
-            $arguments = ConvertTo-AndroidExtras -Arguments $arguments
+            $args = ConvertTo-AndroidExtras -Argument $args
             $execPath = $script:TestSetup.AndroidComponent
+        } elseif ($script:TestSetup.Platform -match "iOS") {
+            $execPath = $script:TestSetup.iOSBundleId
         }
 
-        $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
+        # Use log file override for iOS SauceLabs, null for other providers (fallback to system logs)
+        $logFilePath = if ($script:TestSetup.Platform -eq "iOSSauceLabs") { $script:TestSetup.iOSApplicationLogFile } else { $null }
+        $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $args -LogFilePath $logFilePath
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
@@ -52,15 +57,18 @@ BeforeAll {
         # NOTE: On Cocoa & Android, crashes are sent during the next app launch.
         if (
             ($Action -eq "crash-capture" -or $runResult.ExitCode -ne 0) -and
-                $script:TestSetup.Platform -in @("macOS", "Local", "Adb", "AndroidSauceLabs")
+                $script:TestSetup.Platform -in @("macOS", "Local", "Adb", "AndroidSauceLabs", "iOSSauceLabs")
         ) {
-            Write-Debug "Running crash-send to ensure crash report is sent..."
+            Write-Host "Running crash-send to ensure crash report is sent..."
             Write-GitHub "::group::Log of crash-send"
-            $arguments = ($script:TestSetup.Args + " crash-send")
+
+            $args = $script:TestSetup.Args + @("crash-send")
+
             if ($script:TestSetup.IsAndroid) {
-                $arguments = ConvertTo-AndroidExtras -Arguments $arguments
+                $args = ConvertTo-AndroidExtras -Arguments $args
             }
-            Invoke-DeviceApp -ExecutablePath $execPath -Arguments $arguments
+
+            Invoke-DeviceApp -ExecutablePath $execPath -Arguments $args -LogFilePath $logFilePath
             Write-GitHub "::endgroup::"
         }
 
@@ -74,12 +82,16 @@ BeforeAll {
     # Initialize test parameters object
     $script:TestSetup = [PSCustomObject]@{
         Executable = $env:SENTRY_TEST_EXECUTABLE
-        Args = $env:SENTRY_TEST_ARGS
+        Args = @()
         Dsn = $env:SENTRY_TEST_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
         Platform = $env:SENTRY_TEST_PLATFORM
         AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
         IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
+        IsCocoa = ($env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
+            (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS))
+        iOSBundleId = "io.sentry.godot.project"
+        iOSApplicationLogFile = "@io.sentry.godot.project:documents/logs/godot.log"
     }
 
     # Check executable and arguments
@@ -87,7 +99,9 @@ BeforeAll {
         Write-Warning "SENTRY_TEST_EXECUTABLE environment variable is not set. Defaulting to env:GODOT."
         $script:TestSetup.Executable = $env:GODOT
         # For running with Godot binary, we need to add these flags...
-        $script:TestSetup.Args += " --disable-crash-handler --headless --path project --"
+        $script:TestSetup.Args += @("--disable-crash-handler", "--headless", "--path", "project", "--")
+    } else {
+        $script:TestSetup.Args += @("--")
     }
     # Validate executable
     if (-not (Test-Path $script:TestSetup.Executable)) {
@@ -144,8 +158,6 @@ Describe "Platform Integration Tests" {
 
     Context "Crash Capture" {
         BeforeAll {
-            Write-Host "Testing crash-capture..."
-
             $runResult = Invoke-TestAction -Action "crash-capture"
 
             $eventId = Get-EventIds -appOutput $runResult.Output -expectedCount 1
@@ -230,11 +242,11 @@ Describe "Platform Integration Tests" {
         BeforeAll {
             $script:TEST_MESSAGE = "TestMessage"
 
-            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs "`"$TEST_MESSAGE`""
+            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("$TEST_MESSAGE")
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
             if ($eventId) {
-               	Write-GitHub "::group::Getting event content"
+                Write-GitHub "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
                 Write-GitHub "::endgroup::"
             }
