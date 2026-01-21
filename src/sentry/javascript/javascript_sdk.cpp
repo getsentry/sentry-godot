@@ -102,9 +102,8 @@ String JavaScriptSDK::capture_message(const String &p_message, Level p_level) {
 }
 
 String JavaScriptSDK::get_last_event_id() {
-	WARN_PRINT("JavaScriptSDK::get_last_event_id() not implemented");
-	// TODO: Implement JavaScript SDK last event ID retrieval
-	return String();
+	ERR_FAIL_COND_V(_get_bridge().is_null(), String());
+	return _get_bridge()->call("lastEventId");
 }
 
 Ref<SentryEvent> JavaScriptSDK::create_event() {

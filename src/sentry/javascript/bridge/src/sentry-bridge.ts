@@ -39,6 +39,7 @@ interface SentryBridge {
 	logFatal(message: string, attributesJson?: string): void;
 	captureMessage(message: string): string;
 	captureError(message: string, stacktraceJson?: string): string;
+	lastEventId(): string;
 }
 
 // Utility Functions
@@ -254,6 +255,10 @@ class SentryBridgeImpl implements SentryBridge {
 			console.error("Failed to capture event:", error);
 			return "";
 		}
+	}
+
+	lastEventId(): string {
+		return Sentry.lastEventId() || "";
 	}
 }
 
