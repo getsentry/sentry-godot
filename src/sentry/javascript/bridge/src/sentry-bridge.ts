@@ -1,5 +1,6 @@
 // Type Definitions
 import * as Sentry from "@sentry/browser";
+import type { Breadcrumb } from "@sentry/browser";
 
 interface SentryEvent {
 	message?: string;
@@ -41,6 +42,7 @@ interface SentryBridge {
 	captureMessage(message: string): string;
 	captureError(message: string, stacktraceJson?: string): string;
 	lastEventId(): string;
+	addBreadcrumb(dataJson: string): void;
 }
 
 // Utility Functions
@@ -270,6 +272,18 @@ class SentryBridgeImpl implements SentryBridge {
 	 */
 	lastEventId(): string {
 		return Sentry.lastEventId() || "";
+	}
+
+	/**
+	 * Add breadcrumb
+	 */
+	addBreadcrumb(dataJson: string): void {
+		try {
+			const breadcrumb = safeParseJSON<Breadcrumb>(dataJson || "", {});
+			Sentry.addBreadcrumb(breadcrumb);
+		} catch (error) {
+			console.error("Failed to add breadcrumb:", error);
+		}
 	}
 }
 

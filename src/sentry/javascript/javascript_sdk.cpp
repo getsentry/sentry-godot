@@ -1,5 +1,6 @@
 #include "javascript_sdk.h"
 
+#include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/sentry_options.h"
 
 #include <godot_cpp/classes/java_script_bridge.hpp>
@@ -55,14 +56,17 @@ void JavaScriptSDK::remove_user() {
 }
 
 Ref<SentryBreadcrumb> JavaScriptSDK::create_breadcrumb() {
-	WARN_PRINT("JavaScriptSDK::create_breadcrumb() not implemented");
-	// TODO: Implement JavaScript SDK breadcrumb creation
-	return Ref<SentryBreadcrumb>();
+	return memnew(JavaScriptBreadcrumb);
 }
 
 void JavaScriptSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
-	WARN_PRINT("JavaScriptSDK::add_breadcrumb() not implemented");
-	// TODO: Implement JavaScript SDK breadcrumb addition
+	ERR_FAIL_COND(_get_bridge().is_null());
+	if (p_breadcrumb.is_null()) {
+		return;
+	}
+	JavaScriptBreadcrumb *crumb = Object::cast_to<JavaScriptBreadcrumb>(p_breadcrumb.ptr());
+	ERR_FAIL_NULL(crumb);
+	_get_bridge()->call("addBreadcrumb", crumb->to_json());
 }
 
 void JavaScriptSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {

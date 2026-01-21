@@ -38,6 +38,10 @@
 #include "sentry/cocoa/cocoa_log.h"
 #endif // SDK_COCOA
 
+#ifdef SDK_JAVASCRIPT
+#include "sentry/javascript/javascript_breadcrumb.h"
+#endif
+
 #ifdef TOOLS_ENABLED
 #include "editor/sentry_editor_export_plugin_android.h"
 #include "editor/sentry_editor_export_plugin_unix.h"
@@ -87,6 +91,10 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaEvent);
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaLog);
+#endif
+
+#ifdef SDK_JAVASCRIPT
+	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBreadcrumb);
 #endif
 }
 
