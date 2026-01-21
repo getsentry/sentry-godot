@@ -24,6 +24,7 @@ interface SentryBridge {
 		maxBreadcrumbs?: number,
 		enableLogs?: boolean,
 	): void;
+	close(): void;
 	isEnabled(): boolean;
 	setContext(key: string, valueJson: string): void;
 	removeContext(key: string): void;
@@ -115,6 +116,13 @@ class SentryBridgeImpl implements SentryBridge {
 		};
 
 		Sentry.init(options);
+	}
+
+	/**
+	 * Close Sentry
+	 */
+	close(): void {
+		Sentry.close();
 	}
 
 	/**
@@ -257,6 +265,9 @@ class SentryBridgeImpl implements SentryBridge {
 		}
 	}
 
+	/**
+	 * Get last event ID
+	 */
 	lastEventId(): string {
 		return Sentry.lastEventId() || "";
 	}

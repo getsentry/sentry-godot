@@ -50,6 +50,7 @@ void JavaScriptSDK::set_user(const Ref<SentryUser> &p_user) {
 }
 
 void JavaScriptSDK::remove_user() {
+	ERR_FAIL_COND(_get_bridge().is_null());
 	_get_bridge()->call("removeUser");
 }
 
@@ -141,8 +142,8 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 }
 
 void JavaScriptSDK::close() {
-	WARN_PRINT("JavaScriptSDK::close() not implemented");
-	// TODO: Implement JavaScript SDK shutdown
+	ERR_FAIL_COND(_get_bridge().is_null());
+	_get_bridge()->call("close");
 }
 
 bool JavaScriptSDK::is_enabled() const {
