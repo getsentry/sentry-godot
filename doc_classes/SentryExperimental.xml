@@ -24,7 +24,7 @@
 				return log_entry
 			[/codeblock]
 		</member>
-		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="true" deprecated="Logs are now generally available. Use [member SentryOptions.enable_logs] instead.">
+		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="false" deprecated="Logs are now generally available. Use [member SentryOptions.enable_logs] instead.">
 			Enables Sentry structured logging functionality. When enabled, Godot's log messages are automatically captured and sent to Sentry, and you gain access to the dedicated logging APIs available through [member SentrySDK.logger].
 		</member>
 	</members>

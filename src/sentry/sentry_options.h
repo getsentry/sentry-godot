@@ -82,7 +82,7 @@ private:
 	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
 	bool attach_scene_tree = false;
 
-	bool enable_logs = true;
+	bool enable_logs = false;
 	Callable before_send_log;
 
 	bool app_hang_tracking = false;

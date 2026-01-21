@@ -80,9 +80,10 @@
 		<member name="dsn" type="String" setter="set_dsn" getter="get_dsn" default="&quot;&quot;">
 			Data Source Name (DSN): Specifies where the SDK should send the events. If this value is not provided, the SDK will try to read it from the [code]SENTRY_DSN[/code] environment variable. If that variable also does not exist, the SDK will just not send any events.
 		</member>
-		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="true">
+		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="false">
 			Enables Sentry's structured logging functionality. When enabled, you gain access to dedicated logging APIs through [member SentrySDK.logger], and Godot's built-in log messages are automatically captured and sent to Sentry Logs.
 			Use [member logger_enabled] and other [code]logger_*[/code] options to control how Godot's error messages and log output (including [code]print()[/code] statements) are captured and processed by Sentry.
+			For more information, see [url=https://docs.sentry.io/platforms/godot/logs/]Sentry Logs[/url] documentation.
 		</member>
 		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;{auto}&quot;">
 			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a configuration callback using manual initialization (see [method SentrySDK.init]).
