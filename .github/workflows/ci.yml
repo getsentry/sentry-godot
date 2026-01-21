@@ -57,6 +57,9 @@ jobs:
       APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
       APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
       APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+      FASTLANE_KEYCHAIN_PASSWORD: ${{ secrets.FASTLANE_KEYCHAIN_PASSWORD }}
+      MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
 
   # Deleting "sentry-godot-gdextension" artifact due to broken file permissions.
   # This encourages using the artifact from the "package" job instead which has correct permissions.
