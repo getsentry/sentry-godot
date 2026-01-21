@@ -1,0 +1,9 @@
+# Matchfile
+# See docs at https://docs.fastlane.tools/actions/match
+
+git_url("git@github.com:getsentry/codesigning.git")
+storage_mode("git")
+username("bot@getsentry.com") # Your Apple Developer Portal username
+
+shallow_clone(true)
+readonly(true)
