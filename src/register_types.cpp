@@ -1,4 +1,3 @@
-#include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_plugin.h"
 #include "sentry/disabled/disabled_event.h"
 #include "sentry/logging/sentry_godot_logger.h"
@@ -41,6 +40,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/sentry_editor_export_plugin_android.h"
+#include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_export_plugin_web.h"
 #include "editor/sentry_editor_plugin.h"
 #include <godot_cpp/classes/editor_plugin_registration.hpp>

@@ -29,6 +29,7 @@ void SentryEditorPlugin::_notification(int p_what) {
 			}
 			add_export_plugin(web_export_plugin);
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			if (android_export_plugin.is_valid()) {
 				remove_export_plugin(android_export_plugin);
