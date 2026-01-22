@@ -10,7 +10,7 @@
 namespace {
 
 // Get or create an object property in the JS object, returning it.
-inline Ref<JavaScriptObject> js_obj_get_or_create_object_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property) {
+Ref<JavaScriptObject> js_obj_get_or_create_object_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property) {
 	Ref<JavaScriptObject> prop_obj = p_object->get(p_property);
 	if (prop_obj.is_null()) {
 		prop_obj = JavaScriptBridge::get_singleton()->create_object("Object");
@@ -20,7 +20,7 @@ inline Ref<JavaScriptObject> js_obj_get_or_create_object_property(const Ref<Java
 }
 
 // Get or create an array property in the JS object, returning it.
-inline Ref<JavaScriptObject> js_obj_get_or_create_array_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property) {
+Ref<JavaScriptObject> js_obj_get_or_create_array_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property) {
 	Ref<JavaScriptObject> prop_obj = p_object->get(p_property);
 	if (prop_obj.is_null()) {
 		prop_obj = JavaScriptBridge::get_singleton()->create_object("Array");
