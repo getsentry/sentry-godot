@@ -1,17 +1,10 @@
 // Type Definitions
 import * as Sentry from "@sentry/browser";
-import type { Breadcrumb } from "@sentry/browser";
+import type { Breadcrumb, User } from "@sentry/browser";
 
 interface SentryEvent {
 	message?: string;
 	stacktrace?: any;
-}
-
-interface User {
-	id?: string;
-	username?: string;
-	email?: string;
-	ip_address?: string;
 }
 
 interface SentryBridge {
