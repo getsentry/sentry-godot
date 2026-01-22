@@ -221,7 +221,13 @@ void JavaScriptEvent::add_exception(const Exception &p_exception) {
 
 int JavaScriptEvent::get_exception_count() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), 0);
-	WARN_PRINT("Not implemented");
+	Ref<JavaScriptObject> exception_obj = js_obj->get("exception");
+	if (exception_obj.is_valid()) {
+		Ref<JavaScriptObject> values_arr = exception_obj->get("values");
+		if (values_arr.is_valid()) {
+			return values_arr->get("length");
+		}
+	}
 	return 0;
 }
 
