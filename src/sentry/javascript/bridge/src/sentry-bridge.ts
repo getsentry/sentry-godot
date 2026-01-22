@@ -39,6 +39,7 @@ interface SentryBridge {
 	addBreadcrumb(crumb: Breadcrumb): void;
 	mergeJsonIntoObject(target: object, jsonString: string): void;
 	pushJsonToArray(target: any[], jsonString: string): void;
+	objectToJson(obj: object): string;
 }
 
 // Utility Functions
@@ -308,6 +309,18 @@ class SentryBridgeImpl implements SentryBridge {
 		const item = safeParseJSON(jsonString, null);
 		if (item !== null) {
 			target.push(item);
+		}
+	}
+
+	/**
+	 * Convert object to JSON string
+	 */
+	objectToJson(obj: object): string {
+		try {
+			return JSON.stringify(obj);
+		} catch (error) {
+			console.error("Failed to stringify object:", error);
+			return "{}";
 		}
 	}
 }

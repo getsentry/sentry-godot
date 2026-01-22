@@ -294,8 +294,7 @@ bool JavaScriptEvent::is_crash() const {
 
 String JavaScriptEvent::to_json() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	WARN_PRINT("Not implemented");
-	return String();
+	return js_object_to_json(js_obj);
 }
 
 JavaScriptEvent::JavaScriptEvent() {

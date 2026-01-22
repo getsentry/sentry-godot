@@ -19,4 +19,11 @@ void js_push_json_to_array(const Ref<JavaScriptObject> &p_array, const String &p
 	bridge->call("pushJsonToArray", p_array, p_json);
 }
 
+String js_object_to_json(const Ref<JavaScriptObject> &p_object) {
+	ERR_FAIL_COND_V(p_object.is_null(), String());
+	Ref<JavaScriptObject> bridge = JavaScriptBridge::get_singleton()->get_interface("SentryBridge");
+	ERR_FAIL_COND_V(bridge.is_null(), String());
+	return bridge->call("objectToJson", p_object);
+}
+
 } // namespace sentry::javascript
