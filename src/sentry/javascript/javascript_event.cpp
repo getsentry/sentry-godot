@@ -263,8 +263,28 @@ void JavaScriptEvent::set_exception_value(int p_index, const String &p_value) {
 
 String JavaScriptEvent::get_exception_value(int p_index) const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	WARN_PRINT("Not implemented");
-	return String();
+
+	Ref<JavaScriptObject> exception_obj = js_obj->get("exception");
+	if (exception_obj.is_null()) {
+		return String();
+	}
+
+	Ref<JavaScriptObject> values_arr = exception_obj->get("values");
+	if (values_arr.is_null()) {
+		return String();
+	}
+
+	int length = values_arr->get("length");
+	if (p_index < 0 || p_index >= length) {
+		return String();
+	}
+
+	Ref<JavaScriptObject> exc_obj = values_arr->get(String::num_int64(p_index));
+	if (exc_obj.is_null()) {
+		return String();
+	}
+
+	return exc_obj->get("value");
 }
 
 bool JavaScriptEvent::is_crash() const {
