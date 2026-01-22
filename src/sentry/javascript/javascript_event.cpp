@@ -290,7 +290,6 @@ String JavaScriptEvent::get_exception_value(int p_index) const {
 }
 
 bool JavaScriptEvent::is_crash() const {
-	WARN_PRINT("Not implemented");
 	return false;
 }
 
