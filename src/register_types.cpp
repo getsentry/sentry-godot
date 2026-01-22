@@ -40,6 +40,7 @@
 
 #ifdef SDK_JAVASCRIPT
 #include "sentry/javascript/javascript_breadcrumb.h"
+#include "sentry/javascript/javascript_event.h"
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -94,6 +95,7 @@ void register_runtime_classes() {
 #endif
 
 #ifdef SDK_JAVASCRIPT
+	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptEvent);
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBreadcrumb);
 #endif
 }

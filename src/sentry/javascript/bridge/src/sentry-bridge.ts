@@ -34,6 +34,7 @@ interface SentryBridge {
 	logFatal(message: string, attributesJson?: string): void;
 	captureMessage(message: string): string;
 	captureError(message: string, stacktraceJson?: string): string;
+	captureEvent(event: Sentry.Event): string;
 	lastEventId(): string;
 	addBreadcrumb(crumb: Breadcrumb): void;
 }
@@ -253,6 +254,18 @@ class SentryBridgeImpl implements SentryBridge {
 				event.stacktrace = stacktrace;
 			}
 
+			return Sentry.captureEvent(event);
+		} catch (error) {
+			console.error("Failed to capture event:", error);
+			return "";
+		}
+	}
+
+	/*
+	 * Capture event
+	 */
+	captureEvent(event: Sentry.Event): string {
+		try {
 			return Sentry.captureEvent(event);
 		} catch (error) {
 			console.error("Failed to capture event:", error);

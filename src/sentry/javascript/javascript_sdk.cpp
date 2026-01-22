@@ -1,6 +1,7 @@
 #include "javascript_sdk.h"
 
 #include "sentry/javascript/javascript_breadcrumb.h"
+#include "sentry/javascript/javascript_event.h"
 #include "sentry/sentry_options.h"
 
 #include <godot_cpp/classes/java_script_bridge.hpp>
@@ -110,15 +111,14 @@ String JavaScriptSDK::get_last_event_id() {
 }
 
 Ref<SentryEvent> JavaScriptSDK::create_event() {
-	WARN_PRINT("JavaScriptSDK::create_event() not implemented");
-	// TODO: Implement JavaScript SDK event creation
-	return Ref<SentryEvent>();
+	return memnew(JavaScriptEvent);
 }
 
 String JavaScriptSDK::capture_event(const Ref<SentryEvent> &p_event) {
-	WARN_PRINT("JavaScriptSDK::capture_event() not implemented");
-	// TODO: Implement JavaScript SDK event capture
-	return String();
+	ERR_FAIL_COND_V(_get_bridge().is_null(), String());
+	JavaScriptEvent *ev = Object::cast_to<JavaScriptEvent>(p_event.ptr());
+	ERR_FAIL_NULL_V(ev, String());
+	return _get_bridge()->call("captureEvent", ev->get_js_object());
 }
 
 void JavaScriptSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
