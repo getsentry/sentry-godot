@@ -4,40 +4,37 @@
 
 namespace sentry::javascript {
 
+class JavaScriptSDK;
+
 class JavaScriptBreadcrumb : public SentryBreadcrumb {
 	GDCLASS(JavaScriptBreadcrumb, SentryBreadcrumb);
 
+	friend class JavaScriptSDK;
+
 private:
-	String message;
-	String category;
-	sentry::Level level;
-	String type;
-	Dictionary data;
-	Ref<SentryTimestamp> timestamp;
+	Ref<RefCounted> js_obj;
+
+	_FORCE_INLINE_ Ref<RefCounted> get_js_object() const { return js_obj; }
 
 protected:
 	static void _bind_methods() {}
 
 public:
-	virtual void set_message(const String &p_message) override { message = p_message; }
-	virtual String get_message() const override { return message; }
+	virtual void set_message(const String &p_message) override;
+	virtual String get_message() const override;
 
-	virtual void set_category(const String &p_category) override { category = p_category; }
-	virtual String get_category() const override { return category; }
+	virtual void set_category(const String &p_category) override;
+	virtual String get_category() const override;
 
-	virtual void set_level(sentry::Level p_level) override { level = p_level; }
-	virtual sentry::Level get_level() const override { return level; }
+	virtual void set_level(sentry::Level p_level) override;
+	virtual sentry::Level get_level() const override;
 
-	virtual void set_type(const String &p_type) override { type = p_type; }
-	virtual String get_type() const override { return type; }
+	virtual void set_type(const String &p_type) override;
+	virtual String get_type() const override;
 
-	virtual void set_data(const Dictionary &p_data) override { data = p_data; }
+	virtual void set_data(const Dictionary &p_data) override;
 
-	virtual Ref<SentryTimestamp> get_timestamp() override {
-		return timestamp;
-	}
-
-	String to_json() const;
+	virtual Ref<SentryTimestamp> get_timestamp() override;
 
 	JavaScriptBreadcrumb();
 	virtual ~JavaScriptBreadcrumb() override;

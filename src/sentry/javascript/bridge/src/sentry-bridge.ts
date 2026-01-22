@@ -42,7 +42,7 @@ interface SentryBridge {
 	captureMessage(message: string): string;
 	captureError(message: string, stacktraceJson?: string): string;
 	lastEventId(): string;
-	addBreadcrumb(dataJson: string): void;
+	addBreadcrumb(crumb: Breadcrumb): void;
 }
 
 // Utility Functions
@@ -277,10 +277,9 @@ class SentryBridgeImpl implements SentryBridge {
 	/**
 	 * Add breadcrumb
 	 */
-	addBreadcrumb(dataJson: string): void {
+	addBreadcrumb(crumb: Breadcrumb): void {
 		try {
-			const breadcrumb = safeParseJSON<Breadcrumb>(dataJson || "", {});
-			Sentry.addBreadcrumb(breadcrumb);
+			Sentry.addBreadcrumb(crumb);
 		} catch (error) {
 			console.error("Failed to add breadcrumb:", error);
 		}

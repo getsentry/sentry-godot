@@ -66,7 +66,7 @@ void JavaScriptSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	}
 	JavaScriptBreadcrumb *crumb = Object::cast_to<JavaScriptBreadcrumb>(p_breadcrumb.ptr());
 	ERR_FAIL_NULL(crumb);
-	_get_bridge()->call("addBreadcrumb", crumb->to_json());
+	_get_bridge()->call("addBreadcrumb", crumb->get_js_object());
 }
 
 void JavaScriptSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
