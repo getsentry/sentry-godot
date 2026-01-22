@@ -152,8 +152,7 @@ void JavaScriptSDK::close() {
 
 bool JavaScriptSDK::is_enabled() const {
 	ERR_FAIL_COND_V(_get_bridge().is_null(), false);
-	return false;
-	// return _get_bridge()->call("isEnabled");
+	return _get_bridge()->call("isEnabled");
 }
 
 JavaScriptSDK::JavaScriptSDK() {
