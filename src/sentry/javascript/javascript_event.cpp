@@ -5,6 +5,7 @@
 
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/java_script_object.hpp>
+#include <godot_cpp/classes/json.hpp>
 
 namespace {
 
@@ -159,7 +160,9 @@ String JavaScriptEvent::get_tag(const String &p_key) {
 
 void JavaScriptEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(js_obj.is_null());
-	WARN_PRINT("Not implemented");
+	Ref<JavaScriptObject> contexts_obj = js_obj_get_or_create_object_property(js_obj, "contexts");
+	Ref<JavaScriptObject> context_obj = js_obj_get_or_create_object_property(contexts_obj, p_key);
+	js_merge_json_into_object(context_obj, JSON::stringify(p_value));
 }
 
 void JavaScriptEvent::add_exception(const Exception &p_exception) {

@@ -26,4 +26,11 @@ String js_object_to_json(const Ref<JavaScriptObject> &p_object) {
 	return bridge->call("objectToJson", p_object);
 }
 
+void js_merge_json_into_object(const Ref<JavaScriptObject> &p_target, const String &p_json) {
+	ERR_FAIL_COND(p_target.is_null());
+	Ref<JavaScriptObject> bridge = JavaScriptBridge::get_singleton()->get_interface("SentryBridge");
+	ERR_FAIL_COND(bridge.is_null());
+	bridge->call("mergeJsonIntoObject", p_target, p_json);
+}
+
 } // namespace sentry::javascript

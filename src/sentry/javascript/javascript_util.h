@@ -15,4 +15,7 @@ void js_push_json_to_array(const Ref<JavaScriptObject> &p_array, const String &p
 // Convert a JavaScript object to a JSON string.
 String js_object_to_json(const Ref<JavaScriptObject> &p_object);
 
+// Reconstruct a JSON string as an object and merge its properties into a JavaScript object.
+void js_merge_json_into_object(const Ref<JavaScriptObject> &p_target, const String &p_json);
+
 } //namespace sentry::javascript
