@@ -9,4 +9,7 @@ namespace sentry::javascript {
 // Delete a property from a JavaScript object using Reflect.deleteProperty.
 void js_delete_property(const Ref<JavaScriptObject> &p_object, const String &p_key);
 
+// Reconstruct a JSON string as an object and place it in a JavaScript array.
+void js_push_json_to_array(const Ref<JavaScriptObject> &p_array, const String &p_json);
+
 } //namespace sentry::javascript

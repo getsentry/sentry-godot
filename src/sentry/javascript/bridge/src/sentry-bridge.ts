@@ -37,6 +37,8 @@ interface SentryBridge {
 	captureEvent(event: Sentry.Event): string;
 	lastEventId(): string;
 	addBreadcrumb(crumb: Breadcrumb): void;
+	mergeJsonIntoObject(target: object, jsonString: string): void;
+	pushJsonToArray(target: any[], jsonString: string): void;
 }
 
 // Utility Functions
@@ -288,6 +290,24 @@ class SentryBridgeImpl implements SentryBridge {
 			Sentry.addBreadcrumb(crumb);
 		} catch (error) {
 			console.error("Failed to add breadcrumb:", error);
+		}
+	}
+
+	/**
+	 * Merge JSON content into a target object
+	 */
+	mergeJsonIntoObject(target: object, jsonString: string): void {
+		const source = safeParseJSON(jsonString, {});
+		Object.assign(target, source);
+	}
+
+	/**
+	 * Push JSON content to a target array
+	 */
+	pushJsonToArray(target: any[], jsonString: string): void {
+		const item = safeParseJSON(jsonString, null);
+		if (item !== null) {
+			target.push(item);
 		}
 	}
 }

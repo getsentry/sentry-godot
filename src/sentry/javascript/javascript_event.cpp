@@ -162,7 +162,57 @@ void JavaScriptEvent::merge_context(const String &p_key, const Dictionary &p_val
 
 void JavaScriptEvent::add_exception(const Exception &p_exception) {
 	ERR_FAIL_COND(js_obj.is_null());
-	WARN_PRINT("Not implemented");
+
+	// Build exception dictionary
+	Dictionary exc_dict;
+	exc_dict["type"] = p_exception.type;
+	exc_dict["value"] = p_exception.value;
+
+	if (!p_exception.frames.is_empty()) {
+		Array frames_array;
+		for (int i = 0; i < p_exception.frames.size(); i++) {
+			const StackFrame &frame = p_exception.frames[i];
+			Dictionary frame_dict;
+			if (!frame.filename.is_empty()) {
+				frame_dict["filename"] = frame.filename;
+			}
+			if (!frame.function.is_empty()) {
+				frame_dict["function"] = frame.function;
+			}
+			if (frame.lineno >= 0) {
+				frame_dict["lineno"] = frame.lineno;
+			}
+			frame_dict["in_app"] = frame.in_app;
+			if (!frame.platform.is_empty()) {
+				frame_dict["platform"] = frame.platform;
+			}
+			if (!frame.context_line.is_empty()) {
+				frame_dict["context_line"] = frame.context_line;
+			}
+			if (!frame.pre_context.is_empty()) {
+				frame_dict["pre_context"] = frame.pre_context;
+			}
+			if (!frame.post_context.is_empty()) {
+				frame_dict["post_context"] = frame.post_context;
+			}
+			if (!frame.vars.is_empty()) {
+				Dictionary vars_dict;
+				for (int j = 0; j < frame.vars.size(); j++) {
+					vars_dict[frame.vars[j].first] = frame.vars[j].second;
+				}
+				frame_dict["vars"] = vars_dict;
+			}
+			frames_array.push_back(frame_dict);
+		}
+		Dictionary stacktrace;
+		stacktrace["frames"] = frames_array;
+		exc_dict["stacktrace"] = stacktrace;
+	}
+
+	Ref<JavaScriptObject> exception_obj = js_obj_get_or_create_object_property(js_obj, "exception");
+	Ref<JavaScriptObject> values_arr = js_obj_get_or_create_array_property(exception_obj, "values");
+
+	js_push_json_to_array(values_arr, JSON::stringify(exc_dict));
 }
 
 int JavaScriptEvent::get_exception_count() const {
