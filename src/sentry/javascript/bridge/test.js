@@ -7,7 +7,7 @@ console.log('🔍 Testing Final Sentry Bridge Bundle...\n');
 
 try {
 	// Load the bundle (this should work now since Sentry is bundled)
-	require('./dist/sentry-bridge.js');
+	require('./dist/sentry-bundle.js');
 
 	console.log('✅ Bundle loaded successfully\n');
 

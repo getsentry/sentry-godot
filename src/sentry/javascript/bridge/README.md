@@ -39,5 +39,5 @@ See `src/sentry-bridge.ts` for all available methods.
 
 Output is written to `dist/`. Use `npm run build:deploy` to copy to `project/addons/sentry/web/`.
 
-- `sentry-bridge.js` - Minified bundle with Sentry SDK included
-- `sentry-bridge.js.map` - Source map for debugging
+- `sentry-bundle.js` - Minified bundle with Sentry SDK included
+- `sentry-bundle.js.map` - Source map for debugging

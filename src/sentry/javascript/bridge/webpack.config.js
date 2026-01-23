@@ -5,7 +5,7 @@ module.exports = {
 	mode : 'production',
 	entry : './src/sentry-bridge.ts',
 	output : {
-		filename : 'sentry-bridge.js',
+		filename : 'sentry-bundle.js',
 		path : path.resolve(__dirname, 'dist'),
 		library : {
 			name : 'SentryBridge',
