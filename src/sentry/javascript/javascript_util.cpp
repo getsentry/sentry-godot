@@ -54,15 +54,6 @@ Ref<JavaScriptObject> js_sentry_bridge() {
 	return bridge;
 }
 
-Ref<JavaScriptObject> js_sentry() {
-	static Ref<JavaScriptObject> sentry;
-	if (unlikely(sentry.is_null())) {
-		sentry = JavaScriptBridge::get_singleton()->get_interface("Sentry");
-	}
-	ERR_FAIL_COND_V_MSG(sentry.is_null(), Ref<JavaScriptObject>(), "Sentry JS interface not found!");
-	return sentry;
-}
-
 void js_delete_property(const Ref<JavaScriptObject> &p_object, const String &p_key) {
 	ERR_FAIL_COND(p_object.is_null());
 	// TODO: cache singleton

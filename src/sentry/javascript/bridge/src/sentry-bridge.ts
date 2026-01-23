@@ -309,7 +309,6 @@ const sentryBridge = new SentryBridgeImpl();
 // Export to global window object to maintain compatibility with existing API
 if (typeof window !== "undefined") {
 	(window as any).SentryBridge = sentryBridge;
-	(window as any).Sentry = Sentry;
 }
 
 export default sentryBridge;
