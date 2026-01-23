@@ -43,6 +43,12 @@ interface SentryBridge {
 	): string;
 	lastEventId(): string;
 	addBreadcrumb(crumb: Breadcrumb): void;
+	addBytesAttachment(
+		filename: string,
+		bytes: Uint8Array,
+		contentType: string,
+	): void;
+
 	mergeJsonIntoObject(target: object, jsonString: string): void;
 	pushJsonToArray(target: any[], jsonString: string): void;
 	objectToJson(obj: object): string;
@@ -297,6 +303,27 @@ class SentryBridgeImpl implements SentryBridge {
 			Sentry.addBreadcrumb(crumb);
 		} catch (error) {
 			console.error("Failed to add breadcrumb:", error);
+		}
+	}
+
+	/**
+	 * Add bytes attachment to the current scope
+	 */
+	addBytesAttachment(
+		filename: string,
+		bytes: Uint8Array,
+		contentType: string,
+	): void {
+		try {
+			const attachment = {
+				filename,
+				data: bytes,
+				contentType,
+			};
+
+			Sentry.getCurrentScope().addAttachment(attachment);
+		} catch (error) {
+			console.error("Failed to add bytes attachment:", error);
 		}
 	}
 

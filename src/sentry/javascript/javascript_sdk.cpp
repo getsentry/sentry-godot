@@ -8,6 +8,30 @@
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/json.hpp>
 
+#include <emscripten.h>
+
+// Defines JS functions inline inside C++ unit
+namespace em_js {
+
+// Emscripten JS function to add bytes attachment directly from WASM memory.
+// This avoids the overhead of base64 encoding/decoding.
+EM_JS(void, sentry_add_bytes_attachment, (const char *filename, const uint8_t *data, int size, const char *content_type), {
+	try {
+		var filenameStr = UTF8ToString(filename);
+		var contentTypeStr = UTF8ToString(content_type);
+
+		// Copy bytes from WASM memory into a new Uint8Array
+		var bytes = new Uint8Array(size);
+		bytes.set(HEAPU8.subarray(data, data + size));
+
+		window.SentryBridge.addBytesAttachment(filenameStr, bytes, contentTypeStr);
+	} catch (e) {
+		console.error("Failed to add bytes attachment:", e);
+	}
+});
+
+} //namespace em_js
+
 namespace sentry::javascript {
 
 void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) {
@@ -123,8 +147,25 @@ void JavaScriptSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 }
 
 void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
-	WARN_PRINT("JavaScriptSDK::add_attachment() not implemented");
-	// TODO: Implement JavaScript SDK attachment addition
+	ERR_FAIL_COND(js_sentry_bridge().is_null());
+	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
+
+	if (!p_attachment->get_path().is_empty()) {
+		WARN_PRINT_ONCE("Sentry: File attachments are not yet supported in web exports. Use SentryAttachment.create_with_bytes() instead.");
+		return;
+	} else {
+		// Bytes attachment
+		PackedByteArray bytes = p_attachment->get_bytes();
+		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
+		String filename = p_attachment->get_filename();
+		ERR_FAIL_COND_MSG(filename.is_empty(), "Sentry: Can't add attachment without filename.");
+
+		em_js::sentry_add_bytes_attachment(
+				filename.utf8().get_data(),
+				bytes.ptr(),
+				bytes.size(),
+				p_attachment->get_content_type_or_default().utf8().get_data());
+	}
 }
 
 void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
@@ -139,6 +180,11 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 			SentryOptions::get_singleton()->get_sample_rate(),
 			SentryOptions::get_singleton()->get_max_breadcrumbs(),
 			SentryOptions::get_singleton()->get_enable_logs());
+
+	// TODO: File attachments are not yet supported in JavaScript SDK.
+	if (!p_global_attachments.is_empty()) {
+		WARN_PRINT("Sentry: Global file attachments are not yet supported in web exports. Use SentrySDK.add_attachment() with bytes instead.");
+	}
 }
 
 void JavaScriptSDK::close() {
