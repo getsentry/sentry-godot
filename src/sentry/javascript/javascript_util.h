@@ -6,8 +6,11 @@ using namespace godot;
 
 namespace sentry::javascript {
 
-// Returns JavaScriptObject representing SentryBridge in JavaScript environment.
+// Returns JavaScriptObject representing window.SentryBridge in JavaScript environment.
 Ref<JavaScriptObject> js_sentry_bridge();
+
+// Returns JavaScriptObject representing window.Sentry in JavaScript environment.
+Ref<JavaScriptObject> js_sentry();
 
 // Delete a property from a JavaScript object using Reflect.deleteProperty.
 void js_delete_property(const Ref<JavaScriptObject> &p_object, const String &p_key);
