@@ -35,6 +35,12 @@ interface SentryBridge {
 	captureMessage(message: string): string;
 	captureError(message: string, stacktraceJson?: string): string;
 	captureEvent(event: Sentry.Event): string;
+	captureFeedback(
+		message: string,
+		name?: string,
+		email?: string,
+		associatedEventId?: string,
+	): string;
 	lastEventId(): string;
 	addBreadcrumb(crumb: Breadcrumb): void;
 	mergeJsonIntoObject(target: object, jsonString: string): void;
@@ -252,6 +258,28 @@ class SentryBridgeImpl implements SentryBridge {
 			console.error("Failed to capture event:", error);
 			return "";
 		}
+	}
+
+	/**
+	 * Capture user feedback
+	 */
+	captureFeedback(
+		message: string,
+		name?: string,
+		email?: string,
+		associatedEventId?: string,
+	): string {
+		const feedback: any = { message };
+		if (name) {
+			feedback.name = name;
+		}
+		if (email) {
+			feedback.email = email;
+		}
+		if (associatedEventId) {
+			feedback.associatedEventId = associatedEventId;
+		}
+		return Sentry.captureFeedback(feedback);
 	}
 
 	/**

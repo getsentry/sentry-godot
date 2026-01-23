@@ -111,8 +111,15 @@ String JavaScriptSDK::capture_event(const Ref<SentryEvent> &p_event) {
 }
 
 void JavaScriptSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
-	WARN_PRINT("JavaScriptSDK::capture_feedback() not implemented");
-	// TODO: Implement JavaScript SDK feedback capture
+	ERR_FAIL_COND(js_sentry_bridge().is_null());
+	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
+	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
+
+	js_sentry_bridge()->call("captureFeedback",
+			p_feedback->get_message(),
+			p_feedback->get_name(),
+			p_feedback->get_contact_email(),
+			p_feedback->get_associated_event_id());
 }
 
 void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
