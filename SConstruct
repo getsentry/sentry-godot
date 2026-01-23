@@ -60,6 +60,7 @@ def add_custom_bool_option(name, description, default=False):
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
 add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux, Android)", True)
+add_custom_bool_option("generate_js_bundle", "Generate JavaScript bundle", False)
 
 # Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
 # Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
@@ -290,11 +291,30 @@ if env["build_android_lib"]:
     Default(android_lib)
     Depends(android_lib, library)
 
-# *** Copy JavaScript bridge
+# *** Generate JavaScript bundle
 
-# if platform == "web":
-#     copy_bridge = env.Copy("project/addons/sentry/web/sentry-bundle.js", "src/sentry/javascript/sentry-bundle.js")
-#     Default(copy_bridge)
+js_bundle_cmd = "cd src/sentry/javascript/bridge && npm run build:deploy"
+env_js_bundle = Environment(ENV = os.environ)
+
+js_bundle = env_js_bundle.Command(
+    target=[
+        File("project/addons/sentry/web/sentry-bundle.js")
+    ],
+    source=[
+        File("src/sentry/javascript/bridge/src/sentry-bridge.ts"),
+        File("src/sentry/javascript/bridge/package.json"),
+        File("src/sentry/javascript/bridge/package-lock.json"),
+        File("src/sentry/javascript/bridge/tsconfig.json"),
+        File("src/sentry/javascript/bridge/webpack.config.js"),
+    ],
+    action=[js_bundle_cmd]
+)
+
+Alias("js_bundle", js_bundle)
+
+if env["generate_js_bundle"]:
+    Default(js_bundle)
+    Depends(js_bundle, library)
 
 # *** Add help for optional targets.
 
@@ -308,6 +328,9 @@ ios_framework: Create iOS XCFramework from device and simulator builds.
 
 android_lib: Build Android bridge library.
              Usage: scons target=template_release platform=android android_lib
+
+js_bundle: Generate JavaScript bundle.
+           Usage: scons target=template_release platform=web js_bundle
 """)
 
 
