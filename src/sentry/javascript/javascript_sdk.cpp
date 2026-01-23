@@ -65,10 +65,7 @@ void JavaScriptSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 void JavaScriptSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
 
-	String attr_value;
-	if (!p_attributes.is_empty()) {
-		attr_value = JSON::stringify(p_attributes);
-	}
+	String attr_value = attributes_to_json(p_attributes);
 
 	switch (p_level) {
 		case LOG_LEVEL_TRACE: {

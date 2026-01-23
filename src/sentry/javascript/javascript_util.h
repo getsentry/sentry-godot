@@ -2,9 +2,15 @@
 
 #include <godot_cpp/classes/java_script_object.hpp>
 
+#include <godot_cpp/variant/dictionary.hpp>
+
 using namespace godot;
 
 namespace sentry::javascript {
+
+// Convert a Dictionary of attributes to a JSON string.
+// Supported types (bool, int, float, string) are preserved, others are stringified.
+String attributes_to_json(const Dictionary &p_attributes);
 
 // Returns JavaScriptObject representing window.SentryBridge in JavaScript environment.
 Ref<JavaScriptObject> js_sentry_bridge();
