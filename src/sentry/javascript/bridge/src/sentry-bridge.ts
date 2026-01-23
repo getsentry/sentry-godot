@@ -183,7 +183,7 @@ class SentryBridgeImpl implements SentryBridge {
 	 * Log debug message with attributes
 	 */
 	logDebug(message: string, attributesJson?: string): void {
-		logger.debug(message, parseAttributes(attributesJson || ""));
+		Sentry.logger.debug(message, parseAttributes(attributesJson || ""));
 	}
 
 	/**
