@@ -60,28 +60,6 @@ function parseAttributes(attributesJson: string): Record<string, any> {
 	return safeParseJSON(attributesJson, {});
 }
 
-// Shared logger instance for all log methods (JUST A TEST FOR NOW)
-const logger = {
-	trace: (msg: string, attrs?: Record<string, any>) => {
-		console.log(`[TRACE] ${msg}`, attrs);
-	},
-	debug: (msg: string, attrs?: Record<string, any>) => {
-		console.log(`[DEBUG] ${msg}`, attrs);
-	},
-	info: (msg: string, attrs?: Record<string, any>) => {
-		console.log(`[INFO] ${msg}`, attrs);
-	},
-	warning: (msg: string, attrs?: Record<string, any>) => {
-		console.log(`[WARNING] ${msg}`, attrs);
-	},
-	error: (msg: string, attrs?: Record<string, any>) => {
-		console.log(`[ERROR] ${msg}`, attrs);
-	},
-	fatal: (msg: string, attrs?: Record<string, any>) => {
-		console.log(`[FATAL] ${msg}`, attrs);
-	},
-};
-
 // Main SentryBridge Implementation
 class SentryBridgeImpl implements SentryBridge {
 	constructor() {
@@ -198,7 +176,7 @@ class SentryBridgeImpl implements SentryBridge {
 	 * Log trace message with attributes
 	 */
 	logTrace(message: string, attributesJson?: string): void {
-		logger.trace(message, parseAttributes(attributesJson || ""));
+		Sentry.logger.trace(message, parseAttributes(attributesJson || ""));
 	}
 
 	/**
@@ -212,28 +190,28 @@ class SentryBridgeImpl implements SentryBridge {
 	 * Log info message with attributes
 	 */
 	logInfo(message: string, attributesJson?: string): void {
-		logger.info(message, parseAttributes(attributesJson || ""));
+		Sentry.logger.info(message, parseAttributes(attributesJson || ""));
 	}
 
 	/**
 	 * Log warning message with attributes
 	 */
 	logWarning(message: string, attributesJson?: string): void {
-		logger.warning(message, parseAttributes(attributesJson || ""));
+		Sentry.logger.warn(message, parseAttributes(attributesJson || ""));
 	}
 
 	/**
 	 * Log error message with attributes
 	 */
 	logError(message: string, attributesJson?: string): void {
-		logger.error(message, parseAttributes(attributesJson || ""));
+		Sentry.logger.error(message, parseAttributes(attributesJson || ""));
 	}
 
 	/**
 	 * Log fatal message with attributes
 	 */
 	logFatal(message: string, attributesJson?: string): void {
-		logger.fatal(message, parseAttributes(attributesJson || ""));
+		Sentry.logger.fatal(message, parseAttributes(attributesJson || ""));
 	}
 
 	/**
