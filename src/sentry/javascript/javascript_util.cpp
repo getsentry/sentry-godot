@@ -2,6 +2,7 @@
 
 #include "sentry/util/json_writer.h"
 
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/java_script_bridge.hpp>
 
 namespace sentry::javascript {
@@ -48,9 +49,9 @@ String attributes_to_json(const Dictionary &p_attributes) {
 Ref<JavaScriptObject> js_sentry_bridge() {
 	static Ref<JavaScriptObject> bridge;
 	if (unlikely(bridge.is_null())) {
+		ERR_FAIL_COND_V_MSG(!Engine::get_singleton()->has_singleton("JavaScriptBridge"), bridge, "JavaScriptBridge singleton is not unavailable but required.");
 		bridge = JavaScriptBridge::get_singleton()->get_interface("SentryBridge");
 	}
-	ERR_FAIL_COND_V_MSG(bridge.is_null(), Ref<JavaScriptObject>(), "SentryBridge JS interface not found!");
 	return bridge;
 }
 
