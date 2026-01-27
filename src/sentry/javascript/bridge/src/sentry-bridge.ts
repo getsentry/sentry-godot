@@ -9,6 +9,7 @@ interface SentryEvent {
 
 interface SentryBridge {
   init(
+    beforeSendCallback: (event: SentryEvent) => void,
     dsn: string,
     debug?: boolean,
     release?: string,
@@ -73,6 +74,7 @@ class SentryBridgeImpl implements SentryBridge {
    * Initialize Sentry with provided options
    */
   init(
+    beforeSendCallback: (event: SentryEvent) => void | null,
     dsn: string,
     debug?: boolean,
     release?: string,
@@ -93,6 +95,14 @@ class SentryBridgeImpl implements SentryBridge {
       ...(sampleRate !== undefined && { sampleRate }),
       ...(maxBreadcrumbs !== undefined && { maxBreadcrumbs }),
       ...(enableLogs !== undefined && { enableLogs }),
+      beforeSend(event: SentryEvent) {
+        beforeSendCallback(event);
+
+        var shouldDiscard: boolean = (event as any).shouldDiscard;
+        delete (event as any).shouldDiscard;
+
+        return shouldDiscard ? null : event;
+      },
     };
 
     Sentry.init(options);

@@ -61,6 +61,7 @@ public:
 
 	virtual String to_json() const override;
 
+	JavaScriptEvent(const Ref<RefCounted> &p_js_event_object);
 	JavaScriptEvent();
 	virtual ~JavaScriptEvent() override;
 };

@@ -306,6 +306,10 @@ String JavaScriptEvent::to_json() const {
 	return js_object_to_json(js_obj);
 }
 
+JavaScriptEvent::JavaScriptEvent(const Ref<RefCounted> &p_js_event_object) {
+	js_obj = p_js_event_object;
+}
+
 JavaScriptEvent::JavaScriptEvent() {
 	js_obj = JavaScriptBridge::get_singleton()->create_object("Object");
 }

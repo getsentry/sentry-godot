@@ -3,6 +3,7 @@
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/javascript/javascript_event.h"
 #include "sentry/javascript/javascript_util.h"
+#include "sentry/processing/process_event.h"
 #include "sentry/sentry_options.h"
 
 #include <godot_cpp/classes/java_script_bridge.hpp>
@@ -31,6 +32,29 @@ EM_JS(void, sentry_add_bytes_attachment, (const char *filename, const uint8_t *d
 });
 
 } //namespace em_js
+
+namespace {
+
+void _handle_before_send(const Array &p_args) {
+	ERR_FAIL_COND(p_args.size() != 1);
+
+	Ref<JavaScriptObject> event_obj = p_args[0];
+	ERR_FAIL_COND(event_obj.is_null());
+
+	Ref<sentry::javascript::JavaScriptEvent> event = memnew(sentry::javascript::JavaScriptEvent(event_obj));
+	Ref<sentry::javascript::JavaScriptEvent> processed = sentry::process_event(event);
+
+	// NOTE: We cannot return a value from a callback, so we use the same
+	//       event object to communicate the result back.
+	if (unlikely(processed.is_null())) {
+		// Discard event.
+		event_obj->set("shouldDiscard", true);
+	} else {
+		event_obj->set("shouldDiscard", false);
+	}
+}
+
+} // unnamed namespace
 
 namespace sentry::javascript {
 
@@ -171,7 +195,10 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
 
+	_before_send_callback = JavaScriptBridge::get_singleton()->create_callback(callable_mp_static(_handle_before_send));
+
 	js_sentry_bridge()->call("init",
+			_before_send_callback,
 			SentryOptions::get_singleton()->get_dsn(),
 			SentryOptions::get_singleton()->is_debug_enabled(),
 			SentryOptions::get_singleton()->get_release(),
@@ -190,6 +217,7 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 void JavaScriptSDK::close() {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
 	js_sentry_bridge()->call("close");
+	_before_send_callback.unref();
 }
 
 bool JavaScriptSDK::is_enabled() const {

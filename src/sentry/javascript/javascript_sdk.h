@@ -10,6 +10,10 @@ namespace sentry::javascript {
 
 // Internal SDK utilizing Sentry for JavaScript.
 class JavaScriptSDK : public InternalSDK {
+private:
+	// NOTE: Need to keep ref alive for as long as it's needed.
+	Ref<JavaScriptObject> _before_send_callback;
+
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void remove_context(const String &p_key) override;
