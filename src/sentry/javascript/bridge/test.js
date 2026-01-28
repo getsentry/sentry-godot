@@ -5,6 +5,8 @@ global.window = {};
 
 console.log("🔍 Testing Final Sentry Bridge Bundle...\n");
 
+let failureCount = 0;
+
 try {
 	// Load the bundle (this should work now since Sentry is bundled)
 	require("./dist/sentry-bundle.js");
@@ -35,10 +37,12 @@ try {
 			"logError",
 			"logFatal",
 			"captureMessage",
-			"captureError",
 			"captureEvent",
+			"captureFeedback",
 			"lastEventId",
 			"addBreadcrumb",
+			"addBytesAttachment",
+			"addBytes",
 			"mergeJsonIntoObject",
 			"pushJsonToArray",
 			"objectToJson",
@@ -48,16 +52,20 @@ try {
 		methods.forEach((method) => {
 			const exists = typeof bridge[method] === "function";
 			console.log(`  ${exists ? "✅" : "❌"} ${method}`);
+			if (!exists) {
+				failureCount++;
+			}
 		});
 
 		console.log("\n🧪 Functional tests:");
 
 		// Test init (won't actually send to Sentry without valid DSN)
 		try {
-			bridge.init("https://test@sentry.io/123", false, "1.0.0", "1", "production");
+			bridge.init(() => {}, "https://test@sentry.io/123", false, "1.0.0", "1", "production");
 			console.log("✅ init() works");
 		} catch (e) {
 			console.log("❌ init() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test isEnabled
@@ -66,6 +74,7 @@ try {
 			console.log("✅ isEnabled() works:", enabled);
 		} catch (e) {
 			console.log("❌ isEnabled() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test setTag
@@ -74,6 +83,7 @@ try {
 			console.log("✅ setTag() works");
 		} catch (e) {
 			console.log("❌ setTag() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test removeTag
@@ -82,6 +92,7 @@ try {
 			console.log("✅ removeTag() works");
 		} catch (e) {
 			console.log("❌ removeTag() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test setContext
@@ -90,6 +101,7 @@ try {
 			console.log("✅ setContext() works");
 		} catch (e) {
 			console.log("❌ setContext() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test removeContext
@@ -98,6 +110,7 @@ try {
 			console.log("✅ removeContext() works");
 		} catch (e) {
 			console.log("❌ removeContext() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test setUser
@@ -106,6 +119,7 @@ try {
 			console.log("✅ setUser() works");
 		} catch (e) {
 			console.log("❌ setUser() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test removeUser
@@ -114,6 +128,7 @@ try {
 			console.log("✅ removeUser() works");
 		} catch (e) {
 			console.log("❌ removeUser() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test logInfo
@@ -122,6 +137,7 @@ try {
 			console.log("✅ logInfo() works");
 		} catch (e) {
 			console.log("❌ logInfo() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test captureMessage
@@ -130,14 +146,7 @@ try {
 			console.log("✅ captureMessage() works, returned:", eventId);
 		} catch (e) {
 			console.log("❌ captureMessage() failed:", e.message);
-		}
-
-		// Test captureError
-		try {
-			const errorId = bridge.captureError("Test error", '{"stack": "test stack"}');
-			console.log("✅ captureError() works, returned:", errorId);
-		} catch (e) {
-			console.log("❌ captureError() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test captureEvent
@@ -146,6 +155,7 @@ try {
 			console.log("✅ captureEvent() works, returned:", eventId);
 		} catch (e) {
 			console.log("❌ captureEvent() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test lastEventId
@@ -154,6 +164,7 @@ try {
 			console.log("✅ lastEventId() works, returned:", lastId);
 		} catch (e) {
 			console.log("❌ lastEventId() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test addBreadcrumb
@@ -162,6 +173,34 @@ try {
 			console.log("✅ addBreadcrumb() works");
 		} catch (e) {
 			console.log("❌ addBreadcrumb() failed:", e.message);
+			failureCount++;
+		}
+
+		// Test captureFeedback
+		try {
+			const feedbackId = bridge.captureFeedback("Test feedback", "Test User", "test@example.com");
+			console.log("✅ captureFeedback() works, returned:", feedbackId);
+		} catch (e) {
+			console.log("❌ captureFeedback() failed:", e.message);
+			failureCount++;
+		}
+
+		// Test addBytes
+		try {
+			const bytesId = bridge.addBytes(new Uint8Array([ 1, 2, 3, 4 ]));
+			console.log("✅ addBytes() works, returned:", bytesId);
+		} catch (e) {
+			console.log("❌ addBytes() failed:", e.message);
+			failureCount++;
+		}
+
+		// Test addBytesAttachment
+		try {
+			bridge.addBytesAttachment("test.txt", new Uint8Array([ 104, 101, 108, 108, 111 ]), "text/plain");
+			console.log("✅ addBytesAttachment() works");
+		} catch (e) {
+			console.log("❌ addBytesAttachment() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test mergeJsonIntoObject
@@ -171,6 +210,7 @@ try {
 			console.log("✅ mergeJsonIntoObject() works, result:", target);
 		} catch (e) {
 			console.log("❌ mergeJsonIntoObject() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test pushJsonToArray
@@ -180,6 +220,7 @@ try {
 			console.log("✅ pushJsonToArray() works, result:", arr);
 		} catch (e) {
 			console.log("❌ pushJsonToArray() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test objectToJson
@@ -189,6 +230,7 @@ try {
 			console.log("✅ objectToJson() works, returned:", json);
 		} catch (e) {
 			console.log("❌ objectToJson() failed:", e.message);
+			failureCount++;
 		}
 
 		// Test close
@@ -197,11 +239,18 @@ try {
 			console.log("✅ close() works");
 		} catch (e) {
 			console.log("❌ close() failed:", e.message);
+			failureCount++;
 		}
 
-		console.log("\n🎉 Bundle is working correctly!");
+		if (failureCount > 0) {
+			console.log(`\n❌ ${failureCount} test(s) failed!`);
+			process.exit(1);
+		} else {
+			console.log("\n🎉 Bundle is working correctly!");
+		}
 	} else {
 		console.log("❌ SentryBridge not found on window object");
+		process.exit(1);
 	}
 } catch (error) {
 	console.error("❌ Bundle test failed:", error.message);
