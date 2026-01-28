@@ -3,9 +3,11 @@
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/javascript/javascript_event.h"
 #include "sentry/javascript/javascript_util.h"
+#include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/sentry_options.h"
 
+#include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/json.hpp>
 
@@ -31,15 +33,41 @@ EM_JS(void, sentry_add_bytes_attachment, (const char *filename, const uint8_t *d
 	}
 });
 
+// Emscripten JS function to push bytes directly to bridge layer and return id for later retrieval.
+EM_JS(uint8_t, add_bytes, (const uint8_t *data, int size), {
+	try {
+		var bytes = new Uint8Array(size);
+		bytes.set(HEAPU8.subarray(data, data + size));
+
+		var id = window.SentryBridge.addBytes(bytes);
+		return id;
+	} catch (e) {
+		console.error("Failed to transfer bytes to JS bridge layer:", e);
+		return 0;
+	}
+});
+
 } //namespace em_js
 
-namespace {
+namespace sentry::javascript {
 
-void _handle_before_send(const Array &p_args) {
-	ERR_FAIL_COND(p_args.size() != 1);
+// *** JavaScriptBeforeSendHandler
+
+void JavaScriptBeforeSendHandler::initialize(const FileAttachmentsGetter &p_file_attachments_getter) {
+	_file_attachments_getter = p_file_attachments_getter;
+}
+
+void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
+	ERR_FAIL_COND(p_args.size() != 2);
 
 	Ref<JavaScriptObject> event_obj = p_args[0];
 	ERR_FAIL_COND(event_obj.is_null());
+
+	Ref<JavaScriptObject> out_attachments = p_args[1];
+	ERR_FAIL_COND(out_attachments.is_null());
+
+	// Get file attachments via the getter.
+	PackedStringArray file_attachments = _file_attachments_getter.call();
 
 	Ref<sentry::javascript::JavaScriptEvent> event = memnew(sentry::javascript::JavaScriptEvent(event_obj));
 	Ref<sentry::javascript::JavaScriptEvent> processed = sentry::process_event(event);
@@ -51,12 +79,45 @@ void _handle_before_send(const Array &p_args) {
 		event_obj->set("shouldDiscard", true);
 	} else {
 		event_obj->set("shouldDiscard", false);
+
+		// Add file-based attachments
+		for (const String &path : file_attachments) {
+			Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ);
+			if (file.is_null()) {
+				// Some attachments may be missing. Skip...
+				sentry::logging::print_debug("Skipping missing file attachment: " + path);
+				continue;
+			}
+
+			PackedByteArray bytes = file->get_buffer(file->get_length());
+			if (bytes.is_empty()) {
+				sentry::logging::print_debug("Skipping empty file attachment: " + path);
+				continue;
+			}
+
+			sentry::logging::print_debug("Adding attachment: " + path);
+
+			uint8_t bytes_id = em_js::add_bytes(bytes.ptr(), bytes.size());
+			if (bytes_id == 0) {
+				sentry::logging::print_warning("Failed to push attachment bytes to JS: " + path);
+				continue;
+			}
+
+			// Create attachment data object and push to outAttachments array
+			Ref<JavaScriptObject> attachment_data = JavaScriptBridge::get_singleton()->create_object("Object");
+			attachment_data->set("id", bytes_id);
+			attachment_data->set("filename", path.get_file());
+
+			out_attachments->call("push", attachment_data);
+		}
 	}
 }
 
-} // unnamed namespace
+void JavaScriptBeforeSendHandler::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_handle_before_send"), &JavaScriptBeforeSendHandler::handle_before_send);
+}
 
-namespace sentry::javascript {
+// *** JavaScriptSDK
 
 void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
@@ -175,8 +236,7 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
 
 	if (!p_attachment->get_path().is_empty()) {
-		WARN_PRINT_ONCE("Sentry: File attachments are not yet supported in web exports. Use SentryAttachment.create_with_bytes() instead.");
-		return;
+		file_attachments.append(p_attachment->get_path());
 	} else {
 		// Bytes attachment
 		PackedByteArray bytes = p_attachment->get_bytes();
@@ -195,7 +255,14 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
 
-	_before_send_callback = JavaScriptBridge::get_singleton()->create_callback(callable_mp_static(_handle_before_send));
+	file_attachments.clear();
+	if (!p_global_attachments.is_empty()) {
+		for (const String path : p_global_attachments) {
+			file_attachments.append(path);
+		}
+	}
+
+	_before_send_callback = JavaScriptBridge::get_singleton()->create_callback(callable_mp(_before_send_handler, &JavaScriptBeforeSendHandler::handle_before_send));
 
 	js_sentry_bridge()->call("init",
 			_before_send_callback,
@@ -207,17 +274,15 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 			SentryOptions::get_singleton()->get_sample_rate(),
 			SentryOptions::get_singleton()->get_max_breadcrumbs(),
 			SentryOptions::get_singleton()->get_enable_logs());
-
-	// TODO: File attachments are not yet supported in JavaScript SDK.
-	if (!p_global_attachments.is_empty()) {
-		WARN_PRINT("Sentry: Global file attachments are not yet supported in web exports. Use SentrySDK.add_attachment() with bytes instead.");
-	}
 }
 
 void JavaScriptSDK::close() {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
+
 	js_sentry_bridge()->call("close");
+
 	_before_send_callback.unref();
+	file_attachments.clear();
 }
 
 bool JavaScriptSDK::is_enabled() const {
@@ -226,9 +291,17 @@ bool JavaScriptSDK::is_enabled() const {
 }
 
 JavaScriptSDK::JavaScriptSDK() {
+	auto getter_func = [](void *ctx) -> PackedStringArray {
+		return static_cast<JavaScriptSDK *>(ctx)->_get_file_attachments();
+	};
+	_before_send_handler = memnew(JavaScriptBeforeSendHandler);
+	_before_send_handler->initialize(
+			JavaScriptBeforeSendHandler::FileAttachmentsGetter{ getter_func, this });
 }
 
 JavaScriptSDK::~JavaScriptSDK() {
+	memdelete(_before_send_handler);
+	_before_send_handler = nullptr;
 }
 
 } //namespace sentry::javascript

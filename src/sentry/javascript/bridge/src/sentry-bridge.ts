@@ -1,15 +1,38 @@
-// Type Definitions
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
 
-interface SentryEvent {
-  message?: string;
-  stacktrace?: any;
+// Stores bytes data passed from C++ layer with ID-based retrieval.
+const BytesHandler = {
+  _lastId: 0,
+  _references: {} as Record<number, Uint8Array>,
+
+  get(id: number): Uint8Array | undefined {
+    return BytesHandler._references[id];
+  },
+
+  add(bytes: Uint8Array): number {
+    const id = ++BytesHandler._lastId;
+    BytesHandler._references[id] = bytes;
+    return id;
+  },
+
+  remove(id: number): void {
+    delete BytesHandler._references[id];
+  },
+
+  size(): number {
+    return Object.keys(BytesHandler._references).length;
+  },
+};
+
+interface AttachmentData {
+  id: number;
+  filename: string;
 }
 
 interface SentryBridge {
   init(
-    beforeSendCallback: (event: SentryEvent) => void,
+    beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void,
     dsn: string,
     debug?: boolean,
     release?: string,
@@ -34,12 +57,14 @@ interface SentryBridge {
   logError(message: string, attributesJson?: string): void;
   logFatal(message: string, attributesJson?: string): void;
   captureMessage(message: string, level?: string): string;
-  captureError(message: string, stacktraceJson?: string): string;
   captureEvent(event: Sentry.Event): string;
   captureFeedback(message: string, name?: string, email?: string, associatedEventId?: string): string;
   lastEventId(): string;
   addBreadcrumb(crumb: Breadcrumb): void;
   addBytesAttachment(filename: string, bytes: Uint8Array, contentType: string): void;
+
+  // Transfers bytes from C++ to JavaScript (see BytesHandler)
+  addBytes(bytes: Uint8Array): number;
 
   mergeJsonIntoObject(target: object, jsonString: string): void;
   pushJsonToArray(target: any[], jsonString: string): void;
@@ -74,7 +99,7 @@ class SentryBridgeImpl implements SentryBridge {
    * Initialize Sentry with provided options
    */
   init(
-    beforeSendCallback: (event: SentryEvent) => void | null,
+    beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void | null,
     dsn: string,
     debug?: boolean,
     release?: string,
@@ -95,8 +120,30 @@ class SentryBridgeImpl implements SentryBridge {
       ...(sampleRate !== undefined && { sampleRate }),
       ...(maxBreadcrumbs !== undefined && { maxBreadcrumbs }),
       ...(enableLogs !== undefined && { enableLogs }),
-      beforeSend(event: SentryEvent) {
-        beforeSendCallback(event);
+      beforeSend: (event: Sentry.Event, hint: Sentry.EventHint) => {
+        // NOTE: Populated during processing in C++ layer
+        var outAttachments: Array<AttachmentData> = [];
+
+        beforeSendCallback(event, outAttachments);
+
+        // console.debug("Byte buffers before adding attachments: ", BytesHandler.size());
+
+        // Add attachments added during processing in C++ layer
+        if (!hint.attachments) {
+          hint.attachments = [];
+        }
+        for (var attachmentData of outAttachments) {
+          var bytes = BytesHandler.get(attachmentData.id);
+          if (bytes) {
+            hint.attachments.push({
+              data: bytes,
+              filename: attachmentData.filename,
+            });
+            BytesHandler.remove(attachmentData.id);
+          }
+        }
+
+        // console.debug("Byte buffers remaining after adding attachments: ", BytesHandler.size());
 
         var shouldDiscard: boolean = (event as any).shouldDiscard;
         delete (event as any).shouldDiscard;
@@ -235,27 +282,6 @@ class SentryBridgeImpl implements SentryBridge {
     return Sentry.captureMessage(message, sentryLevel);
   }
 
-  /**
-   * Capture error with stacktrace
-   */
-  captureError(message: string, stacktraceJson?: string): string {
-    try {
-      const stacktrace = safeParseJSON(stacktraceJson || "", undefined);
-      const event: SentryEvent = {
-        message,
-      };
-
-      if (stacktrace) {
-        event.stacktrace = stacktrace;
-      }
-
-      return Sentry.captureEvent(event);
-    } catch (error) {
-      console.error("Failed to capture event:", error);
-      return "";
-    }
-  }
-
   /*
    * Capture event
    */
@@ -321,7 +347,7 @@ class SentryBridgeImpl implements SentryBridge {
   }
 
   /**
-   * Merge JSON content into a target object
+   * Merge properties from JSON content into target object
    */
   mergeJsonIntoObject(target: object, jsonString: string): void {
     const source = safeParseJSON(jsonString, {});
@@ -329,7 +355,7 @@ class SentryBridgeImpl implements SentryBridge {
   }
 
   /**
-   * Push JSON content to a target array
+   * Deserialize object from JSON content and add it to target array
    */
   pushJsonToArray(target: any[], jsonString: string): void {
     const item = safeParseJSON(jsonString, null);
@@ -339,7 +365,7 @@ class SentryBridgeImpl implements SentryBridge {
   }
 
   /**
-   * Convert object to JSON string
+   * Serialize object to JSON string
    */
   objectToJson(obj: object): string {
     try {
@@ -348,6 +374,13 @@ class SentryBridgeImpl implements SentryBridge {
       console.error("Failed to stringify object:", error);
       return "{}";
     }
+  }
+
+  /**
+   * Store bytes and return an ID for later retrieval
+   */
+  addBytes(bytes: Uint8Array): number {
+    return BytesHandler.add(bytes);
   }
 }
 

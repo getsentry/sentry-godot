@@ -8,11 +8,47 @@ using namespace godot;
 
 namespace sentry::javascript {
 
+class JavaScriptBeforeSendHandler : public Object {
+	GDCLASS(JavaScriptBeforeSendHandler, Object);
+
+public:
+	struct FileAttachmentsGetter {
+		PackedStringArray (*func)(void *p_context) = nullptr;
+		void *context = nullptr;
+
+		PackedStringArray call() const {
+			if (func != nullptr) {
+				return func(context);
+			}
+			return PackedStringArray();
+		}
+	};
+
+private:
+	FileAttachmentsGetter _file_attachments_getter;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void handle_before_send(const Array &p_args);
+
+	void initialize(const FileAttachmentsGetter &p_file_attachments_getter);
+	JavaScriptBeforeSendHandler() = default;
+};
+
 // Internal SDK utilizing Sentry for JavaScript.
 class JavaScriptSDK : public InternalSDK {
 private:
 	// NOTE: Need to keep ref alive for as long as it's needed.
 	Ref<JavaScriptObject> _before_send_callback;
+
+	JavaScriptBeforeSendHandler *_before_send_handler;
+
+	// Stores file-based attachment paths to be added in processing during before_send.
+	PackedStringArray file_attachments;
+
+	PackedStringArray _get_file_attachments() { return file_attachments; }
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
