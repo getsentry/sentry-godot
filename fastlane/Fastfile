@@ -10,7 +10,7 @@ platform :ios do
 
     sync_code_signing(
       type: "development",
-      readonly: false,
+      readonly: true,
       app_identifier: [CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)],
     )
   end
