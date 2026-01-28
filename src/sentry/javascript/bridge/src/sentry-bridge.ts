@@ -30,47 +30,6 @@ interface AttachmentData {
   filename: string;
 }
 
-interface SentryBridge {
-  init(
-    beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void,
-    dsn: string,
-    debug?: boolean,
-    release?: string,
-    dist?: string,
-    environment?: string,
-    sampleRate?: number,
-    maxBreadcrumbs?: number,
-    enableLogs?: boolean,
-  ): void;
-  close(): void;
-  isEnabled(): boolean;
-  setContext(key: string, valueJson: string): void;
-  removeContext(key: string): void;
-  setTag(key: string, value: string): void;
-  removeTag(key: string): void;
-  setUser(id?: string, username?: string, email?: string, ip?: string): void;
-  removeUser(): void;
-  logTrace(message: string, attributesJson?: string): void;
-  logDebug(message: string, attributesJson?: string): void;
-  logInfo(message: string, attributesJson?: string): void;
-  logWarn(message: string, attributesJson?: string): void;
-  logError(message: string, attributesJson?: string): void;
-  logFatal(message: string, attributesJson?: string): void;
-  captureMessage(message: string, level?: string): string;
-  captureEvent(event: Sentry.Event): string;
-  captureFeedback(message: string, name?: string, email?: string, associatedEventId?: string): string;
-  lastEventId(): string;
-  addBreadcrumb(crumb: Breadcrumb): void;
-  addBytesAttachment(filename: string, bytes: Uint8Array, contentType: string): void;
-
-  // Transfers bytes from C++ to JavaScript (see BytesHandler)
-  addBytes(bytes: Uint8Array): number;
-
-  mergeJsonIntoObject(target: object, jsonString: string): void;
-  pushJsonToArray(target: any[], jsonString: string): void;
-  objectToJson(obj: object): string;
-}
-
 // Utility Functions
 function safeParseJSON<T = any>(json: string, fallback: T): T {
   if (json === "" || json === null || json === undefined) {
@@ -90,7 +49,7 @@ function parseAttributes(attributesJson: string): Record<string, any> {
 }
 
 // Main SentryBridge Implementation
-class SentryBridgeImpl implements SentryBridge {
+class SentryBridge {
   constructor() {
     // Sentry functions are imported directly
   }
@@ -98,7 +57,7 @@ class SentryBridgeImpl implements SentryBridge {
   /**
    * Initialize Sentry with provided options
    */
-  init(
+  public init(
     beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void | null,
     dsn: string,
     debug?: boolean,
@@ -158,21 +117,21 @@ class SentryBridgeImpl implements SentryBridge {
   /**
    * Close Sentry
    */
-  close(): void {
+  public close(): void {
     Sentry.close();
   }
 
   /**
    * Check if Sentry is enabled
    */
-  isEnabled(): boolean {
+  public isEnabled(): boolean {
     return Sentry.isEnabled();
   }
 
   /**
    * Set context with JSON value
    */
-  setContext(key: string, valueJson: string): void {
+  public setContext(key: string, valueJson: string): void {
     try {
       const value = JSON.parse(valueJson);
       Sentry.setContext(key, value);
@@ -184,28 +143,28 @@ class SentryBridgeImpl implements SentryBridge {
   /**
    * Remove context
    */
-  removeContext(key: string): void {
+  public removeContext(key: string): void {
     Sentry.setContext(key, null);
   }
 
   /**
    * Set tag
    */
-  setTag(key: string, value: string): void {
+  public setTag(key: string, value: string): void {
     Sentry.setTag(key, value);
   }
 
   /**
    * Remove tag
    */
-  removeTag(key: string): void {
+  public removeTag(key: string): void {
     Sentry.setTag(key, undefined);
   }
 
   /**
    * Set user information
    */
-  setUser(id?: string, username?: string, email?: string, ip?: string): void {
+  public setUser(id?: string, username?: string, email?: string, ip?: string): void {
     const user: User = {};
 
     if (id && id !== "") {
@@ -228,56 +187,56 @@ class SentryBridgeImpl implements SentryBridge {
   /**
    * Remove user
    */
-  removeUser(): void {
+  public removeUser(): void {
     Sentry.setUser(null);
   }
 
   /**
    * Log trace message with attributes
    */
-  logTrace(message: string, attributesJson?: string): void {
+  public logTrace(message: string, attributesJson?: string): void {
     Sentry.logger.trace(message, parseAttributes(attributesJson || ""));
   }
 
   /**
    * Log debug message with attributes
    */
-  logDebug(message: string, attributesJson?: string): void {
+  public logDebug(message: string, attributesJson?: string): void {
     Sentry.logger.debug(message, parseAttributes(attributesJson || ""));
   }
 
   /**
    * Log info message with attributes
    */
-  logInfo(message: string, attributesJson?: string): void {
+  public logInfo(message: string, attributesJson?: string): void {
     Sentry.logger.info(message, parseAttributes(attributesJson || ""));
   }
 
   /**
    * Log warning message with attributes
    */
-  logWarn(message: string, attributesJson?: string): void {
+  public logWarn(message: string, attributesJson?: string): void {
     Sentry.logger.warn(message, parseAttributes(attributesJson || ""));
   }
 
   /**
    * Log error message with attributes
    */
-  logError(message: string, attributesJson?: string): void {
+  public logError(message: string, attributesJson?: string): void {
     Sentry.logger.error(message, parseAttributes(attributesJson || ""));
   }
 
   /**
    * Log fatal message with attributes
    */
-  logFatal(message: string, attributesJson?: string): void {
+  public logFatal(message: string, attributesJson?: string): void {
     Sentry.logger.fatal(message, parseAttributes(attributesJson || ""));
   }
 
   /**
    * Capture message
    */
-  captureMessage(message: string, level?: string): string {
+  public captureMessage(message: string, level?: string): string {
     const sentryLevel = level as Sentry.SeverityLevel | undefined;
     return Sentry.captureMessage(message, sentryLevel);
   }
@@ -285,7 +244,7 @@ class SentryBridgeImpl implements SentryBridge {
   /*
    * Capture event
    */
-  captureEvent(event: Sentry.Event): string {
+  public captureEvent(event: Sentry.Event): string {
     try {
       return Sentry.captureEvent(event);
     } catch (error) {
@@ -297,7 +256,7 @@ class SentryBridgeImpl implements SentryBridge {
   /**
    * Capture user feedback
    */
-  captureFeedback(message: string, name?: string, email?: string, associatedEventId?: string): string {
+  public captureFeedback(message: string, name?: string, email?: string, associatedEventId?: string): string {
     const feedback: any = { message };
     if (name) {
       feedback.name = name;
@@ -314,14 +273,14 @@ class SentryBridgeImpl implements SentryBridge {
   /**
    * Get last event ID
    */
-  lastEventId(): string {
+  public lastEventId(): string {
     return Sentry.lastEventId() || "";
   }
 
   /**
    * Add breadcrumb
    */
-  addBreadcrumb(crumb: Breadcrumb): void {
+  public addBreadcrumb(crumb: Breadcrumb): void {
     try {
       Sentry.addBreadcrumb(crumb);
     } catch (error) {
@@ -332,7 +291,7 @@ class SentryBridgeImpl implements SentryBridge {
   /**
    * Add bytes attachment to the current scope
    */
-  addBytesAttachment(filename: string, bytes: Uint8Array, contentType: string): void {
+  public addBytesAttachment(filename: string, bytes: Uint8Array, contentType: string): void {
     try {
       const attachment = {
         filename,
@@ -349,7 +308,7 @@ class SentryBridgeImpl implements SentryBridge {
   /**
    * Merge properties from JSON content into target object
    */
-  mergeJsonIntoObject(target: object, jsonString: string): void {
+  public mergeJsonIntoObject(target: object, jsonString: string): void {
     const source = safeParseJSON(jsonString, {});
     Object.assign(target, source);
   }
@@ -357,7 +316,7 @@ class SentryBridgeImpl implements SentryBridge {
   /**
    * Deserialize object from JSON content and add it to target array
    */
-  pushJsonToArray(target: any[], jsonString: string): void {
+  public pushJsonToArray(target: any[], jsonString: string): void {
     const item = safeParseJSON(jsonString, null);
     if (item !== null) {
       target.push(item);
@@ -367,7 +326,7 @@ class SentryBridgeImpl implements SentryBridge {
   /**
    * Serialize object to JSON string
    */
-  objectToJson(obj: object): string {
+  public objectToJson(obj: object): string {
     try {
       return JSON.stringify(obj);
     } catch (error) {
@@ -379,13 +338,13 @@ class SentryBridgeImpl implements SentryBridge {
   /**
    * Store bytes and return an ID for later retrieval
    */
-  addBytes(bytes: Uint8Array): number {
+  public addBytes(bytes: Uint8Array): number {
     return BytesHandler.add(bytes);
   }
 }
 
 // Create and export the bridge instance
-const sentryBridge = new SentryBridgeImpl();
+const sentryBridge = new SentryBridge();
 
 // Export to global window object to maintain compatibility with existing API
 if (typeof window !== "undefined") {
