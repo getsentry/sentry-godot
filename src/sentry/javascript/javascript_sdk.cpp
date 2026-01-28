@@ -113,10 +113,6 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 	}
 }
 
-void JavaScriptBeforeSendHandler::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_handle_before_send"), &JavaScriptBeforeSendHandler::handle_before_send);
-}
-
 // *** JavaScriptSDK
 
 void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) {
