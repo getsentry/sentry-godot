@@ -25,12 +25,15 @@ const BytesHandler = {
   },
 };
 
+// Stores information about attachment added from C++ layer during event processing.
+// Attachment data is stored in BytesHandler and referenced by id.
 interface AttachmentData {
   id: number;
   filename: string;
 }
 
-// Utility Functions
+// *** Utility Functions
+
 function safeParseJSON<T = any>(json: string, fallback: T): T {
   if (json === "" || json === null || json === undefined) {
     return fallback;
@@ -48,11 +51,10 @@ function parseAttributes(attributesJson: string): Record<string, any> {
   return safeParseJSON(attributesJson, {});
 }
 
-// Main SentryBridge Implementation
+// *** SentryBridge
+
 class SentryBridge {
-  constructor() {
-    // Sentry functions are imported directly
-  }
+  constructor() {}
 
   /**
    * Initialize Sentry with provided options
@@ -343,10 +345,8 @@ class SentryBridge {
   }
 }
 
-// Create and export the bridge instance
 const sentryBridge = new SentryBridge();
 
-// Export to global window object to maintain compatibility with existing API
 if (typeof window !== "undefined") {
   (window as any).SentryBridge = sentryBridge;
 }
