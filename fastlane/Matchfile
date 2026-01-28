@@ -6,4 +6,4 @@ storage_mode("git")
 username("bot@getsentry.com") # Your Apple Developer Portal username
 
 shallow_clone(true)
-readonly(true)
+readonly(false)
