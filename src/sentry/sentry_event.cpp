@@ -7,7 +7,6 @@
 
 namespace sentry {
 
-// Converts exception data to a JSON string representation.
 String SentryEvent::Exception::to_json() const {
 	sentry::util::JSONWriter jw;
 	jw.begin_object(); // exception {

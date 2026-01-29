@@ -170,7 +170,7 @@ void JavaScriptEvent::add_exception(const Exception &p_exception) {
 	Ref<JavaScriptObject> exception_obj = js_obj_get_or_create_object_property(js_obj, "exception");
 	Ref<JavaScriptObject> values_arr = js_obj_get_or_create_array_property(exception_obj, "values");
 
-	js_push_json_to_array(values_arr, exception_to_json(p_exception));
+	js_push_json_to_array(values_arr, p_exception.to_json());
 }
 
 int JavaScriptEvent::get_exception_count() const {
