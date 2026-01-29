@@ -1,5 +1,6 @@
 #include "javascript_util.h"
 
+#include "javascript_string_names.h"
 #include "sentry/util/json_writer.h"
 
 #include <godot_cpp/classes/engine.hpp>
@@ -50,38 +51,40 @@ Ref<JavaScriptObject> js_sentry_bridge() {
 	static Ref<JavaScriptObject> bridge;
 	if (unlikely(bridge.is_null())) {
 		ERR_FAIL_COND_V_MSG(!Engine::get_singleton()->has_singleton("JavaScriptBridge"), bridge, "JavaScriptBridge singleton is not unavailable but required.");
-		bridge = JavaScriptBridge::get_singleton()->get_interface("SentryBridge");
+		bridge = JavaScriptBridge::get_singleton()->get_interface(JAVASCRIPT_SN(SentryBridge));
 	}
 	return bridge;
 }
 
 void js_delete_property(const Ref<JavaScriptObject> &p_object, const String &p_key) {
 	ERR_FAIL_COND(p_object.is_null());
-	// TODO: cache singleton
-	Ref<JavaScriptObject> reflect = JavaScriptBridge::get_singleton()->get_interface("Reflect");
+	static Ref<JavaScriptObject> reflect;
+	if (unlikely(reflect.is_null())) {
+		reflect = JavaScriptBridge::get_singleton()->get_interface(JAVASCRIPT_SN(Reflect));
+	}
 	ERR_FAIL_COND(reflect.is_null());
-	reflect->call("deleteProperty", p_object, p_key);
+	reflect->call(JAVASCRIPT_SN(deleteProperty), p_object, p_key);
 }
 
 void js_push_json_to_array(const Ref<JavaScriptObject> &p_array, const String &p_json) {
 	ERR_FAIL_COND(p_array.is_null());
 	Ref<JavaScriptObject> bridge = js_sentry_bridge();
 	ERR_FAIL_COND(bridge.is_null());
-	bridge->call("pushJsonObjectToArray", p_array, p_json);
+	bridge->call(JAVASCRIPT_SN(pushJsonObjectToArray), p_array, p_json);
 }
 
 String js_object_to_json(const Ref<JavaScriptObject> &p_object) {
 	ERR_FAIL_COND_V(p_object.is_null(), String());
 	Ref<JavaScriptObject> bridge = js_sentry_bridge();
 	ERR_FAIL_COND_V(bridge.is_null(), String());
-	return bridge->call("objectToJson", p_object);
+	return bridge->call(JAVASCRIPT_SN(objectToJson), p_object);
 }
 
 void js_merge_json_into_object(const Ref<JavaScriptObject> &p_target, const String &p_json) {
 	ERR_FAIL_COND(p_target.is_null());
 	Ref<JavaScriptObject> bridge = js_sentry_bridge();
 	ERR_FAIL_COND(bridge.is_null());
-	bridge->call("mergeJsonIntoObject", p_target, p_json);
+	bridge->call(JAVASCRIPT_SN(mergeJsonIntoObject), p_target, p_json);
 }
 
 } // namespace sentry::javascript

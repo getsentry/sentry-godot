@@ -2,6 +2,7 @@
 
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/javascript/javascript_event.h"
+#include "sentry/javascript/javascript_string_names.h"
 #include "sentry/javascript/javascript_util.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
@@ -73,9 +74,9 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 	//       event object to communicate the result back.
 	if (unlikely(processed.is_null())) {
 		// Discard event.
-		event_obj->set("shouldDiscard", true);
+		event_obj->set(JAVASCRIPT_SN(shouldDiscard), true);
 	} else {
-		event_obj->set("shouldDiscard", false);
+		event_obj->set(JAVASCRIPT_SN(shouldDiscard), false);
 
 		// Read file-based attachments and include them with the event.
 		Vector<Ref<SentryAttachment>> file_attachments = _file_attachments_getter.call();
@@ -107,16 +108,16 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 				continue;
 			}
 
-			Ref<JavaScriptObject> attachment_data = JavaScriptBridge::get_singleton()->create_object("Object");
-			attachment_data->set("id", bytes_id);
-			attachment_data->set("filename", att->get_path().get_file());
+			Ref<JavaScriptObject> attachment_data = JavaScriptBridge::get_singleton()->create_object(JAVASCRIPT_SN(Object));
+			attachment_data->set(JAVASCRIPT_SN(id), bytes_id);
+			attachment_data->set(JAVASCRIPT_SN(filename), att->get_path().get_file());
 			if (!att->get_attachment_type().is_empty()) {
-				attachment_data->set("attachmentType", att->get_attachment_type());
+				attachment_data->set(JAVASCRIPT_SN(attachmentType), att->get_attachment_type());
 			}
 			if (!att->get_content_type().is_empty()) {
-				attachment_data->set("contentType", att->get_content_type());
+				attachment_data->set(JAVASCRIPT_SN(contentType), att->get_content_type());
 			}
-			out_attachments->call("push", attachment_data);
+			out_attachments->call(JAVASCRIPT_SN(push), attachment_data);
 		}
 	}
 }
@@ -125,30 +126,30 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 
 void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
-	js_sentry_bridge()->call("setContext", p_key, JSON::stringify(p_value), String(), false);
+	js_sentry_bridge()->call(JAVASCRIPT_SN(setContext), p_key, JSON::stringify(p_value), String(), false);
 }
 
 void JavaScriptSDK::remove_context(const String &p_key) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
-	js_sentry_bridge()->call("removeContext", p_key);
+	js_sentry_bridge()->call(JAVASCRIPT_SN(removeContext), p_key);
 }
 
 void JavaScriptSDK::set_tag(const String &p_key, const String &p_value) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
-	js_sentry_bridge()->call("setTag", p_key, p_value);
+	js_sentry_bridge()->call(JAVASCRIPT_SN(setTag), p_key, p_value);
 }
 
 void JavaScriptSDK::remove_tag(const String &p_key) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
-	js_sentry_bridge()->call("removeTag", p_key);
+	js_sentry_bridge()->call(JAVASCRIPT_SN(removeTag), p_key);
 }
 
 void JavaScriptSDK::set_user(const Ref<SentryUser> &p_user) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
 	if (p_user.is_null()) {
-		js_sentry_bridge()->call("removeUser");
+		js_sentry_bridge()->call(JAVASCRIPT_SN(removeUser));
 	} else {
-		js_sentry_bridge()->call("setUser",
+		js_sentry_bridge()->call(JAVASCRIPT_SN(setUser),
 				p_user->get_id(),
 				p_user->get_username(),
 				p_user->get_email(),
@@ -158,7 +159,7 @@ void JavaScriptSDK::set_user(const Ref<SentryUser> &p_user) {
 
 void JavaScriptSDK::remove_user() {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
-	js_sentry_bridge()->call("removeUser");
+	js_sentry_bridge()->call(JAVASCRIPT_SN(removeUser));
 }
 
 Ref<SentryBreadcrumb> JavaScriptSDK::create_breadcrumb() {
@@ -172,7 +173,7 @@ void JavaScriptSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	}
 	JavaScriptBreadcrumb *crumb = Object::cast_to<JavaScriptBreadcrumb>(p_breadcrumb.ptr());
 	ERR_FAIL_NULL(crumb);
-	js_sentry_bridge()->call("addBreadcrumb", crumb->get_js_object());
+	js_sentry_bridge()->call(JAVASCRIPT_SN(addBreadcrumb), crumb->get_js_object());
 }
 
 void JavaScriptSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
@@ -182,34 +183,34 @@ void JavaScriptSDK::log(LogLevel p_level, const String &p_body, const Dictionary
 
 	switch (p_level) {
 		case LOG_LEVEL_TRACE: {
-			js_sentry_bridge()->call("logTrace", p_body, attr_value);
+			js_sentry_bridge()->call(JAVASCRIPT_SN(logTrace), p_body, attr_value);
 		} break;
 		case LOG_LEVEL_DEBUG: {
-			js_sentry_bridge()->call("logDebug", p_body, attr_value);
+			js_sentry_bridge()->call(JAVASCRIPT_SN(logDebug), p_body, attr_value);
 		} break;
 		case LOG_LEVEL_INFO: {
-			js_sentry_bridge()->call("logInfo", p_body, attr_value);
+			js_sentry_bridge()->call(JAVASCRIPT_SN(logInfo), p_body, attr_value);
 		} break;
 		case LOG_LEVEL_WARN: {
-			js_sentry_bridge()->call("logWarn", p_body, attr_value);
+			js_sentry_bridge()->call(JAVASCRIPT_SN(logWarn), p_body, attr_value);
 		} break;
 		case LOG_LEVEL_ERROR: {
-			js_sentry_bridge()->call("logError", p_body, attr_value);
+			js_sentry_bridge()->call(JAVASCRIPT_SN(logError), p_body, attr_value);
 		} break;
 		case LOG_LEVEL_FATAL: {
-			js_sentry_bridge()->call("logFatal", p_body, attr_value);
+			js_sentry_bridge()->call(JAVASCRIPT_SN(logFatal), p_body, attr_value);
 		} break;
 	}
 }
 
 String JavaScriptSDK::capture_message(const String &p_message, Level p_level) {
 	ERR_FAIL_COND_V(js_sentry_bridge().is_null(), String());
-	return js_sentry_bridge()->call("captureMessage", p_message, level_as_string(p_level));
+	return js_sentry_bridge()->call(JAVASCRIPT_SN(captureMessage), p_message, level_as_string(p_level));
 }
 
 String JavaScriptSDK::get_last_event_id() {
 	ERR_FAIL_COND_V(js_sentry_bridge().is_null(), String());
-	return js_sentry_bridge()->call("lastEventId");
+	return js_sentry_bridge()->call(JAVASCRIPT_SN(lastEventId));
 }
 
 Ref<SentryEvent> JavaScriptSDK::create_event() {
@@ -220,7 +221,7 @@ String JavaScriptSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_COND_V(js_sentry_bridge().is_null(), String());
 	JavaScriptEvent *ev = Object::cast_to<JavaScriptEvent>(p_event.ptr());
 	ERR_FAIL_NULL_V(ev, String());
-	return js_sentry_bridge()->call("captureEvent", ev->get_js_object());
+	return js_sentry_bridge()->call(JAVASCRIPT_SN(captureEvent), ev->get_js_object());
 }
 
 void JavaScriptSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
@@ -228,7 +229,7 @@ void JavaScriptSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
 
-	js_sentry_bridge()->call("captureFeedback",
+	js_sentry_bridge()->call(JAVASCRIPT_SN(captureFeedback),
 			p_feedback->get_message(),
 			p_feedback->get_name(),
 			p_feedback->get_contact_email(),
@@ -274,7 +275,7 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 
 	_before_send_js_callback = JavaScriptBridge::get_singleton()->create_callback(callable_mp(_before_send_handler, &JavaScriptBeforeSendHandler::handle_before_send));
 
-	js_sentry_bridge()->call("init",
+	js_sentry_bridge()->call(JAVASCRIPT_SN(init),
 			_before_send_js_callback,
 			SentryOptions::get_singleton()->get_dsn(),
 			SentryOptions::get_singleton()->is_debug_enabled(),
@@ -289,7 +290,7 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 void JavaScriptSDK::close() {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
 
-	js_sentry_bridge()->call("close");
+	js_sentry_bridge()->call(JAVASCRIPT_SN(close));
 
 	_before_send_js_callback.unref();
 	file_attachments.clear();
@@ -297,10 +298,12 @@ void JavaScriptSDK::close() {
 
 bool JavaScriptSDK::is_enabled() const {
 	ERR_FAIL_COND_V(js_sentry_bridge().is_null(), false);
-	return js_sentry_bridge()->call("isEnabled");
+	return js_sentry_bridge()->call(JAVASCRIPT_SN(isEnabled));
 }
 
 JavaScriptSDK::JavaScriptSDK() {
+	JavaScriptStringNames::create_singleton();
+
 	auto getter_func = [](void *ctx) -> Vector<Ref<SentryAttachment>> {
 		return static_cast<JavaScriptSDK *>(ctx)->_get_file_attachments();
 	};
@@ -310,6 +313,8 @@ JavaScriptSDK::JavaScriptSDK() {
 }
 
 JavaScriptSDK::~JavaScriptSDK() {
+	JavaScriptStringNames::destroy_singleton();
+
 	memdelete(_before_send_handler);
 	_before_send_handler = nullptr;
 }
