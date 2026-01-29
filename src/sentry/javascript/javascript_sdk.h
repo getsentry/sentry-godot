@@ -8,6 +8,7 @@ using namespace godot;
 
 namespace sentry::javascript {
 
+// Handles event processing
 class JavaScriptBeforeSendHandler : public Object {
 	GDCLASS(JavaScriptBeforeSendHandler, Object);
 
@@ -40,8 +41,8 @@ public:
 // Internal SDK utilizing Sentry for JavaScript.
 class JavaScriptSDK : public InternalSDK {
 private:
-	// NOTE: Need to keep ref alive for as long as it's needed.
-	Ref<JavaScriptObject> _before_send_callback;
+	// NOTE: Need to keep this ref alive for as long as it's needed.
+	Ref<JavaScriptObject> _before_send_js_callback;
 
 	JavaScriptBeforeSendHandler *_before_send_handler;
 

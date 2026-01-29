@@ -44,7 +44,7 @@ try {
 			"addBytesAttachment",
 			"addBytes",
 			"mergeJsonIntoObject",
-			"pushJsonToArray",
+			"pushJsonObjectToArray",
 			"objectToJson",
 		];
 
@@ -213,13 +213,13 @@ try {
 			failureCount++;
 		}
 
-		// Test pushJsonToArray
+		// Test pushJsonObjectToArray
 		try {
 			const arr = [ "existing" ];
-			bridge.pushJsonToArray(arr, '{"item": "value"}');
-			console.log("✅ pushJsonToArray() works, result:", arr);
+			bridge.pushJsonObjectToArray(arr, '{"item": "value"}');
+			console.log("✅ pushJsonObjectToArray() works, result:", arr);
 		} catch (e) {
-			console.log("❌ pushJsonToArray() failed:", e.message);
+			console.log("❌ pushJsonObjectToArray() failed:", e.message);
 			failureCount++;
 		}
 

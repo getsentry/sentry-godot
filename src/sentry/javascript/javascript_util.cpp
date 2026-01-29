@@ -67,7 +67,7 @@ void js_push_json_to_array(const Ref<JavaScriptObject> &p_array, const String &p
 	ERR_FAIL_COND(p_array.is_null());
 	Ref<JavaScriptObject> bridge = js_sentry_bridge();
 	ERR_FAIL_COND(bridge.is_null());
-	bridge->call("pushJsonToArray", p_array, p_json);
+	bridge->call("pushJsonObjectToArray", p_array, p_json);
 }
 
 String js_object_to_json(const Ref<JavaScriptObject> &p_object) {

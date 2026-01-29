@@ -9,7 +9,7 @@
 
 namespace {
 
-// Get or create an object property in the JS object, returning it.
+// Returns an object property from a JS object, creating/assigning if missing.
 Ref<JavaScriptObject> js_obj_get_or_create_object_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property) {
 	Ref<JavaScriptObject> prop_obj = p_object->get(p_property);
 	if (prop_obj.is_null()) {
@@ -19,7 +19,7 @@ Ref<JavaScriptObject> js_obj_get_or_create_object_property(const Ref<JavaScriptO
 	return prop_obj;
 }
 
-// Get or create an array property in the JS object, returning it.
+// Returns an array property from a JS object, creating/assigning if missing.
 Ref<JavaScriptObject> js_obj_get_or_create_array_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property) {
 	Ref<JavaScriptObject> prop_obj = p_object->get(p_property);
 	if (prop_obj.is_null()) {

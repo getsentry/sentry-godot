@@ -25,8 +25,8 @@ const BytesHandler = {
   },
 };
 
-// Stores information about attachment added from C++ layer during event processing.
-// Attachment data is stored in BytesHandler and referenced by id.
+// Stores info about attachments loaded from C++ layer during event processing.
+// The content is stored in BytesHandler and referenced by id.
 interface AttachmentData {
   id: number;
   filename: string;
@@ -56,9 +56,6 @@ function parseAttributes(attributesJson: string): Record<string, any> {
 class SentryBridge {
   constructor() {}
 
-  /**
-   * Initialize Sentry with provided options
-   */
   public init(
     beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void | null,
     dsn: string,
@@ -89,7 +86,7 @@ class SentryBridge {
 
         // console.debug("Byte buffers before adding attachments: ", BytesHandler.size());
 
-        // Add attachments added during processing in C++ layer
+        // Add attachments loaded from the C++ layer during event processing
         if (!hint.attachments) {
           hint.attachments = [];
         }
@@ -116,23 +113,14 @@ class SentryBridge {
     Sentry.init(options);
   }
 
-  /**
-   * Close Sentry
-   */
   public close(): void {
     Sentry.close();
   }
 
-  /**
-   * Check if Sentry is enabled
-   */
   public isEnabled(): boolean {
     return Sentry.isEnabled();
   }
 
-  /**
-   * Set context with JSON value
-   */
   public setContext(key: string, valueJson: string): void {
     try {
       const value = JSON.parse(valueJson);
@@ -142,30 +130,18 @@ class SentryBridge {
     }
   }
 
-  /**
-   * Remove context
-   */
   public removeContext(key: string): void {
     Sentry.setContext(key, null);
   }
 
-  /**
-   * Set tag
-   */
   public setTag(key: string, value: string): void {
     Sentry.setTag(key, value);
   }
 
-  /**
-   * Remove tag
-   */
   public removeTag(key: string): void {
     Sentry.setTag(key, undefined);
   }
 
-  /**
-   * Set user information
-   */
   public setUser(id?: string, username?: string, email?: string, ip?: string): void {
     const user: User = {};
 
@@ -186,66 +162,39 @@ class SentryBridge {
     Sentry.setUser(user);
   }
 
-  /**
-   * Remove user
-   */
   public removeUser(): void {
     Sentry.setUser(null);
   }
 
-  /**
-   * Log trace message with attributes
-   */
   public logTrace(message: string, attributesJson?: string): void {
     Sentry.logger.trace(message, parseAttributes(attributesJson || ""));
   }
 
-  /**
-   * Log debug message with attributes
-   */
   public logDebug(message: string, attributesJson?: string): void {
     Sentry.logger.debug(message, parseAttributes(attributesJson || ""));
   }
 
-  /**
-   * Log info message with attributes
-   */
   public logInfo(message: string, attributesJson?: string): void {
     Sentry.logger.info(message, parseAttributes(attributesJson || ""));
   }
 
-  /**
-   * Log warning message with attributes
-   */
   public logWarn(message: string, attributesJson?: string): void {
     Sentry.logger.warn(message, parseAttributes(attributesJson || ""));
   }
 
-  /**
-   * Log error message with attributes
-   */
   public logError(message: string, attributesJson?: string): void {
     Sentry.logger.error(message, parseAttributes(attributesJson || ""));
   }
 
-  /**
-   * Log fatal message with attributes
-   */
   public logFatal(message: string, attributesJson?: string): void {
     Sentry.logger.fatal(message, parseAttributes(attributesJson || ""));
   }
 
-  /**
-   * Capture message
-   */
   public captureMessage(message: string, level?: string): string {
     const sentryLevel = level as Sentry.SeverityLevel | undefined;
     return Sentry.captureMessage(message, sentryLevel);
   }
 
-  /*
-   * Capture event
-   */
   public captureEvent(event: Sentry.Event): string {
     try {
       return Sentry.captureEvent(event);
@@ -255,9 +204,6 @@ class SentryBridge {
     }
   }
 
-  /**
-   * Capture user feedback
-   */
   public captureFeedback(message: string, name?: string, email?: string, associatedEventId?: string): string {
     const feedback: any = { message };
     if (name) {
@@ -272,16 +218,10 @@ class SentryBridge {
     return Sentry.captureFeedback(feedback);
   }
 
-  /**
-   * Get last event ID
-   */
   public lastEventId(): string {
     return Sentry.lastEventId() || "";
   }
 
-  /**
-   * Add breadcrumb
-   */
   public addBreadcrumb(crumb: Breadcrumb): void {
     try {
       Sentry.addBreadcrumb(crumb);
@@ -290,9 +230,6 @@ class SentryBridge {
     }
   }
 
-  /**
-   * Add bytes attachment to the current scope
-   */
   public addBytesAttachment(filename: string, bytes: Uint8Array, contentType: string): void {
     try {
       const attachment = {
@@ -307,27 +244,18 @@ class SentryBridge {
     }
   }
 
-  /**
-   * Merge properties from JSON content into target object
-   */
   public mergeJsonIntoObject(target: object, jsonString: string): void {
     const source = safeParseJSON(jsonString, {});
     Object.assign(target, source);
   }
 
-  /**
-   * Deserialize object from JSON content and add it to target array
-   */
-  public pushJsonToArray(target: any[], jsonString: string): void {
+  public pushJsonObjectToArray(target: any[], jsonString: string): void {
     const item = safeParseJSON(jsonString, null);
     if (item !== null) {
       target.push(item);
     }
   }
 
-  /**
-   * Serialize object to JSON string
-   */
   public objectToJson(obj: object): string {
     try {
       return JSON.stringify(obj);
@@ -337,9 +265,6 @@ class SentryBridge {
     }
   }
 
-  /**
-   * Store bytes and return an ID for later retrieval
-   */
   public addBytes(bytes: Uint8Array): number {
     return BytesHandler.add(bytes);
   }

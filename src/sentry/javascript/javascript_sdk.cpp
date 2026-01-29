@@ -66,9 +66,6 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 	Ref<JavaScriptObject> out_attachments = p_args[1];
 	ERR_FAIL_COND(out_attachments.is_null());
 
-	// Get file attachments via the getter.
-	PackedStringArray file_attachments = _file_attachments_getter.call();
-
 	Ref<sentry::javascript::JavaScriptEvent> event = memnew(sentry::javascript::JavaScriptEvent(event_obj));
 	Ref<sentry::javascript::JavaScriptEvent> processed = sentry::process_event(event);
 
@@ -80,7 +77,8 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 	} else {
 		event_obj->set("shouldDiscard", false);
 
-		// Add file-based attachments
+		// Read file-based attachments and include them with the event.
+		PackedStringArray file_attachments = _file_attachments_getter.call();
 		for (const String &path : file_attachments) {
 			Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ);
 			if (file.is_null()) {
@@ -103,7 +101,6 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 				continue;
 			}
 
-			// Create attachment data object and push to outAttachments array
 			Ref<JavaScriptObject> attachment_data = JavaScriptBridge::get_singleton()->create_object("Object");
 			attachment_data->set("id", bytes_id);
 			attachment_data->set("filename", path.get_file());
@@ -232,9 +229,10 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
 
 	if (!p_attachment->get_path().is_empty()) {
+		// Add attachment to list for on-demand loading during event processing.
 		file_attachments.append(p_attachment->get_path());
 	} else {
-		// Bytes attachment
+		// Bytes attachment - added immediately
 		PackedByteArray bytes = p_attachment->get_bytes();
 		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
 		String filename = p_attachment->get_filename();
@@ -258,10 +256,10 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 		}
 	}
 
-	_before_send_callback = JavaScriptBridge::get_singleton()->create_callback(callable_mp(_before_send_handler, &JavaScriptBeforeSendHandler::handle_before_send));
+	_before_send_js_callback = JavaScriptBridge::get_singleton()->create_callback(callable_mp(_before_send_handler, &JavaScriptBeforeSendHandler::handle_before_send));
 
 	js_sentry_bridge()->call("init",
-			_before_send_callback,
+			_before_send_js_callback,
 			SentryOptions::get_singleton()->get_dsn(),
 			SentryOptions::get_singleton()->is_debug_enabled(),
 			SentryOptions::get_singleton()->get_release(),
@@ -277,7 +275,7 @@ void JavaScriptSDK::close() {
 
 	js_sentry_bridge()->call("close");
 
-	_before_send_callback.unref();
+	_before_send_js_callback.unref();
 	file_attachments.clear();
 }
 

@@ -25,70 +25,70 @@ private:
 public:
 	JSONWriter() = default;
 
-	// Start an object: {
+	// Starts an object: {
 	void begin_object() {
 		_maybe_comma();
 		json += "{";
 		needs_comma = false;
 	}
 
-	// End an object: }
+	// Ends an object: }
 	void end_object() {
 		json += "}";
 		needs_comma = true;
 	}
 
-	// Start an array: [
+	// Starts an array: [
 	void begin_array() {
 		_maybe_comma();
 		json += "[";
 		needs_comma = false;
 	}
 
-	// End an array: ]
+	// Ends an array: ]
 	void end_array() {
 		json += "]";
 		needs_comma = true;
 	}
 
-	// Write a key (for objects): "key":
+	// Writes a key (for objects): "key":
 	void key(const String &p_key) {
 		_maybe_comma();
 		json += "\"" + p_key.json_escape() + "\":";
 		needs_comma = false;
 	}
 
-	// Write a string value: "value"
+	// Writes an escaped string value: "value"
 	void value_string(const String &p_value) {
 		_maybe_comma();
 		json += "\"" + p_value.json_escape() + "\"";
 	}
 
-	// Write an integer value
+	// Writes an integer value
 	void value_int(int64_t p_value) {
 		_maybe_comma();
 		json += String::num_int64(p_value);
 	}
 
-	// Write a float value
+	// Writes a float value
 	void value_float(double p_value) {
 		_maybe_comma();
 		json += String::num(p_value);
 	}
 
-	// Write a boolean value: true or false
+	// Writes a boolean value: true or false
 	void value_bool(bool p_value) {
 		_maybe_comma();
 		json += p_value ? "true" : "false";
 	}
 
-	// Write a null value
+	// Writes a null value
 	void value_null() {
 		_maybe_comma();
 		json += "null";
 	}
 
-	// Write a Variant value (auto-detects type)
+	// Writes a Variant value (auto-detects type)
 	void value_variant(const Variant &p_value) {
 		switch (p_value.get_type()) {
 			case Variant::NIL:
@@ -114,37 +114,37 @@ public:
 		}
 	}
 
-	// Write a key-value pair with string value
+	// Writes a key-value pair with string value
 	void kv_string(const String &p_key, const String &p_value) {
 		key(p_key);
 		value_string(p_value);
 	}
 
-	// Write a key-value pair with integer value
+	// Writes a key-value pair with integer value
 	void kv_int(const String &p_key, int64_t p_value) {
 		key(p_key);
 		value_int(p_value);
 	}
 
-	// Write a key-value pair with float value
+	// Writes a key-value pair with float value
 	void kv_float(const String &p_key, double p_value) {
 		key(p_key);
 		value_float(p_value);
 	}
 
-	// Write a key-value pair with boolean value
+	// Writes a key-value pair with boolean value
 	void kv_bool(const String &p_key, bool p_value) {
 		key(p_key);
 		value_bool(p_value);
 	}
 
-	// Write a key-value pair with Variant value
+	// Writes a key-value pair with Variant value
 	void kv_variant(const String &p_key, const Variant &p_value) {
 		key(p_key);
 		value_variant(p_value);
 	}
 
-	// Write a string array as JSON array
+	// Writes a string array as JSON array
 	void value_string_array(const PackedStringArray &p_array) {
 		begin_array();
 		for (int i = 0; i < p_array.size(); i++) {
@@ -153,13 +153,13 @@ public:
 		end_array();
 	}
 
-	// Write a key-value pair with string array value
+	// Writes a key-value pair with string array value
 	void kv_string_array(const String &p_key, const PackedStringArray &p_array) {
 		key(p_key);
 		value_string_array(p_array);
 	}
 
-	// Get the resulting JSON string
+	// Returns the resulting JSON string
 	String get_string() const {
 		return json;
 	}
