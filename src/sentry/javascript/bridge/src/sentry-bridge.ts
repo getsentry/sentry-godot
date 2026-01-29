@@ -162,7 +162,6 @@ class SentryBridge {
       user.ip_address = ip;
     }
 
-    console.log("setting user ", user);
     Sentry.setUser(user);
   }
 
