@@ -1,34 +1,38 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
 
-// Stores bytes data passed from C++ layer with ID-based retrieval.
+// Stores byte buffers passed from C++ layer with ID-based retrieval.
 // Uses uint32_t range (0 to 4294967295) to stay safe within JavaScript's integer precision.
-const BytesHandler = {
-  _lastId: 0,
-  _refs: {} as Record<number, Uint8Array>,
+class ByteStore {
+  private _lastId = 0;
+  private _buffers = new Map<number, Uint8Array>();
 
-  get(id: number): Uint8Array | undefined {
-    return BytesHandler._refs[id];
-  },
+  public get(id: number): Uint8Array | undefined {
+    return this._buffers.get(id);
+  }
 
-  add(bytes: Uint8Array): number {
+  public add(bytes: Uint8Array): number {
     // Wrap around within uint32_t range (0 is reserved for error)
-    BytesHandler._lastId = (BytesHandler._lastId % 0xffffffff) + 1;
-    BytesHandler._refs[BytesHandler._lastId] = bytes;
-    return BytesHandler._lastId;
-  },
+    this._lastId = (this._lastId % 0xffffffff) + 1;
+    this._buffers.set(this._lastId, bytes);
+    return this._lastId;
+  }
 
-  remove(id: number): void {
-    delete BytesHandler._refs[id];
-  },
+  public remove(id: number): void {
+    this._buffers.delete(id);
+  }
 
-  size(): number {
-    return Object.keys(BytesHandler._refs).length;
-  },
-};
+  public size(): number {
+    return this._buffers.size;
+  }
+
+  public clear(): void {
+    this._buffers.clear();
+  }
+}
 
 // Stores info about attachments loaded from C++ layer during event processing.
-// The content is stored in BytesHandler and referenced by id.
+// The content is stored in ByteStore and referenced by id.
 interface AttachmentData {
   id: number;
   filename: string;
@@ -60,6 +64,8 @@ function parseAttributes(attributesJson: string): Record<string, any> {
 class SentryBridge {
   constructor() {}
 
+  private _byteStore = new ByteStore();
+
   public init(
     beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void | null,
     dsn: string,
@@ -88,14 +94,14 @@ class SentryBridge {
 
         beforeSendCallback(event, outAttachments);
 
-        // console.debug("Byte buffers before adding attachments: ", BytesHandler.size());
+        // console.debug("Byte buffers before adding attachments: ", ByteStore.size());
 
         // Add attachments loaded from the C++ layer during event processing
         if (!hint.attachments) {
           hint.attachments = [];
         }
         for (var attachmentData of outAttachments) {
-          var bytes = BytesHandler.get(attachmentData.id);
+          var bytes = this._byteStore.get(attachmentData.id);
           if (bytes) {
             hint.attachments.push({
               data: bytes,
@@ -103,11 +109,11 @@ class SentryBridge {
               ...(attachmentData.contentType && { contentType: attachmentData.contentType }),
               ...(attachmentData.attachmentType && { attachmentType: attachmentData.attachmentType }),
             } as any);
-            BytesHandler.remove(attachmentData.id);
+            this._byteStore.remove(attachmentData.id);
           }
         }
 
-        // console.debug("Byte buffers remaining after adding attachments: ", BytesHandler.size());
+        // console.debug("Byte buffers remaining after adding attachments: ", ByteStore.size());
 
         var shouldDiscard: boolean = (event as any).shouldDiscard;
         delete (event as any).shouldDiscard;
@@ -121,6 +127,7 @@ class SentryBridge {
 
   public close(): void {
     Sentry.close();
+    this._byteStore.clear();
   }
 
   public isEnabled(): boolean {
@@ -271,7 +278,7 @@ class SentryBridge {
   }
 
   public addBytes(bytes: Uint8Array): number {
-    return BytesHandler.add(bytes);
+    return this._byteStore.add(bytes);
   }
 }
 
