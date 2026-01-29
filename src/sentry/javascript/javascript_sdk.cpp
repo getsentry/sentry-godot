@@ -35,7 +35,7 @@ EM_JS(void, sentry_add_bytes_attachment, (const char *filename, const uint8_t *d
 });
 
 // Emscripten JS function to push bytes directly to bridge layer and return id for later retrieval.
-EM_JS(uint8_t, add_bytes, (const uint8_t *data, int size), {
+EM_JS(uint32_t, add_bytes, (const uint8_t *data, int size), {
 	try {
 		var bytes = new Uint8Array(size);
 		bytes.set(HEAPU8.subarray(data, data + size));
@@ -102,7 +102,7 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 
 			sentry::logging::print_debug("Adding attachment: " + att->get_path());
 
-			uint8_t bytes_id = em_js::add_bytes(bytes.ptr(), bytes.size());
+			uint32_t bytes_id = em_js::add_bytes(bytes.ptr(), bytes.size());
 			if (bytes_id == 0) {
 				sentry::logging::print_warning("Failed to push attachment bytes to JS: " + att->get_path());
 				continue;

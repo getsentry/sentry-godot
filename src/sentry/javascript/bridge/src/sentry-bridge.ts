@@ -2,26 +2,28 @@ import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
 
 // Stores bytes data passed from C++ layer with ID-based retrieval.
+// Uses uint32_t range (0 to 4294967295) to stay safe within JavaScript's integer precision.
 const BytesHandler = {
   _lastId: 0,
-  _references: {} as Record<number, Uint8Array>,
+  _refs: {} as Record<number, Uint8Array>,
 
   get(id: number): Uint8Array | undefined {
-    return BytesHandler._references[id];
+    return BytesHandler._refs[id];
   },
 
   add(bytes: Uint8Array): number {
-    const id = ++BytesHandler._lastId;
-    BytesHandler._references[id] = bytes;
-    return id;
+    // Wrap around within uint32_t range (0 is reserved for error)
+    BytesHandler._lastId = (BytesHandler._lastId % 0xffffffff) + 1;
+    BytesHandler._refs[BytesHandler._lastId] = bytes;
+    return BytesHandler._lastId;
   },
 
   remove(id: number): void {
-    delete BytesHandler._references[id];
+    delete BytesHandler._refs[id];
   },
 
   size(): number {
-    return Object.keys(BytesHandler._references).length;
+    return Object.keys(BytesHandler._refs).length;
   },
 };
 
