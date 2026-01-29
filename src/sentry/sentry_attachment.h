@@ -22,6 +22,7 @@ private:
 	String path;
 	String filename;
 	String content_type;
+	String attachment_type;
 
 #ifdef SDK_NATIVE
 	sentry_attachment_t *native_attachment = nullptr;
@@ -45,6 +46,10 @@ public:
 
 	String get_content_type() const { return content_type; }
 	void set_content_type(const String &p_content_type) { content_type = p_content_type; }
+
+	// NOTE: "attachment_type" property is not exposed in the API
+	String get_attachment_type() const { return attachment_type; }
+	void set_attachment_type(const String &p_attachment_type) { attachment_type = p_attachment_type; }
 
 	String get_content_type_or_default() const { return content_type.is_empty() ? "application/octet-stream" : content_type; }
 

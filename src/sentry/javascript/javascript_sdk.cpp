@@ -78,33 +78,44 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 		event_obj->set("shouldDiscard", false);
 
 		// Read file-based attachments and include them with the event.
-		PackedStringArray file_attachments = _file_attachments_getter.call();
-		for (const String &path : file_attachments) {
-			Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ);
+		Vector<Ref<SentryAttachment>> file_attachments = _file_attachments_getter.call();
+		for (const Ref<SentryAttachment> &att : file_attachments) {
+			if (att->get_path().is_empty()) {
+				// Skip attachments with empty path.
+				// Note that byte attachments are not processed here - they are added immediately.
+				continue;
+			}
+
+			Ref<FileAccess> file = FileAccess::open(att->get_path(), FileAccess::READ);
 			if (file.is_null()) {
 				// Some attachments may be missing. Skip...
-				sentry::logging::print_debug("Skipping missing file attachment: " + path);
+				sentry::logging::print_debug("Skipping missing file attachment: " + att->get_path());
 				continue;
 			}
 
 			PackedByteArray bytes = file->get_buffer(file->get_length());
 			if (bytes.is_empty()) {
-				sentry::logging::print_debug("Skipping empty file attachment: " + path);
+				sentry::logging::print_debug("Skipping empty file attachment: " + att->get_path());
 				continue;
 			}
 
-			sentry::logging::print_debug("Adding attachment: " + path);
+			sentry::logging::print_debug("Adding attachment: " + att->get_path());
 
 			uint8_t bytes_id = em_js::add_bytes(bytes.ptr(), bytes.size());
 			if (bytes_id == 0) {
-				sentry::logging::print_warning("Failed to push attachment bytes to JS: " + path);
+				sentry::logging::print_warning("Failed to push attachment bytes to JS: " + att->get_path());
 				continue;
 			}
 
 			Ref<JavaScriptObject> attachment_data = JavaScriptBridge::get_singleton()->create_object("Object");
 			attachment_data->set("id", bytes_id);
-			attachment_data->set("filename", path.get_file());
-
+			attachment_data->set("filename", att->get_path().get_file());
+			if (!att->get_attachment_type().is_empty()) {
+				attachment_data->set("attachmentType", att->get_attachment_type());
+			}
+			if (!att->get_content_type().is_empty()) {
+				attachment_data->set("contentType", att->get_content_type());
+			}
 			out_attachments->call("push", attachment_data);
 		}
 	}
@@ -230,7 +241,7 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 	if (!p_attachment->get_path().is_empty()) {
 		// Add attachment to list for on-demand loading during event processing.
-		file_attachments.append(p_attachment->get_path());
+		file_attachments.append(p_attachment);
 	} else {
 		// Bytes attachment - added immediately
 		PackedByteArray bytes = p_attachment->get_bytes();
@@ -252,7 +263,12 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 	file_attachments.clear();
 	if (!p_global_attachments.is_empty()) {
 		for (const String path : p_global_attachments) {
-			file_attachments.append(path);
+			Ref<SentryAttachment> att = SentryAttachment::create_with_path(path);
+			if (path.ends_with("view-hierarchy.json")) {
+				att->set_content_type("application/json");
+				att->set_attachment_type("event.view_hierarchy");
+			}
+			file_attachments.append(att);
 		}
 	}
 
@@ -285,7 +301,7 @@ bool JavaScriptSDK::is_enabled() const {
 }
 
 JavaScriptSDK::JavaScriptSDK() {
-	auto getter_func = [](void *ctx) -> PackedStringArray {
+	auto getter_func = [](void *ctx) -> Vector<Ref<SentryAttachment>> {
 		return static_cast<JavaScriptSDK *>(ctx)->_get_file_attachments();
 	};
 	_before_send_handler = memnew(JavaScriptBeforeSendHandler);

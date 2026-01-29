@@ -30,6 +30,8 @@ const BytesHandler = {
 interface AttachmentData {
   id: number;
   filename: string;
+  contentType?: string;
+  attachmentType?: string;
 }
 
 // *** Utility Functions
@@ -96,7 +98,9 @@ class SentryBridge {
             hint.attachments.push({
               data: bytes,
               filename: attachmentData.filename,
-            });
+              ...(attachmentData.contentType && { contentType: attachmentData.contentType }),
+              ...(attachmentData.attachmentType && { attachmentType: attachmentData.attachmentType }),
+            } as any);
             BytesHandler.remove(attachmentData.id);
           }
         }

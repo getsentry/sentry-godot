@@ -14,14 +14,14 @@ class JavaScriptBeforeSendHandler : public Object {
 
 public:
 	struct FileAttachmentsGetter {
-		PackedStringArray (*func)(void *p_context) = nullptr;
+		Vector<Ref<SentryAttachment>> (*func)(void *p_context) = nullptr;
 		void *context = nullptr;
 
-		PackedStringArray call() const {
+		Vector<Ref<SentryAttachment>> call() const {
 			if (func != nullptr) {
 				return func(context);
 			}
-			return PackedStringArray();
+			return Vector<Ref<SentryAttachment>>();
 		}
 	};
 
@@ -47,9 +47,9 @@ private:
 	JavaScriptBeforeSendHandler *_before_send_handler;
 
 	// Stores file-based attachment paths to be added in processing during before_send.
-	PackedStringArray file_attachments;
+	Vector<Ref<SentryAttachment>> file_attachments;
 
-	PackedStringArray _get_file_attachments() { return file_attachments; }
+	Vector<Ref<SentryAttachment>> _get_file_attachments() { return file_attachments; }
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
