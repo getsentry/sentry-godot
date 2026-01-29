@@ -52,12 +52,14 @@ jobs:
             godot-arch: x86_64
             test-executable: ./exports/android.apk
             export-platform: android
+            saucelabs-device: Samsung_Galaxy.*
 
           - test-platform: iOSSauceLabs
             runner: macos-latest
             godot-arch: universal
             test-executable: ./exports/ios/ios.ipa
             export-platform: ios
+            saucelabs-device: iPhone.*
 
     steps:
       - name: Checkout repo
@@ -104,15 +106,20 @@ jobs:
           # TODO: Export fails because Godot attempts to build the Xcode project, which requires a certificate and provisioning profile.
           "${GODOT}" --verbose --headless --disable-crash-handler --path project --export-debug "iOS Tests" "${{github.workspace}}/${{matrix.test-executable}}" || true
 
+          if [ ! -f "${{github.workspace}}/${{matrix.test-executable}}" ]; then
+            echo "Error: Export failed - file does not exist: ${{github.workspace}}/${{matrix.test-executable}}"
+            exit 1
+          fi
+
       - name: Run integration tests
         shell: pwsh
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
           SENTRY_TEST_PLATFORM: ${{ matrix.test-platform }}
-          SENTRY_TEST_EXECUTABLE: ${{matrix.test-executable}}
+          SENTRY_TEST_EXECUTABLE: ${{ matrix.test-executable }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           SAUCE_REGION: us-west-1
-          SAUCE_DEVICE_NAME: Samsung_Galaxy_S23.*
+          SAUCE_DEVICE_NAME: ${{ matrix.saucelabs-device }}
           SAUCE_SESSION_NAME: Godot ${{matrix.test-platform}} E2E Tests
         run: Invoke-Pester -Script integration_tests/Integration.Tests.ps1
