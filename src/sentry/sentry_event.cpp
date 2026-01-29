@@ -1,10 +1,66 @@
 #include "sentry_event.h"
 
 #include "sentry/sentry_sdk.h" // Needed for VariantCaster<SentrySDK::Level>
+#include "sentry/util/json_writer.h"
 
 #include <godot_cpp/classes/global_constants.hpp>
 
 namespace sentry {
+
+// Converts exception data to a JSON string representation.
+String SentryEvent::Exception::to_json() const {
+	sentry::util::JSONWriter jw;
+	jw.begin_object(); // exception {
+	jw.kv_string("type", type);
+	jw.kv_string("value", value);
+
+	if (!frames.is_empty()) {
+		jw.key("stacktrace");
+		jw.begin_object(); // stacktrace {
+		jw.key("frames");
+		jw.begin_array(); // frames [
+		for (int i = 0; i < frames.size(); i++) {
+			const sentry::SentryEvent::StackFrame &frame = frames[i];
+			jw.begin_object(); // frame {
+			if (!frame.filename.is_empty()) {
+				jw.kv_string("filename", frame.filename);
+			}
+			if (!frame.function.is_empty()) {
+				jw.kv_string("function", frame.function);
+			}
+			if (frame.lineno >= 0) {
+				jw.kv_int("lineno", frame.lineno);
+			}
+			jw.kv_bool("in_app", frame.in_app);
+			if (!frame.platform.is_empty()) {
+				jw.kv_string("platform", frame.platform);
+			}
+			if (!frame.context_line.is_empty()) {
+				jw.kv_string("context_line", frame.context_line);
+			}
+			if (!frame.pre_context.is_empty()) {
+				jw.kv_string_array("pre_context", frame.pre_context);
+			}
+			if (!frame.post_context.is_empty()) {
+				jw.kv_string_array("post_context", frame.post_context);
+			}
+			if (!frame.vars.is_empty()) {
+				jw.key("vars");
+				jw.begin_object(); // vars {
+				for (int j = 0; j < frame.vars.size(); j++) {
+					jw.kv_variant(frame.vars[j].first, frame.vars[j].second);
+				}
+				jw.end_object(); // } vars
+			}
+			jw.end_object(); // } frame
+		}
+		jw.end_array(); // ] frames
+		jw.end_object(); // } stacktrace
+	}
+	jw.end_object(); // } exception
+
+	return jw.get_string();
+}
 
 void SentryEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id"), &SentryEvent::get_id);
