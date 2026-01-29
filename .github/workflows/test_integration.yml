@@ -9,6 +9,12 @@ on:
         required: true
       SAUCE_ACCESS_KEY:
         required: true
+      FASTLANE_KEYCHAIN_PASSWORD:
+        required: true
+      MATCH_GIT_PRIVATE_KEY:
+        required: true
+      MATCH_PASSWORD:
+        required: true
 
 permissions:
   contents: read
@@ -24,22 +30,37 @@ jobs:
           - test-platform: Linux
             runner: ubuntu-latest
             godot-arch: x86_64
+
           - test-platform: Linux
             runner: ubuntu-latest
             godot-arch: x86_32
+
           - test-platform: Windows
             runner: windows-latest
             godot-arch: x86_64
+
           - test-platform: Windows
             runner: windows-latest
             godot-arch: x86_32
+
           - test-platform: macOS
             runner: macos-latest
             godot-arch: universal
+
           - test-platform: AndroidSauceLabs
             runner: ubuntu-latest
             godot-arch: x86_64
             test-executable: ./exports/android.apk
+            export-platform: android
+            saucelabs-device: Samsung_Galaxy.*
+
+          - test-platform: iOSSauceLabs
+            runner: macos-latest
+            godot-arch: universal
+            test-executable: ./exports/ios/ios.ipa
+            export-platform: ios
+            saucelabs-device: iPhone.*
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -51,14 +72,43 @@ jobs:
         timeout-minutes: 15
         with:
           arch: ${{ matrix.godot-arch }}
-          android: ${{ matrix.test-platform == 'AndroidSauceLabs' && 'true' || 'false' }}
+          export-platform: ${{ matrix.export-platform }}
 
-      - name: Export project
-        if: matrix.test-platform == 'AndroidSauceLabs'
+      - name: "Android: Export project"
+        if: matrix.export-platform == 'android'
         timeout-minutes: 10
         shell: bash
         run: |
-          "${GODOT}" --verbose --headless --disable-crash-handler --path project --install-android-build-template --export-debug "Android Tests" "${GITHUB_WORKSPACE}/exports/android.apk" || true
+          "${GODOT}" --verbose --headless --disable-crash-handler --path project --install-android-build-template --export-debug "Android Tests" "${{github.workspace}}/${{matrix.test-executable}}" || true
+
+      # Needed for fastlane
+      - name: "iOS: Setup Ruby"
+        if: matrix.export-platform == 'ios'
+        uses: ruby/setup-ruby@90be1154f987f4dc0fe0dd0feedac9e473aa4ba8 # v1.286.0
+        with:
+          bundler-cache: true
+
+      - name: "iOS: Import certificate and profile"
+        if: matrix.export-platform == 'ios'
+        env:
+          FASTLANE_KEYCHAIN_PASSWORD: ${{ secrets.FASTLANE_KEYCHAIN_PASSWORD }}
+          MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        run: bundle exec fastlane prepare_signing
+
+      - name: "iOS: Export project"
+        if: matrix.export-platform == 'ios'
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          mkdir -p "$(dirname "${{github.workspace}}/${{matrix.test-executable}}")"
+
+          "${GODOT}" --verbose --headless --disable-crash-handler --path project --export-debug "iOS Tests" "${{github.workspace}}/${{matrix.test-executable}}" || true
+
+          if [ ! -f "${{github.workspace}}/${{matrix.test-executable}}" ]; then
+            echo "Error: Export failed - file does not exist: ${{github.workspace}}/${{matrix.test-executable}}"
+            exit 1
+          fi
 
       - name: Run integration tests
         shell: pwsh
@@ -69,6 +119,6 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           SAUCE_REGION: us-west-1
-          SAUCE_DEVICE_NAME: Samsung_Galaxy_S23.*
+          SAUCE_DEVICE_NAME: ${{ matrix.saucelabs-device }}
           SAUCE_SESSION_NAME: Godot ${{matrix.test-platform}} E2E Tests
         run: Invoke-Pester -Script integration_tests/Integration.Tests.ps1

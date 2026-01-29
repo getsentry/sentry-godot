@@ -90,8 +90,8 @@ BeforeAll {
         IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
         IsCocoa = ($env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
             (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS))
-        iOSBundleId = "io.sentry.godot.project"
-        iOSApplicationLogFile = "@io.sentry.godot.project:documents/logs/godot.log"
+        iOSBundleId = "io.sentry.SentryGodotProject"
+        iOSApplicationLogFile = "@io.sentry.SentryGodotProject:documents/logs/godot.log"
     }
 
     # Check executable and arguments
