@@ -261,6 +261,10 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
 
+	if (p_configuration_callback.is_valid()) {
+		p_configuration_callback.call(SentryOptions::get_singleton());
+	}
+
 	file_attachments.clear();
 	if (!p_global_attachments.is_empty()) {
 		for (const String path : p_global_attachments) {
