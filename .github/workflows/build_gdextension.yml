@@ -200,28 +200,28 @@ jobs:
             arch: universal
             scons-flags: debug_symbols=yes ios_simulator=yes
 
-          - name: 🌐 Web (noop, threads, release)
+          - name: 🌐 Web (threads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
             scons-flags: debug_symbols=no threads=yes
 
-          - name: 🌐 Web (noop, threads, debug)
+          - name: 🌐 Web (threads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
             scons-flags: debug_symbols=no threads=yes
 
-          - name: 🌐 Web (noop, nothreads, release)
+          - name: 🌐 Web (nothreads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
             scons-flags: debug_symbols=no threads=no
 
-          - name: 🌐 Web (noop, nothreads, debug)
+          - name: 🌐 Web (nothreads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
