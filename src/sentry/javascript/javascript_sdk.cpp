@@ -90,13 +90,13 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 			Ref<FileAccess> file = FileAccess::open(att->get_path(), FileAccess::READ);
 			if (file.is_null()) {
 				// Some attachments may be missing. Skip...
-				sentry::logging::print_debug("Skipping missing file attachment: " + att->get_path());
+				sentry::logging::print_debug("Skipping attachment - file not found: " + att->get_path());
 				continue;
 			}
 
 			PackedByteArray bytes = file->get_buffer(file->get_length());
 			if (bytes.is_empty()) {
-				sentry::logging::print_debug("Skipping empty file attachment: " + att->get_path());
+				sentry::logging::print_debug("Skipping attachment - empty file: " + att->get_path());
 				continue;
 			}
 
