@@ -1,4 +1,4 @@
-name: 🧪 JavaScript bridge tests
+name: 🧪 JS bridge tests
 
 on:
   workflow_call:

@@ -53,7 +53,7 @@ jobs:
       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
 
   test-js-bridge:
-    name: 🧪 JavaScript bridge tests
+    name: 🧪 JS bridge tests
     uses: ./.github/workflows/test_js_bridge.yml
 
   package:
