@@ -126,7 +126,7 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 
 void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
-	js_sentry_bridge()->call(JAVASCRIPT_SN(setContext), p_key, JSON::stringify(p_value), String(), false);
+	js_sentry_bridge()->call(JAVASCRIPT_SN(setContext), p_key, JSON::stringify(p_value));
 }
 
 void JavaScriptSDK::remove_context(const String &p_key) {
