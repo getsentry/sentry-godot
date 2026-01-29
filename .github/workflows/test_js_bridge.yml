@@ -1,4 +1,4 @@
-name: 🧪 JavaScript Bridge Tests
+name: 🧪 JavaScript bridge tests
 
 on:
   workflow_call:
@@ -8,7 +8,6 @@ permissions:
 
 jobs:
   test-js-bridge:
-    name: Test JavaScript Bridge
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
