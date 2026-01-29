@@ -186,8 +186,8 @@ inline size_t _hash(int p_value) {
 	return p_value;
 }
 
-template <typename T>
-inline void _hash_combine(std::size_t &p_hash, T p_value) {
+template <class T>
+inline void _hash_combine(std::size_t &p_hash, const T &p_value) {
 	// NOTE: Hash combining technique, originally from boost.
 	p_hash ^= _hash(p_value) + 0x9e3779b9 + (p_hash << 6) + (p_hash >> 2);
 }
