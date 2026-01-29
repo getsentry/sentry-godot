@@ -5,9 +5,10 @@ inputs:
   arch:
     description: Architecture to use for testing.
     required: true
-  android:
-    description: Whether to prepare for Android testing.
-    default: "false"
+  export-platform:
+    description: Which export template will be used, lowercase (e.g., android, ios).
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -34,7 +35,7 @@ runs:
         scons --version
 
     - name: Set up Java 17
-      if: inputs.android == 'true'
+      if: inputs.export-platform == 'android'
       uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
       with:
         distribution: temurin
@@ -133,8 +134,8 @@ runs:
       shell: bash
       run: cp exports/export_presets.cfg project/export_presets.cfg
 
-    - name: Deploy Android build template
-      if: inputs.android == 'true'
+    - name: Download export templates
+      if: inputs.export-platform != ''
       shell: bash
       run: |
         # Download Godot templates
@@ -143,8 +144,9 @@ runs:
         echo "Downloading templates from: $url"
         curl -L -o templates.zip "${url}"
 
-        echo "Extracting Android source template..."
-        unzip -j templates.zip templates/android_source.zip -d exports/
+        echo "Extracting export templates..."
+        mkdir -p exports/templates
+        unzip -j templates.zip -d exports/templates
         rm templates.zip
 
     - name: Prepare project

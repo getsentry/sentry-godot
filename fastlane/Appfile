@@ -1,0 +1,4 @@
+# Appfile
+# See docs at https://docs.fastlane.tools/advanced/#appfile
+
+app_identifier("io.sentry.SentryGodotProject")
