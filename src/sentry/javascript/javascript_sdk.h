@@ -52,6 +52,9 @@ private:
 	Vector<Ref<SentryAttachment>> _get_file_attachments() { return file_attachments; }
 
 public:
+	// NOTE: JS SDK can't be intialized early because it needs JavaScriptBridge engine singleton.
+	virtual BitField<Capabilities> get_capabilities() const override { return 0xff & ~InternalSDK::Capabilities::CAN_INITIALIZE_EARLY; }
+
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void remove_context(const String &p_key) override;
 

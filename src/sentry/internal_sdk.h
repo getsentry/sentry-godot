@@ -19,6 +19,15 @@ namespace sentry {
 // Interface for SDKs used internally.
 class InternalSDK {
 public:
+	enum Capabilities {
+		CAN_INITIALIZE_EARLY = (1 << 0),
+		// CAN_RUN_DOOM = (1 << 1),
+		// CAN_LAND_ON_THE_MOON = (1 << 2)
+	};
+
+public:
+	virtual BitField<Capabilities> get_capabilities() const { return 0xff; }
+
 	virtual void set_context(const String &p_key, const Dictionary &p_value) = 0;
 	virtual void remove_context(const String &p_key) = 0;
 

@@ -344,7 +344,12 @@ void SentrySDK::prepare_and_auto_initialize() {
 		SentryOptions::get_singleton()->add_event_processor(memnew(ViewHierarchyProcessor));
 	}
 
-	_auto_initialize();
+	if (internal_sdk->get_capabilities().has_flag(InternalSDK::Capabilities::CAN_INITIALIZE_EARLY)) {
+		_auto_initialize();
+	} else {
+		// Defer automatic initialization when the underlying SDK cannot be initialized early.
+		callable_mp(this, &SentrySDK::_auto_initialize).call_deferred();
+	}
 }
 
 void SentrySDK::_notification(int p_what) {
