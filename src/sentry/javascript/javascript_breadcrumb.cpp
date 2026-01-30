@@ -6,6 +6,18 @@
 #include <godot_cpp/classes/java_script_object.hpp>
 #include <godot_cpp/classes/json.hpp>
 
+namespace {
+
+inline String js_obj_get_property_value_as_string(const Ref<JavaScriptObject> &p_obj, const String &p_property, const String &p_default = "") {
+	Variant val = p_obj->get(p_property);
+	if (val == Variant()) {
+		return p_default;
+	}
+	return val;
+}
+
+} // unnamed namespace
+
 namespace sentry::javascript {
 
 void JavaScriptBreadcrumb::set_message(const String &p_message) {
@@ -15,7 +27,7 @@ void JavaScriptBreadcrumb::set_message(const String &p_message) {
 
 String JavaScriptBreadcrumb::get_message() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj->get(JAVASCRIPT_SN(message));
+	return js_obj_get_property_value_as_string(js_obj, JAVASCRIPT_SN(message));
 }
 
 void JavaScriptBreadcrumb::set_category(const String &p_category) {
@@ -25,7 +37,7 @@ void JavaScriptBreadcrumb::set_category(const String &p_category) {
 
 String JavaScriptBreadcrumb::get_category() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj->get(JAVASCRIPT_SN(category));
+	return js_obj_get_property_value_as_string(js_obj, JAVASCRIPT_SN(category));
 }
 
 void JavaScriptBreadcrumb::set_level(sentry::Level p_level) {
@@ -35,20 +47,13 @@ void JavaScriptBreadcrumb::set_level(sentry::Level p_level) {
 
 sentry::Level JavaScriptBreadcrumb::get_level() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), sentry::Level::LEVEL_INFO);
-	String level_str = js_obj->get(JAVASCRIPT_SN(level));
-	if (level_str == "debug") {
-		return sentry::Level::LEVEL_DEBUG;
-	} else if (level_str == "info") {
-		return sentry::Level::LEVEL_INFO;
-	} else if (level_str == "warning") {
-		return sentry::Level::LEVEL_WARNING;
-	} else if (level_str == "error") {
-		return sentry::Level::LEVEL_ERROR;
-	} else if (level_str == "fatal") {
-		return sentry::Level::LEVEL_FATAL;
-	} else {
+
+	Variant value = js_obj->get(JAVASCRIPT_SN(level));
+	if (value == Variant()) {
 		return sentry::Level::LEVEL_INFO;
 	}
+
+	return sentry::level_from_string(value, sentry::Level::LEVEL_INFO);
 }
 
 void JavaScriptBreadcrumb::set_type(const String &p_type) {
@@ -58,7 +63,7 @@ void JavaScriptBreadcrumb::set_type(const String &p_type) {
 
 String JavaScriptBreadcrumb::get_type() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj->get(JAVASCRIPT_SN(type));
+	return js_obj_get_property_value_as_string(js_obj, JAVASCRIPT_SN(type));
 }
 
 void JavaScriptBreadcrumb::set_data(const Dictionary &p_data) {

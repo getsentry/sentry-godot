@@ -60,4 +60,20 @@ Level int_to_level(int p_value) {
 	}
 }
 
+Level level_from_string(const godot::String &p_value, Level p_default) {
+	if (p_value == "debug") {
+		return Level::LEVEL_DEBUG;
+	} else if (p_value == "info") {
+		return Level::LEVEL_INFO;
+	} else if (p_value == "warning") {
+		return Level::LEVEL_WARNING;
+	} else if (p_value == "error") {
+		return Level::LEVEL_ERROR;
+	} else if (p_value == "fatal") {
+		return Level::LEVEL_FATAL;
+	} else {
+		return p_default;
+	}
+}
+
 } // namespace sentry
