@@ -1,6 +1,7 @@
 #include "javascript_breadcrumb.h"
 
 #include "javascript_string_names.h"
+#include "javascript_util.h"
 
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/java_script_object.hpp>
@@ -27,7 +28,7 @@ void JavaScriptBreadcrumb::set_message(const String &p_message) {
 
 String JavaScriptBreadcrumb::get_message() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj_get_property_value_as_string(js_obj, JAVASCRIPT_SN(message));
+	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(message));
 }
 
 void JavaScriptBreadcrumb::set_category(const String &p_category) {
@@ -37,7 +38,7 @@ void JavaScriptBreadcrumb::set_category(const String &p_category) {
 
 String JavaScriptBreadcrumb::get_category() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj_get_property_value_as_string(js_obj, JAVASCRIPT_SN(category));
+	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(category));
 }
 
 void JavaScriptBreadcrumb::set_level(sentry::Level p_level) {
@@ -63,7 +64,7 @@ void JavaScriptBreadcrumb::set_type(const String &p_type) {
 
 String JavaScriptBreadcrumb::get_type() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj_get_property_value_as_string(js_obj, JAVASCRIPT_SN(type));
+	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(type));
 }
 
 void JavaScriptBreadcrumb::set_data(const Dictionary &p_data) {
