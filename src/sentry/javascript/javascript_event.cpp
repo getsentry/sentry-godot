@@ -79,20 +79,8 @@ void JavaScriptEvent::set_level(sentry::Level p_level) {
 
 sentry::Level JavaScriptEvent::get_level() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), sentry::Level::LEVEL_INFO);
-	String level_str = js_obj->get(JAVASCRIPT_SN(level));
-	if (level_str == "debug") {
-		return sentry::Level::LEVEL_DEBUG;
-	} else if (level_str == "info") {
-		return sentry::Level::LEVEL_INFO;
-	} else if (level_str == "warning") {
-		return sentry::Level::LEVEL_WARNING;
-	} else if (level_str == "error") {
-		return sentry::Level::LEVEL_ERROR;
-	} else if (level_str == "fatal") {
-		return sentry::Level::LEVEL_FATAL;
-	} else {
-		return sentry::Level::LEVEL_ERROR;
-	}
+	String level_str = js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(level));
+	return sentry::level_from_string(level_str, sentry::Level::LEVEL_ERROR);
 }
 
 void JavaScriptEvent::set_logger(const String &p_logger) {
