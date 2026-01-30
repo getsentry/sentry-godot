@@ -7,18 +7,6 @@
 #include <godot_cpp/classes/java_script_object.hpp>
 #include <godot_cpp/classes/json.hpp>
 
-namespace {
-
-inline String js_obj_get_property_value_as_string(const Ref<JavaScriptObject> &p_obj, const String &p_property, const String &p_default = "") {
-	Variant val = p_obj->get(p_property);
-	if (val == Variant()) {
-		return p_default;
-	}
-	return val;
-}
-
-} // unnamed namespace
-
 namespace sentry::javascript {
 
 void JavaScriptBreadcrumb::set_message(const String &p_message) {

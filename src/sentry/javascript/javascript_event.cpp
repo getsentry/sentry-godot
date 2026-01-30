@@ -35,7 +35,7 @@ namespace sentry::javascript {
 
 String JavaScriptEvent::get_id() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj->get(JAVASCRIPT_SN(event_id));
+	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(event_id));
 }
 
 void JavaScriptEvent::set_message(const String &p_message) {
@@ -45,7 +45,7 @@ void JavaScriptEvent::set_message(const String &p_message) {
 
 String JavaScriptEvent::get_message() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj->get(JAVASCRIPT_SN(message));
+	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(message));
 }
 
 void JavaScriptEvent::set_timestamp(const Ref<SentryTimestamp> &p_timestamp) {
@@ -69,7 +69,7 @@ Ref<SentryTimestamp> JavaScriptEvent::get_timestamp() const {
 
 String JavaScriptEvent::get_platform() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj->get(JAVASCRIPT_SN(platform));
+	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(platform));
 }
 
 void JavaScriptEvent::set_level(sentry::Level p_level) {
@@ -90,7 +90,7 @@ void JavaScriptEvent::set_logger(const String &p_logger) {
 
 String JavaScriptEvent::get_logger() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj->get(JAVASCRIPT_SN(logger));
+	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(logger));
 }
 
 void JavaScriptEvent::set_release(const String &p_release) {
@@ -100,7 +100,7 @@ void JavaScriptEvent::set_release(const String &p_release) {
 
 String JavaScriptEvent::get_release() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj->get(JAVASCRIPT_SN(release));
+	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(release));
 }
 
 void JavaScriptEvent::set_dist(const String &p_dist) {
@@ -110,7 +110,7 @@ void JavaScriptEvent::set_dist(const String &p_dist) {
 
 String JavaScriptEvent::get_dist() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj->get(JAVASCRIPT_SN(dist));
+	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(dist));
 }
 
 void JavaScriptEvent::set_environment(const String &p_environment) {
@@ -120,7 +120,7 @@ void JavaScriptEvent::set_environment(const String &p_environment) {
 
 String JavaScriptEvent::get_environment() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_obj->get(JAVASCRIPT_SN(environment));
+	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(environment));
 }
 
 void JavaScriptEvent::set_tag(const String &p_key, const String &p_value) {
@@ -141,7 +141,7 @@ String JavaScriptEvent::get_tag(const String &p_key) {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
 	Ref<JavaScriptObject> tags_obj = js_obj->get(JAVASCRIPT_SN(tags));
 	if (tags_obj.is_valid()) {
-		return tags_obj->get(p_key);
+		return js_object_get_property_as_string(tags_obj, p_key);
 	}
 	return String();
 }
@@ -227,7 +227,7 @@ String JavaScriptEvent::get_exception_value(int p_index) const {
 		return String();
 	}
 
-	return exc_obj->get(JAVASCRIPT_SN(value));
+	return js_object_get_property_as_string(exc_obj, JAVASCRIPT_SN(value));
 }
 
 bool JavaScriptEvent::is_crash() const {
