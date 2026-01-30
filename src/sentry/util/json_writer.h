@@ -73,7 +73,7 @@ public:
 	// Writes a float value
 	void value_float(double p_value) {
 		_maybe_comma();
-		json += String::num(p_value);
+		json += String::num(p_value, 16);
 	}
 
 	// Writes a boolean value: true or false

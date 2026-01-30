@@ -102,7 +102,7 @@ void js_object_set_double(const Ref<JavaScriptObject> &p_object, const String &p
 	ERR_FAIL_COND(p_object.is_null());
 	Ref<JavaScriptObject> bridge = js_sentry_bridge();
 	ERR_FAIL_COND(bridge.is_null());
-	String value_str = String::num(p_value);
+	String value_str = String::num(p_value, 16);
 	bridge->call(JAVASCRIPT_SN(setDoubleFromString), p_object, p_key, value_str);
 }
 
