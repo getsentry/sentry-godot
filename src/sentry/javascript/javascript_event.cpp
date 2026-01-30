@@ -51,7 +51,7 @@ String JavaScriptEvent::get_message() const {
 void JavaScriptEvent::set_timestamp(const Ref<SentryTimestamp> &p_timestamp) {
 	ERR_FAIL_COND(js_obj.is_null());
 	if (p_timestamp.is_valid()) {
-		js_obj->set(JAVASCRIPT_SN(timestamp), p_timestamp->get_microseconds_since_unix_epoch() / 1000000.0);
+		js_object_set_double(js_obj, JAVASCRIPT_SN(timestamp), p_timestamp->to_unix_time());
 	} else {
 		js_obj->set(JAVASCRIPT_SN(timestamp), Variant());
 	}
@@ -59,11 +59,10 @@ void JavaScriptEvent::set_timestamp(const Ref<SentryTimestamp> &p_timestamp) {
 
 Ref<SentryTimestamp> JavaScriptEvent::get_timestamp() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), Ref<SentryTimestamp>());
-	Variant timestamp_var = js_obj->get(JAVASCRIPT_SN(timestamp));
-	if (timestamp_var.get_type() == Variant::NIL) {
+	double unix_time = js_object_get_double(js_obj, JAVASCRIPT_SN(timestamp), 0.0);
+	if (unix_time == 0.0) {
 		return Ref<SentryTimestamp>();
 	}
-	double unix_time = timestamp_var;
 	return SentryTimestamp::from_unix_time(unix_time);
 }
 
