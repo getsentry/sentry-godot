@@ -6,6 +6,7 @@
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/java_script_object.hpp>
 #include <godot_cpp/classes/json.hpp>
+#include <godot_cpp/classes/time.hpp>
 
 namespace {
 
@@ -244,6 +245,10 @@ JavaScriptEvent::JavaScriptEvent(const Ref<RefCounted> &p_js_event_object) {
 
 JavaScriptEvent::JavaScriptEvent() {
 	js_obj = JavaScriptBridge::get_singleton()->create_object(JAVASCRIPT_SN(Object));
+
+	// Capture current timestamp
+	js_object_set_double(js_obj, JAVASCRIPT_SN(timestamp),
+			Time::get_singleton()->get_unix_time_from_system());
 }
 
 JavaScriptEvent::~JavaScriptEvent() {

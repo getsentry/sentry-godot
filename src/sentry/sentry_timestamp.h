@@ -41,7 +41,7 @@ public:
 	String to_rfc3339() const;
 
 	// Return seconds since Unix epoch as double with microsecond precision.
-	_FORCE_INLINE_ double to_unix_time() const { return microseconds_since_unix_epoch / 1000000.0; }
+	_FORCE_INLINE_ double to_unix_time() const { return microseconds_since_unix_epoch * 0.000'001; }
 };
 
 } // namespace sentry
