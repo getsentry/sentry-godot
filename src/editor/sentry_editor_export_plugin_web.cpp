@@ -55,11 +55,11 @@ void SentryEditorExportPluginWeb::_export_begin(const PackedStringArray &p_featu
 			String src_abs = ProjectSettings::get_singleton()->globalize_path("res://addons/sentry/web/").path_join(fn);
 			String dest_abs = export_dir.path_join(fn);
 
-			Error err = DirAccess::copy_absolute(src_abs, dest_abs);
-			if (err == OK) {
+			Error copy_err = DirAccess::copy_absolute(src_abs, dest_abs);
+			if (copy_err == OK) {
 				sentry::logging::print_debug("  Copied ", fn);
 			} else {
-				ERR_PRINT(vformat("Sentry: Failed to copy \"%s\" on export to Web: %s", fn, UtilityFunctions::error_string(err)));
+				ERR_PRINT(vformat("Sentry: Failed to copy \"%s\" on export to Web: %s", fn, UtilityFunctions::error_string(copy_err)));
 			}
 		}
 
