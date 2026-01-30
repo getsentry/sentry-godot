@@ -5,7 +5,7 @@
   "main": "dist/sentry-bundle.js",
   "scripts": {
     "build": "webpack --mode production",
-    "build:deploy": "npm run build && cp dist/sentry-bundle.js ../../../../project/addons/sentry/web/ && cp dist/sentry-bundle.js.map ../../../../project/addons/sentry/web/",
+    "build:deploy": "npm run build && mkdir -p ../../../../project/addons/sentry/web && cp dist/sentry-bundle.js ../../../../project/addons/sentry/web/ && cp dist/sentry-bundle.js.map ../../../../project/addons/sentry/web/",
     "clean": "rm -rf dist && rm -f ../../../../project/addons/sentry/web/sentry-bundle.js ../../../../project/addons/sentry/web/sentry-bundle.js.map",
     "test": "node test.js"
   },
