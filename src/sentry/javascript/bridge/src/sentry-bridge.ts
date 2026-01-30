@@ -280,6 +280,24 @@ class SentryBridge {
   public addBytes(bytes: Uint8Array): number {
     return this._byteStore.add(bytes);
   }
+
+  // Gets double property as string to preserve precision across the JS/C++ boundary.
+  // NOTE: Numbers loose precision when crossing JS boundary in current Godot bindings.
+  public getDoubleAsString(obj: object, prop: string): string {
+    const value = (obj as Record<string, unknown>)[prop];
+    if (typeof value === "number") {
+      return value.toString();
+    }
+    return "";
+  }
+
+  // Sets double property from string to preserve precision across the JS/C++ boundary.
+  public setDoubleFromString(obj: object, prop: string, valueStr: string): void {
+    const value = parseFloat(valueStr);
+    if (!isNaN(value)) {
+      (obj as Record<string, unknown>)[prop] = value;
+    }
+  }
 }
 
 const sentryBridge = new SentryBridge();

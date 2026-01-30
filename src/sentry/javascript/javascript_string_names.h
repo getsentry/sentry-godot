@@ -45,6 +45,7 @@ public:
 	StringName event_id;
 	StringName exception;
 	StringName filename;
+	StringName getDoubleAsString;
 	StringName id;
 	StringName init;
 	StringName isEnabled;
@@ -69,6 +70,7 @@ public:
 	StringName removeTag;
 	StringName removeUser;
 	StringName setContext;
+	StringName setDoubleFromString;
 	StringName setTag;
 	StringName setUser;
 	StringName shouldDiscard;

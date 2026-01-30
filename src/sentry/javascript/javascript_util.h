@@ -27,6 +27,12 @@ String js_object_to_json(const Ref<JavaScriptObject> &p_object);
 // Reconstruct a JSON string as an object and merge its properties into a JavaScript object.
 void js_merge_json_into_object(const Ref<JavaScriptObject> &p_target, const String &p_json);
 
+// Get a double property from a JavaScript object, preserving precision by passing as string.
+double js_object_get_double(const Ref<JavaScriptObject> &p_object, const String &p_key, double p_default = 0.0);
+
+// Set a double property on a JavaScript object, preserving precision by passing as string.
+void js_object_set_double(const Ref<JavaScriptObject> &p_object, const String &p_key, double p_value);
+
 _FORCE_INLINE_ String js_object_get_property_as_string(const Ref<JavaScriptObject> &p_obj, const String &p_property, const String &p_default = "") {
 	Variant val = p_obj->get(p_property);
 	return val == Variant() ? p_default : val.operator String();

@@ -34,6 +34,7 @@ JavaScriptStringNames::JavaScriptStringNames() {
 	event_id = StringName("event_id");
 	exception = StringName("exception");
 	filename = StringName("filename");
+	getDoubleAsString = StringName("getDoubleAsString");
 	id = StringName("id");
 	init = StringName("init");
 	isEnabled = StringName("isEnabled");
@@ -58,6 +59,7 @@ JavaScriptStringNames::JavaScriptStringNames() {
 	removeTag = StringName("removeTag");
 	removeUser = StringName("removeUser");
 	setContext = StringName("setContext");
+	setDoubleFromString = StringName("setDoubleFromString");
 	setTag = StringName("setTag");
 	setUser = StringName("setUser");
 	shouldDiscard = StringName("shouldDiscard");

@@ -87,4 +87,23 @@ void js_merge_json_into_object(const Ref<JavaScriptObject> &p_target, const Stri
 	bridge->call(JAVASCRIPT_SN(mergeJsonIntoObject), p_target, p_json);
 }
 
+double js_object_get_double(const Ref<JavaScriptObject> &p_object, const String &p_key, double p_default) {
+	ERR_FAIL_COND_V(p_object.is_null(), p_default);
+	Ref<JavaScriptObject> bridge = js_sentry_bridge();
+	ERR_FAIL_COND_V(bridge.is_null(), p_default);
+	String value_str = bridge->call(JAVASCRIPT_SN(getDoubleAsString), p_object, p_key);
+	if (value_str.is_empty()) {
+		return p_default;
+	}
+	return value_str.to_float();
+}
+
+void js_object_set_double(const Ref<JavaScriptObject> &p_object, const String &p_key, double p_value) {
+	ERR_FAIL_COND(p_object.is_null());
+	Ref<JavaScriptObject> bridge = js_sentry_bridge();
+	ERR_FAIL_COND(bridge.is_null());
+	String value_str = String::num(p_value);
+	bridge->call(JAVASCRIPT_SN(setDoubleFromString), p_object, p_key, value_str);
+}
+
 } // namespace sentry::javascript
