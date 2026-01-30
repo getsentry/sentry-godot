@@ -344,7 +344,7 @@ void SentrySDK::prepare_and_auto_initialize() {
 		SentryOptions::get_singleton()->add_event_processor(memnew(ViewHierarchyProcessor));
 	}
 
-	if (internal_sdk->get_capabilities().has_flag(InternalSDK::Capabilities::CAN_INITIALIZE_EARLY)) {
+	if (internal_sdk->get_capabilities().has_flag(InternalSDK::SUPPORTS_EARLY_INIT)) {
 		_auto_initialize();
 	} else {
 		// Defer automatic initialization when the underlying SDK cannot be initialized early.
