@@ -2,6 +2,7 @@
 
 #include "javascript_string_names.h"
 #include "javascript_util.h"
+#include "sentry/uuid.h"
 
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/java_script_object.hpp>
