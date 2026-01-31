@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://uwd7dms6675q"]
+[gd_scene load_steps=5 format=3 uid="uid://uwd7dms6675q"]
 
 [ext_resource type="PackedScene" uid="uid://dyoaec2d7uung" path="res://views/enrich_events.tscn" id="1_uh226"]
 [ext_resource type="PackedScene" uid="uid://bxi26vu5tlqas" path="res://views/capture_events.tscn" id="2_qcmjx"]
+[ext_resource type="PackedScene" uid="uid://cywnvytpa2bec" path="res://views/tools.tscn" id="3_qcmjx"]
 [ext_resource type="PackedScene" uid="uid://dllqhtd731wtc" path="res://views/output_pane.tscn" id="3_uh226"]
 
 [node name="Desktop" type="CanvasLayer"]
@@ -32,6 +33,13 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="Spacer3" type="Control" parent="VBoxContainer/Columns"]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+
+[node name="Tools" parent="VBoxContainer/Columns" instance=ExtResource("3_qcmjx")]
+layout_mode = 2
+
+[node name="Spacer4" type="Control" parent="VBoxContainer/Columns"]
 custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
 
