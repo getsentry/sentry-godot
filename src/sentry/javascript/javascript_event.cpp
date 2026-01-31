@@ -252,7 +252,7 @@ JavaScriptEvent::JavaScriptEvent() {
 			Time::get_singleton()->get_unix_time_from_system());
 
 	// Pre-generate event-id
-	js_obj->set(JAVASCRIPT_SN(event_id), sentry::uuid::make_uuid());
+	js_obj->set(JAVASCRIPT_SN(event_id), sentry::uuid::make_uuid_no_dashes());
 }
 
 JavaScriptEvent::~JavaScriptEvent() {
