@@ -259,7 +259,8 @@ func test_event_json_level_attribute() -> void:
 			.verify()
 
 
-func test_event_json_sdk_interface() -> void:
+# NOTE: JS SDK adds SDK info after beforeSend; therefore, skip this test in Web builds.
+func test_event_json_sdk_interface(_do_skip = OS.get_name() == "Web") -> void:
 	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
 
 	assert_json(json).describe("SDK metadata present") \
