@@ -85,15 +85,22 @@ func _on_set_user_button_pressed() -> void:
 
 
 func _on_gen_script_error_pressed() -> void:
-	_generate_script_error()
+	var thread_name: String = "main"
+	_generate_script_error(thread_name)
+
+
+func _on_gen_script_error_from_thread_pressed() -> void:
+	var thread := Thread.new()
+	thread.start(_generate_script_error.bind("worker"))
+	thread.wait_to_finish()
 
 
 func _on_gen_native_error_pressed() -> void:
 	_generate_native_error()
 
 
-func _generate_script_error() -> void:
-	DemoOutput.print_info("Generating GDScript error...")
+func _generate_script_error(thread_name: String) -> void:
+	DemoOutput.print_info("Generating GDScript error from %s thread..." % thread_name)
 	# The following line should generate 2 errors:
 	# script parse error and failed to load script.
 	@warning_ignore("unused_variable")
