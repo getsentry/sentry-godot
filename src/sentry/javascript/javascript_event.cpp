@@ -9,30 +9,6 @@
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/time.hpp>
 
-namespace {
-
-// Returns an object property from a JS object, creating/assigning if missing.
-Ref<JavaScriptObject> js_obj_get_or_create_object_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property) {
-	Ref<JavaScriptObject> prop_obj = p_object->get(p_property);
-	if (prop_obj.is_null()) {
-		prop_obj = JavaScriptBridge::get_singleton()->create_object(JAVASCRIPT_SN(Object));
-		p_object->set(p_property, prop_obj);
-	}
-	return prop_obj;
-}
-
-// Returns an array property from a JS object, creating/assigning if missing.
-Ref<JavaScriptObject> js_obj_get_or_create_array_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property) {
-	Ref<JavaScriptObject> prop_obj = p_object->get(p_property);
-	if (prop_obj.is_null()) {
-		prop_obj = JavaScriptBridge::get_singleton()->create_object(JAVASCRIPT_SN(Array));
-		p_object->set(p_property, prop_obj);
-	}
-	return prop_obj;
-}
-
-} // unnamed namespace
-
 namespace sentry::javascript {
 
 String JavaScriptEvent::get_id() const {
@@ -142,7 +118,7 @@ String JavaScriptEvent::get_environment() const {
 
 void JavaScriptEvent::set_tag(const String &p_key, const String &p_value) {
 	ERR_FAIL_COND(js_obj.is_null());
-	Ref<JavaScriptObject> tags_obj = js_obj_get_or_create_object_property(js_obj, JAVASCRIPT_SN(tags));
+	Ref<JavaScriptObject> tags_obj = js_object_get_or_create_object_property(js_obj, JAVASCRIPT_SN(tags));
 	tags_obj->set(p_key, p_value);
 }
 
@@ -165,16 +141,16 @@ String JavaScriptEvent::get_tag(const String &p_key) {
 
 void JavaScriptEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(js_obj.is_null());
-	Ref<JavaScriptObject> contexts_obj = js_obj_get_or_create_object_property(js_obj, JAVASCRIPT_SN(contexts));
-	Ref<JavaScriptObject> context_obj = js_obj_get_or_create_object_property(contexts_obj, p_key);
+	Ref<JavaScriptObject> contexts_obj = js_object_get_or_create_object_property(js_obj, JAVASCRIPT_SN(contexts));
+	Ref<JavaScriptObject> context_obj = js_object_get_or_create_object_property(contexts_obj, p_key);
 	js_merge_json_into_object(context_obj, JSON::stringify(p_value));
 }
 
 void JavaScriptEvent::add_exception(const Exception &p_exception) {
 	ERR_FAIL_COND(js_obj.is_null());
 
-	Ref<JavaScriptObject> exception_obj = js_obj_get_or_create_object_property(js_obj, JAVASCRIPT_SN(exception));
-	Ref<JavaScriptObject> values_arr = js_obj_get_or_create_array_property(exception_obj, JAVASCRIPT_SN(values));
+	Ref<JavaScriptObject> exception_obj = js_object_get_or_create_object_property(js_obj, JAVASCRIPT_SN(exception));
+	Ref<JavaScriptObject> values_arr = js_object_get_or_create_array_property(exception_obj, JAVASCRIPT_SN(values));
 
 	js_push_json_to_array(values_arr, p_exception.to_json());
 }

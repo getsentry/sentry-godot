@@ -106,4 +106,22 @@ void js_object_set_double(const Ref<JavaScriptObject> &p_object, const String &p
 	bridge->call(JAVASCRIPT_SN(setDoubleFromString), p_object, p_key, value_str);
 }
 
+Ref<JavaScriptObject> js_object_get_or_create_object_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property) {
+	Ref<JavaScriptObject> prop_obj = p_object->get(p_property);
+	if (prop_obj.is_null()) {
+		prop_obj = JavaScriptBridge::get_singleton()->create_object(JAVASCRIPT_SN(Object));
+		p_object->set(p_property, prop_obj);
+	}
+	return prop_obj;
+}
+
+Ref<JavaScriptObject> js_object_get_or_create_array_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property) {
+	Ref<JavaScriptObject> prop_obj = p_object->get(p_property);
+	if (prop_obj.is_null()) {
+		prop_obj = JavaScriptBridge::get_singleton()->create_object(JAVASCRIPT_SN(Array));
+		p_object->set(p_property, prop_obj);
+	}
+	return prop_obj;
+}
+
 } // namespace sentry::javascript

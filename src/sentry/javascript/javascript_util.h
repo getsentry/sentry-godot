@@ -38,4 +38,10 @@ _FORCE_INLINE_ String js_object_get_property_as_string(const Ref<JavaScriptObjec
 	return val == Variant() ? p_default : val.operator String();
 }
 
+// Returns an object property from a JS object, creating/assigning if missing.
+Ref<JavaScriptObject> js_object_get_or_create_object_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property);
+
+// Returns an array property from a JS object, creating/assigning if missing.
+Ref<JavaScriptObject> js_object_get_or_create_array_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property);
+
 } //namespace sentry::javascript

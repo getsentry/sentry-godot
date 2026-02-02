@@ -5,6 +5,7 @@
 
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/java_script_object.hpp>
+#include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/time.hpp>
 
 namespace sentry::javascript {
@@ -57,7 +58,13 @@ String JavaScriptBreadcrumb::get_type() const {
 
 void JavaScriptBreadcrumb::set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(js_obj.is_null());
-	js_obj->set(JAVASCRIPT_SN(data), p_data);
+	if (!p_data.is_empty()) {
+		js_delete_property(js_obj, JAVASCRIPT_SN(data));
+		Ref<JavaScriptObject> data_obj = js_object_get_or_create_object_property(js_obj, JAVASCRIPT_SN(data));
+		js_merge_json_into_object(data_obj, JSON::stringify(p_data));
+	} else {
+		js_delete_property(js_obj, JAVASCRIPT_SN(data));
+	}
 }
 
 Ref<SentryTimestamp> JavaScriptBreadcrumb::get_timestamp() {
