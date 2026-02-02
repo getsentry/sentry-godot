@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
+import { wasmIntegration } from "@sentry/wasm";
 
 // Stores byte buffers passed from C++ layer with ID-based retrieval.
 // Uses uint32_t range (0 to 4294967295) to stay safe within JavaScript's integer precision.
@@ -88,6 +89,14 @@ class SentryBridge {
       ...(sampleRate !== undefined && { sampleRate }),
       ...(maxBreadcrumbs !== undefined && { maxBreadcrumbs }),
       ...(enableLogs !== undefined && { enableLogs }),
+      integrations: function (integrations: { name: string }[]) {
+        // Disable Dedupe integration - it prevents errors with the same message but different line/function in GDScript from being registered
+        const filtered = integrations.filter(function (integration: { name: string }) {
+          return integration.name !== "Dedupe";
+        });
+        filtered.push(wasmIntegration());
+        return filtered;
+      },
       beforeSend: (event: Sentry.Event, hint: Sentry.EventHint) => {
         // NOTE: Populated during processing in C++ layer
         var outAttachments: Array<AttachmentData> = [];
