@@ -229,7 +229,7 @@ void SentrySDK::_init_contexts() {
 	// Mark Godot engine singletons as safe to access.
 	sentry::godot_singletons::mark_as_ready();
 
-#ifdef SDK_NATIVE
+#if defined(SDK_NATIVE) || defined(SDK_JAVASCRIPT)
 	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
 	internal_sdk->set_context("app", sentry::contexts::make_app_context());
 #endif
