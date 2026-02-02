@@ -45,6 +45,7 @@ public:
 	StringName event_id;
 	StringName exception;
 	StringName filename;
+	StringName formatted;
 	StringName getDoubleAsString;
 	StringName id;
 	StringName init;

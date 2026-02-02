@@ -34,6 +34,7 @@ JavaScriptStringNames::JavaScriptStringNames() {
 	event_id = StringName("event_id");
 	exception = StringName("exception");
 	filename = StringName("filename");
+	formatted = StringName("formatted");
 	getDoubleAsString = StringName("getDoubleAsString");
 	id = StringName("id");
 	init = StringName("init");

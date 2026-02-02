@@ -47,7 +47,23 @@ void JavaScriptEvent::set_message(const String &p_message) {
 
 String JavaScriptEvent::get_message() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(message));
+
+	Variant message_value = js_obj->get(JAVASCRIPT_SN(message));
+
+	if (message_value == Variant()) {
+		return String();
+	}
+
+	if (message_value.get_type() == Variant::STRING) {
+		return message_value.operator String();
+	}
+
+	Ref<JavaScriptObject> jso = message_value;
+	if (jso.is_valid()) {
+		return js_object_get_property_as_string(jso, JAVASCRIPT_SN(formatted));
+	}
+
+	return String();
 }
 
 void JavaScriptEvent::set_timestamp(const Ref<SentryTimestamp> &p_timestamp) {
