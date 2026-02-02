@@ -2,14 +2,65 @@
 
 #include "javascript_string_names.h"
 #include "javascript_util.h"
+#include "sentry/util/json_writer.h"
 #include "sentry/uuid.h"
 
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/java_script_object.hpp>
 #include <godot_cpp/classes/json.hpp>
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/time.hpp>
 
 namespace sentry::javascript {
+
+namespace {
+
+// Helper function to write stacktrace object with frames to a JSONWriter.
+// Writes: "stacktrace": { "frames": [...] }
+void write_stacktrace_json(sentry::util::JSONWriter &p_jw, const Vector<SentryEvent::StackFrame> &p_frames) {
+	p_jw.key("stacktrace");
+	p_jw.begin_object(); // stacktrace {
+	p_jw.key("frames");
+	p_jw.begin_array(); // frames [
+	for (const SentryEvent::StackFrame &frame : p_frames) {
+		p_jw.begin_object(); // frame {
+		if (!frame.filename.is_empty()) {
+			p_jw.kv_string("filename", frame.filename);
+		}
+		if (!frame.function.is_empty()) {
+			p_jw.kv_string("function", frame.function);
+		}
+		if (frame.lineno >= 0) {
+			p_jw.kv_int("lineno", frame.lineno);
+		}
+		p_jw.kv_bool("in_app", frame.in_app);
+		if (!frame.platform.is_empty()) {
+			p_jw.kv_string("platform", frame.platform);
+		}
+		if (!frame.context_line.is_empty()) {
+			p_jw.kv_string("context_line", frame.context_line);
+		}
+		if (!frame.pre_context.is_empty()) {
+			p_jw.kv_string_array("pre_context", frame.pre_context);
+		}
+		if (!frame.post_context.is_empty()) {
+			p_jw.kv_string_array("post_context", frame.post_context);
+		}
+		if (!frame.vars.is_empty()) {
+			p_jw.key("vars");
+			p_jw.begin_object(); // vars {
+			for (int j = 0; j < frame.vars.size(); j++) {
+				p_jw.kv_variant(frame.vars[j].first, frame.vars[j].second);
+			}
+			p_jw.end_object(); // } vars
+		}
+		p_jw.end_object(); // } frame
+	}
+	p_jw.end_array(); // ] frames
+	p_jw.end_object(); // } stacktrace
+}
+
+} // namespace
 
 String JavaScriptEvent::get_id() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), String());
@@ -149,10 +200,37 @@ void JavaScriptEvent::merge_context(const String &p_key, const Dictionary &p_val
 void JavaScriptEvent::add_exception(const Exception &p_exception) {
 	ERR_FAIL_COND(js_obj.is_null());
 
+	uint64_t thread_id = OS::get_singleton()->get_thread_caller_id();
+	bool is_main = OS::get_singleton()->get_main_thread_id() == thread_id;
+
+	// Create thread with stacktrace.
+	if (!p_exception.frames.is_empty()) {
+		sentry::util::JSONWriter jw;
+		jw.begin_object(); // thread {
+		jw.kv_int("id", thread_id);
+		jw.kv_bool("main", is_main);
+		jw.kv_bool("crashed", true);
+		jw.kv_bool("current", true);
+		write_stacktrace_json(jw, p_exception.frames);
+		jw.end_object(); // } thread
+
+		Ref<JavaScriptObject> threads_obj = js_object_get_or_create_object_property(js_obj, JAVASCRIPT_SN(threads));
+		Ref<JavaScriptObject> threads_arr = js_object_get_or_create_array_property(threads_obj, JAVASCRIPT_SN(values));
+		js_push_json_to_array(threads_arr, jw.get_string());
+	}
+
+	// Create exception with thread_id reference.
+	// NOTE: stacktrace is attached to the thread object, not the exception.
+	sentry::util::JSONWriter exc_jw;
+	exc_jw.begin_object(); // exception {
+	exc_jw.kv_string("type", p_exception.type);
+	exc_jw.kv_string("value", p_exception.value);
+	exc_jw.kv_int("thread_id", thread_id);
+	exc_jw.end_object(); // } exception
+
 	Ref<JavaScriptObject> exception_obj = js_object_get_or_create_object_property(js_obj, JAVASCRIPT_SN(exception));
 	Ref<JavaScriptObject> values_arr = js_object_get_or_create_array_property(exception_obj, JAVASCRIPT_SN(values));
-
-	js_push_json_to_array(values_arr, p_exception.to_json());
+	js_push_json_to_array(values_arr, exc_jw.get_string());
 }
 
 int JavaScriptEvent::get_exception_count() const {
