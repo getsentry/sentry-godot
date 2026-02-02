@@ -90,11 +90,24 @@ class SentryBridge {
       ...(maxBreadcrumbs !== undefined && { maxBreadcrumbs }),
       ...(enableLogs !== undefined && { enableLogs }),
       integrations: function (integrations: { name: string }[]) {
-        // Disable Dedupe integration - it prevents errors with the same message but different line/function in GDScript from being registered
+        const excludedIntegrations = [
+          "Dedupe", // prevents errors with the same message but different line/function in GDScript from being registered
+          "Breadcrumbs", // added later with custom settings
+        ];
         const filtered = integrations.filter(function (integration: { name: string }) {
-          return integration.name !== "Dedupe";
+          return !excludedIntegrations.includes(integration.name);
         });
         filtered.push(wasmIntegration());
+        filtered.push(
+          Sentry.breadcrumbsIntegration({
+            console: false, // very noisy in Godot SDK
+            dom: true,
+            fetch: true,
+            history: true,
+            sentry: true,
+            xhr: true,
+          }),
+        );
         return filtered;
       },
       beforeSend: (event: Sentry.Event, hint: Sentry.EventHint) => {
