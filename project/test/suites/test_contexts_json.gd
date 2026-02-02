@@ -211,6 +211,8 @@ func test_app_context() -> void:
 
 # OS context is added later in processing on Web platform; so we have to skip this test.
 func test_os_context(_do_skip = OS.get_name() == "Web") -> void:
+	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+
 	assert_json(json).describe("OS context structure") \
 		.at("/contexts/os") \
 		.is_object() \
