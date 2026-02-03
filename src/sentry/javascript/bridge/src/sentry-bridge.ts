@@ -100,10 +100,10 @@ class SentryBridge {
         filtered.push(
           Sentry.breadcrumbsIntegration({
             console: false, // very noisy in Godot SDK
-            dom: true,
+            dom: false, // dom clicks are not informative in games
             fetch: true,
             history: true,
-            sentry: true,
+            sentry: false, // redundant - doubles our functionality
             xhr: true,
           }),
         );
