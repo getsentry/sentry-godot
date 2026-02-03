@@ -69,6 +69,13 @@ void SentryEditorExportPluginWeb::_export_begin(const PackedStringArray &p_featu
 	dir->list_dir_end();
 }
 
+String SentryEditorExportPluginWeb::_get_export_option_warning(const Ref<EditorExportPlatform> &p_platform, const String &p_option) const {
+	if (p_option == "variant/extensions_support" && get_option("variant/extensions_support") == Variant(false)) {
+		return "Sentry requires \"Extension Support\" to be enabled for Web exports.";
+	}
+	return String();
+}
+
 SentryEditorExportPluginWeb::SentryEditorExportPluginWeb() {
 	project_js_files_path = "res://addons/sentry/web/";
 
