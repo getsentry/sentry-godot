@@ -52,10 +52,12 @@ try {
 			"lastEventId",
 			"addBreadcrumb",
 			"addBytesAttachment",
-			"addBytes",
+			"storeBytes",
 			"mergeJsonIntoObject",
 			"pushJsonObjectToArray",
 			"objectToJson",
+			"getDoubleAsString",
+			"setDoubleFromString",
 		];
 
 		console.log("📋 Method availability check:");
@@ -145,8 +147,8 @@ try {
 			bridge.captureFeedback("Test feedback", "Test User", "test@example.com");
 		});
 
-		runTest("addBytes()", () => {
-			bridge.addBytes(new Uint8Array([ 1, 2, 3, 4 ]));
+		runTest("storeBytes()", () => {
+			bridge.storeBytes(new Uint8Array([ 1, 2, 3, 4 ]));
 		});
 
 		runTest("addBytesAttachment()", () => {
@@ -165,6 +167,16 @@ try {
 
 		runTest("objectToJson()", () => {
 			bridge.objectToJson({ message : "test", level : "info" });
+		});
+
+		runTest("getDoubleAsString()", () => {
+			const obj = { timestamp : 1234567890.123456 };
+			bridge.getDoubleAsString(obj, "timestamp");
+		});
+
+		runTest("setDoubleFromString()", () => {
+			const obj = {};
+			bridge.setDoubleFromString(obj, "timestamp", "1234567890.123456");
 		});
 
 		runTest("close()", () => {
