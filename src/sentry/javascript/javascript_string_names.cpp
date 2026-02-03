@@ -20,6 +20,7 @@ JavaScriptStringNames::JavaScriptStringNames() {
 	SentryBridge = StringName("SentryBridge");
 	addBreadcrumb = StringName("addBreadcrumb");
 	attachmentType = StringName("attachmentType");
+	attributes = StringName("attributes");
 	captureEvent = StringName("captureEvent");
 	captureFeedback = StringName("captureFeedback");
 	captureMessage = StringName("captureMessage");

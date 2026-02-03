@@ -38,13 +38,28 @@ public:
 	JavaScriptBeforeSendHandler() = default;
 };
 
+// Handles log processing
+class JavaScriptBeforeSendLogHandler : public Object {
+	GDCLASS(JavaScriptBeforeSendLogHandler, Object);
+
+protected:
+	static void _bind_methods() {}
+
+public:
+	void handle_before_send_log(const Array &p_args);
+
+	JavaScriptBeforeSendLogHandler() = default;
+};
+
 // Internal SDK utilizing Sentry for JavaScript.
 class JavaScriptSDK : public InternalSDK {
 private:
-	// NOTE: Need to keep this ref alive for as long as it's needed.
+	// NOTE: Need to keep these refs alive for as long as they're needed.
 	Ref<JavaScriptObject> _before_send_js_callback;
+	Ref<JavaScriptObject> _before_send_log_js_callback;
 
 	JavaScriptBeforeSendHandler *_before_send_handler;
+	JavaScriptBeforeSendLogHandler *_before_send_log_handler;
 
 	// Stores file-based attachment paths to be added in processing during before_send.
 	Vector<Ref<SentryAttachment>> file_attachments;

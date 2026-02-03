@@ -31,6 +31,7 @@ public:
 	StringName SentryBridge;
 	StringName addBreadcrumb;
 	StringName attachmentType;
+	StringName attributes;
 	StringName captureEvent;
 	StringName captureFeedback;
 	StringName captureMessage;

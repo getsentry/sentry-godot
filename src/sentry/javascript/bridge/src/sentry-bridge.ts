@@ -67,7 +67,8 @@ class SentryBridge {
   private _byteStore = new ByteStore();
 
   public init(
-    beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void | null,
+    beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void,
+    beforeSendLogCallback: ((log: Sentry.Log) => void) | null,
     dsn: string,
     debug?: boolean,
     release?: string,
@@ -88,6 +89,7 @@ class SentryBridge {
       ...(sampleRate !== undefined && { sampleRate }),
       ...(maxBreadcrumbs !== undefined && { maxBreadcrumbs }),
       ...(enableLogs !== undefined && { enableLogs }),
+
       integrations: function (integrations: { name: string }[]) {
         const excludedIntegrations = [
           "Dedupe", // prevents errors with the same message but different line/function in GDScript from being registered
@@ -109,7 +111,10 @@ class SentryBridge {
         );
         return filtered;
       },
-      beforeSend: (event: Sentry.Event, hint: Sentry.EventHint) => {
+    };
+
+    if (beforeSendCallback) {
+      options.beforeSend = (event: Sentry.Event, hint: Sentry.EventHint) => {
         // NOTE: Populated during processing in C++ layer
         var outAttachments: Array<AttachmentData> = [];
 
@@ -140,8 +145,26 @@ class SentryBridge {
         delete (event as any).shouldDiscard;
 
         return shouldDiscard ? null : event;
-      },
-    };
+      };
+    } else {
+      console.error(
+        "Sentry: beforeSend callback is missing. Events will be sent without native-side processing; this is unexpected and likely indicates the bridge failed to initialize correctly.",
+      );
+    }
+
+    // Only set beforeSendLog handler if the callback is provided
+    if (beforeSendLogCallback) {
+      options.beforeSendLog = (log: Sentry.Log) => {
+        beforeSendLogCallback(log);
+
+        var shouldDiscard: boolean = (log as any).shouldDiscard;
+        delete (log as any).shouldDiscard;
+
+        return shouldDiscard ? null : log;
+      };
+    } else {
+      console.debug("Sentry: beforeSendLog callback not provided.");
+    }
 
     Sentry.init(options);
   }

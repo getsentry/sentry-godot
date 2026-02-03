@@ -2,10 +2,12 @@
 
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/javascript/javascript_event.h"
+#include "sentry/javascript/javascript_log.h"
 #include "sentry/javascript/javascript_string_names.h"
 #include "sentry/javascript/javascript_util.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/processing/process_log.h"
 #include "sentry/sentry_options.h"
 
 #include <godot_cpp/classes/file_access.hpp>
@@ -119,6 +121,27 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 			}
 			out_attachments->call(JAVASCRIPT_SN(push), attachment_data);
 		}
+	}
+}
+
+// *** JavaScriptBeforeSendLogHandler
+
+void JavaScriptBeforeSendLogHandler::handle_before_send_log(const Array &p_args) {
+	ERR_FAIL_COND(p_args.size() != 1);
+
+	Ref<JavaScriptObject> log_obj = p_args[0];
+	ERR_FAIL_COND(log_obj.is_null());
+
+	Ref<sentry::javascript::JavaScriptLog> log = memnew(sentry::javascript::JavaScriptLog(log_obj));
+	Ref<sentry::javascript::JavaScriptLog> processed = sentry::process_log(log);
+
+	// NOTE: We cannot return a value from a callback, so we use the same
+	//       log object to communicate the result back.
+	if (unlikely(processed.is_null())) {
+		// Discard log.
+		log_obj->set(JAVASCRIPT_SN(shouldDiscard), true);
+	} else {
+		log_obj->set(JAVASCRIPT_SN(shouldDiscard), false);
 	}
 }
 
@@ -279,8 +302,17 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 
 	_before_send_js_callback = JavaScriptBridge::get_singleton()->create_callback(callable_mp(_before_send_handler, &JavaScriptBeforeSendHandler::handle_before_send));
 
+	// Only create the before_send_log callback if user has set a callback
+	const Callable &before_send_log = SentryOptions::get_singleton()->get_before_send_log();
+	Variant before_send_log_callback;
+	if (before_send_log.is_valid()) {
+		_before_send_log_js_callback = JavaScriptBridge::get_singleton()->create_callback(callable_mp(_before_send_log_handler, &JavaScriptBeforeSendLogHandler::handle_before_send_log));
+		before_send_log_callback = _before_send_log_js_callback;
+	}
+
 	js_sentry_bridge()->call(JAVASCRIPT_SN(init),
 			_before_send_js_callback,
+			before_send_log_callback,
 			SentryOptions::get_singleton()->get_dsn(),
 			SentryOptions::get_singleton()->is_debug_enabled(),
 			SentryOptions::get_singleton()->get_release(),
@@ -297,6 +329,7 @@ void JavaScriptSDK::close() {
 	js_sentry_bridge()->call(JAVASCRIPT_SN(close));
 
 	_before_send_js_callback.unref();
+	_before_send_log_js_callback.unref();
 	file_attachments.clear();
 }
 
@@ -314,6 +347,8 @@ JavaScriptSDK::JavaScriptSDK() {
 	_before_send_handler = memnew(JavaScriptBeforeSendHandler);
 	_before_send_handler->initialize(
 			JavaScriptBeforeSendHandler::FileAttachmentsGetter{ getter_func, this });
+
+	_before_send_log_handler = memnew(JavaScriptBeforeSendLogHandler);
 }
 
 JavaScriptSDK::~JavaScriptSDK() {
@@ -321,6 +356,9 @@ JavaScriptSDK::~JavaScriptSDK() {
 
 	memdelete(_before_send_handler);
 	_before_send_handler = nullptr;
+
+	memdelete(_before_send_log_handler);
+	_before_send_log_handler = nullptr;
 }
 
 } //namespace sentry::javascript
