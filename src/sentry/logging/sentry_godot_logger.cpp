@@ -4,6 +4,7 @@
 #include "sentry/logging/state.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
+#include "sentry/util/hash.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
@@ -162,19 +163,6 @@ Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
 	return frames;
 }
 
-template <class T>
-inline size_t _hash(const T &p_value) {
-	std::hash<T> hasher;
-	return hasher(p_value);
-}
-
-template <class T>
-inline void _hash_combine(std::size_t &p_hash, const T &p_value) {
-	// NOTE: Hash combining technique, originally from boost.
-	std::hash<T> hasher;
-	p_hash ^= hasher(p_value) + 0x9e3779b9 + (p_hash << 6) + (p_hash >> 2);
-}
-
 String _strip_invisible(const String &p_text) {
 	String result;
 
@@ -223,9 +211,9 @@ std::size_t SentryGodotLogger::ErrorKeyHash::operator()(const ErrorKey &p_key) c
 	std::string_view message_sv{ message_cstr.get_data() };
 	std::string_view filename_sv{ filename_cstr.get_data() };
 
-	size_t hash_value = _hash(message_sv);
-	_hash_combine(hash_value, filename_sv);
-	_hash_combine(hash_value, p_key.line);
+	size_t hash_value = sentry::util::hash(message_sv);
+	sentry::util::hash_combine(hash_value, filename_sv);
+	sentry::util::hash_combine(hash_value, p_key.line);
 	return hash_value;
 }
 
