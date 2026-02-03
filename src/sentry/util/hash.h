@@ -21,7 +21,7 @@ _FORCE_INLINE_ size_t fnv1a_hash(const char *p_data, size_t p_len) {
 	return hash;
 }
 
-_FORCE_INLINE_ size_t hash(std::string_view p_value) {
+_FORCE_INLINE_ size_t hash(const std::string_view &p_value) {
 	return fnv1a_hash(p_value.data(), p_value.size());
 }
 
