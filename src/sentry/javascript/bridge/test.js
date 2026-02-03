@@ -72,7 +72,7 @@ try {
 		console.log("\n🧪 Functional tests:");
 
 		runTest("init()", () => {
-			bridge.init(() => {}, "https://test@sentry.io/123", false, "1.0.0", "1", "production");
+			bridge.init(() => {}, null, "https://test@sentry.io/123", false, "1.0.0", "1", "production");
 		});
 
 		runTest("isEnabled()", () => {
