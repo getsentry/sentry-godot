@@ -33,9 +33,8 @@ class ByteStore {
 }
 
 // Stores info about attachments loaded from C++ layer during event processing.
-// The content is stored in ByteStore and referenced by id.
 interface AttachmentData {
-  id: number;
+  id: number; // the content is stored in ByteStore and referenced by this id.
   filename: string;
   contentType?: string;
   attachmentType?: string;
@@ -278,15 +277,21 @@ class SentryBridge {
     }
   }
 
-  public mergeJsonIntoObject(target: object, jsonString: string): void {
-    const source = safeParseJSON(jsonString, {});
-    Object.assign(target, source);
+  // *** Native-JS interop helpers
+
+  public storeBytes(bytes: Uint8Array): number {
+    return this._byteStore.add(bytes);
   }
 
-  public pushJsonObjectToArray(target: any[], jsonString: string): void {
+  public mergeJsonIntoObject(obj: object, jsonString: string): void {
+    const source = safeParseJSON(jsonString, {});
+    Object.assign(obj, source);
+  }
+
+  public pushJsonObjectToArray(arr: any[], jsonString: string): void {
     const item = safeParseJSON(jsonString, null);
     if (item !== null) {
-      target.push(item);
+      arr.push(item);
     }
   }
 
@@ -297,10 +302,6 @@ class SentryBridge {
       console.error("Failed to stringify object:", error);
       return "{}";
     }
-  }
-
-  public addBytes(bytes: Uint8Array): number {
-    return this._byteStore.add(bytes);
   }
 
   // Gets double property as string to preserve precision across the JS/C++ boundary.
