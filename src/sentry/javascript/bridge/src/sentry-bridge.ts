@@ -43,7 +43,7 @@ interface AttachmentData {
 // *** Utility Functions
 
 function safeParseJSON<T = any>(json: string, fallback: T): T {
-  if (json === "" || json === null || json === undefined) {
+  if (json === "") {
     return fallback;
   }
 
@@ -112,7 +112,7 @@ class SentryBridge {
     if (beforeSendCallback) {
       options.beforeSend = (event: Sentry.Event, hint: Sentry.EventHint) => {
         // NOTE: Populated during processing in C++ layer
-        var outAttachments: Array<AttachmentData> = [];
+        const outAttachments: Array<AttachmentData> = [];
 
         beforeSendCallback(event, outAttachments);
 
@@ -120,8 +120,8 @@ class SentryBridge {
         if (!hint.attachments) {
           hint.attachments = [];
         }
-        for (var attachmentData of outAttachments) {
-          var bytes = this._byteStore.get(attachmentData.id);
+        for (const attachmentData of outAttachments) {
+          const bytes = this._byteStore.get(attachmentData.id);
           if (bytes) {
             hint.attachments.push({
               data: bytes,
@@ -133,7 +133,7 @@ class SentryBridge {
           }
         }
 
-        var shouldDiscard: boolean = (event as any).shouldDiscard;
+        const shouldDiscard: boolean = (event as any).shouldDiscard;
         delete (event as any).shouldDiscard;
 
         return shouldDiscard ? null : event;
@@ -149,7 +149,7 @@ class SentryBridge {
       options.beforeSendLog = (log: Sentry.Log) => {
         beforeSendLogCallback(log);
 
-        var shouldDiscard: boolean = (log as any).shouldDiscard;
+        const shouldDiscard: boolean = (log as any).shouldDiscard;
         delete (log as any).shouldDiscard;
 
         return shouldDiscard ? null : log;
@@ -186,19 +186,19 @@ class SentryBridge {
     Sentry.setTag(key, undefined);
   }
 
-  public setUser(id?: string, username?: string, email?: string, ip?: string): void {
+  public setUser(id: string, username: string, email: string, ip: string): void {
     const user: User = {};
 
-    if (id && id !== "") {
+    if (id !== "") {
       user.id = id;
     }
-    if (username && username !== "") {
+    if (username !== "") {
       user.username = username;
     }
-    if (email && email !== "") {
+    if (email !== "") {
       user.email = email;
     }
-    if (ip && ip !== "") {
+    if (ip !== "") {
       user.ip_address = ip;
     }
 
@@ -233,9 +233,8 @@ class SentryBridge {
     Sentry.logger.fatal(message, safeParseJSON(attributesJson || "", {}));
   }
 
-  public captureMessage(message: string, level?: string): string {
-    const sentryLevel = level as Sentry.SeverityLevel | undefined;
-    return Sentry.captureMessage(message, sentryLevel);
+  public captureMessage(message: string, level: string): string {
+    return Sentry.captureMessage(message, level as Sentry.SeverityLevel);
   }
 
   public captureEvent(event: Sentry.Event): string {
@@ -244,13 +243,13 @@ class SentryBridge {
 
   public captureFeedback(message: string, name: string, email: string, associatedEventId: string): string {
     const feedback: any = { message };
-    if (name) {
+    if (name !== "") {
       feedback.name = name;
     }
-    if (email) {
+    if (email !== "") {
       feedback.email = email;
     }
-    if (associatedEventId) {
+    if (associatedEventId !== "") {
       feedback.associatedEventId = associatedEventId;
     }
     return Sentry.captureFeedback(feedback);
@@ -300,7 +299,7 @@ class SentryBridge {
   }
 
   // Gets double property as string to preserve precision across the JS/C++ boundary.
-  // NOTE: Numbers loose precision when crossing JS boundary in current Godot bindings.
+  // NOTE: Numbers lose precision when crossing JS boundary in current Godot bindings.
   public getDoubleAsString(obj: object, prop: string): string {
     const value = (obj as Record<string, unknown>)[prop];
     if (typeof value === "number") {
