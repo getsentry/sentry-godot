@@ -26,11 +26,11 @@ bridge/
 The bridge exposes `window.SentryBridge`. Example usage:
 
 ```typescript
-SentryBridge.init(dsn, debug?, release?, dist?, environment?, sampleRate?, maxBreadcrumbs?, enableLogs?)
+SentryBridge.init(beforeSendCallback, beforeSendLogCallback, dsn, debug, release, dist, environment, sampleRate, maxBreadcrumbs, enableLogs)
 SentryBridge.setTag(key, value)
-SentryBridge.setUser(id?, username?, email?, ip?)
-SentryBridge.captureMessage(message)
-SentryBridge.captureError(message, stacktraceJson?)
+SentryBridge.setUser(id, username, email, ip)
+SentryBridge.captureMessage(message, level)
+SentryBridge.captureEvent(event)
 ```
 
 See `src/sentry-bridge.ts` for all available methods.
