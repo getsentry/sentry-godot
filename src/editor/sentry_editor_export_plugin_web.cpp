@@ -52,7 +52,7 @@ void SentryEditorExportPluginWeb::_export_begin(const PackedStringArray &p_featu
 	String fn = dir->get_next();
 	while (!fn.is_empty()) {
 		if (!dir->current_is_dir() && (fn.ends_with(".js") || fn.ends_with(".map"))) {
-			String src_abs = ProjectSettings::get_singleton()->globalize_path("res://addons/sentry/web/").path_join(fn);
+			String src_abs = ProjectSettings::get_singleton()->globalize_path(project_js_files_path).path_join(fn);
 			String dest_abs = export_dir.path_join(fn);
 
 			Error copy_err = DirAccess::copy_absolute(src_abs, dest_abs);
