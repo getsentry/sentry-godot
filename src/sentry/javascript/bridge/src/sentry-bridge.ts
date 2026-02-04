@@ -70,25 +70,25 @@ class SentryBridge {
     beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void,
     beforeSendLogCallback: ((log: Sentry.Log) => void) | null,
     dsn: string,
-    debug?: boolean,
-    release?: string,
-    dist?: string,
-    environment?: string,
-    sampleRate?: number,
-    maxBreadcrumbs?: number,
-    enableLogs?: boolean,
+    debug: boolean,
+    release: string,
+    dist: string,
+    environment: string,
+    sampleRate: number,
+    maxBreadcrumbs: number,
+    enableLogs: boolean,
   ): void {
     console.log("Initializing Sentry via bridge...");
 
     const options: any = {
       dsn,
-      ...(debug !== undefined && { debug }),
-      ...(release !== undefined && { release }),
-      ...(dist !== undefined && { dist }),
-      ...(environment !== undefined && { environment }),
-      ...(sampleRate !== undefined && { sampleRate }),
-      ...(maxBreadcrumbs !== undefined && { maxBreadcrumbs }),
-      ...(enableLogs !== undefined && { enableLogs }),
+      debug,
+      release,
+      dist,
+      environment,
+      sampleRate,
+      maxBreadcrumbs,
+      enableLogs,
 
       integrations: function (integrations: { name: string }[]) {
         const excludedIntegrations = [
