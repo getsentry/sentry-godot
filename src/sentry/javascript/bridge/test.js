@@ -72,7 +72,7 @@ try {
 		console.log("\n🧪 Functional tests:");
 
 		runTest("init()", () => {
-			bridge.init(() => {}, null, "https://test@sentry.io/123", false, "1.0.0", "1", "production");
+			bridge.init(() => {}, null, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 100, false);
 		});
 
 		runTest("isEnabled()", () => {
@@ -128,7 +128,7 @@ try {
 		});
 
 		runTest("captureMessage()", () => {
-			bridge.captureMessage("Test message");
+			bridge.captureMessage("Test message", "info");
 		});
 
 		runTest("captureEvent()", () => {
@@ -144,7 +144,7 @@ try {
 		});
 
 		runTest("captureFeedback()", () => {
-			bridge.captureFeedback("Test feedback", "Test User", "test@example.com");
+			bridge.captureFeedback("Test feedback", "Test User", "test@example.com", "");
 		});
 
 		runTest("storeBytes()", () => {
