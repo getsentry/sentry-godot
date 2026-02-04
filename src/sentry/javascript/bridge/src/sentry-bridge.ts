@@ -88,7 +88,7 @@ class SentryBridge {
 
       integrations: function (integrations: { name: string }[]) {
         const excludedIntegrations = [
-          "Dedupe", // prevents errors with the same message but different line/function in GDScript from being registered
+          "Dedupe", // prevents the same message event from being sent twice in a row; since we don't include stacktraces with messages yet, different call sites can look identical and be dropped
           "Breadcrumbs", // added later with custom settings
         ];
         const filtered = integrations.filter(function (integration: { name: string }) {
