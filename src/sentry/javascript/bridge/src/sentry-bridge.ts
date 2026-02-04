@@ -55,10 +55,6 @@ function safeParseJSON<T = any>(json: string, fallback: T): T {
   }
 }
 
-function parseAttributes(attributesJson: string): Record<string, any> {
-  return safeParseJSON(attributesJson, {});
-}
-
 // *** SentryBridge
 
 class SentryBridge {
@@ -120,8 +116,6 @@ class SentryBridge {
 
         beforeSendCallback(event, outAttachments);
 
-        // console.debug("Byte buffers before adding attachments: ", ByteStore.size());
-
         // Add attachments loaded from the C++ layer during event processing
         if (!hint.attachments) {
           hint.attachments = [];
@@ -139,8 +133,6 @@ class SentryBridge {
           }
         }
 
-        // console.debug("Byte buffers remaining after adding attachments: ", ByteStore.size());
-
         var shouldDiscard: boolean = (event as any).shouldDiscard;
         delete (event as any).shouldDiscard;
 
@@ -152,7 +144,7 @@ class SentryBridge {
       );
     }
 
-    // Only set beforeSendLog handler if the callback is provided
+    // beforeSendLogCallback may be null when no user-provided callback is configured.
     if (beforeSendLogCallback) {
       options.beforeSendLog = (log: Sentry.Log) => {
         beforeSendLogCallback(log);
@@ -179,12 +171,7 @@ class SentryBridge {
   }
 
   public setContext(key: string, valueJson: string): void {
-    try {
-      const value = JSON.parse(valueJson);
-      Sentry.setContext(key, value);
-    } catch (error) {
-      console.error("Failed to parse context JSON:", error);
-    }
+    Sentry.setContext(key, safeParseJSON(valueJson, {}));
   }
 
   public removeContext(key: string): void {
@@ -223,27 +210,27 @@ class SentryBridge {
   }
 
   public logTrace(message: string, attributesJson?: string): void {
-    Sentry.logger.trace(message, parseAttributes(attributesJson || ""));
+    Sentry.logger.trace(message, safeParseJSON(attributesJson || "", {}));
   }
 
   public logDebug(message: string, attributesJson?: string): void {
-    Sentry.logger.debug(message, parseAttributes(attributesJson || ""));
+    Sentry.logger.debug(message, safeParseJSON(attributesJson || "", {}));
   }
 
   public logInfo(message: string, attributesJson?: string): void {
-    Sentry.logger.info(message, parseAttributes(attributesJson || ""));
+    Sentry.logger.info(message, safeParseJSON(attributesJson || "", {}));
   }
 
   public logWarn(message: string, attributesJson?: string): void {
-    Sentry.logger.warn(message, parseAttributes(attributesJson || ""));
+    Sentry.logger.warn(message, safeParseJSON(attributesJson || "", {}));
   }
 
   public logError(message: string, attributesJson?: string): void {
-    Sentry.logger.error(message, parseAttributes(attributesJson || ""));
+    Sentry.logger.error(message, safeParseJSON(attributesJson || "", {}));
   }
 
   public logFatal(message: string, attributesJson?: string): void {
-    Sentry.logger.fatal(message, parseAttributes(attributesJson || ""));
+    Sentry.logger.fatal(message, safeParseJSON(attributesJson || "", {}));
   }
 
   public captureMessage(message: string, level?: string): string {
@@ -252,15 +239,10 @@ class SentryBridge {
   }
 
   public captureEvent(event: Sentry.Event): string {
-    try {
-      return Sentry.captureEvent(event);
-    } catch (error) {
-      console.error("Failed to capture event:", error);
-      return "";
-    }
+    return Sentry.captureEvent(event);
   }
 
-  public captureFeedback(message: string, name?: string, email?: string, associatedEventId?: string): string {
+  public captureFeedback(message: string, name: string, email: string, associatedEventId: string): string {
     const feedback: any = { message };
     if (name) {
       feedback.name = name;
@@ -279,25 +261,15 @@ class SentryBridge {
   }
 
   public addBreadcrumb(crumb: Breadcrumb): void {
-    try {
-      Sentry.addBreadcrumb(crumb);
-    } catch (error) {
-      console.error("Failed to add breadcrumb:", error);
-    }
+    Sentry.addBreadcrumb(crumb);
   }
 
   public addBytesAttachment(filename: string, bytes: Uint8Array, contentType: string): void {
-    try {
-      const attachment = {
-        filename,
-        data: bytes,
-        contentType,
-      };
-
-      Sentry.getCurrentScope().addAttachment(attachment);
-    } catch (error) {
-      console.error("Failed to add bytes attachment:", error);
-    }
+    Sentry.getCurrentScope().addAttachment({
+      filename,
+      data: bytes,
+      contentType,
+    });
   }
 
   // *** Native-JS interop helpers
