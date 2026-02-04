@@ -82,14 +82,18 @@ Variant JavaScriptLog::get_attribute(const String &p_name) const {
 		return Variant();
 	}
 
-	Ref<JavaScriptObject> attr_obj = attributes_obj->get(p_name);
-	if (attr_obj.is_null()) {
-		return Variant();
+	Variant attr_val = attributes_obj->get(p_name);
+
+	// Attributes can be stored either as a typed object { value, type } or as a raw primitive.
+	Ref<JavaScriptObject> attr_obj = attr_val;
+	if (attr_obj.is_valid()) {
+		// Typed attribute - return the underlying value.
+		// TODO: handle "double" via a dedicated path.
+		return attr_obj->get(JAVASCRIPT_SN(value));
 	}
 
-	// Sentry log attributes have a "value" and "type" structure
-	// TODO: this should handle "double" via special path
-	return attr_obj->get(JAVASCRIPT_SN(value));
+	// Raw primitive value.
+	return attr_val;
 }
 
 void JavaScriptLog::set_attribute(const String &p_name, const Variant &p_value) {
