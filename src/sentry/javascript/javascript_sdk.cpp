@@ -321,6 +321,12 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 			SentryOptions::get_singleton()->get_sample_rate(),
 			SentryOptions::get_singleton()->get_max_breadcrumbs(),
 			SentryOptions::get_singleton()->get_enable_logs());
+
+	if (is_enabled()) {
+		set_user(SentryUser::create_default());
+	} else {
+		ERR_PRINT("Sentry: Failed to initialize JavaScript SDK.");
+	}
 }
 
 void JavaScriptSDK::close() {
