@@ -3,9 +3,7 @@
 #include "javascript_string_names.h"
 #include "javascript_util.h"
 
-#include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/java_script_object.hpp>
-#include <godot_cpp/classes/json.hpp>
 
 namespace sentry::javascript {
 
@@ -88,7 +86,6 @@ Variant JavaScriptLog::get_attribute(const String &p_name) const {
 	Ref<JavaScriptObject> attr_obj = attr_val;
 	if (attr_obj.is_valid()) {
 		// Typed attribute - return the underlying value.
-		// TODO: handle "double" via a dedicated path.
 		return attr_obj->get(JAVASCRIPT_SN(value));
 	}
 
@@ -100,29 +97,7 @@ void JavaScriptLog::set_attribute(const String &p_name, const Variant &p_value) 
 	ERR_FAIL_COND(js_obj.is_null());
 
 	Ref<JavaScriptObject> attributes_obj = js_object_get_or_create_object_property(js_obj, JAVASCRIPT_SN(attributes));
-
-	Ref<JavaScriptObject> attr_obj = JavaScriptBridge::get_singleton()->create_object(JAVASCRIPT_SN(Object));
-	attr_obj->set(JAVASCRIPT_SN(value), p_value);
-
-	String type_str;
-	switch (p_value.get_type()) {
-		case Variant::BOOL:
-			type_str = "boolean";
-			break;
-		case Variant::INT:
-			type_str = "integer";
-			break;
-		case Variant::FLOAT:
-			type_str = "double";
-			break;
-		case Variant::STRING:
-		default:
-			type_str = "string";
-			break;
-	}
-
-	attr_obj->set(JAVASCRIPT_SN(type), type_str);
-	attributes_obj->set(p_name, attr_obj);
+	attributes_obj->set(p_name, p_value);
 }
 
 void JavaScriptLog::add_attributes(const Dictionary &p_attributes) {
