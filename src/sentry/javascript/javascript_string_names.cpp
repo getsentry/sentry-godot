@@ -28,8 +28,6 @@ JavaScriptStringNames::JavaScriptStringNames() {
 	close = StringName("close");
 	contentType = StringName("contentType");
 	contexts = StringName("contexts");
-	crashed = StringName("crashed");
-	current = StringName("current");
 	data = StringName("data");
 	deleteProperty = StringName("deleteProperty");
 	dist = StringName("dist");
@@ -52,7 +50,6 @@ JavaScriptStringNames::JavaScriptStringNames() {
 	logTrace = StringName("logTrace");
 	logWarn = StringName("logWarn");
 	logger = StringName("logger");
-	main = StringName("main");
 	mergeJsonIntoObject = StringName("mergeJsonIntoObject");
 	message = StringName("message");
 	objectToJson = StringName("objectToJson");
@@ -68,9 +65,7 @@ JavaScriptStringNames::JavaScriptStringNames() {
 	setTag = StringName("setTag");
 	setUser = StringName("setUser");
 	shouldDiscard = StringName("shouldDiscard");
-	stacktrace = StringName("stacktrace");
 	tags = StringName("tags");
-	thread_id = StringName("thread_id");
 	threads = StringName("threads");
 	timestamp = StringName("timestamp");
 	type = StringName("type");

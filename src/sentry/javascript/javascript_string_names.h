@@ -39,8 +39,6 @@ public:
 	StringName close;
 	StringName contentType;
 	StringName contexts;
-	StringName crashed;
-	StringName current;
 	StringName data;
 	StringName deleteProperty;
 	StringName dist;
@@ -63,7 +61,6 @@ public:
 	StringName logTrace;
 	StringName logWarn;
 	StringName logger;
-	StringName main;
 	StringName mergeJsonIntoObject;
 	StringName message;
 	StringName objectToJson;
@@ -79,9 +76,7 @@ public:
 	StringName setTag;
 	StringName setUser;
 	StringName shouldDiscard;
-	StringName stacktrace;
 	StringName tags;
-	StringName thread_id;
 	StringName threads;
 	StringName timestamp;
 	StringName type;
