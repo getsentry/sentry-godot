@@ -116,7 +116,7 @@ void JavaScriptEvent::set_level(sentry::Level p_level) {
 }
 
 sentry::Level JavaScriptEvent::get_level() const {
-	ERR_FAIL_COND_V(js_obj.is_null(), sentry::Level::LEVEL_INFO);
+	ERR_FAIL_COND_V(js_obj.is_null(), sentry::Level::LEVEL_ERROR);
 	String level_str = js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(level));
 	return sentry::level_from_string(level_str, sentry::Level::LEVEL_ERROR);
 }

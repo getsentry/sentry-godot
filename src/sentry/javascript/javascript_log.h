@@ -28,7 +28,7 @@ public:
 	virtual void remove_attribute(const String &p_name) override;
 
 	JavaScriptLog(const Ref<RefCounted> &p_js_log_object);
-	JavaScriptLog() = default;
+	JavaScriptLog();
 	virtual ~JavaScriptLog() override;
 };
 

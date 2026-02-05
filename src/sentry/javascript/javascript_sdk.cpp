@@ -146,11 +146,7 @@ void JavaScriptBeforeSendLogHandler::handle_before_send_log(const Array &p_args)
 
 void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
-	if (!p_value.is_empty()) {
-		js_sentry_bridge()->call(JAVASCRIPT_SN(setContext), p_key, JSON::stringify(p_value));
-	} else {
-		js_sentry_bridge()->call(JAVASCRIPT_SN(removeContext), p_key);
-	}
+	js_sentry_bridge()->call(JAVASCRIPT_SN(setContext), p_key, JSON::stringify(p_value));
 }
 
 void JavaScriptSDK::remove_context(const String &p_key) {
@@ -243,6 +239,7 @@ Ref<SentryEvent> JavaScriptSDK::create_event() {
 
 String JavaScriptSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_COND_V(js_sentry_bridge().is_null(), String());
+	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Sentry: Can't capture event - event object is null.");
 	JavaScriptEvent *ev = Object::cast_to<JavaScriptEvent>(p_event.ptr());
 	ERR_FAIL_NULL_V(ev, String());
 	return js_sentry_bridge()->call(JAVASCRIPT_SN(captureEvent), ev->get_js_object());

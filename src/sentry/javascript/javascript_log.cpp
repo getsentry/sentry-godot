@@ -75,6 +75,10 @@ void JavaScriptLog::remove_attribute(const String &p_name) {
 	}
 }
 
+JavaScriptLog::JavaScriptLog() {
+	ERR_PRINT("This constructor is not intended for runtime use.");
+}
+
 JavaScriptLog::JavaScriptLog(const Ref<RefCounted> &p_js_log_object) {
 	js_obj = p_js_log_object;
 }
