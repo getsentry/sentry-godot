@@ -38,6 +38,15 @@ _FORCE_INLINE_ String js_object_get_property_as_string(const Ref<JavaScriptObjec
 	return val == Variant() ? p_default : val.operator String();
 }
 
+// Set a string property on a JavaScript object, or remove it if the value is empty.
+_FORCE_INLINE_ void js_object_set_or_remove_string_property(const Ref<JavaScriptObject> &p_obj, const String &p_property, const String &p_value) {
+	if (p_value.is_empty()) {
+		js_delete_property(p_obj, p_property);
+	} else {
+		p_obj->set(p_property, p_value);
+	}
+}
+
 // Returns an object property from a JS object, creating/assigning if missing.
 Ref<JavaScriptObject> js_object_get_or_create_object_property(const Ref<JavaScriptObject> &p_object, const StringName &p_property);
 

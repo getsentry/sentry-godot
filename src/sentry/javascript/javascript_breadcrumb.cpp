@@ -12,7 +12,7 @@ namespace sentry::javascript {
 
 void JavaScriptBreadcrumb::set_message(const String &p_message) {
 	ERR_FAIL_COND(js_obj.is_null());
-	js_obj->set(JAVASCRIPT_SN(message), p_message);
+	js_object_set_or_remove_string_property(js_obj, JAVASCRIPT_SN(message), p_message);
 }
 
 String JavaScriptBreadcrumb::get_message() const {
@@ -22,7 +22,7 @@ String JavaScriptBreadcrumb::get_message() const {
 
 void JavaScriptBreadcrumb::set_category(const String &p_category) {
 	ERR_FAIL_COND(js_obj.is_null());
-	js_obj->set(JAVASCRIPT_SN(category), p_category);
+	js_object_set_or_remove_string_property(js_obj, JAVASCRIPT_SN(category), p_category);
 }
 
 String JavaScriptBreadcrumb::get_category() const {
@@ -48,7 +48,7 @@ sentry::Level JavaScriptBreadcrumb::get_level() const {
 
 void JavaScriptBreadcrumb::set_type(const String &p_type) {
 	ERR_FAIL_COND(js_obj.is_null());
-	js_obj->set(JAVASCRIPT_SN(type), p_type);
+	js_object_set_or_remove_string_property(js_obj, JAVASCRIPT_SN(type), p_type);
 }
 
 String JavaScriptBreadcrumb::get_type() const {

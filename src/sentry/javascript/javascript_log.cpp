@@ -69,7 +69,7 @@ String JavaScriptLog::get_body() const {
 
 void JavaScriptLog::set_body(const String &p_body) {
 	ERR_FAIL_COND(js_obj.is_null());
-	js_obj->set(JAVASCRIPT_SN(message), p_body);
+	js_object_set_or_remove_string_property(js_obj, JAVASCRIPT_SN(message), p_body);
 }
 
 Variant JavaScriptLog::get_attribute(const String &p_name) const {

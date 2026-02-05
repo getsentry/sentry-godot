@@ -69,7 +69,7 @@ String JavaScriptEvent::get_id() const {
 
 void JavaScriptEvent::set_message(const String &p_message) {
 	ERR_FAIL_COND(js_obj.is_null());
-	js_obj->set(JAVASCRIPT_SN(message), p_message);
+	js_object_set_or_remove_string_property(js_obj, JAVASCRIPT_SN(message), p_message);
 }
 
 String JavaScriptEvent::get_message() const {
@@ -129,7 +129,7 @@ sentry::Level JavaScriptEvent::get_level() const {
 
 void JavaScriptEvent::set_logger(const String &p_logger) {
 	ERR_FAIL_COND(js_obj.is_null());
-	js_obj->set(JAVASCRIPT_SN(logger), p_logger);
+	js_object_set_or_remove_string_property(js_obj, JAVASCRIPT_SN(logger), p_logger);
 }
 
 String JavaScriptEvent::get_logger() const {
@@ -139,7 +139,7 @@ String JavaScriptEvent::get_logger() const {
 
 void JavaScriptEvent::set_release(const String &p_release) {
 	ERR_FAIL_COND(js_obj.is_null());
-	js_obj->set(JAVASCRIPT_SN(release), p_release);
+	js_object_set_or_remove_string_property(js_obj, JAVASCRIPT_SN(release), p_release);
 }
 
 String JavaScriptEvent::get_release() const {
@@ -149,7 +149,7 @@ String JavaScriptEvent::get_release() const {
 
 void JavaScriptEvent::set_dist(const String &p_dist) {
 	ERR_FAIL_COND(js_obj.is_null());
-	js_obj->set(JAVASCRIPT_SN(dist), p_dist);
+	js_object_set_or_remove_string_property(js_obj, JAVASCRIPT_SN(dist), p_dist);
 }
 
 String JavaScriptEvent::get_dist() const {
@@ -159,7 +159,7 @@ String JavaScriptEvent::get_dist() const {
 
 void JavaScriptEvent::set_environment(const String &p_environment) {
 	ERR_FAIL_COND(js_obj.is_null());
-	js_obj->set(JAVASCRIPT_SN(environment), p_environment);
+	js_object_set_or_remove_string_property(js_obj, JAVASCRIPT_SN(environment), p_environment);
 }
 
 String JavaScriptEvent::get_environment() const {
