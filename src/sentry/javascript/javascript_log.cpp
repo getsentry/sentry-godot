@@ -3,63 +3,19 @@
 #include "javascript_string_names.h"
 #include "javascript_util.h"
 
-#include <godot_cpp/classes/java_script_object.hpp>
-
 namespace sentry::javascript {
 
 LogLevel JavaScriptLog::get_level() const {
 	ERR_FAIL_COND_V(js_obj.is_null(), LOG_LEVEL_INFO);
 
 	String level_str = js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(level));
-
-	// TODO: extract
-	if (level_str == "trace") {
-		return LOG_LEVEL_TRACE;
-	} else if (level_str == "debug") {
-		return LOG_LEVEL_DEBUG;
-	} else if (level_str == "info") {
-		return LOG_LEVEL_INFO;
-	} else if (level_str == "warn") {
-		return LOG_LEVEL_WARN;
-	} else if (level_str == "error") {
-		return LOG_LEVEL_ERROR;
-	} else if (level_str == "fatal") {
-		return LOG_LEVEL_FATAL;
-	}
-
-	return LOG_LEVEL_INFO;
+	return sentry::log_level_from_string(level_str, LOG_LEVEL_INFO);
 }
 
 void JavaScriptLog::set_level(LogLevel p_level) {
 	ERR_FAIL_COND(js_obj.is_null());
 
-	// TODO: extract
-	String level_str;
-	switch (p_level) {
-		case LOG_LEVEL_TRACE:
-			level_str = "trace";
-			break;
-		case LOG_LEVEL_DEBUG:
-			level_str = "debug";
-			break;
-		case LOG_LEVEL_INFO:
-			level_str = "info";
-			break;
-		case LOG_LEVEL_WARN:
-			level_str = "warn";
-			break;
-		case LOG_LEVEL_ERROR:
-			level_str = "error";
-			break;
-		case LOG_LEVEL_FATAL:
-			level_str = "fatal";
-			break;
-		default:
-			level_str = "info";
-			break;
-	}
-
-	js_obj->set(JAVASCRIPT_SN(level), level_str);
+	js_obj->set(JAVASCRIPT_SN(level), sentry::log_level_as_string(p_level));
 }
 
 String JavaScriptLog::get_body() const {
