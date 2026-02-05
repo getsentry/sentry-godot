@@ -21,8 +21,6 @@ private:
 	}
 
 public:
-	JSONWriter() = default;
-
 	// Starts an object: {
 	void begin_object() {
 		_maybe_comma();
@@ -220,6 +218,8 @@ public:
 	String get_string() const {
 		return json;
 	}
+
+	JSONWriter() = default;
 };
 
 } // namespace sentry::util
