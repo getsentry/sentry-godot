@@ -69,8 +69,8 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 	Ref<JavaScriptObject> out_attachments = p_args[1];
 	ERR_FAIL_COND(out_attachments.is_null());
 
-	Ref<sentry::javascript::JavaScriptEvent> event = memnew(sentry::javascript::JavaScriptEvent(event_obj));
-	Ref<sentry::javascript::JavaScriptEvent> processed = sentry::process_event(event);
+	Ref<JavaScriptEvent> event = memnew(JavaScriptEvent(event_obj));
+	Ref<JavaScriptEvent> processed = sentry::process_event(event);
 
 	// NOTE: We cannot return a value from a callback, so we use the same
 	//       event object to communicate the result back.
@@ -85,13 +85,13 @@ void JavaScriptBeforeSendHandler::handle_before_send(const Array &p_args) {
 		for (const Ref<SentryAttachment> &att : file_attachments) {
 			if (att->get_path().is_empty()) {
 				// Skip attachments with empty path.
-				// Note that byte attachments are not processed here - they are added immediately.
+				// NOTE: Byte attachments are not processed here - they are added immediately.
 				continue;
 			}
 
 			Ref<FileAccess> file = FileAccess::open(att->get_path(), FileAccess::READ);
 			if (file.is_null()) {
-				// Some attachments may be missing. Skip...
+				// NOTE: Some attachments may legitimately be missing (e.g. screenshots not created on non-main threads).
 				sentry::logging::print_debug("Skipping attachment - file not found: " + att->get_path());
 				continue;
 			}
@@ -132,24 +132,23 @@ void JavaScriptBeforeSendLogHandler::handle_before_send_log(const Array &p_args)
 	Ref<JavaScriptObject> log_obj = p_args[0];
 	ERR_FAIL_COND(log_obj.is_null());
 
-	Ref<sentry::javascript::JavaScriptLog> log = memnew(sentry::javascript::JavaScriptLog(log_obj));
-	Ref<sentry::javascript::JavaScriptLog> processed = sentry::process_log(log);
+	Ref<JavaScriptLog> log = memnew(JavaScriptLog(log_obj));
+	Ref<JavaScriptLog> processed = sentry::process_log(log);
 
 	// NOTE: We cannot return a value from a callback, so we use the same
 	//       log object to communicate the result back.
-	if (unlikely(processed.is_null())) {
-		// Discard log.
-		log_obj->set(JAVASCRIPT_SN(shouldDiscard), true);
-	} else {
-		log_obj->set(JAVASCRIPT_SN(shouldDiscard), false);
-	}
+	log_obj->set(JAVASCRIPT_SN(shouldDiscard), processed.is_null());
 }
 
 // *** JavaScriptSDK
 
 void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
-	js_sentry_bridge()->call(JAVASCRIPT_SN(setContext), p_key, JSON::stringify(p_value));
+	if (!p_value.is_empty()) {
+		js_sentry_bridge()->call(JAVASCRIPT_SN(setContext), p_key, JSON::stringify(p_value));
+	} else {
+		js_sentry_bridge()->call(JAVASCRIPT_SN(removeContext), p_key);
+	}
 }
 
 void JavaScriptSDK::remove_context(const String &p_key) {
@@ -268,16 +267,14 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		file_attachments.append(p_attachment);
 	} else {
 		// Bytes attachment - added immediately
-		PackedByteArray bytes = p_attachment->get_bytes();
-		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
-		String filename = p_attachment->get_filename();
-		ERR_FAIL_COND_MSG(filename.is_empty(), "Sentry: Can't add attachment without filename.");
+		ERR_FAIL_COND_MSG(p_attachment->get_bytes().is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
+		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add attachment without filename.");
 
 		em_js::sentry_add_bytes_attachment(
-				filename.utf8().get_data(),
-				bytes.ptr(),
-				bytes.size(),
-				p_attachment->get_content_type_or_default().utf8().get_data());
+				p_attachment->get_filename().utf8(),
+				p_attachment->get_bytes().ptr(),
+				p_attachment->get_bytes().size(),
+				p_attachment->get_content_type_or_default().utf8());
 	}
 }
 
@@ -290,7 +287,7 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 
 	file_attachments.clear();
 	if (!p_global_attachments.is_empty()) {
-		for (const String path : p_global_attachments) {
+		for (const String &path : p_global_attachments) {
 			Ref<SentryAttachment> att = SentryAttachment::create_with_path(path);
 			if (path.ends_with("view-hierarchy.json")) {
 				att->set_content_type("application/json");
@@ -303,9 +300,8 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 	_before_send_js_callback = JavaScriptBridge::get_singleton()->create_callback(callable_mp(_before_send_handler, &JavaScriptBeforeSendHandler::handle_before_send));
 
 	// Only create the before_send_log callback if user has set a callback
-	const Callable &before_send_log = SentryOptions::get_singleton()->get_before_send_log();
 	Variant before_send_log_callback;
-	if (before_send_log.is_valid()) {
+	if (SentryOptions::get_singleton()->get_before_send_log().is_valid()) {
 		_before_send_log_js_callback = JavaScriptBridge::get_singleton()->create_callback(callable_mp(_before_send_log_handler, &JavaScriptBeforeSendLogHandler::handle_before_send_log));
 		before_send_log_callback = _before_send_log_js_callback;
 	}
