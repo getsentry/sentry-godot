@@ -26,6 +26,7 @@ func _setup_isolated_tests_menu() -> void:
 		if file_name.begins_with("test_") and file_name.ends_with(".gd"):
 			_isolated_test_files.append(file_name)
 		file_name = dir.get_next()
+	dir.list_dir_end()
 	_isolated_test_files.sort()
 
 	var popup := menu_button.get_popup()
