@@ -24,19 +24,13 @@ void write_stacktrace_json(sentry::util::JSONWriter &p_jw, const Vector<SentryEv
 	p_jw.begin_array(); // frames [
 	for (const SentryEvent::StackFrame &frame : p_frames) {
 		p_jw.begin_object(); // frame {
-		if (!frame.filename.is_empty()) {
-			p_jw.kv_string("filename", frame.filename);
-		}
-		if (!frame.function.is_empty()) {
-			p_jw.kv_string("function", frame.function);
-		}
+		p_jw.kv_string("filename", frame.filename);
+		p_jw.kv_string("function", frame.function);
 		if (frame.lineno >= 0) {
 			p_jw.kv_int("lineno", frame.lineno);
 		}
 		p_jw.kv_bool("in_app", frame.in_app);
-		if (!frame.platform.is_empty()) {
-			p_jw.kv_string("platform", frame.platform);
-		}
+		p_jw.kv_string("platform", frame.platform);
 		if (!frame.context_line.is_empty()) {
 			p_jw.kv_string("context_line", frame.context_line);
 		}
