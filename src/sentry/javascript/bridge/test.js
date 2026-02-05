@@ -8,6 +8,20 @@ console.log("🔍 Testing Final Sentry Bridge Bundle...\n");
 let failureCount = 0;
 let passCount = 0;
 
+function assert(condition, message) {
+	if (!condition) {
+		throw new Error(message || "Assertion failed");
+	}
+}
+
+function assertEqual(actual, expected, message) {
+	if (actual !== expected) {
+		throw new Error(
+				`${message || "Assertion failed"}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`,
+		);
+	}
+}
+
 function runTest(name, testFn) {
 	try {
 		testFn();
@@ -30,7 +44,7 @@ try {
 		console.log("🧪 Testing bridge methods...\n");
 
 		// Check if all methods exist
-		const methods = [
+		const expectedMethods = [
 			"init",
 			"close",
 			"isEnabled",
@@ -61,10 +75,22 @@ try {
 		];
 
 		console.log("📋 Method availability check:");
-		methods.forEach((method) => {
+		expectedMethods.forEach((method) => {
 			runTest(method, () => {
 				if (typeof bridge[method] !== "function") {
 					throw new Error(`${method} is not a function`);
+				}
+			});
+		});
+
+		// Reverse check: detect unexpected methods on the bridge
+		const bridgeMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(bridge)).filter(
+				(m) => m !== "constructor" && typeof bridge[m] === "function",
+		);
+		bridgeMethods.forEach((method) => {
+			runTest(`bridge should not expose unexpected method: ${method}`, () => {
+				if (!expectedMethods.includes(method)) {
+					throw new Error(`unexpected method "${method}" found on bridge but not in test list`);
 				}
 			});
 		});
@@ -76,7 +102,8 @@ try {
 		});
 
 		runTest("isEnabled()", () => {
-			bridge.isEnabled();
+			const result = bridge.isEnabled();
+			assertEqual(typeof result, "boolean", "isEnabled should return a boolean");
 		});
 
 		runTest("setTag()", () => {
@@ -128,15 +155,18 @@ try {
 		});
 
 		runTest("captureMessage()", () => {
-			bridge.captureMessage("Test message", "info");
+			const result = bridge.captureMessage("Test message", "info");
+			assertEqual(typeof result, "string", "captureMessage should return a string");
 		});
 
 		runTest("captureEvent()", () => {
-			bridge.captureEvent({ message : "Test event" });
+			const result = bridge.captureEvent({ message : "Test event" });
+			assertEqual(typeof result, "string", "captureEvent should return a string");
 		});
 
 		runTest("lastEventId()", () => {
-			bridge.lastEventId();
+			const result = bridge.lastEventId();
+			assertEqual(typeof result, "string", "lastEventId should return a string");
 		});
 
 		runTest("addBreadcrumb()", () => {
@@ -144,11 +174,16 @@ try {
 		});
 
 		runTest("captureFeedback()", () => {
-			bridge.captureFeedback("Test feedback", "Test User", "test@example.com", "");
+			const result = bridge.captureFeedback("Test feedback", "Test User", "test@example.com", "");
+			assertEqual(typeof result, "string", "captureFeedback should return a string");
 		});
 
 		runTest("storeBytes()", () => {
-			bridge.storeBytes(new Uint8Array([ 1, 2, 3, 4 ]));
+			const id1 = bridge.storeBytes(new Uint8Array([ 1, 2, 3, 4 ]));
+			assertEqual(typeof id1, "number", "storeBytes should return a number");
+			assert(id1 > 0, "storeBytes ID should be positive");
+			const id2 = bridge.storeBytes(new Uint8Array([ 5, 6 ]));
+			assert(id2 > 0 && id2 !== id1, "storeBytes should return unique IDs");
 		});
 
 		runTest("addBytesAttachment()", () => {
@@ -158,25 +193,42 @@ try {
 		runTest("mergeJsonIntoObject()", () => {
 			const target = { existing : "value" };
 			bridge.mergeJsonIntoObject(target, '{"new": "property"}');
+			assertEqual(target.existing, "value", "existing property should be preserved");
+			assertEqual(target.new, "property", "new property should be merged");
 		});
 
 		runTest("pushJsonObjectToArray()", () => {
 			const arr = [];
 			bridge.pushJsonObjectToArray(arr, '{"item": "value"}');
+			assertEqual(arr.length, 1, "array should have one element");
+			assertEqual(arr[0].item, "value", "pushed object should have correct value");
 		});
 
 		runTest("objectToJson()", () => {
-			bridge.objectToJson({ message : "test", level : "info" });
+			const result = bridge.objectToJson({ message : "test", level : "info" });
+			assertEqual(typeof result, "string", "objectToJson should return a string");
+			const parsed = JSON.parse(result);
+			assertEqual(parsed.message, "test", "JSON should contain message");
+			assertEqual(parsed.level, "info", "JSON should contain level");
+		});
+
+		runTest("objectToJson() with empty object", () => {
+			const result = bridge.objectToJson({});
+			assertEqual(result, "{}", "empty object should serialize to '{}'");
 		});
 
 		runTest("getDoubleAsString()", () => {
 			const obj = { timestamp : 1234567890.123456 };
-			bridge.getDoubleAsString(obj, "timestamp");
+			const result = bridge.getDoubleAsString(obj, "timestamp");
+			assertEqual(typeof result, "string", "should return a string");
+			assertEqual(result, "1234567890.123456", "should preserve precision");
 		});
 
 		runTest("setDoubleFromString()", () => {
 			const obj = {};
 			bridge.setDoubleFromString(obj, "timestamp", "1234567890.123456");
+			assertEqual(typeof obj.timestamp, "number", "should set a number property");
+			assertEqual(obj.timestamp, 1234567890.123456, "should set correct value");
 		});
 
 		runTest("close()", () => {
