@@ -17,7 +17,7 @@ godot::String log_level_as_string(LogLevel p_level) {
 		case LOG_LEVEL_FATAL:
 			return "fatal";
 		default:
-			return "info";
+			return "unknown";
 	}
 }
 
