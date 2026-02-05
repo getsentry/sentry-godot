@@ -10,6 +10,8 @@
 #include "sentry/processing/process_log.h"
 #include "sentry/sentry_options.h"
 
+#include "gen/sdk_version.gen.h"
+
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/json.hpp>
@@ -316,7 +318,8 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 			SentryOptions::get_singleton()->get_environment(),
 			SentryOptions::get_singleton()->get_sample_rate(),
 			SentryOptions::get_singleton()->get_max_breadcrumbs(),
-			SentryOptions::get_singleton()->get_enable_logs());
+			SentryOptions::get_singleton()->get_enable_logs(),
+			String(SENTRY_GODOT_SDK_VERSION));
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());

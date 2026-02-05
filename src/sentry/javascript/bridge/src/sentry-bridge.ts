@@ -73,6 +73,7 @@ class SentryBridge {
     sampleRate: number,
     maxBreadcrumbs: number,
     enableLogs: boolean,
+    sdkVersion: string,
   ): void {
     console.log("Initializing Sentry via bridge...");
 
@@ -85,6 +86,12 @@ class SentryBridge {
       sampleRate,
       maxBreadcrumbs,
       enableLogs,
+      _metadata: {
+        sdk: {
+          name: "sentry.javascript.godot",
+          version: sdkVersion,
+        },
+      },
 
       integrations: function (integrations: { name: string }[]) {
         const excludedIntegrations = [
