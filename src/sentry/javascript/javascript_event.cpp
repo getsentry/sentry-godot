@@ -92,7 +92,7 @@ void JavaScriptEvent::set_timestamp(const Ref<SentryTimestamp> &p_timestamp) {
 	if (p_timestamp.is_valid()) {
 		js_object_set_double(js_obj, JAVASCRIPT_SN(timestamp), p_timestamp->to_unix_time());
 	} else {
-		js_obj->set(JAVASCRIPT_SN(timestamp), Variant());
+		js_delete_property(js_obj, JAVASCRIPT_SN(timestamp));
 	}
 }
 
@@ -197,7 +197,7 @@ void JavaScriptEvent::add_exception(const Exception &p_exception) {
 	uint64_t thread_id = OS::get_singleton()->get_thread_caller_id();
 	bool is_main = OS::get_singleton()->get_main_thread_id() == thread_id;
 
-	// Create thread with stacktrace.
+	// Create thread structure with stacktrace.
 	if (!p_exception.frames.is_empty()) {
 		sentry::util::JSONWriter jw;
 		jw.begin_object(); // thread {
