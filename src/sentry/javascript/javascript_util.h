@@ -33,12 +33,13 @@ double js_object_get_double(const Ref<JavaScriptObject> &p_object, const String 
 // Set a double property on a JavaScript object, preserving precision by passing as string.
 void js_object_set_double(const Ref<JavaScriptObject> &p_object, const String &p_key, double p_value);
 
+// Get a string property from a JavaScript object, or return a default value if not found.
 _FORCE_INLINE_ String js_object_get_property_as_string(const Ref<JavaScriptObject> &p_obj, const String &p_property, const String &p_default = "") {
 	Variant val = p_obj->get(p_property);
 	return val == Variant() ? p_default : val.operator String();
 }
 
-// Set a string property on a JavaScript object, or remove it if the value is empty.
+// Set a string property on a JavaScript object, or remove it if the provided value is empty.
 _FORCE_INLINE_ void js_object_set_or_remove_string_property(const Ref<JavaScriptObject> &p_obj, const String &p_property, const String &p_value) {
 	if (p_value.is_empty()) {
 		js_delete_property(p_obj, p_property);
