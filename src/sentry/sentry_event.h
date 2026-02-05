@@ -35,8 +35,6 @@ public:
 		String type;
 		String value;
 		Vector<StackFrame> frames;
-
-		String to_json() const;
 	};
 
 protected:
