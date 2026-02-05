@@ -103,7 +103,7 @@ scons target=template_release platform=web generate_js_bundle=yes
 Or, build the JavaScript bundle separately:
 
 ```bash
-scons platform=web js_bundle
+scons js_bundle
 ```
 
 You can also use npm scripts directly from the `src/sentry/javascript/bridge` directory:

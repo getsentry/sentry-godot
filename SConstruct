@@ -322,15 +322,15 @@ Help("""
 Optional targets:
 
 ios_framework: Create iOS XCFramework from device and simulator builds.
-               Usage: scons target=template_release platform=ios ios_framework
+               Usage: scons ios_framework
                Note: Requires both device and simulator builds to exist, and it
                      doesn't trigger a build.
 
 android_lib: Build Android bridge library.
-             Usage: scons target=template_release platform=android android_lib
+             Usage: scons android_lib
 
 js_bundle: Generate JavaScript bundle.
-           Usage: scons target=template_release platform=web js_bundle
+           Usage: scons js_bundle
 """)
 
 
