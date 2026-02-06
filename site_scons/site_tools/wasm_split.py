@@ -9,6 +9,7 @@ import urllib.request
 import platform
 import stat
 from pathlib import Path
+from SCons.Script import Exit
 
 
 def get_property(prop_name, file_path):
@@ -24,7 +25,7 @@ def download_wasm_split(env, properties_file):
     """Download wasm-split binary if needed, return path to binary."""
     if not properties_file.exists():
         print(f"ERROR: Properties file not found at {properties_file}")
-        env.Exit(1)
+        Exit(1)
 
     repo = get_property("repo", properties_file)
     version = get_property("version", properties_file)
@@ -40,7 +41,7 @@ def download_wasm_split(env, properties_file):
         binary_name = "wasm-split-Darwin-universal"
     else:
         print(f"ERROR: wasm-split is not available for {system}")
-        env.Exit(1)
+        Exit(1)
 
     binary_path = wasm_split_dir / binary_name
 
@@ -64,7 +65,7 @@ def download_wasm_split(env, properties_file):
             urllib.request.urlretrieve(url, binary_path)
         except Exception as e:
             print(f"ERROR: Failed to download wasm-split: {e}")
-            env.Exit(1)
+            Exit(1)
 
         # Make binary executable.
         binary_path.chmod(binary_path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
