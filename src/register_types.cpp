@@ -1,4 +1,3 @@
-#include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_plugin.h"
 #include "sentry/disabled/disabled_event.h"
 #include "sentry/logging/sentry_godot_logger.h"
@@ -39,8 +38,17 @@
 #include "sentry/cocoa/cocoa_log.h"
 #endif // SDK_COCOA
 
+#ifdef SDK_JAVASCRIPT
+#include "sentry/javascript/javascript_breadcrumb.h"
+#include "sentry/javascript/javascript_event.h"
+#include "sentry/javascript/javascript_log.h"
+#include "sentry/javascript/javascript_sdk.h"
+#endif
+
 #ifdef TOOLS_ENABLED
 #include "editor/sentry_editor_export_plugin_android.h"
+#include "editor/sentry_editor_export_plugin_unix.h"
+#include "editor/sentry_editor_export_plugin_web.h"
 #include "editor/sentry_editor_plugin.h"
 #include <godot_cpp/classes/editor_plugin_registration.hpp>
 #endif // TOOLS_ENABLED
@@ -87,11 +95,20 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaLog);
 #endif
+
+#ifdef SDK_JAVASCRIPT
+	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptEvent);
+	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBreadcrumb);
+	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBeforeSendHandler);
+	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptLog);
+	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBeforeSendLogHandler);
+#endif
 }
 
 void register_editor_classes() {
 #ifdef TOOLS_ENABLED
 	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginAndroid);
+	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginWeb);
 	GDREGISTER_INTERNAL_CLASS(SentryEditorPlugin);
 
 #ifndef WINDOWS_ENABLED

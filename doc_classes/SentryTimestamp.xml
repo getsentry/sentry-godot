@@ -44,6 +44,12 @@
 				Converts this timestamp to an RFC 3339 formatted string in UTC. The returned string follows the format YYYY-MM-DDTHH:MM:SS.ssssssZ, for example: [code]2025-05-02T02:09:40.376534Z[/code].
 			</description>
 		</method>
+		<method name="to_unix_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Converts this timestamp to a Unix time. Unix time is a floating-point number representing the number of seconds since the Unix epoch (January 1, 1970, 00:00:00 UTC).
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="microseconds_since_unix_epoch" type="int" setter="set_microseconds_since_unix_epoch" getter="get_microseconds_since_unix_epoch" default="0">

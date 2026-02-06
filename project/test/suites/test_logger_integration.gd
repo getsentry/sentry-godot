@@ -45,11 +45,12 @@ func test_past_errors_appear_as_breadcrumbs() -> void:
 	assert_int(captured_events.size()).is_equal(2).override_failure_message("expected two events")
 
 	assert_json(second_event).describe("First error captured should be the last breadcrumb") \
-		.at("/breadcrumbs/-1") \
+		.at("/breadcrumbs/") \
+		.with_objects() \
 		.containing("message", "first error") \
 		.must_contain("level", "error") \
 		.must_contain("category", "error") \
-		.verify()
+		.exactly(1)
 
 	assert_json(second_event).describe("Second (aka current) error should NOT be in breadcrumbs") \
 		.at("/breadcrumbs/") \

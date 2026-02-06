@@ -1,0 +1,32 @@
+{
+  "name": "bridge",
+  "version": "1.0.0",
+  "description": "TypeScript Sentry Bridge for Godot Web integration",
+  "main": "dist/sentry-bundle.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "build:deploy": "npm run build && mkdir -p ../../../../project/addons/sentry/web && cp dist/sentry-bundle.js ../../../../project/addons/sentry/web/ && cp dist/sentry-bundle.js.map ../../../../project/addons/sentry/web/",
+    "clean": "rm -rf dist && rm -f ../../../../project/addons/sentry/web/sentry-bundle.js ../../../../project/addons/sentry/web/sentry-bundle.js.map",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "sentry",
+    "typescript",
+    "godot"
+  ],
+  "author": "Sentry",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "terser": "^5.44.1",
+    "terser-webpack-plugin": "^5.3.16",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.3",
+    "webpack": "^5.104.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@sentry/browser": "^10.34.0",
+    "@sentry/wasm": "^10.34.0"
+  }
+}

@@ -56,4 +56,5 @@ options/auto_init=false
 options/dsn="https://3f1e095cf2e14598a0bd5b4ff324f712@o447951.ingest.us.sentry.io/6680910"
 options/attach_scene_tree=true
 logger/include_variables=true
+logger/limits/throttle_window_ms=1000
 experimental/attach_screenshot=true

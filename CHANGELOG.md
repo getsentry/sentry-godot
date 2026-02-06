@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Support Web platform ([#488](https://github.com/getsentry/sentry-godot/pull/488))
+
 ### Changed
 
 - The `enable_logs` option is now turned off by default to align with other Sentry SDKs. If you want to keep it enabled, go to **Sentry > Options > Enable Logs** in the **Project Settings** and turn it on. ([#484](https://github.com/getsentry/sentry-godot/pull/484))
