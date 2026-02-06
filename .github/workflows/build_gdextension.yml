@@ -205,28 +205,28 @@ jobs:
             platform: web
             target: template_release
             arch: wasm32
-            scons-flags: debug_symbols=no threads=yes
+            scons-flags: debug_symbols=yes threads=yes
 
           - name: 🌐 Web (threads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
-            scons-flags: debug_symbols=no threads=yes
+            scons-flags: debug_symbols=yes threads=yes
 
           - name: 🌐 Web (nothreads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
-            scons-flags: debug_symbols=no threads=no
+            scons-flags: debug_symbols=yes threads=no
 
           - name: 🌐 Web (nothreads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
-            scons-flags: debug_symbols=no threads=no
+            scons-flags: debug_symbols=yes threads=no
 
     steps:
       - name: Checkout repo and submodules

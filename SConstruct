@@ -59,7 +59,7 @@ def add_custom_bool_option(name, description, default=False):
 # Define our custom options
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
-add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux, Android)", True)
+add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux, Android, Web)", True)
 add_custom_bool_option("generate_js_bundle", "Generate JavaScript bundle", False)
 
 # Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
@@ -81,6 +81,8 @@ arch = env["arch"]
 # Register tools
 env.Tool("copy")
 env.Tool("separate_debug_symbols")
+if platform == "web":
+    env.Tool("wasm_split")
 
 # Restore original ARGUMENTS and add custom options to environment
 ARGUMENTS.clear()
@@ -261,6 +263,9 @@ if env["debug_symbols"] and env["separate_debug_symbols"]:
         env.SeparateDebugSymbols(Dir(dsym_path), library)
     elif platform in ["linux", "android"]:
         symbols_path = f"{out_dir}/{lib_name}.debug"
+        env.SeparateDebugSymbols(File(symbols_path), library)
+    elif platform == "web":
+        symbols_path = f"{out_dir}/{lib_name}.debug.wasm"
         env.SeparateDebugSymbols(File(symbols_path), library)
 
 
