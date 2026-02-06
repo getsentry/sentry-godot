@@ -1,4 +1,4 @@
-def get_property(prop_name, file_path):
+def read_property(prop_name, file_path):
     """Read property from .properties file"""
     with open(file_path, 'r') as file:
         for line in file:
