@@ -113,25 +113,39 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	device_context["screen_dpi"] = DisplayServer::get_singleton()->screen_get_dpi(
 			DisplayServer::get_singleton()->get_primary_screen());
 
-#ifndef IOS_ENABLED
+#if !defined(IOS_ENABLED)
 	// NOTE: Memory info access on iOS can cause runtime errors in Godot 4.5.
 	// See: https://github.com/godotengine/godot/issues/109073
 	Dictionary meminfo = OS::get_singleton()->get_memory_info();
-	// NOTE: Using double since int32 can't handle size in bytes.
-	device_context["memory_size"] = double(meminfo["physical"]);
-	device_context["free_memory"] = double(meminfo["free"]);
-	device_context["usable_memory"] = double(meminfo["available"]);
+	int64_t mem_size = meminfo["physical"];
+	int64_t mem_free = meminfo["free"];
+	int64_t mem_used = meminfo["used"];
+	int64_t mem_usable = meminfo["available"];
+	if (mem_size > 0) {
+		device_context["memory_size"] = mem_size;
+	}
+	if (mem_free >= 0) {
+		device_context["free_memory"] = mem_free;
+	}
+	if (mem_used > 0) {
+		device_context["used_memory"] = mem_used;
+	}
+	if (mem_usable >= 0) {
+		device_context["usable_memory"] = mem_usable;
+	}
 #endif // !IOS_ENABLED
 
 	auto dir = DirAccess::open("user://");
 	if (dir.is_valid()) {
-		device_context["free_storage"] = double(dir->get_space_left());
+		device_context["free_storage"] = dir->get_space_left();
 	}
 
-	// TODO: device type.
-
 	device_context["processor_count"] = OS::get_singleton()->get_processor_count();
-	device_context["cpu_description"] = OS::get_singleton()->get_processor_name();
+
+	String cpu_desc = OS::get_singleton()->get_processor_name();
+	if (!cpu_desc.is_empty()) {
+		device_context["cpu_description"] = cpu_desc;
+	}
 
 	// Read/initialize installation id.
 	String installation_id = p_runtime_config->get_installation_id();
@@ -148,24 +162,26 @@ Dictionary make_device_context_update() {
 	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
 	device_context["orientation"] = _screen_orientation_as_string(primary_screen);
 
-#ifndef IOS_ENABLED
+#if !defined(IOS_ENABLED)
 	// NOTE: Memory info access on iOS can cause runtime errors in Godot 4.5.
 	const Dictionary &meminfo = OS::get_singleton()->get_memory_info();
-	// NOTE: Using double since int32 can't handle size in bytes.
-	//       On some platforms, memory info may not be available (-1).
-	int64_t free_memory = meminfo["free"];
-	if (free_memory >= 0) {
-		device_context["free_memory"] = double(free_memory);
+	int64_t mem_free = meminfo["free"];
+	int64_t mem_usable = meminfo["available"];
+	int64_t mem_used = meminfo["used"];
+	if (mem_free >= 0) {
+		device_context["free_memory"] = mem_free;
 	}
-	int64_t available_memory = meminfo["available"];
-	if (available_memory >= 0) {
-		device_context["usable_memory"] = double(available_memory);
+	if (mem_used > 0) {
+		device_context["used_memory"] = mem_used;
+	}
+	if (mem_usable >= 0) {
+		device_context["usable_memory"] = mem_usable;
 	}
 #endif // !IOS_ENABLED
 
 	auto dir = DirAccess::open("user://");
 	if (dir.is_valid()) {
-		device_context["free_storage"] = double(dir->get_space_left());
+		device_context["free_storage"] = dir->get_space_left();
 	}
 
 	return device_context;

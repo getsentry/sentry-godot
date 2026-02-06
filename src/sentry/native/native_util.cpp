@@ -13,7 +13,7 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 			return sentry_value_new_bool((bool)p_variant);
 		} break;
 		case Variant::Type::INT: {
-			return sentry_value_new_int32((int32_t)p_variant);
+			return sentry_value_new_int64((int64_t)p_variant);
 		} break;
 		case Variant::Type::FLOAT: {
 			return sentry_value_new_double((double)p_variant);
