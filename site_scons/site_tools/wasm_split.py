@@ -10,15 +10,7 @@ import platform
 import stat
 from pathlib import Path
 from SCons.Script import Exit
-
-
-def get_property(prop_name, file_path):
-    """Read property from .properties file"""
-    with open(file_path, 'r') as file:
-        for line in file:
-            if line.startswith(prop_name):
-                return line.split('=')[1].strip().strip('"')
-    raise KeyError(f"Property '{prop_name}' not found in {file_path}")
+from utils import get_property
 
 
 def download_wasm_split(env, properties_file):
