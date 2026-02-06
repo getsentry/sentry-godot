@@ -57,6 +57,13 @@ def separate_debug_symbols(target, source, env, p_symbols_path):
             print(f"ERROR: Failed to add debug link (exit code {err})")
             Exit(1)
 
+    elif platform == "web":
+        wasm_split = env["WASM_SPLIT"]
+        err = env.Execute(f'"{wasm_split}" "{binary_path}" --strip --debug-out="{symbols_path}"')
+        if err != 0:
+            print(f"ERROR: Failed to split WASM debug symbols (exit code {err})")
+            Exit(1)
+
     else:
         print("ERROR: Can't separate debug symbols on this platform")
         Exit(1)

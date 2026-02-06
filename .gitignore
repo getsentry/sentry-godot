@@ -20,6 +20,9 @@ src/gen/
 # Cocoa: downloaded automatically.
 modules/sentry-cocoa/
 
+# wasm-split: downloaded automatically.
+modules/wasm-split/
+
 # Android plugin
 .gradle/
 .idea/
