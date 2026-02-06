@@ -119,16 +119,12 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	Dictionary meminfo = OS::get_singleton()->get_memory_info();
 	int64_t mem_size = meminfo["physical"];
 	int64_t mem_free = meminfo["free"];
-	int64_t mem_used = meminfo["used"];
 	int64_t mem_usable = meminfo["available"];
 	if (mem_size > 0) {
 		device_context["memory_size"] = mem_size;
 	}
 	if (mem_free >= 0) {
 		device_context["free_memory"] = mem_free;
-	}
-	if (mem_used > 0) {
-		device_context["used_memory"] = mem_used;
 	}
 	if (mem_usable >= 0) {
 		device_context["usable_memory"] = mem_usable;
@@ -167,12 +163,8 @@ Dictionary make_device_context_update() {
 	const Dictionary &meminfo = OS::get_singleton()->get_memory_info();
 	int64_t mem_free = meminfo["free"];
 	int64_t mem_usable = meminfo["available"];
-	int64_t mem_used = meminfo["used"];
 	if (mem_free >= 0) {
 		device_context["free_memory"] = mem_free;
-	}
-	if (mem_used > 0) {
-		device_context["used_memory"] = mem_used;
 	}
 	if (mem_usable >= 0) {
 		device_context["usable_memory"] = mem_usable;
