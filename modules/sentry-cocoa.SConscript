@@ -11,7 +11,7 @@ from pathlib import Path
 
 Import("env")
 
-from utils import get_property
+from utils import read_property
 
 
 def remove_if_exists(filesystem_path):
@@ -75,8 +75,8 @@ def update_cocoa_framework():
         print(f"ERROR: Properties file not found at {properties_file}")
         Exit(1)
 
-    cocoa_repo = get_property("repo", properties_file)
-    cocoa_version = get_property("version", properties_file)
+    cocoa_repo = read_property("repo", properties_file)
+    cocoa_version = read_property("version", properties_file)
 
     cocoa_dir = project_root / "modules/sentry-cocoa"
     version_file = cocoa_dir / ".version"

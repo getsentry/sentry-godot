@@ -10,7 +10,7 @@ import platform
 import stat
 from pathlib import Path
 from SCons.Script import Exit
-from utils import get_property
+from utils import read_property
 
 
 def download_wasm_split(env, properties_file):
@@ -19,8 +19,8 @@ def download_wasm_split(env, properties_file):
         print(f"ERROR: Properties file not found at {properties_file}")
         Exit(1)
 
-    repo = get_property("repo", properties_file)
-    version = get_property("version", properties_file)
+    repo = read_property("repo", properties_file)
+    version = read_property("version", properties_file)
 
     wasm_split_dir = properties_file.parent / "wasm-split"
     version_file = wasm_split_dir / ".version"
