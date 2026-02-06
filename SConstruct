@@ -82,7 +82,7 @@ arch = env["arch"]
 env.Tool("copy")
 env.Tool("separate_debug_symbols")
 if platform == "web":
-    env.Tool("wasm_split")
+    env.Tool("wasm_split", properties_file="modules/wasm-split.properties")
 
 # Restore original ARGUMENTS and add custom options to environment
 ARGUMENTS.clear()

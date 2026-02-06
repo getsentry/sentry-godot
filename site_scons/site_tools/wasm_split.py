@@ -20,11 +20,8 @@ def get_property(prop_name, file_path):
     raise KeyError(f"Property '{prop_name}' not found in {file_path}")
 
 
-def download_wasm_split(env):
+def download_wasm_split(env, properties_file):
     """Download wasm-split binary if needed, return path to binary."""
-    project_root = Path(env.Dir("#").abspath)
-
-    properties_file = project_root / "modules/wasm-split.properties"
     if not properties_file.exists():
         print(f"ERROR: Properties file not found at {properties_file}")
         env.Exit(1)
@@ -32,7 +29,7 @@ def download_wasm_split(env):
     repo = get_property("repo", properties_file)
     version = get_property("version", properties_file)
 
-    wasm_split_dir = project_root / "modules/wasm-split"
+    wasm_split_dir = properties_file.parent / "wasm-split"
     version_file = wasm_split_dir / ".version"
 
     # Determine platform-specific binary name.
@@ -78,8 +75,9 @@ def download_wasm_split(env):
     return str(binary_path)
 
 
-def generate(env):
-    env["WASM_SPLIT"] = download_wasm_split(env)
+def generate(env, **kwargs):
+    properties_file = Path(env.Dir("#").abspath) / kwargs.get("properties_file", "")
+    env["WASM_SPLIT"] = download_wasm_split(env, properties_file)
 
 
 def exists(env):
