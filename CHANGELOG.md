@@ -6,6 +6,12 @@
 
 - The `enable_logs` option is now turned off by default to align with other Sentry SDKs. If you want to keep it enabled, go to **Sentry > Options > Enable Logs** in the **Project Settings** and turn it on. ([#484](https://github.com/getsentry/sentry-godot/pull/484))
 
+### Dependencies
+
+- Bump Native SDK from v0.12.3 to v0.12.6 ([#487](https://github.com/getsentry/sentry-godot/pull/487))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0126)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.3...0.12.6)
+
 ## 1.3.1
 
 ### Fixes
