@@ -6,6 +6,12 @@
 
 - The `enable_logs` option is now turned off by default to align with other Sentry SDKs. If you want to keep it enabled, go to **Sentry > Options > Enable Logs** in the **Project Settings** and turn it on. ([#484](https://github.com/getsentry/sentry-godot/pull/484))
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.57.3 to v9.4.0 ([#456](https://github.com/getsentry/sentry-godot/pull/456))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#940)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.4.0)
+
 ## 1.3.1
 
 ### Fixes
