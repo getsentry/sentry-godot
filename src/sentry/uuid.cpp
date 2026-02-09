@@ -11,7 +11,7 @@ inline PackedByteArray _generate_uuid_v4() {
 	data.resize(16);
 	std::random_device rd;
 	std::mt19937 gen{ rd() };
-	std::uniform_int_distribution<int> dist{ 0, 256 }; // Limits
+	std::uniform_int_distribution<int> dist{ 0, 255 }; // Limits
 	for (int i = 0; i < 16; i++) {
 		data[i] = ((unsigned char)dist(gen));
 	}
