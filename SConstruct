@@ -265,7 +265,8 @@ if env["debug_symbols"] and env["separate_debug_symbols"]:
         symbols_path = f"{out_dir}/{lib_name}.debug"
         env.SeparateDebugSymbols(File(symbols_path), library)
     elif platform == "web":
-        symbols_path = f"{out_dir}/{lib_name}.debug.wasm"
+        debug_name = lib_name.removesuffix(".wasm") + ".debug"
+        symbols_path = f"{out_dir}/{debug_name}"
         env.SeparateDebugSymbols(File(symbols_path), library)
 
 
