@@ -326,7 +326,28 @@ void SentrySDK::_demo_helper_crash_app() {
 }
 
 void SentrySDK::prepare_and_auto_initialize() {
-	options = SentryOptions::create_from_project_settings();
+	// Create platform-specific SDK backend.
+#ifdef SDK_NATIVE
+	internal_sdk = std::make_shared<sentry::native::NativeSDK>();
+#elif SDK_ANDROID
+	if (unlikely(OS::get_singleton()->has_feature("editor"))) {
+		sentry::logging::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
+		// internal_sdk stays DisabledSDK
+	} else {
+		auto sdk = std::make_shared<sentry::android::AndroidSDK>();
+		if (sdk->has_android_plugin()) {
+			internal_sdk = sdk;
+		} else {
+			sentry::logging::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
+			// internal_sdk stays DisabledSDK
+		}
+	}
+#elif SDK_COCOA
+	internal_sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
+#else
+	sentry::logging::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
+	// internal_sdk stays DisabledSDK
+#endif
 
 	// Load the runtime configuration from the user's data directory.
 	runtime_config.instantiate();
@@ -396,30 +417,9 @@ void SentrySDK::_bind_methods() {
 SentrySDK::SentrySDK() {
 	ERR_FAIL_NULL(OS::get_singleton());
 
+	options = SentryOptions::create_from_project_settings();
 	logger = memnew(SentryLogger);
-
-#ifdef SDK_NATIVE
-	internal_sdk = std::make_shared<sentry::native::NativeSDK>();
-#elif SDK_ANDROID
-	if (unlikely(OS::get_singleton()->has_feature("editor"))) {
-		sentry::logging::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
-		internal_sdk = std::make_shared<DisabledSDK>();
-	} else {
-		auto sdk = std::make_shared<sentry::android::AndroidSDK>();
-		if (sdk->has_android_plugin()) {
-			internal_sdk = sdk;
-		} else {
-			sentry::logging::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
-			internal_sdk = std::make_shared<DisabledSDK>();
-		}
-	}
-#elif SDK_COCOA
-	internal_sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
-#else
-	// Unsupported platform
-	sentry::logging::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
 	internal_sdk = std::make_shared<DisabledSDK>();
-#endif
 }
 
 SentrySDK::~SentrySDK() {
