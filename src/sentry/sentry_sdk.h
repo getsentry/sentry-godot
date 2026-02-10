@@ -34,7 +34,7 @@ private:
 	static SentrySDK *singleton;
 
 	Ref<SentryOptions> options;
-	std::shared_ptr<sentry::InternalSDK> internal_sdk;
+	std::unique_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
 	Ref<sentry::logging::SentryGodotLogger> godot_logger;
 	bool is_auto_initializing = false;
@@ -59,7 +59,7 @@ public:
 	static SentrySDK *get_singleton() { return singleton; }
 
 	_FORCE_INLINE_ Ref<SentryOptions> get_options() const { return options; }
-	_FORCE_INLINE_ std::shared_ptr<sentry::InternalSDK> get_internal_sdk() const { return internal_sdk; }
+	_FORCE_INLINE_ sentry::InternalSDK *get_internal_sdk() const { return internal_sdk.get(); }
 	_FORCE_INLINE_ Ref<RuntimeConfig> get_runtime_config() const { return runtime_config; }
 
 	// * Exported API

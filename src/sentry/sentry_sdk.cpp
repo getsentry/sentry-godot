@@ -326,24 +326,24 @@ void SentrySDK::_demo_helper_crash_app() {
 }
 
 void SentrySDK::prepare_and_auto_initialize() {
-	// Create platform-specific SDK backend.
+	// Create platform-specific SDK backend (replaces the default DisabledSDK).
 #ifdef SDK_NATIVE
-	internal_sdk = std::make_shared<sentry::native::NativeSDK>();
+	internal_sdk = std::make_unique<sentry::native::NativeSDK>();
 #elif SDK_ANDROID
 	if (unlikely(OS::get_singleton()->has_feature("editor"))) {
 		sentry::logging::print_debug("Sentry SDK is disabled in Android editor mode (only supported in exported Android projects)");
 		// internal_sdk stays DisabledSDK
 	} else {
-		auto sdk = std::make_shared<sentry::android::AndroidSDK>();
+		auto sdk = std::make_unique<sentry::android::AndroidSDK>();
 		if (sdk->has_android_plugin()) {
-			internal_sdk = sdk;
+			internal_sdk = std::move(sdk);
 		} else {
 			sentry::logging::print_error("Failed to initialize on Android. Disabling Sentry SDK...");
 			// internal_sdk stays DisabledSDK
 		}
 	}
 #elif SDK_COCOA
-	internal_sdk = std::make_shared<sentry::cocoa::CocoaSDK>();
+	internal_sdk = std::make_unique<sentry::cocoa::CocoaSDK>();
 #else
 	sentry::logging::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
 	// internal_sdk stays DisabledSDK
@@ -419,7 +419,7 @@ SentrySDK::SentrySDK() {
 
 	options = SentryOptions::create_from_project_settings();
 	logger = memnew(SentryLogger);
-	internal_sdk = std::make_shared<DisabledSDK>();
+	internal_sdk = std::make_unique<DisabledSDK>();
 }
 
 SentrySDK::~SentrySDK() {
