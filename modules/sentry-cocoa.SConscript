@@ -253,6 +253,8 @@ def CreateXCFrameworkFromLibs(self, framework_path, libraries):
             binary_dest = fw_dir / fw_name
             shutil.copy2(lib_path, binary_dest)
 
+            # Dylib's LC_ID_DYLIB still points to the bare .dylib path; update
+            # it to the framework layout so dyld resolves it correctly at runtime.
             install_name = f"@rpath/{fw_name}.framework/{fw_name}"
             result = subprocess.run(
                 ["install_name_tool", "-id", install_name, str(binary_dest)],
