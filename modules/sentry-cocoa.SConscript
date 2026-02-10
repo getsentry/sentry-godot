@@ -218,7 +218,12 @@ if platform in ["macos", "ios"]:
 # *** Export pseudo-builders to create xcframeworks
 
 def CreateXCFrameworkFromLibs(self, framework_path, libraries):
-    """Create an xcframework from multiple libraries."""
+    """Create an xcframework from dynamic libraries.
+
+    Each dylib is wrapped in a .framework bundle before packaging into the
+    xcframework. This produces proper framework slices that don't require
+    additional conversion by Godot's export pipeline.
+    """
     framework_path = str(framework_path)
 
     def create_xcframework_action(target, source, env):
@@ -236,14 +241,54 @@ def CreateXCFrameworkFromLibs(self, framework_path, libraries):
 
         remove_if_exists(framework_path)
 
-        # Generate xcodebuild command
-        cmd = ["xcodebuild", "-create-xcframework"]
+        # Wrap each dylib in a .framework bundle.
+        temp_frameworks = []
         for lib in libraries:
-            cmd.extend(["-library", str(lib)])
+            lib_path = Path(lib)
+            fw_name = lib_path.stem  # e.g. "libsentry.ios.debug.arm64"
+            fw_dir = lib_path.parent / f"{fw_name}.framework"
+
+            remove_if_exists(fw_dir)
+            fw_dir.mkdir(parents=True, exist_ok=True)
+
+            # Copy dylib as framework binary (without .dylib extension).
+            binary_dest = fw_dir / fw_name
+            shutil.copy2(lib_path, binary_dest)
+
+            # Set framework install name.
+            install_name = f"@rpath/{fw_name}.framework/{fw_name}"
+            result = subprocess.run(
+                ["install_name_tool", "-id", install_name, str(binary_dest)],
+                capture_output=True, text=True,
+            )
+            if result.returncode != 0:
+                print(f"ERROR: install_name_tool failed: {result.stderr}")
+                return 1
+
+            # Create Info.plist.
+            is_simulator = "simulator" in lib_path.name
+            env.WriteFrameworkPlist(
+                fw_dir / "Info.plist",
+                bundle_executable=fw_name,
+                bundle_identifier=f"io.sentry.godot.{fw_name}",
+                bundle_platforms=["iPhoneSimulator"] if is_simulator else ["iPhoneOS"],
+                min_os_version=env.get("ios_min_version", "12.0"),
+            )
+
+            temp_frameworks.append(fw_dir)
+
+        # Create xcframework using -framework flag.
+        cmd = ["xcodebuild", "-create-xcframework"]
+        for fw_dir in temp_frameworks:
+            cmd.extend(["-framework", str(fw_dir)])
         cmd.extend(["-output", framework_path])
 
         print(f"Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
+
+        # Clean up temp framework bundles.
+        for fw_dir in temp_frameworks:
+            remove_if_exists(fw_dir)
 
         if result.returncode != 0:
             print("ERROR: Failed creating xcframework:")
