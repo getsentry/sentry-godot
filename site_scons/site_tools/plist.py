@@ -55,13 +55,13 @@ def _framework_plist_content(
 \t<key>CFBundlePackageType</key>
 \t<string>{bundle_package_type}</string>
 \t<key>CFBundleShortVersionString</key>
-\t<string>{bundle_version}</string>
+\t<string>{short_version}</string>
 \t<key>CFBundleSupportedPlatforms</key>
 \t<array>
 {platforms_content}
 \t</array>
 \t<key>CFBundleVersion</key>
-\t<string>{short_version}</string>
+\t<string>{bundle_version}</string>
 {min_version_entry}\
 </dict>
 </plist>
