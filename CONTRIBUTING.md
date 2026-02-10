@@ -85,6 +85,36 @@ scons platform=ios target=editor arch=arm64 ios_simulator=no
 scons platform=ios target=editor arch=universal ios_simulator=yes generate_ios_framework=yes
 ```
 
+### Web
+
+Building for Web requires Node.js to bundle the JavaScript bridge. First, install dependencies:
+
+```bash
+cd src/sentry/javascript/bridge
+npm install
+```
+
+Then build the GDExtension library and generate the JavaScript bundle:
+
+```bash
+scons target=template_release platform=web generate_js_bundle=yes
+```
+
+Or, build the JavaScript bundle separately:
+
+```bash
+scons js_bundle
+```
+
+You can also use npm scripts directly from the `src/sentry/javascript/bridge` directory:
+
+```bash
+npm run build          # Build production bundle to dist/
+npm run build:deploy   # Build and copy to project/addons/sentry/web/
+npm run clean          # Clean build artifacts
+npm test               # Run tests
+```
+
 ## Project Structure
 
 - `src/` -- Godot extension source code

@@ -8,6 +8,7 @@ using namespace godot;
 namespace sentry::uuid {
 
 String make_uuid();
+String make_uuid_no_dashes();
 
 } // namespace sentry::uuid
 

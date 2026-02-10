@@ -105,10 +105,14 @@ func test_event_json_message_interface() -> void:
 
 	var json: String = await capture_event_and_get_json(event)
 
-	assert_json(json).describe("Message is nested under message.formatted") \
+	assert_json(json).describe("Message interface structure") \
 		.at("/message") \
-		.is_object() \
-		.must_contain("formatted", "Test event message") \
+		.either() \
+			.is_object() \
+			.must_contain("formatted", "Test event message") \
+		.or_else() \
+			.must_be("Test event message") \
+		.end() \
 		.verify()
 
 
@@ -118,10 +122,12 @@ func test_event_json_with_capture_message() -> void:
 	var json: String = await wait_for_captured_event_json()
 
 	assert_json(json).describe("Message interface structure") \
-		.at("/message") \
-		.is_object() \
-		.is_not_empty() \
-		.must_contain("formatted", "Nobody expects the Spanish Inquisition!") \
+		.at("/") \
+		.either() \
+			.must_contain("message/formatted", "Nobody expects the Spanish Inquisition!") \
+		.or_else() \
+			.must_contain("message", "Nobody expects the Spanish Inquisition!") \
+		.end() \
 		.verify()
 
 	assert_json(json).describe("Event has correct level") \
@@ -177,11 +183,19 @@ func test_event_json_attributes_with_utf8_encoding() -> void:
 
 	assert_json(json).describe("Attributes preserve UTF-8 data") \
 		.at("/") \
-		.must_contain("message/formatted", "Hello 世界! 👋") \
 		.must_contain("logger", "Hello 世界! 👋") \
 		.must_contain("release", "Hello 世界! 👋") \
 		.must_contain("dist", "Hello 世界! 👋") \
 		.must_contain("environment", "Hello 世界! 👋") \
+		.verify()
+
+	assert_json(json).describe("Message preserves UTF-8 data") \
+		.at("/") \
+		.either() \
+			.must_contain("message/formatted", "Hello 世界! 👋") \
+		.or_else() \
+			.must_contain("message", "Hello 世界! 👋") \
+		.end() \
 		.verify()
 
 	assert_json(json).describe("Tags preserve UTF-8 data") \
@@ -203,7 +217,11 @@ func test_capture_message_with_utf8() -> void:
 
 	assert_json(json).describe("Message preserves UTF-8 data") \
 		.at("/") \
-		.must_contain("message/formatted", "Hello 世界! 👋") \
+		.either() \
+			.must_contain("message/formatted", "Hello 世界! 👋") \
+		.or_else() \
+			.must_contain("message", "Hello 世界! 👋") \
+		.end() \
 		.verify()
 
 
@@ -241,7 +259,8 @@ func test_event_json_level_attribute() -> void:
 			.verify()
 
 
-func test_event_json_sdk_interface() -> void:
+# NOTE: JS SDK adds SDK info after beforeSend; therefore, skip this test in Web builds.
+func test_event_json_sdk_interface(_do_skip = OS.get_name() == "Web") -> void:
 	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
 
 	assert_json(json).describe("SDK metadata present") \

@@ -16,23 +16,23 @@ func _before_send(event: SentryEvent) -> SentryEvent:
 
 @warning_ignore("unused_parameter")
 func test_event_integrity(timeout := 10000) -> void:
-	_capture_event()
+	_capture_event("event integrity check from main thread")
 	await assert_signal(self).is_emitted("callback_processed")
 
 
 @warning_ignore("unused_parameter")
 func test_threaded_event_capture(timeout := 10000) -> void:
 	var thread := Thread.new()
-	thread.start(_capture_event)
+	thread.start(_capture_event.bind("event integrity check from worker thread"))
 	await assert_signal(self).is_emitted("callback_processed")
 	thread.wait_to_finish()
 
 
-func _capture_event() ->  void:
+func _capture_event(message: String) ->  void:
 	SentrySDK._set_before_send(_before_send)
 
 	var event := SentrySDK.create_event()
-	event.message = "integrity-check"
+	event.message = message
 	event.level = SentrySDK.LEVEL_DEBUG
 	event.logger = "custom-logger"
 	event.release = "custom-release"
@@ -42,7 +42,7 @@ func _capture_event() ->  void:
 	created_id = event.id
 
 	before_send = func(ev: SentryEvent) -> SentryEvent:
-		assert_str(ev.message).is_equal("integrity-check")
+		assert_str(ev.message).is_equal(message)
 		assert_int(ev.level).is_equal(SentrySDK.LEVEL_DEBUG)
 		assert_str(ev.logger).is_equal("custom-logger")
 		assert_str(ev.release).is_equal("custom-release")

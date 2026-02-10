@@ -409,7 +409,7 @@ HashMap<String, Dictionary> make_event_contexts() {
 
 	event_contexts["godot_performance"] = make_performance_context();
 
-#ifdef SDK_NATIVE
+#if defined(SDK_NATIVE) || defined(SDK_JAVASCRIPT)
 	event_contexts["device"] = make_device_context_update();
 #endif
 
