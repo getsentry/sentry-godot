@@ -11,7 +11,7 @@
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
-#include "sentry/sentry_options.h"
+#include "sentry/sentry_sdk.h"
 #include "sentry/util/screenshot.h"
 
 #include <cstdio>
@@ -358,22 +358,22 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	if (p_configuration_callback.is_valid()) {
-		p_configuration_callback.call(SentryOptions::get_singleton());
+		p_configuration_callback.call(SENTRY_OPTIONS());
 	}
 
 	sentry_options_t *options = sentry_options_new();
 
-	sentry_options_set_dsn(options, SentryOptions::get_singleton()->get_dsn().utf8());
+	sentry_options_set_dsn(options, SENTRY_OPTIONS()->get_dsn().utf8());
 	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
-	sentry_options_set_debug(options, SentryOptions::get_singleton()->is_debug_enabled());
-	sentry_options_set_release(options, SentryOptions::get_singleton()->get_release().utf8());
-	sentry_options_set_dist(options, SentryOptions::get_singleton()->get_dist().utf8());
-	sentry_options_set_environment(options, SentryOptions::get_singleton()->get_environment().utf8());
-	sentry_options_set_sample_rate(options, SentryOptions::get_singleton()->get_sample_rate());
-	sentry_options_set_max_breadcrumbs(options, SentryOptions::get_singleton()->get_max_breadcrumbs());
+	sentry_options_set_debug(options, SENTRY_OPTIONS()->is_debug_enabled());
+	sentry_options_set_release(options, SENTRY_OPTIONS()->get_release().utf8());
+	sentry_options_set_dist(options, SENTRY_OPTIONS()->get_dist().utf8());
+	sentry_options_set_environment(options, SENTRY_OPTIONS()->get_environment().utf8());
+	sentry_options_set_sample_rate(options, SENTRY_OPTIONS()->get_sample_rate());
+	sentry_options_set_max_breadcrumbs(options, SENTRY_OPTIONS()->get_max_breadcrumbs());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
 	sentry_options_set_logger_enabled_when_crashed(options, false);
-	sentry_options_set_enable_logs(options, SentryOptions::get_singleton()->get_enable_logs());
+	sentry_options_set_enable_logs(options, SENTRY_OPTIONS()->get_enable_logs());
 
 	// Establish handler path.
 	String handler_fn;
@@ -422,7 +422,7 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 	sentry_options_set_on_crash(options, _handle_on_crash, NULL);
 	sentry_options_set_logger(options, _log_native_message, NULL);
 
-	const Callable &before_send_log = SentryOptions::get_singleton()->get_before_send_log();
+	const Callable &before_send_log = SENTRY_OPTIONS()->get_before_send_log();
 	if (before_send_log.is_valid()) {
 		sentry_options_set_before_send_log(options, _handle_before_send_log, NULL);
 	}

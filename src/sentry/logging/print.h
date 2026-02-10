@@ -3,7 +3,7 @@
 
 #include "sentry/level.h"
 #include "sentry/logging/state.h"
-#include "sentry/sentry_options.h"
+#include "sentry/sentry_sdk.h"
 
 #include <cstdio>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -15,10 +15,10 @@ namespace sentry::logging {
 
 template <typename... Args>
 void print_no_logger(sentry::Level p_level, const Variant &p_arg1, const Args &...p_args) {
-	if (!SentryOptions::get_singleton()->is_debug_enabled() && p_level < sentry::LEVEL_ERROR) {
+	if (!SENTRY_OPTIONS()->is_debug_enabled() && p_level < sentry::LEVEL_ERROR) {
 		return;
 	}
-	if (SentryOptions::get_singleton()->get_diagnostic_level() > p_level) {
+	if (SENTRY_OPTIONS()->get_diagnostic_level() > p_level) {
 		return;
 	}
 
@@ -60,10 +60,10 @@ void print(sentry::Level p_level, const Variant &p_arg1, const Args &...p_args) 
 		return;
 	}
 
-	if (!SentryOptions::get_singleton()->is_debug_enabled() && p_level < sentry::LEVEL_ERROR) {
+	if (!SENTRY_OPTIONS()->is_debug_enabled() && p_level < sentry::LEVEL_ERROR) {
 		return;
 	}
-	if (SentryOptions::get_singleton()->get_diagnostic_level() > p_level) {
+	if (SENTRY_OPTIONS()->get_diagnostic_level() > p_level) {
 		return;
 	}
 

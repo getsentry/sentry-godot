@@ -33,6 +33,7 @@ public:
 private:
 	static SentrySDK *singleton;
 
+	Ref<SentryOptions> options;
 	std::shared_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
 	Ref<sentry::logging::SentryGodotLogger> godot_logger;
@@ -57,6 +58,7 @@ public:
 	static void destroy_singleton();
 	static SentrySDK *get_singleton() { return singleton; }
 
+	_FORCE_INLINE_ Ref<SentryOptions> get_options() const { return options; }
 	_FORCE_INLINE_ std::shared_ptr<sentry::InternalSDK> get_internal_sdk() const { return internal_sdk; }
 	_FORCE_INLINE_ Ref<RuntimeConfig> get_runtime_config() const { return runtime_config; }
 
@@ -90,9 +92,9 @@ public:
 
 	// * Hidden API methods -- used in testing
 
-	void set_before_send(const Callable &p_callable) { SentryOptions::get_singleton()->set_before_send(p_callable); }
-	void unset_before_send() { SentryOptions::get_singleton()->set_before_send(Callable()); }
-	Callable get_before_send() { return SentryOptions::get_singleton()->get_before_send(); }
+	void set_before_send(const Callable &p_callable) { options->set_before_send(p_callable); }
+	void unset_before_send() { options->set_before_send(Callable()); }
+	Callable get_before_send() { return options->get_before_send(); }
 
 	void prepare_and_auto_initialize();
 
@@ -100,7 +102,8 @@ public:
 	~SentrySDK();
 };
 
-#define INTERNAL_SDK() (SentrySDK::get_singleton()->get_internal_sdk())
+#define SENTRY_OPTIONS() (sentry::SentrySDK::get_singleton()->get_options())
+#define INTERNAL_SDK() (sentry::SentrySDK::get_singleton()->get_internal_sdk())
 
 } // namespace sentry
 

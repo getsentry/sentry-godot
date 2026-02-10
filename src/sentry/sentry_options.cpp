@@ -61,22 +61,24 @@ void SentryLoggerLimits::_bind_methods() {
 
 void SentryExperimental::set_enable_logs(bool p_value) {
 	WARN_DEPRECATED_MSG("Sentry Logs are now generally available. This property is deprecated. Use SentryOptions.enable_logs instead.");
-	SentryOptions::get_singleton()->set_enable_logs(p_value);
+	ERR_FAIL_NULL(owner);
+	owner->set_enable_logs(p_value);
 }
 
 bool SentryExperimental::get_enable_logs() {
 	// DEPRECATED: This accessor is deprecated and will be removed in a future version.
-	return SentryOptions::get_singleton()->get_enable_logs();
+	return owner ? owner->get_enable_logs() : false;
 }
 
 void SentryExperimental::set_before_send_log(Callable p_value) {
 	WARN_DEPRECATED_MSG("Sentry Logs are now generally available. This property is deprecated. Use SentryOptions.before_send_log instead.");
-	SentryOptions::get_singleton()->set_before_send_log(p_value);
+	ERR_FAIL_NULL(owner);
+	owner->set_before_send_log(p_value);
 }
 
 Callable SentryExperimental::get_before_send_log() {
 	// DEPRECATED: This accessor is deprecated and will be removed in a future version.
-	return SentryOptions::get_singleton()->get_before_send_log();
+	return owner ? owner->get_before_send_log() : Callable();
 }
 
 void SentryExperimental::_bind_methods() {
@@ -87,8 +89,6 @@ void SentryExperimental::_bind_methods() {
 }
 
 // *** SentryOptions
-
-Ref<SentryOptions> SentryOptions::singleton = nullptr;
 
 void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options) {
 	ERR_FAIL_COND(p_options.is_null());
@@ -186,20 +186,17 @@ void SentryOptions::_init_debug_option(DebugMode p_mode) {
 	debug = (p_mode == DebugMode::DEBUG_ON) || (p_mode == DebugMode::DEBUG_AUTO && OS::get_singleton()->is_debug_build());
 }
 
-void SentryOptions::create_singleton() {
-	singleton = Ref(memnew(SentryOptions));
+Ref<SentryOptions> SentryOptions::create_from_project_settings() {
+	Ref<SentryOptions> options = Ref(memnew(SentryOptions));
 
 	static bool are_settings_defined = false;
 	if (!are_settings_defined) {
-		_define_project_settings(singleton);
+		_define_project_settings(options);
 		are_settings_defined = true;
 	}
 
-	_load_project_settings(singleton);
-}
-
-void SentryOptions::destroy_singleton() {
-	singleton = Ref<SentryOptions>();
+	_load_project_settings(options);
+	return options;
 }
 
 void SentryOptions::set_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
@@ -282,6 +279,7 @@ void SentryOptions::_bind_methods() {
 SentryOptions::SentryOptions() {
 	logger_limits.instantiate();
 	experimental.instantiate();
+	experimental->owner = this;
 
 	_init_debug_option(DEBUG_DEFAULT);
 }

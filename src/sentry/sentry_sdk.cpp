@@ -36,7 +36,7 @@ namespace {
 void _verify_project_settings() {
 	ProjectSettings *ps = ProjectSettings::get_singleton();
 	ERR_FAIL_NULL(ps);
-	Ref<SentryOptions> options = SentryOptions::get_singleton();
+	Ref<SentryOptions> options = SENTRY_OPTIONS();
 	ERR_FAIL_COND(options.is_null());
 	ERR_FAIL_NULL(Engine::get_singleton());
 
@@ -130,6 +130,17 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	}
 #endif
 
+	// Fresh options from project settings.
+	options = SentryOptions::create_from_project_settings();
+
+	// Add built-in event processors.
+	if (options->is_attach_screenshot_enabled()) {
+		options->add_event_processor(memnew(ScreenshotProcessor));
+	}
+	if (options->is_attach_scene_tree_enabled()) {
+		options->add_event_processor(memnew(ViewHierarchyProcessor));
+	}
+
 	sentry::logging::print_debug("Initializing Sentry SDK");
 	internal_sdk->init(_get_global_attachments(), p_configuration_callback);
 
@@ -142,7 +153,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 			_init_contexts();
 		}
 
-		if (SentryOptions::get_singleton()->is_logger_enabled()) {
+		if (options->is_logger_enabled()) {
 			if (godot_logger.is_null()) {
 				godot_logger.instantiate();
 			}
@@ -245,7 +256,7 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 	PackedStringArray attachments;
 
 	// Attach LOG file.
-	if (SentryOptions::get_singleton()->is_attach_log_enabled()) {
+	if (options->is_attach_log_enabled()) {
 		String log_path = ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path");
 		if (FileAccess::file_exists(log_path)) {
 			log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
@@ -256,14 +267,14 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 	}
 
 	// Attach screenshot.
-	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
+	if (options->is_attach_screenshot_enabled()) {
 		String screenshot_path = OS::get_singleton()->get_user_data_dir().path_join(SENTRY_SCREENSHOT_FN);
 		DirAccess::remove_absolute(screenshot_path);
 		attachments.append(screenshot_path);
 	}
 
 	// Attach view hierarchy (aka scene tree info).
-	if (SentryOptions::get_singleton()->is_attach_scene_tree_enabled()) {
+	if (options->is_attach_scene_tree_enabled()) {
 		String vh_path = OS::get_singleton()->get_user_data_dir().path_join(SENTRY_VIEW_HIERARCHY_FN);
 		DirAccess::remove_absolute(vh_path);
 		attachments.append(vh_path);
@@ -277,7 +288,7 @@ void SentrySDK::_auto_initialize() {
 
 	bool should_enable = true;
 
-	if (!SentryOptions::get_singleton()->is_auto_init_enabled()) {
+	if (!options->is_auto_init_enabled()) {
 		should_enable = false;
 		sentry::logging::print_debug("Automatic initialization is disabled in the project settings.");
 	}
@@ -287,12 +298,12 @@ void SentrySDK::_auto_initialize() {
 		sentry::logging::print_debug("Automatic initialization is disabled in the editor.");
 	}
 
-	if (!Engine::get_singleton()->is_editor_hint() && OS::get_singleton()->has_feature("editor") && SentryOptions::get_singleton()->should_skip_auto_init_on_editor_play()) {
+	if (!Engine::get_singleton()->is_editor_hint() && OS::get_singleton()->has_feature("editor") && options->should_skip_auto_init_on_editor_play()) {
 		should_enable = false;
 		sentry::logging::print_debug("Automatic initialization is disabled when project is played from the editor. Tip: This can be changed in the project settings.");
 	}
 
-	if (SentryOptions::get_singleton()->get_dsn().is_empty()) {
+	if (options->get_dsn().is_empty()) {
 		should_enable = false;
 		sentry::logging::print_debug("Automatic initialization is disabled because no DSN was provided. Tip: You can obtain a DSN from Sentry's dashboard and add it in the project settings.");
 	}
@@ -315,6 +326,8 @@ void SentrySDK::_demo_helper_crash_app() {
 }
 
 void SentrySDK::prepare_and_auto_initialize() {
+	options = SentryOptions::create_from_project_settings();
+
 	// Load the runtime configuration from the user's data directory.
 	runtime_config.instantiate();
 	runtime_config->load_file(OS::get_singleton()->get_user_data_dir() + "/sentry.dat");
@@ -333,14 +346,6 @@ void SentrySDK::prepare_and_auto_initialize() {
 		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/arm32/crashpad_handler");
 	}
 #endif
-
-	// Add event processors.
-	if (SentryOptions::get_singleton()->is_attach_screenshot_enabled()) {
-		SentryOptions::get_singleton()->add_event_processor(memnew(ScreenshotProcessor));
-	}
-	if (SentryOptions::get_singleton()->is_attach_scene_tree_enabled()) {
-		SentryOptions::get_singleton()->add_event_processor(memnew(ViewHierarchyProcessor));
-	}
 
 	_auto_initialize();
 }
@@ -390,7 +395,6 @@ void SentrySDK::_bind_methods() {
 
 SentrySDK::SentrySDK() {
 	ERR_FAIL_NULL(OS::get_singleton());
-	ERR_FAIL_NULL(SentryOptions::get_singleton());
 
 	logger = memnew(SentryLogger);
 

@@ -3,7 +3,7 @@
 #include "sentry/contexts.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/sentry_event_processor.h"
-#include "sentry/sentry_options.h"
+#include "sentry/sentry_sdk.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
@@ -41,7 +41,7 @@ Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 	}
 
 	// Event processors
-	for (const Ref<SentryEventProcessor> &processor : SentryOptions::get_singleton()->get_event_processors()) {
+	for (const Ref<SentryEventProcessor> &processor : SENTRY_OPTIONS()->get_event_processors()) {
 		event = processor->process_event(event);
 		if (event.is_null()) {
 			return event;
@@ -52,7 +52,7 @@ Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 	}
 
 	// Before send callback
-	if (const Callable &before_send = SentryOptions::get_singleton()->get_before_send(); before_send.is_valid()) {
+	if (const Callable &before_send = SENTRY_OPTIONS()->get_before_send(); before_send.is_valid()) {
 		event = before_send.call(event);
 
 		if (event.is_valid() && event != p_event) {

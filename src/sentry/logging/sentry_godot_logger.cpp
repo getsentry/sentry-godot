@@ -115,7 +115,7 @@ Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
 			};
 
 			// Provide script source code context for script errors if available.
-			if (SentryOptions::get_singleton()->is_logger_include_source_enabled()) {
+			if (SENTRY_OPTIONS()->is_logger_include_source_enabled()) {
 				String context_line;
 				PackedStringArray pre_context;
 				PackedStringArray post_context;
@@ -265,7 +265,7 @@ void SentryGodotLogger::_process_frame() {
 }
 
 void SentryGodotLogger::_apply_startup_limits() {
-	Ref<SentryLoggerLimits> logger_limits = SentryOptions::get_singleton()->get_logger_limits();
+	Ref<SentryLoggerLimits> logger_limits = SENTRY_OPTIONS()->get_logger_limits();
 
 	limits.events_per_frame = MAX(30, logger_limits->events_per_frame);
 	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->repeated_error_window_ms };
@@ -274,7 +274,7 @@ void SentryGodotLogger::_apply_startup_limits() {
 }
 
 void SentryGodotLogger::_apply_normal_limits() {
-	Ref<SentryLoggerLimits> logger_limits = SentryOptions::get_singleton()->get_logger_limits();
+	Ref<SentryLoggerLimits> logger_limits = SENTRY_OPTIONS()->get_logger_limits();
 
 	limits.events_per_frame = logger_limits->events_per_frame;
 	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->repeated_error_window_ms };
@@ -323,13 +323,13 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 		bool within_frame_limit = frame_events < limits.events_per_frame;
 		bool within_throttling_limit = event_times.size() < limits.throttle_events || limits.throttle_window.count() == 0;
 
-		as_event = SentryOptions::get_singleton()->should_capture_event((GodotErrorType)p_error_type) &&
+		as_event = SENTRY_OPTIONS()->should_capture_event((GodotErrorType)p_error_type) &&
 				within_frame_limit &&
 				within_throttling_limit &&
 				!is_spammy_error;
-		as_breadcrumb = SentryOptions::get_singleton()->should_capture_breadcrumb((GodotErrorType)p_error_type) &&
+		as_breadcrumb = SENTRY_OPTIONS()->should_capture_breadcrumb((GodotErrorType)p_error_type) &&
 				!is_spammy_error;
-		as_log = SentryOptions::get_singleton()->get_enable_logs() &&
+		as_log = SENTRY_OPTIONS()->get_enable_logs() &&
 				!is_spammy_error;
 
 		if (as_event) {
@@ -359,7 +359,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 	// Capture error as event.
 	if (as_event) {
 		// Backtraces don't include variables by default, so if we need them, we must capture them separately.
-		bool include_variables = SentryOptions::get_singleton()->is_logger_include_variables_enabled();
+		bool include_variables = SENTRY_OPTIONS()->is_logger_include_variables_enabled();
 		TypedArray<ScriptBacktrace> script_backtraces = include_variables ? Engine::get_singleton()->capture_script_backtraces(true) : p_script_backtraces;
 
 		Vector<SentryEvent::StackFrame> frames = _extract_error_stack_frames_from_backtraces(
@@ -441,8 +441,8 @@ void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 		return;
 	}
 
-	bool as_log = SentryOptions::get_singleton()->get_enable_logs();
-	bool as_breadcrumb = SentryOptions::get_singleton()->is_logger_messages_as_breadcrumbs_enabled();
+	bool as_log = SENTRY_OPTIONS()->get_enable_logs();
+	bool as_breadcrumb = SENTRY_OPTIONS()->is_logger_messages_as_breadcrumbs_enabled();
 
 	if (!as_log && !as_breadcrumb) {
 		return;

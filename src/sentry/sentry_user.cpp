@@ -14,7 +14,7 @@ Ref<SentryUser> SentryUser::create_default() {
 
 	user->set_id(SentrySDK::get_singleton()->get_runtime_config()->get_installation_id());
 
-	if (SentryOptions::get_singleton()->is_send_default_pii_enabled()) {
+	if (SENTRY_OPTIONS()->is_send_default_pii_enabled()) {
 		user->infer_ip_address();
 	}
 
