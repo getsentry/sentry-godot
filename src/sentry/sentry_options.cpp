@@ -285,6 +285,9 @@ SentryOptions::SentryOptions() {
 }
 
 SentryOptions::~SentryOptions() {
+	if (experimental.is_valid()) {
+		experimental->owner = nullptr;
+	}
 }
 
 } // namespace sentry
