@@ -423,6 +423,8 @@ SentrySDK::SentrySDK() {
 }
 
 SentrySDK::~SentrySDK() {
+	internal_sdk.reset();
+
 	singleton = nullptr;
 
 	memdelete(logger);
