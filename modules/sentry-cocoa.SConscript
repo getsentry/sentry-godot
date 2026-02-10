@@ -241,13 +241,20 @@ def CreateXCFrameworkFromLibs(self, framework_path, libraries):
 
         remove_if_exists(framework_path)
 
+        # Use a common framework name across all slices, derived from
+        # the xcframework name (e.g. "libsentry.ios.debug").
+        fw_name = Path(framework_path).stem
+
+        temp_dirs = []
         temp_frameworks = []
         for lib in libraries:
             lib_path = Path(lib)
-            fw_name = lib_path.stem  # e.g. "libsentry.ios.debug.arm64"
-            fw_dir = lib_path.parent / f"{fw_name}.framework"
+            # Each slice needs its own directory since all frameworks share
+            # the same name.
+            slice_dir = lib_path.parent / lib_path.stem
+            fw_dir = slice_dir / f"{fw_name}.framework"
 
-            remove_if_exists(fw_dir)
+            remove_if_exists(slice_dir)
             fw_dir.mkdir(parents=True, exist_ok=True)
 
             binary_dest = fw_dir / fw_name
@@ -273,6 +280,7 @@ def CreateXCFrameworkFromLibs(self, framework_path, libraries):
                 min_os_version=env.get("ios_min_version", "12.0"),
             )
 
+            temp_dirs.append(slice_dir)
             temp_frameworks.append(fw_dir)
 
         cmd = ["xcodebuild", "-create-xcframework"]
@@ -283,8 +291,8 @@ def CreateXCFrameworkFromLibs(self, framework_path, libraries):
         print(f"Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
 
-        for fw_dir in temp_frameworks:
-            remove_if_exists(fw_dir)
+        for temp_dir in temp_dirs:
+            remove_if_exists(temp_dir)
 
         if result.returncode != 0:
             print("ERROR: Failed creating xcframework:")
