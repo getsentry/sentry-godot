@@ -295,10 +295,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}${{ contains(matrix.scons-flags, 'threads=no') && '.nothreads' || '' }}
+          # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
           path: |
             project/
-            !project/addons/gdUnit4
-            !project/test/
+            !project/
+            project/addons/sentry/
 
   android-plugin:
     name: 🤖 Android Plugin AARs
