@@ -15,6 +15,15 @@ bool SentryEditorExportPluginWeb::_supports_platform(const Ref<EditorExportPlatf
 	return p_platform->get_os_name() == "Web";
 }
 
+TypedArray<Dictionary> SentryEditorExportPluginWeb::_get_export_options(const Ref<EditorExportPlatform> &p_platform) const {
+	TypedArray<Dictionary> options;
+	Dictionary option;
+	option["option"] = Dictionary(PropertyInfo(Variant::BOOL, "sentry/inject_script"));
+	option["default_value"] = true;
+	options.push_back(option);
+	return options;
+}
+
 void SentryEditorExportPluginWeb::_export_begin(const PackedStringArray &p_features, bool p_is_debug, const String &p_path, uint32_t p_flags) {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
@@ -22,24 +31,24 @@ void SentryEditorExportPluginWeb::_export_begin(const PackedStringArray &p_featu
 
 	sentry::logging::print_debug("Exporting project to ", export_dir);
 
-	// Add HTML head content.
-
 	ERR_FAIL_COND(get_export_preset().is_null());
 
-	String head_include = get_export_preset()->get("html/head_include");
-	bool adding = false;
+	// Add HTML head content.
 
-	for (const String &line : html_head_content) {
-		if (!head_include.contains(line)) {
-			if (!adding) {
-				adding = true;
-				head_include += "\n" + html_head_comment;
+	if (get_option("sentry/inject_script")) {
+		String head_include = get_export_preset()->get("html/head_include");
+		bool adding = false;
+		for (const String &line : html_head_content) {
+			if (!head_include.contains(line)) {
+				if (!adding) {
+					adding = true;
+					head_include += "\n" + html_head_comment;
+				}
+				head_include += "\n" + line;
 			}
-			head_include += "\n" + line;
 		}
+		get_export_preset()->set("html/head_include", head_include);
 	}
-
-	get_export_preset()->set("html/head_include", head_include);
 
 	// Copy JS files.
 
@@ -70,7 +79,10 @@ void SentryEditorExportPluginWeb::_export_begin(const PackedStringArray &p_featu
 }
 
 String SentryEditorExportPluginWeb::_get_export_option_warning(const Ref<EditorExportPlatform> &p_platform, const String &p_option) const {
-	if (p_option == "variant/extensions_support" && get_option("variant/extensions_support") == Variant(false)) {
+	// HACK: Also check "sentry/inject_script" so the warning appears at the bottom of the export dialog.
+	//       Godot shows bottom-bar warnings through a separate code path that only checks plugin-owned options.
+	if ((p_option == "variant/extensions_support" || p_option == "sentry/inject_script") &&
+			get_option("variant/extensions_support") == Variant(false)) {
 		return "Sentry requires \"Extension Support\" to be enabled for Web exports.";
 	}
 	return String();
