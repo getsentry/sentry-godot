@@ -5,8 +5,9 @@
 ### Fixes
 
 - Fix options pollution across `close()`/`init()` cycles by recreating `SentryOptions` on each initialization ([#503](https://github.com/getsentry/sentry-godot/pull/503))
+- Fix warning about instantiated `SentryLogger` used as default value on startup ([#505](https://github.com/getsentry/sentry-godot/pull/505))
 
-### Changed
+### Changes
 
 - The `enable_logs` option is now turned off by default to align with other Sentry SDKs. If you want to keep it enabled, go to **Sentry > Options > Enable Logs** in the **Project Settings** and turn it on. ([#484](https://github.com/getsentry/sentry-godot/pull/484))
 

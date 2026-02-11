@@ -411,7 +411,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_before_send"), &SentrySDK::get_before_send);
 	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 
-	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "logger"), get_logger);
+	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "logger", PROPERTY_HINT_TYPE_STRING, "SentryLogger", PROPERTY_USAGE_NONE), get_logger);
 }
 
 SentrySDK::SentrySDK() {

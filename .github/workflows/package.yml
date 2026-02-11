@@ -93,7 +93,7 @@ jobs:
           archive_file="sentry-godot-gdextension-${version}+${git_short_sha}.zip"
           cd artifact/
           mkdir ${GITHUB_WORKSPACE}/out/
-          zip -r ${GITHUB_WORKSPACE}/out/${archive_file} ./*
+          zip -r ${GITHUB_WORKSPACE}/out/${archive_file} addons/sentry/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
