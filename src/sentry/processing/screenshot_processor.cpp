@@ -3,7 +3,7 @@
 #include "sentry/common_defs.h"
 #include "sentry/godot_singletons.h"
 #include "sentry/logging/print.h"
-#include "sentry/sentry_options.h"
+#include "sentry/sentry_sdk.h"
 #include "sentry/util/screenshot.h" // TODO: incorporate
 
 #include <godot_cpp/classes/dir_access.hpp>
@@ -56,13 +56,13 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 		return p_event;
 	}
 
-	if (p_event->get_level() < SentryOptions::get_singleton()->get_screenshot_level()) {
+	if (p_event->get_level() < SENTRY_OPTIONS()->get_screenshot_level()) {
 		sentry::logging::print_debug("Skipping screenshot - screenshot level not met");
 		return p_event;
 	}
 
-	if (SentryOptions::get_singleton()->get_before_capture_screenshot().is_valid()) {
-		Variant result = SentryOptions::get_singleton()->get_before_capture_screenshot().call(p_event);
+	if (SENTRY_OPTIONS()->get_before_capture_screenshot().is_valid()) {
+		Variant result = SENTRY_OPTIONS()->get_before_capture_screenshot().call(p_event);
 		if (result.get_type() != Variant::BOOL) {
 			// Note: Using PRINT_ONCE to avoid feedback loop in case of error event.
 			ERR_PRINT_ONCE("Sentry: before_capture_screenshot callback failed: expected a boolean return value");

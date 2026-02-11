@@ -32,9 +32,15 @@ protected:
 	static void _bind_methods();
 };
 
+class SentryOptions;
+
 // Experimental options.
 class SentryExperimental : public RefCounted {
 	GDCLASS(SentryExperimental, RefCounted);
+
+	friend class SentryOptions;
+
+	SentryOptions *owner = nullptr;
 
 public:
 	// DEPRECATED: The following accessors are deprecated and scheduled for removal.
@@ -56,8 +62,6 @@ public:
 	using GodotErrorMask = sentry::GodotErrorMask;
 
 private:
-	static Ref<SentryOptions> singleton;
-
 	enum class DebugMode {
 		DEBUG_OFF = 0,
 		DEBUG_ON = 1,
@@ -112,9 +116,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static void create_singleton();
-	static void destroy_singleton();
-	_FORCE_INLINE_ static Ref<SentryOptions> get_singleton() { return singleton; }
+	static Ref<SentryOptions> create_from_project_settings();
 
 	_FORCE_INLINE_ bool is_auto_init_enabled() const { return auto_init; }
 	_FORCE_INLINE_ void set_auto_init(bool p_enabled) { auto_init = p_enabled; }

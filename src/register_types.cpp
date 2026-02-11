@@ -106,7 +106,6 @@ void initialize_module(ModuleInitializationLevel p_level) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		register_runtime_classes();
-		SentryOptions::create_singleton();
 		SentrySDK::create_singleton();
 		SentrySDK::get_singleton()->prepare_and_auto_initialize();
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
@@ -120,7 +119,6 @@ void initialize_module(ModuleInitializationLevel p_level) {
 void uninitialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		SentrySDK::destroy_singleton();
-		SentryOptions::destroy_singleton();
 	}
 }
 
