@@ -10,6 +10,7 @@
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
+#include "sentry/sentry_sdk.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -231,7 +232,7 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 	ERR_FAIL_NULL(android_plugin);
 
 	if (p_configuration_callback.is_valid()) {
-		p_configuration_callback.call(SentryOptions::get_singleton());
+		p_configuration_callback.call(SENTRY_OPTIONS());
 	}
 
 	for (const String &path : p_global_attachments) {
@@ -244,21 +245,21 @@ void AndroidSDK::init(const PackedStringArray &p_global_attachments, const Calla
 	}
 
 	Dictionary optionsData;
-	optionsData["dsn"] = SentryOptions::get_singleton()->get_dsn();
-	optionsData["debug"] = SentryOptions::get_singleton()->is_debug_enabled();
-	optionsData["release"] = SentryOptions::get_singleton()->get_release();
-	optionsData["dist"] = SentryOptions::get_singleton()->get_dist();
-	optionsData["environment"] = SentryOptions::get_singleton()->get_environment();
-	optionsData["sample_rate"] = SentryOptions::get_singleton()->get_sample_rate();
-	optionsData["max_breadcrumbs"] = SentryOptions::get_singleton()->get_max_breadcrumbs();
-	optionsData["enable_logs"] = SentryOptions::get_singleton()->get_enable_logs();
-	optionsData["app_hang_tracking"] = SentryOptions::get_singleton()->is_app_hang_tracking_enabled();
-	optionsData["app_hang_timeout_sec"] = SentryOptions::get_singleton()->get_app_hang_timeout_sec();
+	optionsData["dsn"] = SENTRY_OPTIONS()->get_dsn();
+	optionsData["debug"] = SENTRY_OPTIONS()->is_debug_enabled();
+	optionsData["release"] = SENTRY_OPTIONS()->get_release();
+	optionsData["dist"] = SENTRY_OPTIONS()->get_dist();
+	optionsData["environment"] = SENTRY_OPTIONS()->get_environment();
+	optionsData["sample_rate"] = SENTRY_OPTIONS()->get_sample_rate();
+	optionsData["max_breadcrumbs"] = SENTRY_OPTIONS()->get_max_breadcrumbs();
+	optionsData["enable_logs"] = SENTRY_OPTIONS()->get_enable_logs();
+	optionsData["app_hang_tracking"] = SENTRY_OPTIONS()->is_app_hang_tracking_enabled();
+	optionsData["app_hang_timeout_sec"] = SENTRY_OPTIONS()->get_app_hang_timeout_sec();
 
 	android_plugin->call(ANDROID_SN(init),
 			optionsData,
 			before_send_handler->get_instance_id(),
-			SentryOptions::get_singleton()->get_before_send_log().is_valid() ? before_send_log_handler->get_instance_id() : 0);
+			SENTRY_OPTIONS()->get_before_send_log().is_valid() ? before_send_log_handler->get_instance_id() : 0);
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());

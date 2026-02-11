@@ -10,7 +10,7 @@
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
 #include "sentry/sentry_attachment.h"
-#include "sentry/sentry_options.h"
+#include "sentry/sentry_sdk.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -240,30 +240,30 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
 		if (p_configuration_callback.is_valid()) {
-			p_configuration_callback.call(SentryOptions::get_singleton());
+			p_configuration_callback.call(SENTRY_OPTIONS());
 		}
 
-		options.dsn = string_to_objc(SentryOptions::get_singleton()->get_dsn());
-		options.debug = SentryOptions::get_singleton()->is_debug_enabled();
-		options.releaseName = string_to_objc(SentryOptions::get_singleton()->get_release());
-		options.environment = string_to_objc(SentryOptions::get_singleton()->get_environment());
-		options.sampleRate = double_to_objc(SentryOptions::get_singleton()->get_sample_rate());
-		options.maxBreadcrumbs = (NSUInteger)SentryOptions::get_singleton()->get_max_breadcrumbs();
-		options.sendDefaultPii = SentryOptions::get_singleton()->is_send_default_pii_enabled();
-		options.diagnosticLevel = sentry_level_to_objc(SentryOptions::get_singleton()->get_diagnostic_level());
+		options.dsn = string_to_objc(SENTRY_OPTIONS()->get_dsn());
+		options.debug = SENTRY_OPTIONS()->is_debug_enabled();
+		options.releaseName = string_to_objc(SENTRY_OPTIONS()->get_release());
+		options.environment = string_to_objc(SENTRY_OPTIONS()->get_environment());
+		options.sampleRate = double_to_objc(SENTRY_OPTIONS()->get_sample_rate());
+		options.maxBreadcrumbs = (NSUInteger)SENTRY_OPTIONS()->get_max_breadcrumbs();
+		options.sendDefaultPii = SENTRY_OPTIONS()->is_send_default_pii_enabled();
+		options.diagnosticLevel = sentry_level_to_objc(SENTRY_OPTIONS()->get_diagnostic_level());
 
-		String dist = SentryOptions::get_singleton()->get_dist();
+		String dist = SENTRY_OPTIONS()->get_dist();
 		if (!dist.is_empty()) {
 			options.dist = string_to_objc(dist);
 		}
 
-		options.enableAppHangTracking = SentryOptions::get_singleton()->is_app_hang_tracking_enabled();
-		options.appHangTimeoutInterval = SentryOptions::get_singleton()->get_app_hang_timeout_sec();
+		options.enableAppHangTracking = SENTRY_OPTIONS()->is_app_hang_tracking_enabled();
+		options.appHangTimeoutInterval = SENTRY_OPTIONS()->get_app_hang_timeout_sec();
 
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
 
-		options.experimental.enableLogs = SentryOptions::get_singleton()->get_enable_logs();
+		options.experimental.enableLogs = SENTRY_OPTIONS()->get_enable_logs();
 
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments
@@ -308,7 +308,7 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 			}
 		};
 
-		if (SentryOptions::get_singleton()->get_before_send_log().is_valid()) {
+		if (SENTRY_OPTIONS()->get_before_send_log().is_valid()) {
 			options.beforeSendLog = ^objc::SentryLog *(objc::SentryLog *log) {
 				Ref<CocoaLog> log_obj = memnew(CocoaLog(log));
 				Ref<CocoaLog> processed = sentry::process_log(log_obj);

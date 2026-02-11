@@ -7,7 +7,7 @@ from enum import Enum
 
 # *** Settings.
 
-VERSION = "1.3.1"
+VERSION = "1.3.2"
 COMPATIBILITY_MINIMUM = "4.5"
 
 
@@ -80,6 +80,7 @@ arch = env["arch"]
 
 # Register tools
 env.Tool("copy")
+env.Tool("plist")
 env.Tool("separate_debug_symbols")
 
 # Restore original ARGUMENTS and add custom options to environment

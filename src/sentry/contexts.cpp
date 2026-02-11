@@ -3,7 +3,7 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
 #include "sentry/godot_singletons.h"
-#include "sentry/sentry_options.h"
+#include "sentry/sentry_sdk.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
@@ -94,7 +94,7 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	}
 
 	// Set device.name to hostname if server.
-	if (SentryOptions::get_singleton()->is_send_default_pii_enabled() && OS::get_singleton()->has_feature("dedicated_server")) {
+	if (SENTRY_OPTIONS()->is_send_default_pii_enabled() && OS::get_singleton()->has_feature("dedicated_server")) {
 		String host = _get_hostname();
 		if (!host.is_empty()) {
 			device_context["name"] = host;

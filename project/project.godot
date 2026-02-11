@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Sentry demo project"
-config/version="1.3.1"
+config/version="1.3.2"
 run/main_scene="uid://cqiowj0jydds1"
 run/main_loop_type="ProjectMainLoop"
 config/features=PackedStringArray("4.5")
@@ -55,6 +55,8 @@ textures/vram_compression/import_etc2_astc=true
 options/auto_init=false
 options/dsn="https://3f1e095cf2e14598a0bd5b4ff324f712@o447951.ingest.us.sentry.io/6680910"
 options/attach_scene_tree=true
+options/enable_logs=true
 logger/include_variables=true
 logger/limits/throttle_window_ms=1000
 experimental/attach_screenshot=true
+experimental/screenshot_level=1

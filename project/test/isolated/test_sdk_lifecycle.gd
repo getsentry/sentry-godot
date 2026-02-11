@@ -40,3 +40,28 @@ func test_sdk_lifecycle() -> void:
 
 	SentrySDK.capture_message("message not captured when SDK is closed")
 	await assert_signal(self).is_not_emitted("callback_processed")
+
+
+## Test that re-init creates fresh options (old before_send should not leak).
+func test_reinit_clears_options() -> void:
+	monitor_signals(self, false)
+
+	# First init with before_send callback.
+	SentrySDK.init(func (options: SentryOptions) -> void:
+		options.before_send = _before_send
+	)
+	assert_bool(SentrySDK.is_enabled()).is_true()
+
+	SentrySDK.capture_message("message triggers before_send")
+	await assert_signal(self).is_emitted("callback_processed")
+
+	SentrySDK.close()
+
+	# Re-init WITHOUT callback -- old before_send should be gone.
+	SentrySDK.init()
+	assert_bool(SentrySDK.is_enabled()).is_true()
+
+	SentrySDK.capture_message("message should not trigger old before_send")
+	await assert_signal(self).is_not_emitted("callback_processed")
+
+	SentrySDK.close()
