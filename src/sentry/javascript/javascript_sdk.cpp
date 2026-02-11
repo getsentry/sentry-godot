@@ -8,7 +8,7 @@
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
-#include "sentry/sentry_options.h"
+#include "sentry/sentry_sdk.h"
 
 #include "gen/sdk_version.gen.h"
 
@@ -281,7 +281,7 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 	ERR_FAIL_COND(js_sentry_bridge().is_null());
 
 	if (p_configuration_callback.is_valid()) {
-		p_configuration_callback.call(SentryOptions::get_singleton());
+		p_configuration_callback.call(SENTRY_OPTIONS());
 	}
 
 	file_attachments.clear();
@@ -300,7 +300,7 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 
 	// Only create the before_send_log callback if user has set a callback
 	Variant before_send_log_callback;
-	if (SentryOptions::get_singleton()->get_before_send_log().is_valid()) {
+	if (SENTRY_OPTIONS()->get_before_send_log().is_valid()) {
 		_before_send_log_js_callback = JavaScriptBridge::get_singleton()->create_callback(callable_mp(_before_send_log_handler, &JavaScriptBeforeSendLogHandler::handle_before_send_log));
 		before_send_log_callback = _before_send_log_js_callback;
 	}
@@ -308,14 +308,14 @@ void JavaScriptSDK::init(const PackedStringArray &p_global_attachments, const Ca
 	js_sentry_bridge()->call(JAVASCRIPT_SN(init),
 			_before_send_js_callback,
 			before_send_log_callback,
-			SentryOptions::get_singleton()->get_dsn(),
-			SentryOptions::get_singleton()->is_debug_enabled(),
-			SentryOptions::get_singleton()->get_release(),
-			SentryOptions::get_singleton()->get_dist(),
-			SentryOptions::get_singleton()->get_environment(),
-			SentryOptions::get_singleton()->get_sample_rate(),
-			SentryOptions::get_singleton()->get_max_breadcrumbs(),
-			SentryOptions::get_singleton()->get_enable_logs(),
+			SENTRY_OPTIONS()->get_dsn(),
+			SENTRY_OPTIONS()->is_debug_enabled(),
+			SENTRY_OPTIONS()->get_release(),
+			SENTRY_OPTIONS()->get_dist(),
+			SENTRY_OPTIONS()->get_environment(),
+			SENTRY_OPTIONS()->get_sample_rate(),
+			SENTRY_OPTIONS()->get_max_breadcrumbs(),
+			SENTRY_OPTIONS()->get_enable_logs(),
 			String(SENTRY_GODOT_SDK_VERSION));
 
 	if (is_enabled()) {
