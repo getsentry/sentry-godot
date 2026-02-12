@@ -297,6 +297,7 @@ def fetch_kaboom_action(target, source, env):
         asset="godot-kaboom.zip",
         target_dir="project/addons/kaboom",
         strip_prefix="addons/kaboom",
+        clean=True,
     )
 
 fetch_kaboom = env.Command(
@@ -314,6 +315,7 @@ def fetch_kaboom_symbols_action(target, source, env):
         asset="godot-kaboom-debug-symbols.zip",
         target_dir="project/addons/kaboom",
         strip_prefix="addons/kaboom",
+        version_file=".symbols_version",
     )
 
 fetch_kaboom_symbols = env.Command(
