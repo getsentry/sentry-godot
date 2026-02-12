@@ -67,11 +67,6 @@ func _on_capture_button_pressed() -> void:
 	DemoOutput.print_info("Captured message event. Event ID: " + event_id)
 
 
-func _on_crash_button_pressed() -> void:
-	DemoOutput.print_info("Crashing app...")
-	SentrySDK._demo_helper_crash_app()
-
-
 func _on_set_user_button_pressed() -> void:
 	DemoOutput.print_info("Setting user info...")
 	var user := SentryUser.new()
@@ -114,3 +109,23 @@ func _generate_native_error() -> void:
 
 func _on_user_feedback_button_pressed() -> void:
 	_user_feedback_gui.show()
+
+
+func _on_crash_with_null_dereference_button_pressed() -> void:
+	DemoOutput.print_info("Crashing app with null dereference...")
+	Kaboom.crash_with_null_dereference()
+
+
+func _on_crash_with_stack_overflow_button_pressed() -> void:
+	DemoOutput.print_info("Crashing app with stack overflow...")
+	Kaboom.crash_with_stack_overflow()
+
+
+func _on_crash_with_abort_button_pressed() -> void:
+	DemoOutput.print_info("Crashing app with abort...")
+	Kaboom.crash_with_abort()
+
+
+func _on_crash_with_div_by_zero_button_pressed() -> void:
+	DemoOutput.print_info("Crashing app with division by zero...")
+	Kaboom.crash_with_division_by_zero()
