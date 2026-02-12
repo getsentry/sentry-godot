@@ -21,7 +21,7 @@ permissions:
 env:
   # Default SCons flags applied to each build.
   SCONSFLAGS: verbose=yes
-  EM_VERSION: 3.1.45
+  EM_VERSION: 4.0.10
   XCODE_VERSION: 16.4
 
 jobs:
