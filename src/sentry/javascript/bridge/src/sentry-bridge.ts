@@ -75,7 +75,9 @@ class SentryBridge {
     enableLogs: boolean,
     sdkVersion: string,
   ): void {
-    console.log("Initializing Sentry via bridge...");
+    if (debug) {
+      console.log("Initializing Sentry via bridge...");
+    }
 
     const options: any = {
       dsn,
