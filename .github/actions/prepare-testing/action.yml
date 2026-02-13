@@ -125,6 +125,10 @@ runs:
       run: |
         ls -lR project/
 
+    - name: Fetch kaboom addon
+      shell: bash
+      run: scons kaboom
+
     - name: Prepare gdUnit4
       shell: bash
       run: |
