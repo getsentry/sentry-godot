@@ -37,17 +37,19 @@ void SentryEditorExportPluginWeb::_export_begin(const PackedStringArray &p_featu
 
 	if (get_option("sentry/inject_script")) {
 		String head_include = get_export_preset()->get("html/head_include");
-		bool adding = false;
+		bool edited = false;
 		for (const String &line : html_head_content) {
 			if (!head_include.contains(line)) {
-				if (!adding) {
-					adding = true;
+				if (!edited) {
+					edited = true;
 					head_include += "\n" + html_head_comment;
 				}
 				head_include += "\n" + line;
 			}
 		}
-		get_export_preset()->set("html/head_include", head_include);
+		if (edited) {
+			get_export_preset()->set("html/head_include", head_include);
+		}
 	}
 
 	// Copy JS files.
