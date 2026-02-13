@@ -320,11 +320,6 @@ void SentrySDK::_auto_initialize() {
 	is_auto_initializing = false;
 }
 
-void SentrySDK::_demo_helper_crash_app() {
-	char *ptr = (char *)1;
-	sentry::logging::print_fatal("Crash by access violation ", ptr); // this is going to crash the app
-}
-
 void SentrySDK::prepare_and_auto_initialize() {
 	// Create platform-specific SDK backend (replaces the default DisabledSDK).
 #ifdef SDK_NATIVE
@@ -409,7 +404,6 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
 	ClassDB::bind_method(D_METHOD("_get_before_send"), &SentrySDK::get_before_send);
-	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "logger", PROPERTY_HINT_TYPE_STRING, "SentryLogger", PROPERTY_USAGE_NONE), get_logger);
 }
