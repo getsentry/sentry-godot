@@ -60,6 +60,7 @@ def add_custom_bool_option(name, description, default=False):
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
 add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux, Android)", True)
+add_custom_bool_option("generate_js_bundle", "Generate JavaScript bundle", False)
 
 # Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
 # Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
@@ -104,6 +105,7 @@ class SDK(Enum):
     NATIVE = 1
     ANDROID = 2
     COCOA = 3
+    JAVASCRIPT = 4
 
 
 if platform in ["linux", "windows"]:
@@ -115,6 +117,8 @@ elif platform in ["macos", "ios"]:
     internal_sdk = SDK.COCOA
 elif platform == "android":
     internal_sdk = SDK.ANDROID
+elif platform == "web":
+    internal_sdk = SDK.JAVASCRIPT
 else:
     internal_sdk = SDK.DISABLED
 
@@ -178,6 +182,9 @@ elif internal_sdk == SDK.COCOA:
     sources += Glob("src/sentry/cocoa/*.cpp")
     sources += Glob("src/sentry/cocoa/*.mm")
     env.Append(CPPDEFINES=["SDK_COCOA"])
+elif internal_sdk == SDK.JAVASCRIPT:
+    sources += Glob("src/sentry/javascript/*.cpp")
+    env.Append(CPPDEFINES=["SDK_JAVASCRIPT"])
 
 # Generate documentation data.
 if env["target"] in ["editor", "template_debug"]:
@@ -285,6 +292,30 @@ if env["build_android_lib"]:
     Default(android_lib)
     Depends(android_lib, library)
 
+# *** Generate JavaScript bundle
+
+js_bundle_cmd = "cd src/sentry/javascript/bridge && npm run build:deploy"
+env_js_bundle = Environment(ENV = os.environ)
+
+js_bundle = env_js_bundle.Command(
+    target=[
+        File("project/addons/sentry/web/sentry-bundle.js")
+    ],
+    source=[
+        File("src/sentry/javascript/bridge/src/sentry-bridge.ts"),
+        File("src/sentry/javascript/bridge/package.json"),
+        File("src/sentry/javascript/bridge/package-lock.json"),
+        File("src/sentry/javascript/bridge/tsconfig.json"),
+        File("src/sentry/javascript/bridge/webpack.config.js"),
+    ],
+    action=[js_bundle_cmd]
+)
+
+Alias("js_bundle", js_bundle)
+
+if env["generate_js_bundle"]:
+    Default(js_bundle)
+    Depends(js_bundle, library)
 
 # *** Add help for optional targets.
 
@@ -292,12 +323,15 @@ Help("""
 Optional targets:
 
 ios_framework: Create iOS XCFramework from device and simulator builds.
-               Usage: scons target=template_release platform=ios ios_framework
+               Usage: scons ios_framework
                Note: Requires both device and simulator builds to exist, and it
                      doesn't trigger a build.
 
 android_lib: Build Android bridge library.
-             Usage: scons target=template_release platform=android android_lib
+             Usage: scons android_lib
+
+js_bundle: Generate JavaScript bundle.
+           Usage: scons js_bundle
 """)
 
 

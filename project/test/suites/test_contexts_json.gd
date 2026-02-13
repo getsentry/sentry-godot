@@ -187,7 +187,6 @@ func test_default_contexts_presence() -> void:
 		.must_contain("/contexts/culture") \
 		.must_contain("/contexts/device") \
 		.must_contain("/contexts/gpu") \
-		.must_contain("/contexts/os") \
 		.verify()
 
 	assert_json(json).describe("Test Godot contexts presence") \
@@ -199,7 +198,7 @@ func test_default_contexts_presence() -> void:
 		.verify()
 
 
-func test_platform_contexts() -> void:
+func test_app_context() -> void:
 	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
 
 	assert_json(json).describe("App context structure") \
@@ -209,6 +208,10 @@ func test_platform_contexts() -> void:
 		.must_contain("app_name") \
 		.must_contain("app_version") \
 		.verify()
+
+# OS context is added later in processing on Web platform; so we have to skip this test.
+func test_os_context(_do_skip = OS.get_name() == "Web") -> void:
+	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
 
 	assert_json(json).describe("OS context structure") \
 		.at("/contexts/os") \

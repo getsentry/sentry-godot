@@ -26,6 +26,8 @@
 #include "sentry/android/android_sdk.h"
 #elif SDK_COCOA
 #include "sentry/cocoa/cocoa_sdk.h"
+#elif SDK_JAVASCRIPT
+#include "sentry/javascript/javascript_sdk.h"
 #endif
 
 using namespace godot;
@@ -238,7 +240,7 @@ void SentrySDK::_init_contexts() {
 	// Mark Godot engine singletons as safe to access.
 	sentry::godot_singletons::mark_as_ready();
 
-#ifdef SDK_NATIVE
+#if defined(SDK_NATIVE) || defined(SDK_JAVASCRIPT)
 	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
 	internal_sdk->set_context("app", sentry::contexts::make_app_context());
 #endif
@@ -344,6 +346,8 @@ void SentrySDK::prepare_and_auto_initialize() {
 	}
 #elif SDK_COCOA
 	internal_sdk = std::make_unique<sentry::cocoa::CocoaSDK>();
+#elif SDK_JAVASCRIPT
+	internal_sdk = std::make_unique<sentry::javascript::JavaScriptSDK>();
 #else
 	sentry::logging::print_debug("This is an unsupported platform. Disabling Sentry SDK...");
 	// internal_sdk stays DisabledSDK
@@ -368,7 +372,12 @@ void SentrySDK::prepare_and_auto_initialize() {
 	}
 #endif
 
-	_auto_initialize();
+	if (internal_sdk->get_capabilities().has_flag(InternalSDK::SUPPORTS_EARLY_INIT)) {
+		_auto_initialize();
+	} else {
+		// Defer automatic initialization when the underlying SDK cannot be initialized early.
+		callable_mp(this, &SentrySDK::_auto_initialize).call_deferred();
+	}
 }
 
 void SentrySDK::_notification(int p_what) {

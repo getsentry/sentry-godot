@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Support Web platform ([#488](https://github.com/getsentry/sentry-godot/pull/488))
+
 ## 1.3.2
 
 ### Fixes
