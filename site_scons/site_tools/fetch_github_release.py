@@ -7,8 +7,8 @@ target directory, and caches by version to avoid re-downloading.
 Usage in SConstruct:
     env.Tool("fetch_github_release")
     env.FetchGithubRelease(
-        properties_file="my-package.properties",
-        asset="me-package.zip",
+        "modules/my-package.properties",
+        asset="my-package.zip",
         target_dir="target/directory/",
         strip_prefix="some/prefix/directory/",
     )
@@ -35,12 +35,12 @@ def fetch_github_release(env, properties_file, asset, target_dir, strip_prefix="
     version = read_property("version", properties_path)
 
     target_path = project_root / target_dir
-    version_file = target_path / version_file
+    version_file_path = target_path / version_file
 
     # Check if we need to download.
     should_download = True
-    if version_file.exists():
-        stored_version = version_file.read_text().strip()
+    if version_file_path.exists():
+        stored_version = version_file_path.read_text().strip()
         if stored_version == version:
             should_download = False
             print(f"Detected {asset} v{version} -- up-to-date!")
@@ -80,7 +80,7 @@ def fetch_github_release(env, properties_file, asset, target_dir, strip_prefix="
                             dst.write(src.read())
 
             zip_path.unlink()
-            version_file.write_text(version)
+            version_file_path.write_text(version)
 
             print(f"Successfully fetched {asset} v{version}.")
 
@@ -89,8 +89,18 @@ def fetch_github_release(env, properties_file, asset, target_dir, strip_prefix="
             Exit(1)
 
 
+def command(env, properties_file, asset, target_dir, strip_prefix="", clean=False, version_file=".version"):
+    target = str(Path(target_dir) / version_file)
+
+    def action(target, source, env):
+        fetch_github_release(env, properties_file, asset, target_dir, strip_prefix, clean, version_file)
+
+    result = env.Command(target, properties_file, action)
+    return result
+
+
 def generate(env):
-    env.AddMethod(fetch_github_release, "FetchGithubRelease")
+    env.AddMethod(command, "FetchGithubRelease")
 
 
 def exists(env):

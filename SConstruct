@@ -287,44 +287,23 @@ if env["build_android_lib"]:
     Depends(android_lib, library)
 
 
-
-
 # *** Fetch kaboom addon (addon to trigger test crashes).
 
-def fetch_kaboom_action(target, source, env):
-    env.FetchGithubRelease(
-        properties_file="modules/kaboom.properties",
-        asset="godot-kaboom.zip",
-        target_dir="project/addons/kaboom",
-        strip_prefix="addons/kaboom",
-        clean=True,
-    )
-
-fetch_kaboom = env.Command(
-    "project/addons/kaboom/.version",
+Alias("kaboom", env.FetchGithubRelease(
     "modules/kaboom.properties",
-    fetch_kaboom_action,
-)
+    asset="godot-kaboom.zip",
+    target_dir="project/addons/kaboom",
+    strip_prefix="addons/kaboom",
+    clean=True,
+))
 
-Alias("kaboom", fetch_kaboom)
-
-
-def fetch_kaboom_symbols_action(target, source, env):
-    env.FetchGithubRelease(
-        properties_file="modules/kaboom.properties",
-        asset="godot-kaboom-debug-symbols.zip",
-        target_dir="project/addons/kaboom",
-        strip_prefix="addons/kaboom",
-        version_file=".symbols_version",
-    )
-
-fetch_kaboom_symbols = env.Command(
-    "project/addons/kaboom/.symbols_version",
+Alias("kaboom_symbols", env.FetchGithubRelease(
     "modules/kaboom.properties",
-    fetch_kaboom_symbols_action,
-)
-
-Alias("kaboom_symbols", fetch_kaboom_symbols)
+    asset="godot-kaboom-debug-symbols.zip",
+    target_dir="project/addons/kaboom",
+    strip_prefix="addons/kaboom",
+    version_file=".symbols_version",
+))
 
 
 # *** Add help for optional targets.
