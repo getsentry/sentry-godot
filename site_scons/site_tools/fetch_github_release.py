@@ -50,6 +50,9 @@ def fetch_github_release(env, properties_file, asset, target_dir, strip_prefix="
 
         # Clean existing directory to remove stale files from previous versions.
         if clean and target_path.exists():
+            if not target_path.resolve().is_relative_to(project_root.resolve()):
+                print(f"ERROR: Refusing to clean directory outside project root: {target_path}")
+                Exit(1)
             shutil.rmtree(target_path)
 
         url = f"{repo}/releases/download/{version}/{asset}"
