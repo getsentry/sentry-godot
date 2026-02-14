@@ -17,6 +17,9 @@ integration_tests/results/
 # Source tree
 src/gen/
 
+# Kaboom: downloaded automatically.
+project/addons/kaboom/
+
 # Cocoa: downloaded automatically.
 modules/sentry-cocoa/
 

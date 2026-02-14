@@ -46,7 +46,6 @@ private:
 	void _init_user();
 	PackedStringArray _get_global_attachments();
 	void _auto_initialize();
-	void _demo_helper_crash_app();
 
 protected:
 	static void _bind_methods();

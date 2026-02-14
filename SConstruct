@@ -81,6 +81,7 @@ arch = env["arch"]
 env.Tool("copy")
 env.Tool("plist")
 env.Tool("separate_debug_symbols")
+env.Tool("fetch_github_release")
 
 # Restore original ARGUMENTS and add custom options to environment
 ARGUMENTS.clear()
@@ -286,6 +287,25 @@ if env["build_android_lib"]:
     Depends(android_lib, library)
 
 
+# *** Fetch kaboom addon (addon to trigger test crashes).
+
+Alias("kaboom", env.FetchGithubRelease(
+    "modules/kaboom.properties",
+    asset="godot-kaboom.zip",
+    target_dir="project/addons/kaboom",
+    strip_prefix="addons/kaboom",
+    clean=True,
+))
+
+Alias("kaboom_symbols", env.FetchGithubRelease(
+    "modules/kaboom.properties",
+    asset="godot-kaboom-debug-symbols.zip",
+    target_dir="project/addons/kaboom",
+    strip_prefix="addons/kaboom",
+    version_file=".symbols_version",
+))
+
+
 # *** Add help for optional targets.
 
 Help("""
@@ -298,6 +318,12 @@ ios_framework: Create iOS XCFramework from device and simulator builds.
 
 android_lib: Build Android bridge library.
              Usage: scons target=template_release platform=android android_lib
+
+kaboom: Fetch kaboom addon (addon to trigger test crashes).
+        Usage: scons kaboom
+
+kaboom_symbols: Fetch kaboom debug symbols.
+                Usage: scons kaboom_symbols
 """)
 
 
