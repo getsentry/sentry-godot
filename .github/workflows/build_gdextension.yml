@@ -121,14 +121,14 @@ jobs:
             platform: macos
             target: template_release
             arch: universal
-            scons-flags: debug_symbols=yes macos_deployment_target=10.4
+            scons-flags: debug_symbols=yes macos_deployment_target=10.14
 
           - name: 🍎 macOS (universal, debug)
             runner: macos-15
             platform: macos
             target: editor
             arch: universal
-            scons-flags: debug_symbols=yes macos_deployment_target=10.4
+            scons-flags: debug_symbols=yes macos_deployment_target=10.14
 
           - name: 🤖 Android (arm64, release)
             runner: ubuntu-latest
