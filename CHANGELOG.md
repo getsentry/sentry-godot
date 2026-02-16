@@ -21,6 +21,7 @@
 - Bump Cocoa SDK from v8.57.3 to v9.4.1 ([#442](https://github.com/getsentry/sentry-godot/pull/442))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#941)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.4.1)
+
 ## 1.3.2
 
 ### Fixes
