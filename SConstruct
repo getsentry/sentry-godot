@@ -81,8 +81,11 @@ def set_argument_default(scons_key, props_key):
                 pass
         ARGUMENTS[scons_key] = get_property(props_key, BUILD_PROPERTIES)
 
-set_argument_default("macos_deployment_target", "macos.deployment_target")
-set_argument_default("ios_min_version", "ios.min_version")
+platform = ARGUMENTS.get("platform", "")
+if platform == "macos" or (not platform and sys.platform == "darwin"):
+    set_argument_default("macos_deployment_target", "macos.deployment_target")
+if platform == "ios":
+    set_argument_default("ios_min_version", "ios.min_version")
 
 # Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
 # Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
