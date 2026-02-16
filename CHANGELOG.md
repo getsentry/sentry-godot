@@ -4,7 +4,7 @@
 
 ### Breaking changes
 
-- Bumped minimum iOS version to 15.0 due to Cocoa SDK update
+- Bumped minimum iOS version to 15.0 and macOS to 10.4 due to Cocoa SDK update
 
 ### Features
 
