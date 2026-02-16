@@ -277,7 +277,7 @@ def CreateXCFrameworkFromLibs(self, framework_path, libraries):
                 bundle_executable=fw_name,
                 bundle_identifier=f"io.sentry.godot.{fw_name}",
                 bundle_platforms=["iPhoneSimulator"] if is_simulator else ["iPhoneOS"],
-                min_os_version=env.get("ios_min_version", "12.0"),
+                min_os_version=env.get("ios_min_version", "15.0"),
             )
 
             temp_dirs.append(slice_dir)
