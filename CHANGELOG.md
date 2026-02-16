@@ -6,6 +6,12 @@
 
 - Support Web platform ([#488](https://github.com/getsentry/sentry-godot/pull/488))
 
+### Dependencies
+
+- Bump Sentry Android from v8.29.0 to v8.32.0 ([#473](https://github.com/getsentry/sentry-godot/pull/473))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8320)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.29.0...8.32.0)
+
 ## 1.3.2
 
 ### Fixes
