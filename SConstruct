@@ -89,8 +89,17 @@ def set_argument_default(scons_key, props_key):
                 pass
         ARGUMENTS[scons_key] = read_property(props_key, BUILD_PROPERTIES)
 
+# Detect platform (matching godot-cpp's auto-detection logic).
 platform = ARGUMENTS.get("platform", "")
-if platform == "macos" or (not platform and sys.platform == "darwin"):
+if not platform:
+    if sys.platform.startswith("linux"):
+        platform = "linux"
+    elif sys.platform == "darwin":
+        platform = "macos"
+    elif sys.platform == "win32" or sys.platform == "msys":
+        platform = "windows"
+
+if platform == "macos":
     set_argument_default("macos_deployment_target", "macos.deployment_target")
 if platform == "ios":
     set_argument_default("ios_min_version", "ios.min_version")
