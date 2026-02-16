@@ -52,6 +52,10 @@ jobs:
       MATCH_GIT_PRIVATE_KEY: ${{ secrets.MATCH_GIT_PRIVATE_KEY }}
       MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
 
+  test-js-bridge:
+    name: 🧪 JS bridge tests
+    uses: ./.github/workflows/test_js_bridge.yml
+
   package:
     name: 📦 Package
     needs: build-extension
@@ -66,7 +70,7 @@ jobs:
   # See issue: https://github.com/getsentry/sentry-godot/issues/41
   cleanup:
     name: 🗑️ Cleanup
-    needs: [package, unit-tests, test-android, test-integration, static-checks]
+    needs: [package, unit-tests, test-android, test-integration, static-checks, test-js-bridge]
     runs-on: ubuntu-latest
     steps:
       - name: Delete sentry-godot-gdextension artifact

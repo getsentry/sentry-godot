@@ -176,6 +176,7 @@ void SentryTimestamp::_bind_methods() {
 	BIND_PROPERTY(SentryTimestamp, PropertyInfo(Variant::INT, "microseconds_since_unix_epoch"), set_microseconds_since_unix_epoch, get_microseconds_since_unix_epoch);
 
 	ClassDB::bind_method(D_METHOD("to_rfc3339"), &SentryTimestamp::to_rfc3339);
+	ClassDB::bind_method(D_METHOD("to_unix_time"), &SentryTimestamp::to_unix_time);
 	ClassDB::bind_method(D_METHOD("equals", "other"), &SentryTimestamp::equals);
 }
 

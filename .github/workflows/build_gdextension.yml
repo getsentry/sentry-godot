@@ -21,7 +21,7 @@ permissions:
 env:
   # Default SCons flags applied to each build.
   SCONSFLAGS: verbose=yes
-  EM_VERSION: 3.1.45
+  EM_VERSION: 4.0.10
   XCODE_VERSION: 16.4
 
 jobs:
@@ -200,28 +200,28 @@ jobs:
             arch: universal
             scons-flags: debug_symbols=yes ios_simulator=yes
 
-          - name: 🌐 Web (noop, threads, release)
+          - name: 🌐 Web (threads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
             scons-flags: debug_symbols=no threads=yes
 
-          - name: 🌐 Web (noop, threads, debug)
+          - name: 🌐 Web (threads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
             scons-flags: debug_symbols=no threads=yes
 
-          - name: 🌐 Web (noop, nothreads, release)
+          - name: 🌐 Web (nothreads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
             scons-flags: debug_symbols=no threads=no
 
-          - name: 🌐 Web (noop, nothreads, debug)
+          - name: 🌐 Web (nothreads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
@@ -381,10 +381,42 @@ jobs:
         with:
           name: sentry.ios.*
 
+  js-bundle:
+    name: 🌐 JS bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{inputs.ref}}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: "25"
+          cache: "npm"
+          cache-dependency-path: src/sentry/javascript/bridge/package-lock.json
+
+      - name: Install dependencies
+        run: cd src/sentry/javascript/bridge && npm ci
+
+      - name: Generate bundle
+        run: cd src/sentry/javascript/bridge && npm run build:deploy
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sentry.web.js-bundle
+          # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
+          path: |
+            project/
+            !project/
+            project/addons/sentry/web
+
   package:
     name: 📦 Package GDExtension
     runs-on: ubuntu-latest
-    needs: [build, android-plugin, ios-framework]
+    needs: [build, android-plugin, ios-framework, js-bundle]
     steps:
       - name: Merge artifacts
         uses: actions/upload-artifact/merge@v4
