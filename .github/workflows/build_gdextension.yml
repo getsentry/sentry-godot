@@ -21,7 +21,6 @@ permissions:
 env:
   # Default SCons flags applied to each build.
   SCONSFLAGS: verbose=yes
-  EM_VERSION: 4.0.10
   XCODE_VERSION: 16.4
 
 jobs:
@@ -116,19 +115,33 @@ jobs:
             arch: arm64
             scons-flags: debug_symbols=no
 
-          - name: 🍎 macOS (universal, release)
+          - name: 🍎 macOS (x86_64, release)
             runner: macos-15
             platform: macos
             target: template_release
-            arch: universal
-            scons-flags: debug_symbols=yes macos_deployment_target=11.0
+            arch: x86_64
+            scons-flags: debug_symbols=yes
 
-          - name: 🍎 macOS (universal, debug)
+          - name: 🍎 macOS (x86_64, debug)
             runner: macos-15
             platform: macos
             target: editor
-            arch: universal
-            scons-flags: debug_symbols=yes macos_deployment_target=11.0
+            arch: x86_64
+            scons-flags: debug_symbols=yes
+
+          - name: 🍎 macOS (arm64, release)
+            runner: macos-15
+            platform: macos
+            target: template_release
+            arch: arm64
+            scons-flags: debug_symbols=yes
+
+          - name: 🍎 macOS (arm64, debug)
+            runner: macos-15
+            platform: macos
+            target: editor
+            arch: arm64
+            scons-flags: debug_symbols=yes
 
           - name: 🤖 Android (arm64, release)
             runner: ubuntu-latest
@@ -177,28 +190,28 @@ jobs:
             platform: ios
             target: template_release
             arch: arm64
-            scons-flags: debug_symbols=yes ios_min_version=15.0
+            scons-flags: debug_symbols=yes
 
           - name: 🍏 iOS (arm64, debug)
             runner: macos-15
             platform: ios
             target: editor
             arch: arm64
-            scons-flags: debug_symbols=yes ios_min_version=15.0
+            scons-flags: debug_symbols=yes
 
           - name: 🍏 iOS (simulator, release)
             runner: macos-15
             platform: ios
             target: template_release
             arch: universal
-            scons-flags: debug_symbols=yes ios_simulator=yes ios_min_version=15.0
+            scons-flags: debug_symbols=yes ios_simulator=yes
 
           - name: 🍏 iOS (simulator, debug)
             runner: macos-15
             platform: ios
             target: editor
             arch: universal
-            scons-flags: debug_symbols=yes ios_simulator=yes ios_min_version=15.0
+            scons-flags: debug_symbols=yes ios_simulator=yes
 
           - name: 🌐 Web (threads, release)
             runner: ubuntu-latest
@@ -258,6 +271,10 @@ jobs:
           python --version
           scons --version
 
+      - name: Read Emscripten version
+        if: matrix.platform == 'web'
+        run: echo "EM_VERSION=$(grep '^emscripten.version=' build.properties | cut -d= -f2)" >> $GITHUB_ENV
+
       - name: Install Emscripten
         if: matrix.platform == 'web'
         uses: mymindstorm/setup-emsdk@6ab9eb1bda2574c4ddb79809fc9247783eaf9021 # v14
@@ -300,6 +317,66 @@ jobs:
             project/
             !project/
             project/addons/sentry/
+
+  macos-universal:
+    name: 🍎 Make macOS Universal
+    needs: [build]
+    runs-on: macos-15
+    steps:
+      - name: Download macOS x86_64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sentry.macos.*.x86_64
+          path: x86_64/
+          merge-multiple: true
+
+      - name: Download macOS arm64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sentry.macos.*.arm64
+          path: arm64/
+          merge-multiple: true
+
+      - name: Create universal binaries
+        run: |
+          # Start with arm64 as base (includes shared files: libSentry.dylib, Cocoa dSYMs, gdextension)
+          cp -R arm64/ output/
+
+          bin_dir="addons/sentry/bin/macos"
+
+          for build_type in release debug; do
+            lib="libsentry.macos.${build_type}.dylib"
+
+            # Create universal library
+            lipo -create \
+              "x86_64/${bin_dir}/${lib}" \
+              "arm64/${bin_dir}/${lib}" \
+              -output "output/${bin_dir}/${lib}"
+
+            # Create universal dSYM
+            dsym_dwarf="${bin_dir}/dSYMs/${lib}.dSYM/Contents/Resources/DWARF/${lib}"
+            lipo -create \
+              "x86_64/${dsym_dwarf}" \
+              "arm64/${dsym_dwarf}" \
+              -output "output/${dsym_dwarf}"
+
+            echo "=== ${build_type} ==="
+            lipo -info "output/${bin_dir}/${lib}"
+          done
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sentry.macos-universal
+          path: |
+            output/
+            !output/
+            output/addons/sentry/
+
+      - name: Delete per-arch macOS artifacts
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
+        with:
+          name: sentry.macos.*
 
   android-plugin:
     name: 🤖 Android Plugin AARs
@@ -416,7 +493,7 @@ jobs:
   package:
     name: 📦 Package GDExtension
     runs-on: ubuntu-latest
-    needs: [build, android-plugin, ios-framework, js-bundle]
+    needs: [build, android-plugin, macos-universal, ios-framework, js-bundle]
     steps:
       - name: Merge artifacts
         uses: actions/upload-artifact/merge@v4

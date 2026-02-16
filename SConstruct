@@ -62,6 +62,28 @@ add_custom_bool_option("build_android_lib", "Build Android bridge library", Fals
 add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux, Android)", True)
 add_custom_bool_option("generate_js_bundle", "Generate JavaScript bundle", False)
 
+# *** Read build properties and set SCons option defaults.
+
+from utils import get_property
+
+BUILD_PROPERTIES = "build.properties"
+
+def set_argument_default(scons_key, props_key):
+    """Set ARGUMENTS default from build.properties if not already specified on command line."""
+    if scons_key not in ARGUMENTS:
+        # Check for arch-specific value first (e.g., "macos.deployment_target.x86_64").
+        arch = ARGUMENTS.get("arch", "")
+        if arch:
+            try:
+                ARGUMENTS[scons_key] = get_property(f"{props_key}.{arch}", BUILD_PROPERTIES)
+                return
+            except KeyError:
+                pass
+        ARGUMENTS[scons_key] = get_property(props_key, BUILD_PROPERTIES)
+
+set_argument_default("macos_deployment_target", "macos.deployment_target")
+set_argument_default("ios_min_version", "ios.min_version")
+
 # Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
 # Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
 original_arguments = dict(ARGUMENTS)
