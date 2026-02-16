@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Bumped minimum iOS version to 15.0 due to Cocoa SDK update
+
 ### Features
 
 - Support Web platform ([#488](https://github.com/getsentry/sentry-godot/pull/488))
