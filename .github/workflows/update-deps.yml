@@ -40,6 +40,15 @@ jobs:
           name: Sentry Android
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
+  sentry-javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@v3
+        with:
+          path: scripts/javascript-version.ps1
+          name: Sentry JavaScript
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
+
   gdunit4:
     runs-on: ubuntu-latest
     steps:
