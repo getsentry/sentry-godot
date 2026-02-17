@@ -27,12 +27,15 @@ def download_wasm_split(env, properties_file):
 
     # Determine platform-specific binary name.
     system = platform.system()
-    if system == "Linux":
-        binary_name = "wasm-split-Linux-x86_64"
+    machine = platform.machine()
+    if system == "Linux" and machine in ("x86_64", "aarch64"):
+        binary_name = f"wasm-split-Linux-{machine}"
     elif system == "Darwin":
         binary_name = "wasm-split-Darwin-universal"
+    elif system == "Windows" and machine in ("x86_64", "AMD64"):
+        binary_name = "wasm-split-Windows-x86_64.exe"
     else:
-        print(f"ERROR: wasm-split is not available for {system}")
+        print(f"ERROR: wasm-split is not available for {system} {machine}")
         Exit(1)
 
     binary_path = wasm_split_dir / binary_name
