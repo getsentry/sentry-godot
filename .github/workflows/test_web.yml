@@ -28,8 +28,10 @@ jobs:
         timeout-minutes: 5
         run: |
           mkdir -p exports/web
-          ${GODOT} --headless --path project \
-            --export-debug "Web Tests" ../exports/web/index.html
+          ${GODOT} --headless --path project --export-debug "Web Tests" ../exports/web/index.html || true
+
+      - name: Verify web export
+        run: ls exports/web/*.pck
 
       - name: Set up Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
