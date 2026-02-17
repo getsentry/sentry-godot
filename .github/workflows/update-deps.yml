@@ -66,4 +66,5 @@ jobs:
         with:
           path: modules/wasm-split.properties
           name: wasm-split
+          changelog-entry: false
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
