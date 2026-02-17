@@ -79,5 +79,10 @@ compile_commands.json
 # clang cache
 .cache
 
+# Web tests
+test_web/node_modules/
+test_web/playwright-report/
+test_web/test-results/
+
 # Local Claude Code settings that should not be committed
 .claude/settings.local.json
