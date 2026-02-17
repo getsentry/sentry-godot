@@ -54,14 +54,19 @@ function Set-SentryJavaScriptVersion
 		[string]$Version
 	)
 
-	$currentVersion = Get-CurrentVersion
-	if ($currentVersion -eq $Version)
+	Test-FileExists $packageJsonFile
+
+	$packageJson = Get-Content $packageJsonFile -Raw | ConvertFrom-Json
+	$browserVersion = $packageJson.dependencies.'@sentry/browser' -replace '^[\^~]', ''
+	$wasmVersion = $packageJson.dependencies.'@sentry/wasm' -replace '^[\^~]', ''
+
+	if ($browserVersion -eq $Version -and $wasmVersion -eq $Version)
 	{
 		Write-Host "No changes needed."
 		return
 	}
 
-	Write-Host "Updating Sentry JavaScript dependencies from version $currentVersion to $Version"
+	Write-Host "Updating Sentry JavaScript dependencies to version $Version"
 
 	# Read file as text and replace versions to preserve formatting
 	$content = Get-Content $packageJsonFile -Raw
