@@ -27,6 +27,7 @@ jobs:
         shell: bash
         timeout-minutes: 5
         run: |
+          mkdir -p exports/web
           ${GODOT} --headless --path project \
             --export-debug "Web Tests" ../exports/web/index.html
 
