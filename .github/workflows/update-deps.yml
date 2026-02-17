@@ -49,3 +49,12 @@ jobs:
           name: gdUnit 4
           changelog-entry: false
           api-token: ${{ secrets.CI_DEPLOY_KEY }}
+
+  wasm-split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@v3
+        with:
+          path: modules/wasm-split.properties
+          name: wasm-split
+          api-token: ${{ secrets.CI_DEPLOY_KEY }}
