@@ -8,69 +8,69 @@ const PROJECT_DIR = path.resolve(__dirname, "../project");
 // Discover test paths: suite tests first, then each isolated test file.
 // Mirrors the pattern in scripts/run-android-tests.sh.
 function discoverTestPaths(): string[] {
-	const paths = ["res://test/suites/"];
-	const isolatedDir = path.join(PROJECT_DIR, "test/isolated");
-	if (fs.existsSync(isolatedDir)) {
-		const files = fs
-			.readdirSync(isolatedDir)
-			.filter((f) => f.startsWith("test_") && f.endsWith(".gd"))
-			.sort();
-		for (const file of files) {
-			paths.push(`res://test/isolated/${file}`);
-		}
-	}
-	return paths;
+  const paths = ["res://test/suites/"];
+  const isolatedDir = path.join(PROJECT_DIR, "test/isolated");
+  if (fs.existsSync(isolatedDir)) {
+    const files = fs
+      .readdirSync(isolatedDir)
+      .filter((f) => f.startsWith("test_") && f.endsWith(".gd"))
+      .sort();
+    for (const file of files) {
+      paths.push(`res://test/isolated/${file}`);
+    }
+  }
+  return paths;
 }
 
 // Start the Godot engine with the given test path and wait for completion.
 // Returns the exit code from the test runner.
 async function runGodotTests(page: Page, testPath: string): Promise<number> {
-	const output: string[] = [];
-	let completionResolve: (code: number) => void;
-	const completionPromise = new Promise<number>((resolve) => {
-		completionResolve = resolve;
-	});
+  const output: string[] = [];
+  let completionResolve: (code: number) => void;
+  const completionPromise = new Promise<number>((resolve) => {
+    completionResolve = resolve;
+  });
 
-	page.on("console", (msg) => {
-		const text = msg.text();
-		output.push(text);
-		if (text.includes(COMPLETION_MARKER)) {
-			const code = parseInt(text.split(COMPLETION_MARKER)[1], 10);
-			completionResolve(code);
-		}
-	});
+  page.on("console", (msg) => {
+    const text = msg.text();
+    output.push(text);
+    if (text.includes(COMPLETION_MARKER)) {
+      const code = parseInt(text.split(COMPLETION_MARKER)[1], 10);
+      completionResolve(code);
+    }
+  });
 
-	page.on("pageerror", (error) => {
-		output.push(`[PAGE ERROR] ${error.message}`);
-	});
+  page.on("pageerror", (error) => {
+    output.push(`[PAGE ERROR] ${error.message}`);
+  });
 
-	await page.goto("/test.html");
+  await page.goto("/test.html");
 
-	// Start the Godot engine with test arguments.
-	// See: https://docs.godotengine.org/en/stable/tutorials/platform/web/customizing_html5_shell.html
-	await page.evaluate((testArgs: string[]) => {
-		const engine = new (window as any).Engine((window as any).GODOT_CONFIG);
-		engine
-			.startGame({ args: testArgs })
-			.catch((err: Error) => {
-				console.error("Engine start failed:", err.message);
-			});
-	}, ["--", "run-tests", testPath]);
+  // Start the Godot engine with test arguments.
+  // See: https://docs.godotengine.org/en/stable/tutorials/platform/web/customizing_html5_shell.html
+  await page.evaluate((testArgs: string[]) => {
+    const engine = new (window as any).Engine((window as any).GODOT_CONFIG);
+    engine
+      .startGame({ args: testArgs })
+      .catch((err: Error) => {
+        console.error("Engine start failed:", err.message);
+      });
+  }, ["--", "run-tests", testPath]);
 
-	// Wait for the test completion marker in console output.
-	// Note: onExit is unreliable — Godot's WASM shutdown may trap before it fires.
-	const exitCode = await completionPromise;
+  // Wait for the test completion marker in console output.
+  // Note: onExit is unreliable — Godot's WASM shutdown may trap before it fires.
+  const exitCode = await completionPromise;
 
-	const fullOutput = output.join("\n");
-	console.log(fullOutput);
-	return exitCode;
+  const fullOutput = output.join("\n");
+  console.log(fullOutput);
+  return exitCode;
 }
 
 const TEST_PATHS = discoverTestPaths();
 
 for (const testPath of TEST_PATHS) {
-	test(`run-tests ${testPath}`, async ({ page }) => {
-		const exitCode = await runGodotTests(page, testPath);
-		expect(exitCode).toBe(0);
-	});
+  test(`run-tests ${testPath}`, async ({ page }) => {
+    const exitCode = await runGodotTests(page, testPath);
+    expect(exitCode).toBe(0);
+  });
 }
