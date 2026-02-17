@@ -57,4 +57,4 @@ jobs:
         with:
           path: modules/wasm-split.properties
           name: wasm-split
-          api-token: ${{ secrets.CI_DEPLOY_KEY }}
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
