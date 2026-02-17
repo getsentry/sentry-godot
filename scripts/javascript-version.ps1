@@ -75,10 +75,12 @@ function Set-SentryJavaScriptVersion
 	[System.IO.File]::WriteAllText((Resolve-Path $packageJsonFile), $content)
 
 	# Verify write succeeded
-	$readVersion = (Get-Content $packageJsonFile -Raw | ConvertFrom-Json).dependencies.'@sentry/browser' -replace '^[\^~]', ''
-	if ($readVersion -ne $Version)
+	$verifyJson = Get-Content $packageJsonFile -Raw | ConvertFrom-Json
+	$readBrowser = $verifyJson.dependencies.'@sentry/browser' -replace '^[\^~]', ''
+	$readWasm = $verifyJson.dependencies.'@sentry/wasm' -replace '^[\^~]', ''
+	if ($readBrowser -ne $Version -or $readWasm -ne $Version)
 	{
-		throw "Update failed - read-after-write yielded '$readVersion' instead of expected '$Version'"
+		throw "Update failed - read-after-write: @sentry/browser='$readBrowser', @sentry/wasm='$readWasm', expected '$Version'"
 	}
 
 	# Update package-lock.json
@@ -113,13 +115,11 @@ switch ($action)
 {
 	"get-version"
 	{
-		$currentVersion = Get-CurrentVersion
-		Write-Output $currentVersion
+		Write-Output (Get-CurrentVersion)
 	}
 	"get-repo"
 	{
-		$repoUrl = Get-RepositoryUrl
-		Write-Output $repoUrl
+		Write-Output (Get-RepositoryUrl)
 	}
 	"set-version"
 	{
