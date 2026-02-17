@@ -121,14 +121,14 @@ jobs:
             platform: macos
             target: template_release
             arch: universal
-            scons-flags: debug_symbols=yes macos_deployment_target=11.0
+            scons-flags: debug_symbols=yes macos_deployment_target=10.14
 
           - name: 🍎 macOS (universal, debug)
             runner: macos-15
             platform: macos
             target: editor
             arch: universal
-            scons-flags: debug_symbols=yes macos_deployment_target=11.0
+            scons-flags: debug_symbols=yes macos_deployment_target=10.14
 
           - name: 🤖 Android (arm64, release)
             runner: ubuntu-latest
@@ -177,28 +177,28 @@ jobs:
             platform: ios
             target: template_release
             arch: arm64
-            scons-flags: debug_symbols=yes
+            scons-flags: debug_symbols=yes ios_min_version=15.0
 
           - name: 🍏 iOS (arm64, debug)
             runner: macos-15
             platform: ios
             target: editor
             arch: arm64
-            scons-flags: debug_symbols=yes
+            scons-flags: debug_symbols=yes ios_min_version=15.0
 
           - name: 🍏 iOS (simulator, release)
             runner: macos-15
             platform: ios
             target: template_release
             arch: universal
-            scons-flags: debug_symbols=yes ios_simulator=yes
+            scons-flags: debug_symbols=yes ios_simulator=yes ios_min_version=15.0
 
           - name: 🍏 iOS (simulator, debug)
             runner: macos-15
             platform: ios
             target: editor
             arch: universal
-            scons-flags: debug_symbols=yes ios_simulator=yes
+            scons-flags: debug_symbols=yes ios_simulator=yes ios_min_version=15.0
 
           - name: 🌐 Web (threads, release)
             runner: ubuntu-latest

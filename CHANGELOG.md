@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Bumped minimum iOS version to 15.0 due to Cocoa SDK update
+
 ### Features
 
 - Support Web platform ([#488](https://github.com/getsentry/sentry-godot/pull/488))
@@ -14,6 +18,10 @@
 - Bump Native SDK from v0.12.3 to v0.12.8 ([#487](https://github.com/getsentry/sentry-godot/pull/487))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0128)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.12.3...0.12.8)
+- Bump Cocoa SDK from v8.57.3 to v9.4.1 ([#442](https://github.com/getsentry/sentry-godot/pull/442))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#941)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.4.1)
+  - Lowered minimum macOS deployment target from 11.0 to 10.14 to match Cocoa SDK minimum
 
 ## 1.3.2
 

@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 #endif
 #import <Sentry/Sentry-Swift.h>
+#import <Sentry/SentryId.h>
 
 namespace objc {
 
