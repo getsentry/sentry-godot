@@ -212,6 +212,12 @@ cd test_web
 npx playwright test
 ```
 
+Or use the convenience PowerShell script (handles dependency installation automatically):
+
+```powershell
+pwsh scripts/run-web-tests.ps1
+```
+
 By default, tests expect the web export in `exports/web/`. To use a different location, set the `WEB_EXPORT_DIR` environment variable:
 
 ```bash
