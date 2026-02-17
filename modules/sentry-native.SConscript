@@ -56,6 +56,7 @@ add_lib_target("crashpad_minidump")
 add_lib_target("crashpad_snapshot")
 add_lib_target("crashpad_tools")
 add_lib_target("crashpad_util")
+add_lib_target("crashpad_mpack")
 add_lib_target("mini_chromium")
 
 # Platform-specific libs
