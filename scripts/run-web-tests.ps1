@@ -22,6 +22,8 @@ if (-not (Test-Path $nodeModules)) {
         Write-Host "package-lock.json changed, running npm install..." -ForegroundColor Cyan
         npm install
         if ($LASTEXITCODE -ne 0) { Set-Location $startDir; exit $LASTEXITCODE }
+        npx playwright install chromium
+        if ($LASTEXITCODE -ne 0) { Set-Location $startDir; exit $LASTEXITCODE }
     }
 }
 
