@@ -102,9 +102,9 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Resolve path and prevent directory traversal
+  // Prevent directory traversal.
   const filePath = path.resolve(EXPORT_DIR, url.pathname.slice(1));
-  if (!filePath.startsWith(EXPORT_DIR + path.sep) && filePath !== EXPORT_DIR) {
+  if (!filePath.startsWith(EXPORT_DIR + path.sep)) {
     res.writeHead(403);
     res.end("Forbidden");
     return;
