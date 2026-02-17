@@ -6,6 +6,7 @@ export default defineConfig({
 	testDir: ".",
 	testMatch: "*.test.ts",
 	timeout: 120_000,
+	workers: 1,
 	use: {
 		baseURL: "http://localhost:8521",
 	},
