@@ -87,18 +87,18 @@ console.log(`Export dir: ${EXPORT_DIR}`);
 console.log(`Executable: ${info.executable}, threads: ${info.hasThreads}`);
 console.log(`GDExtension libs: ${info.gdextensionLibs.join(", ")}`);
 
+// Cross-origin isolation headers (required for threads, harmless for nothreads)
+const COI_HEADERS: Record<string, string> = {
+	"Cross-Origin-Opener-Policy": "same-origin",
+	"Cross-Origin-Embedder-Policy": "require-corp",
+};
+
 const server = http.createServer((req, res) => {
 	const url = new URL(req.url || "/", `http://localhost:${PORT}`);
 
-	// Cross-origin isolation headers (required for threads, harmless for nothreads)
-	const coiHeaders: Record<string, string> = {
-		"Cross-Origin-Opener-Policy": "same-origin",
-		"Cross-Origin-Embedder-Policy": "require-corp",
-	};
-
 	if (url.pathname === "/" || url.pathname === "/test.html") {
 		res.writeHead(200, {
-			...coiHeaders,
+			...COI_HEADERS,
 			"Content-Type": "text/html; charset=utf-8",
 		});
 		res.end(testHtml);
@@ -113,7 +113,15 @@ const server = http.createServer((req, res) => {
 		return;
 	}
 
-	if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+	let stat: fs.Stats;
+	try {
+		stat = fs.statSync(filePath);
+	} catch {
+		res.writeHead(404);
+		res.end("Not Found");
+		return;
+	}
+	if (!stat.isFile()) {
 		res.writeHead(404);
 		res.end("Not Found");
 		return;
@@ -121,10 +129,9 @@ const server = http.createServer((req, res) => {
 
 	const ext = path.extname(filePath).toLowerCase();
 	const contentType = MIME_TYPES[ext] || "application/octet-stream";
-	const stat = fs.statSync(filePath);
 
 	res.writeHead(200, {
-		...coiHeaders,
+		...COI_HEADERS,
 		"Content-Type": contentType,
 		"Content-Length": stat.size.toString(),
 		"Cross-Origin-Resource-Policy": "same-origin",
