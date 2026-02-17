@@ -70,8 +70,8 @@ function Set-SentryJavaScriptVersion
 
 	# Read file as text and replace versions to preserve formatting
 	$content = Get-Content $packageJsonFile -Raw
-	$content = $content -replace '"@sentry/browser": "[\^~]?[^"]+"', "`"@sentry/browser`": `"^$Version`""
-	$content = $content -replace '"@sentry/wasm": "[\^~]?[^"]+"', "`"@sentry/wasm`": `"^$Version`""
+	$content = $content -replace '"@sentry/browser": "[\^~]?[^"]+"', ('"@sentry/browser": "^' + $Version + '"')
+	$content = $content -replace '"@sentry/wasm": "[\^~]?[^"]+"', ('"@sentry/wasm": "^' + $Version + '"')
 	[System.IO.File]::WriteAllText((Resolve-Path $packageJsonFile), $content)
 
 	# Verify write succeeded
