@@ -14,6 +14,9 @@
 - Bump Native SDK from v0.12.3 to v0.12.8 ([#487](https://github.com/getsentry/sentry-godot/pull/487))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0128)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.12.3...0.12.8)
+- Bump Sentry JavaScript from v10.34.0 to v10.39.0 ([#527](https://github.com/getsentry/sentry-godot/pull/527))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10390)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.34.0...10.39.0)
 
 ## 1.3.2
 
