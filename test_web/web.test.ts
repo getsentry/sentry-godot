@@ -25,7 +25,6 @@ function discoverTestPaths(): string[] {
 // Start the Godot engine with the given test path and wait for completion.
 // Returns the exit code from the test runner.
 async function runGodotTests(page: Page, testPath: string): Promise<number> {
-  const output: string[] = [];
   let completionResolve: (code: number) => void;
   const completionPromise = new Promise<number>((resolve) => {
     completionResolve = resolve;
@@ -33,7 +32,7 @@ async function runGodotTests(page: Page, testPath: string): Promise<number> {
 
   page.on("console", (msg) => {
     const text = msg.text();
-    output.push(text);
+    console.log(text);
     if (text.includes(COMPLETION_MARKER)) {
       const code = parseInt(text.split(COMPLETION_MARKER)[1], 10);
       completionResolve(code);
@@ -41,7 +40,7 @@ async function runGodotTests(page: Page, testPath: string): Promise<number> {
   });
 
   page.on("pageerror", (error) => {
-    output.push(`[PAGE ERROR] ${error.message}`);
+    console.log(`[PAGE ERROR] ${error.message}`);
   });
 
   await page.goto("/test.html");
@@ -59,11 +58,7 @@ async function runGodotTests(page: Page, testPath: string): Promise<number> {
 
   // Wait for the test completion marker in console output.
   // Note: onExit is unreliable — Godot's WASM shutdown may trap before it fires.
-  const exitCode = await completionPromise;
-
-  const fullOutput = output.join("\n");
-  console.log(fullOutput);
-  return exitCode;
+  return await completionPromise;
 }
 
 const TEST_PATHS = discoverTestPaths();
