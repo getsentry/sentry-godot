@@ -14,10 +14,9 @@ function discoverTestPaths(): string[] {
     const files = fs
       .readdirSync(isolatedDir)
       .filter((f) => f.startsWith("test_") && f.endsWith(".gd"))
-      .sort();
-    for (const file of files) {
-      paths.push(`res://test/isolated/${file}`);
-    }
+      .sort()
+      .map((f) => `res://test/isolated/${f}`);
+    paths.push(...files);
   }
   return paths;
 }
@@ -25,10 +24,7 @@ function discoverTestPaths(): string[] {
 // Start the Godot engine with the given test path and wait for completion.
 // Returns the exit code from the test runner.
 async function runGodotTests(page: Page, testPath: string): Promise<number> {
-  let completionResolve: (code: number) => void;
-  const completionPromise = new Promise<number>((resolve) => {
-    completionResolve = resolve;
-  });
+  const { promise: completionPromise, resolve: completionResolve } = Promise.withResolvers<number>();
 
   page.on("console", (msg) => {
     const text = msg.text();
