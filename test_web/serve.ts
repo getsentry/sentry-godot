@@ -1,6 +1,7 @@
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import escapeHtml from "escape-html";
 
 const PORT = parseInt(process.env.PORT || "8521", 10);
 const EXPORT_DIR = path.resolve(process.env.WEB_EXPORT_DIR || "../exports/web");
@@ -27,7 +28,8 @@ interface ExportInfo {
 }
 
 function discoverExportFiles(): ExportInfo {
-  const files = fs.readdirSync(EXPORT_DIR);
+  const SAFE_FILENAME = /^[\w.-]+$/;
+  const files = fs.readdirSync(EXPORT_DIR).filter((f) => SAFE_FILENAME.test(f));
 
   // Find .pck to derive executable name
   const pckFile = files.find((f) => f.endsWith(".pck"));
@@ -59,10 +61,10 @@ function generateTestHtml(info: ExportInfo): string {
   const godotConfig = {
     args: [],
     canvasResizePolicy: 0,
-    executable: info.executable,
+    executable: escapeHtml(info.executable),
     experimentalVK: false,
     focusCanvas: false,
-    gdextensionLibs: info.gdextensionLibs,
+    gdextensionLibs: info.gdextensionLibs.map(escapeHtml),
     ensureCrossOriginIsolationHeaders: info.hasThreads,
   };
   return `<!DOCTYPE html>
@@ -71,7 +73,7 @@ function generateTestHtml(info: ExportInfo): string {
 <body>
 <canvas id="canvas" width="800" height="600"></canvas>
 ${info.hasSentryBundle ? '<script src="sentry-bundle.js"></script>' : ""}
-<script src="${info.engineJs}"></script>
+<script src="${escapeHtml(info.engineJs)}"></script>
 <script>window.GODOT_CONFIG = ${JSON.stringify(godotConfig)};</script>
 </body>
 </html>`;
