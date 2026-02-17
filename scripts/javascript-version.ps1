@@ -8,6 +8,12 @@ Set-StrictMode -Version latest
 $bridgeDir = "$PSScriptRoot/../src/sentry/javascript/bridge"
 $packageJsonFile = "$bridgeDir/package.json"
 
+# Sentry packages to track — add new packages here.
+$sentryPackages = @(
+	"@sentry/browser",
+	"@sentry/wasm"
+)
+
 function Write-Usage
 {
 	Write-Host "Usage: $(Split-Path $MyInvocation.ScriptName -Leaf) <action> [version]"
@@ -26,20 +32,34 @@ function Test-FileExists($filePath)
 	}
 }
 
+function Get-PackageVersion($packageJson, [string]$package)
+{
+	$version = $packageJson.dependencies.$package
+	if (-not $version)
+	{
+		Write-Error "Could not find $package version in package.json"
+		exit 1
+	}
+	return $version -replace '^[\^~]', ''
+}
+
 function Get-CurrentVersion
 {
 	Test-FileExists $packageJsonFile
 
 	$packageJson = Get-Content $packageJsonFile -Raw | ConvertFrom-Json
-	$currentVersion = $packageJson.dependencies.'@sentry/browser'
-	if ($currentVersion)
+	$minVersion = $null
+
+	foreach ($package in $sentryPackages)
 	{
-		# Strip version prefix (e.g. ^, ~)
-		return $currentVersion -replace '^[\^~]', ''
+		$version = Get-PackageVersion $packageJson $package
+		if ($null -eq $minVersion -or [System.Version]$version -lt [System.Version]$minVersion)
+		{
+			$minVersion = $version
+		}
 	}
 
-	Write-Error "Could not find @sentry/browser version in package.json"
-	exit 1
+	return $minVersion
 }
 
 function Get-RepositoryUrl
@@ -57,10 +77,18 @@ function Set-SentryJavaScriptVersion
 	Test-FileExists $packageJsonFile
 
 	$packageJson = Get-Content $packageJsonFile -Raw | ConvertFrom-Json
-	$browserVersion = $packageJson.dependencies.'@sentry/browser' -replace '^[\^~]', ''
-	$wasmVersion = $packageJson.dependencies.'@sentry/wasm' -replace '^[\^~]', ''
+	$needsUpdate = $false
 
-	if ($browserVersion -eq $Version -and $wasmVersion -eq $Version)
+	foreach ($package in $sentryPackages)
+	{
+		if ((Get-PackageVersion $packageJson $package) -ne $Version)
+		{
+			$needsUpdate = $true
+			break
+		}
+	}
+
+	if (-not $needsUpdate)
 	{
 		Write-Host "No changes needed."
 		return
@@ -70,17 +98,21 @@ function Set-SentryJavaScriptVersion
 
 	# Read file as text and replace versions to preserve formatting
 	$content = Get-Content $packageJsonFile -Raw
-	$content = $content -replace '"@sentry/browser": "[\^~]?[^"]+"', ('"@sentry/browser": "^' + $Version + '"')
-	$content = $content -replace '"@sentry/wasm": "[\^~]?[^"]+"', ('"@sentry/wasm": "^' + $Version + '"')
+	foreach ($package in $sentryPackages)
+	{
+		$content = $content -replace ('"' + [regex]::Escape($package) + '": "[\^~]?[^"]+"'), ('"' + $package + '": "^' + $Version + '"')
+	}
 	[System.IO.File]::WriteAllText((Resolve-Path $packageJsonFile), $content)
 
 	# Verify write succeeded
 	$verifyJson = Get-Content $packageJsonFile -Raw | ConvertFrom-Json
-	$readBrowser = $verifyJson.dependencies.'@sentry/browser' -replace '^[\^~]', ''
-	$readWasm = $verifyJson.dependencies.'@sentry/wasm' -replace '^[\^~]', ''
-	if ($readBrowser -ne $Version -or $readWasm -ne $Version)
+	foreach ($package in $sentryPackages)
 	{
-		throw "Update failed - read-after-write: @sentry/browser='$readBrowser', @sentry/wasm='$readWasm', expected '$Version'"
+		$readVersion = Get-PackageVersion $verifyJson $package
+		if ($readVersion -ne $Version)
+		{
+			throw "Update failed - read-after-write: $package='$readVersion', expected '$Version'"
+		}
 	}
 
 	# Update package-lock.json
