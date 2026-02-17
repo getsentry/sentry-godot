@@ -212,6 +212,12 @@ cd test_web
 npx playwright test
 ```
 
+By default, tests expect the web export in `exports/web/`. To use a different location, set the `WEB_EXPORT_DIR` environment variable:
+
+```bash
+WEB_EXPORT_DIR=path/to/export npx playwright test
+```
+
 ### End-to-End Integration Tests
 
 Integration tests validate end-to-end SDK functionality by running test actions and verifying events are captured in Sentry. Tests are located in `integration_tests/` and use PowerShell with Pester testing framework alongside the 
