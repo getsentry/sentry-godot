@@ -61,7 +61,14 @@ const TEST_PATHS = discoverTestPaths();
 
 for (const testPath of TEST_PATHS) {
   test(`run-tests ${testPath}`, async ({ page }) => {
+    console.log(`::group::Test log ${testPath}`);
     const exitCode = await runGodotTests(page, testPath);
+    console.log("::endgroup::");
+    if (exitCode === 0) {
+      console.log(`✓ PASSED: ${testPath}`);
+    } else {
+      console.log(`✗ FAILED: ${testPath} (exit code: ${exitCode})`);
+    }
     expect(exitCode).toBe(0);
   });
 }
