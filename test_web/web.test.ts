@@ -57,6 +57,10 @@ async function runGodotTests(page: Page, testPath: string): Promise<number> {
   return await completionPromise;
 }
 
+// Formatted output (matches scripts/run-android-tests.sh)
+const success = (msg: string) => console.log(`\x1b[1;32m${msg}\x1b[0m`);
+const error = (msg: string) => console.log(`\x1b[1;31m${msg}\x1b[0m`);
+
 const TEST_PATHS = discoverTestPaths();
 
 for (const testPath of TEST_PATHS) {
@@ -65,9 +69,9 @@ for (const testPath of TEST_PATHS) {
     const exitCode = await runGodotTests(page, testPath);
     console.log("::endgroup::");
     if (exitCode === 0) {
-      console.log(`\x1b[1;32m✓ PASSED: ${testPath}\x1b[0m`);
+      success(`✓ PASSED: ${testPath}`);
     } else {
-      console.log(`\x1b[1;31m✗ FAILED: ${testPath} (exit code: ${exitCode})\x1b[0m`);
+      error(`✗ FAILED: ${testPath} (exit code: ${exitCode})`);
     }
     expect(exitCode).toBe(0);
   });
