@@ -65,9 +65,9 @@ for (const testPath of TEST_PATHS) {
     const exitCode = await runGodotTests(page, testPath);
     console.log("::endgroup::");
     if (exitCode === 0) {
-      console.log(`✓ PASSED: ${testPath}`);
+      console.log(`\x1b[1;32m✓ PASSED: ${testPath}\x1b[0m`);
     } else {
-      console.log(`✗ FAILED: ${testPath} (exit code: ${exitCode})`);
+      console.log(`\x1b[1;31m✗ FAILED: ${testPath} (exit code: ${exitCode})\x1b[0m`);
     }
     expect(exitCode).toBe(0);
   });
