@@ -32,6 +32,28 @@ class ByteStore {
   }
 }
 
+// Stores JS objects with ID-based retrieval for C++/WASM interop.
+// Used by JSObject to track JS object references across the WASM boundary.
+class ObjectStore {
+  private _lastId = 0;
+  private _objects = new Map<number, any>();
+
+  public register(obj: any): number {
+    // Wrap around within uint32_t range (0 is reserved for null/error)
+    this._lastId = (this._lastId % 0xffffffff) + 1;
+    this._objects.set(this._lastId, obj);
+    return this._lastId;
+  }
+
+  public get(id: number): any | undefined {
+    return this._objects.get(id);
+  }
+
+  public release(id: number): void {
+    this._objects.delete(id);
+  }
+}
+
 // Stores info about attachments loaded from C++ layer during event processing.
 interface AttachmentData {
   id: number; // the content is stored in ByteStore and referenced by this id.
@@ -61,6 +83,19 @@ class SentryBridge {
   constructor() {}
 
   private _byteStore = new ByteStore();
+  private _objectStore = new ObjectStore();
+
+  public registerObject(obj: any): number {
+    return this._objectStore.register(obj);
+  }
+
+  public getObject(id: number): any {
+    return this._objectStore.get(id);
+  }
+
+  public releaseObject(id: number): void {
+    this._objectStore.release(id);
+  }
 
   public init(
     beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void,
