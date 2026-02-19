@@ -273,6 +273,8 @@ public:
 
 	void delete_property(const char *p_property);
 
+	void merge_properties_from_json(const char *p_json);
+
 	static JSObjectPtr create(const char *p_type_name);
 	static JSObjectPtr get_interface(const char *p_name);
 

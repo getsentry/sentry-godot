@@ -209,6 +209,24 @@ int object_delete_property(int p_object_id, const char *p_property) {
 	}, p_object_id, p_property);
 }
 
+int object_merge_properties_from_json(int p_object_id, const char *p_json) {
+	return MAIN_THREAD_EM_ASM_INT({
+		try {
+			const bridge = window.SentryBridge;
+			const obj = bridge.getObject($0);
+			if (obj === null || obj === undefined) {
+				return -1;
+			}
+			const json = UTF8ToString($1);
+			const parsedJson = JSON.parse(json);
+			Object.assign(obj, parsedJson);
+		} catch (e) {
+			return -2;
+		}
+		return 0;
+	}, p_object_id, p_json);
+}
+
 // clang-format on
 
 } // namespace em_js
@@ -356,6 +374,13 @@ void JSObject::delete_property(const char *p_property) {
 	int result = em_js::object_delete_property(id, p_property);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: Failed deleting \"", p_property, "\" property.");
+	}
+}
+
+void JSObject::merge_properties_from_json(const char *p_json) {
+	int result = em_js::object_merge_properties_from_json(id, p_json);
+	if (result < 0) {
+		sentry::logging::print_error("JS interop: Failed merging properties from JSON.");
 	}
 }
 
