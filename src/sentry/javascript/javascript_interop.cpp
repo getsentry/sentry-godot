@@ -15,7 +15,7 @@ namespace em_js {
 int32_t create_object(const char *p_name) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
-			var n = AsciiToString($0);
+			var n = UTF8ToString($0);
 			var ctor = window[n];
 			if (!ctor) {
 				return 0;
@@ -41,6 +41,79 @@ void release_object(int32_t p_object_id) {
 }
 
 // Returns type of return value as int or error as negative number.
+int32_t object_get(int32_t p_object_id, const char* p_property, sentry::javascript::JSValue *r_ret) {
+	return MAIN_THREAD_EM_ASM_INT({
+		try {
+			const bridge = window.SentryBridge;
+			const obj = bridge.getObject($0);
+			if (obj === null || obj === undefined) {
+				return -1;
+			}
+			const prop = UTF8ToString($1);
+			const result = obj[prop];
+			if (result == null || result === undefined) {
+				return 0;
+			}
+			const retPtr = $2;
+			const type = typeof (result);
+			if (type === "boolean") {
+				HEAP64[retPtr >> 3] = BigInt(result ? 1 : 0);
+				return 1;
+			}
+			if (type === "number") {
+				if (Number.isInteger(result)) {
+					HEAP64[retPtr >> 3] = BigInt(result);
+					return 2;
+				} else {
+					HEAPF64[retPtr >> 3] = result;
+					return 3;
+				}
+			}
+			if (type === "string") {
+				const ptr = stringToNewUTF8(result);
+				HEAP64[retPtr >> 3] = BigInt(ptr);
+				return 4;
+			}
+			if (type === "object" || type === "function") {
+				HEAP64[retPtr >> 3] = BigInt(bridge.registerObject(result));
+				return 5;
+			}
+			return 0;
+		} catch (e) {
+			console.error("Sentry JS interop: object_get() failed:", e);
+			return -2;
+		}
+	}, p_object_id, p_property, r_ret);
+}
+
+int32_t object_set(int32_t p_object_id, const char *p_property, const void *p_value, const int32_t p_type) {
+	return MAIN_THREAD_EM_ASM_INT({
+		try {
+			const bridge = window.SentryBridge;
+			const obj = bridge.getObject($0);
+			if (obj === null || obj === undefined) {
+				return -1;
+			}
+			const prop = UTF8ToString($1);
+			const valuePtr = $2;
+			const type = $3;
+			switch (type) {
+				case 0: obj[prop] = null; break;
+				case 1: obj[prop] = Boolean(HEAP64[(valuePtr >> 3)]); break;
+				case 2: obj[prop] = Number(HEAP64[(valuePtr >> 3)]); break;
+				case 3: obj[prop] = HEAPF64[(valuePtr >> 3)]; break;
+				case 4: obj[prop] = UTF8ToString(Number(HEAP64[(valuePtr >> 3)])); break;
+				case 5: obj[prop] = bridge.getObject(Number(HEAP64[(valuePtr >> 3)])); break;
+			}
+		} catch (e) {
+			console.error("Sentry JS interop: object_set() failed:", e);
+			return -2;
+		}
+		return 0;
+	}, p_object_id, p_property, p_value, p_type);
+}
+
+// Returns type of return value as int or error as negative number.
 int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_args,
 		const void *p_types, int p_len, sentry::javascript::JSValue *r_ret) {
 	return MAIN_THREAD_EM_ASM_INT({
@@ -50,7 +123,7 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 			if (obj === null || obj === undefined) {
 				return -1;
 			}
-			const method = AsciiToString($1);
+			const method = UTF8ToString($1);
 			const valuesPtr = $2;
 			const typesPtr = $3;
 			const len = $4;
@@ -115,6 +188,50 @@ JSObjectPtr JSObject::create(const String &p_name) {
 		return JSObjectPtr();
 	}
 	return JSObjectPtr(new JSObject(id));
+}
+
+JSReturn JSObject::get(const String &p_property) const {
+	JSValue val = {};
+	CharString prop = p_property.utf8();
+	int result = em_js::object_get(id, prop.get_data(), &val);
+	if (result < 0) {
+		sentry::logging::print_error("JS interop: get() failed for \"", p_property, "\" property.");
+		return JSReturn();
+	}
+	JSValueType t = (JSValueType)result;
+
+	switch (t) {
+		case JSValueType::NIL:
+			return JSReturn();
+		case JSValueType::BOOL:
+			return JSReturn(val.b);
+		case JSValueType::INT:
+			return JSReturn(val.i);
+		case JSValueType::DOUBLE:
+			return JSReturn(val.d);
+		case JSValueType::STRING: {
+			String s = String::utf8(val.c);
+			free((void *)val.c);
+			return JSReturn(s);
+		}
+		case JSValueType::OBJECT:
+			if (val.id == 0) {
+				return JSReturn();
+			}
+			return JSReturn(JSObjectPtr(new JSObject(val.id)));
+		case JSValueType::BYTES:
+			// TODO: implement
+			return JSReturn();
+		default:
+			return JSReturn();
+	}
+}
+
+void JSObject::_set_impl(const char *p_property, const JSValue *p_value, int p_type) {
+	int32_t result = em_js::object_set(id, p_property, p_value, p_type);
+	if (result < 0) {
+		sentry::logging::print_error("JS interop: set() failed for \"", p_property, "\" property.");
+	}
 }
 
 JSReturn JSObject::_call_impl(const char *p_method, const int *p_types, const JSValue *p_values, int p_len) {

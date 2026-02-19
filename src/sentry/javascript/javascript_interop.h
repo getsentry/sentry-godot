@@ -179,6 +179,7 @@ private:
 	int32_t id;
 
 	JSReturn _call_impl(const char *p_method, const int *p_types, const JSValue *p_values, int p_len);
+	void _set_impl(const char *p_property, const JSValue *p_value, int p_type);
 
 	// Store overloads: pack a single argument directly into buffers.
 	// See call() below.
@@ -223,8 +224,17 @@ private:
 public:
 	int32_t get_id() const { return id; };
 
-	// JSReturn get(const String &p_property) const;
-	// void set(const String &p_property, const JSValue &p_value);
+	JSReturn get(const String &p_property) const;
+
+	template <typename T>
+	void set(const String &p_property, const T &p_value) {
+		int type = {};
+		JSValue val = {};
+		_store(type, val, p_value);
+
+		CharString prop = p_property.utf8();
+		_set_impl(prop.get_data(), &val, type);
+	}
 
 	template <typename... Args>
 	JSReturn call(const char *p_method, const Args &...p_args) {
