@@ -67,7 +67,7 @@ int32_t object_get(int32_t p_object_id, const char* p_property, MarshalData *r_r
 			}
 			const prop = UTF8ToString($1);
 			const result = obj[prop];
-			if (result == null || result === undefined) {
+			if (result === null || result === undefined) {
 				return 0;
 			}
 			const retPtr = $2;
@@ -227,6 +227,27 @@ int object_merge_properties_from_json(int p_object_id, const char *p_json) {
 	}, p_object_id, p_json);
 }
 
+int object_push_element_from_json(int p_object_id, const char *p_json) {
+	return MAIN_THREAD_EM_ASM_INT({
+		try {
+			const bridge = window.SentryBridge;
+			const obj = bridge.getObject($0);
+			if (obj === null || obj === undefined) {
+				return -1;
+			}
+			const json = UTF8ToString($1);
+			const item = JSON.parse(json);
+			if (item !== null) {
+				arr.push(item);
+			}
+		} catch (e) {
+			console.error("Sentry JS interop: object_push_element_from_json() failed:", e);
+			return -2;
+		}
+		return 0;
+	}, p_object_id, p_json);
+}
+
 // clang-format on
 
 } // namespace em_js
@@ -319,12 +340,21 @@ String JSObject::get_as_string(const char *p_property, const String &p_default) 
 }
 
 JSObjectPtr JSObject::get_or_create_object_property(const char *p_property) {
-	JSObjectPtr prop_obj = static_cast<JSObjectPtr>(get(p_property));
-	if (!prop_obj) {
-		prop_obj = JSObject::create("Object");
-		set(p_property, prop_obj);
+	JSObjectPtr jso = static_cast<JSObjectPtr>(get(p_property));
+	if (!jso) {
+		jso = JSObject::create("Object");
+		set(p_property, jso);
 	}
-	return prop_obj;
+	return jso;
+}
+
+JSObjectPtr JSObject::get_or_create_array_property(const char *p_property) {
+	JSObjectPtr jso = static_cast<JSObjectPtr>(get(p_property));
+	if (!jso) {
+		jso = JSObject::create("Array");
+		set(p_property, jso);
+	}
+	return jso;
 }
 
 void JSObject::_set_impl(const char *p_property, const em_js::MarshalData *p_value, int p_type) {
@@ -384,10 +414,22 @@ void JSObject::merge_properties_from_json(const char *p_json) {
 	}
 }
 
+void JSObject::push_element_from_json(const char *p_json) {
+	int result = em_js::object_push_element_from_json(id, p_json);
+	if (result < 0) {
+		sentry::logging::print_error("JS interop: Failed pushing element from JSON.");
+	}
+}
+
 JSObject::~JSObject() {
 	if (id != 0) {
 		em_js::release_object(id);
 	}
+}
+
+JSObjectPtr js_bridge() {
+	static JSObjectPtr bridge = JSObject::get_interface("SentryBridge");
+	return bridge;
 }
 
 } // namespace sentry::javascript

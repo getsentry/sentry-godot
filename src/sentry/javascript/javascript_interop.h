@@ -237,6 +237,7 @@ public:
 	String get_as_string(const char *p_property, const String &p_default = "") const;
 
 	JSObjectPtr get_or_create_object_property(const char *p_property);
+	JSObjectPtr get_or_create_array_property(const char *p_property);
 
 	template <typename T>
 	void set(const char *p_property, const T &p_value) {
@@ -275,6 +276,8 @@ public:
 
 	void merge_properties_from_json(const char *p_json);
 
+	void push_element_from_json(const char *p_json);
+
 	static JSObjectPtr create(const char *p_type_name);
 	static JSObjectPtr get_interface(const char *p_name);
 
@@ -287,5 +290,7 @@ public:
 	JSObject() = delete;
 	~JSObject();
 };
+
+JSObjectPtr js_bridge();
 
 } // namespace sentry::javascript
