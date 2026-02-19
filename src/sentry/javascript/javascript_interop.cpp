@@ -57,7 +57,7 @@ int get_interface(const char *p_name) {
 }
 
 // Returns type of return value as int or error as negative number.
-int32_t object_get(int32_t p_object_id, const char* p_property, sentry::javascript::JSValue *r_ret) {
+int32_t object_get(int32_t p_object_id, const char* p_property, MarshalData *r_ret) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bridge = window.SentryBridge;
@@ -131,7 +131,7 @@ int32_t object_set(int32_t p_object_id, const char *p_property, const void *p_va
 
 // Returns type of return value as int or error as negative number.
 int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_args,
-		const void *p_types, int p_len, sentry::javascript::JSValue *r_ret) {
+		const void *p_types, int p_len, MarshalData *r_ret) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bridge = window.SentryBridge;
@@ -191,17 +191,34 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 	}, p_object_id, p_method, p_args, p_types, p_len, r_ret);
 }
 
+int object_delete_property(int p_object_id, const char *p_property) {
+	return MAIN_THREAD_EM_ASM_INT({
+		try {
+			const bridge = window.SentryBridge;
+			const obj = bridge.getObject($0);
+			if (obj === null || obj === undefined) {
+				return -1;
+			}
+			const prop = UTF8ToString($1);
+			delete obj[prop];
+		} catch (e) {
+			console.error("Sentry JS interop: object_delete_property() failed:", e);
+			return -2;
+		}
+		return 0;
+	}, p_object_id, p_property);
+}
+
 // clang-format on
 
 } // namespace em_js
 
 namespace sentry::javascript {
 
-JSObjectPtr JSObject::create(const String &p_name) {
-	CharString name = p_name.ascii();
-	int32_t id = em_js::create_object(name.get_data());
+JSObjectPtr JSObject::create(const char *p_type_name) {
+	int32_t id = em_js::create_object(p_type_name);
 	if (id == 0) {
-		return JSObjectPtr();
+		return nullptr;
 	}
 	return JSObjectPtr(new JSObject(id));
 }
@@ -214,88 +231,136 @@ JSObjectPtr JSObject::get_interface(const char *p_name) {
 	return JSObjectPtr(new JSObject(id));
 }
 
-JSReturn JSObject::get(const String &p_property) const {
-	JSValue val = {};
-	CharString prop = p_property.utf8();
-	int result = em_js::object_get(id, prop.get_data(), &val);
+JSValue JSObject::get(const char *p_property) const {
+	em_js::MarshalData rv = {};
+	int result = em_js::object_get(id, p_property, &rv);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: get() failed for \"", p_property, "\" property.");
-		return JSReturn();
+		return JSValue();
 	}
 	JSValueType t = (JSValueType)result;
 
 	switch (t) {
 		case JSValueType::NIL:
-			return JSReturn();
+			return JSValue();
 		case JSValueType::BOOL:
-			return JSReturn(val.b);
+			return JSValue(rv.b);
 		case JSValueType::INT:
-			return JSReturn(val.i);
+			return JSValue(rv.i);
 		case JSValueType::DOUBLE:
-			return JSReturn(val.d);
+			return JSValue(rv.d);
 		case JSValueType::STRING: {
-			String s = String::utf8(val.c);
-			free((void *)val.c);
-			return JSReturn(s);
+			String s = String::utf8(rv.c);
+			free((void *)rv.c);
+			return JSValue(s);
 		}
 		case JSValueType::OBJECT:
-			if (val.id == 0) {
-				return JSReturn();
+			if (rv.id == 0) {
+				return JSValue();
 			}
-			return JSReturn(JSObjectPtr(new JSObject(val.id)));
+			return JSValue(JSObjectPtr(new JSObject(rv.id)));
 		case JSValueType::BYTES:
 			// TODO: implement
-			return JSReturn();
+			return JSValue();
 		default:
-			return JSReturn();
+			return JSValue();
 	}
 }
 
-void JSObject::_set_impl(const char *p_property, const JSValue *p_value, int p_type) {
+Variant JSObject::get_as_variant(const char *p_property) const {
+	JSValue val = get(p_property);
+	switch (val.get_type()) {
+		case JSValueType::NIL:
+			return Variant();
+		case JSValueType::BOOL:
+			return Variant(val.operator bool());
+		case JSValueType::INT:
+			return Variant(val.operator int64_t());
+		case JSValueType::DOUBLE:
+			return Variant(val.operator double());
+		case JSValueType::STRING: {
+			return Variant(val.operator String());
+		}
+		case JSValueType::OBJECT:
+			// TODO: Convert to dictionary
+			return Variant();
+		case JSValueType::BYTES:
+			// TODO: implement
+			return Variant();
+		default:
+			return Variant();
+	}
+}
+
+String JSObject::get_as_string(const char *p_property, const String &p_default) const {
+	JSValue val = get(p_property);
+	if (val.get_type() == JSValueType::STRING) {
+		return val.operator String();
+	}
+	return p_default;
+}
+
+JSObjectPtr JSObject::get_or_create_object_property(const char *p_property) {
+	JSObjectPtr prop_obj = static_cast<JSObjectPtr>(get(p_property));
+	if (!prop_obj) {
+		prop_obj = JSObject::create("Object");
+		set(p_property, prop_obj);
+	}
+	return prop_obj;
+}
+
+void JSObject::_set_impl(const char *p_property, const em_js::MarshalData *p_value, int p_type) {
 	int32_t result = em_js::object_set(id, p_property, p_value, p_type);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: set() failed for \"", p_property, "\" property.");
 	}
 }
 
-JSReturn JSObject::_call_impl(const char *p_method, const int *p_types, const JSValue *p_values, int p_len) {
-	JSValue val = {};
-	int result = em_js::call_method(id, p_method, p_values, p_types, p_len, &val);
+JSValue JSObject::_call_impl(const char *p_method, const int *p_types, const em_js::MarshalData *p_values, int p_len) {
+	em_js::MarshalData rv = {};
+	int result = em_js::call_method(id, p_method, p_values, p_types, p_len, &rv);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop failed calling \"", p_method, "\" method.");
-		return JSReturn();
+		return JSValue();
 	}
 	JSValueType t = (JSValueType)result;
 
 	switch (t) {
 		case JSValueType::NIL:
-			return JSReturn();
+			return JSValue();
 		case JSValueType::BOOL:
-			return JSReturn(val.b);
+			return JSValue(rv.b);
 		case JSValueType::INT:
-			return JSReturn(val.i);
+			return JSValue(rv.i);
 		case JSValueType::DOUBLE:
-			return JSReturn(val.d);
+			return JSValue(rv.d);
 		case JSValueType::STRING: {
-			String s = String::utf8(val.c);
-			free((void *)val.c);
-			return JSReturn(s);
+			String s = String::utf8(rv.c);
+			free((void *)rv.c);
+			return JSValue(s);
 		}
 		case JSValueType::OBJECT:
-			if (val.id == 0) {
-				return JSReturn();
+			if (rv.id == 0) {
+				return JSValue();
 			}
-			return JSReturn(JSObjectPtr(new JSObject(val.id)));
+			return JSValue(JSObjectPtr(new JSObject(rv.id)));
 		case JSValueType::BYTES:
 			// TODO: implement
-			return JSReturn();
+			return JSValue();
 		default:
-			return JSReturn();
+			return JSValue();
+	}
+}
+
+void JSObject::delete_property(const char *p_property) {
+	int result = em_js::object_delete_property(id, p_property);
+	if (result < 0) {
+		sentry::logging::print_error("JS interop: Failed deleting \"", p_property, "\" property.");
 	}
 }
 
 JSObject::~JSObject() {
-	if (id > 0) {
+	if (id != 0) {
 		em_js::release_object(id);
 	}
 }
