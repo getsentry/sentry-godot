@@ -251,7 +251,7 @@ public:
 	}
 
 	static JSObjectPtr create(const String &p_constructor_name);
-	// static JSObjectPtr get_interface(const String &p_name);
+	static JSObjectPtr get_interface(const char *p_name);
 
 	// Non-copyable.
 	JSObject(const JSObject &) = delete;

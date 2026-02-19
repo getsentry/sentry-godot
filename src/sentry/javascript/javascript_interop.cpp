@@ -40,6 +40,22 @@ void release_object(int32_t p_object_id) {
 	}, p_object_id);
 }
 
+// Get interface by name, returning non-zero object ID or 0 on error.
+int get_interface(const char *p_name) {
+	return MAIN_THREAD_EM_ASM_INT({
+		try {
+			const obj = window[UTF8ToString($0)];
+			if (obj === null || obj === undefined) {
+				return 0;
+			}
+			return window.SentryBridge.registerObject(obj);
+		} catch (e) {
+			console.error("Sentry: JS interop: Failed to get interface:", e);
+			return 0;
+		}
+	}, p_name);
+}
+
 // Returns type of return value as int or error as negative number.
 int32_t object_get(int32_t p_object_id, const char* p_property, sentry::javascript::JSValue *r_ret) {
 	return MAIN_THREAD_EM_ASM_INT({
@@ -185,6 +201,14 @@ JSObjectPtr JSObject::create(const String &p_name) {
 	CharString name = p_name.ascii();
 	int32_t id = em_js::create_object(name.get_data());
 	if (id == 0) {
+		return JSObjectPtr();
+	}
+	return JSObjectPtr(new JSObject(id));
+}
+
+JSObjectPtr JSObject::get_interface(const char *p_name) {
+	int id = em_js::get_interface(p_name);
+	if (unlikely(id == 0)) {
 		return JSObjectPtr();
 	}
 	return JSObjectPtr(new JSObject(id));
