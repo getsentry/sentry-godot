@@ -1,63 +1,92 @@
 #include "javascript_log.h"
 
-#include "javascript_string_names.h"
-#include "javascript_util.h"
-
 namespace sentry::javascript {
 
 LogLevel JavaScriptLog::get_level() const {
-	ERR_FAIL_COND_V(js_obj.is_null(), LOG_LEVEL_INFO);
+	ERR_FAIL_COND_V(!js_obj, LOG_LEVEL_INFO);
 
-	String level_str = js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(level));
+	String level_str = js_obj->get_as_string("level");
 	return sentry::log_level_from_string(level_str, LOG_LEVEL_INFO);
 }
 
 void JavaScriptLog::set_level(LogLevel p_level) {
-	ERR_FAIL_COND(js_obj.is_null());
+	ERR_FAIL_COND(!js_obj);
 
-	js_obj->set(JAVASCRIPT_SN(level), sentry::log_level_as_string(p_level));
+	js_obj->set("level", sentry::log_level_as_cstring(p_level));
 }
 
 String JavaScriptLog::get_body() const {
-	ERR_FAIL_COND_V(js_obj.is_null(), String());
-	return js_object_get_property_as_string(js_obj, JAVASCRIPT_SN(message));
+	ERR_FAIL_COND_V(!js_obj, String());
+	return js_obj->get_as_string("message");
 }
 
 void JavaScriptLog::set_body(const String &p_body) {
-	ERR_FAIL_COND(js_obj.is_null());
-	js_object_set_or_remove_string_property(js_obj, JAVASCRIPT_SN(message), p_body);
+	ERR_FAIL_COND(!js_obj);
+	js_obj->set_or_remove_string_property("message", p_body.utf8());
 }
 
 Variant JavaScriptLog::get_attribute(const String &p_name) const {
-	ERR_FAIL_COND_V(js_obj.is_null(), Variant());
+	ERR_FAIL_COND_V(!js_obj, Variant());
 
-	Ref<JavaScriptObject> attributes_obj = js_obj->get(JAVASCRIPT_SN(attributes));
-	if (attributes_obj.is_null()) {
+	JSObjectPtr attributes_obj = js_obj->get("attributes").as_object();
+	if (!attributes_obj) {
 		return Variant();
 	}
 
-	Variant attr_val = attributes_obj->get(p_name);
+	JSValue attr_val = attributes_obj->get(p_name.utf8());
 
 	// Attributes can be stored either as a typed object { value, type } or as a raw primitive.
-	Ref<JavaScriptObject> attr_obj = attr_val;
-	if (attr_obj.is_valid()) {
+	JSObjectPtr attr_obj = attr_val.as_object();
+	if (attr_obj) {
 		// Typed attribute - return the underlying value.
-		return attr_obj->get(JAVASCRIPT_SN(value));
+		return attr_obj->get_as_variant("value");
 	}
 
 	// Raw primitive value.
-	return attr_val;
+	switch (attr_val.get_type()) {
+		case JSValueType::BOOL: {
+			return attr_val.as_bool();
+		} break;
+		case JSValueType::INT: {
+			return attr_val.as_int();
+		} break;
+		case JSValueType::DOUBLE: {
+			return attr_val.as_double();
+		} break;
+		case JSValueType::STRING: {
+			return attr_val.as_string();
+		} break;
+		default: {
+			return Variant();
+		}
+	}
 }
 
 void JavaScriptLog::set_attribute(const String &p_name, const Variant &p_value) {
-	ERR_FAIL_COND(js_obj.is_null());
+	ERR_FAIL_COND(!js_obj);
 
-	Ref<JavaScriptObject> attributes_obj = js_object_get_or_create_object_property(js_obj, JAVASCRIPT_SN(attributes));
-	attributes_obj->set(p_name, p_value);
+	JSObjectPtr attr_obj = js_obj->get_or_create_object_property("attributes");
+	switch (p_value.get_type()) {
+		case Variant::Type::BOOL: {
+			attr_obj->set(p_name.utf8(), p_value.operator bool());
+		} break;
+		case Variant::Type::INT: {
+			attr_obj->set(p_name.utf8(), p_value.operator int64_t());
+		} break;
+		case Variant::Type::FLOAT: {
+			attr_obj->set(p_name.utf8(), p_value.operator double());
+		} break;
+		case Variant::Type::STRING: {
+			attr_obj->set(p_name.utf8(), p_value.operator String().utf8());
+		} break;
+		default: {
+			attr_obj->set(p_name.utf8(), p_value.stringify().utf8());
+		}
+	}
 }
 
 void JavaScriptLog::add_attributes(const Dictionary &p_attributes) {
-	ERR_FAIL_COND(js_obj.is_null());
+	ERR_FAIL_COND(!js_obj);
 
 	Array keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
@@ -67,11 +96,11 @@ void JavaScriptLog::add_attributes(const Dictionary &p_attributes) {
 }
 
 void JavaScriptLog::remove_attribute(const String &p_name) {
-	ERR_FAIL_COND(js_obj.is_null());
+	ERR_FAIL_COND(!js_obj);
 
-	Ref<JavaScriptObject> attributes_obj = js_obj->get(JAVASCRIPT_SN(attributes));
-	if (attributes_obj.is_valid()) {
-		js_delete_property(attributes_obj, p_name);
+	JSObjectPtr attr_obj = js_obj->get("attributes").as_object();
+	if (attr_obj) {
+		attr_obj->delete_property(p_name.utf8());
 	}
 }
 
@@ -79,7 +108,7 @@ JavaScriptLog::JavaScriptLog() {
 	ERR_PRINT("This constructor is not intended for runtime use.");
 }
 
-JavaScriptLog::JavaScriptLog(const Ref<RefCounted> &p_js_log_object) {
+JavaScriptLog::JavaScriptLog(const JSObjectPtr &p_js_log_object) {
 	js_obj = p_js_log_object;
 }
 
