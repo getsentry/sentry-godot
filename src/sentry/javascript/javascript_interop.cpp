@@ -277,6 +277,29 @@ int object_push_element_from_json(int p_object_id, const char *p_json) {
 	}, p_object_id, p_json);
 }
 
+int object_to_json(int32_t p_object_id, MarshalData *r_ret) {
+	return MAIN_THREAD_EM_ASM_INT({
+		try {
+			const bridge = window.SentryBridge;
+			const obj = bridge.getObject($0);
+			if (obj === null || obj === undefined) {
+				return -1;
+			}
+			const json = JSON.stringify(obj);
+			if (json == null) {
+				return -1;
+			}
+			const jsonPtr = stringToNewUTF8(json);
+			const retPtr = $1;
+			HEAP64[retPtr >> 3] = BigInt(jsonPtr);
+			return 0;
+		} catch (e) {
+			console.error("Sentry JS interop: object_to_json() failed:", e);
+			return -2;
+		}
+	}, p_object_id, r_ret);
+}
+
 // clang-format on
 
 } // namespace em_js
@@ -464,12 +487,15 @@ void JSObject::push_element_from_json(const char *p_json) {
 }
 
 String JSObject::to_json() const {
-	// Marshal `this` as OBJECT, not int
-	int type = JSValueType::OBJECT;
-	em_js::MarshalData val = {};
-	val.id = id;
-	JSValue result = js_bridge()->_call_impl("objectToJson", &type, &val, 1);
-	return result.as_string();
+	em_js::MarshalData jsonData;
+	int result = em_js::object_to_json(id, &jsonData);
+	if (result < 0) {
+		sentry::logging::print_error("JS interop: Failed converting object to JSON.");
+		return String();
+	}
+	String json = String::utf8(jsonData.c);
+	free((void *)jsonData.c);
+	return json;
 }
 
 JSObject::~JSObject() {
