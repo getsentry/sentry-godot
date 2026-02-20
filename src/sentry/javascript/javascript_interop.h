@@ -60,35 +60,35 @@ public:
 	JSValueType get_type() const { return type; }
 	int64_t get_raw() const { return data.i; }
 
-	explicit operator int64_t() const {
+	int64_t as_int() const {
 		if (type == JSValueType::INT) {
 			return data.i;
 		}
 		return 0;
 	}
 
-	explicit operator bool() const {
+	bool as_bool() const {
 		if (type == JSValueType::BOOL) {
 			return data.b;
 		}
 		return false;
 	}
 
-	explicit operator double() const {
+	double as_double() const {
 		if (type == JSValueType::DOUBLE) {
 			return data.d;
 		}
 		return 0.0;
 	}
 
-	explicit operator String() const {
+	String as_string() const {
 		if (type == JSValueType::STRING) {
 			return *reinterpret_cast<const String *>(data.mem);
 		}
 		return String();
 	}
 
-	explicit operator JSObjectPtr() const {
+	JSObjectPtr as_object() const {
 		if (type == JSValueType::OBJECT) {
 			return *reinterpret_cast<const JSObjectPtr *>(data.mem);
 		}
