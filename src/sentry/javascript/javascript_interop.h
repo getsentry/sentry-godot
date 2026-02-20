@@ -177,6 +177,9 @@ public:
 	}
 };
 
+// WASM callback signature: receives an array of JS object IDs and the count.
+using WasmCallbackFunc = void (*)(int *p_ids, int p_len);
+
 class JSObject {
 private:
 	int32_t id;
@@ -233,7 +236,7 @@ private:
 	}
 
 public:
-	int32_t get_id() const { return id; };
+	_ALWAYS_INLINE_ int32_t get_id() const { return id; };
 
 	JSValue get(const char *p_property) const;
 
@@ -282,8 +285,12 @@ public:
 
 	void push_element_from_json(const char *p_json);
 
+	String to_json() const;
+
 	static JSObjectPtr create(const char *p_type_name);
+	static JSObjectPtr from_id(int32_t p_id);
 	static JSObjectPtr get_interface(const char *p_name);
+	static JSObjectPtr create_callback(WasmCallbackFunc p_func_ptr);
 
 	// Non-copyable.
 	JSObject(const JSObject &) = delete;

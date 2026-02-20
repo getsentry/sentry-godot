@@ -56,6 +56,35 @@ int get_interface(const char *p_name) {
 	}, p_name);
 }
 
+// Create a callback function from a WASM function pointer, returning non-zero callable ID or 0 on error.
+int create_callback(uintptr_t p_func_ptr) {
+	return MAIN_THREAD_EM_ASM_INT({
+		try {
+			const wasmFunc = wasmTable.get($0);
+			if (!wasmFunc) {
+				return 0;
+			}
+			const callback = function() {
+				const argc = arguments.length;
+				if (argc === 0) {
+					wasmFunc(0, 0);
+					return;
+				}
+				const idsPtr = _malloc(argc * 4);
+				for (let i = 0; i < argc; i++) {
+					HEAP32[(idsPtr >> 2) + i] = window.SentryBridge.registerObject(arguments[i]);
+				}
+				wasmFunc(idsPtr, argc);
+				_free(idsPtr);
+			};
+			return window.SentryBridge.registerObject(callback);
+		} catch (e) {
+			console.error("Sentry: JS interop: Failed to create WASM callback:", e);
+			return 0;
+		}
+	}, p_func_ptr);
+}
+
 // Returns type of return value as int or error as negative number.
 int32_t object_get(int32_t p_object_id, const char* p_property, MarshalData *r_ret) {
 	return MAIN_THREAD_EM_ASM_INT({
@@ -238,7 +267,7 @@ int object_push_element_from_json(int p_object_id, const char *p_json) {
 			const json = UTF8ToString($1);
 			const item = JSON.parse(json);
 			if (item !== null) {
-				arr.push(item);
+				obj.push(item);
 			}
 		} catch (e) {
 			console.error("Sentry JS interop: object_push_element_from_json() failed:", e);
@@ -262,12 +291,25 @@ JSObjectPtr JSObject::create(const char *p_type_name) {
 	return JSObjectPtr(new JSObject(id));
 }
 
+JSObjectPtr JSObject::from_id(int32_t p_id) {
+	if (p_id == 0) {
+		return nullptr;
+	}
+	return JSObjectPtr(new JSObject(p_id));
+}
+
 JSObjectPtr JSObject::get_interface(const char *p_name) {
 	int id = em_js::get_interface(p_name);
 	if (unlikely(id == 0)) {
 		return JSObjectPtr();
 	}
 	return JSObjectPtr(new JSObject(id));
+}
+
+JSObjectPtr JSObject::create_callback(WasmCallbackFunc p_func) {
+	// In WASM, function pointers are indices into the function table.
+	int id = em_js::create_callback(reinterpret_cast<uintptr_t>(p_func));
+	return from_id(id);
 }
 
 JSValue JSObject::get(const char *p_property) const {
@@ -312,13 +354,13 @@ Variant JSObject::get_as_variant(const char *p_property) const {
 		case JSValueType::NIL:
 			return Variant();
 		case JSValueType::BOOL:
-			return Variant(val.operator bool());
+			return Variant(val.as_bool());
 		case JSValueType::INT:
-			return Variant(val.operator int64_t());
+			return Variant(val.as_int());
 		case JSValueType::DOUBLE:
-			return Variant(val.operator double());
+			return Variant(val.as_double());
 		case JSValueType::STRING: {
-			return Variant(val.operator String());
+			return Variant(val.as_string());
 		}
 		case JSValueType::OBJECT:
 			// TODO: Convert to dictionary
@@ -334,13 +376,13 @@ Variant JSObject::get_as_variant(const char *p_property) const {
 String JSObject::get_as_string(const char *p_property, const String &p_default) const {
 	JSValue val = get(p_property);
 	if (val.get_type() == JSValueType::STRING) {
-		return val.operator String();
+		return val.as_string();
 	}
 	return p_default;
 }
 
 JSObjectPtr JSObject::get_or_create_object_property(const char *p_property) {
-	JSObjectPtr jso = static_cast<JSObjectPtr>(get(p_property));
+	JSObjectPtr jso = get(p_property).as_object();
 	if (!jso) {
 		jso = JSObject::create("Object");
 		set(p_property, jso);
@@ -349,7 +391,7 @@ JSObjectPtr JSObject::get_or_create_object_property(const char *p_property) {
 }
 
 JSObjectPtr JSObject::get_or_create_array_property(const char *p_property) {
-	JSObjectPtr jso = static_cast<JSObjectPtr>(get(p_property));
+	JSObjectPtr jso = get(p_property).as_object();
 	if (!jso) {
 		jso = JSObject::create("Array");
 		set(p_property, jso);
@@ -419,6 +461,15 @@ void JSObject::push_element_from_json(const char *p_json) {
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: Failed pushing element from JSON.");
 	}
+}
+
+String JSObject::to_json() const {
+	// Marshal `this` as OBJECT, not int
+	int type = JSValueType::OBJECT;
+	em_js::MarshalData val = {};
+	val.id = id;
+	JSValue result = js_bridge()->_call_impl("objectToJson", &type, &val, 1);
+	return result.as_string();
 }
 
 JSObject::~JSObject() {
