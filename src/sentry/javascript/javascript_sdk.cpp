@@ -2,7 +2,6 @@
 
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/javascript/javascript_event.h"
-#include "sentry/javascript/javascript_interop_test.h"
 #include "sentry/javascript/javascript_log.h"
 #include "sentry/javascript/javascript_string_names.h"
 #include "sentry/javascript/javascript_util.h"
