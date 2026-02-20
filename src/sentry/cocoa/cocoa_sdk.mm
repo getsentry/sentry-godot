@@ -265,13 +265,12 @@ void CocoaSDK::init() {
 			// Add global attachments
 			for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
 				sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
-				objc::SentryAttachment *att = nil;
 				// TODO: Can't specify attachmentType!
-				att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(att->get_path())
-														  filename:string_to_objc(att->get_filename())
-													   contentType:string_to_objc(att->get_content_type())];
-				ERR_CONTINUE(att == nil);
-				[scope addAttachment:att];
+				objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(att->get_path())
+																					   filename:string_to_objc(att->get_filename())
+																					contentType:string_to_objc(att->get_content_type())];
+				ERR_CONTINUE(objc_att == nil);
+				[scope addAttachment:objc_att];
 			}
 
 			// Initialize default user.
