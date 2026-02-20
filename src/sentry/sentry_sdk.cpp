@@ -382,12 +382,7 @@ void SentrySDK::prepare_and_auto_initialize() {
 	}
 #endif
 
-	if (internal_sdk->get_capabilities().has_flag(InternalSDK::SUPPORTS_EARLY_INIT)) {
-		_auto_initialize();
-	} else {
-		// Defer automatic initialization when the underlying SDK cannot be initialized early.
-		callable_mp(this, &SentrySDK::_auto_initialize).call_deferred();
-	}
+	_auto_initialize();
 }
 
 void SentrySDK::_notification(int p_what) {

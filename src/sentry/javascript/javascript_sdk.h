@@ -17,9 +17,6 @@ private:
 	JSObjectPtr _before_send_log_js_callback;
 
 public:
-	// NOTE: JS SDK can't be intialized early because it needs JavaScriptBridge engine singleton.
-	virtual BitField<Capabilities> get_capabilities() const override { return SUPPORTS_ALL & ~SUPPORTS_EARLY_INIT; }
-
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void remove_context(const String &p_key) override;
 

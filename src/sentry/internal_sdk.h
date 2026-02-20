@@ -20,7 +20,7 @@ namespace sentry {
 class InternalSDK {
 public:
 	enum Capabilities : int64_t {
-		SUPPORTS_EARLY_INIT = (1LL << 0),
+		// SUPPORTS_EARLY_INIT = (1LL << 0),
 		// SUPPORTS_RUNNING_DOOM = (1LL << 1),
 		// SUPPORTS_LANDING_ON_THE_MOON = (1LL << 2)
 		SUPPORTS_ALL = ~0LL
