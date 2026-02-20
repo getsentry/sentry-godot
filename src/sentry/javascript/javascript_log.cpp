@@ -5,7 +5,7 @@ namespace sentry::javascript {
 LogLevel JavaScriptLog::get_level() const {
 	ERR_FAIL_COND_V(!js_obj, LOG_LEVEL_INFO);
 
-	String level_str = js_obj->get_as_string("level");
+	String level_str = js_obj->get("level").as_string();
 	return sentry::log_level_from_string(level_str, LOG_LEVEL_INFO);
 }
 
@@ -17,7 +17,7 @@ void JavaScriptLog::set_level(LogLevel p_level) {
 
 String JavaScriptLog::get_body() const {
 	ERR_FAIL_COND_V(!js_obj, String());
-	return js_obj->get_as_string("message");
+	return js_obj->get("message").as_string();
 }
 
 void JavaScriptLog::set_body(const String &p_body) {

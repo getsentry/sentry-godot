@@ -396,14 +396,6 @@ Variant JSObject::get_as_variant(const char *p_property) const {
 	}
 }
 
-String JSObject::get_as_string(const char *p_property, const String &p_default) const {
-	JSValue val = get(p_property);
-	if (val.get_type() == JSValueType::STRING) {
-		return val.as_string();
-	}
-	return p_default;
-}
-
 JSObjectPtr JSObject::get_or_create_object_property(const char *p_property) {
 	JSObjectPtr jso = get(p_property).as_object();
 	if (!jso) {

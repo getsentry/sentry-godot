@@ -241,7 +241,6 @@ public:
 	JSValue get(const char *p_property) const;
 
 	Variant get_as_variant(const char *p_property) const;
-	String get_as_string(const char *p_property, const String &p_default = "") const;
 
 	JSObjectPtr get_or_create_object_property(const char *p_property);
 	JSObjectPtr get_or_create_array_property(const char *p_property);

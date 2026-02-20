@@ -14,7 +14,7 @@ void JavaScriptBreadcrumb::set_message(const String &p_message) {
 
 String JavaScriptBreadcrumb::get_message() const {
 	ERR_FAIL_COND_V(!js_obj, String());
-	return js_obj->get_as_string("message");
+	return js_obj->get("message").as_string();
 }
 
 void JavaScriptBreadcrumb::set_category(const String &p_category) {
@@ -24,7 +24,7 @@ void JavaScriptBreadcrumb::set_category(const String &p_category) {
 
 String JavaScriptBreadcrumb::get_category() const {
 	ERR_FAIL_COND_V(!js_obj, String());
-	return js_obj->get_as_string("category");
+	return js_obj->get("category").as_string();
 }
 
 void JavaScriptBreadcrumb::set_level(sentry::Level p_level) {
@@ -58,7 +58,7 @@ void JavaScriptBreadcrumb::set_type(const String &p_type) {
 String JavaScriptBreadcrumb::get_type() const {
 	ERR_FAIL_COND_V(!js_obj, "");
 
-	return js_obj->get_as_string("type");
+	return js_obj->get("type").as_string();
 }
 
 void JavaScriptBreadcrumb::set_data(const Dictionary &p_data) {

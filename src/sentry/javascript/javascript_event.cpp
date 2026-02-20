@@ -77,7 +77,7 @@ String JavaScriptEvent::get_message() const {
 
 	JSObjectPtr jso = message_value.as_object();
 	if (jso) {
-		return jso->get_as_string("formatted");
+		return jso->get("formatted").as_string();
 	}
 
 	return String();
@@ -290,7 +290,7 @@ String JavaScriptEvent::get_exception_value(int p_index) const {
 		return String();
 	}
 
-	return exc_obj->get_as_string("value");
+	return exc_obj->get("value").as_string();
 }
 
 bool JavaScriptEvent::is_crash() const {
