@@ -235,14 +235,10 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}];
 }
 
-void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
+void CocoaSDK::init() {
 	[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
 
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
-		if (p_configuration_callback.is_valid()) {
-			p_configuration_callback.call(SENTRY_OPTIONS());
-		}
-
 		options.dsn = string_to_objc(SENTRY_OPTIONS()->get_dsn());
 		options.debug = SENTRY_OPTIONS()->is_debug_enabled();
 		options.releaseName = string_to_objc(SENTRY_OPTIONS()->get_release());
@@ -267,17 +263,13 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments
-			for (const String &path : p_global_attachments) {
-				sentry::logging::print_debug("adding attachment \"", path, "\"");
+			for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
+				sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
 				objc::SentryAttachment *att = nil;
-				if (path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
-					// TODO: Can't specify attachmentType!
-					att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(path)
-															  filename:string_to_objc("view-hierarchy.json")
-														   contentType:string_to_objc("application/json")];
-				} else {
-					att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(path)];
-				}
+				// TODO: Can't specify attachmentType!
+				att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(att->get_path())
+														  filename:string_to_objc(att->get_filename())
+													   contentType:string_to_objc(att->get_content_type())];
 				ERR_CONTINUE(att == nil);
 				[scope addAttachment:att];
 			}

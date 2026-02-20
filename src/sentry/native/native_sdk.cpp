@@ -353,13 +353,9 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
+void NativeSDK::init() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
-
-	if (p_configuration_callback.is_valid()) {
-		p_configuration_callback.call(SENTRY_OPTIONS());
-	}
 
 	sentry_options_t *options = sentry_options_new();
 
@@ -406,12 +402,12 @@ void NativeSDK::init(const PackedStringArray &p_global_attachments, const Callab
 		sentry_options_set_backend(options, NULL);
 	}
 
-	for (const String &path : p_global_attachments) {
-		sentry::logging::print_debug("adding attachment \"", path, "\"");
-		if (path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
-			sentry_options_add_view_hierarchy(options, path.utf8());
+	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
+		sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
+		if (att->get_path().ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
+			sentry_options_add_view_hierarchy(options, att->get_path().utf8());
 		} else {
-			sentry_options_add_attachment(options, path.utf8());
+			sentry_options_add_attachment(options, att->get_path().utf8());
 		}
 	}
 

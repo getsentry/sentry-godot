@@ -44,7 +44,7 @@ private:
 
 	void _init_contexts();
 	void _init_user();
-	PackedStringArray _get_global_attachments();
+	Vector<Ref<SentryAttachment>> _create_builtin_attachments();
 	void _auto_initialize();
 	void _demo_helper_crash_app();
 

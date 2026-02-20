@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sentry/internal_sdk.h"
+#include "sentry/javascript/javascript_interop.h"
 
 #include <godot_cpp/classes/java_script_object.hpp>
 
@@ -8,63 +9,12 @@ using namespace godot;
 
 namespace sentry::javascript {
 
-// Handles event processing
-class JavaScriptBeforeSendHandler : public Object {
-	GDCLASS(JavaScriptBeforeSendHandler, Object);
-
-public:
-	struct FileAttachmentsGetter {
-		Vector<Ref<SentryAttachment>> (*func)(void *p_context) = nullptr;
-		void *context = nullptr;
-
-		Vector<Ref<SentryAttachment>> call() const {
-			if (func != nullptr) {
-				return func(context);
-			}
-			return Vector<Ref<SentryAttachment>>();
-		}
-	};
-
-private:
-	FileAttachmentsGetter _file_attachments_getter;
-
-protected:
-	static void _bind_methods() {}
-
-public:
-	void handle_before_send(const Array &p_args);
-
-	void initialize(const FileAttachmentsGetter &p_file_attachments_getter);
-	JavaScriptBeforeSendHandler() = default;
-};
-
-// Handles log processing
-class JavaScriptBeforeSendLogHandler : public Object {
-	GDCLASS(JavaScriptBeforeSendLogHandler, Object);
-
-protected:
-	static void _bind_methods() {}
-
-public:
-	void handle_before_send_log(const Array &p_args);
-
-	JavaScriptBeforeSendLogHandler() = default;
-};
-
 // Internal SDK utilizing Sentry for JavaScript.
 class JavaScriptSDK : public InternalSDK {
 private:
 	// NOTE: Need to keep these refs alive for as long as they're needed.
-	Ref<JavaScriptObject> _before_send_js_callback;
-	Ref<JavaScriptObject> _before_send_log_js_callback;
-
-	JavaScriptBeforeSendHandler *_before_send_handler;
-	JavaScriptBeforeSendLogHandler *_before_send_log_handler;
-
-	// Stores file-based attachment paths to be added in processing during before_send.
-	Vector<Ref<SentryAttachment>> file_attachments;
-
-	Vector<Ref<SentryAttachment>> _get_file_attachments() { return file_attachments; }
+	JSObjectPtr _before_send_js_callback;
+	JSObjectPtr _before_send_log_js_callback;
 
 public:
 	// NOTE: JS SDK can't be intialized early because it needs JavaScriptBridge engine singleton.
@@ -94,7 +44,7 @@ public:
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
 
-	virtual void init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) override;
+	virtual void init() override;
 	virtual void close() override;
 	virtual bool is_enabled() const override;
 

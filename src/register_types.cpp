@@ -99,9 +99,7 @@ void register_runtime_classes() {
 #ifdef SDK_JAVASCRIPT
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptEvent);
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBreadcrumb);
-	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBeforeSendHandler);
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptLog);
-	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBeforeSendLogHandler);
 #endif
 }
 

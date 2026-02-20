@@ -4,6 +4,7 @@
 #include "sentry/godot_error_types.h"
 #include "sentry/level.h"
 #include "sentry/processing/sentry_event_processor.h"
+#include "sentry/sentry_attachment.h"
 #include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
@@ -106,6 +107,7 @@ private:
 	Callable before_capture_screenshot;
 
 	Vector<Ref<SentryEventProcessor>> event_processors;
+	Vector<Ref<SentryAttachment>> file_attachments;
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
@@ -210,6 +212,9 @@ public:
 	void add_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	void remove_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	_FORCE_INLINE_ Vector<Ref<SentryEventProcessor>> get_event_processors() { return event_processors; }
+
+	void add_file_attachment(const Ref<SentryAttachment> &p_attachment) { file_attachments.append(p_attachment); }
+	_FORCE_INLINE_ Vector<Ref<SentryAttachment>> get_file_attachments() const { return file_attachments; }
 
 	SentryOptions();
 	~SentryOptions();
