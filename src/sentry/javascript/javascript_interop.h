@@ -194,6 +194,10 @@ private:
 		type = JSValueType::INT;
 		jval.i = v;
 	}
+	static void _store(int &type, em_js::MarshalData &jval, uint32_t v) {
+		type = JSValueType::INT;
+		jval.i = v;
+	}
 	static void _store(int &type, em_js::MarshalData &jval, int64_t v) {
 		type = JSValueType::INT;
 		jval.i = v;
