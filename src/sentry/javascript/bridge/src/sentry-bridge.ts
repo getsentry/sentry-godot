@@ -12,14 +12,14 @@ class ByteStore {
     return this._buffers.get(id);
   }
 
-  public add(bytes: Uint8Array): number {
+  public store(bytes: Uint8Array): number {
     // Wrap around within uint32_t range (0 is reserved for error)
     this._lastId = (this._lastId % 0xffffffff) + 1;
     this._buffers.set(this._lastId, bytes);
     return this._lastId;
   }
 
-  public remove(id: number): void {
+  public release(id: number): void {
     this._buffers.delete(id);
   }
 
@@ -38,7 +38,7 @@ class ObjectStore {
   private _lastId = 0;
   private _objects = new Map<number, any>();
 
-  public register(obj: any): number {
+  public store(obj: any): number {
     // Wrap around within uint32_t range (0 is reserved for null/error)
     this._lastId = (this._lastId % 0xffffffff) + 1;
     this._objects.set(this._lastId, obj);
@@ -85,8 +85,12 @@ class SentryBridge {
   private _byteStore = new ByteStore();
   private _objectStore = new ObjectStore();
 
-  public registerObject(obj: any): number {
-    return this._objectStore.register(obj);
+  public storeBytes(bytes: Uint8Array): number {
+    return this._byteStore.store(bytes);
+  }
+
+  public storeObject(obj: any): number {
+    return this._objectStore.store(obj);
   }
 
   public getObject(id: number): any {
@@ -173,7 +177,7 @@ class SentryBridge {
               ...(attachmentData.contentType && { contentType: attachmentData.contentType }),
               ...(attachmentData.attachmentType && { attachmentType: attachmentData.attachmentType }),
             } as any);
-            this._byteStore.remove(attachmentData.id);
+            this._byteStore.release(attachmentData.id);
           }
         }
 
@@ -313,51 +317,6 @@ class SentryBridge {
       data: bytes,
       contentType,
     });
-  }
-
-  // *** Native-JS interop helpers
-
-  public storeBytes(bytes: Uint8Array): number {
-    return this._byteStore.add(bytes);
-  }
-
-  public mergeJsonIntoObject(obj: object, jsonString: string): void {
-    const source = safeParseJSON(jsonString, {});
-    Object.assign(obj, source);
-  }
-
-  public pushJsonObjectToArray(arr: any[], jsonString: string): void {
-    const item = safeParseJSON(jsonString, null);
-    if (item !== null) {
-      arr.push(item);
-    }
-  }
-
-  public objectToJson(obj: object): string {
-    try {
-      return JSON.stringify(obj);
-    } catch (error) {
-      console.error("Failed to stringify object:", error);
-      return "{}";
-    }
-  }
-
-  // Gets double property as string to preserve precision across the JS/C++ boundary.
-  // NOTE: Numbers lose precision when crossing JS boundary in current Godot bindings.
-  public getDoubleAsString(obj: object, prop: string): string {
-    const value = (obj as Record<string, unknown>)[prop];
-    if (typeof value === "number") {
-      return value.toString();
-    }
-    return "";
-  }
-
-  // Sets double property from string to preserve precision across the JS/C++ boundary.
-  public setDoubleFromString(obj: object, prop: string, valueStr: string): void {
-    const value = parseFloat(valueStr);
-    if (!isNaN(value)) {
-      (obj as Record<string, unknown>)[prop] = value;
-    }
   }
 }
 

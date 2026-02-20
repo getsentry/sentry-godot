@@ -9,7 +9,7 @@ namespace em_js {
 
 // clang-format off
 
-// Create a new JavaScript object and register it with Sentry bridge, returning
+// Create a new JavaScript object and store it in Sentry bridge, returning
 // non-zero object ID or 0 on error.
 // NOTE: We don't expect UTF8 names in our classes.
 int32_t create_object(const char *p_name) {
@@ -21,7 +21,7 @@ int32_t create_object(const char *p_name) {
 				return 0;
 			}
 			var obj = new ctor();
-			return window.SentryBridge.registerObject(obj);
+			return window.SentryBridge.storeObject(obj);
 		} catch (e) {
 			console.error("Sentry: JS interop failure:", e);
 			return 0;
@@ -48,7 +48,7 @@ int get_interface(const char *p_name) {
 			if (obj === null || obj === undefined) {
 				return 0;
 			}
-			return window.SentryBridge.registerObject(obj);
+			return window.SentryBridge.storeObject(obj);
 		} catch (e) {
 			console.error("Sentry: JS interop: Failed to get interface:", e);
 			return 0;
@@ -72,12 +72,12 @@ int create_callback(uintptr_t p_func_ptr) {
 				}
 				const idsPtr = _malloc(argc * 4);
 				for (let i = 0; i < argc; i++) {
-					HEAP32[(idsPtr >> 2) + i] = window.SentryBridge.registerObject(arguments[i]);
+					HEAP32[(idsPtr >> 2) + i] = window.SentryBridge.storeObject(arguments[i]);
 				}
 				wasmFunc(idsPtr, argc);
 				_free(idsPtr);
 			};
-			return window.SentryBridge.registerObject(callback);
+			return window.SentryBridge.storeObject(callback);
 		} catch (e) {
 			console.error("Sentry: JS interop: Failed to create WASM callback:", e);
 			return 0;
@@ -120,7 +120,7 @@ int32_t object_get(int32_t p_object_id, const char* p_property, MarshalData *r_r
 				return 4;
 			}
 			if (type === "object" || type === "function") {
-				HEAP64[retPtr >> 3] = BigInt(bridge.registerObject(result));
+				HEAP64[retPtr >> 3] = BigInt(bridge.storeObject(result));
 				return 5;
 			}
 			return 0;
@@ -209,7 +209,7 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 				return 4;
 			}
 			if (type === "object" || type === "function") {
-				HEAP64[retPtr >> 3] = BigInt(bridge.registerObject(result));
+				HEAP64[retPtr >> 3] = BigInt(bridge.storeObject(result));
 				return 5;
 			}
 			return 0;
@@ -220,7 +220,7 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 	}, p_object_id, p_method, p_args, p_types, p_len, r_ret);
 }
 
-int object_delete_property(int p_object_id, const char *p_property) {
+int object_delete_property(int32_t p_object_id, const char *p_property) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bridge = window.SentryBridge;
@@ -238,7 +238,7 @@ int object_delete_property(int p_object_id, const char *p_property) {
 	}, p_object_id, p_property);
 }
 
-int object_merge_properties_from_json(int p_object_id, const char *p_json) {
+int object_merge_properties_from_json(int32_t p_object_id, const char *p_json) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bridge = window.SentryBridge;
@@ -256,7 +256,7 @@ int object_merge_properties_from_json(int p_object_id, const char *p_json) {
 	}, p_object_id, p_json);
 }
 
-int object_push_element_from_json(int p_object_id, const char *p_json) {
+int object_push_element_from_json(int32_t p_object_id, const char *p_json) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bridge = window.SentryBridge;
