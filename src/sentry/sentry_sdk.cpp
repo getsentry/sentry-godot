@@ -146,7 +146,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	p_configuration_callback.call(options);
 
 	// Add built-in attachments.
-	for (const Ref<SentryAttachment> &att : _create_builtin_attachments()) {
+	for (const Ref<SentryAttachment> &att : _get_default_attachments()) {
 		options->add_file_attachment(att);
 	}
 
@@ -261,7 +261,7 @@ void SentrySDK::_init_contexts() {
 	internal_sdk->set_context("environment", sentry::contexts::make_environment_context());
 }
 
-Vector<Ref<SentryAttachment>> SentrySDK::_create_builtin_attachments() {
+Vector<Ref<SentryAttachment>> SentrySDK::_get_default_attachments() {
 	Vector<Ref<SentryAttachment>> attachments;
 
 	// Attach LOG file.
