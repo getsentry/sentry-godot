@@ -102,7 +102,7 @@ int32_t object_get(int32_t p_object_id, const char* p_property, MarshalData *r_r
 			const retPtr = $2;
 			const type = typeof (result);
 			if (type === "boolean") {
-				HEAP64[retPtr >> 3] = BigInt(result ? 1 : 0);
+				HEAP8[retPtr] = result ? 1 : 0;
 				return 1;
 			}
 			if (type === "number") {
@@ -115,16 +115,15 @@ int32_t object_get(int32_t p_object_id, const char* p_property, MarshalData *r_r
 				}
 			}
 			if (type === "string") {
-				const ptr = stringToNewUTF8(result);
-				HEAP64[retPtr >> 3] = BigInt(ptr);
+				HEAPU32[retPtr >> 2] = stringToNewUTF8(result);
 				return 4;
 			}
 			if (result instanceof Uint8Array) {
-				HEAP64[retPtr >> 3] = BigInt(bridge.storeBytes(result));
+				HEAP32[retPtr >> 2] = bridge.storeBytes(result);
 				return 6;
 			}
 			if (type === "object" || type === "function") {
-				HEAP64[retPtr >> 3] = BigInt(bridge.storeObject(result));
+				HEAP32[retPtr >> 2] = bridge.storeObject(result);
 				return 5;
 			}
 			return 0;
@@ -145,19 +144,19 @@ int32_t object_set(int32_t p_object_id, const char *p_property, const void *p_va
 			if (obj === null || obj === undefined) {
 				// Release stored bytes to prevent leaking in the byte store.
 				if (type === 6) {
-					bridge.releaseBytes(Number(HEAP64[(valuePtr >> 3)]));
+					bridge.releaseBytes(HEAP32[valuePtr >> 2]);
 				}
 				return -1;
 			}
 			const prop = UTF8ToString($1);
 			switch (type) {
 				case 0: obj[prop] = null; break;
-				case 1: obj[prop] = Boolean(HEAP64[(valuePtr >> 3)]); break;
+				case 1: obj[prop] = Boolean(HEAP8[valuePtr]); break;
 				case 2: obj[prop] = Number(HEAP64[(valuePtr >> 3)]); break;
 				case 3: obj[prop] = HEAPF64[(valuePtr >> 3)]; break;
-				case 4: obj[prop] = UTF8ToString(Number(HEAP64[(valuePtr >> 3)])); break;
-				case 5: obj[prop] = bridge.getObject(Number(HEAP64[(valuePtr >> 3)])); break;
-				case 6: obj[prop] = bridge.takeBytes(Number(HEAP64[(valuePtr >> 3)])); break;
+				case 4: obj[prop] = UTF8ToString(HEAPU32[valuePtr >> 2]); break;
+				case 5: obj[prop] = bridge.getObject(HEAP32[valuePtr >> 2]); break;
+				case 6: obj[prop] = bridge.takeBytes(HEAP32[valuePtr >> 2]); break;
 			}
 		} catch (e) {
 			console.error("Sentry JS interop: object_set() failed:", e);
@@ -181,7 +180,7 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 				// Release any stored bytes to prevent leaking in the byte store.
 				for (let i = 0; i < len; i++) {
 					if (HEAP32[(typesPtr >> 2) + i] === 6) {
-						bridge.releaseBytes(Number(HEAP64[(valuesPtr >> 3) + i]));
+						bridge.releaseBytes(HEAP32[(valuesPtr + i * 8) >> 2]);
 					}
 				}
 				return -1;
@@ -190,14 +189,15 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 			const args = [];
 			for (let i = 0; i < len; i++) {
 				const t = HEAP32[(typesPtr >> 2) + i];
+				const off = valuesPtr + i * 8;
 				switch (t) {
 					case 0: args.push(null); break;
-					case 1: args.push(Boolean(HEAP64[(valuesPtr >> 3) + i])); break;
-					case 2: args.push(Number(HEAP64[(valuesPtr >> 3) + i])); break;
-					case 3: args.push(HEAPF64[(valuesPtr >> 3) + i]); break;
-					case 4: args.push(UTF8ToString(Number(HEAP64[(valuesPtr >> 3) + i]))); break;
-					case 5: args.push(bridge.getObject(Number(HEAP64[(valuesPtr >> 3) + i]))); break;
-					case 6: args.push(bridge.takeBytes(Number(HEAP64[(valuesPtr >> 3) + i]))); break;
+					case 1: args.push(Boolean(HEAP8[off])); break;
+					case 2: args.push(Number(HEAP64[off >> 3])); break;
+					case 3: args.push(HEAPF64[off >> 3]); break;
+					case 4: args.push(UTF8ToString(HEAPU32[off >> 2])); break;
+					case 5: args.push(bridge.getObject(HEAP32[off >> 2])); break;
+					case 6: args.push(bridge.takeBytes(HEAP32[off >> 2])); break;
 				}
 			}
 			const result = obj[method].apply(obj, args);
@@ -207,7 +207,7 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 			const retPtr = $5;
 			const type = typeof (result);
 			if (type === "boolean") {
-				HEAP64[retPtr >> 3] = BigInt(result ? 1 : 0);
+				HEAP8[retPtr] = result ? 1 : 0;
 				return 1;
 			}
 			if (type === "number") {
@@ -220,16 +220,15 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 				}
 			}
 			if (type === "string") {
-				const ptr = stringToNewUTF8(result);
-				HEAP64[retPtr >> 3] = BigInt(ptr);
+				HEAPU32[retPtr >> 2] = stringToNewUTF8(result);
 				return 4;
 			}
 			if (result instanceof Uint8Array) {
-				HEAP64[retPtr >> 3] = BigInt(bridge.storeBytes(result));
+				HEAP32[retPtr >> 2] = bridge.storeBytes(result);
 				return 6;
 			}
 			if (type === "object" || type === "function") {
-				HEAP64[retPtr >> 3] = BigInt(bridge.storeObject(result));
+				HEAP32[retPtr >> 2] = bridge.storeObject(result);
 				return 5;
 			}
 			return 0;
@@ -312,7 +311,7 @@ int object_to_json(int32_t p_object_id, MarshalData *r_ret) {
 			}
 			const jsonPtr = stringToNewUTF8(json);
 			const retPtr = $1;
-			HEAP64[retPtr >> 3] = BigInt(jsonPtr);
+			HEAPU32[retPtr >> 2] = jsonPtr;
 			return 0;
 		} catch (e) {
 			console.error("Sentry JS interop: object_to_json() failed:", e);
@@ -349,7 +348,7 @@ PackedByteArray take_bytes(int32_t p_id) {
 			const ptr = _malloc(size);
 			HEAPU8.set(bytes, ptr);
 			const retPtr = $1;
-			HEAP64[retPtr >> 3] = BigInt(ptr);
+			HEAPU32[retPtr >> 2] = ptr;
 			return size;
 		} catch (e) {
 			console.error("Sentry JS interop: Failed to retrieve bytes:", e);
