@@ -575,7 +575,7 @@ void JSObject::push_element_from_json(const char *p_json) {
 }
 
 String JSObject::to_json() const {
-	em_js::MarshalData jsonData;
+	em_js::MarshalData jsonData = {};
 	int result = em_js::object_to_json(id, &jsonData);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: Failed converting object to JSON.");
