@@ -190,8 +190,7 @@ class SentryBridge {
   }
 
   public close(): void {
-    console.log("Received close request in bridge layer");
-    Sentry.close(2000);
+    Sentry.close();
     this._byteStore.clear();
   }
 
