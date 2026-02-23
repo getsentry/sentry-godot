@@ -53,6 +53,9 @@ public:
 
 	String get_content_type_or_default() const { return content_type.is_empty() ? "application/octet-stream" : content_type; }
 
+	// Returns the absolute OS path, globalizing Godot virtual paths (e.g. user://, res://) as needed.
+	String get_globalized_path() const;
+
 #ifdef SDK_NATIVE
 	sentry_attachment_t *get_native_attachment() const { return native_attachment; }
 	void set_native_attachment(sentry_attachment_t *p_native_attachment) { native_attachment = p_native_attachment; }

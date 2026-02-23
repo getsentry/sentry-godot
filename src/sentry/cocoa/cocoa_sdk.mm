@@ -208,7 +208,7 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 	if (!p_attachment->get_path().is_empty()) {
 		ERR_FAIL_NULL(ProjectSettings::get_singleton());
-		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
+		String absolute_path = p_attachment->get_globalized_path();
 
 		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
 
@@ -266,7 +266,7 @@ void CocoaSDK::init() {
 			for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
 				sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
 				// TODO: Can't specify attachmentType!
-				objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(att->get_path())
+				objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(att->get_globalized_path())
 																					   filename:string_to_objc_or_nil_if_empty(att->get_filename())
 																					contentType:string_to_objc_or_nil_if_empty(att->get_content_type())];
 				ERR_CONTINUE(objc_att == nil);

@@ -217,7 +217,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 				p_attachment->get_content_type(),
 				String());
 	} else {
-		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
+		String absolute_path = p_attachment->get_globalized_path();
 		sentry::logging::print_debug("attaching file: ", absolute_path);
 		android_plugin->call(ANDROID_SN(addFileAttachment),
 				absolute_path,
@@ -233,7 +233,7 @@ void AndroidSDK::init() {
 
 	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
 		android_plugin->call(ANDROID_SN(addFileAttachment),
-				att->get_path(),
+				att->get_globalized_path(),
 				String(), // filename
 				att->get_content_type(),
 				att->get_attachment_type());

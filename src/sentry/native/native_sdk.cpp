@@ -321,7 +321,7 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	sentry_attachment_t *native_attachment = nullptr;
 
 	if (!p_attachment->get_path().is_empty()) {
-		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
+		String absolute_path = p_attachment->get_globalized_path();
 		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
 
 		native_attachment = sentry_attach_file(absolute_path.utf8());
@@ -403,11 +403,12 @@ void NativeSDK::init() {
 	}
 
 	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
-		sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
-		if (att->get_path().ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
-			sentry_options_add_view_hierarchy(options, att->get_path().utf8());
+		String absolute_path = att->get_globalized_path();
+		sentry::logging::print_debug("adding attachment \"", absolute_path, "\"");
+		if (absolute_path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
+			sentry_options_add_view_hierarchy(options, absolute_path.utf8());
 		} else {
-			sentry_options_add_attachment(options, att->get_path().utf8());
+			sentry_options_add_attachment(options, absolute_path.utf8());
 		}
 	}
 

@@ -2,6 +2,7 @@
 
 #include "sentry/util/simple_bind.h"
 
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
 namespace sentry {
@@ -21,6 +22,13 @@ Ref<SentryAttachment> SentryAttachment::create_with_bytes(const PackedByteArray 
 	attachment->bytes = p_bytes;
 	attachment->filename = p_filename;
 	return attachment;
+}
+
+String SentryAttachment::get_globalized_path() const {
+	if (path.begins_with("res://") || path.begins_with("user://")) {
+		return ProjectSettings::get_singleton()->globalize_path(path);
+	}
+	return path;
 }
 
 void SentryAttachment::_bind_methods() {
