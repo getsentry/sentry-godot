@@ -237,9 +237,9 @@ public:
 
 	// Set a string property on a JavaScript object, or remove it if the provided value is empty.
 	void set_or_remove_string_property(const char *p_property, const char *p_value) {
-		if (p_value == nullptr)
+		if (p_value == nullptr || p_value[0] == '\0') {
 			delete_property(p_property);
-		else {
+		} else {
 			em_js::MarshalData val = {};
 			val.c = p_value;
 			_set_impl(p_property, &val, JSValueType::STRING);
