@@ -214,7 +214,7 @@ try {
 		});
 
 		runTest("close()", () => {
-			bridge.close();
+			bridge.close(2000);
 		});
 
 		// Print summary
