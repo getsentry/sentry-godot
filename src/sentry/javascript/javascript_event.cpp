@@ -167,7 +167,7 @@ void JavaScriptEvent::set_tag(const String &p_key, const String &p_value) {
 
 void JavaScriptEvent::remove_tag(const String &p_key) {
 	ERR_FAIL_COND(!js_obj);
-	JSObjectPtr tags_obj = js_obj->get_or_create_object_property("tags");
+	JSObjectPtr tags_obj = js_obj->get("tags").as_object();
 	if (tags_obj) {
 		tags_obj->delete_property(p_key.utf8());
 	}
@@ -175,7 +175,7 @@ void JavaScriptEvent::remove_tag(const String &p_key) {
 
 String JavaScriptEvent::get_tag(const String &p_key) {
 	ERR_FAIL_COND_V(!js_obj, String());
-	JSObjectPtr tags_obj = js_obj->get_or_create_object_property("tags");
+	JSObjectPtr tags_obj = js_obj->get("tags").as_object();
 	if (tags_obj) {
 		return tags_obj->get(p_key.utf8()).as_string();
 	}
