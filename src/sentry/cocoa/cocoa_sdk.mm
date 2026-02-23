@@ -267,8 +267,8 @@ void CocoaSDK::init() {
 				sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
 				// TODO: Can't specify attachmentType!
 				objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(att->get_path())
-																					   filename:string_to_objc(att->get_filename())
-																					contentType:string_to_objc(att->get_content_type())];
+																					   filename:string_to_objc_or_nil_if_empty(att->get_filename())
+																					contentType:string_to_objc_or_nil_if_empty(att->get_content_type())];
 				ERR_CONTINUE(objc_att == nil);
 				[scope addAttachment:objc_att];
 			}
