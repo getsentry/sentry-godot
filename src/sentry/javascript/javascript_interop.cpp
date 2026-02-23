@@ -306,6 +306,59 @@ int object_to_json(int32_t p_object_id, MarshalData *r_ret) {
 
 namespace sentry::javascript {
 
+// *** JSValue
+
+Variant JSValue::as_variant() const {
+	switch (type) {
+		case JSValueType::NIL:
+			return Variant();
+		case JSValueType::BOOL:
+			return Variant(as_bool());
+		case JSValueType::INT:
+			return Variant(as_int());
+		case JSValueType::DOUBLE:
+			return Variant(as_double());
+		case JSValueType::STRING: {
+			return Variant(as_string());
+		}
+		case JSValueType::OBJECT:
+			ERR_PRINT("Not supported - JSObject cannot be stored in Variant.");
+			return Variant();
+		case JSValueType::BYTES:
+			// TODO - implement
+			return Variant();
+		default:
+			return Variant();
+	}
+}
+
+void JSValue::operator=(const JSValue &p_other) {
+	if (unlikely(this == &p_other)) {
+		return;
+	}
+	_destroy();
+	type = p_other.type;
+	switch (type) {
+		case JSValueType::NIL:
+		case JSValueType::BOOL:
+		case JSValueType::INT:
+		case JSValueType::DOUBLE: {
+			data = p_other.data;
+		} break;
+		case JSValueType::STRING: {
+			memnew_placement(data.mem, String(*reinterpret_cast<const String *>(p_other.data.mem)));
+		} break;
+		case JSValueType::OBJECT: {
+			new (data.mem) JSObjectPtr(*reinterpret_cast<const JSObjectPtr *>(p_other.data.mem));
+		} break;
+		case JSValueType::BYTES: {
+			//TODO: implement
+		} break;
+	}
+}
+
+// *** JSObject
+
 JSObjectPtr JSObject::create(const char *p_type_name) {
 	int32_t id = em_js::create_object(p_type_name);
 	if (id == 0) {
@@ -368,31 +421,6 @@ JSValue JSObject::get(const char *p_property) const {
 			return JSValue();
 		default:
 			return JSValue();
-	}
-}
-
-Variant JSObject::get_as_variant(const char *p_property) const {
-	JSValue val = get(p_property);
-	switch (val.get_type()) {
-		case JSValueType::NIL:
-			return Variant();
-		case JSValueType::BOOL:
-			return Variant(val.as_bool());
-		case JSValueType::INT:
-			return Variant(val.as_int());
-		case JSValueType::DOUBLE:
-			return Variant(val.as_double());
-		case JSValueType::STRING: {
-			return Variant(val.as_string());
-		}
-		case JSValueType::OBJECT:
-			// TODO: Convert to dictionary
-			return Variant();
-		case JSValueType::BYTES:
-			// TODO: implement
-			return Variant();
-		default:
-			return Variant();
 	}
 }
 

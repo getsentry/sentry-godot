@@ -7,6 +7,7 @@ using namespace godot;
 
 namespace em_js {
 
+// Used to pass data across WASM/JS boundary
 union MarshalData {
 	bool b;
 	int64_t i;
@@ -36,6 +37,7 @@ using JSObjectPtr = std::shared_ptr<JSObject>;
 class JSValue {
 private:
 	JSValueType type;
+
 	union Data {
 		int64_t i;
 		bool b;
@@ -95,55 +97,35 @@ public:
 		return nullptr;
 	}
 
-	void operator=(const JSValue &p_value) {
-		if (unlikely(this == &p_value)) {
+	Variant as_variant() const;
+
+	void operator=(const JSValue &p_other);
+
+	void operator=(JSValue &&p_other) {
+		if (unlikely(this == &p_other)) {
 			return;
 		}
 		_destroy();
-		type = p_value.type;
+		data = p_other.data;
+		type = p_other.type;
+		// Since we're moving data from p_other, we need to ensure that p_value's data is not destroyed
+		p_other.type = JSValueType::NIL;
+	}
+
+	JSValue(const JSValue &p_other) :
+			type(p_other.type) {
 		switch (type) {
 			case JSValueType::NIL:
 			case JSValueType::BOOL:
 			case JSValueType::INT:
 			case JSValueType::DOUBLE: {
-				data = p_value.data;
+				data = p_other.data;
 			} break;
 			case JSValueType::STRING: {
-				memnew_placement(data.mem, String(*reinterpret_cast<const String *>(p_value.data.mem)));
+				memnew_placement(data.mem, String(*reinterpret_cast<const String *>(p_other.data.mem)));
 			} break;
 			case JSValueType::OBJECT: {
-				new (data.mem) JSObjectPtr(*reinterpret_cast<const JSObjectPtr *>(p_value.data.mem));
-			} break;
-			case JSValueType::BYTES: {
-				//TODO: implement
-			} break;
-		}
-	}
-
-	void operator=(JSValue &&p_value) {
-		if (unlikely(this == &p_value)) {
-			return;
-		}
-		_destroy();
-		type = p_value.type;
-		data = p_value.data;
-		p_value.type = JSValueType::NIL;
-	}
-
-	JSValue(const JSValue &p_value) :
-			type(p_value.type) {
-		switch (type) {
-			case JSValueType::NIL:
-			case JSValueType::BOOL:
-			case JSValueType::INT:
-			case JSValueType::DOUBLE: {
-				data = p_value.data;
-			} break;
-			case JSValueType::STRING: {
-				memnew_placement(data.mem, String(*reinterpret_cast<const String *>(p_value.data.mem)));
-			} break;
-			case JSValueType::OBJECT: {
-				new (data.mem) JSObjectPtr(*reinterpret_cast<const JSObjectPtr *>(p_value.data.mem));
+				new (data.mem) JSObjectPtr(*reinterpret_cast<const JSObjectPtr *>(p_other.data.mem));
 			} break;
 			case JSValueType::BYTES: {
 				// TODO: implement
@@ -151,9 +133,9 @@ public:
 		}
 	}
 
-	JSValue(JSValue &&p_value) :
-			type(p_value.type), data(p_value.data) {
-		p_value.type = JSValueType::NIL;
+	JSValue(JSValue &&p_other) :
+			type(p_other.type), data(p_other.data) {
+		p_other.type = JSValueType::NIL;
 	}
 
 	JSValue() :
@@ -180,6 +162,8 @@ public:
 // WASM callback signature: receives an array of JS object IDs and the count.
 using WasmCallbackFunc = void (*)(int *p_ids, int p_len);
 
+// RAII handle to a JavaScript object, identified by an integer ID.
+// Provides property access and method calls across the WASM/JS boundary.
 class JSObject {
 private:
 	int32_t id;
@@ -187,8 +171,7 @@ private:
 	JSValue _call_impl(const char *p_method, const int *p_types, const em_js::MarshalData *p_values, int p_len);
 	void _set_impl(const char *p_property, const em_js::MarshalData *p_value, int p_type);
 
-	// Store overloads: pack a single argument directly into buffers.
-	// See call() below.
+	// Overloads that marshal a C++ argument into a type tag + MarshalData pair for call() and set().
 	static void _store(int &type, em_js::MarshalData &jval, bool v) {
 		type = JSValueType::BOOL;
 		jval.b = v;
@@ -213,11 +196,6 @@ private:
 		type = JSValueType::STRING;
 		jval.c = v;
 	}
-	// Should catch String.utf8()/CharString arguments and keep alive for the duration of the call
-	static void _store(int &type, em_js::MarshalData &jval, const CharString &v) {
-		type = JSValueType::STRING;
-		jval.c = v.get_data();
-	}
 	static void _store(int &type, em_js::MarshalData &jval, const JSObjectPtr &v) {
 		if (v) {
 			type = JSValueType::OBJECT;
@@ -239,8 +217,6 @@ public:
 	_ALWAYS_INLINE_ int32_t get_id() const { return id; };
 
 	JSValue get(const char *p_property) const;
-
-	Variant get_as_variant(const char *p_property) const;
 
 	JSObjectPtr get_or_create_object_property(const char *p_property);
 	JSObjectPtr get_or_create_array_property(const char *p_property);
