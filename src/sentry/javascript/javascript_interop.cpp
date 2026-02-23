@@ -358,6 +358,42 @@ PackedByteArray take_bytes(int32_t p_id) {
 
 } // namespace em_js
 
+namespace {
+
+using namespace sentry::javascript;
+
+JSValue _unmarshal_return_value(JSValueType p_type, em_js::MarshalData &p_data) {
+	switch (p_type) {
+		case JSValueType::NIL:
+			return JSValue();
+		case JSValueType::BOOL:
+			return JSValue(p_data.b);
+		case JSValueType::INT:
+			return JSValue(p_data.i);
+		case JSValueType::DOUBLE:
+			return JSValue(p_data.d);
+		case JSValueType::STRING: {
+			String s = String::utf8(p_data.c);
+			free((void *)p_data.c);
+			return JSValue(s);
+		}
+		case JSValueType::OBJECT:
+			if (p_data.id == 0) {
+				return JSValue();
+			}
+			return JSValue(JSObjectPtr(new JSObject(p_data.id)));
+		case JSValueType::BYTES:
+			if (p_data.id == 0) {
+				return JSValue(PackedByteArray());
+			}
+			return JSValue(em_js::take_bytes(p_data.id));
+		default:
+			return JSValue();
+	}
+}
+
+} // unnamed namespace
+
 namespace sentry::javascript {
 
 // *** JSValue
@@ -469,35 +505,7 @@ JSValue JSObject::get(const char *p_property) const {
 		sentry::logging::print_error("JS interop: get() failed for \"", p_property, "\" property.");
 		return JSValue();
 	}
-	JSValueType t = (JSValueType)result;
-
-	switch (t) {
-		case JSValueType::NIL:
-			return JSValue();
-		case JSValueType::BOOL:
-			return JSValue(rv.b);
-		case JSValueType::INT:
-			return JSValue(rv.i);
-		case JSValueType::DOUBLE:
-			return JSValue(rv.d);
-		case JSValueType::STRING: {
-			String s = String::utf8(rv.c);
-			free((void *)rv.c);
-			return JSValue(s);
-		}
-		case JSValueType::OBJECT:
-			if (rv.id == 0) {
-				return JSValue();
-			}
-			return JSValue(JSObjectPtr(new JSObject(rv.id)));
-		case JSValueType::BYTES:
-			if (rv.id == 0) {
-				return JSValue(PackedByteArray());
-			}
-			return JSValue(em_js::take_bytes(rv.id));
-		default:
-			return JSValue();
-	}
+	return _unmarshal_return_value((JSValueType)result, rv);
 }
 
 JSObjectPtr JSObject::get_or_create_object_property(const char *p_property) {
@@ -532,35 +540,7 @@ JSValue JSObject::_call_impl(const char *p_method, const int *p_types, const em_
 		sentry::logging::print_error("JS interop failed calling \"", p_method, "\" method.");
 		return JSValue();
 	}
-	JSValueType t = (JSValueType)result;
-
-	switch (t) {
-		case JSValueType::NIL:
-			return JSValue();
-		case JSValueType::BOOL:
-			return JSValue(rv.b);
-		case JSValueType::INT:
-			return JSValue(rv.i);
-		case JSValueType::DOUBLE:
-			return JSValue(rv.d);
-		case JSValueType::STRING: {
-			String s = String::utf8(rv.c);
-			free((void *)rv.c);
-			return JSValue(s);
-		}
-		case JSValueType::OBJECT:
-			if (rv.id == 0) {
-				return JSValue();
-			}
-			return JSValue(JSObjectPtr(new JSObject(rv.id)));
-		case JSValueType::BYTES:
-			if (rv.id == 0) {
-				return JSValue(PackedByteArray());
-			}
-			return JSValue(em_js::take_bytes(rv.id));
-		default:
-			return JSValue();
-	}
+	return _unmarshal_return_value((JSValueType)result, rv);
 }
 
 void JSObject::delete_property(const char *p_property) {
