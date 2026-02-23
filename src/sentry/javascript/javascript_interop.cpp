@@ -594,6 +594,8 @@ JSObject::~JSObject() {
 }
 
 JSObjectPtr js_bridge() {
+	// Safe to cache: the bridge script is injected at HTML <head>, so SentryBridge
+	// is always registered on window before any WASM/C++ code executes.
 	static JSObjectPtr bridge = JSObject::get_interface("SentryBridge");
 	return bridge;
 }
