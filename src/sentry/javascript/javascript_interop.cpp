@@ -4,7 +4,7 @@
 
 #include <emscripten.h>
 
-// JS interop functions - always run on the main browser thread.
+// Defines JS interop functions inside C++ unit - always run on the main browser thread.
 namespace em_js {
 
 // clang-format off
@@ -323,7 +323,7 @@ int32_t store_bytes(const PackedByteArray &p_bytes) {
 			console.error("Sentry JS interop: Failed to store bytes:", e);
 			return 0;
 		}
-	}, p_bytes.ptr(), p_bytes.size());
+	}, p_bytes.ptr(), (int32_t)p_bytes.size());
 }
 
 PackedByteArray take_bytes(int32_t p_id) {

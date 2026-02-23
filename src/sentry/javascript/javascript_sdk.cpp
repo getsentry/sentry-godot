@@ -16,28 +16,6 @@
 
 #include <emscripten.h>
 
-// Defines JS functions inline inside C++ unit
-namespace em_js {
-
-// Emscripten JS function to add bytes attachment directly from WASM memory.
-// This avoids the overhead of base64 encoding/decoding.
-EM_JS(void, sentry_add_bytes_attachment, (const char *filename, const uint8_t *data, int size, const char *content_type), {
-	try {
-		var filenameStr = UTF8ToString(filename);
-		var contentTypeStr = UTF8ToString(content_type);
-
-		// Copy bytes from WASM memory into a new Uint8Array
-		var bytes = new Uint8Array(size);
-		bytes.set(HEAPU8.subarray(data, data + size));
-
-		window.SentryBridge.addBytesAttachment(filenameStr, bytes, contentTypeStr);
-	} catch (e) {
-		console.error("Failed to add bytes attachment:", e);
-	}
-});
-
-} //namespace em_js
-
 namespace sentry::javascript {
 
 // *** WASM callbacks
@@ -250,10 +228,9 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		ERR_FAIL_COND_MSG(p_attachment->get_bytes().is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
 		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add attachment without filename.");
 
-		em_js::sentry_add_bytes_attachment(
+		js_bridge()->call("addBytesAttachment",
 				p_attachment->get_filename().utf8(),
-				p_attachment->get_bytes().ptr(),
-				p_attachment->get_bytes().size(),
+				p_attachment->get_bytes(),
 				p_attachment->get_content_type_or_default().utf8());
 	}
 }
