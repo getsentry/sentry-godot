@@ -67,11 +67,9 @@ try {
 			"addBreadcrumb",
 			"addBytesAttachment",
 			"storeBytes",
-			"mergeJsonIntoObject",
-			"pushJsonObjectToArray",
-			"objectToJson",
-			"getDoubleAsString",
-			"setDoubleFromString",
+			"storeObject",
+			"getObject",
+			"releaseObject",
 		];
 
 		console.log("📋 Method availability check:");
@@ -190,45 +188,15 @@ try {
 			bridge.addBytesAttachment("test.txt", new Uint8Array([ 104, 101, 108, 108, 111 ]), "text/plain");
 		});
 
-		runTest("mergeJsonIntoObject()", () => {
-			const target = { existing : "value" };
-			bridge.mergeJsonIntoObject(target, '{"new": "property"}');
-			assertEqual(target.existing, "value", "existing property should be preserved");
-			assertEqual(target.new, "property", "new property should be merged");
-		});
-
-		runTest("pushJsonObjectToArray()", () => {
-			const arr = [];
-			bridge.pushJsonObjectToArray(arr, '{"item": "value"}');
-			assertEqual(arr.length, 1, "array should have one element");
-			assertEqual(arr[0].item, "value", "pushed object should have correct value");
-		});
-
-		runTest("objectToJson()", () => {
-			const result = bridge.objectToJson({ message : "test", level : "info" });
-			assertEqual(typeof result, "string", "objectToJson should return a string");
-			const parsed = JSON.parse(result);
-			assertEqual(parsed.message, "test", "JSON should contain message");
-			assertEqual(parsed.level, "info", "JSON should contain level");
-		});
-
-		runTest("objectToJson() with empty object", () => {
-			const result = bridge.objectToJson({});
-			assertEqual(result, "{}", "empty object should serialize to '{}'");
-		});
-
-		runTest("getDoubleAsString()", () => {
-			const obj = { timestamp : 1234567890.123456 };
-			const result = bridge.getDoubleAsString(obj, "timestamp");
-			assertEqual(typeof result, "string", "should return a string");
-			assertEqual(result, "1234567890.123456", "should preserve precision");
-		});
-
-		runTest("setDoubleFromString()", () => {
-			const obj = {};
-			bridge.setDoubleFromString(obj, "timestamp", "1234567890.123456");
-			assertEqual(typeof obj.timestamp, "number", "should set a number property");
-			assertEqual(obj.timestamp, 1234567890.123456, "should set correct value");
+		runTest("storeObject() / getObject() / releaseObject()", () => {
+			const obj = { key : "value" };
+			const id = bridge.storeObject(obj);
+			assertEqual(typeof id, "number", "storeObject should return a number");
+			assert(id > 0, "storeObject ID should be positive");
+			const retrieved = bridge.getObject(id);
+			assertEqual(retrieved, obj, "getObject should return the same object");
+			bridge.releaseObject(id);
+			assertEqual(bridge.getObject(id), undefined, "getObject should return undefined after release");
 		});
 
 		runTest("close()", () => {
