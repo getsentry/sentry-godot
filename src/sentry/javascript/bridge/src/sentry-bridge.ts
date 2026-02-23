@@ -2,61 +2,33 @@ import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
 import { wasmIntegration } from "@sentry/wasm";
 
-// Stores byte buffers passed from C++ layer with ID-based retrieval.
-// Uses uint32_t range (0 to 4294967295) to stay safe within JavaScript's integer precision.
-class ByteStore {
+// ID-based store for WASM/JS interop. Assigns auto-incrementing uint32 IDs (0 is reserved).
+class IdStore<T> {
   private _lastId = 0;
-  private _buffers = new Map<number, Uint8Array>();
+  private _items = new Map<number, T>();
 
-  public get(id: number): Uint8Array | undefined {
-    return this._buffers.get(id);
-  }
-
-  public store(bytes: Uint8Array): number {
-    // Wrap around within uint32_t range (0 is reserved for error)
+  public store(item: T): number {
     this._lastId = (this._lastId % 0xffffffff) + 1;
-    this._buffers.set(this._lastId, bytes);
+    this._items.set(this._lastId, item);
     return this._lastId;
   }
 
-  public release(id: number): void {
-    this._buffers.delete(id);
+  public get(id: number): T | undefined {
+    return this._items.get(id);
   }
 
-  public size(): number {
-    return this._buffers.size;
+  public release(id: number): void {
+    this._items.delete(id);
   }
 
   public clear(): void {
-    this._buffers.clear();
-  }
-}
-
-// Stores JS objects with ID-based retrieval for C++/WASM interop.
-// Used by JSObject to track JS object references across the WASM boundary.
-class ObjectStore {
-  private _lastId = 0;
-  private _objects = new Map<number, any>();
-
-  public store(obj: any): number {
-    // Wrap around within uint32_t range (0 is reserved for null/error)
-    this._lastId = (this._lastId % 0xffffffff) + 1;
-    this._objects.set(this._lastId, obj);
-    return this._lastId;
-  }
-
-  public get(id: number): any | undefined {
-    return this._objects.get(id);
-  }
-
-  public release(id: number): void {
-    this._objects.delete(id);
+    this._items.clear();
   }
 }
 
 // Stores info about attachments loaded from C++ layer during event processing.
 interface AttachmentData {
-  id: number; // the content is stored in ByteStore and referenced by this id.
+  id: number; // the content is stored in the byte store and referenced by this id.
   filename: string;
   contentType?: string;
   attachmentType?: string;
@@ -82,8 +54,8 @@ function safeParseJSON<T = any>(json: string, fallback: T): T {
 class SentryBridge {
   constructor() {}
 
-  private _byteStore = new ByteStore();
-  private _objectStore = new ObjectStore();
+  private _byteStore = new IdStore<Uint8Array>();
+  private _objectStore = new IdStore<object>();
 
   public storeBytes(bytes: Uint8Array): number {
     return this._byteStore.store(bytes);
@@ -210,7 +182,8 @@ class SentryBridge {
   }
 
   public close(): void {
-    Sentry.close();
+    console.log("Received close request in bridge layer");
+    Sentry.close(2000);
     this._byteStore.clear();
   }
 
