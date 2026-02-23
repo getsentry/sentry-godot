@@ -211,6 +211,7 @@ public:
 		_set_impl(p_property, &val, type);
 	}
 
+	// Set a string property on a JavaScript object, or remove it if the provided value is empty.
 	void set_or_remove_string_property(const char *p_property, const char *p_value) {
 		if (p_value == nullptr)
 			delete_property(p_property);
@@ -237,8 +238,11 @@ public:
 
 	void delete_property(const char *p_property);
 
+	// Parse a JSON string into an object and merge its properties into this JavaScript object.
 	void merge_properties_from_json(const char *p_json);
 
+	// Parse the provided JSON string, reconstruct it as a JavaScript value, and push it onto this object,
+	// assuming this object represents a JavaScript array.
 	void push_element_from_json(const char *p_json);
 
 	String to_json() const;
