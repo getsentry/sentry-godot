@@ -85,7 +85,7 @@ int create_callback(uintptr_t p_func_ptr) {
 	}, p_func_ptr);
 }
 
-// Returns type of return value as int or error as negative number.
+// Gets value of object's property, returning its type code or error as negative number.
 int32_t object_get(int32_t p_object_id, const char* p_property, MarshalData *r_ret) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
@@ -134,6 +134,7 @@ int32_t object_get(int32_t p_object_id, const char* p_property, MarshalData *r_r
 	}, p_object_id, p_property, r_ret);
 }
 
+// Sets value of object's property, returning 0 on success or negative number on error.
 int32_t object_set(int32_t p_object_id, const char *p_property, const void *p_value, const int32_t p_type) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
@@ -166,7 +167,7 @@ int32_t object_set(int32_t p_object_id, const char *p_property, const void *p_va
 	}, p_object_id, p_property, p_value, p_type);
 }
 
-// Returns type of return value as int or error as negative number.
+// Calls object's method, returning RV's type code or negative number on error.
 int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_args,
 		const void *p_types, int p_len, MarshalData *r_ret) {
 	return MAIN_THREAD_EM_ASM_INT({
@@ -239,6 +240,7 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 	}, p_object_id, p_method, p_args, p_types, p_len, r_ret);
 }
 
+// Deletes a property from an object, returning 0 on success or negative number on error.
 int object_delete_property(int32_t p_object_id, const char *p_property) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
@@ -257,6 +259,7 @@ int object_delete_property(int32_t p_object_id, const char *p_property) {
 	}, p_object_id, p_property);
 }
 
+// Merges properties from a JSON string into an object, returning 0 on success or negative number on error.
 int object_merge_properties_from_json(int32_t p_object_id, const char *p_json) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
@@ -276,6 +279,7 @@ int object_merge_properties_from_json(int32_t p_object_id, const char *p_json) {
 	}, p_object_id, p_json);
 }
 
+// Parses object from JSON string and adds it to an array, returning 0 on success or negative number on error.
 int object_push_element_from_json(int32_t p_object_id, const char *p_json) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
@@ -297,6 +301,7 @@ int object_push_element_from_json(int32_t p_object_id, const char *p_json) {
 	}, p_object_id, p_json);
 }
 
+// Serializes object to JSON string, returning 0 on success or negative number on error.
 int object_to_json(int32_t p_object_id, MarshalData *r_ret) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
@@ -320,7 +325,6 @@ int object_to_json(int32_t p_object_id, MarshalData *r_ret) {
 	}, p_object_id, r_ret);
 }
 
-// Emscripten JS function to push bytes directly to bridge layer and return id for later retrieval or 0 on error.
 int32_t store_bytes(const PackedByteArray &p_bytes) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {

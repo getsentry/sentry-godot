@@ -17,7 +17,10 @@ union MarshalData {
 	int32_t id; // object id or buffer id
 };
 
+// Pass bytes to JS side, returning id.
 int32_t store_bytes(const PackedByteArray &p_bytes);
+
+// Retrieve bytes from the JS side by id.
 PackedByteArray take_bytes(int32_t p_id);
 
 } //namespace em_js
@@ -37,6 +40,7 @@ enum JSValueType {
 class JSObject;
 using JSObjectPtr = std::shared_ptr<JSObject>;
 
+// Get JavaScript bridge interface.
 JSObjectPtr js_bridge();
 
 // Return value from JavaScript functions
