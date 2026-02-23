@@ -199,7 +199,7 @@ private:
 	static void _store(int &type, em_js::MarshalData &jval, const JSObjectPtr &v) {
 		if (v) {
 			type = JSValueType::OBJECT;
-			jval.id = v->get_id();
+			jval.i = v->get_id();
 		} else {
 			type = JSValueType::NIL;
 			jval.i = 0;
@@ -207,7 +207,7 @@ private:
 	}
 	static void _store(int &type, em_js::MarshalData &jval, const PackedByteArray &v) {
 		if (!v.is_empty()) {
-			jval.id = em_js::store_bytes(v);
+			jval.i = em_js::store_bytes(v);
 			type = JSValueType::BYTES;
 		} else {
 			_store(type, jval, nullptr);
