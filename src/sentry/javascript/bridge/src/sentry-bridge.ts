@@ -191,7 +191,6 @@ class SentryBridge {
 
   public close(): void {
     Sentry.close();
-    this._byteStore.clear();
   }
 
   public isEnabled(): boolean {
