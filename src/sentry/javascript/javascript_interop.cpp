@@ -270,6 +270,7 @@ int object_merge_properties_from_json(int32_t p_object_id, const char *p_json) {
 			const parsedJson = JSON.parse(json);
 			Object.assign(obj, parsedJson);
 		} catch (e) {
+			console.error("Sentry JS interop: object_merge_properties_from_json() failed:", e);
 			return -2;
 		}
 		return 0;
