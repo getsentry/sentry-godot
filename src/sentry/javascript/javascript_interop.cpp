@@ -339,7 +339,6 @@ PackedByteArray take_bytes(int32_t p_id) {
 			HEAPU8.set(bytes, ptr);
 			const retPtr = $1;
 			HEAP64[retPtr >> 3] = BigInt(ptr);
-			window.SentryBridge.releaseBytes($0);
 			return size;
 		} catch (e) {
 			console.error("Sentry JS interop: Failed to retrieve bytes:", e);
