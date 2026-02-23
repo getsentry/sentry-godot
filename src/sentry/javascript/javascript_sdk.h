@@ -3,8 +3,6 @@
 #include "sentry/internal_sdk.h"
 #include "sentry/javascript/javascript_interop.h"
 
-#include <godot_cpp/classes/java_script_object.hpp>
-
 using namespace godot;
 
 namespace sentry::javascript {

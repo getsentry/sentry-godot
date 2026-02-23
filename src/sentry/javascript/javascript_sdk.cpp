@@ -3,7 +3,6 @@
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/javascript/javascript_event.h"
 #include "sentry/javascript/javascript_log.h"
-#include "sentry/javascript/javascript_string_names.h"
 #include "sentry/javascript/javascript_util.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
@@ -13,7 +12,6 @@
 #include "gen/sdk_version.gen.h"
 
 #include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/classes/java_script_bridge.hpp>
 #include <godot_cpp/classes/json.hpp>
 
 #include <emscripten.h>
@@ -321,11 +319,9 @@ bool JavaScriptSDK::is_enabled() const {
 }
 
 JavaScriptSDK::JavaScriptSDK() {
-	JavaScriptStringNames::create_singleton();
 }
 
 JavaScriptSDK::~JavaScriptSDK() {
-	JavaScriptStringNames::destroy_singleton();
 }
 
 } //namespace sentry::javascript
