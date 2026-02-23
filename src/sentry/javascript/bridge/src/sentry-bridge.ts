@@ -61,12 +61,10 @@ class SentryBridge {
     return this._byteStore.store(bytes);
   }
 
-  public getBytes(id: number): any {
-    return this._byteStore.get(id);
-  }
-
-  public releaseBytes(id: number): void {
+  public takeBytes(id: number): any {
+    const bytes = this._byteStore.get(id);
     this._byteStore.release(id);
+    return bytes;
   }
 
   public storeObject(obj: any): number {

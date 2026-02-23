@@ -153,7 +153,7 @@ int32_t object_set(int32_t p_object_id, const char *p_property, const void *p_va
 				case 3: obj[prop] = HEAPF64[(valuePtr >> 3)]; break;
 				case 4: obj[prop] = UTF8ToString(Number(HEAP64[(valuePtr >> 3)])); break;
 				case 5: obj[prop] = bridge.getObject(Number(HEAP64[(valuePtr >> 3)])); break;
-				case 6: obj[prop] = bridge.getBytes(Number(HEAP64[(valuePtr >> 3)])); break;
+				case 6: obj[prop] = bridge.takeBytes(Number(HEAP64[(valuePtr >> 3)])); break;
 			}
 		} catch (e) {
 			console.error("Sentry JS interop: object_set() failed:", e);
@@ -187,7 +187,7 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 					case 3: args.push(HEAPF64[(valuesPtr >> 3) + i]); break;
 					case 4: args.push(UTF8ToString(Number(HEAP64[(valuesPtr >> 3) + i]))); break;
 					case 5: args.push(bridge.getObject(Number(HEAP64[(valuesPtr >> 3) + i]))); break;
-					case 6: args.push(bridge.getBytes(Number(HEAP64[(valuesPtr >> 3) + i]))); break;
+					case 6: args.push(bridge.takeBytes(Number(HEAP64[(valuesPtr >> 3) + i]))); break;
 				}
 			}
 			const result = obj[method].apply(obj, args);
@@ -330,7 +330,7 @@ PackedByteArray take_bytes(int32_t p_id) {
 	em_js::MarshalData buf = {};
 	int32_t size = MAIN_THREAD_EM_ASM_INT({
 		try {
-			const bytes = window.SentryBridge.getBytes($0);
+			const bytes = window.SentryBridge.takeBytes($0);
 			if (!bytes || bytes.byteLength === 0) {
 				return 0;
 			}
