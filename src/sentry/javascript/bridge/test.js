@@ -67,6 +67,8 @@ try {
 			"addBreadcrumb",
 			"addBytesAttachment",
 			"storeBytes",
+			"getBytes",
+			"releaseBytes",
 			"storeObject",
 			"getObject",
 			"releaseObject",
@@ -176,12 +178,19 @@ try {
 			assertEqual(typeof result, "string", "captureFeedback should return a string");
 		});
 
-		runTest("storeBytes()", () => {
+		runTest("storeBytes() / getBytes() / releaseBytes()", () => {
 			const id1 = bridge.storeBytes(new Uint8Array([ 1, 2, 3, 4 ]));
 			assertEqual(typeof id1, "number", "storeBytes should return a number");
 			assert(id1 > 0, "storeBytes ID should be positive");
 			const id2 = bridge.storeBytes(new Uint8Array([ 5, 6 ]));
 			assert(id2 > 0 && id2 !== id1, "storeBytes should return unique IDs");
+			const retrieved = bridge.getBytes(id1);
+			assert(retrieved instanceof Uint8Array, "getBytes should return a Uint8Array");
+			assertEqual(retrieved.length, 4, "getBytes should return correct length");
+			assertEqual(retrieved[0], 1, "getBytes should return correct data");
+			bridge.releaseBytes(id1);
+			assertEqual(bridge.getBytes(id1), undefined, "getBytes should return undefined after release");
+			bridge.releaseBytes(id2);
 		});
 
 		runTest("addBytesAttachment()", () => {
