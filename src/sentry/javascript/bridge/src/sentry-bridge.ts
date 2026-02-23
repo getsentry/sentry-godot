@@ -8,9 +8,13 @@ class IdStore<T> {
   private _items = new Map<number, T>();
 
   public store(item: T): number {
-    this._lastId = (this._lastId % 0xffffffff) + 1;
-    this._items.set(this._lastId, item);
-    return this._lastId;
+    let id = this._lastId;
+    do {
+      id = (id % 0xffffffff) + 1;
+    } while (this._items.has(id));
+    this._lastId = id;
+    this._items.set(id, item);
+    return id;
   }
 
   public get(id: number): T | undefined {
