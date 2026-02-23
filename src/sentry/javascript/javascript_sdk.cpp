@@ -36,20 +36,6 @@ EM_JS(void, sentry_add_bytes_attachment, (const char *filename, const uint8_t *d
 	}
 });
 
-// Emscripten JS function to push bytes directly to bridge layer and return id for later retrieval.
-EM_JS(uint32_t, store_bytes, (const uint8_t *data, int size), {
-	try {
-		var bytes = new Uint8Array(size);
-		bytes.set(HEAPU8.subarray(data, data + size));
-
-		var id = window.SentryBridge.storeBytes(bytes);
-		return id;
-	} catch (e) {
-		console.error("Failed to transfer bytes to JS bridge layer:", e);
-		return 0;
-	}
-});
-
 } //namespace em_js
 
 namespace sentry::javascript {
@@ -100,7 +86,7 @@ static void before_send_wasm_callback(int *p_ids, int p_len) {
 
 			sentry::logging::print_debug("Adding attachment: " + att->get_path());
 
-			uint32_t bytes_id = em_js::store_bytes(bytes.ptr(), bytes.size());
+			uint32_t bytes_id = em_js::store_bytes(bytes);
 			if (bytes_id == 0) {
 				sentry::logging::print_warning("Failed to push attachment bytes to JS: " + att->get_path());
 				continue;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <godot_cpp/variant/variant.hpp>
 #include <memory>
 
@@ -15,6 +16,9 @@ union MarshalData {
 	const char *c;
 	int32_t id; // object id or buffer id
 };
+
+int32_t store_bytes(const PackedByteArray &p_bytes);
+PackedByteArray take_bytes(int32_t p_id);
 
 } //namespace em_js
 
@@ -33,6 +37,8 @@ enum JSValueType {
 class JSObject;
 using JSObjectPtr = std::shared_ptr<JSObject>;
 
+JSObjectPtr js_bridge();
+
 // Return value from JavaScript functions
 class JSValue {
 private:
@@ -42,7 +48,8 @@ private:
 		int64_t i;
 		bool b;
 		double d;
-		alignas(String) alignas(JSObjectPtr) uint8_t mem[sizeof(String) > sizeof(JSObjectPtr) ? sizeof(String) : sizeof(JSObjectPtr)];
+		alignas(String) alignas(JSObjectPtr) alignas(PackedByteArray)
+				uint8_t mem[std::max({ sizeof(String), sizeof(JSObjectPtr), sizeof(PackedByteArray) })];
 	} data;
 
 	void _destroy() {
@@ -52,6 +59,9 @@ private:
 			} break;
 			case JSValueType::OBJECT: {
 				reinterpret_cast<const JSObjectPtr *>(data.mem)->~JSObjectPtr();
+			} break;
+			case JSValueType::BYTES: {
+				reinterpret_cast<const PackedByteArray *>(data.mem)->~PackedByteArray();
 			} break;
 			default: {
 			} break;
@@ -97,6 +107,13 @@ public:
 		return nullptr;
 	}
 
+	PackedByteArray as_bytes() const {
+		if (type == JSValueType::BYTES) {
+			return *reinterpret_cast<const PackedByteArray *>(data.mem);
+		}
+		return PackedByteArray();
+	}
+
 	Variant as_variant() const;
 
 	void operator=(const JSValue &p_other);
@@ -134,6 +151,8 @@ public:
 			type(JSValueType::STRING) { memnew_placement(data.mem, String(p_value)); }
 	explicit JSValue(const JSObjectPtr &p_value) :
 			type(JSValueType::OBJECT) { new (data.mem) JSObjectPtr(p_value); }
+	explicit JSValue(const PackedByteArray &p_value) :
+			type(JSValueType::BYTES) { memnew_placement(data.mem, PackedByteArray(p_value)); }
 
 	~JSValue() {
 		_destroy();
@@ -187,7 +206,12 @@ private:
 		}
 	}
 	static void _store(int &type, em_js::MarshalData &jval, const PackedByteArray &v) {
-		// TODO: implement
+		if (!v.is_empty()) {
+			jval.id = em_js::store_bytes(v);
+			type = JSValueType::BYTES;
+		} else {
+			_store(type, jval, nullptr);
+		}
 	}
 	static void _store(int &type, em_js::MarshalData &val, std::nullptr_t) {
 		type = JSValueType::NIL;
@@ -261,7 +285,5 @@ public:
 	JSObject() = delete;
 	~JSObject();
 };
-
-JSObjectPtr js_bridge();
 
 } // namespace sentry::javascript

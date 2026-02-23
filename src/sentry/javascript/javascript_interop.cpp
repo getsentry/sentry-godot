@@ -119,6 +119,10 @@ int32_t object_get(int32_t p_object_id, const char* p_property, MarshalData *r_r
 				HEAP64[retPtr >> 3] = BigInt(ptr);
 				return 4;
 			}
+			if (result instanceof Uint8Array) {
+				HEAP64[retPtr >> 3] = BigInt(bridge.storeBytes(result));
+				return 6;
+			}
 			if (type === "object" || type === "function") {
 				HEAP64[retPtr >> 3] = BigInt(bridge.storeObject(result));
 				return 5;
@@ -149,6 +153,7 @@ int32_t object_set(int32_t p_object_id, const char *p_property, const void *p_va
 				case 3: obj[prop] = HEAPF64[(valuePtr >> 3)]; break;
 				case 4: obj[prop] = UTF8ToString(Number(HEAP64[(valuePtr >> 3)])); break;
 				case 5: obj[prop] = bridge.getObject(Number(HEAP64[(valuePtr >> 3)])); break;
+				case 6: obj[prop] = bridge.getBytes(Number(HEAP64[(valuePtr >> 3)])); break;
 			}
 		} catch (e) {
 			console.error("Sentry JS interop: object_set() failed:", e);
@@ -182,6 +187,7 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 					case 3: args.push(HEAPF64[(valuesPtr >> 3) + i]); break;
 					case 4: args.push(UTF8ToString(Number(HEAP64[(valuesPtr >> 3) + i]))); break;
 					case 5: args.push(bridge.getObject(Number(HEAP64[(valuesPtr >> 3) + i]))); break;
+					case 6: args.push(bridge.getBytes(Number(HEAP64[(valuesPtr >> 3) + i]))); break;
 				}
 			}
 			const result = obj[method].apply(obj, args);
@@ -207,6 +213,10 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 				const ptr = stringToNewUTF8(result);
 				HEAP64[retPtr >> 3] = BigInt(ptr);
 				return 4;
+			}
+			if (result instanceof Uint8Array) {
+				HEAP64[retPtr >> 3] = BigInt(bridge.storeBytes(result));
+				return 6;
 			}
 			if (type === "object" || type === "function") {
 				HEAP64[retPtr >> 3] = BigInt(bridge.storeObject(result));
@@ -300,6 +310,51 @@ int object_to_json(int32_t p_object_id, MarshalData *r_ret) {
 	}, p_object_id, r_ret);
 }
 
+// Emscripten JS function to push bytes directly to bridge layer and return id for later retrieval or 0 on error.
+int32_t store_bytes(const PackedByteArray &p_bytes) {
+	return MAIN_THREAD_EM_ASM_INT({
+		try {
+			const dataPtr = $0;
+			const size = $1;
+			var bytes = new Uint8Array(size);
+			bytes.set(HEAPU8.subarray(dataPtr, dataPtr + size));
+			return window.SentryBridge.storeBytes(bytes);
+		} catch (e) {
+			console.error("Sentry JS interop: Failed to store bytes:", e);
+			return 0;
+		}
+	}, p_bytes.ptr(), p_bytes.size());
+}
+
+PackedByteArray take_bytes(int32_t p_id) {
+	em_js::MarshalData buf = {};
+	int32_t size = MAIN_THREAD_EM_ASM_INT({
+		try {
+			const bytes = window.SentryBridge.getBytes($0);
+			if (!bytes || bytes.byteLength === 0) {
+				return 0;
+			}
+			const size = bytes.byteLength;
+			const ptr = _malloc(size);
+			HEAPU8.set(bytes, ptr);
+			const retPtr = $1;
+			HEAP64[retPtr >> 3] = BigInt(ptr);
+			window.SentryBridge.releaseBytes($0);
+			return size;
+		} catch (e) {
+			console.error("Sentry JS interop: Failed to retrieve bytes:", e);
+			return -1;
+		} }, p_id, &buf);
+	if (size <= 0) {
+		return PackedByteArray();
+	}
+	PackedByteArray bytes;
+	bytes.resize(size);
+	memcpy(bytes.ptrw(), buf.c, size);
+	free((void *)buf.c);
+	return bytes;
+}
+
 // clang-format on
 
 } // namespace em_js
@@ -325,8 +380,7 @@ Variant JSValue::as_variant() const {
 			ERR_PRINT("Not supported - JSObject cannot be stored in Variant.");
 			return Variant();
 		case JSValueType::BYTES:
-			// TODO - implement
-			return Variant();
+			return Variant(as_bytes());
 		default:
 			return Variant();
 	}
@@ -352,7 +406,7 @@ void JSValue::operator=(const JSValue &p_other) {
 			new (data.mem) JSObjectPtr(*reinterpret_cast<const JSObjectPtr *>(p_other.data.mem));
 		} break;
 		case JSValueType::BYTES: {
-			//TODO: implement
+			memnew_placement(data.mem, PackedByteArray(*reinterpret_cast<const PackedByteArray *>(p_other.data.mem)));
 		} break;
 	}
 }
@@ -373,7 +427,7 @@ JSValue::JSValue(const JSValue &p_other) :
 			new (data.mem) JSObjectPtr(*reinterpret_cast<const JSObjectPtr *>(p_other.data.mem));
 		} break;
 		case JSValueType::BYTES: {
-			// TODO: implement
+			memnew_placement(data.mem, PackedByteArray(*reinterpret_cast<const PackedByteArray *>(p_other.data.mem)));
 		} break;
 	}
 }
@@ -438,8 +492,10 @@ JSValue JSObject::get(const char *p_property) const {
 			}
 			return JSValue(JSObjectPtr(new JSObject(rv.id)));
 		case JSValueType::BYTES:
-			// TODO: implement
-			return JSValue();
+			if (rv.id == 0) {
+				return JSValue(PackedByteArray());
+			}
+			return JSValue(em_js::take_bytes(rv.id));
 		default:
 			return JSValue();
 	}
@@ -499,8 +555,10 @@ JSValue JSObject::_call_impl(const char *p_method, const int *p_types, const em_
 			}
 			return JSValue(JSObjectPtr(new JSObject(rv.id)));
 		case JSValueType::BYTES:
-			// TODO: implement
-			return JSValue();
+			if (rv.id == 0) {
+				return JSValue(PackedByteArray());
+			}
+			return JSValue(em_js::take_bytes(rv.id));
 		default:
 			return JSValue();
 	}
