@@ -392,7 +392,7 @@ JSValue _unmarshal_return_value(JSValueType p_type, em_js::MarshalData &p_data) 
 			if (p_data.id == 0) {
 				return JSValue();
 			}
-			return JSValue(JSObjectPtr(new JSObject(p_data.id)));
+			return JSValue(JSObject::from_id(p_data.id));
 		case JSValueType::BYTES:
 			if (p_data.id == 0) {
 				return JSValue(PackedByteArray());
