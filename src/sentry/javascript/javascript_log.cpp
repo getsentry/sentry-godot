@@ -39,7 +39,7 @@ Variant JavaScriptLog::get_attribute(const String &p_name) const {
 	JSObjectPtr attr_obj = attr_val.as_object();
 	if (attr_obj) {
 		// Typed attribute - return the underlying value.
-		return attr_obj->get_as_variant("value");
+		return attr_obj->get("value").as_variant();
 	}
 
 	// Raw primitive value.
