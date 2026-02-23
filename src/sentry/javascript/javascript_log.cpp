@@ -66,6 +66,8 @@ void JavaScriptLog::set_attribute(const String &p_name, const Variant &p_value) 
 	ERR_FAIL_COND(!js_obj);
 
 	JSObjectPtr attr_obj = js_obj->get_or_create_object_property("attributes");
+	ERR_FAIL_COND(!attr_obj);
+
 	switch (p_value.get_type()) {
 		case Variant::Type::BOOL: {
 			attr_obj->set(p_name.utf8(), p_value.operator bool());
@@ -110,6 +112,7 @@ JavaScriptLog::JavaScriptLog() {
 
 JavaScriptLog::JavaScriptLog(const JSObjectPtr &p_js_log_object) {
 	js_obj = p_js_log_object;
+	ERR_FAIL_COND(!js_obj);
 }
 
 JavaScriptLog::~JavaScriptLog() {

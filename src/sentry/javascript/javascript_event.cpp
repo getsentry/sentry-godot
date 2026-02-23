@@ -162,7 +162,9 @@ String JavaScriptEvent::get_environment() const {
 void JavaScriptEvent::set_tag(const String &p_key, const String &p_value) {
 	ERR_FAIL_COND(!js_obj);
 	JSObjectPtr tags_obj = js_obj->get_or_create_object_property("tags");
-	tags_obj->set(p_key.utf8(), p_value.utf8());
+	if (tags_obj) {
+		tags_obj->set(p_key.utf8(), p_value.utf8());
+	}
 }
 
 void JavaScriptEvent::remove_tag(const String &p_key) {
@@ -184,9 +186,13 @@ String JavaScriptEvent::get_tag(const String &p_key) {
 
 void JavaScriptEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(!js_obj);
-	JSObjectPtr contexts_obj = js_obj->get_or_create_object_property("contexts");
-	JSObjectPtr context_obj = contexts_obj->get_or_create_object_property(p_key.utf8());
-	context_obj->merge_properties_from_json(JSON::stringify(p_value).utf8());
+	JSObjectPtr all_contexts_jso = js_obj->get_or_create_object_property("contexts");
+	if (all_contexts_jso) {
+		JSObjectPtr context_jso = all_contexts_jso->get_or_create_object_property(p_key.utf8());
+		if (context_jso) {
+			context_jso->merge_properties_from_json(JSON::stringify(p_value).utf8());
+		}
+	}
 }
 
 void JavaScriptEvent::add_exception(const Exception &p_exception) {
@@ -207,8 +213,12 @@ void JavaScriptEvent::add_exception(const Exception &p_exception) {
 		jw.end_object(); // } thread
 
 		JSObjectPtr threads_obj = js_obj->get_or_create_object_property("threads");
-		JSObjectPtr threads_arr = threads_obj->get_or_create_array_property("values");
-		threads_arr->push_element_from_json(jw.get_string().utf8());
+		if (threads_obj) {
+			JSObjectPtr threads_arr = threads_obj->get_or_create_array_property("values");
+			if (threads_arr) {
+				threads_arr->push_element_from_json(jw.get_string().utf8());
+			}
+		}
 	}
 
 	// Create exception with thread_id reference.
@@ -221,8 +231,12 @@ void JavaScriptEvent::add_exception(const Exception &p_exception) {
 	exc_jw.end_object(); // } exception
 
 	JSObjectPtr exception_obj = js_obj->get_or_create_object_property("exception");
-	JSObjectPtr values_arr = exception_obj->get_or_create_array_property("values");
-	values_arr->push_element_from_json(exc_jw.get_string().utf8());
+	if (exception_obj) {
+		JSObjectPtr values_arr = exception_obj->get_or_create_array_property("values");
+		if (values_arr) {
+			values_arr->push_element_from_json(exc_jw.get_string().utf8());
+		}
+	}
 }
 
 int JavaScriptEvent::get_exception_count() const {
@@ -308,10 +322,10 @@ JavaScriptEvent::JavaScriptEvent(const JSObjectPtr &p_js_event_object) {
 
 JavaScriptEvent::JavaScriptEvent() {
 	js_obj = JSObject::create("Object");
+	ERR_FAIL_COND(!js_obj);
 
 	// Capture current timestamp
 	js_obj->set("timestamp", Time::get_singleton()->get_unix_time_from_system());
-
 	// Pre-generate event-id
 	js_obj->set("event_id", sentry::uuid::make_uuid_no_dashes().ascii());
 }

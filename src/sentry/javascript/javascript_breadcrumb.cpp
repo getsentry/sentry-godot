@@ -57,7 +57,6 @@ void JavaScriptBreadcrumb::set_type(const String &p_type) {
 
 String JavaScriptBreadcrumb::get_type() const {
 	ERR_FAIL_COND_V(!js_obj, "");
-
 	return js_obj->get("type").as_string();
 }
 
@@ -66,8 +65,10 @@ void JavaScriptBreadcrumb::set_data(const Dictionary &p_data) {
 
 	if (!p_data.is_empty()) {
 		JSObjectPtr data_obj = JSObject::create("Object");
-		data_obj->merge_properties_from_json(JSON::stringify(p_data).utf8());
-		js_obj->set("data", data_obj);
+		if (data_obj) {
+			data_obj->merge_properties_from_json(JSON::stringify(p_data).utf8());
+			js_obj->set("data", data_obj);
+		}
 	} else {
 		js_obj->delete_property("data");
 	}
@@ -85,6 +86,7 @@ Ref<SentryTimestamp> JavaScriptBreadcrumb::get_timestamp() {
 
 JavaScriptBreadcrumb::JavaScriptBreadcrumb() {
 	js_obj = JSObject::create("Object");
+	ERR_FAIL_COND(!js_obj);
 
 	// Capture current timestamp
 	js_obj->set("timestamp", Time::get_singleton()->get_unix_time_from_system());
