@@ -145,6 +145,11 @@ class SentryBridge {
 
     if (beforeSendCallback) {
       options.beforeSend = (event: Sentry.Event, hint: Sentry.EventHint) => {
+        if (!this.isEnabled()) {
+          // SDK is disabled, skip processing.
+          return null;
+        }
+
         // NOTE: Populated during processing in C++ layer
         const outAttachments: Array<AttachmentData> = [];
 
