@@ -68,6 +68,7 @@ try {
 			"addBytesAttachment",
 			"storeBytes",
 			"takeBytes",
+			"releaseBytes",
 			"storeObject",
 			"getObject",
 			"releaseObject",
@@ -189,6 +190,12 @@ try {
 			assertEqual(retrieved[0], 1, "takeBytes should return correct data");
 			assertEqual(bridge.takeBytes(id1), undefined, "takeBytes should return undefined after take");
 			bridge.takeBytes(id2);
+		});
+
+		runTest("releaseBytes()", () => {
+			const id = bridge.storeBytes(new Uint8Array([ 10, 20 ]));
+			bridge.releaseBytes(id);
+			assertEqual(bridge.takeBytes(id), undefined, "releaseBytes should discard bytes");
 		});
 
 		runTest("addBytesAttachment()", () => {

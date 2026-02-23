@@ -67,6 +67,10 @@ class SentryBridge {
     return bytes;
   }
 
+  public releaseBytes(id: number): void {
+    this._byteStore.release(id);
+  }
+
   public storeObject(obj: any): number {
     return this._objectStore.store(obj);
   }

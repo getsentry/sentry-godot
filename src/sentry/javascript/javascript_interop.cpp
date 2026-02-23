@@ -140,12 +140,16 @@ int32_t object_set(int32_t p_object_id, const char *p_property, const void *p_va
 		try {
 			const bridge = window.SentryBridge;
 			const obj = bridge.getObject($0);
+			const valuePtr = $2;
+			const type = $3;
 			if (obj === null || obj === undefined) {
+				// Release stored bytes to prevent leaking in the byte store.
+				if (type === 6) {
+					bridge.releaseBytes(Number(HEAP64[(valuePtr >> 3)]));
+				}
 				return -1;
 			}
 			const prop = UTF8ToString($1);
-			const valuePtr = $2;
-			const type = $3;
 			switch (type) {
 				case 0: obj[prop] = null; break;
 				case 1: obj[prop] = Boolean(HEAP64[(valuePtr >> 3)]); break;
@@ -170,13 +174,19 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 		try {
 			const bridge = window.SentryBridge;
 			const obj = bridge.getObject($0);
-			if (obj === null || obj === undefined) {
-				return -1;
-			}
-			const method = UTF8ToString($1);
 			const valuesPtr = $2;
 			const typesPtr = $3;
 			const len = $4;
+			if (obj === null || obj === undefined) {
+				// Release any stored bytes to prevent leaking in the byte store.
+				for (let i = 0; i < len; i++) {
+					if (HEAP32[(typesPtr >> 2) + i] === 6) {
+						bridge.releaseBytes(Number(HEAP64[(valuesPtr >> 3) + i]));
+					}
+				}
+				return -1;
+			}
+			const method = UTF8ToString($1);
 			const args = [];
 			for (let i = 0; i < len; i++) {
 				const t = HEAP32[(typesPtr >> 2) + i];
