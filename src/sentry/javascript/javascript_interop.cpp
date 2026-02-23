@@ -357,6 +357,27 @@ void JSValue::operator=(const JSValue &p_other) {
 	}
 }
 
+JSValue::JSValue(const JSValue &p_other) :
+		type(p_other.type) {
+	switch (type) {
+		case JSValueType::NIL:
+		case JSValueType::BOOL:
+		case JSValueType::INT:
+		case JSValueType::DOUBLE: {
+			data = p_other.data;
+		} break;
+		case JSValueType::STRING: {
+			memnew_placement(data.mem, String(*reinterpret_cast<const String *>(p_other.data.mem)));
+		} break;
+		case JSValueType::OBJECT: {
+			new (data.mem) JSObjectPtr(*reinterpret_cast<const JSObjectPtr *>(p_other.data.mem));
+		} break;
+		case JSValueType::BYTES: {
+			// TODO: implement
+		} break;
+	}
+}
+
 // *** JSObject
 
 JSObjectPtr JSObject::create(const char *p_type_name) {

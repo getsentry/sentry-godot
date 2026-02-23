@@ -47,14 +47,14 @@ private:
 
 	void _destroy() {
 		switch (type) {
-			case JSValueType::STRING:
+			case JSValueType::STRING: {
 				reinterpret_cast<const String *>(data.mem)->~String();
-				break;
-			case JSValueType::OBJECT:
+			} break;
+			case JSValueType::OBJECT: {
 				reinterpret_cast<const JSObjectPtr *>(data.mem)->~JSObjectPtr();
-				break;
-			default:
-				break;
+			} break;
+			default: {
+			} break;
 		}
 	}
 
@@ -112,26 +112,7 @@ public:
 		p_other.type = JSValueType::NIL;
 	}
 
-	JSValue(const JSValue &p_other) :
-			type(p_other.type) {
-		switch (type) {
-			case JSValueType::NIL:
-			case JSValueType::BOOL:
-			case JSValueType::INT:
-			case JSValueType::DOUBLE: {
-				data = p_other.data;
-			} break;
-			case JSValueType::STRING: {
-				memnew_placement(data.mem, String(*reinterpret_cast<const String *>(p_other.data.mem)));
-			} break;
-			case JSValueType::OBJECT: {
-				new (data.mem) JSObjectPtr(*reinterpret_cast<const JSObjectPtr *>(p_other.data.mem));
-			} break;
-			case JSValueType::BYTES: {
-				// TODO: implement
-			} break;
-		}
-	}
+	JSValue(const JSValue &p_other);
 
 	JSValue(JSValue &&p_other) :
 			type(p_other.type), data(p_other.data) {
