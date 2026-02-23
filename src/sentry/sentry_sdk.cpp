@@ -143,7 +143,9 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 		options->add_event_processor(memnew(ViewHierarchyProcessor));
 	}
 
-	p_configuration_callback.call(options);
+	if (p_configuration_callback.is_valid()) {
+		p_configuration_callback.call(options);
+	}
 
 	// Add built-in attachments.
 	for (const Ref<SentryAttachment> &att : _get_default_attachments()) {
