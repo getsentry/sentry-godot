@@ -76,6 +76,10 @@ public:
 		if (type == JSValueType::INT) {
 			return data.i;
 		}
+		// Coerces double to int since JS numbers may be marshalled as either
+		if (type == JSValueType::DOUBLE) {
+			return static_cast<int64_t>(data.d);
+		}
 		return 0;
 	}
 
@@ -89,6 +93,10 @@ public:
 	double as_double() const {
 		if (type == JSValueType::DOUBLE) {
 			return data.d;
+		}
+		// Coerces int to double since JS numbers may be marshalled as either
+		if (type == JSValueType::INT) {
+			return static_cast<double>(data.i);
 		}
 		return 0.0;
 	}
