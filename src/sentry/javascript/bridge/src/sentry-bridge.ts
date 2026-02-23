@@ -195,8 +195,8 @@ class SentryBridge {
     Sentry.init(options);
   }
 
-  public close(): void {
-    Sentry.close();
+  public close(timeout: number): void {
+    Sentry.close(timeout);
   }
 
   public isEnabled(): boolean {

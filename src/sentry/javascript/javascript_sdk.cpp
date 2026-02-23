@@ -270,7 +270,7 @@ void JavaScriptSDK::init() {
 void JavaScriptSDK::close() {
 	ERR_FAIL_COND(!js_bridge());
 
-	js_bridge()->call("close");
+	js_bridge()->call("close", 2000);
 
 	_before_send_js_callback.reset();
 	_before_send_log_js_callback.reset();
