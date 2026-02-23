@@ -65,7 +65,7 @@ class SentryBridge {
     return this._byteStore.store(bytes);
   }
 
-  public takeBytes(id: number): any {
+  public takeBytes(id: number): Uint8Array | undefined {
     const bytes = this._byteStore.get(id);
     this._byteStore.release(id);
     return bytes;
