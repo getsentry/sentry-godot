@@ -72,6 +72,7 @@ static void before_send_wasm_callback(int *p_ids, int p_len) {
 			}
 
 			JSObjectPtr attachment_data = JSObject::create("Object");
+			ERR_CONTINUE(!attachment_data);
 			attachment_data->set("id", bytes_id);
 			attachment_data->set("filename", att->get_path().get_file().utf8());
 			if (!att->get_attachment_type().is_empty()) {
