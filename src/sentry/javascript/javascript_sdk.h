@@ -1,7 +1,6 @@
 #pragma once
 
 #include "sentry/internal_sdk.h"
-#include "sentry/javascript/javascript_interop.h"
 
 using namespace godot;
 
@@ -9,11 +8,6 @@ namespace sentry::javascript {
 
 // Internal SDK utilizing Sentry for JavaScript.
 class JavaScriptSDK : public InternalSDK {
-private:
-	// NOTE: Need to keep these refs alive for as long as they're needed.
-	JSObjectPtr _before_send_js_callback;
-	JSObjectPtr _before_send_log_js_callback;
-
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void remove_context(const String &p_key) override;

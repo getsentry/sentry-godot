@@ -2,6 +2,7 @@
 
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/javascript/javascript_event.h"
+#include "sentry/javascript/javascript_interop.h"
 #include "sentry/javascript/javascript_log.h"
 #include "sentry/javascript/javascript_util.h"
 #include "sentry/logging/print.h"
@@ -238,17 +239,16 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 void JavaScriptSDK::init() {
 	ERR_FAIL_COND(!js_bridge());
 
-	_before_send_js_callback = JSObject::create_callback(before_send_wasm_callback);
+	JSObjectPtr before_send_callback = JSObject::create_callback(before_send_wasm_callback);
 
 	// Only create the before_send_log callback if user has set a callback
 	JSObjectPtr before_send_log_callback;
 	if (SENTRY_OPTIONS()->get_before_send_log().is_valid()) {
-		_before_send_log_js_callback = JSObject::create_callback(before_send_log_wasm_callback);
-		before_send_log_callback = _before_send_log_js_callback;
+		before_send_log_callback = JSObject::create_callback(before_send_log_wasm_callback);
 	}
 
 	js_bridge()->call("init",
-			_before_send_js_callback,
+			before_send_callback,
 			before_send_log_callback,
 			SENTRY_OPTIONS()->get_dsn().utf8(),
 			SENTRY_OPTIONS()->is_debug_enabled(),
@@ -271,9 +271,6 @@ void JavaScriptSDK::close() {
 	ERR_FAIL_COND(!js_bridge());
 
 	js_bridge()->call("close", 2000);
-
-	_before_send_js_callback.reset();
-	_before_send_log_js_callback.reset();
 }
 
 bool JavaScriptSDK::is_enabled() const {
