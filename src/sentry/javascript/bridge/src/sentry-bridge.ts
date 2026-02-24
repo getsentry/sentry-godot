@@ -87,18 +87,19 @@ class SentryBridge {
     this._objectStore.release(id);
   }
 
-  public createAttachmentData(
+  public pushAttachmentData(
+    attachmentData: Array<AttachmentData>,
     bytes: Uint8Array,
     filename: string,
     contentType?: string,
     attachmentType?: string,
-  ): AttachmentData {
-    return {
+  ): void {
+    attachmentData.push({
       bytes,
       filename,
       contentType,
       attachmentType,
-    };
+    });
   }
 
   public init(

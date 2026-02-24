@@ -65,14 +65,12 @@ static void before_send_wasm_callback(int32_t *p_ids, int32_t p_len) {
 
 			sentry::logging::print_debug("Adding attachment: " + att->get_path());
 
-			JSObjectPtr attachment_data = js_bridge()->call("createAttachmentData",
-															 bytes,
-															 att->get_path().get_file().utf8(),
-															 att->get_content_type().utf8(),
-															 att->get_attachment_type().utf8())
-												  .as_object();
-			ERR_CONTINUE(!attachment_data);
-			out_attachments->call("push", attachment_data);
+			js_bridge()->call("pushAttachmentData",
+					out_attachments,
+					bytes,
+					att->get_path().get_file().utf8(),
+					att->get_content_type().utf8(),
+					att->get_attachment_type().utf8());
 		}
 	}
 }
