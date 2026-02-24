@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add configurable `shutdown_timeout_ms` option ([#539](https://github.com/getsentry/sentry-godot/pull/539))
+
 ## 1.4.0-beta.0
 
 ### Features
