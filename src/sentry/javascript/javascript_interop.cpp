@@ -11,16 +11,15 @@ namespace em_js {
 
 // Create a new JavaScript object and store it in Sentry bridge, returning
 // non-zero object ID or 0 on error.
-// NOTE: We don't expect UTF8 names in our classes.
 int32_t create_object(const char *p_name) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
-			var n = UTF8ToString($0);
-			var ctor = window[n];
+			const n = UTF8ToString($0);
+			const ctor = window[n];
 			if (!ctor) {
 				return 0;
 			}
-			var obj = new ctor();
+			const obj = new ctor();
 			return window.SentryBridge.storeObject(obj);
 		} catch (e) {
 			console.error("Sentry: JS interop failure:", e);
@@ -41,7 +40,7 @@ void release_object(int32_t p_object_id) {
 }
 
 // Get interface by name, returning non-zero object ID or 0 on error.
-int get_interface(const char *p_name) {
+int32_t get_interface(const char *p_name) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const obj = window[UTF8ToString($0)];
@@ -57,7 +56,7 @@ int get_interface(const char *p_name) {
 }
 
 // Create a callback function from a WASM function pointer, returning non-zero callable ID or 0 on error.
-int create_callback(uintptr_t p_func_ptr) {
+int32_t create_callback(uintptr_t p_func_ptr) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const wasmFunc = wasmTable.get($0);
@@ -135,7 +134,7 @@ int32_t object_get(int32_t p_object_id, const char* p_property, MarshalData *r_r
 }
 
 // Sets value of object's property, returning 0 on success or negative number on error.
-int32_t object_set(int32_t p_object_id, const char *p_property, const void *p_value, const int32_t p_type) {
+int32_t object_set(int32_t p_object_id, const char *p_property, const MarshalData *p_value, sentry::javascript::JSValueType p_type) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bridge = window.SentryBridge;
@@ -168,8 +167,9 @@ int32_t object_set(int32_t p_object_id, const char *p_property, const void *p_va
 }
 
 // Calls object's method, returning RV's type code or negative number on error.
-int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_args,
-		const void *p_types, int p_len, MarshalData *r_ret) {
+// Each argument is a tagged union (MarshalData) - must be read via the heap view matching its type tag.
+int32_t call_method(int32_t p_object_id, const char *p_method, const MarshalData *p_args,
+		const sentry::javascript::JSValueType *p_types, int32_t p_len, MarshalData *r_ret) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bridge = window.SentryBridge;
@@ -241,7 +241,7 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const void *p_arg
 }
 
 // Deletes a property from an object, returning 0 on success or negative number on error.
-int object_delete_property(int32_t p_object_id, const char *p_property) {
+int32_t object_delete_property(int32_t p_object_id, const char *p_property) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bridge = window.SentryBridge;
@@ -260,7 +260,7 @@ int object_delete_property(int32_t p_object_id, const char *p_property) {
 }
 
 // Merges properties from a JSON string into an object, returning 0 on success or negative number on error.
-int object_merge_properties_from_json(int32_t p_object_id, const char *p_json) {
+int32_t object_merge_properties_from_json(int32_t p_object_id, const char *p_json) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bridge = window.SentryBridge;
@@ -280,7 +280,7 @@ int object_merge_properties_from_json(int32_t p_object_id, const char *p_json) {
 }
 
 // Parses object from JSON string and adds it to an array, returning 0 on success or negative number on error.
-int object_push_element_from_json(int32_t p_object_id, const char *p_json) {
+int32_t object_push_element_from_json(int32_t p_object_id, const char *p_json) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bridge = window.SentryBridge;
@@ -302,7 +302,7 @@ int object_push_element_from_json(int32_t p_object_id, const char *p_json) {
 }
 
 // Serializes object to JSON string, returning 0 on success or negative number on error.
-int object_to_json(int32_t p_object_id, MarshalData *r_ret) {
+int32_t object_to_json(int32_t p_object_id, MarshalData *r_ret) {
 	return MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bridge = window.SentryBridge;
@@ -499,7 +499,7 @@ JSObjectPtr JSObject::from_id(int32_t p_id) {
 }
 
 JSObjectPtr JSObject::get_interface(const char *p_name) {
-	int id = em_js::get_interface(p_name);
+	int32_t id = em_js::get_interface(p_name);
 	if (unlikely(id == 0)) {
 		return JSObjectPtr();
 	}
@@ -508,13 +508,13 @@ JSObjectPtr JSObject::get_interface(const char *p_name) {
 
 JSObjectPtr JSObject::create_callback(WasmCallbackFunc p_func) {
 	// In WASM, function pointers are indices into the function table.
-	int id = em_js::create_callback(reinterpret_cast<uintptr_t>(p_func));
+	int32_t id = em_js::create_callback(reinterpret_cast<uintptr_t>(p_func));
 	return from_id(id);
 }
 
 JSValue JSObject::get(const char *p_property) const {
 	em_js::MarshalData rv = {};
-	int result = em_js::object_get(id, p_property, &rv);
+	int32_t result = em_js::object_get(id, p_property, &rv);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: get() failed for \"", p_property, "\" property.");
 		return JSValue();
@@ -540,16 +540,16 @@ JSObjectPtr JSObject::get_or_create_array_property(const char *p_property) {
 	return jso;
 }
 
-void JSObject::_set_impl(const char *p_property, const em_js::MarshalData *p_value, int p_type) {
+void JSObject::_set_impl(const char *p_property, const em_js::MarshalData *p_value, JSValueType p_type) {
 	int32_t result = em_js::object_set(id, p_property, p_value, p_type);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: set() failed for \"", p_property, "\" property.");
 	}
 }
 
-JSValue JSObject::_call_impl(const char *p_method, const int *p_types, const em_js::MarshalData *p_values, int p_len) {
+JSValue JSObject::_call_impl(const char *p_method, const JSValueType *p_types, const em_js::MarshalData *p_values, int32_t p_len) {
 	em_js::MarshalData rv = {};
-	int result = em_js::call_method(id, p_method, p_values, p_types, p_len, &rv);
+	int32_t result = em_js::call_method(id, p_method, p_values, p_types, p_len, &rv);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop failed calling \"", p_method, "\" method.");
 		return JSValue();
@@ -558,21 +558,21 @@ JSValue JSObject::_call_impl(const char *p_method, const int *p_types, const em_
 }
 
 void JSObject::delete_property(const char *p_property) {
-	int result = em_js::object_delete_property(id, p_property);
+	int32_t result = em_js::object_delete_property(id, p_property);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: Failed deleting \"", p_property, "\" property.");
 	}
 }
 
 void JSObject::merge_properties_from_json(const char *p_json) {
-	int result = em_js::object_merge_properties_from_json(id, p_json);
+	int32_t result = em_js::object_merge_properties_from_json(id, p_json);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: Failed merging properties from JSON.");
 	}
 }
 
 void JSObject::push_element_from_json(const char *p_json) {
-	int result = em_js::object_push_element_from_json(id, p_json);
+	int32_t result = em_js::object_push_element_from_json(id, p_json);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: Failed pushing element from JSON.");
 	}
@@ -580,7 +580,7 @@ void JSObject::push_element_from_json(const char *p_json) {
 
 String JSObject::to_json() const {
 	em_js::MarshalData jsonData = {};
-	int result = em_js::object_to_json(id, &jsonData);
+	int32_t result = em_js::object_to_json(id, &jsonData);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: Failed converting object to JSON.");
 		return String();

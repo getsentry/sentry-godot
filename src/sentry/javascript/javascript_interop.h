@@ -172,7 +172,7 @@ public:
 };
 
 // WASM callback signature: receives an array of JS object IDs and the count.
-using WasmCallbackFunc = void (*)(int *p_ids, int p_len);
+using WasmCallbackFunc = void (*)(int32_t *p_ids, int32_t p_len);
 
 // RAII handle to a JavaScript object, identified by an integer ID.
 // Provides property access and method calls across the WASM/JS boundary.
@@ -180,35 +180,35 @@ class JSObject {
 private:
 	int32_t id;
 
-	JSValue _call_impl(const char *p_method, const int *p_types, const em_js::MarshalData *p_values, int p_len);
-	void _set_impl(const char *p_property, const em_js::MarshalData *p_value, int p_type);
+	JSValue _call_impl(const char *p_method, const JSValueType *p_types, const em_js::MarshalData *p_values, int32_t p_len);
+	void _set_impl(const char *p_property, const em_js::MarshalData *p_value, JSValueType p_type);
 
 	// Overloads that marshal a C++ argument into a type tag + MarshalData pair for call() and set().
-	static void _store(int &type, em_js::MarshalData &jval, bool v) {
+	static void _store(JSValueType &type, em_js::MarshalData &jval, bool v) {
 		type = JSValueType::BOOL;
 		jval.b = v;
 	}
-	static void _store(int &type, em_js::MarshalData &jval, int v) {
+	static void _store(JSValueType &type, em_js::MarshalData &jval, int v) {
 		type = JSValueType::INT;
 		jval.i = v;
 	}
-	static void _store(int &type, em_js::MarshalData &jval, uint32_t v) {
+	static void _store(JSValueType &type, em_js::MarshalData &jval, uint32_t v) {
 		type = JSValueType::INT;
 		jval.i = v;
 	}
-	static void _store(int &type, em_js::MarshalData &jval, int64_t v) {
+	static void _store(JSValueType &type, em_js::MarshalData &jval, int64_t v) {
 		type = JSValueType::INT;
 		jval.i = v;
 	}
-	static void _store(int &type, em_js::MarshalData &jval, double v) {
+	static void _store(JSValueType &type, em_js::MarshalData &jval, double v) {
 		type = JSValueType::DOUBLE;
 		jval.d = v;
 	}
-	static void _store(int &type, em_js::MarshalData &jval, const char *v) {
+	static void _store(JSValueType &type, em_js::MarshalData &jval, const char *v) {
 		type = JSValueType::STRING;
 		jval.c = v;
 	}
-	static void _store(int &type, em_js::MarshalData &jval, const JSObjectPtr &v) {
+	static void _store(JSValueType &type, em_js::MarshalData &jval, const JSObjectPtr &v) {
 		if (v) {
 			type = JSValueType::OBJECT;
 			jval.id = v->get_id();
@@ -217,7 +217,7 @@ private:
 			jval.i = 0;
 		}
 	}
-	static void _store(int &type, em_js::MarshalData &jval, const PackedByteArray &v) {
+	static void _store(JSValueType &type, em_js::MarshalData &jval, const PackedByteArray &v) {
 		if (!v.is_empty()) {
 			jval.id = em_js::store_bytes(v);
 			type = JSValueType::BYTES;
@@ -225,7 +225,7 @@ private:
 			_store(type, jval, nullptr);
 		}
 	}
-	static void _store(int &type, em_js::MarshalData &val, std::nullptr_t) {
+	static void _store(JSValueType &type, em_js::MarshalData &val, std::nullptr_t) {
 		type = JSValueType::NIL;
 		val.i = 0;
 	}
@@ -240,7 +240,7 @@ public:
 
 	template <typename T>
 	void set(const char *p_property, const T &p_value) {
-		int type = {};
+		JSValueType type = {};
 		em_js::MarshalData val = {};
 		_store(type, val, p_value);
 
@@ -260,12 +260,12 @@ public:
 
 	template <typename... Args>
 	JSValue call(const char *p_method, const Args &...p_args) {
-		constexpr int len = sizeof...(p_args);
+		constexpr int32_t len = sizeof...(p_args);
 		// +1 ensures zero-length calls are supported
-		int types[len + 1] = {};
+		JSValueType types[len + 1] = {};
 		em_js::MarshalData values[len + 1] = {};
 
-		int idx = 0;
+		int32_t idx = 0;
 		// Fold expression: executes left-to-right, for each argument in the pack.
 		((_store(types[idx], values[idx], p_args), ++idx), ...);
 
