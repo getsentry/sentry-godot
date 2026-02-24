@@ -152,6 +152,7 @@ int32_t object_set(int32_t p_object_id, const char *p_property, const MarshalDat
 			switch (type) {
 				case 0: obj[prop] = null; break;
 				case 1: obj[prop] = Boolean(HEAP8[valuePtr]); break;
+				// Number() loses precision beyond Number.MAX_SAFE_INTEGER; acceptable since APIs rarely use BigInt.
 				case 2: obj[prop] = Number(HEAP64[(valuePtr >> 3)]); break;
 				case 3: obj[prop] = HEAPF64[(valuePtr >> 3)]; break;
 				case 4: obj[prop] = UTF8ToString(HEAPU32[valuePtr >> 2]); break;
@@ -194,6 +195,7 @@ int32_t call_method(int32_t p_object_id, const char *p_method, const MarshalData
 				switch (t) {
 					case 0: args.push(null); break;
 					case 1: args.push(Boolean(HEAP8[off])); break;
+					// Number() loses precision beyond Number.MAX_SAFE_INTEGER; acceptable since APIs rarely use BigInt.
 					case 2: args.push(Number(HEAP64[off >> 3])); break;
 					case 3: args.push(HEAPF64[off >> 3]); break;
 					case 4: args.push(UTF8ToString(HEAPU32[off >> 2])); break;
