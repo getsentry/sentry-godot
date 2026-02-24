@@ -25,10 +25,11 @@ For upgrade instructions between major versions, see the [Migration Guide](https
 - **macOS**: universal (Intel and Apple Silicon)
 - **Android**: arm64, arm32, x86_64
 - **iOS**: device and simulator
-- **Web**: expected in Q4 2025, after 1.0.0 stable
+- **Web**: supported in 1.4+
 - **W4 console forks**: coming in 2026
 
 Support for additional platforms and architectures may be added in future releases.
+C# support is planned, tracked in [#91](https://github.com/getsentry/sentry-godot/issues/91).
 
 ## Getting started
 
