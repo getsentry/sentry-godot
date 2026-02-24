@@ -19,16 +19,6 @@ namespace sentry {
 // Interface for SDKs used internally.
 class InternalSDK {
 public:
-	enum Capabilities : int64_t {
-		SUPPORTS_EARLY_INIT = (1LL << 0),
-		// SUPPORTS_RUNNING_DOOM = (1LL << 1),
-		// SUPPORTS_LANDING_ON_THE_MOON = (1LL << 2)
-		SUPPORTS_ALL = ~0LL
-	};
-
-public:
-	virtual BitField<Capabilities> get_capabilities() const { return Capabilities::SUPPORTS_ALL; }
-
 	virtual void set_context(const String &p_key, const Dictionary &p_value) = 0;
 	virtual void remove_context(const String &p_key) = 0;
 
@@ -53,7 +43,7 @@ public:
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) = 0;
 
-	virtual void init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) = 0;
+	virtual void init() = 0;
 	virtual void close() = 0;
 	virtual bool is_enabled() const = 0;
 

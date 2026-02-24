@@ -208,7 +208,7 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 	if (!p_attachment->get_path().is_empty()) {
 		ERR_FAIL_NULL(ProjectSettings::get_singleton());
-		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
+		String absolute_path = p_attachment->get_globalized_path();
 
 		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
 
@@ -235,14 +235,10 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}];
 }
 
-void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
+void CocoaSDK::init() {
 	[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
 
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
-		if (p_configuration_callback.is_valid()) {
-			p_configuration_callback.call(SENTRY_OPTIONS());
-		}
-
 		options.dsn = string_to_objc(SENTRY_OPTIONS()->get_dsn());
 		options.debug = SENTRY_OPTIONS()->is_debug_enabled();
 		options.releaseName = string_to_objc(SENTRY_OPTIONS()->get_release());
@@ -267,19 +263,14 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 
 		options.initialScope = ^(objc::SentryScope *scope) {
 			// Add global attachments
-			for (const String &path : p_global_attachments) {
-				sentry::logging::print_debug("adding attachment \"", path, "\"");
-				objc::SentryAttachment *att = nil;
-				if (path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
-					// TODO: Can't specify attachmentType!
-					att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(path)
-															  filename:string_to_objc("view-hierarchy.json")
-														   contentType:string_to_objc("application/json")];
-				} else {
-					att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(path)];
-				}
-				ERR_CONTINUE(att == nil);
-				[scope addAttachment:att];
+			for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
+				sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
+				// TODO: Can't specify attachmentType!
+				objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(att->get_globalized_path())
+																					   filename:string_to_objc_or_nil_if_empty(att->get_filename())
+																					contentType:string_to_objc_or_nil_if_empty(att->get_content_type())];
+				ERR_CONTINUE(objc_att == nil);
+				[scope addAttachment:objc_att];
 			}
 
 			// Initialize default user.

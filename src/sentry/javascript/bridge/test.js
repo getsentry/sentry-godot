@@ -67,11 +67,11 @@ try {
 			"addBreadcrumb",
 			"addBytesAttachment",
 			"storeBytes",
-			"mergeJsonIntoObject",
-			"pushJsonObjectToArray",
-			"objectToJson",
-			"getDoubleAsString",
-			"setDoubleFromString",
+			"takeBytes",
+			"releaseBytes",
+			"storeObject",
+			"getObject",
+			"releaseObject",
 		];
 
 		console.log("📋 Method availability check:");
@@ -178,61 +178,43 @@ try {
 			assertEqual(typeof result, "string", "captureFeedback should return a string");
 		});
 
-		runTest("storeBytes()", () => {
+		runTest("storeBytes() / takeBytes()", () => {
 			const id1 = bridge.storeBytes(new Uint8Array([ 1, 2, 3, 4 ]));
 			assertEqual(typeof id1, "number", "storeBytes should return a number");
 			assert(id1 > 0, "storeBytes ID should be positive");
 			const id2 = bridge.storeBytes(new Uint8Array([ 5, 6 ]));
 			assert(id2 > 0 && id2 !== id1, "storeBytes should return unique IDs");
+			const retrieved = bridge.takeBytes(id1);
+			assert(retrieved instanceof Uint8Array, "takeBytes should return a Uint8Array");
+			assertEqual(retrieved.length, 4, "takeBytes should return correct length");
+			assertEqual(retrieved[0], 1, "takeBytes should return correct data");
+			assertEqual(bridge.takeBytes(id1), undefined, "takeBytes should return undefined after take");
+			bridge.takeBytes(id2);
+		});
+
+		runTest("releaseBytes()", () => {
+			const id = bridge.storeBytes(new Uint8Array([ 10, 20 ]));
+			bridge.releaseBytes(id);
+			assertEqual(bridge.takeBytes(id), undefined, "releaseBytes should discard bytes");
 		});
 
 		runTest("addBytesAttachment()", () => {
 			bridge.addBytesAttachment("test.txt", new Uint8Array([ 104, 101, 108, 108, 111 ]), "text/plain");
 		});
 
-		runTest("mergeJsonIntoObject()", () => {
-			const target = { existing : "value" };
-			bridge.mergeJsonIntoObject(target, '{"new": "property"}');
-			assertEqual(target.existing, "value", "existing property should be preserved");
-			assertEqual(target.new, "property", "new property should be merged");
-		});
-
-		runTest("pushJsonObjectToArray()", () => {
-			const arr = [];
-			bridge.pushJsonObjectToArray(arr, '{"item": "value"}');
-			assertEqual(arr.length, 1, "array should have one element");
-			assertEqual(arr[0].item, "value", "pushed object should have correct value");
-		});
-
-		runTest("objectToJson()", () => {
-			const result = bridge.objectToJson({ message : "test", level : "info" });
-			assertEqual(typeof result, "string", "objectToJson should return a string");
-			const parsed = JSON.parse(result);
-			assertEqual(parsed.message, "test", "JSON should contain message");
-			assertEqual(parsed.level, "info", "JSON should contain level");
-		});
-
-		runTest("objectToJson() with empty object", () => {
-			const result = bridge.objectToJson({});
-			assertEqual(result, "{}", "empty object should serialize to '{}'");
-		});
-
-		runTest("getDoubleAsString()", () => {
-			const obj = { timestamp : 1234567890.123456 };
-			const result = bridge.getDoubleAsString(obj, "timestamp");
-			assertEqual(typeof result, "string", "should return a string");
-			assertEqual(result, "1234567890.123456", "should preserve precision");
-		});
-
-		runTest("setDoubleFromString()", () => {
-			const obj = {};
-			bridge.setDoubleFromString(obj, "timestamp", "1234567890.123456");
-			assertEqual(typeof obj.timestamp, "number", "should set a number property");
-			assertEqual(obj.timestamp, 1234567890.123456, "should set correct value");
+		runTest("storeObject() / getObject() / releaseObject()", () => {
+			const obj = { key : "value" };
+			const id = bridge.storeObject(obj);
+			assertEqual(typeof id, "number", "storeObject should return a number");
+			assert(id > 0, "storeObject ID should be positive");
+			const retrieved = bridge.getObject(id);
+			assertEqual(retrieved, obj, "getObject should return the same object");
+			bridge.releaseObject(id);
+			assertEqual(bridge.getObject(id), undefined, "getObject should return undefined after release");
 		});
 
 		runTest("close()", () => {
-			bridge.close();
+			bridge.close(2000);
 		});
 
 		// Print summary

@@ -143,8 +143,17 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 		options->add_event_processor(memnew(ViewHierarchyProcessor));
 	}
 
+	if (p_configuration_callback.is_valid()) {
+		p_configuration_callback.call(options);
+	}
+
+	// Add built-in attachments.
+	for (const Ref<SentryAttachment> &att : _get_default_attachments()) {
+		options->add_file_attachment(att);
+	}
+
 	sentry::logging::print_debug("Initializing Sentry SDK");
-	internal_sdk->init(_get_global_attachments(), p_configuration_callback);
+	internal_sdk->init();
 
 	if (internal_sdk->is_enabled()) {
 		if (is_auto_initializing) {
@@ -254,15 +263,15 @@ void SentrySDK::_init_contexts() {
 	internal_sdk->set_context("environment", sentry::contexts::make_environment_context());
 }
 
-PackedStringArray SentrySDK::_get_global_attachments() {
-	PackedStringArray attachments;
+Vector<Ref<SentryAttachment>> SentrySDK::_get_default_attachments() {
+	Vector<Ref<SentryAttachment>> attachments;
 
 	// Attach LOG file.
 	if (options->is_attach_log_enabled()) {
 		String log_path = ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path");
 		if (FileAccess::file_exists(log_path)) {
 			log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
-			attachments.append(log_path);
+			attachments.append(SentryAttachment::create_with_path(log_path));
 		} else {
 			ERR_PRINT("Sentry: Log file not found. Make sure \"debug/file_logging/enable_file_logging\" is turned ON in the Project Settings.");
 		}
@@ -272,14 +281,17 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 	if (options->is_attach_screenshot_enabled()) {
 		String screenshot_path = OS::get_singleton()->get_user_data_dir().path_join(SENTRY_SCREENSHOT_FN);
 		DirAccess::remove_absolute(screenshot_path);
-		attachments.append(screenshot_path);
+		attachments.append(SentryAttachment::create_with_path(screenshot_path));
 	}
 
 	// Attach view hierarchy (aka scene tree info).
 	if (options->is_attach_scene_tree_enabled()) {
 		String vh_path = OS::get_singleton()->get_user_data_dir().path_join(SENTRY_VIEW_HIERARCHY_FN);
 		DirAccess::remove_absolute(vh_path);
-		attachments.append(vh_path);
+		Ref<SentryAttachment> att = SentryAttachment::create_with_path(vh_path);
+		att->set_content_type("application/json");
+		att->set_attachment_type("event.view_hierarchy");
+		attachments.append(att);
 	}
 
 	return attachments;
@@ -372,12 +384,7 @@ void SentrySDK::prepare_and_auto_initialize() {
 	}
 #endif
 
-	if (internal_sdk->get_capabilities().has_flag(InternalSDK::SUPPORTS_EARLY_INIT)) {
-		_auto_initialize();
-	} else {
-		// Defer automatic initialization when the underlying SDK cannot be initialized early.
-		callable_mp(this, &SentrySDK::_auto_initialize).call_deferred();
-	}
+	_auto_initialize();
 }
 
 void SentrySDK::_notification(int p_what) {

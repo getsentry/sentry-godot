@@ -4,7 +4,7 @@
 
 ### Features
 
-- Support Web platform ([#488](https://github.com/getsentry/sentry-godot/pull/488))
+- Support Web platform ([#488](https://github.com/getsentry/sentry-godot/pull/488), [#532](https://github.com/getsentry/sentry-godot/pull/532))
 
 ### Dependencies
 
