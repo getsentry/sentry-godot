@@ -17,16 +17,6 @@ union MarshalData {
 	int32_t id; // object id or buffer id
 };
 
-// Pass bytes to JS side, returning id.
-int32_t store_bytes(const PackedByteArray &p_bytes);
-
-// Retrieve bytes from the JS side by id.
-PackedByteArray take_bytes(int32_t p_id);
-
-} //namespace em_js
-
-namespace sentry::javascript {
-
 enum JSValueType {
 	NIL,
 	BOOL,
@@ -37,8 +27,20 @@ enum JSValueType {
 	BYTES
 };
 
+// Pass bytes to JS side, returning non-zero id or 0 on error.
+int32_t store_bytes(const PackedByteArray &p_bytes);
+
+// Retrieve bytes from the JS side by id.
+PackedByteArray take_bytes(int32_t p_id);
+
+} //namespace em_js
+
+namespace sentry::javascript {
+
 class JSObject;
 using JSObjectPtr = std::shared_ptr<JSObject>;
+
+using JSValueType = em_js::JSValueType;
 
 // Get JavaScript bridge interface.
 JSObjectPtr js_bridge();

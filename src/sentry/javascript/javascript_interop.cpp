@@ -342,6 +342,7 @@ int32_t store_bytes(const PackedByteArray &p_bytes) {
 
 PackedByteArray take_bytes(int32_t p_id) {
 	em_js::MarshalData buf = {};
+
 	int32_t size = MAIN_THREAD_EM_ASM_INT({
 		try {
 			const bytes = window.SentryBridge.takeBytes($0);
@@ -358,9 +359,11 @@ PackedByteArray take_bytes(int32_t p_id) {
 			console.error("Sentry JS interop: Failed to retrieve bytes:", e);
 			return -1;
 		} }, p_id, &buf);
+
 	if (size <= 0) {
 		return PackedByteArray();
 	}
+
 	PackedByteArray bytes;
 	bytes.resize(size);
 	memcpy(bytes.ptrw(), buf.c, size);
@@ -485,14 +488,14 @@ JSValue::JSValue(const JSValue &p_other) :
 
 JSObjectPtr JSObject::create(const char *p_type_name) {
 	int32_t id = em_js::create_object(p_type_name);
-	if (id == 0) {
+	if (unlikely(id == 0)) {
 		return nullptr;
 	}
 	return JSObjectPtr(new JSObject(id));
 }
 
 JSObjectPtr JSObject::from_id(int32_t p_id) {
-	if (p_id == 0) {
+	if (unlikely(p_id == 0)) {
 		return nullptr;
 	}
 	return JSObjectPtr(new JSObject(p_id));
@@ -515,7 +518,7 @@ JSObjectPtr JSObject::create_callback(WasmCallbackFunc p_func) {
 JSValue JSObject::get(const char *p_property) const {
 	em_js::MarshalData rv = {};
 	int32_t result = em_js::object_get(id, p_property, &rv);
-	if (result < 0) {
+	if (unlikely(result < 0)) {
 		sentry::logging::print_error("JS interop: get() failed for \"", p_property, "\" property.");
 		return JSValue();
 	}
@@ -550,8 +553,8 @@ void JSObject::_set_impl(const char *p_property, const em_js::MarshalData *p_val
 JSValue JSObject::_call_impl(const char *p_method, const JSValueType *p_types, const em_js::MarshalData *p_values, int32_t p_len) {
 	em_js::MarshalData rv = {};
 	int32_t result = em_js::call_method(id, p_method, p_values, p_types, p_len, &rv);
-	if (result < 0) {
-		sentry::logging::print_error("JS interop failed calling \"", p_method, "\" method.");
+	if (unlikely(result < 0)) {
+		sentry::logging::print_error("JS interop: Failed calling \"", p_method, "\" method.");
 		return JSValue();
 	}
 	return _unmarshal_return_value((JSValueType)result, rv);
@@ -581,7 +584,7 @@ void JSObject::push_element_from_json(const char *p_json) {
 String JSObject::to_json() const {
 	em_js::MarshalData jsonData = {};
 	int32_t result = em_js::object_to_json(id, &jsonData);
-	if (result < 0) {
+	if (unlikely(result < 0)) {
 		sentry::logging::print_error("JS interop: Failed converting object to JSON.");
 		return String();
 	}

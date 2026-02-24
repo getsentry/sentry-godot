@@ -23,7 +23,7 @@ namespace sentry::javascript {
 
 extern "C" {
 
-static void before_send_wasm_callback(int *p_ids, int p_len) {
+static void before_send_wasm_callback(int32_t *p_ids, int32_t p_len) {
 	ERR_FAIL_COND(p_len != 2);
 
 	JSObjectPtr event_obj = JSObject::from_id(p_ids[0]);
@@ -86,7 +86,7 @@ static void before_send_wasm_callback(int *p_ids, int p_len) {
 	}
 }
 
-static void before_send_log_wasm_callback(int *p_ids, int p_len) {
+static void before_send_log_wasm_callback(int32_t *p_ids, int32_t p_len) {
 	ERR_FAIL_COND(p_len != 1);
 
 	JSObjectPtr log_jso = JSObject::from_id(p_ids[0]);
