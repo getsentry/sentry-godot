@@ -90,10 +90,26 @@ jobs:
           # * Create release archive
           version=$(grep 'VERSION =' SConstruct | cut -d '"' -f 2)
           git_short_sha=$(git rev-parse --short HEAD)
-          archive_file="sentry-godot-gdextension-${version}+${git_short_sha}.zip"
-          cd artifact/
           mkdir ${GITHUB_WORKSPACE}/out/
-          zip -r ${GITHUB_WORKSPACE}/out/${archive_file} addons/sentry/
+
+          # Addon-only zip
+          addon_archive="sentry-godot-${version}+${git_short_sha}.zip"
+          cd artifact/
+          zip -r ${GITHUB_WORKSPACE}/out/${addon_archive} addons/sentry/
+          cd ${GITHUB_WORKSPACE}
+
+          # Demo project zip
+          cp -r project/ samples_staging/
+          rm -rf samples_staging/test/ samples_staging/.godot/
+          cp -r artifact/addons samples_staging/
+          # Sanitize project.godot: remove [editor_plugins] and [gdunit4] sections, clear DSN
+          awk '/^\[editor_plugins\]/ { skip=1; next } /^\[gdunit4\]/ { skip=1; next } /^\[/ { skip=0 } !skip' \
+            samples_staging/project.godot > samples_staging/project.godot.tmp
+          mv samples_staging/project.godot.tmp samples_staging/project.godot
+          sed -i '/^options\/dsn=/d' samples_staging/project.godot
+          demo_archive="sentry-godot-demo-project-${version}+${git_short_sha}.zip"
+          cd samples_staging/
+          zip -r ${GITHUB_WORKSPACE}/out/${demo_archive} .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
