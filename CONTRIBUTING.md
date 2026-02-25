@@ -124,6 +124,7 @@ npm test               # Run tests
 - `project/test/` -- unit tests
 - `test_web/` -- Playwright-based web/WASM test infrastructure
 - `scripts/` -- various scripts used mostly for maintenance
+- `assetlib/` -- metadata for Godot Asset Library entries
 - `doc_classes/` -- built-in Godot documentation (class reference)
 - `android_lib/` -- supporting library for Android, containing a Godot plugin that bridges the Sentry GDExtension with the native Sentry Android SDK.
 
@@ -261,3 +262,17 @@ Invoke-Pester -Path Integration.Tests.ps1
 ```
 
 Tests validate crash capture, message capture, runtime error capture, and event metadata. Results are saved to `integration_tests/results/`.
+
+## Releasing
+
+### Godot Asset Library
+
+The [Godot Asset Library](https://godotengine.org/asset-library/) entry is updated automatically via the `publish-assetlib` workflow, which runs when a GitHub Release is published. It extracts the version from `SConstruct`, resolves the download URL from the release assets, and submits an edit to the AssetLib API. Pre-release versions (containing `-` in the version string) are skipped automatically.
+
+Asset metadata is stored in `assetlib/addon.yaml`. Changes to the AssetLib entry (title, description, icon, etc.) should be made through PRs updating this file.
+
+You can test the update script locally using `--dry-run`:
+
+```bash
+./scripts/publish-assetlib.sh --dry-run assetlib/addon.yaml 1.3.0 4.3
+```
