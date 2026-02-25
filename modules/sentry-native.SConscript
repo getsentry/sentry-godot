@@ -122,7 +122,7 @@ if platform == "windows":
     cmake_gen += f' -G "Visual Studio 17 2022" {cmake_arch}'
 elif platform == "linux":
     if arch == "x86_32":
-        cmake_gen += ' -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" -DLINK_OPTIONS="-m32"'
+        cmake_gen += ' -DSENTRY_BUILD_FORCE32=ON -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" -DLINK_OPTIONS="-m32"'
     elif arch == "x86_64":
         cmake_gen += ' -DCMAKE_C_FLAGS="-m64" -DCMAKE_CXX_FLAGS="-m64" -DLINK_OPTIONS="-m64"'
     else:
