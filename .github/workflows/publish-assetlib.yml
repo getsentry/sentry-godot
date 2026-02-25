@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   publish:
+    if: ${{ !github.event.release.prerelease }}
     runs-on: ubuntu-latest
     name: Publish to Godot Asset Library
     steps:
