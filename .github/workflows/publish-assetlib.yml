@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   publish:
-    if: ${{ !github.event.release.prerelease }}
     runs-on: ubuntu-latest
     name: Publish to Godot Asset Library
     steps:
@@ -20,10 +19,15 @@ jobs:
       - name: Extract version metadata from SConstruct
         id: version
         run: |
-          echo "version=$(grep -oP '^VERSION\s*=\s*"\K[^"]+' SConstruct)" >> "$GITHUB_OUTPUT"
+          VERSION=$(grep -oP '^VERSION\s*=\s*"\K[^"]+' SConstruct)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "godot=$(grep -oP '^COMPATIBILITY_MINIMUM\s*=\s*"\K[^"]+' SConstruct)" >> "$GITHUB_OUTPUT"
+          if [[ "$VERSION" == *-* ]]; then
+            echo "::notice::Skipping AssetLib publish for pre-release version $VERSION"
+          fi
 
       - name: Publish addon to AssetLib
+        if: ${{ !contains(steps.version.outputs.version, '-') }} # skip pre-releases
         env:
           ASSETLIB_USERNAME: ${{ secrets.ASSETLIB_USERNAME }}
           ASSETLIB_PASSWORD: ${{ secrets.ASSETLIB_PASSWORD }}
