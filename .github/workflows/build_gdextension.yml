@@ -300,6 +300,8 @@ jobs:
             project/
             !project/
             project/addons/sentry/
+            !project/addons/sentry/bin/**/*.lib
+            !project/addons/sentry/bin/**/*.exp
 
   android-plugin:
     name: 🤖 Android Plugin AARs
