@@ -1,0 +1,30 @@
+name: 📦 Publish to AssetLib
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    name: Publish to Godot Asset Library
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Extract version metadata from SConstruct
+        id: version
+        run: |
+          echo "version=$(grep -oP '^VERSION\s*=\s*"\K[^"]+' SConstruct)" >> "$GITHUB_OUTPUT"
+          echo "godot=$(grep -oP '^COMPATIBILITY_MINIMUM\s*=\s*"\K[^"]+' SConstruct)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish addon to AssetLib
+        env:
+          ASSETLIB_USERNAME: ${{ secrets.ASSETLIB_USERNAME }}
+          ASSETLIB_PASSWORD: ${{ secrets.ASSETLIB_PASSWORD }}
+        run: >
+          ./scripts/publish-assetlib.sh
+          assetlib/addon.yaml
+          "${{ steps.version.outputs.version }}"
+          "${{ steps.version.outputs.godot }}"
+

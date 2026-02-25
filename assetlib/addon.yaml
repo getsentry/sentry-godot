@@ -1,0 +1,20 @@
+asset_id: "4756"
+
+title: Sentry for Godot
+description: >-
+  Monitor your game's health during QA and after release with crash reports,
+  script errors, user feedback, and more through real-time alerting and a
+  web dashboard at https://sentry.io.
+category_id: "5" # Tools
+cost: MIT
+
+download_provider: Custom
+download_asset_prefix: sentry-godot-{version}
+browse_url: https://github.com/getsentry/sentry-godot/
+issues_url: https://github.com/getsentry/sentry-godot/issues/
+icon_url: https://raw.githubusercontent.com/getsentry/sentry-godot/{version}/project/addons/sentry/icon.png
+
+previews:
+  - type: video
+    link: https://www.youtube.com/watch?v=l2u1NQNWksQ
+    thumbnail: https://img.youtube.com/vi/l2u1NQNWksQ/default.jpg
