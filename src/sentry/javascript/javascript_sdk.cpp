@@ -65,23 +65,12 @@ static void before_send_wasm_callback(int32_t *p_ids, int32_t p_len) {
 
 			sentry::logging::print_debug("Adding attachment: " + att->get_path());
 
-			uint32_t bytes_id = em_js::store_bytes(bytes);
-			if (bytes_id == 0) {
-				sentry::logging::print_warning("Failed to push attachment bytes to JS: " + att->get_path());
-				continue;
-			}
-
-			JSObjectPtr attachment_data = JSObject::create("Object");
-			ERR_CONTINUE(!attachment_data);
-			attachment_data->set("id", bytes_id);
-			attachment_data->set("filename", att->get_path().get_file().utf8());
-			if (!att->get_attachment_type().is_empty()) {
-				attachment_data->set("attachmentType", att->get_attachment_type().ascii());
-			}
-			if (!att->get_content_type().is_empty()) {
-				attachment_data->set("contentType", att->get_content_type().ascii());
-			}
-			out_attachments->call("push", attachment_data);
+			js_bridge()->call("pushAttachmentData",
+					out_attachments,
+					bytes,
+					att->get_path().get_file().utf8(),
+					att->get_content_type().utf8(),
+					att->get_attachment_type().utf8());
 		}
 	}
 }
@@ -271,7 +260,7 @@ void JavaScriptSDK::init() {
 void JavaScriptSDK::close() {
 	ERR_FAIL_COND(!js_bridge());
 
-	js_bridge()->call("close", 2000);
+	js_bridge()->call("close", SENTRY_OPTIONS()->get_shutdown_timeout_ms());
 }
 
 bool JavaScriptSDK::is_enabled() const {

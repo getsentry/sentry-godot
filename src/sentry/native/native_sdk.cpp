@@ -367,6 +367,7 @@ void NativeSDK::init() {
 	sentry_options_set_environment(options, SENTRY_OPTIONS()->get_environment().utf8());
 	sentry_options_set_sample_rate(options, SENTRY_OPTIONS()->get_sample_rate());
 	sentry_options_set_max_breadcrumbs(options, SENTRY_OPTIONS()->get_max_breadcrumbs());
+	sentry_options_set_shutdown_timeout(options, SENTRY_OPTIONS()->get_shutdown_timeout_ms());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
 	sentry_options_set_logger_enabled_when_crashed(options, false);
 	sentry_options_set_enable_logs(options, SENTRY_OPTIONS()->get_enable_logs());

@@ -255,6 +255,7 @@ void CocoaSDK::init() {
 
 		options.enableAppHangTracking = SENTRY_OPTIONS()->is_app_hang_tracking_enabled();
 		options.appHangTimeoutInterval = SENTRY_OPTIONS()->get_app_hang_timeout_sec();
+		options.shutdownTimeInterval = SENTRY_OPTIONS()->get_shutdown_timeout_ms() / 1000.0;
 
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;

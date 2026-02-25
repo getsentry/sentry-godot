@@ -66,6 +66,7 @@ try {
 			"lastEventId",
 			"addBreadcrumb",
 			"addBytesAttachment",
+			"pushAttachmentData",
 			"storeBytes",
 			"takeBytes",
 			"releaseBytes",
@@ -196,6 +197,21 @@ try {
 			const id = bridge.storeBytes(new Uint8Array([ 10, 20 ]));
 			bridge.releaseBytes(id);
 			assertEqual(bridge.takeBytes(id), undefined, "releaseBytes should discard bytes");
+		});
+
+		runTest("pushAttachmentData()", () => {
+			const attachments = [];
+			bridge.pushAttachmentData(attachments, new Uint8Array([ 1, 2, 3 ]), "test.bin", "application/octet-stream", "event.attachment");
+			assertEqual(attachments.length, 1, "should push one attachment");
+			assertEqual(attachments[0].filename, "test.bin", "filename should match");
+			assertEqual(attachments[0].bytes.length, 3, "bytes length should match");
+			assertEqual(attachments[0].contentType, "application/octet-stream", "contentType should match");
+			assertEqual(attachments[0].attachmentType, "event.attachment", "attachmentType should match");
+
+			bridge.pushAttachmentData(attachments, new Uint8Array([ 4, 5 ]), "test2.bin");
+			assertEqual(attachments.length, 2, "should push second attachment");
+			assertEqual(attachments[1].contentType, undefined, "optional contentType should be undefined");
+			assertEqual(attachments[1].attachmentType, undefined, "optional attachmentType should be undefined");
 		});
 
 		runTest("addBytesAttachment()", () => {
