@@ -6,6 +6,16 @@
 
 - Add configurable `shutdown_timeout_ms` option ([#539](https://github.com/getsentry/sentry-godot/pull/539))
 
+### Improvements
+
+- Optimize file attachment loading in WASM bridge by reducing cross-boundary round-trips ([#538](https://github.com/getsentry/sentry-godot/pull/538))
+
+### Dependencies
+
+- Bump Sentry JavaScript from v10.39.0 to v10.40.0 ([#540](https://github.com/getsentry/sentry-godot/pull/540))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10400)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.39.0...10.40.0)
+
 ## 1.4.0-beta.0
 
 ### Features
