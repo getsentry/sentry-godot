@@ -4,6 +4,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      force:
+        description: Publish even if the version is a pre-release
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -27,7 +32,7 @@ jobs:
           fi
 
       - name: Publish addon to AssetLib
-        if: ${{ !contains(steps.version.outputs.version, '-') }} # skip pre-releases
+        if: ${{ inputs.force || !contains(steps.version.outputs.version, '-') }} # skip pre-releases
         env:
           ASSETLIB_USERNAME: ${{ secrets.ASSETLIB_USERNAME }}
           ASSETLIB_PASSWORD: ${{ secrets.ASSETLIB_PASSWORD }}
