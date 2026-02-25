@@ -103,7 +103,7 @@ fi
 # --- Login ---
 
 echo "Logging in to AssetLib..."
-LOGIN_RESPONSE=$(curl -sf "$ASSETLIB_API/login" \
+LOGIN_RESPONSE=$(curl -sS --fail-with-body "$ASSETLIB_API/login" \
     -d "$(jq -n --arg u "$ASSETLIB_USERNAME" --arg p "$ASSETLIB_PASSWORD" \
         '{username: $u, password: $p}')" \
     -H "Content-Type: application/json")
@@ -116,7 +116,7 @@ if [[ -z "$TOKEN" || "$TOKEN" == "null" ]]; then
 fi
 
 # Ensure we log out even if the edit request fails.
-logout() { curl -sf "$ASSETLIB_API/logout" \
+logout() { curl -sS --fail-with-body "$ASSETLIB_API/logout" \
     -d "$(jq -n --arg t "$TOKEN" '{token: $t}')" \
     -H "Content-Type: application/json" > /dev/null 2>&1 || true; }
 trap logout EXIT
@@ -126,7 +126,7 @@ trap logout EXIT
 PAYLOAD=$(echo "$PAYLOAD" | jq --arg token "$TOKEN" '. + {token: $token}')
 
 echo "Submitting edit for asset $ASSET_ID..."
-EDIT_RESPONSE=$(curl -sf "$ASSETLIB_API/asset/$ASSET_ID" \
+EDIT_RESPONSE=$(curl -sS --fail-with-body "$ASSETLIB_API/asset/$ASSET_ID" \
     -d "$PAYLOAD" \
     -H "Content-Type: application/json")
 

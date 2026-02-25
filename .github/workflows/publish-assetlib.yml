@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -27,4 +30,3 @@ jobs:
           assetlib/addon.yaml
           "${{ steps.version.outputs.version }}"
           "${{ steps.version.outputs.godot }}"
-
