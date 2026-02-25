@@ -25,6 +25,7 @@ func test_sdk_lifecycle() -> void:
 
 	SentrySDK.init(func (options: SentryOptions) -> void:
 		options.before_send = _before_send
+		options.shutdown_timeout_ms = 2000
 	)
 	assert_bool(SentrySDK.is_enabled()).is_true()
 
@@ -49,6 +50,7 @@ func test_reinit_clears_options() -> void:
 	# First init with before_send callback.
 	SentrySDK.init(func (options: SentryOptions) -> void:
 		options.before_send = _before_send
+		options.shutdown_timeout_ms = 2000
 	)
 	assert_bool(SentrySDK.is_enabled()).is_true()
 

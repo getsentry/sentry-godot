@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add configurable `shutdown_timeout_ms` option ([#539](https://github.com/getsentry/sentry-godot/pull/539))
+
 ### Improvements
 
 - Optimize file attachment loading in WASM bridge by reducing cross-boundary round-trips ([#538](https://github.com/getsentry/sentry-godot/pull/538))

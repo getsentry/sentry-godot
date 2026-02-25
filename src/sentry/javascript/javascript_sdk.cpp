@@ -260,7 +260,7 @@ void JavaScriptSDK::init() {
 void JavaScriptSDK::close() {
 	ERR_FAIL_COND(!js_bridge());
 
-	js_bridge()->call("close", 2000);
+	js_bridge()->call("close", SENTRY_OPTIONS()->get_shutdown_timeout_ms());
 }
 
 bool JavaScriptSDK::is_enabled() const {

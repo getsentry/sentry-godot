@@ -149,6 +149,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val enableLogs = optionsData["enable_logs"] as Boolean
             val appHangTracking = optionsData["app_hang_tracking"] as Boolean
             val appHangTimeoutSec = optionsData["app_hang_timeout_sec"] as Double
+            val shutdownTimeoutMs = optionsData["shutdown_timeout_ms"].toIntOrThrow()
 
             SentryAndroid.init(godot.getActivity()!!.applicationContext) { options ->
                 options.dsn = dsn.ifEmpty { null }
@@ -163,6 +164,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.logs.isEnabled = enableLogs
                 options.isAnrEnabled = appHangTracking
                 options.anrTimeoutIntervalMillis = (appHangTimeoutSec * 1000.0).toLong()
+                options.shutdownTimeoutMillis = shutdownTimeoutMs.toLong()
                 options.beforeSend =
                     SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
                         Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")

@@ -51,6 +51,12 @@ func test_max_breadcrumbs() -> void:
 	assert_int(options.max_breadcrumbs).is_equal(42)
 
 
+## SentryOptions.shutdown_timeout_ms should be set to the specified value.
+func test_shutdown_timeout_ms() -> void:
+	options.shutdown_timeout_ms = 5000
+	assert_int(options.shutdown_timeout_ms).is_equal(5000)
+
+
 ## SentryOptions.logger_event_mask should be set to the specified value.
 func test_logger_event_mask() -> void:
 	var mask := SentryOptions.MASK_SCRIPT | SentryOptions.MASK_SHADER

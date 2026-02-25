@@ -250,6 +250,7 @@ void AndroidSDK::init() {
 	optionsData["enable_logs"] = SENTRY_OPTIONS()->get_enable_logs();
 	optionsData["app_hang_tracking"] = SENTRY_OPTIONS()->is_app_hang_tracking_enabled();
 	optionsData["app_hang_timeout_sec"] = SENTRY_OPTIONS()->get_app_hang_timeout_sec();
+	optionsData["shutdown_timeout_ms"] = SENTRY_OPTIONS()->get_shutdown_timeout_ms();
 
 	android_plugin->call(ANDROID_SN(init),
 			optionsData,
