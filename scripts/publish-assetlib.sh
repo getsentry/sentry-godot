@@ -18,20 +18,25 @@ ASSETLIB_API="https://godotengine.org/asset-library/api"
 
 # --- Parse arguments ---
 
+usage() {
+    echo "Usage: publish-assetlib.sh [-n|--dry-run] <metadata.yaml> <version> <godot_version>" >&2
+    exit "$1"
+}
+
 DRY_RUN=false
 PARAMS=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -n|--dry-run) DRY_RUN=true; shift;;
-        -*) echo "Unknown option: $1" >&2; exit 1;;
+        -h|--help) usage 0;;
+        -*) echo "Unknown option: $1" >&2; usage 1;;
         *) PARAMS+=("$1"); shift;;
     esac
 done
 
 if [[ ${#PARAMS[@]} -ne 3 ]]; then
-    echo "Usage: publish-assetlib.sh [-n|--dry-run] <metadata.yaml> <version> <godot_version>" >&2
-    exit 1
+    usage 1
 fi
 
 METADATA_FILE="${PARAMS[0]}"
