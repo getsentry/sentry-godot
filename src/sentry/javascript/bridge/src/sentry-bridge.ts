@@ -32,7 +32,7 @@ class IdStore<T> {
 
 // Stores info about attachments loaded from C++ layer during event processing.
 interface AttachmentData {
-  id: number; // the content is stored in the byte store and referenced by this id.
+  bytes: Uint8Array;
   filename: string;
   contentType?: string;
   attachmentType?: string;
@@ -85,6 +85,21 @@ class SentryBridge {
 
   public releaseObject(id: number): void {
     this._objectStore.release(id);
+  }
+
+  public pushAttachmentData(
+    attachmentData: Array<AttachmentData>,
+    bytes: Uint8Array,
+    filename: string,
+    contentType?: string,
+    attachmentType?: string,
+  ): void {
+    attachmentData.push({
+      bytes,
+      filename,
+      contentType,
+      attachmentType,
+    });
   }
 
   public init(
@@ -160,15 +175,13 @@ class SentryBridge {
           hint.attachments = [];
         }
         for (const attachmentData of outAttachments) {
-          const bytes = this._byteStore.get(attachmentData.id);
-          if (bytes) {
+          if (attachmentData.bytes) {
             hint.attachments.push({
-              data: bytes,
+              data: attachmentData.bytes,
               filename: attachmentData.filename,
               ...(attachmentData.contentType && { contentType: attachmentData.contentType }),
               ...(attachmentData.attachmentType && { attachmentType: attachmentData.attachmentType }),
             } as any);
-            this._byteStore.release(attachmentData.id);
           }
         }
 

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Improvements
+
+- Optimize file attachment loading in WASM bridge by reducing cross-boundary round-trips ([#538](https://github.com/getsentry/sentry-godot/pull/538))
+
 ### Dependencies
 
 - Bump Sentry JavaScript from v10.39.0 to v10.40.0 ([#540](https://github.com/getsentry/sentry-godot/pull/540))
