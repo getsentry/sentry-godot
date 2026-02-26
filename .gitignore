@@ -1,6 +1,7 @@
 # Project-related
 project/addons/gdUnit4
 project/addons/sentry/*
+!project/addons/sentry/README.md
 !project/addons/sentry/user_feedback/
 project/export_presets.cfg
 project/.vscode/

@@ -94,6 +94,7 @@ jobs:
 
           # Addon-only zip
           addon_archive="sentry-godot-${version}+${git_short_sha}.zip"
+          cp project/addons/sentry/README.md artifact/addons/sentry/
           cd artifact/
           zip -r ${GITHUB_WORKSPACE}/out/${addon_archive} addons/sentry/
           cd ${GITHUB_WORKSPACE}
