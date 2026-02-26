@@ -1,6 +1,8 @@
 # Sentry SDK for Godot — Demo Project
 
-This demo project showcases the features of the Sentry SDK for Godot.
+Sentry helps you track errors and crashes in your Godot games — so you can find and fix problems before your players notice.
+
+This demo project showcases the features of the Sentry SDK.
 
 ## Getting Started
 

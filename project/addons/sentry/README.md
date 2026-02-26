@@ -1,5 +1,7 @@
 # Sentry SDK for Godot
 
+Sentry helps you track errors and crashes in your Godot games — so you can find and fix problems before your players notice.
+
 ## Quick Start
 
 1. Sign up or log in at [sentry.io](https://sentry.io).
