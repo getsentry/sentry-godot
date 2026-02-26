@@ -6,7 +6,11 @@ const TEST_DSN := "https://examplePublicKey@o0.ingest.sentry.io/0"
 
 
 func init_sdk() -> void:
-	ProjectSettings.set_setting("sentry/options/dsn", "")
+	# Reset project settings to defaults so env vars can take effect.
+	var defaults := SentryOptions.new()
+	ProjectSettings.set_setting("sentry/options/dsn", defaults.dsn)
+	ProjectSettings.set_setting("sentry/options/release", defaults.release)
+	ProjectSettings.set_setting("sentry/options/environment", defaults.environment)
 	OS.set_environment("SENTRY_DSN", TEST_DSN)
 	OS.set_environment("SENTRY_RELEASE", "env-release@1.0")
 	OS.set_environment("SENTRY_ENVIRONMENT", "env-testing")
