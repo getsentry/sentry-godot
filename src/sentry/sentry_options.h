@@ -112,7 +112,6 @@ private:
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
-	static void _apply_environment_variables(const Ref<SentryOptions> &p_options);
 
 	void _init_debug_option(DebugMode p_debug_mode);
 

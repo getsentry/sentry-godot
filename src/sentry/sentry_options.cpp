@@ -143,32 +143,43 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->auto_init = ProjectSettings::get_singleton()->get_setting("sentry/options/auto_init", p_options->auto_init);
 	p_options->skip_auto_init_on_editor_play = ProjectSettings::get_singleton()->get_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
 
-	// For options that support environment variables (dsn, release, environment),
-	// only overwrite when the project setting differs from its default.
-	// This preserves env var values when project settings are at their defaults.
-	const Ref<SentryOptions> defaults = Ref(memnew(SentryOptions));
-
-	String ps_dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", defaults->dsn);
-	if (ps_dsn != defaults->dsn) {
+	// DSN: project setting > env var > default.
+	String ps_dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
+	if (ps_dsn != p_options->dsn) {
 		p_options->dsn = ps_dsn;
+	} else {
+		String env_dsn = OS::get_singleton()->get_environment("SENTRY_DSN");
+		if (!env_dsn.is_empty()) {
+			p_options->set_dsn(env_dsn);
+		}
 	}
 
-	String ps_release = ProjectSettings::get_singleton()->get_setting("sentry/options/release", defaults->release);
-	if (ps_release != defaults->release) {
+	// Release: project setting > env var > default.
+	String ps_release = ProjectSettings::get_singleton()->get_setting("sentry/options/release", p_options->release);
+	if (ps_release != p_options->release) {
 		p_options->set_release(ps_release);
 	} else {
-		// Process current value (env var or default template) through the setter.
-		p_options->set_release(p_options->release);
+		String env_release = OS::get_singleton()->get_environment("SENTRY_RELEASE");
+		if (!env_release.is_empty()) {
+			p_options->set_release(env_release);
+		} else {
+			p_options->set_release(p_options->release);
+		}
 	}
 
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/options/dist", p_options->dist);
 
-	String ps_environment = ProjectSettings::get_singleton()->get_setting("sentry/options/environment", defaults->environment);
-	if (ps_environment != defaults->environment) {
+	// Environment: project setting > env var > default.
+	String ps_environment = ProjectSettings::get_singleton()->get_setting("sentry/options/environment", p_options->environment);
+	if (ps_environment != p_options->environment) {
 		p_options->set_environment(ps_environment);
 	} else {
-		// Process current value (env var or default placeholder) through the setter.
-		p_options->set_environment(p_options->environment);
+		String env_environment = OS::get_singleton()->get_environment("SENTRY_ENVIRONMENT");
+		if (!env_environment.is_empty()) {
+			p_options->set_environment(env_environment);
+		} else {
+			p_options->set_environment(p_options->environment);
+		}
 	}
 
 	// DebugMode is only used to represent the debug option in the project settings.
@@ -211,39 +222,6 @@ void SentryOptions::_init_debug_option(DebugMode p_mode) {
 	debug = (p_mode == DebugMode::DEBUG_ON) || (p_mode == DebugMode::DEBUG_AUTO && OS::get_singleton()->is_debug_build());
 }
 
-void SentryOptions::_apply_environment_variables(const Ref<SentryOptions> &p_options) {
-	ERR_FAIL_COND(p_options.is_null());
-	ERR_FAIL_NULL(OS::get_singleton());
-
-	// Use a plain instance to obtain default values.
-	// Env vars only apply when the option still matches its default.
-	const Ref<SentryOptions> defaults = Ref(memnew(SentryOptions));
-
-	// DSN
-	if (p_options->dsn == defaults->dsn) {
-		String env_dsn = OS::get_singleton()->get_environment("SENTRY_DSN");
-		if (!env_dsn.is_empty()) {
-			p_options->set_dsn(env_dsn);
-		}
-	}
-
-	// Release
-	if (p_options->release == defaults->release) {
-		String env_release = OS::get_singleton()->get_environment("SENTRY_RELEASE");
-		if (!env_release.is_empty()) {
-			p_options->set_release(env_release);
-		}
-	}
-
-	// Environment
-	if (p_options->environment == defaults->environment) {
-		String env_environment = OS::get_singleton()->get_environment("SENTRY_ENVIRONMENT");
-		if (!env_environment.is_empty()) {
-			p_options->set_environment(env_environment);
-		}
-	}
-}
-
 Ref<SentryOptions> SentryOptions::create_from_project_settings() {
 	Ref<SentryOptions> options = Ref(memnew(SentryOptions));
 
@@ -253,7 +231,6 @@ Ref<SentryOptions> SentryOptions::create_from_project_settings() {
 		are_settings_defined = true;
 	}
 
-	_apply_environment_variables(options);
 	_load_project_settings(options);
 	return options;
 }
