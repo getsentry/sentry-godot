@@ -164,6 +164,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 		if (!env_release.is_empty()) {
 			p_options->set_release(env_release);
 		} else {
+			// Apply format substitution on the default value.
 			p_options->set_release(p_options->release);
 		}
 	}
@@ -179,6 +180,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 		if (!env_environment.is_empty()) {
 			p_options->set_environment(env_environment);
 		} else {
+			// Apply format substitution on the default value.
 			p_options->set_environment(p_options->environment);
 		}
 	}
