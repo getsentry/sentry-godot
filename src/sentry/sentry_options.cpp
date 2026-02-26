@@ -143,10 +143,33 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->auto_init = ProjectSettings::get_singleton()->get_setting("sentry/options/auto_init", p_options->auto_init);
 	p_options->skip_auto_init_on_editor_play = ProjectSettings::get_singleton()->get_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
 
-	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
-	p_options->set_release(ProjectSettings::get_singleton()->get_setting("sentry/options/release", p_options->release));
+	// For options that support environment variables (dsn, release, environment),
+	// only overwrite when the project setting differs from its default.
+	// This preserves env var values when project settings are at their defaults.
+	const Ref<SentryOptions> defaults = Ref(memnew(SentryOptions));
+
+	String ps_dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", defaults->dsn);
+	if (ps_dsn != defaults->dsn) {
+		p_options->dsn = ps_dsn;
+	}
+
+	String ps_release = ProjectSettings::get_singleton()->get_setting("sentry/options/release", defaults->release);
+	if (ps_release != defaults->release) {
+		p_options->set_release(ps_release);
+	} else {
+		// Process current value (env var or default template) through the setter.
+		p_options->set_release(p_options->release);
+	}
+
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/options/dist", p_options->dist);
-	p_options->set_environment(ProjectSettings::get_singleton()->get_setting("sentry/options/environment", p_options->environment));
+
+	String ps_environment = ProjectSettings::get_singleton()->get_setting("sentry/options/environment", defaults->environment);
+	if (ps_environment != defaults->environment) {
+		p_options->set_environment(ps_environment);
+	} else {
+		// Process current value (env var or default placeholder) through the setter.
+		p_options->set_environment(p_options->environment);
+	}
 
 	// DebugMode is only used to represent the debug option in the project settings.
 	// The user may also set the `debug` option explicitly in a configuration callback.
@@ -191,10 +214,9 @@ void SentryOptions::_init_debug_option(DebugMode p_mode) {
 void SentryOptions::_apply_environment_variables(const Ref<SentryOptions> &p_options) {
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(OS::get_singleton());
-	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	// Use a fresh SentryOptions instance to obtain default values.
-	// Env vars only apply when the raw project setting matches the default.
+	// Use a plain instance to obtain default values.
+	// Env vars only apply when the option still matches its default.
 	const Ref<SentryOptions> defaults = Ref(memnew(SentryOptions));
 
 	// DSN
@@ -206,9 +228,7 @@ void SentryOptions::_apply_environment_variables(const Ref<SentryOptions> &p_opt
 	}
 
 	// Release
-	String raw_release = ProjectSettings::get_singleton()->get_setting(
-			"sentry/options/release", defaults->release);
-	if (raw_release == defaults->release) {
+	if (p_options->release == defaults->release) {
 		String env_release = OS::get_singleton()->get_environment("SENTRY_RELEASE");
 		if (!env_release.is_empty()) {
 			p_options->set_release(env_release);
@@ -216,9 +236,7 @@ void SentryOptions::_apply_environment_variables(const Ref<SentryOptions> &p_opt
 	}
 
 	// Environment
-	String raw_environment = ProjectSettings::get_singleton()->get_setting(
-			"sentry/options/environment", defaults->environment);
-	if (raw_environment == defaults->environment) {
+	if (p_options->environment == defaults->environment) {
 		String env_environment = OS::get_singleton()->get_environment("SENTRY_ENVIRONMENT");
 		if (!env_environment.is_empty()) {
 			p_options->set_environment(env_environment);
@@ -235,8 +253,8 @@ Ref<SentryOptions> SentryOptions::create_from_project_settings() {
 		are_settings_defined = true;
 	}
 
-	_load_project_settings(options);
 	_apply_environment_variables(options);
+	_load_project_settings(options);
 	return options;
 }
 
