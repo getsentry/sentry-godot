@@ -54,7 +54,7 @@ ASSET_JSON=$(yq -o=json '.' "$METADATA_FILE")
 
 ASSET_ID=$(echo "$ASSET_JSON" | jq -r '.asset_id')
 ASSET_PREFIX=$(echo "$ASSET_JSON" | jq -r '.download_asset_prefix')
-REPO=$(echo "$ASSET_JSON" | jq -r '.browse_url | ltrimstr("https://github.com/")')
+REPO=$(echo "$ASSET_JSON" | jq -r '.browse_url | ltrimstr("https://github.com/") | rtrimstr("/")')
 
 echo "Asset: $(echo "$ASSET_JSON" | jq -r '.title') (ID: $ASSET_ID)"
 echo "Version: $VERSION, Godot: $GODOT_VERSION"
