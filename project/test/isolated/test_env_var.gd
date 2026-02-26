@@ -27,6 +27,7 @@ func after() -> void:
 
 
 ## SENTRY_DSN should be used to initialize the SDK.
+## Note: DSN is not readable back through the API, so we verify indirectly.
 func test_env_var_dsn() -> void:
 	assert_bool(SentrySDK.is_enabled()).is_true()
 
