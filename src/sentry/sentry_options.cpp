@@ -147,7 +147,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	// DSN: project setting > env var > default.
 	String ps_dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
 	if (ps_dsn != p_options->dsn) {
-		p_options->dsn = ps_dsn;
+		p_options->set_dsn(ps_dsn);
 	} else {
 		String env_dsn = OS::get_singleton()->get_environment("SENTRY_DSN");
 		if (!env_dsn.is_empty()) {
