@@ -11,9 +11,11 @@ func init_sdk() -> void:
 	ProjectSettings.set_setting("sentry/options/dsn", defaults.dsn)
 	ProjectSettings.set_setting("sentry/options/release", defaults.release)
 	ProjectSettings.set_setting("sentry/options/environment", defaults.environment)
+
 	OS.set_environment("SENTRY_DSN", TEST_DSN)
 	OS.set_environment("SENTRY_RELEASE", "env-release@1.0")
 	OS.set_environment("SENTRY_ENVIRONMENT", "env-testing")
+
 	SentrySDK.init()
 
 
