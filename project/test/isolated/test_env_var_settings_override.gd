@@ -15,6 +15,11 @@ func after() -> void:
 	OS.unset_environment("SENTRY_RELEASE")
 	OS.unset_environment("SENTRY_ENVIRONMENT")
 
+	# Restore settings
+	var defaults := SentryOptions.new()
+	ProjectSettings.set_setting("sentry/options/release", defaults.release)
+	ProjectSettings.set_setting("sentry/options/environment", defaults.environment)
+
 
 ## Explicit release project setting should take precedence over SENTRY_RELEASE.
 func test_project_setting_overrides_env_var_release() -> void:
