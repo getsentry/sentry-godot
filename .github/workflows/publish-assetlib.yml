@@ -1,0 +1,43 @@
+name: 📦 Publish to AssetLib
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Publish even if the version is a pre-release
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    name: Publish to Godot Asset Library
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Extract version metadata from SConstruct
+        id: version
+        run: |
+          VERSION=$(grep -oP '^VERSION\s*=\s*"\K[^"]+' SConstruct)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "godot=$(grep -oP '^COMPATIBILITY_MINIMUM\s*=\s*"\K[^"]+' SConstruct)" >> "$GITHUB_OUTPUT"
+          if [[ "$VERSION" == *-* ]]; then
+            echo "::notice::Skipping AssetLib publish for pre-release version $VERSION"
+          fi
+
+      - name: Publish addon to AssetLib
+        if: ${{ inputs.force || !contains(steps.version.outputs.version, '-') }} # skip pre-releases
+        env:
+          ASSETLIB_USERNAME: ${{ secrets.ASSETLIB_USERNAME }}
+          ASSETLIB_PASSWORD: ${{ secrets.ASSETLIB_PASSWORD }}
+        run: >
+          ./scripts/publish-assetlib.sh
+          assetlib/addon.yaml
+          "${{ steps.version.outputs.version }}"
+          "${{ steps.version.outputs.godot }}"

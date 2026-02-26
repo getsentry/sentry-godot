@@ -1,0 +1,18 @@
+asset_id: "4756"
+
+title: Sentry
+description: >-
+  Sentry for Godot helps you monitor your game's health during QA and after
+  release. It provides insights into crash reports, script errors, hardware
+  information, user feedback, attachments and more through real-time alerting
+  and an intuitive web dashboard. With automatic error reporting, release
+  tracking, and AI-assisted analysis, you can quickly identify, prioritize,
+  and resolve issues for a better player experience.
+category_id: "5" # Tools
+cost: MIT
+
+download_provider: Custom
+download_asset_prefix: sentry-godot-{version}
+browse_url: https://github.com/getsentry/sentry-godot/
+issues_url: https://github.com/getsentry/sentry-godot/issues/
+icon_url: https://images.icon-icons.com/2389/PNG/512/sentry_logo_icon_144898.png
