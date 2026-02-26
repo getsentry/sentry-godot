@@ -22,22 +22,23 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Extract version metadata from SConstruct
-        id: version
         run: |
           VERSION=$(grep -oP '^VERSION\s*=\s*"\K[^"]+' SConstruct)
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "godot=$(grep -oP '^COMPATIBILITY_MINIMUM\s*=\s*"\K[^"]+' SConstruct)" >> "$GITHUB_OUTPUT"
-          if [[ "$VERSION" == *-* ]]; then
-            echo "::notice::Skipping AssetLib publish for pre-release version $VERSION"
-          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "GODOT_VERSION=$(grep -oP '^COMPATIBILITY_MINIMUM\s*=\s*"\K[^"]+' SConstruct)" >> "$GITHUB_ENV"
+
+      - name: Notify pre-release skip
+        if: ${{ !inputs.force && contains(env.VERSION, '-') }}
+        run: echo "::notice::Skipping AssetLib publish for pre-release version $VERSION"
 
       - name: Publish addon to AssetLib
-        if: ${{ inputs.force || !contains(steps.version.outputs.version, '-') }} # skip pre-releases
+        if: ${{ inputs.force || !contains(env.VERSION, '-') }} # skip pre-releases
         env:
+          GH_TOKEN: ${{ github.token }}
           ASSETLIB_USERNAME: ${{ secrets.ASSETLIB_USERNAME }}
           ASSETLIB_PASSWORD: ${{ secrets.ASSETLIB_PASSWORD }}
         run: >
           ./scripts/publish-assetlib.sh
           assetlib/addon.yaml
-          "${{ steps.version.outputs.version }}"
-          "${{ steps.version.outputs.godot }}"
+          "$VERSION"
+          "$GODOT_VERSION"
