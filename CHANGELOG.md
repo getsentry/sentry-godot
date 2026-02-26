@@ -4,6 +4,7 @@
 
 ### Features
 
+- Support `SENTRY_DSN`, `SENTRY_RELEASE`, and `SENTRY_ENVIRONMENT` environment variables ([#548](https://github.com/getsentry/sentry-godot/pull/548))
 - Add configurable `shutdown_timeout_ms` option ([#539](https://github.com/getsentry/sentry-godot/pull/539))
 
 ### Improvements
