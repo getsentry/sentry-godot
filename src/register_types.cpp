@@ -11,6 +11,7 @@
 #include "sentry/sentry_feedback.h"
 #include "sentry/sentry_log.h"
 #include "sentry/sentry_logger.h"
+#include "sentry/sentry_metrics.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_user.h"
@@ -64,6 +65,7 @@ void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryUser);
 	GDREGISTER_CLASS(SentryTimestamp);
 	GDREGISTER_CLASS(SentryLogger);
+	GDREGISTER_CLASS(SentryMetrics);
 	GDREGISTER_CLASS(SentryFeedback);
 	GDREGISTER_CLASS(SentrySDK);
 	GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
