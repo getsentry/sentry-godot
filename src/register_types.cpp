@@ -11,6 +11,7 @@
 #include "sentry/sentry_feedback.h"
 #include "sentry/sentry_log.h"
 #include "sentry/sentry_logger.h"
+#include "sentry/sentry_metric.h"
 #include "sentry/sentry_metrics.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
@@ -72,6 +73,7 @@ void register_runtime_classes() {
 	GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 	GDREGISTER_ABSTRACT_CLASS(SentryBreadcrumb);
 	GDREGISTER_ABSTRACT_CLASS(SentryLog);
+	GDREGISTER_ABSTRACT_CLASS(SentryMetric);
 	GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
