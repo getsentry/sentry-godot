@@ -4,6 +4,7 @@
 
 ### Features
 
+- Support `SENTRY_DSN`, `SENTRY_RELEASE`, and `SENTRY_ENVIRONMENT` environment variables ([#548](https://github.com/getsentry/sentry-godot/pull/548))
 - Add configurable `shutdown_timeout_ms` option ([#539](https://github.com/getsentry/sentry-godot/pull/539))
 
 ### Improvements
@@ -15,9 +16,9 @@
 - Bump Sentry JavaScript from v10.39.0 to v10.40.0 ([#540](https://github.com/getsentry/sentry-godot/pull/540))
   - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10400)
   - [diff](https://github.com/getsentry/sentry-javascript/compare/10.39.0...10.40.0)
-- Bump Native SDK from v0.12.8 to v0.13.0 ([#533](https://github.com/getsentry/sentry-godot/pull/533))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0130)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.8...0.13.0)
+- Bump Native SDK from v0.12.8 to v0.13.1 ([#533](https://github.com/getsentry/sentry-godot/pull/533), [#544](https://github.com/getsentry/sentry-godot/pull/544))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0131)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.8...0.13.1)
 - Bump Sentry Android from v8.32.0 to v8.33.0 ([#531](https://github.com/getsentry/sentry-godot/pull/531))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8330)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.32.0...8.33.0)
