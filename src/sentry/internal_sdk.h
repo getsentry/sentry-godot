@@ -43,9 +43,9 @@ public:
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) = 0;
 
-	virtual void count(const String &p_name, const Variant &p_value, const Dictionary &p_attributes = Dictionary()) = 0;
-	virtual void gauge(const String &p_name, const Variant &p_value, const String &p_unit = String(), const Dictionary &p_attributes = Dictionary()) = 0;
-	virtual void distribution(const String &p_name, const Variant &p_value, const String &p_unit = String(), const Dictionary &p_attributes = Dictionary()) = 0;
+	virtual void count(const String &p_name, int64_t p_value, const Dictionary &p_attributes = Dictionary()) = 0;
+	virtual void gauge(const String &p_name, double p_value, const String &p_unit = String(), const Dictionary &p_attributes = Dictionary()) = 0;
+	virtual void distribution(const String &p_name, double p_value, const String &p_unit = String(), const Dictionary &p_attributes = Dictionary()) = 0;
 
 	virtual void init() = 0;
 	virtual void close() = 0;
