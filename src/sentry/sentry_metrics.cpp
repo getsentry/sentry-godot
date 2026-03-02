@@ -12,21 +12,21 @@ inline bool _is_valid_value(const Variant &p_value) {
 
 namespace sentry {
 
-void SentryMetrics::counter(const String &p_name, Variant p_value, const Dictionary &p_attributes) {
+void SentryMetrics::counter(const String &p_name, const Variant &p_value, const Dictionary &p_attributes) {
 	if (!_is_valid_value(p_value)) {
 		ERR_PRINT("SentryMetrics.counter(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
 		return;
 	}
 }
 
-void SentryMetrics::gauge(const String &p_name, Variant p_value, const String &p_unit, const Dictionary &p_attributes) {
+void SentryMetrics::gauge(const String &p_name, const Variant &p_value, const String &p_unit, const Dictionary &p_attributes) {
 	if (!_is_valid_value(p_value)) {
 		ERR_PRINT("SentryMetrics.gauge(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
 		return;
 	}
 }
 
-void SentryMetrics::distribution(const String &p_name, Variant p_value, const String &p_unit, const Dictionary &p_attributes) {
+void SentryMetrics::distribution(const String &p_name, const Variant &p_value, const String &p_unit, const Dictionary &p_attributes) {
 	if (!_is_valid_value(p_value)) {
 		ERR_PRINT("SentryMetrics.distribution(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
 		return;
