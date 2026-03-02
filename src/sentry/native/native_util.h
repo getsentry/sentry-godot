@@ -37,6 +37,10 @@ _FORCE_INLINE_ void sentry_value_set_or_remove_string_by_key(sentry_value_t valu
 sentry_value_t variant_to_attribute(const Variant &p_value);
 sentry_value_t dictionary_to_attributes(const Dictionary &p_attributes);
 
+Variant sentry_value_get_attribute(sentry_value_t p_value, const String &p_name);
+void sentry_value_set_attribute(sentry_value_t p_native, const String &p_name, const Variant &p_value);
+void sentry_value_add_attributes(sentry_value_t p_native, const Dictionary &p_attributes);
+
 } //namespace sentry::native
 
 #endif // NATIVE_UTIL_H
