@@ -284,6 +284,26 @@ class SentryBridge {
     Sentry.logger.fatal(message, safeParseJSON(attributesJson || "", {}));
   }
 
+  public metricsAddCount(name: string, value: number, attributesJson?: string): void {
+    Sentry.metrics.count(name, value, {
+      attributes: safeParseJSON(attributesJson || "", {}),
+    });
+  }
+
+  public metricsAddGauge(name: string, value: number, unit: string, attributesJson?: string): void {
+    Sentry.metrics.gauge(name, value, {
+      ...(unit !== "" && { unit }),
+      attributes: safeParseJSON(attributesJson || "", {}),
+    });
+  }
+
+  public metricsAddDistribution(name: string, value: number, unit: string, attributesJson?: string): void {
+    Sentry.metrics.distribution(name, value, {
+      ...(unit !== "" && { unit }),
+      attributes: safeParseJSON(attributesJson || "", {}),
+    });
+  }
+
   public captureMessage(message: string, level: string): string {
     return Sentry.captureMessage(message, level as Sentry.SeverityLevel);
   }

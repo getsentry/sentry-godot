@@ -226,6 +226,24 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
+void JavaScriptSDK::count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
+	ERR_FAIL_COND(!js_bridge());
+	String attr_value = attributes_to_json(p_attributes);
+	js_bridge()->call("metricsAddCount", p_name.utf8(), p_value, attr_value.utf8());
+}
+
+void JavaScriptSDK::gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	ERR_FAIL_COND(!js_bridge());
+	String attr_value = attributes_to_json(p_attributes);
+	js_bridge()->call("metricsAddGauge", p_name.utf8(), p_value, p_unit.utf8(), attr_value.utf8());
+}
+
+void JavaScriptSDK::distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	ERR_FAIL_COND(!js_bridge());
+	String attr_value = attributes_to_json(p_attributes);
+	js_bridge()->call("metricsAddDistribution", p_name.utf8(), p_value, p_unit.utf8(), attr_value.utf8());
+}
+
 void JavaScriptSDK::init() {
 	ERR_FAIL_COND(!js_bridge());
 
@@ -248,6 +266,7 @@ void JavaScriptSDK::init() {
 			SENTRY_OPTIONS()->get_sample_rate(),
 			SENTRY_OPTIONS()->get_max_breadcrumbs(),
 			SENTRY_OPTIONS()->get_enable_logs(),
+			SENTRY_OPTIONS()->get_experimental()->get_enable_metrics(),
 			SENTRY_GODOT_SDK_VERSION);
 
 	if (is_enabled()) {
