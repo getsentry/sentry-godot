@@ -72,6 +72,7 @@ if platform == "windows":
     )
 elif platform == "linux":
     add_lib_target("crashpad_compat")
+    add_lib_target("unwind")
     env.Append(
         LIBS=[
             "curl",
