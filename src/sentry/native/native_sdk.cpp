@@ -344,15 +344,15 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void NativeSDK::count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
+void NativeSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
 	sentry_metrics_count(p_name.utf8(), p_value, dictionary_to_attributes(p_attributes));
 }
 
-void NativeSDK::gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+void NativeSDK::metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	sentry_metrics_gauge(p_name.utf8(), p_value, p_unit.utf8(), dictionary_to_attributes(p_attributes));
 }
 
-void NativeSDK::distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+void NativeSDK::metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	sentry_metrics_distribution(p_name.utf8(), p_value, p_unit.utf8(), dictionary_to_attributes(p_attributes));
 }
 
