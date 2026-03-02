@@ -162,4 +162,15 @@ sentry_value_t variant_to_attribute(const Variant &p_value) {
 	}
 }
 
+sentry_value_t dictionary_to_attributes(const Dictionary &p_attributes) {
+	if (!p_attributes.is_empty()) {
+		sentry_value_t attributes = sentry_value_new_object();
+		for (const Variant &key : p_attributes.keys()) {
+			sentry_value_set_by_key(attributes, key.stringify().utf8(),
+					variant_to_attribute(p_attributes[key]));
+		}
+	}
+	return sentry_value_new_null();
+}
+
 } // namespace sentry::native

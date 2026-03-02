@@ -207,40 +207,31 @@ void NativeSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_
 		return;
 	}
 
-	String body = p_body;
-
-	sentry_value_t attributes = sentry_value_new_object();
-
-	if (!p_attributes.is_empty()) {
-		for (const Variant &key : p_attributes.keys()) {
-			sentry_value_set_by_key(attributes, key.stringify().utf8(),
-					variant_to_attribute(p_attributes[key]));
-		}
-	}
+	sentry_value_t attributes = dictionary_to_attributes(p_attributes);
 
 	switch (p_level) {
 		case LOG_LEVEL_TRACE: {
-			sentry_log_trace(body.utf8(), attributes);
+			sentry_log_trace(p_body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_DEBUG: {
-			sentry_log_debug(body.utf8(), attributes);
+			sentry_log_debug(p_body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_INFO: {
-			sentry_log_info(body.utf8(), attributes);
+			sentry_log_info(p_body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_WARN: {
-			sentry_log_warn(body.utf8(), attributes);
+			sentry_log_warn(p_body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_ERROR: {
-			sentry_log_error(body.utf8(), attributes);
+			sentry_log_error(p_body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_FATAL: {
-			sentry_log_fatal(body.utf8(), attributes);
+			sentry_log_fatal(p_body.utf8(), attributes);
 		} break;
 		default: {
 			sentry::logging::print_no_logger(LEVEL_WARNING,
 					vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
-			sentry_log_info(body.utf8(), attributes);
+			sentry_log_info(p_body.utf8(), attributes);
 		} break;
 	}
 }
@@ -351,6 +342,18 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	if (!p_attachment->get_content_type().is_empty()) {
 		sentry_attachment_set_content_type(native_attachment, p_attachment->get_content_type().utf8());
 	}
+}
+
+void NativeSDK::count(const String &p_name, const Variant &p_value, const Dictionary &p_attributes) {
+	sentry_metrics_count(p_name.utf8(), p_value, dictionary_to_attributes(p_attributes));
+}
+
+void NativeSDK::gauge(const String &p_name, const Variant &p_value, const String &p_unit, const Dictionary &p_attributes) {
+	sentry_metrics_gauge(p_name.utf8(), p_value, p_unit.utf8(), dictionary_to_attributes(p_attributes));
+}
+
+void NativeSDK::distribution(const String &p_name, const Variant &p_value, const String &p_unit, const Dictionary &p_attributes) {
+	sentry_metrics_distribution(p_name.utf8(), p_value, p_unit.utf8(), dictionary_to_attributes(p_attributes));
 }
 
 void NativeSDK::init() {

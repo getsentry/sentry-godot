@@ -40,6 +40,10 @@ public:
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
 
+	virtual void count(const String &p_name, const Variant &p_value, const Dictionary &p_attributes = Dictionary()) override;
+	virtual void gauge(const String &p_name, const Variant &p_value, const String &p_unit = String(), const Dictionary &p_attributes = Dictionary()) override;
+	virtual void distribution(const String &p_name, const Variant &p_value, const String &p_unit = String(), const Dictionary &p_attributes = Dictionary()) override;
+
 	virtual void init() override;
 	virtual void close() override;
 	virtual bool is_enabled() const override;

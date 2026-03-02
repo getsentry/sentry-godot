@@ -35,6 +35,7 @@ _FORCE_INLINE_ void sentry_value_set_or_remove_string_by_key(sentry_value_t valu
 }
 
 sentry_value_t variant_to_attribute(const Variant &p_value);
+sentry_value_t dictionary_to_attributes(const Dictionary &p_attributes);
 
 } //namespace sentry::native
 
