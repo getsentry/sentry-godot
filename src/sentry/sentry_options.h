@@ -44,10 +44,14 @@ class SentryExperimental : public RefCounted {
 	SentryOptions *owner = nullptr;
 
 	bool enable_metrics = true;
+	Callable before_send_metric;
 
 public:
 	void set_enable_metrics(bool p_value) { enable_metrics = p_value; }
 	bool get_enable_metrics() const { return enable_metrics; }
+
+	void set_before_send_metric(const Callable &p_value) { before_send_metric = p_value; }
+	Callable get_before_send_metric() const { return before_send_metric; }
 
 	// DEPRECATED: The following accessors are deprecated and scheduled for removal.
 	void set_enable_logs(bool p_value);
