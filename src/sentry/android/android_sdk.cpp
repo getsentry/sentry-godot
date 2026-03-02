@@ -25,6 +25,18 @@ inline Variant _as_attribute(const Variant &p_value) {
 	return (type < Variant::BOOL || type > Variant::STRING) ? (Variant)p_value.stringify() : p_value;
 }
 
+Dictionary _sanitize_attributes(const Dictionary &p_attributes) {
+	Dictionary attributes;
+	if (!p_attributes.is_empty()) {
+		const Array &keys = p_attributes.keys();
+		for (int i = 0; i < keys.size(); i++) {
+			const String &key = keys[i];
+			attributes[key] = _as_attribute(p_attributes[key]);
+		}
+	}
+	return attributes;
+}
+
 } // unnamed namespace
 
 namespace sentry::android {
@@ -146,19 +158,7 @@ void AndroidSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p
 		return;
 	}
 
-	String body = p_body;
-
-	Dictionary attributes;
-
-	if (!p_attributes.is_empty()) {
-		const Array &keys = p_attributes.keys();
-		for (int i = 0; i < keys.size(); i++) {
-			const String &key = keys[i];
-			attributes[key] = _as_attribute(p_attributes[key]);
-		}
-	}
-
-	android_plugin->call(ANDROID_SN(log), p_level, body, attributes);
+	android_plugin->call(ANDROID_SN(log), p_level, p_body, _sanitize_attributes(p_attributes));
 }
 
 String AndroidSDK::capture_message(const String &p_message, Level p_level) {
@@ -225,6 +225,30 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 				p_attachment->get_content_type(),
 				String());
 	}
+}
+
+void AndroidSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+
+	android_plugin->call(ANDROID_SN(metricsAddCount),
+			p_name, p_value, _sanitize_attributes(p_attributes));
+}
+
+void AndroidSDK::metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+
+	android_plugin->call(ANDROID_SN(metricsAddGauge),
+			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
+}
+
+void AndroidSDK::metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+
+	android_plugin->call(ANDROID_SN(metricsAddDistribution),
+			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
 }
 
 void AndroidSDK::init() {

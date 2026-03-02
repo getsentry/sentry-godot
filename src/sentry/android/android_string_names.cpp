@@ -91,6 +91,11 @@ AndroidStringNames::AndroidStringNames() {
 	logSetAttribute = StringName("logSetAttribute");
 	logAddAttributes = StringName("logAddAttributes");
 	logRemoveAttribute = StringName("logRemoveAttribute");
+
+	// Metrics.
+	metricsAddCount = StringName("metricsAddCount");
+	metricsAddGauge = StringName("metricsAddGauge");
+	metricsAddDistribution = StringName("metricsAddDistribution");
 }
 
 } //namespace sentry::android

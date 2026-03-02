@@ -15,6 +15,7 @@ import io.sentry.SentryLogLevel
 import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
 import io.sentry.logger.SentryLogParameters
+import io.sentry.metrics.SentryMetricsParameters
 import io.sentry.protocol.Feedback
 import io.sentry.protocol.Message
 import io.sentry.protocol.SentryException
@@ -194,7 +195,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun isEnabled(): Boolean {
-      return Sentry.isEnabled()
+        return Sentry.isEnabled()
     }
 
     @UsedByGodot
@@ -281,6 +282,37 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 SentryLogParameters.create(sentryAttributes),
                 body
             )
+        }
+    }
+
+    @UsedByGodot
+    fun metricsAddCount(name: String, value: Long, attributes: Dictionary) {
+        if (attributes.isEmpty()) {
+            Sentry.metrics().count(name, value.toDouble())
+        } else {
+            val sentryAttributes = SentryAttributes.fromMap(attributes)
+            Sentry.metrics().count(name, value.toDouble(), "", SentryMetricsParameters.create(sentryAttributes))
+        }
+    }
+
+    @UsedByGodot
+    fun metricsAddGauge(name: String, value: Double, unit: String, attributes: Dictionary) {
+        if (attributes.isEmpty()) {
+            Sentry.metrics().gauge(name, value, unit)
+        } else {
+            val sentryAttributes = SentryAttributes.fromMap(attributes)
+            Sentry.metrics().gauge(name, value, unit, SentryMetricsParameters.create(sentryAttributes))
+        }
+    }
+
+    @UsedByGodot
+    fun metricsAddDistribution(name: String, value: Double, unit: String, attributes: Dictionary) {
+        if (attributes.isEmpty()) {
+            Sentry.metrics().distribution(name, value, unit)
+        } else {
+            val sentryAttributes = SentryAttributes.fromMap(attributes)
+            Sentry.metrics()
+                .distribution(name, value, unit, SentryMetricsParameters.create(sentryAttributes))
         }
     }
 
@@ -598,7 +630,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun breadcrumbSetType(handle: Int, type: String) {
-       getBreadcrumb(handle)?.type = type
+        getBreadcrumb(handle)?.type = type
     }
 
     @UsedByGodot
@@ -669,16 +701,18 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         val name = attributeData["name"] as String
         val type = attributeData["type"] as String
         val value = attributeData["value"]
-        val logAttributes = log.attributes ?: HashMap<String, SentryLogEventAttributeValue>().also { log.attributes = it }
+        val logAttributes =
+            log.attributes ?: HashMap<String, SentryLogEventAttributeValue>().also { log.attributes = it }
         logAttributes[name] = SentryLogEventAttributeValue(type, value)
     }
 
     @UsedByGodot
     fun logAddAttributes(handle: Int, attributes: Dictionary) {
         val log = getLog(handle) ?: return
-        val logAttributes = log.attributes ?: HashMap<String, SentryLogEventAttributeValue>().also { log.attributes = it }
+        val logAttributes =
+            log.attributes ?: HashMap<String, SentryLogEventAttributeValue>().also { log.attributes = it }
         for ((key, value) in attributes) {
-            val attrValue = when(value) {
+            val attrValue = when (value) {
                 is Boolean -> SentryLogEventAttributeValue("boolean", value)
                 is Int, is Long -> SentryLogEventAttributeValue("integer", value)
                 is Float, is Double -> SentryLogEventAttributeValue("double", value)
