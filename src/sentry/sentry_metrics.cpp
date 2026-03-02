@@ -13,24 +13,18 @@ inline bool _is_valid_value(const Variant &p_value) {
 namespace sentry {
 
 void SentryMetrics::counter(const String &p_name, const Variant &p_value, const Dictionary &p_attributes) {
-	if (!_is_valid_value(p_value)) {
-		ERR_PRINT("SentryMetrics.counter(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
-		return;
-	}
+	ERR_FAIL_COND_MSG(p_name.is_empty(), "SentryMetrics.counter(): metric name must not be empty.");
+	ERR_FAIL_COND_MSG(!_is_valid_value(p_value), "SentryMetrics.counter(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
 }
 
 void SentryMetrics::gauge(const String &p_name, const Variant &p_value, const String &p_unit, const Dictionary &p_attributes) {
-	if (!_is_valid_value(p_value)) {
-		ERR_PRINT("SentryMetrics.gauge(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
-		return;
-	}
+	ERR_FAIL_COND_MSG(p_name.is_empty(), "SentryMetrics.gauge(): metric name must not be empty.");
+	ERR_FAIL_COND_MSG(!_is_valid_value(p_value), "SentryMetrics.gauge(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
 }
 
 void SentryMetrics::distribution(const String &p_name, const Variant &p_value, const String &p_unit, const Dictionary &p_attributes) {
-	if (!_is_valid_value(p_value)) {
-		ERR_PRINT("SentryMetrics.distribution(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
-		return;
-	}
+	ERR_FAIL_COND_MSG(p_name.is_empty(), "SentryMetrics.distribution(): metric name must not be empty.");
+	ERR_FAIL_COND_MSG(!_is_valid_value(p_value), "SentryMetrics.distribution(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
 }
 
 void SentryMetrics::_bind_methods() {
