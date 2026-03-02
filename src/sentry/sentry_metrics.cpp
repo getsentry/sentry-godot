@@ -15,16 +15,22 @@ namespace sentry {
 void SentryMetrics::count(const String &p_name, const Variant &p_value, const Dictionary &p_attributes) {
 	ERR_FAIL_COND_MSG(p_name.is_empty(), "SentryMetrics.count(): metric name must not be empty.");
 	ERR_FAIL_COND_MSG(!_is_valid_value(p_value), "SentryMetrics.count(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
+
+	INTERNAL_SDK()->count(p_name, p_value, p_attributes);
 }
 
 void SentryMetrics::gauge(const String &p_name, const Variant &p_value, const String &p_unit, const Dictionary &p_attributes) {
 	ERR_FAIL_COND_MSG(p_name.is_empty(), "SentryMetrics.gauge(): metric name must not be empty.");
 	ERR_FAIL_COND_MSG(!_is_valid_value(p_value), "SentryMetrics.gauge(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
+
+	INTERNAL_SDK()->gauge(p_name, p_value, p_unit, p_attributes);
 }
 
 void SentryMetrics::distribution(const String &p_name, const Variant &p_value, const String &p_unit, const Dictionary &p_attributes) {
 	ERR_FAIL_COND_MSG(p_name.is_empty(), "SentryMetrics.distribution(): metric name must not be empty.");
 	ERR_FAIL_COND_MSG(!_is_valid_value(p_value), "SentryMetrics.distribution(): expected an int or float value, got " + Variant::get_type_name(p_value.get_type()) + ".");
+
+	INTERNAL_SDK()->distribution(p_name, p_value, p_unit, p_attributes);
 }
 
 void SentryMetrics::_bind_methods() {
