@@ -43,7 +43,12 @@ class SentryExperimental : public RefCounted {
 
 	SentryOptions *owner = nullptr;
 
+	bool enable_metrics = true;
+
 public:
+	void set_enable_metrics(bool p_value) { enable_metrics = p_value; }
+	bool get_enable_metrics() const { return enable_metrics; }
+
 	// DEPRECATED: The following accessors are deprecated and scheduled for removal.
 	void set_enable_logs(bool p_value);
 	bool get_enable_logs();

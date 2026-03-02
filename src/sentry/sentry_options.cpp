@@ -82,6 +82,8 @@ Callable SentryExperimental::get_before_send_log() {
 }
 
 void SentryExperimental::_bind_methods() {
+	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::BOOL, enable_metrics);
+
 	// DEPRECATED: These properties are deprecated and remain for compatibility reasons.
 	// TODO: Remove these after June 2026 or in version 2.0.
 	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::BOOL, enable_logs);
@@ -134,6 +136,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/experimental/screenshot_level"), p_options->screenshot_level, false);
+
+	_define_setting("sentry/experimental/enable_metrics", p_options->get_experimental()->enable_metrics);
 }
 
 void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) {
@@ -218,6 +222,8 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/experimental/screenshot_level", p_options->screenshot_level);
+
+	p_options->get_experimental()->enable_metrics = ProjectSettings::get_singleton()->get_setting("sentry/experimental/enable_metrics", p_options->get_experimental()->enable_metrics);
 }
 
 void SentryOptions::_init_debug_option(DebugMode p_mode) {
