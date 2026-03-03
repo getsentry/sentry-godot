@@ -332,7 +332,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             Sentry.metrics().count(name, value.toDouble())
         } else {
             val sentryAttributes = SentryAttributes.fromMap(attributes)
-            Sentry.metrics().count(name, value.toDouble(), "", SentryMetricsParameters.create(sentryAttributes))
+            Sentry.metrics().count(name, value.toDouble(), null, SentryMetricsParameters.create(sentryAttributes))
         }
     }
 
