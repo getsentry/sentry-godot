@@ -1,6 +1,7 @@
-#include "sentry/sentry_metric.h"
+#pragma once
 
 #include "sentry.h"
+#include "sentry/sentry_metric.h"
 
 namespace sentry::native {
 
