@@ -73,8 +73,8 @@ void NativeMetric::set_value(double p_value) {
 }
 
 String NativeMetric::get_unit() const {
-	return sentry_value_as_string(
-			sentry_value_get_by_key(native_metric, "unit"));
+	return String::utf8(sentry_value_as_string(
+			sentry_value_get_by_key(native_metric, "unit")));
 }
 
 void NativeMetric::set_unit(const String &p_unit) {
