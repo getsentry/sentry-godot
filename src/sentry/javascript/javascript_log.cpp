@@ -1,5 +1,7 @@
 #include "javascript_log.h"
 
+#include "sentry/javascript/javascript_util.h"
+
 namespace sentry::javascript {
 
 LogLevel JavaScriptLog::get_level() const {
@@ -26,65 +28,11 @@ void JavaScriptLog::set_body(const String &p_body) {
 }
 
 Variant JavaScriptLog::get_attribute(const String &p_name) const {
-	ERR_FAIL_COND_V(!js_obj, Variant());
-
-	JSObjectPtr attributes_obj = js_obj->get("attributes").as_object();
-	if (!attributes_obj) {
-		return Variant();
-	}
-
-	JSValue attr_val = attributes_obj->get(p_name.utf8());
-
-	// Attributes can be stored either as a typed object { value, type } or as a raw primitive.
-	JSObjectPtr attr_obj = attr_val.as_object();
-	if (attr_obj) {
-		// Typed attribute - return the underlying value.
-		return attr_obj->get("value").as_variant();
-	}
-
-	// Raw primitive value.
-	switch (attr_val.get_type()) {
-		case JSValueType::BOOL: {
-			return attr_val.as_bool();
-		} break;
-		case JSValueType::INT: {
-			return attr_val.as_int();
-		} break;
-		case JSValueType::DOUBLE: {
-			return attr_val.as_double();
-		} break;
-		case JSValueType::STRING: {
-			return attr_val.as_string();
-		} break;
-		default: {
-			return Variant();
-		}
-	}
+	return sentry_js_object_get_attribute(js_obj, p_name);
 }
 
 void JavaScriptLog::set_attribute(const String &p_name, const Variant &p_value) {
-	ERR_FAIL_COND(!js_obj);
-
-	JSObjectPtr attr_obj = js_obj->get_or_create_object_property("attributes");
-	ERR_FAIL_COND(!attr_obj);
-
-	switch (p_value.get_type()) {
-		case Variant::Type::BOOL: {
-			attr_obj->set(p_name.utf8(), p_value.operator bool());
-		} break;
-		case Variant::Type::INT: {
-			attr_obj->set(p_name.utf8(), p_value.operator int64_t());
-		} break;
-		case Variant::Type::FLOAT: {
-			attr_obj->set(p_name.utf8(), p_value.operator double());
-		} break;
-		case Variant::Type::STRING: {
-			attr_obj->set(p_name.utf8(), p_value.operator String().utf8());
-		} break;
-		default: {
-			attr_obj->set(p_name.utf8(), p_value.stringify().utf8());
-		}
-	}
+	sentry_js_object_set_attribute(js_obj, p_name, p_value);
 }
 
 void JavaScriptLog::add_attributes(const Dictionary &p_attributes) {
@@ -107,6 +55,7 @@ void JavaScriptLog::remove_attribute(const String &p_name) {
 }
 
 JavaScriptLog::JavaScriptLog() {
+	js_obj = js_bridge()->create("Object");
 	ERR_PRINT("This constructor is not intended for runtime use.");
 }
 

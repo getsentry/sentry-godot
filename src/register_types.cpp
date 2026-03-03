@@ -46,6 +46,7 @@
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/javascript/javascript_event.h"
 #include "sentry/javascript/javascript_log.h"
+#include "sentry/javascript/javascript_metric.h"
 #include "sentry/javascript/javascript_sdk.h"
 #endif
 
@@ -109,6 +110,7 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptEvent);
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptLog);
+	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptMetric);
 #endif
 }
 
