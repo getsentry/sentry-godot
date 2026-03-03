@@ -67,6 +67,7 @@ void NativeMetric::set_value(double p_value) {
 		sentry_value_set_by_key(native_metric, "value",
 				sentry_value_new_double(p_value));
 	} else {
+		// Counter values are stored as integers; the double is truncated.
 		sentry_value_set_by_key(native_metric, "value",
 				sentry_value_new_int64(p_value));
 	}
