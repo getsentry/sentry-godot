@@ -390,7 +390,7 @@ void NativeSDK::init() {
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
 	sentry_options_set_logger_enabled_when_crashed(options, false);
 	sentry_options_set_enable_logs(options, SENTRY_OPTIONS()->get_enable_logs());
-	sentry_options_set_enable_metrics(options, SENTRY_OPTIONS()->get_enable_logs());
+	sentry_options_set_enable_metrics(options, SENTRY_OPTIONS()->get_experimental()->get_enable_metrics());
 
 	// Establish handler path.
 	String handler_fn;
