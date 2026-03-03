@@ -9,6 +9,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_attributes">
+			<return type="void" />
+			<param index="0" name="attributes" type="Dictionary" />
+			<description>
+				Adds multiple attributes to the metric from a Dictionary. Each key-value pair in the dictionary becomes an attribute, where the key serves as the attribute name and the value as the attribute value. This method is most efficient when adding multiple attributes at once. For single attributes, use [method set_attribute] instead.
+				[b]Note:[/b] Attributes support integers, booleans, floats, and strings. Other data types will be automatically converted to strings.
+			</description>
+		</method>
 		<method name="get_attribute" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="name" type="String" />
