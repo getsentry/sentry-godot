@@ -4,10 +4,12 @@
 #include "sentry/javascript/javascript_event.h"
 #include "sentry/javascript/javascript_interop.h"
 #include "sentry/javascript/javascript_log.h"
+#include "sentry/javascript/javascript_metric.h"
 #include "sentry/javascript/javascript_util.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
+#include "sentry/processing/process_metric.h"
 #include "sentry/sentry_sdk.h"
 
 #include "gen/sdk_version.gen.h"
@@ -87,6 +89,20 @@ static void before_send_log_wasm_callback(int32_t *p_ids, int32_t p_len) {
 	// NOTE: We cannot return a value from a callback, so we use the same
 	//       log object to communicate the result back.
 	log_jso->set("shouldDiscard", processed.is_null());
+}
+
+static void before_send_metric_wasm_callback(int32_t *p_ids, int32_t p_len) {
+	ERR_FAIL_COND(p_len != 1);
+
+	JSObjectPtr metric_jso = JSObject::from_id(p_ids[0]);
+	ERR_FAIL_COND(!metric_jso);
+
+	Ref<JavaScriptMetric> metric = memnew(JavaScriptMetric(metric_jso));
+	Ref<JavaScriptMetric> processed = sentry::process_metric(metric);
+
+	// NOTE: We cannot return a value from a callback, so we use the same
+	//       metric object to communicate the result back.
+	metric_jso->set("shouldDiscard", processed.is_null());
 }
 
 } // extern "C"
@@ -255,9 +271,15 @@ void JavaScriptSDK::init() {
 		before_send_log_callback = JSObject::create_callback(before_send_log_wasm_callback);
 	}
 
+	JSObjectPtr before_send_metric_callback;
+	if (SENTRY_OPTIONS()->get_experimental()->get_before_send_metric().is_valid()) {
+		before_send_metric_callback = JSObject::create_callback(before_send_metric_wasm_callback);
+	}
+
 	js_bridge()->call("init",
 			before_send_callback,
 			before_send_log_callback,
+			before_send_metric_callback,
 			SENTRY_OPTIONS()->get_dsn().utf8(),
 			SENTRY_OPTIONS()->is_debug_enabled(),
 			SENTRY_OPTIONS()->get_release().utf8(),

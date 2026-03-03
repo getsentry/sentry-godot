@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
+import type { Metric } from "@sentry/core";
 import { wasmIntegration } from "@sentry/wasm";
 
 // ID-based store for WASM/JS interop. Assigns auto-incrementing uint32 IDs (0 is reserved).
@@ -105,6 +106,7 @@ class SentryBridge {
   public init(
     beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void,
     beforeSendLogCallback: ((log: Sentry.Log) => void) | null,
+    beforeSendMetricCallback: ((metric: Metric) => void) | null,
     dsn: string,
     debug: boolean,
     release: string,
@@ -210,6 +212,19 @@ class SentryBridge {
       };
     } else {
       console.debug("Sentry: beforeSendLog callback not provided.");
+    }
+
+    if (beforeSendMetricCallback) {
+      options.beforeSendMetric = (metric: Metric) => {
+        beforeSendMetricCallback(metric);
+
+        const shouldDiscard: boolean = (metric as any).shouldDiscard;
+        delete (metric as any).shouldDiscard;
+
+        return shouldDiscard ? null : metric;
+      };
+    } else {
+      console.debug("Sentry: beforeSendMetric callback not provided.");
     }
 
     Sentry.init(options);
