@@ -12,6 +12,7 @@ void SentryMetric::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_attribute", "name"), &SentryMetric::get_attribute);
 	ClassDB::bind_method(D_METHOD("set_attribute", "name", "value"), &SentryMetric::set_attribute);
+	ClassDB::bind_method(D_METHOD("add_attributes", "attributes"), &SentryMetric::add_attributes);
 	ClassDB::bind_method(D_METHOD("remove_attribute", "name"), &SentryMetric::remove_attribute);
 
 	BIND_ENUM_CONSTANT(METRIC_COUNTER);
