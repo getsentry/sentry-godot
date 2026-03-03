@@ -80,6 +80,9 @@ compile_commands.json
 # clang cache
 .cache
 
+# clangd config (local/user-specific)
+.clangd
+
 # Web tests
 test_web/node_modules/
 test_web/playwright-report/
