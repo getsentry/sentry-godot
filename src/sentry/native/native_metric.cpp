@@ -52,7 +52,7 @@ void NativeMetric::set_type(MetricType p_type) {
 
 double NativeMetric::get_value() const {
 	sentry_value_t value = sentry_value_get_by_key(native_metric, "value");
-	sentry_value_type_t value_type = sentry_value_get_type(native_metric);
+	sentry_value_type_t value_type = sentry_value_get_type(value);
 	if (value_type == SENTRY_VALUE_TYPE_DOUBLE) {
 		return sentry_value_as_double(value);
 	} else {
