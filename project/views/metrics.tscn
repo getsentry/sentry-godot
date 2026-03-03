@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://bt3152vsiyit"]
+
+[ext_resource type="Script" uid="uid://dclkhuhgejykf" path="res://views/metrics.gd" id="1_cqo6d"]
+
+[node name="Metrics" type="Node"]
+script = ExtResource("1_cqo6d")
+
+[node name="EmitTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+
+[connection signal="timeout" from="EmitTimer" to="." method="_on_emit_timer_timeout"]
