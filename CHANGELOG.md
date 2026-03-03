@@ -4,6 +4,8 @@
 
 ### Features
 
+- Add Metrics support ([#553](https://github.com/getsentry/sentry-godot/pull/553))
+  - Metrics are currently not supported on Apple platforms in the Godot SDK.
 - Support `SENTRY_DSN`, `SENTRY_RELEASE`, and `SENTRY_ENVIRONMENT` environment variables ([#548](https://github.com/getsentry/sentry-godot/pull/548))
 - Add configurable `shutdown_timeout_ms` option ([#539](https://github.com/getsentry/sentry-godot/pull/539))
 
