@@ -148,6 +148,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val sampleRate = optionsData["sample_rate"] as Double
             val maxBreadcrumbs = optionsData["max_breadcrumbs"].toIntOrThrow()
             val enableLogs = optionsData["enable_logs"] as Boolean
+            val enableMetrics = optionsData["enable_metrics"] as Boolean
             val appHangTracking = optionsData["app_hang_tracking"] as Boolean
             val appHangTimeoutSec = optionsData["app_hang_timeout_sec"] as Double
             val shutdownTimeoutMs = optionsData["shutdown_timeout_ms"].toIntOrThrow()
@@ -163,6 +164,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.sdkVersion?.name = "sentry.java.android.godot"
                 options.nativeSdkName = "sentry.native.android.godot"
                 options.logs.isEnabled = enableLogs
+                options.metrics.isEnabled = enableMetrics
                 options.isAnrEnabled = appHangTracking
                 options.anrTimeoutIntervalMillis = (appHangTimeoutSec * 1000.0).toLong()
                 options.shutdownTimeoutMillis = shutdownTimeoutMs.toLong()
