@@ -113,6 +113,7 @@ class SentryBridge {
     sampleRate: number,
     maxBreadcrumbs: number,
     enableLogs: boolean,
+    enableMetrics: boolean,
     sdkVersion: string,
   ): void {
     if (debug) {
@@ -128,6 +129,7 @@ class SentryBridge {
       sampleRate,
       maxBreadcrumbs,
       enableLogs,
+      enableMetrics,
       _metadata: {
         sdk: {
           name: "sentry.javascript.godot",
