@@ -15,6 +15,8 @@ Ref<SentryMetric> process_metric(const Ref<SentryMetric> &p_metric) {
 		return nullptr;
 	}
 
+	// Replacing the metric instance isn't supported; always return the original,
+	// whether it was modified or not.
 	return p_metric;
 }
 
