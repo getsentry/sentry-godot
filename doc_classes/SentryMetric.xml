@@ -52,7 +52,7 @@
 			The unit of measurement for the metric value (e.g., [code]"millisecond"[/code], [code]"byte"[/code], [code]"percent"[/code]). An empty string indicates a unitless metric.
 		</member>
 		<member name="value" type="float" setter="set_value" getter="get_value">
-			The numeric value of the metric.
+			The numeric value of the metric. For [constant METRIC_COUNTER] metrics, this is a whole number even though the property type is [code]float[/code].
 		</member>
 	</members>
 	<constants>
