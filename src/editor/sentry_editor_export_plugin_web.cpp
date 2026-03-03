@@ -25,6 +25,10 @@ TypedArray<Dictionary> SentryEditorExportPluginWeb::_get_export_options(const Re
 }
 
 void SentryEditorExportPluginWeb::_export_begin(const PackedStringArray &p_features, bool p_is_debug, const String &p_path, uint32_t p_flags) {
+	if (!p_features.has("web")) {
+		return;
+	}
+
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
 	String export_dir = ProjectSettings::get_singleton()->globalize_path(p_path.get_base_dir());
