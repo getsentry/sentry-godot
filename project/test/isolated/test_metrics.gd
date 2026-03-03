@@ -5,6 +5,10 @@ signal metric_processed(metric: SentryMetric)
 var _discard_metric: bool = false
 
 
+func before(_do_skip := OS.get_name() in ["macOS", "iOS"], _skip_reason := "Metrics are not supported on Apple platforms") -> void:
+	super()
+
+
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		options.experimental.enable_metrics = true
