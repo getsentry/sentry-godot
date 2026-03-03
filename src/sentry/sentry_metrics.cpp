@@ -20,7 +20,7 @@ void SentryMetrics::distribution(const String &p_name, double p_value, const Str
 }
 
 void SentryMetrics::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("count", "name", "value", "attributes"), &SentryMetrics::count, DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("count", "name", "value", "attributes"), &SentryMetrics::count, DEFVAL(1), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("gauge", "name", "value", "unit", "attributes"), &SentryMetrics::gauge, DEFVAL(String()), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("distribution", "name", "value", "unit", "attributes"), &SentryMetrics::distribution, DEFVAL(String()), DEFVAL(Dictionary()));
 }
