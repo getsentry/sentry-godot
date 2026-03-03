@@ -19,7 +19,7 @@
   "type": "commonjs",
   "devDependencies": {
     "terser": "^5.44.1",
-    "terser-webpack-plugin": "^5.3.16",
+    "terser-webpack-plugin": "^5.3.17",
     "ts-loader": "^9.5.4",
     "typescript": "^5.9.3",
     "webpack": "^5.104.1",
