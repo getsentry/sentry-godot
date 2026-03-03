@@ -73,10 +73,14 @@ bool SentryEditorExportPluginUnix::_supports_platform(const Ref<EditorExportPlat
 }
 
 void SentryEditorExportPluginUnix::_export_begin(const PackedStringArray &p_features, bool p_is_debug, const String &p_path, uint32_t p_flags) {
+	active = p_features.has("linux");
 	export_path = p_path;
 }
 
 void SentryEditorExportPluginUnix::_export_end() {
+	if (!active) {
+		return;
+	}
 	// Fix crashpad handler executable permissions on Unix platforms.
 	_find_and_fix_crashpad_handler(export_path);
 }
