@@ -3,12 +3,14 @@
 #include "android_breadcrumb.h"
 #include "android_event.h"
 #include "android_log.h"
+#include "android_metric.h"
 #include "android_string_names.h"
 #include "android_util.h"
 #include "sentry/common_defs.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
+#include "sentry/processing/process_metric.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_sdk.h"
 
@@ -85,6 +87,24 @@ void SentryAndroidBeforeSendLogHandler::_before_send_log(int32_t p_handle) {
 
 void SentryAndroidBeforeSendLogHandler::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("before_send_log"), &SentryAndroidBeforeSendLogHandler::_before_send_log);
+}
+
+// ** SentryAndroidBeforeSendMetricHandler
+
+void SentryAndroidBeforeSendMetricHandler::_before_send_metric(int32_t p_metric_handle) {
+	Ref<AndroidMetric> metric_obj = memnew(AndroidMetric(android_plugin, p_metric_handle));
+	metric_obj->set_as_borrowed();
+
+	Ref<AndroidMetric> processed = sentry::process_metric(metric_obj);
+
+	if (processed.is_null()) {
+		// Discard metric.
+		android_plugin->call(ANDROID_SN(releaseMetric), p_metric_handle);
+	}
+}
+
+void SentryAndroidBeforeSendMetricHandler::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("before_send_metric"), &SentryAndroidBeforeSendMetricHandler::_before_send_metric);
 }
 
 // *** AndroidSDK
@@ -280,7 +300,8 @@ void AndroidSDK::init() {
 	android_plugin->call(ANDROID_SN(init),
 			optionsData,
 			before_send_handler->get_instance_id(),
-			SENTRY_OPTIONS()->get_before_send_log().is_valid() ? before_send_log_handler->get_instance_id() : 0);
+			SENTRY_OPTIONS()->get_before_send_log().is_valid() ? before_send_log_handler->get_instance_id() : 0,
+			SENTRY_OPTIONS()->get_experimental()->get_before_send_metric().is_valid() ? before_send_metric_handler->get_instance_id() : 0);
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());
@@ -313,6 +334,9 @@ AndroidSDK::AndroidSDK() {
 
 	before_send_log_handler = memnew(SentryAndroidBeforeSendLogHandler);
 	before_send_log_handler->_initialize(android_plugin);
+
+	before_send_metric_handler = memnew(SentryAndroidBeforeSendMetricHandler);
+	before_send_metric_handler->_initialize(android_plugin);
 }
 
 AndroidSDK::~AndroidSDK() {
@@ -322,6 +346,9 @@ AndroidSDK::~AndroidSDK() {
 	}
 	if (before_send_log_handler) {
 		memdelete(before_send_log_handler);
+	}
+	if (before_send_metric_handler) {
+		memdelete(before_send_metric_handler);
 	}
 }
 

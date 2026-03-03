@@ -32,6 +32,7 @@
 #include "sentry/android/android_breadcrumb.h"
 #include "sentry/android/android_event.h"
 #include "sentry/android/android_log.h"
+#include "sentry/android/android_metric.h"
 #include "sentry/android/android_sdk.h"
 #endif // SDK_ANDROID
 
@@ -92,8 +93,10 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(android::AndroidEvent);
 	GDREGISTER_INTERNAL_CLASS(android::AndroidBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(android::AndroidLog);
+	GDREGISTER_INTERNAL_CLASS(android::AndroidMetric);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendHandler);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendLogHandler);
+	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendMetricHandler);
 #endif
 
 #ifdef SDK_COCOA

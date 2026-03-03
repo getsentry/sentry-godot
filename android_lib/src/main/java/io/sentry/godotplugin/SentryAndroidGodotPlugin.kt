@@ -12,6 +12,7 @@ import io.sentry.SentryLevel
 import io.sentry.SentryLogEvent
 import io.sentry.SentryLogEventAttributeValue
 import io.sentry.SentryLogLevel
+import io.sentry.SentryMetricsEvent
 import io.sentry.SentryOptions
 import io.sentry.android.core.SentryAndroid
 import io.sentry.logger.SentryLogParameters
@@ -58,6 +59,12 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
+    private val metricsByHandle = object : ThreadLocal<MutableMap<Int, SentryMetricsEvent>>() {
+        override fun initialValue(): MutableMap<Int, SentryMetricsEvent> {
+            return mutableMapOf()
+        }
+    }
+
     private fun getEvent(eventHandle: Int): SentryEvent? {
         val event: SentryEvent? = eventsByHandle.get()?.get(eventHandle)
         if (event == null) {
@@ -67,7 +74,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     private fun getBreadcrumb(breadcrumbHandle: Int): Breadcrumb? {
-        var crumb: Breadcrumb? = breadcrumbsByHandle.get()?.get(breadcrumbHandle)
+        val crumb: Breadcrumb? = breadcrumbsByHandle.get()?.get(breadcrumbHandle)
         if (crumb == null) {
             Log.e(TAG, "Internal Error -- Breadcrumb not found: $breadcrumbHandle")
         }
@@ -75,11 +82,19 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     private fun getLog(logHandle: Int): SentryLogEvent? {
-        var logEvent: SentryLogEvent? = logsByHandle.get()?.get(logHandle)
+        val logEvent: SentryLogEvent? = logsByHandle.get()?.get(logHandle)
         if (logEvent == null) {
             Log.e(TAG, "Internal Error -- SentryLogEvent not found: $logHandle")
         }
         return logEvent
+    }
+
+    private fun getMetric(metricHandle: Int): SentryMetricsEvent? {
+        val metricEvent: SentryMetricsEvent? = metricsByHandle.get()?.get(metricHandle)
+        if (metricEvent == null) {
+            Log.e(TAG, "Internal Error -- SentryMetricsEvent not found: $metricHandle")
+        }
+        return metricEvent
     }
 
     private fun registerEvent(event: SentryEvent): Int {
@@ -113,7 +128,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     private fun registerLog(logEvent: SentryLogEvent): Int {
-        var logsMap = logsByHandle.get() ?: run {
+        val logsMap = logsByHandle.get() ?: run {
             Log.e(TAG, "Internal Error -- logsMap is null")
             return 0
         }
@@ -127,6 +142,21 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         return handle
     }
 
+    private fun registerMetric(metricEvent: SentryMetricsEvent): Int {
+        val metricsMap = metricsByHandle.get() ?: run {
+            Log.e(TAG, "Internal Error -- metricsMap is null")
+            return 0
+        }
+
+        var handle = Random.nextInt()
+        while (metricsMap.containsKey(handle)) {
+            handle = Random.nextInt()
+        }
+
+        metricsMap[handle] = metricEvent
+        return handle
+    }
+
     override fun getPluginName(): String {
         return "SentryAndroidGodotPlugin"
     }
@@ -135,7 +165,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun init(
         optionsData: Dictionary,
         beforeSendHandlerId: Long,
-        beforeSendLogHandlerId: Long
+        beforeSendLogHandlerId: Long,
+        beforeSendMetricHandlerId: Long
     ) {
         Log.v(TAG, "Initializing Sentry Android")
 
@@ -159,7 +190,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.release = release.ifEmpty { null }
                 options.dist = dist.ifEmpty { null }
                 options.environment = environment.ifEmpty { null }
-                options.sampleRate = sampleRate.toDouble()
+                options.sampleRate = sampleRate
                 options.maxBreadcrumbs = maxBreadcrumbs
                 options.sdkVersion?.name = "sentry.java.android.godot"
                 options.nativeSdkName = "sentry.native.android.godot"
@@ -181,6 +212,14 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                             val handle: Int = registerLog(logEvent)
                             Callable.call(beforeSendLogHandlerId, "before_send_log", handle)
                             logsByHandle.get()?.remove(handle) // Returns the log or null if it was discarded.
+                        }
+                }
+                if (beforeSendMetricHandlerId != 0L) {
+                    options.metrics.beforeSend =
+                        SentryOptions.Metrics.BeforeSendMetricCallback { metricEvent, hint ->
+                            val handle: Int = registerMetric(metricEvent)
+                            Callable.call(beforeSendMetricHandlerId, "before_send_metric", handle)
+                            metricsByHandle.get()?.remove(handle) // Returns the metric or null if it was discarded.
                         }
                 }
             }
@@ -690,7 +729,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun logGetAttribute(handle: Int, name: String): Dictionary {
         // NOTE: Use Dictionary container for the value to avoid object wrapper creation.
-        var attr = getLog(handle)?.attributes?.get(name) ?: return Dictionary()
+        val attr = getLog(handle)?.attributes?.get(name) ?: return Dictionary()
         val result = Dictionary()
         result["type"] = attr.type
         result["value"] = attr.value
@@ -730,4 +769,91 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         getLog(handle)?.attributes?.remove(name)
     }
 
+    @UsedByGodot
+    fun releaseMetric(handle: Int) {
+        metricsByHandle.get()?.remove(handle)
+    }
+
+    @UsedByGodot
+    fun metricGetName(handle: Int): String {
+        return getMetric(handle)?.name ?: ""
+    }
+
+    @UsedByGodot
+    fun metricSetName(handle: Int, name: String) {
+        getMetric(handle)?.name = name
+    }
+
+    @UsedByGodot
+    fun metricGetType(handle: Int): String {
+        return getMetric(handle)?.type ?: ""
+    }
+
+    @UsedByGodot
+    fun metricSetType(handle: Int, type: String) {
+        getMetric(handle)?.type = type
+    }
+
+    @UsedByGodot
+    fun metricGetValue(handle: Int): Double {
+        return getMetric(handle)?.value ?: 0.0
+    }
+
+    @UsedByGodot
+    fun metricSetValue(handle: Int, value: Double) {
+        getMetric(handle)?.value = value
+    }
+
+    @UsedByGodot
+    fun metricGetUnit(handle: Int): String {
+        return getMetric(handle)?.unit ?: ""
+    }
+
+    @UsedByGodot
+    fun metricSetUnit(handle: Int, unit: String) {
+        getMetric(handle)?.unit = unit
+    }
+
+    @UsedByGodot
+    fun metricGetAttribute(handle: Int, name: String): Dictionary {
+        // NOTE: Use Dictionary container for the value to avoid object wrapper creation.
+        val attr = getMetric(handle)?.attributes?.get(name) ?: return Dictionary()
+        val result = Dictionary()
+        result["type"] = attr.type
+        result["value"] = attr.value
+        return result
+    }
+
+    @UsedByGodot
+    fun metricSetAttribute(handle: Int, attributeData: Dictionary) {
+        val metric = getMetric(handle) ?: return
+        val name = attributeData["name"] as String
+        val type = attributeData["type"] as String
+        val value = attributeData["value"]
+        val metricAttributes =
+            metric.attributes ?: HashMap<String, SentryLogEventAttributeValue>().also { metric.attributes = it }
+        metricAttributes[name] = SentryLogEventAttributeValue(type, value)
+    }
+
+    @UsedByGodot
+    fun metricAddAttributes(handle: Int, attributes: Dictionary) {
+        val metric = getMetric(handle) ?: return
+        val metricAttributes =
+            metric.attributes ?: HashMap<String, SentryLogEventAttributeValue>().also { metric.attributes = it }
+        for ((key, value) in attributes) {
+            val attrValue = when (value) {
+                is Boolean -> SentryLogEventAttributeValue("boolean", value)
+                is Int, is Long -> SentryLogEventAttributeValue("integer", value)
+                is Float, is Double -> SentryLogEventAttributeValue("double", value)
+                is String -> SentryLogEventAttributeValue("string", value)
+                else -> SentryLogEventAttributeValue("string", value.toString())
+            }
+            metricAttributes[key.toString()] = attrValue
+        }
+    }
+
+    @UsedByGodot
+    fun metricRemoveAttribute(handle: Int, name: String) {
+        getMetric(handle)?.attributes?.remove(name)
+    }
 }
