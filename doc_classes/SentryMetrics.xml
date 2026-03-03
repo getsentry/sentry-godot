@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryMetrics" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Send metrics to Sentry.
+	</brief_description>
+	<description>
+		A dedicated API for emitting metrics to Sentry. Access this API through [member SentrySDK.metrics]. [SentryMetrics] provides methods for emitting different metric types: [method count] for incrementing counters, [method gauge] for tracking point-in-time values, and [method distribution] for recording value distributions.
+		[b]Note:[/b] The [member SentryExperimental.enable_metrics] option in [member SentryOptions.experimental] must be enabled for metrics functionality to work.
+		[codeblock]
+		# Count occurrences
+		SentrySDK.metrics.count("match_started")
+		SentrySDK.metrics.count("in_app_purchase", 1, {"item": "sword_of_fire"})
+
+		# Track a point-in-time value
+		SentrySDK.metrics.gauge("players_online", lobby.get_player_count())
+
+		# Record a value distribution
+		SentrySDK.metrics.distribution("level_load_time", load_time, "millisecond")
+		[/codeblock]
+		Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="count">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="int" default="1" />
+			<param index="2" name="attributes" type="Dictionary" default="{}" />
+			<description>
+				Emits a counter metric. Counters track how many times something happened — each increment adds to a cumulative total. The [param value] defaults to [code]1[/code], making it convenient for counting occurrences. The optional [param attributes] dictionary adds structured metadata to the metric.
+				[codeblock]
+				SentrySDK.metrics.count("match_started")
+				SentrySDK.metrics.count("enemies_spawned", wave_size, {"level": "castle"})
+				[/codeblock]
+			</description>
+		</method>
+		<method name="distribution">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="float" />
+			<param index="2" name="unit" type="String" default="&quot;&quot;" />
+			<param index="3" name="attributes" type="Dictionary" default="{}" />
+			<description>
+				Emits a distribution metric. Distributions record numeric values to compute statistical aggregates such as p50, p95, avg, min, and max. The optional [param unit] specifies the unit of measurement. The optional [param attributes] dictionary adds structured metadata to the metric.
+				[codeblock]
+				SentrySDK.metrics.distribution("level_load_time", load_time, "millisecond")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="gauge">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="float" />
+			<param index="2" name="unit" type="String" default="&quot;&quot;" />
+			<param index="3" name="attributes" type="Dictionary" default="{}" />
+			<description>
+				Emits a gauge metric. Gauges set a specific value at a point in time, like a snapshot. The optional [param unit] specifies the unit of measurement. The optional [param attributes] dictionary adds structured metadata to the metric.
+				[codeblock]
+				SentrySDK.metrics.gauge("players_online", lobby.get_player_count())
+				SentrySDK.metrics.gauge("memory_usage", OS.get_static_memory_usage(), "byte")
+				[/codeblock]
+			</description>
+		</method>
+	</methods>
+</class>
