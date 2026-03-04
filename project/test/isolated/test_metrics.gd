@@ -9,6 +9,11 @@ func before(_do_skip := OS.get_name() in ["macOS", "iOS"], _skip_reason := "Metr
 	super()
 
 
+func after() -> void:
+	_discard_metric = false
+	super()
+
+
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		options.experimental.enable_metrics = true
