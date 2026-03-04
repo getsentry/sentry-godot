@@ -61,15 +61,13 @@ double NativeMetric::get_value() const {
 }
 
 void NativeMetric::set_value(double p_value) {
-	sentry_value_type_t value_type = sentry_value_get_type(
-			sentry_value_get_by_key(native_metric, "value"));
-	if (value_type == SENTRY_VALUE_TYPE_DOUBLE) {
-		sentry_value_set_by_key(native_metric, "value",
-				sentry_value_new_double(p_value));
-	} else {
-		// Counter values are stored as integers; the double is truncated.
+	if (get_type() == METRIC_COUNTER) {
+		// Counter values are stored as integers.
 		sentry_value_set_by_key(native_metric, "value",
 				sentry_value_new_int64(p_value));
+	} else {
+		sentry_value_set_by_key(native_metric, "value",
+				sentry_value_new_double(p_value));
 	}
 }
 
