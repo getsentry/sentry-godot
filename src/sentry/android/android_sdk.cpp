@@ -272,6 +272,7 @@ void AndroidSDK::metrics_add_distribution(const String &p_name, double p_value, 
 }
 
 void AndroidSDK::init() {
+void AndroidSDK::_add_default_attachments() {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 
@@ -282,6 +283,21 @@ void AndroidSDK::init() {
 				att->get_content_type(),
 				att->get_attachment_type());
 	}
+}
+
+void AndroidSDK::clear_attachments() {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+
+	android_plugin->call(ANDROID_SN(clearAttachments));
+	_add_default_attachments();
+}
+
+void AndroidSDK::init() {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+
+	_add_default_attachments();
 
 	Dictionary optionsData;
 	optionsData["dsn"] = SENTRY_OPTIONS()->get_dsn();

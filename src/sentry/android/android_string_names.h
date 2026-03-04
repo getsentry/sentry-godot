@@ -47,6 +47,7 @@ public:
 	StringName captureFeedback;
 	StringName addFileAttachment;
 	StringName addBytesAttachment;
+	StringName clearAttachments;
 
 	// Event methods.
 	StringName eventGetId;

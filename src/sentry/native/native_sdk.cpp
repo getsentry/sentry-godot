@@ -358,6 +358,15 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	if (!p_attachment->get_content_type().is_empty()) {
 		sentry_attachment_set_content_type(native_attachment, p_attachment->get_content_type().utf8());
 	}
+
+	user_attachments.push_back(native_attachment);
+}
+
+void NativeSDK::clear_attachments() {
+	for (sentry_attachment_t *att : user_attachments) {
+		sentry_remove_attachment(att);
+	}
+	user_attachments.clear();
 }
 
 void NativeSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
@@ -463,6 +472,7 @@ void NativeSDK::init() {
 void NativeSDK::close() {
 	int err = sentry_close();
 	initialized = false;
+	user_attachments.clear();
 
 	if (err != 0) {
 		ERR_PRINT("Sentry: Failed to close native SDK cleanly. Error code: " + itos(err));

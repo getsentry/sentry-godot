@@ -21,12 +21,15 @@
 
 namespace sentry::javascript {
 
+static JavaScriptSDK *js_sdk = nullptr;
+
 // *** WASM callbacks
 
 extern "C" {
 
 static void before_send_wasm_callback(int32_t *p_ids, int32_t p_len) {
 	ERR_FAIL_COND(p_len != 2);
+	ERR_FAIL_NULL(js_sdk);
 
 	JSObjectPtr event_obj = JSObject::from_id(p_ids[0]);
 	JSObjectPtr out_attachments = JSObject::from_id(p_ids[1]);
@@ -45,7 +48,7 @@ static void before_send_wasm_callback(int32_t *p_ids, int32_t p_len) {
 		event_obj->set("shouldDiscard", false);
 
 		// Read file-based attachments and include them with the event.
-		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
+		for (const Ref<SentryAttachment> &att : js_sdk->get_file_attachments()) {
 			if (att->get_path().is_empty()) {
 				// Skip attachments with empty path.
 				// NOTE: Byte attachments are not processed here - they are added immediately.
@@ -229,7 +232,7 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 	if (!p_attachment->get_path().is_empty()) {
 		// Add attachment to list for on-demand loading during event processing.
-		SENTRY_OPTIONS()->add_file_attachment(p_attachment);
+		file_attachments.push_back(p_attachment);
 	} else {
 		// Bytes attachment - added immediately
 		ERR_FAIL_COND_MSG(p_attachment->get_bytes().is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
@@ -240,6 +243,14 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 				p_attachment->get_bytes(),
 				p_attachment->get_content_type_or_default().utf8());
 	}
+}
+
+void JavaScriptSDK::clear_attachments() {
+	ERR_FAIL_COND(!js_bridge());
+
+	// Reset file attachments from options (Vector uses copy-on-write).
+	file_attachments = SENTRY_OPTIONS()->get_file_attachments();
+	js_bridge()->call("clearAttachments");
 }
 
 void JavaScriptSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
@@ -262,6 +273,8 @@ void JavaScriptSDK::metrics_add_distribution(const String &p_name, double p_valu
 
 void JavaScriptSDK::init() {
 	ERR_FAIL_COND(!js_bridge());
+
+	file_attachments = SENTRY_OPTIONS()->get_file_attachments();
 
 	JSObjectPtr before_send_callback = JSObject::create_callback(before_send_wasm_callback);
 
@@ -302,6 +315,7 @@ void JavaScriptSDK::close() {
 	ERR_FAIL_COND(!js_bridge());
 
 	js_bridge()->call("close", SENTRY_OPTIONS()->get_shutdown_timeout_ms());
+	file_attachments.clear();
 }
 
 bool JavaScriptSDK::is_enabled() const {
@@ -310,9 +324,11 @@ bool JavaScriptSDK::is_enabled() const {
 }
 
 JavaScriptSDK::JavaScriptSDK() {
+	js_sdk = this;
 }
 
 JavaScriptSDK::~JavaScriptSDK() {
+	js_sdk = nullptr;
 }
 
 } //namespace sentry::javascript

@@ -235,6 +235,15 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}];
 }
 
+void CocoaSDK::clear_attachments() {
+	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
+		[scope clearAttachments];
+	}];
+	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
+		add_attachment(att);
+	}
+}
+
 void CocoaSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
 	WARN_PRINT_ONCE("Metrics are currently not supported on Apple platforms.");
 }
