@@ -339,21 +339,21 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun metricsAddGauge(name: String, value: Double, unit: String, attributes: Dictionary) {
         if (attributes.isEmpty()) {
-            Sentry.metrics().gauge(name, value, unit)
+            Sentry.metrics().gauge(name, value, unit.ifEmpty { null })
         } else {
             val sentryAttributes = SentryAttributes.fromMap(attributes)
-            Sentry.metrics().gauge(name, value, unit, SentryMetricsParameters.create(sentryAttributes))
+            Sentry.metrics().gauge(name, value, unit.ifEmpty { null }, SentryMetricsParameters.create(sentryAttributes))
         }
     }
 
     @UsedByGodot
     fun metricsAddDistribution(name: String, value: Double, unit: String, attributes: Dictionary) {
         if (attributes.isEmpty()) {
-            Sentry.metrics().distribution(name, value, unit)
+            Sentry.metrics().distribution(name, value, unit.ifEmpty { null })
         } else {
             val sentryAttributes = SentryAttributes.fromMap(attributes)
             Sentry.metrics()
-                .distribution(name, value, unit, SentryMetricsParameters.create(sentryAttributes))
+                .distribution(name, value, unit.ifEmpty { null }, SentryMetricsParameters.create(sentryAttributes))
         }
     }
 
