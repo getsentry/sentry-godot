@@ -30,7 +30,7 @@
 			<param index="2" name="attributes" type="Dictionary" default="{}" />
 			<description>
 				Emits a counter metric. Counters track how many times something happened — each increment adds to a cumulative total. The [param value] defaults to [code]1[/code], making it convenient for counting occurrences. The optional [param attributes] dictionary adds structured metadata to the metric.
-				[b]Note:[/b] On Android and Web platforms, the [param value] is converted to a floating-point number internally, which limits integer precision to 2[sup]53[/sup]. Values beyond that range may lose precision.
+				[b]Note:[/b] On Android and Web platforms, the [param value] is converted to a floating-point number internally. Values above 2^53 may lose precision.
 				[codeblock]
 				SentrySDK.metrics.count("match_started")
 				SentrySDK.metrics.count("enemies_spawned", wave_size, {"level": "castle"})
