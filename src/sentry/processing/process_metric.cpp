@@ -11,13 +11,12 @@ Ref<SentryMetric> process_metric(const Ref<SentryMetric> &p_metric) {
 	}
 
 	Ref<SentryMetric> processed = before_send_metric.call(p_metric);
-	if (processed.is_null()) {
-		return nullptr;
+	if (processed == p_metric || processed.is_null()) {
+		return processed;
+	} else {
+		ERR_PRINT_ONCE("Sentry: before_send_metric callback must return the same metric object or null.");
+		return p_metric;
 	}
-
-	// Replacing the metric instance isn't supported; always return the original,
-	// whether it was modified or not.
-	return p_metric;
 }
 
 } //namespace sentry
