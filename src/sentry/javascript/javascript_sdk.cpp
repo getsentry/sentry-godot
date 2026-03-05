@@ -73,7 +73,7 @@ static void before_send_wasm_callback(int32_t *p_ids, int32_t p_len) {
 			js_bridge()->call("pushAttachmentData",
 					out_attachments,
 					bytes,
-					att->get_path().get_file().utf8(),
+					att->get_effective_filename().utf8(),
 					att->get_content_type().utf8(),
 					att->get_attachment_type().utf8());
 		}
@@ -231,12 +231,11 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
 
 	if (!p_attachment->get_path().is_empty()) {
-		// Add attachment to list for on-demand loading during event processing.
+		// File attachment - add to list for on-demand loading during event processing.
 		file_attachments.push_back(p_attachment);
 	} else {
 		// Bytes attachment - added immediately
-		ERR_FAIL_COND_MSG(p_attachment->get_bytes().is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
-		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add attachment without filename.");
+		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add bytes attachment without filename.");
 
 		js_bridge()->call("addBytesAttachment",
 				p_attachment->get_filename().utf8(),

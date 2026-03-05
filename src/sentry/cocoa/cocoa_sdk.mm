@@ -219,21 +219,21 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	objc::SentryAttachment *attachment_objc = nil;
 
 	if (!p_attachment->get_path().is_empty()) {
-		ERR_FAIL_NULL(ProjectSettings::get_singleton());
+		// File attachment
 		String absolute_path = p_attachment->get_globalized_path();
 
 		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
 
-		String filename = p_attachment->get_filename().is_empty() ? p_attachment->get_path().get_file() : p_attachment->get_filename();
 		attachment_objc = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(absolute_path)
-															  filename:string_to_objc(filename)
+															  filename:string_to_objc(p_attachment->get_effective_filename())
 														   contentType:string_to_objc(p_attachment->get_content_type_or_default())];
 	} else {
+		// Bytes attachment
+		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add bytes attachment without filename.");
 		PackedByteArray bytes = p_attachment->get_bytes();
-		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
 		NSData *bytes_objc = [NSData dataWithBytes:bytes.ptr() length:bytes.size()];
 
-		sentry::logging::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
+		sentry::logging::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
 
 		attachment_objc = [[objc::SentryAttachment alloc] initWithData:bytes_objc
 															  filename:string_to_objc(p_attachment->get_filename())

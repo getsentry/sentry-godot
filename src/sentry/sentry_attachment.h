@@ -36,10 +36,10 @@ public:
 	static Ref<SentryAttachment> create_with_bytes(const PackedByteArray &p_bytes, const String &p_filename);
 
 	PackedByteArray get_bytes() const { return bytes; }
-	void set_bytes(const PackedByteArray &p_bytes) { bytes = p_bytes; }
+	void set_bytes(const PackedByteArray &p_bytes);
 
 	String get_path() const { return path; }
-	void set_path(const String &p_path) { path = p_path; }
+	void set_path(const String &p_path);
 
 	String get_filename() const { return filename; }
 	void set_filename(const String &p_filename) { filename = p_filename; }
@@ -50,6 +50,9 @@ public:
 	// NOTE: "attachment_type" property is not exposed in the API
 	String get_attachment_type() const { return attachment_type; }
 	void set_attachment_type(const String &p_attachment_type) { attachment_type = p_attachment_type; }
+
+	// Returns the effective filename: the user-set filename if provided, otherwise the basename from the path.
+	String get_effective_filename() const { return filename.is_empty() ? path.get_file() : filename; }
 
 	String get_content_type_or_default() const { return content_type.is_empty() ? "application/octet-stream" : content_type; }
 
