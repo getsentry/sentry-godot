@@ -40,7 +40,7 @@ NSObject *_as_attribute(const Variant &p_value) {
 }
 
 void _add_default_attachments(objc::SentryScope *p_scope) {
-	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
+	for (const Ref<sentry::SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
 		sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
 		// TODO: Can't specify attachmentType!
 		objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(att->get_globalized_path())
