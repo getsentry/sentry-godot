@@ -44,7 +44,7 @@ void _add_default_attachments(objc::SentryScope *p_scope) {
 		sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
 		// TODO: Can't specify attachmentType!
 		objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:sentry::cocoa::string_to_objc(att->get_globalized_path())
-																			   filename:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_filename())
+																			   filename:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_effective_filename())
 																			contentType:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_content_type())];
 		ERR_CONTINUE(objc_att == nil);
 		[p_scope addAttachment:objc_att];
