@@ -3,12 +3,14 @@
 #include "android_breadcrumb.h"
 #include "android_event.h"
 #include "android_log.h"
+#include "android_metric.h"
 #include "android_string_names.h"
 #include "android_util.h"
 #include "sentry/common_defs.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
+#include "sentry/processing/process_metric.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_sdk.h"
 
@@ -23,6 +25,18 @@ namespace {
 inline Variant _as_attribute(const Variant &p_value) {
 	Variant::Type type = p_value.get_type();
 	return (type < Variant::BOOL || type > Variant::STRING) ? (Variant)p_value.stringify() : p_value;
+}
+
+Dictionary _sanitize_attributes(const Dictionary &p_attributes) {
+	Dictionary attributes;
+	if (!p_attributes.is_empty()) {
+		const Array &keys = p_attributes.keys();
+		for (int i = 0; i < keys.size(); i++) {
+			const String &key = keys[i];
+			attributes[key] = _as_attribute(p_attributes[key]);
+		}
+	}
+	return attributes;
 }
 
 } // unnamed namespace
@@ -73,6 +87,24 @@ void SentryAndroidBeforeSendLogHandler::_before_send_log(int32_t p_handle) {
 
 void SentryAndroidBeforeSendLogHandler::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("before_send_log"), &SentryAndroidBeforeSendLogHandler::_before_send_log);
+}
+
+// ** SentryAndroidBeforeSendMetricHandler
+
+void SentryAndroidBeforeSendMetricHandler::_before_send_metric(int32_t p_metric_handle) {
+	Ref<AndroidMetric> metric_obj = memnew(AndroidMetric(android_plugin, p_metric_handle));
+	metric_obj->set_as_borrowed();
+
+	Ref<AndroidMetric> processed = sentry::process_metric(metric_obj);
+
+	if (processed.is_null()) {
+		// Discard metric.
+		android_plugin->call(ANDROID_SN(releaseMetric), p_metric_handle);
+	}
+}
+
+void SentryAndroidBeforeSendMetricHandler::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("before_send_metric"), &SentryAndroidBeforeSendMetricHandler::_before_send_metric);
 }
 
 // *** AndroidSDK
@@ -146,19 +178,7 @@ void AndroidSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p
 		return;
 	}
 
-	String body = p_body;
-
-	Dictionary attributes;
-
-	if (!p_attributes.is_empty()) {
-		const Array &keys = p_attributes.keys();
-		for (int i = 0; i < keys.size(); i++) {
-			const String &key = keys[i];
-			attributes[key] = _as_attribute(p_attributes[key]);
-		}
-	}
-
-	android_plugin->call(ANDROID_SN(log), p_level, body, attributes);
+	android_plugin->call(ANDROID_SN(log), p_level, p_body, _sanitize_attributes(p_attributes));
 }
 
 String AndroidSDK::capture_message(const String &p_message, Level p_level) {
@@ -227,6 +247,30 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
+void AndroidSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+
+	android_plugin->call(ANDROID_SN(metricsAddCount),
+			p_name, p_value, _sanitize_attributes(p_attributes));
+}
+
+void AndroidSDK::metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+
+	android_plugin->call(ANDROID_SN(metricsAddGauge),
+			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
+}
+
+void AndroidSDK::metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+
+	android_plugin->call(ANDROID_SN(metricsAddDistribution),
+			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
+}
+
 void AndroidSDK::init() {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
@@ -248,6 +292,7 @@ void AndroidSDK::init() {
 	optionsData["sample_rate"] = SENTRY_OPTIONS()->get_sample_rate();
 	optionsData["max_breadcrumbs"] = SENTRY_OPTIONS()->get_max_breadcrumbs();
 	optionsData["enable_logs"] = SENTRY_OPTIONS()->get_enable_logs();
+	optionsData["enable_metrics"] = SENTRY_OPTIONS()->get_experimental()->get_enable_metrics();
 	optionsData["app_hang_tracking"] = SENTRY_OPTIONS()->is_app_hang_tracking_enabled();
 	optionsData["app_hang_timeout_sec"] = SENTRY_OPTIONS()->get_app_hang_timeout_sec();
 	optionsData["shutdown_timeout_ms"] = SENTRY_OPTIONS()->get_shutdown_timeout_ms();
@@ -255,7 +300,8 @@ void AndroidSDK::init() {
 	android_plugin->call(ANDROID_SN(init),
 			optionsData,
 			before_send_handler->get_instance_id(),
-			SENTRY_OPTIONS()->get_before_send_log().is_valid() ? before_send_log_handler->get_instance_id() : 0);
+			SENTRY_OPTIONS()->get_before_send_log().is_valid() ? before_send_log_handler->get_instance_id() : 0,
+			SENTRY_OPTIONS()->get_experimental()->get_before_send_metric().is_valid() ? before_send_metric_handler->get_instance_id() : 0);
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());
@@ -288,6 +334,9 @@ AndroidSDK::AndroidSDK() {
 
 	before_send_log_handler = memnew(SentryAndroidBeforeSendLogHandler);
 	before_send_log_handler->_initialize(android_plugin);
+
+	before_send_metric_handler = memnew(SentryAndroidBeforeSendMetricHandler);
+	before_send_metric_handler->_initialize(android_plugin);
 }
 
 AndroidSDK::~AndroidSDK() {
@@ -297,6 +346,9 @@ AndroidSDK::~AndroidSDK() {
 	}
 	if (before_send_log_handler) {
 		memdelete(before_send_log_handler);
+	}
+	if (before_send_metric_handler) {
+		memdelete(before_send_metric_handler);
 	}
 }
 

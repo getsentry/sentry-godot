@@ -91,6 +91,24 @@ AndroidStringNames::AndroidStringNames() {
 	logSetAttribute = StringName("logSetAttribute");
 	logAddAttributes = StringName("logAddAttributes");
 	logRemoveAttribute = StringName("logRemoveAttribute");
+
+	// Metrics.
+	metricsAddCount = StringName("metricsAddCount");
+	metricsAddGauge = StringName("metricsAddGauge");
+	metricsAddDistribution = StringName("metricsAddDistribution");
+	metricGetName = StringName("metricGetName");
+	metricSetName = StringName("metricSetName");
+	metricGetType = StringName("metricGetType");
+	metricSetType = StringName("metricSetType");
+	metricGetValue = StringName("metricGetValue");
+	metricSetValue = StringName("metricSetValue");
+	metricGetUnit = StringName("metricGetUnit");
+	metricSetUnit = StringName("metricSetUnit");
+	metricGetAttribute = StringName("metricGetAttribute");
+	metricSetAttribute = StringName("metricSetAttribute");
+	metricAddAttributes = StringName("metricAddAttributes");
+	metricRemoveAttribute = StringName("metricRemoveAttribute");
+	releaseMetric = StringName("releaseMetric");
 }
 
 } //namespace sentry::android

@@ -73,6 +73,9 @@ try {
 			"storeObject",
 			"getObject",
 			"releaseObject",
+			"metricsAddCount",
+			"metricsAddGauge",
+			"metricsAddDistribution",
 		];
 
 		console.log("📋 Method availability check:");
@@ -99,7 +102,7 @@ try {
 		console.log("\n🧪 Functional tests:");
 
 		runTest("init()", () => {
-			bridge.init(() => {}, null, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 100, false, "0.1.0");
+			bridge.init(() => {}, null, null, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 100, false, false, "0.1.0");
 		});
 
 		runTest("isEnabled()", () => {
@@ -227,6 +230,18 @@ try {
 			assertEqual(retrieved, obj, "getObject should return the same object");
 			bridge.releaseObject(id);
 			assertEqual(bridge.getObject(id), undefined, "getObject should return undefined after release");
+		});
+
+		runTest("metricsAddCount()", () => {
+			bridge.metricsAddCount("test.count", 1, '{"key": "value"}');
+		});
+
+		runTest("metricsAddGauge()", () => {
+			bridge.metricsAddGauge("test.gauge", 42.5, "millisecond", '{"key": "value"}');
+		});
+
+		runTest("metricsAddDistribution()", () => {
+			bridge.metricsAddDistribution("test.dist", 100, "byte", '{"key": "value"}');
 		});
 
 		runTest("close()", () => {

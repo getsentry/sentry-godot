@@ -103,6 +103,24 @@ public:
 	StringName logSetAttribute;
 	StringName logAddAttributes;
 	StringName logRemoveAttribute;
+
+	// Metrics.
+	StringName metricsAddCount;
+	StringName metricsAddGauge;
+	StringName metricsAddDistribution;
+	StringName metricGetName;
+	StringName metricSetName;
+	StringName metricGetType;
+	StringName metricSetType;
+	StringName metricGetValue;
+	StringName metricSetValue;
+	StringName metricGetUnit;
+	StringName metricSetUnit;
+	StringName metricGetAttribute;
+	StringName metricSetAttribute;
+	StringName metricAddAttributes;
+	StringName metricRemoveAttribute;
+	StringName releaseMetric;
 };
 
 } //namespace sentry::android

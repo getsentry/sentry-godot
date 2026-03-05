@@ -162,4 +162,71 @@ sentry_value_t variant_to_attribute(const Variant &p_value) {
 	}
 }
 
+sentry_value_t dictionary_to_attributes(const Dictionary &p_attributes) {
+	sentry_value_t rv = sentry_value_new_object();
+	if (!p_attributes.is_empty()) {
+		for (const Variant &key : p_attributes.keys()) {
+			sentry_value_set_by_key(rv, key.stringify().utf8(),
+					variant_to_attribute(p_attributes[key]));
+		}
+	}
+	return rv;
+}
+
+Variant sentry_value_get_attribute(sentry_value_t p_value, const String &p_name) {
+	sentry_value_t attributes = sentry_value_get_by_key(p_value, "attributes");
+	if (sentry_value_is_null(attributes)) {
+		return Variant();
+	}
+
+	sentry_value_t attr = sentry_value_get_by_key(attributes, p_name.utf8());
+	if (sentry_value_is_null(attr)) {
+		return Variant();
+	}
+
+	sentry_value_t value = sentry_value_get_by_key(attr, "value");
+	sentry_value_t type = sentry_value_get_by_key(attr, "type");
+	const char *type_cstr = sentry_value_as_string(type);
+
+	if (strcmp(type_cstr, "boolean") == 0) {
+		return static_cast<bool>(sentry_value_is_true(value));
+	} else if (strcmp(type_cstr, "integer") == 0) {
+		return sentry_value_as_int64(value);
+	} else if (strcmp(type_cstr, "double") == 0) {
+		return sentry_value_as_double(value);
+	} else if (strcmp(type_cstr, "string") == 0) {
+		return String::utf8(sentry_value_as_string(value));
+	} else {
+		WARN_PRINT("Sentry: Unexpected native attribute type string \"" + String(type_cstr) + "\"");
+		return Variant();
+	}
+}
+
+void sentry_value_set_attribute(sentry_value_t p_native, const String &p_name, const Variant &p_value) {
+	if (p_name.is_empty()) {
+		return;
+	}
+
+	sentry_value_t attributes = sentry_value_get_by_key(p_native, "attributes");
+	if (sentry_value_is_null(attributes)) {
+		attributes = sentry_value_new_object();
+		sentry_value_set_by_key(p_native, "attributes", attributes);
+	}
+
+	sentry_value_set_by_key(attributes, p_name.utf8(), variant_to_attribute(p_value));
+}
+
+void sentry_value_add_attributes(sentry_value_t p_native, const Dictionary &p_attributes) {
+	sentry_value_t attributes = sentry_value_get_by_key(p_native, "attributes");
+	if (sentry_value_is_null(attributes)) {
+		attributes = sentry_value_new_object();
+		sentry_value_set_by_key(p_native, "attributes", attributes);
+	}
+
+	const Array &keys = p_attributes.keys();
+	for (const String &key : keys) {
+		sentry_value_set_by_key(attributes, key.utf8(), variant_to_attribute(p_attributes[key]));
+	}
+}
+
 } // namespace sentry::native

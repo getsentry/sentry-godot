@@ -7,9 +7,11 @@
 #include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_log.h"
+#include "sentry/native/native_metric.h"
 #include "sentry/native/native_util.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
+#include "sentry/processing/process_metric.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/util/screenshot.h"
@@ -24,6 +26,7 @@ namespace {
 
 using NativeEvent = sentry::native::NativeEvent;
 using NativeLog = sentry::native::NativeLog;
+using NativeMetric = sentry::native::NativeMetric;
 
 sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closure) {
 	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, false));
@@ -44,6 +47,19 @@ sentry_value_t _handle_before_send_log(sentry_value_t p_value, void *p_user_data
 
 	if (unlikely(processed.is_null())) {
 		// Discard event.
+		sentry_value_decref(p_value);
+		return sentry_value_new_null();
+	} else {
+		return p_value;
+	}
+}
+
+sentry_value_t _handle_before_send_metric(sentry_value_t p_value, void *p_user_data) {
+	Ref<NativeMetric> metric_obj = memnew(NativeMetric(p_value));
+	Ref<NativeMetric> processed = sentry::process_metric(metric_obj);
+
+	if (unlikely(processed.is_null())) {
+		// Discard metric.
 		sentry_value_decref(p_value);
 		return sentry_value_new_null();
 	} else {
@@ -207,40 +223,31 @@ void NativeSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_
 		return;
 	}
 
-	String body = p_body;
-
-	sentry_value_t attributes = sentry_value_new_object();
-
-	if (!p_attributes.is_empty()) {
-		for (const Variant &key : p_attributes.keys()) {
-			sentry_value_set_by_key(attributes, key.stringify().utf8(),
-					variant_to_attribute(p_attributes[key]));
-		}
-	}
+	sentry_value_t attributes = dictionary_to_attributes(p_attributes);
 
 	switch (p_level) {
 		case LOG_LEVEL_TRACE: {
-			sentry_log_trace(body.utf8(), attributes);
+			sentry_log_trace(p_body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_DEBUG: {
-			sentry_log_debug(body.utf8(), attributes);
+			sentry_log_debug(p_body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_INFO: {
-			sentry_log_info(body.utf8(), attributes);
+			sentry_log_info(p_body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_WARN: {
-			sentry_log_warn(body.utf8(), attributes);
+			sentry_log_warn(p_body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_ERROR: {
-			sentry_log_error(body.utf8(), attributes);
+			sentry_log_error(p_body.utf8(), attributes);
 		} break;
 		case LOG_LEVEL_FATAL: {
-			sentry_log_fatal(body.utf8(), attributes);
+			sentry_log_fatal(p_body.utf8(), attributes);
 		} break;
 		default: {
 			sentry::logging::print_no_logger(LEVEL_WARNING,
 					vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
-			sentry_log_info(body.utf8(), attributes);
+			sentry_log_info(p_body.utf8(), attributes);
 		} break;
 	}
 }
@@ -353,6 +360,18 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
+void NativeSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
+	sentry_metrics_count(p_name.utf8(), p_value, dictionary_to_attributes(p_attributes));
+}
+
+void NativeSDK::metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	sentry_metrics_gauge(p_name.utf8(), p_value, p_unit.utf8(), dictionary_to_attributes(p_attributes));
+}
+
+void NativeSDK::metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	sentry_metrics_distribution(p_name.utf8(), p_value, p_unit.utf8(), dictionary_to_attributes(p_attributes));
+}
+
 void NativeSDK::init() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
@@ -371,6 +390,7 @@ void NativeSDK::init() {
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
 	sentry_options_set_logger_enabled_when_crashed(options, false);
 	sentry_options_set_enable_logs(options, SENTRY_OPTIONS()->get_enable_logs());
+	sentry_options_set_enable_metrics(options, SENTRY_OPTIONS()->get_experimental()->get_enable_metrics());
 
 	// Establish handler path.
 	String handler_fn;
@@ -423,6 +443,11 @@ void NativeSDK::init() {
 	const Callable &before_send_log = SENTRY_OPTIONS()->get_before_send_log();
 	if (before_send_log.is_valid()) {
 		sentry_options_set_before_send_log(options, _handle_before_send_log, NULL);
+	}
+
+	const Callable &before_send_metric = SENTRY_OPTIONS()->get_experimental()->get_before_send_metric();
+	if (before_send_metric.is_valid()) {
+		sentry_options_set_before_send_metric(options, _handle_before_send_metric, NULL);
 	}
 
 	int err = sentry_init(options);

@@ -33,6 +33,10 @@ class DisabledSDK : public InternalSDK {
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override {}
 
+	virtual void metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) override {}
+	virtual void metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override {}
+	virtual void metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override {}
+
 	virtual void init() override {}
 	virtual void close() override {}
 	virtual bool is_enabled() const override { return false; }

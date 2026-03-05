@@ -149,6 +149,10 @@
 			Provides access to Sentry's structured logging API. Use this to send log messages to Sentry when [member SentryExperimental.enable_logs] is enabled. The dedicated logger API offers methods for different log levels and enables you to capture structured data with your log messages.
 			See [SentryLogger] for more details.
 		</member>
+		<member name="metrics" type="SentryMetrics" setter="" getter="get_metrics">
+			Provides access to Sentry's metrics API. Use this to emit custom metrics to Sentry when [member SentryExperimental.enable_metrics] is enabled.
+			See [SentryMetrics] for more details.
+		</member>
 	</members>
 	<constants>
 		<constant name="LEVEL_DEBUG" value="0" enum="Level">

@@ -37,12 +37,28 @@ protected:
 	static void _bind_methods();
 };
 
+class SentryAndroidBeforeSendMetricHandler : public Object {
+	GDCLASS(SentryAndroidBeforeSendMetricHandler, Object);
+	friend class AndroidSDK;
+
+private:
+	Object *android_plugin = nullptr;
+
+	void _initialize(Object *p_android_plugin) { android_plugin = p_android_plugin; }
+
+	void _before_send_metric(int32_t p_metric_handle);
+
+protected:
+	static void _bind_methods();
+};
+
 // Internal SDK utilizing Sentry Android (sentry-java repo).
 class AndroidSDK : public InternalSDK {
 private:
 	uint64_t android_plugin_instance_id = 0;
 	SentryAndroidBeforeSendHandler *before_send_handler = nullptr;
 	SentryAndroidBeforeSendLogHandler *before_send_log_handler = nullptr;
+	SentryAndroidBeforeSendMetricHandler *before_send_metric_handler = nullptr;
 
 	_FORCE_INLINE_ Object *_get_android_plugin() const { return ObjectDB::get_instance(android_plugin_instance_id); }
 
@@ -70,6 +86,10 @@ public:
 	virtual void capture_feedback(const Ref<SentryFeedback> &p_feedback) override;
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
+
+	virtual void metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) override;
+	virtual void metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override;
+	virtual void metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override;
 
 	virtual void init() override;
 	virtual void close() override;

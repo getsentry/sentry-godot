@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
+import type { Metric } from "@sentry/core";
 import { wasmIntegration } from "@sentry/wasm";
 
 // ID-based store for WASM/JS interop. Assigns auto-incrementing uint32 IDs (0 is reserved).
@@ -105,6 +106,7 @@ class SentryBridge {
   public init(
     beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void,
     beforeSendLogCallback: ((log: Sentry.Log) => void) | null,
+    beforeSendMetricCallback: ((metric: Metric) => void) | null,
     dsn: string,
     debug: boolean,
     release: string,
@@ -113,6 +115,7 @@ class SentryBridge {
     sampleRate: number,
     maxBreadcrumbs: number,
     enableLogs: boolean,
+    enableMetrics: boolean,
     sdkVersion: string,
   ): void {
     if (debug) {
@@ -128,6 +131,7 @@ class SentryBridge {
       sampleRate,
       maxBreadcrumbs,
       enableLogs,
+      enableMetrics,
       _metadata: {
         sdk: {
           name: "sentry.javascript.godot",
@@ -210,6 +214,19 @@ class SentryBridge {
       console.debug("Sentry: beforeSendLog callback not provided.");
     }
 
+    if (beforeSendMetricCallback) {
+      options.beforeSendMetric = (metric: Metric) => {
+        beforeSendMetricCallback(metric);
+
+        const shouldDiscard: boolean = (metric as any).shouldDiscard;
+        delete (metric as any).shouldDiscard;
+
+        return shouldDiscard ? null : metric;
+      };
+    } else {
+      console.debug("Sentry: beforeSendMetric callback not provided.");
+    }
+
     Sentry.init(options);
   }
 
@@ -282,6 +299,26 @@ class SentryBridge {
 
   public logFatal(message: string, attributesJson?: string): void {
     Sentry.logger.fatal(message, safeParseJSON(attributesJson || "", {}));
+  }
+
+  public metricsAddCount(name: string, value: number, attributesJson?: string): void {
+    Sentry.metrics.count(name, value, {
+      attributes: safeParseJSON(attributesJson || "", {}),
+    });
+  }
+
+  public metricsAddGauge(name: string, value: number, unit: string, attributesJson?: string): void {
+    Sentry.metrics.gauge(name, value, {
+      ...(unit !== "" && { unit }),
+      attributes: safeParseJSON(attributesJson || "", {}),
+    });
+  }
+
+  public metricsAddDistribution(name: string, value: number, unit: string, attributesJson?: string): void {
+    Sentry.metrics.distribution(name, value, {
+      ...(unit !== "" && { unit }),
+      attributes: safeParseJSON(attributesJson || "", {}),
+    });
   }
 
   public captureMessage(message: string, level: string): string {

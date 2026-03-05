@@ -9,6 +9,7 @@
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
 #include "sentry/sentry_logger.h"
+#include "sentry/sentry_metrics.h"
 #include "sentry/sentry_options.h"
 
 #include <godot_cpp/classes/mutex.hpp>
@@ -39,8 +40,9 @@ private:
 	Ref<sentry::logging::SentryGodotLogger> godot_logger;
 	bool is_auto_initializing = false;
 
-	// Public API logs interface
+	// Public API for logs and metrics
 	SentryLogger *logger = nullptr;
+	SentryMetrics *metrics = nullptr;
 
 	void _init_contexts();
 	void _init_user();
@@ -79,6 +81,7 @@ public:
 	void remove_user();
 
 	_FORCE_INLINE_ SentryLogger *get_logger() const { return logger; }
+	_FORCE_INLINE_ SentryMetrics *get_metrics() const { return metrics; }
 
 	String capture_message(const String &p_message, sentry::Level p_level = sentry::LEVEL_INFO);
 	String get_last_event_id() const;

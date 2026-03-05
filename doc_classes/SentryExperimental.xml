@@ -24,8 +24,23 @@
 				return log_entry
 			[/codeblock]
 		</member>
+		<member name="before_send_metric" type="Callable" setter="set_before_send_metric" getter="get_before_send_metric" default="Callable()">
+			If assigned, this callback will be called before sending a metric to Sentry. It can be used to modify the metric or prevent it from being sent.
+			[codeblock]
+			func _before_send_metric(metric: SentryMetric) -&gt; SentryMetric:
+				# Drop debug-only metrics in release builds.
+				if not OS.is_debug_build() and metric.name.begins_with("debug."):
+					return null
+				# Enrich with runtime context.
+				metric.set_attribute("current_scene", get_tree().current_scene.name)
+				return metric
+			[/codeblock]
+		</member>
 		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="false" deprecated="Logs are now generally available. Use [member SentryOptions.enable_logs] instead.">
 			Enables Sentry structured logging functionality. When enabled, Godot's log messages are automatically captured and sent to Sentry, and you gain access to the dedicated logging APIs available through [member SentrySDK.logger].
+		</member>
+		<member name="enable_metrics" type="bool" setter="set_enable_metrics" getter="get_enable_metrics" default="true">
+			Enables Sentry metrics functionality. When enabled, you can emit custom metrics using the [SentryMetrics] API available through [member SentrySDK.metrics].
 		</member>
 	</members>
 </class>
