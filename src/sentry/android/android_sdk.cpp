@@ -271,7 +271,6 @@ void AndroidSDK::metrics_add_distribution(const String &p_name, double p_value, 
 			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
 }
 
-void AndroidSDK::init() {
 void AndroidSDK::_add_default_attachments() {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
