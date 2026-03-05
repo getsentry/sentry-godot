@@ -358,6 +358,10 @@ class SentryBridge {
       contentType,
     });
   }
+
+  public clearAttachments(): void {
+    Sentry.getCurrentScope().clearAttachments();
+  }
 }
 
 const sentryBridge = new SentryBridge();

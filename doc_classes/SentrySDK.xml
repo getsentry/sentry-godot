@@ -52,6 +52,12 @@
 				Captures an event with [param message] and sends it to Sentry, returning the event ID.
 			</description>
 		</method>
+		<method name="clear_attachments">
+			<return type="void" />
+			<description>
+				Clears all user-added attachments. Built-in attachments (log file, screenshot, view hierarchy) are preserved.
+			</description>
+		</method>
 		<method name="close">
 			<return type="void" />
 			<description>

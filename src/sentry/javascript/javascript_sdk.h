@@ -8,7 +8,11 @@ namespace sentry::javascript {
 
 // Internal SDK utilizing Sentry for JavaScript.
 class JavaScriptSDK : public InternalSDK {
+private:
+	Vector<Ref<SentryAttachment>> file_attachments;
+
 public:
+	_FORCE_INLINE_ const Vector<Ref<SentryAttachment>> &get_file_attachments() const { return file_attachments; }
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void remove_context(const String &p_key) override;
 
@@ -32,6 +36,7 @@ public:
 	virtual void capture_feedback(const Ref<SentryFeedback> &p_feedback) override;
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
+	virtual void clear_attachments() override;
 
 	virtual void metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) override;
 	virtual void metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override;

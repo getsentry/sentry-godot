@@ -14,6 +14,7 @@ private:
 	sentry_uuid_t last_uuid;
 	Ref<Mutex> last_uuid_mutex;
 	bool initialized = false;
+	Vector<sentry_attachment_t *> user_attachments;
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
@@ -39,6 +40,7 @@ public:
 	virtual void capture_feedback(const Ref<SentryFeedback> &p_feedback) override;
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
+	virtual void clear_attachments() override;
 
 	virtual void metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) override;
 	virtual void metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override;

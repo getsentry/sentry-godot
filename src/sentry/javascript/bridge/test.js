@@ -66,6 +66,7 @@ try {
 			"lastEventId",
 			"addBreadcrumb",
 			"addBytesAttachment",
+			"clearAttachments",
 			"pushAttachmentData",
 			"storeBytes",
 			"takeBytes",
@@ -219,6 +220,10 @@ try {
 
 		runTest("addBytesAttachment()", () => {
 			bridge.addBytesAttachment("test.txt", new Uint8Array([ 104, 101, 108, 108, 111 ]), "text/plain");
+		});
+
+		runTest("clearAttachments()", () => {
+			bridge.clearAttachments();
 		});
 
 		runTest("storeObject() / getObject() / releaseObject()", () => {

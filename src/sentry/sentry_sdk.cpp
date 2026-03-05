@@ -220,6 +220,10 @@ void SentrySDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	internal_sdk->add_attachment(p_attachment);
 }
 
+void SentrySDK::clear_attachments() {
+	internal_sdk->clear_attachments();
+}
+
 void SentrySDK::set_tag(const String &p_key, const String &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set tag with an empty key.");
 	internal_sdk->set_tag(p_key, p_value);
@@ -420,6 +424,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("capture_event", "event"), &SentrySDK::capture_event);
 	ClassDB::bind_method(D_METHOD("capture_feedback", "feedback"), &SentrySDK::capture_feedback);
 	ClassDB::bind_method(D_METHOD("add_attachment", "attachment"), &SentrySDK::add_attachment);
+	ClassDB::bind_method(D_METHOD("clear_attachments"), &SentrySDK::clear_attachments);
 
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);

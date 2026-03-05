@@ -92,6 +92,7 @@ public:
 	void capture_feedback(const Ref<SentryFeedback> &p_feedback);
 
 	void add_attachment(const Ref<SentryAttachment> &p_attachment);
+	void clear_attachments();
 
 	// * Hidden API methods -- used in testing
 

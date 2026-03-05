@@ -264,6 +264,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun clearAttachments() {
+        Sentry.getGlobalScope().clearAttachments()
+    }
+
+    @UsedByGodot
     fun setContext(key: String, value: Dictionary) {
         Sentry.getGlobalScope().setContexts(key, value)
     }

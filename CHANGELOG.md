@@ -9,6 +9,7 @@
 - Support `SENTRY_DSN`, `SENTRY_RELEASE`, and `SENTRY_ENVIRONMENT` environment variables ([#548](https://github.com/getsentry/sentry-godot/pull/548))
 - Add configurable `shutdown_timeout_ms` option ([#539](https://github.com/getsentry/sentry-godot/pull/539))
 - Add unit constants supported by specification that can be used with Metrics API ([#562](https://github.com/getsentry/sentry-godot/pull/562))
+- Add `SentrySDK.clear_attachments()` ([#565](https://github.com/getsentry/sentry-godot/pull/565))
 
 ### Improvements
 
