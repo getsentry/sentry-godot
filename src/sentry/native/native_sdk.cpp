@@ -353,8 +353,6 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach bytes with filename: %s", p_attachment->get_filename()));
 	}
 
-	p_attachment->set_native_attachment(native_attachment);
-
 	if (!p_attachment->get_content_type().is_empty()) {
 		sentry_attachment_set_content_type(native_attachment, p_attachment->get_content_type().utf8());
 	}
