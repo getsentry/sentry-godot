@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-### Improvements
+### Fixes
 
-- Harden attachment filename handling and validation across all platforms ([#567](https://github.com/getsentry/sentry-godot/pull/567))
+- Fix blank attachment names on Apple platforms and harden attachment handling and validation across all platforms ([#567](https://github.com/getsentry/sentry-godot/pull/567))
 
 ## 1.4.0
 
