@@ -15,7 +15,10 @@
 		SentrySDK.metrics.gauge("players_online", lobby.get_player_count())
 
 		# Record a value distribution
-		SentrySDK.metrics.distribution("level_load_time", load_time, "millisecond")
+		SentrySDK.metrics.distribution("level_load_time", load_time, SentryUnit.millisecond)
+
+		# Custom units are also supported
+		SentrySDK.metrics.gauge("items_in_inventory", item_count, "item")
 		[/codeblock]
 		Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
 		[b]Note:[/b] Metrics are currently not supported on Apple platforms.
@@ -44,9 +47,9 @@
 			<param index="2" name="unit" type="String" default="&quot;&quot;" />
 			<param index="3" name="attributes" type="Dictionary" default="{}" />
 			<description>
-				Emits a distribution metric. Distributions record numeric values to compute statistical aggregates such as p50, p95, avg, min, and max. The optional [param unit] specifies the unit of measurement. The optional [param attributes] dictionary adds structured metadata to the metric.
+				Emits a distribution metric. Distributions record numeric values to compute statistical aggregates such as p50, p95, avg, min, and max. The optional [param unit] specifies the unit of measurement (see [SentryUnit] for predefined constants). The optional [param attributes] dictionary adds structured metadata to the metric.
 				[codeblock]
-				SentrySDK.metrics.distribution("level_load_time", load_time, "millisecond")
+				SentrySDK.metrics.distribution("level_load_time", load_time, SentryUnit.millisecond)
 				[/codeblock]
 			</description>
 		</method>
@@ -57,10 +60,10 @@
 			<param index="2" name="unit" type="String" default="&quot;&quot;" />
 			<param index="3" name="attributes" type="Dictionary" default="{}" />
 			<description>
-				Emits a gauge metric. Gauges set a specific value at a point in time, like a snapshot. The optional [param unit] specifies the unit of measurement. The optional [param attributes] dictionary adds structured metadata to the metric.
+				Emits a gauge metric. Gauges set a specific value at a point in time, like a snapshot. The optional [param unit] specifies the unit of measurement (see [SentryUnit] for predefined constants). The optional [param attributes] dictionary adds structured metadata to the metric.
 				[codeblock]
 				SentrySDK.metrics.gauge("players_online", lobby.get_player_count())
-				SentrySDK.metrics.gauge("memory_usage", OS.get_static_memory_usage(), "byte")
+				SentrySDK.metrics.gauge("memory_usage", OS.get_static_memory_usage(), SentryUnit.byte)
 				[/codeblock]
 			</description>
 		</method>
