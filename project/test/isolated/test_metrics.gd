@@ -71,6 +71,20 @@ func test_distribution() -> void:
 	SentrySDK.metrics.distribution("response_time", 150.0)
 
 
+func test_gauge_with_sentry_unit() -> void:
+	metric_processed.connect(func(metric: SentryMetric):
+		assert_str(metric.unit).is_equal("byte")
+	, CONNECT_ONE_SHOT)
+	SentrySDK.metrics.gauge("memory_usage", 1024.0, SentryUnit.byte)
+
+
+func test_distribution_with_sentry_unit() -> void:
+	metric_processed.connect(func(metric: SentryMetric):
+		assert_str(metric.unit).is_equal("millisecond")
+	, CONNECT_ONE_SHOT)
+	SentrySDK.metrics.distribution("level_load_time", 150.0, SentryUnit.millisecond)
+
+
 func test_distribution_with_unit() -> void:
 	metric_processed.connect(func(metric: SentryMetric):
 		assert_str(metric.name).is_equal("request_size")

@@ -15,6 +15,7 @@
 #include "sentry/sentry_metrics.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
+#include "sentry/sentry_unit.h"
 #include "sentry/sentry_user.h"
 
 #include <godot_cpp/classes/engine.hpp>
@@ -70,6 +71,7 @@ void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryTimestamp);
 	GDREGISTER_CLASS(SentryLogger);
 	GDREGISTER_CLASS(SentryMetrics);
+	GDREGISTER_CLASS(SentryUnit);
 	GDREGISTER_CLASS(SentryFeedback);
 	GDREGISTER_CLASS(SentrySDK);
 	GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
@@ -132,6 +134,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		register_runtime_classes();
+		SentryUnit::create_singleton();
 		SentrySDK::create_singleton();
 		SentrySDK::get_singleton()->prepare_and_auto_initialize();
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
@@ -145,6 +148,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 void uninitialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		SentrySDK::destroy_singleton();
+		SentryUnit::destroy_singleton();
 	}
 }
 
