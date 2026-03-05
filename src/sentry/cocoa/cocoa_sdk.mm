@@ -39,6 +39,18 @@ NSObject *_as_attribute(const Variant &p_value) {
 	}
 }
 
+void _add_default_attachments(objc::SentryScope *p_scope) {
+	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
+		sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
+		// TODO: Can't specify attachmentType!
+		objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(att->get_globalized_path())
+																			   filename:string_to_objc_or_nil_if_empty(att->get_filename())
+																			contentType:string_to_objc_or_nil_if_empty(att->get_content_type())];
+		ERR_CONTINUE(objc_att == nil);
+		[p_scope addAttachment:objc_att];
+	}
+}
+
 } // unnamed namespace
 
 namespace sentry::cocoa {
@@ -238,10 +250,8 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 void CocoaSDK::clear_attachments() {
 	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
 		[scope clearAttachments];
+		_add_default_attachments(scope);
 	}];
-	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
-		add_attachment(att);
-	}
 }
 
 void CocoaSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
@@ -284,16 +294,7 @@ void CocoaSDK::init() {
 		options.experimental.enableLogs = SENTRY_OPTIONS()->get_enable_logs();
 
 		options.initialScope = ^(objc::SentryScope *scope) {
-			// Add global attachments
-			for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
-				sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
-				// TODO: Can't specify attachmentType!
-				objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(att->get_globalized_path())
-																					   filename:string_to_objc_or_nil_if_empty(att->get_filename())
-																					contentType:string_to_objc_or_nil_if_empty(att->get_content_type())];
-				ERR_CONTINUE(objc_att == nil);
-				[scope addAttachment:objc_att];
-			}
+			_add_default_attachments(scope);
 
 			// Initialize default user.
 			Ref<SentryUser> user = SentryUser::create_default();
