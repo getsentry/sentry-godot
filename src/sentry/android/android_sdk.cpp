@@ -281,7 +281,7 @@ void AndroidSDK::_add_default_attachments() {
 	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
 		android_plugin->call(ANDROID_SN(addFileAttachment),
 				att->get_globalized_path(),
-				String(), // filename
+				att->get_effective_filename(),
 				att->get_content_type(),
 				att->get_attachment_type());
 	}
