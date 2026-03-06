@@ -292,7 +292,8 @@ Describe "Platform Integration Tests" {
                 Write-GitHub "::endgroup::"
 
                 Write-GitHub "::group::Getting event attachments"
-                $script:attachments = Get-SentryTestEventAttachments -EventId "$eventId" -ExpectedCount 4
+                # 4 custom + godot.log + view-hierarchy.json = 6
+                $script:attachments = Get-SentryTestEventAttachments -EventId "$eventId" -ExpectedCount 6
                 $script:attachmentNames = ($script:attachments | ForEach-Object { "'$($_.name)'" }) -join ", "
                 Write-GitHub "::endgroup::"
             }
@@ -310,8 +311,9 @@ Describe "Platform Integration Tests" {
             $runResult.ExitCode | Should -Be 0
         }
 
-        It "Has at least 4 custom attachments" {
-            $attachments.Count | Should -BeGreaterOrEqual 4 -Because "received attachments: $attachmentNames"
+        It "Has at least 6 attachments" {
+            # 4 custom + godot.log + view-hierarchy.json (screenshot not tested — headless mode)
+            $attachments.Count | Should -BeGreaterOrEqual 6 -Because "received attachments: $attachmentNames"
         }
 
         It "Has no attachments with empty name" {
@@ -351,6 +353,19 @@ Describe "Platform Integration Tests" {
             $runtimeBytes.headers.'Content-Type' | Should -Be "text/plain"
             # "Runtime bytes" is 13 bytes in UTF-8
             $runtimeBytes.size | Should -Be 13
+        }
+
+        It "Has godot.log default attachment" {
+            $logFile = $attachments | Where-Object { $_.name -eq "godot.log" }
+            $logFile | Should -Not -BeNullOrEmpty -Because "'godot.log' should be among received attachments: $attachmentNames"
+            $logFile.size | Should -BeGreaterThan 0
+        }
+
+        It "Has view-hierarchy.json default attachment" {
+            $viewHierarchy = $attachments | Where-Object { $_.name -eq "view-hierarchy.json" }
+            $viewHierarchy | Should -Not -BeNullOrEmpty -Because "'view-hierarchy.json' should be among received attachments: $attachmentNames"
+            $viewHierarchy.type | Should -Be "event.view_hierarchy"
+            $viewHierarchy.size | Should -BeGreaterThan 0
         }
     }
 

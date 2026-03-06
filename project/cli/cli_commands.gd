@@ -132,7 +132,10 @@ func _cmd_attachment_capture() -> int:
 	_write_text_file("user://runtime_attachment.txt", "Runtime file attachment for integration testing.\n")
 
 	# Add attachments during init to test that they are retained after SDK initialization.
-	await _init_sentry(func(_options: SentryOptions) -> void:
+	await _init_sentry(func(options: SentryOptions) -> void:
+		# Enable default attachments (screenshot excluded — not available in headless/CLI mode)
+		options.attach_log = true
+		options.attach_scene_tree = true
 		# File attachment added in config callback
 		SentrySDK.add_attachment(SentryAttachment.create_with_path("user://config_attachment.txt"))
 		# Bytes attachment added in config callback
