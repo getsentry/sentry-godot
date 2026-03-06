@@ -154,7 +154,7 @@ AfterAll {
 Describe "Platform Integration Tests" {
     # TODO: structured logs tests
     # TODO: user feedback tests
-    # TODO: attachment tests: screenshot, VH, log file, and custom attachments
+    # TODO: attachment tests: screenshot, VH, log file
 
     Context "Crash Capture" {
         BeforeAll {
@@ -278,6 +278,94 @@ Describe "Platform Integration Tests" {
 
         It "Has expected level tag" {
             ($runEvent.tags | Where-Object { $_.key -eq "level" }).value | Should -Be "info"
+        }
+    }
+
+    Context "Attachment Capture" {
+        BeforeAll {
+            $runResult = Invoke-TestAction -Action "attachment-capture"
+
+            $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
+            if ($eventId) {
+                Write-GitHub "::group::Getting event content"
+                $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
+                Write-GitHub "::endgroup::"
+
+                Write-GitHub "::group::Getting event attachments"
+                # 4 custom + godot.log + view-hierarchy.json = 6
+                $script:attachments = Get-SentryTestEventAttachments -EventId "$eventId" -ExpectedCount 6
+                $script:attachmentNames = ($script:attachments | ForEach-Object { "'$($_.name)'" }) -join ", "
+                Write-GitHub "::endgroup::"
+            }
+        }
+
+        # Include shared test cases from CommonTestCases.ps1
+        It "<Name>" -ForEach $CommonTestCases {
+            & $testBlock -SentryEvent $runEvent -TestType "attachment-capture" -RunResult $runResult -TestSetup $script:TestSetup
+        }
+
+        It "Exits with code zero" {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+                return
+            }
+            $runResult.ExitCode | Should -Be 0
+        }
+
+        It "Has at least 6 attachments" {
+            # 4 custom + godot.log + view-hierarchy.json (screenshot not tested — headless mode)
+            $attachments.Count | Should -BeGreaterOrEqual 6 -Because "received attachments: $attachmentNames"
+        }
+
+        It "Has no attachments with empty name" {
+            $emptyNames = $attachments | Where-Object { [string]::IsNullOrWhiteSpace($_.name) }
+            $emptyNames | Should -BeNullOrEmpty -Because "all attachments should have a non-empty name, received attachments: $attachmentNames"
+        }
+
+        It "Has file attachment added in config callback" {
+            $configFile = $attachments | Where-Object { $_.name -eq "config_attachment.txt" }
+            $configFile | Should -Not -BeNullOrEmpty -Because "'config_attachment.txt' should be among received attachments: $attachmentNames"
+            $configFile.type | Should -Be "event.attachment"
+            # "Config file attachment for integration testing.\n" is 48 bytes in UTF-8
+            $configFile.size | Should -Be 48
+        }
+
+        It "Has file attachment added after init" {
+            $runtimeFile = $attachments | Where-Object { $_.name -eq "runtime_attachment.txt" }
+            $runtimeFile | Should -Not -BeNullOrEmpty -Because "'runtime_attachment.txt' should be among received attachments: $attachmentNames"
+            $runtimeFile.type | Should -Be "event.attachment"
+            # "Runtime file attachment for integration testing.\n" is 49 bytes in UTF-8
+            $runtimeFile.size | Should -Be 49
+        }
+
+        It "Has bytes attachment added in config callback" {
+            $configBytes = $attachments | Where-Object { $_.name -eq "config_bytes.txt" }
+            $configBytes | Should -Not -BeNullOrEmpty -Because "'config_bytes.txt' should be among received attachments: $attachmentNames"
+            $configBytes.type | Should -Be "event.attachment"
+            $configBytes.headers.'Content-Type' | Should -Be "text/plain"
+            # "Config bytes" is 12 bytes in UTF-8
+            $configBytes.size | Should -Be 12
+        }
+
+        It "Has bytes attachment added after init" {
+            $runtimeBytes = $attachments | Where-Object { $_.name -eq "runtime_bytes.txt" }
+            $runtimeBytes | Should -Not -BeNullOrEmpty -Because "'runtime_bytes.txt' should be among received attachments: $attachmentNames"
+            $runtimeBytes.type | Should -Be "event.attachment"
+            $runtimeBytes.headers.'Content-Type' | Should -Be "text/plain"
+            # "Runtime bytes" is 13 bytes in UTF-8
+            $runtimeBytes.size | Should -Be 13
+        }
+
+        It "Has godot.log default attachment" {
+            $logFile = $attachments | Where-Object { $_.name -eq "godot.log" }
+            $logFile | Should -Not -BeNullOrEmpty -Because "'godot.log' should be among received attachments: $attachmentNames"
+            $logFile.size | Should -BeGreaterThan 0
+        }
+
+        It "Has view-hierarchy.json default attachment" {
+            $viewHierarchy = $attachments | Where-Object { $_.name -eq "view-hierarchy.json" }
+            $viewHierarchy | Should -Not -BeNullOrEmpty -Because "'view-hierarchy.json' should be among received attachments: $attachmentNames"
+            $viewHierarchy.type | Should -Be "event.view_hierarchy"
+            $viewHierarchy.size | Should -BeGreaterThan 0
         }
     }
 
