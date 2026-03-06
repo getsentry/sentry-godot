@@ -207,7 +207,7 @@ void NativeSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_
 		return;
 	}
 
-	String body = p_body;
+	const CharString body_utf8 = p_body.utf8();
 
 	sentry_value_t attributes = sentry_value_new_object();
 
@@ -218,29 +218,36 @@ void NativeSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_
 		}
 	}
 
+	// NOTE: The sentry_log_* functions treat `message` as a printf format
+	// string. When `logs_with_attributes` is enabled (line 418), the first
+	// vararg is consumed as the attributes object, and remaining varargs are
+	// used as format arguments. Passing the log body directly as `message`
+	// causes a crash on Windows (CRT invalid parameter handler) if the body
+	// contains '%' characters, because vsnprintf reads past the va_list.
+	// Fix: use "%s" as the format string and pass the body as a vararg.
 	switch (p_level) {
 		case LOG_LEVEL_TRACE: {
-			sentry_log_trace(body.utf8(), attributes);
+			sentry_log_trace("%s", attributes, body_utf8.get_data());
 		} break;
 		case LOG_LEVEL_DEBUG: {
-			sentry_log_debug(body.utf8(), attributes);
+			sentry_log_debug("%s", attributes, body_utf8.get_data());
 		} break;
 		case LOG_LEVEL_INFO: {
-			sentry_log_info(body.utf8(), attributes);
+			sentry_log_info("%s", attributes, body_utf8.get_data());
 		} break;
 		case LOG_LEVEL_WARN: {
-			sentry_log_warn(body.utf8(), attributes);
+			sentry_log_warn("%s", attributes, body_utf8.get_data());
 		} break;
 		case LOG_LEVEL_ERROR: {
-			sentry_log_error(body.utf8(), attributes);
+			sentry_log_error("%s", attributes, body_utf8.get_data());
 		} break;
 		case LOG_LEVEL_FATAL: {
-			sentry_log_fatal(body.utf8(), attributes);
+			sentry_log_fatal("%s", attributes, body_utf8.get_data());
 		} break;
 		default: {
 			sentry::logging::print_no_logger(LEVEL_WARNING,
 					vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
-			sentry_log_info(body.utf8(), attributes);
+			sentry_log_info("%s", attributes, body_utf8.get_data());
 		} break;
 	}
 }
