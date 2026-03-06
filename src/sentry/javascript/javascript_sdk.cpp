@@ -247,7 +247,7 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 void JavaScriptSDK::clear_attachments() {
 	ERR_FAIL_COND(!js_bridge());
 
-	// Reset file attachments to defaults only (custom attachments are clearable).
+	// Reset file attachments from options (Vector uses copy-on-write).
 	file_attachments = SENTRY_OPTIONS()->get_default_attachments();
 	js_bridge()->call("clearAttachments");
 }
@@ -274,11 +274,6 @@ void JavaScriptSDK::init() {
 	ERR_FAIL_COND(!js_bridge());
 
 	file_attachments = SENTRY_OPTIONS()->get_default_attachments();
-	// Route custom attachments through add_attachment() to handle both file and bytes.
-	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
-		add_attachment(att);
-	}
-	SENTRY_OPTIONS()->clear_custom_attachments();
 
 	JSObjectPtr before_send_callback = JSObject::create_callback(before_send_wasm_callback);
 
@@ -309,6 +304,12 @@ void JavaScriptSDK::init() {
 			SENTRY_GODOT_SDK_VERSION);
 
 	if (is_enabled()) {
+		// Add custom attachments from the configuration callback.
+		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
+			add_attachment(att);
+		}
+		SENTRY_OPTIONS()->clear_custom_attachments();
+
 		set_user(SentryUser::create_default());
 	} else {
 		ERR_PRINT("Sentry: Failed to initialize JavaScript SDK.");

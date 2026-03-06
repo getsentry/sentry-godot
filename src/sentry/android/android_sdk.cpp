@@ -322,7 +322,7 @@ void AndroidSDK::init() {
 			SENTRY_OPTIONS()->get_experimental()->get_before_send_metric().is_valid() ? before_send_metric_handler->get_instance_id() : 0);
 
 	if (is_enabled()) {
-		// Register custom attachments via runtime API (handles both file and bytes).
+		// Add custom attachments from the configuration callback.
 		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
 			add_attachment(att);
 		}

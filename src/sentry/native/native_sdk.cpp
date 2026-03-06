@@ -461,7 +461,7 @@ void NativeSDK::init() {
 	initialized = (err == 0);
 
 	if (is_enabled()) {
-		// Register custom attachments via runtime API (tracked for selective removal).
+		// Add custom attachments from the configuration callback.
 		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
 			add_attachment(att);
 		}

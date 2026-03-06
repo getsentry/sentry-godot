@@ -336,7 +336,7 @@ void CocoaSDK::init() {
 	}];
 
 	if (is_enabled()) {
-		// Register custom attachments via runtime API (handles both file and bytes).
+		// Add custom attachments from the configuration callback.
 		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
 			add_attachment(att);
 		}
