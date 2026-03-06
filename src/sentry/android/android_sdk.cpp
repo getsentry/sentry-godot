@@ -322,12 +322,6 @@ void AndroidSDK::init() {
 			SENTRY_OPTIONS()->get_experimental()->get_before_send_metric().is_valid() ? before_send_metric_handler->get_instance_id() : 0);
 
 	if (is_enabled()) {
-		// Add custom attachments from the configuration callback.
-		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
-			add_attachment(att);
-		}
-		SENTRY_OPTIONS()->clear_custom_attachments();
-
 		set_user(SentryUser::create_default());
 	} else {
 		ERR_PRINT("Sentry: Failed to initialize Android SDK.");

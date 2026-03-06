@@ -461,12 +461,6 @@ void NativeSDK::init() {
 	initialized = (err == 0);
 
 	if (is_enabled()) {
-		// Add custom attachments from the configuration callback.
-		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
-			add_attachment(att);
-		}
-		SENTRY_OPTIONS()->clear_custom_attachments();
-
 		set_user(SentryUser::create_default());
 	} else {
 		ERR_PRINT("Sentry: Failed to initialize native SDK. Error code: " + itos(err));

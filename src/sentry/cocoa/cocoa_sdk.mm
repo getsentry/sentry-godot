@@ -335,13 +335,7 @@ void CocoaSDK::init() {
 		}
 	}];
 
-	if (is_enabled()) {
-		// Add custom attachments from the configuration callback.
-		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
-			add_attachment(att);
-		}
-		SENTRY_OPTIONS()->clear_custom_attachments();
-	} else {
+	if (!is_enabled()) {
 		ERR_PRINT("Sentry: Failed to initialize Cocoa SDK.");
 	}
 }

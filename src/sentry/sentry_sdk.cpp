@@ -158,6 +158,12 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	internal_sdk->init();
 
 	if (internal_sdk->is_enabled()) {
+		// Drain custom attachments added during the configuration callback.
+		for (const Ref<SentryAttachment> &att : options->get_custom_attachments()) {
+			internal_sdk->add_attachment(att);
+		}
+		options->clear_custom_attachments();
+
 		if (is_auto_initializing) {
 			// Delay contexts initialization until engine singletons are ready during early initialization.
 			callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
