@@ -127,6 +127,7 @@ func _cmd_runtime_error_capture() -> int:
 
 ## Captures a message with custom attachments to Sentry.
 func _cmd_attachment_capture() -> int:
+	# Add attachments during init to test that they are retained after SDK initialization.
 	await _init_sentry(func(_options: SentryOptions) -> void:
 		# File attachment added in config callback
 		SentrySDK.add_attachment(SentryAttachment.create_with_path("res://test/fixtures/config_attachment.txt"))
