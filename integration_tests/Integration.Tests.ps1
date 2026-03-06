@@ -323,12 +323,16 @@ Describe "Platform Integration Tests" {
             $configFile = $attachments | Where-Object { $_.name -eq "config_attachment.txt" }
             $configFile | Should -Not -BeNullOrEmpty -Because "'config_attachment.txt' should be among received attachments: $attachmentNames"
             $configFile.type | Should -Be "event.attachment"
+            # "Config file attachment for integration testing.\n" is 48 bytes in UTF-8
+            $configFile.size | Should -Be 48
         }
 
         It "Has file attachment added after init" {
             $runtimeFile = $attachments | Where-Object { $_.name -eq "runtime_attachment.txt" }
             $runtimeFile | Should -Not -BeNullOrEmpty -Because "'runtime_attachment.txt' should be among received attachments: $attachmentNames"
             $runtimeFile.type | Should -Be "event.attachment"
+            # "Runtime file attachment for integration testing.\n" is 49 bytes in UTF-8
+            $runtimeFile.size | Should -Be 49
         }
 
         It "Has bytes attachment added in config callback" {
