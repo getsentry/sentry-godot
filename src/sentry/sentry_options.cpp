@@ -278,6 +278,7 @@ void SentryOptions::remove_event_processor(const Ref<SentryEventProcessor> &p_pr
 }
 
 void SentryOptions::add_default_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Internal Error: Can't add null default attachment.");
 	ERR_FAIL_COND_MSG(p_attachment->get_path().is_empty(), "Sentry: Internal Error: Default attachments must be file-based (bytes attachments are not allowed).");
 	default_attachments.append(p_attachment);
 }
