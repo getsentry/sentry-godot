@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix blank attachment names on Apple platforms and harden attachment handling and validation across all platforms ([#567](https://github.com/getsentry/sentry-godot/pull/567))
+
 ### Dependencies
 
 - Bump Sentry Android from v8.34.0 to v8.34.1 ([#572](https://github.com/getsentry/sentry-godot/pull/572))

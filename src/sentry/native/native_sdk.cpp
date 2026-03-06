@@ -328,20 +328,21 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	sentry_attachment_t *native_attachment = nullptr;
 
 	if (!p_attachment->get_path().is_empty()) {
+		// File attachment
 		String absolute_path = p_attachment->get_globalized_path();
+
 		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
 
 		native_attachment = sentry_attach_file(absolute_path.utf8());
-
 		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach file: %s", absolute_path));
 
 		if (!p_attachment->get_filename().is_empty()) {
 			sentry_attachment_set_filename(native_attachment, p_attachment->get_filename().utf8());
 		}
-
 	} else {
+		// Bytes attachment
+		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add bytes attachment without filename.");
 		PackedByteArray bytes = p_attachment->get_bytes();
-		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
 
 		sentry::logging::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
 
@@ -349,7 +350,6 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 				reinterpret_cast<const char *>(bytes.ptr()),
 				bytes.size(),
 				p_attachment->get_filename().utf8());
-
 		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach bytes with filename: %s", p_attachment->get_filename()));
 	}
 

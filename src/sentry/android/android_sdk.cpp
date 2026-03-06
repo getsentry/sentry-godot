@@ -229,21 +229,24 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_NULL(android_plugin);
 	ERR_FAIL_COND(p_attachment.is_null());
 
-	if (p_attachment->get_path().is_empty()) {
+	if (!p_attachment->get_path().is_empty()) {
+		// File attachment
+		String absolute_path = p_attachment->get_globalized_path();
+		sentry::logging::print_debug("attaching file: ", absolute_path);
+		android_plugin->call(ANDROID_SN(addFileAttachment),
+				absolute_path,
+				p_attachment->get_effective_filename(),
+				p_attachment->get_content_type(),
+				p_attachment->get_attachment_type());
+	} else {
+		// Bytes attachment
+		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add bytes attachment without filename.");
 		sentry::logging::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
 		android_plugin->call(ANDROID_SN(addBytesAttachment),
 				p_attachment->get_bytes(),
 				p_attachment->get_filename(),
 				p_attachment->get_content_type(),
-				String());
-	} else {
-		String absolute_path = p_attachment->get_globalized_path();
-		sentry::logging::print_debug("attaching file: ", absolute_path);
-		android_plugin->call(ANDROID_SN(addFileAttachment),
-				absolute_path,
-				p_attachment->get_filename(),
-				p_attachment->get_content_type(),
-				String());
+				p_attachment->get_attachment_type());
 	}
 }
 
@@ -278,7 +281,7 @@ void AndroidSDK::_add_default_attachments() {
 	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
 		android_plugin->call(ANDROID_SN(addFileAttachment),
 				att->get_globalized_path(),
-				String(), // filename
+				att->get_effective_filename(),
 				att->get_content_type(),
 				att->get_attachment_type());
 	}
