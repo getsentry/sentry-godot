@@ -139,6 +139,14 @@ func test_structured_logs_with_utf8() -> void:
 		"world": "世界"
 	})
 
+func test_structured_logs_body_with_percent_characters() -> void:
+	log_processed.connect(func(entry: SentryLog):
+		assert_str(entry.body).is_equal("100% complete %s %d %n")
+		assert_int(entry.level).is_equal(SentryLog.LOG_LEVEL_INFO)
+	, CONNECT_ONE_SHOT)
+	SentrySDK.logger.info("100% complete %s %d %n")
+
+
 func test_structured_logs_attribute_methods() -> void:
 	log_processed.connect(func(entry: SentryLog):
 		entry.add_attributes({
