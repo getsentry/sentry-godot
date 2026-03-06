@@ -227,6 +227,10 @@ void SentrySDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 }
 
 void SentrySDK::clear_attachments() {
+	if (is_configuring) {
+		options->clear_custom_attachments();
+		return;
+	}
 	internal_sdk->clear_attachments();
 }
 
