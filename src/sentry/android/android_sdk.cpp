@@ -278,7 +278,7 @@ void AndroidSDK::_add_default_attachments() {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 
-	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
+	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
 		android_plugin->call(ANDROID_SN(addFileAttachment),
 				att->get_globalized_path(),
 				att->get_effective_filename(),
@@ -300,6 +300,16 @@ void AndroidSDK::init() {
 	ERR_FAIL_NULL(android_plugin);
 
 	_add_default_attachments();
+
+	// Register custom attachments from config callback.
+	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
+		android_plugin->call(ANDROID_SN(addFileAttachment),
+				att->get_globalized_path(),
+				att->get_effective_filename(),
+				att->get_content_type(),
+				att->get_attachment_type());
+	}
+	SENTRY_OPTIONS()->clear_custom_attachments();
 
 	Dictionary optionsData;
 	optionsData["dsn"] = SENTRY_OPTIONS()->get_dsn();

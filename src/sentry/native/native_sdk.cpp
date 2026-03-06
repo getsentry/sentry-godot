@@ -430,7 +430,7 @@ void NativeSDK::init() {
 		sentry_options_set_backend(options, NULL);
 	}
 
-	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
+	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
 		String absolute_path = att->get_globalized_path();
 		sentry::logging::print_debug("adding attachment \"", absolute_path, "\"");
 		if (absolute_path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
@@ -461,6 +461,12 @@ void NativeSDK::init() {
 	initialized = (err == 0);
 
 	if (is_enabled()) {
+		// Register custom attachments via runtime API (tracked for selective removal).
+		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
+			add_attachment(att);
+		}
+		SENTRY_OPTIONS()->clear_custom_attachments();
+
 		set_user(SentryUser::create_default());
 	} else {
 		ERR_PRINT("Sentry: Failed to initialize native SDK. Error code: " + itos(err));

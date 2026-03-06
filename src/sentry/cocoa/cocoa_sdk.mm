@@ -40,7 +40,7 @@ NSObject *_as_attribute(const Variant &p_value) {
 }
 
 void _add_default_attachments(objc::SentryScope *p_scope) {
-	for (const Ref<sentry::SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
+	for (const Ref<sentry::SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
 		sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
 		// TODO: Can't specify attachmentType!
 		objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:sentry::cocoa::string_to_objc(att->get_globalized_path())
@@ -295,6 +295,18 @@ void CocoaSDK::init() {
 
 		options.initialScope = ^(objc::SentryScope *scope) {
 			_add_default_attachments(scope);
+
+			// Register custom attachments from config callback.
+			for (const Ref<sentry::SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
+				sentry::logging::print_debug("adding custom attachment \"", att->get_path(), "\"");
+				objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:sentry::cocoa::string_to_objc(att->get_globalized_path())
+																					   filename:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_effective_filename())
+																					contentType:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_content_type())];
+				if (objc_att != nil) {
+					[scope addAttachment:objc_att];
+				}
+			}
+			SENTRY_OPTIONS()->clear_custom_attachments();
 
 			// Initialize default user.
 			Ref<SentryUser> user = SentryUser::create_default();

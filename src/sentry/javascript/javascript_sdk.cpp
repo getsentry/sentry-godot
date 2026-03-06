@@ -247,8 +247,8 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 void JavaScriptSDK::clear_attachments() {
 	ERR_FAIL_COND(!js_bridge());
 
-	// Reset file attachments from options (Vector uses copy-on-write).
-	file_attachments = SENTRY_OPTIONS()->get_file_attachments();
+	// Reset file attachments to defaults only (custom attachments are clearable).
+	file_attachments = SENTRY_OPTIONS()->get_default_attachments();
 	js_bridge()->call("clearAttachments");
 }
 
@@ -273,7 +273,9 @@ void JavaScriptSDK::metrics_add_distribution(const String &p_name, double p_valu
 void JavaScriptSDK::init() {
 	ERR_FAIL_COND(!js_bridge());
 
-	file_attachments = SENTRY_OPTIONS()->get_file_attachments();
+	file_attachments = SENTRY_OPTIONS()->get_default_attachments();
+	file_attachments.append_array(SENTRY_OPTIONS()->get_custom_attachments());
+	SENTRY_OPTIONS()->clear_custom_attachments();
 
 	JSObjectPtr before_send_callback = JSObject::create_callback(before_send_wasm_callback);
 

@@ -144,12 +144,14 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	}
 
 	if (p_configuration_callback.is_valid()) {
+		is_configuring = true;
 		p_configuration_callback.call(options);
+		is_configuring = false;
 	}
 
 	// Add built-in attachments.
 	for (const Ref<SentryAttachment> &att : _get_default_attachments()) {
-		options->add_file_attachment(att);
+		options->add_default_attachment(att);
 	}
 
 	sentry::logging::print_debug("Initializing Sentry SDK");
@@ -217,6 +219,10 @@ void SentrySDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 
 void SentrySDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
+	if (is_configuring) {
+		options->add_custom_attachment(p_attachment);
+		return;
+	}
 	internal_sdk->add_attachment(p_attachment);
 }
 
