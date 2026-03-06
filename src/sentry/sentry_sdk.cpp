@@ -149,7 +149,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 		is_configuring = false;
 	}
 
-	// Add built-in attachments.
+	// Add default attachments.
 	for (const Ref<SentryAttachment> &att : _get_default_attachments()) {
 		options->add_default_attachment(att);
 	}

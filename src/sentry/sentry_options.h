@@ -117,7 +117,7 @@ private:
 	Callable before_capture_screenshot;
 
 	Vector<Ref<SentryEventProcessor>> event_processors;
-	// Built-in file attachments (log, screenshot, view hierarchy). Survive clear_attachments().
+	// Default attachments (log, screenshot, view hierarchy). Must be file-based. Survive clear_attachments().
 	Vector<Ref<SentryAttachment>> default_attachments;
 	// User attachments added during config callback, drained at init.
 	Vector<Ref<SentryAttachment>> custom_attachments;
