@@ -430,7 +430,7 @@ void NativeSDK::init() {
 		sentry_options_set_backend(options, NULL);
 	}
 
-	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_file_attachments()) {
+	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
 		String absolute_path = att->get_globalized_path();
 		sentry::logging::print_debug("adding attachment \"", absolute_path, "\"");
 		if (absolute_path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {

@@ -117,7 +117,10 @@ private:
 	Callable before_capture_screenshot;
 
 	Vector<Ref<SentryEventProcessor>> event_processors;
-	Vector<Ref<SentryAttachment>> file_attachments;
+	// Default attachments (log, screenshot, view hierarchy). Must be file-based. Survive clear_attachments().
+	Vector<Ref<SentryAttachment>> default_attachments;
+	// User attachments added during config callback, drained at init.
+	Vector<Ref<SentryAttachment>> custom_attachments;
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
@@ -226,8 +229,12 @@ public:
 	void remove_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	_FORCE_INLINE_ Vector<Ref<SentryEventProcessor>> get_event_processors() { return event_processors; }
 
-	void add_file_attachment(const Ref<SentryAttachment> &p_attachment) { file_attachments.append(p_attachment); }
-	_FORCE_INLINE_ Vector<Ref<SentryAttachment>> get_file_attachments() const { return file_attachments; }
+	void add_default_attachment(const Ref<SentryAttachment> &p_attachment);
+	_FORCE_INLINE_ Vector<Ref<SentryAttachment>> get_default_attachments() const { return default_attachments; }
+
+	void add_custom_attachment(const Ref<SentryAttachment> &p_attachment) { custom_attachments.append(p_attachment); }
+	_FORCE_INLINE_ Vector<Ref<SentryAttachment>> get_custom_attachments() const { return custom_attachments; }
+	void clear_custom_attachments() { custom_attachments.clear(); }
 
 	SentryOptions();
 	~SentryOptions();

@@ -39,6 +39,7 @@ private:
 	Ref<RuntimeConfig> runtime_config;
 	Ref<sentry::logging::SentryGodotLogger> godot_logger;
 	bool is_auto_initializing = false;
+	bool is_configuring = false;
 
 	// Public API for logs and metrics
 	SentryLogger *logger = nullptr;

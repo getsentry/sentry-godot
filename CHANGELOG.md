@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fix blank attachment names on Apple platforms and harden attachment handling and validation across all platforms ([#567](https://github.com/getsentry/sentry-godot/pull/567))
+- Support adding attachments inside configuration callback ([#573](https://github.com/getsentry/sentry-godot/pull/573))
 
 ### Dependencies
 
