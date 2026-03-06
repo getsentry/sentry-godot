@@ -296,18 +296,6 @@ void CocoaSDK::init() {
 		options.initialScope = ^(objc::SentryScope *scope) {
 			_add_default_attachments(scope);
 
-			// Register custom attachments from config callback.
-			for (const Ref<sentry::SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
-				sentry::logging::print_debug("adding custom attachment \"", att->get_path(), "\"");
-				objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:sentry::cocoa::string_to_objc(att->get_globalized_path())
-																					   filename:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_effective_filename())
-																					contentType:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_content_type())];
-				if (objc_att != nil) {
-					[scope addAttachment:objc_att];
-				}
-			}
-			SENTRY_OPTIONS()->clear_custom_attachments();
-
 			// Initialize default user.
 			Ref<SentryUser> user = SentryUser::create_default();
 			objc::SentryUser *objc_user = [[objc::SentryUser alloc] init];
@@ -347,7 +335,13 @@ void CocoaSDK::init() {
 		}
 	}];
 
-	if (!is_enabled()) {
+	if (is_enabled()) {
+		// Register custom attachments via runtime API (handles both file and bytes).
+		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
+			add_attachment(att);
+		}
+		SENTRY_OPTIONS()->clear_custom_attachments();
+	} else {
 		ERR_PRINT("Sentry: Failed to initialize Cocoa SDK.");
 	}
 }

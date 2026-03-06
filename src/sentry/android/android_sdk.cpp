@@ -301,16 +301,6 @@ void AndroidSDK::init() {
 
 	_add_default_attachments();
 
-	// Register custom attachments from config callback.
-	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
-		android_plugin->call(ANDROID_SN(addFileAttachment),
-				att->get_globalized_path(),
-				att->get_effective_filename(),
-				att->get_content_type(),
-				att->get_attachment_type());
-	}
-	SENTRY_OPTIONS()->clear_custom_attachments();
-
 	Dictionary optionsData;
 	optionsData["dsn"] = SENTRY_OPTIONS()->get_dsn();
 	optionsData["debug"] = SENTRY_OPTIONS()->is_debug_enabled();
@@ -332,6 +322,12 @@ void AndroidSDK::init() {
 			SENTRY_OPTIONS()->get_experimental()->get_before_send_metric().is_valid() ? before_send_metric_handler->get_instance_id() : 0);
 
 	if (is_enabled()) {
+		// Register custom attachments via runtime API (handles both file and bytes).
+		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
+			add_attachment(att);
+		}
+		SENTRY_OPTIONS()->clear_custom_attachments();
+
 		set_user(SentryUser::create_default());
 	} else {
 		ERR_PRINT("Sentry: Failed to initialize Android SDK.");
