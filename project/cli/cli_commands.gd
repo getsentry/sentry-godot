@@ -127,10 +127,14 @@ func _cmd_runtime_error_capture() -> int:
 
 ## Captures a message with custom attachments to Sentry.
 func _cmd_attachment_capture() -> int:
+	# Write fixture files to user:// so they exist on disk on all platforms (res:// is packed in exports).
+	_write_text_file("user://config_attachment.txt", "Config file attachment for integration testing.\n")
+	_write_text_file("user://runtime_attachment.txt", "Runtime file attachment for integration testing.\n")
+
 	# Add attachments during init to test that they are retained after SDK initialization.
 	await _init_sentry(func(_options: SentryOptions) -> void:
 		# File attachment added in config callback
-		SentrySDK.add_attachment(SentryAttachment.create_with_path("res://test/fixtures/config_attachment.txt"))
+		SentrySDK.add_attachment(SentryAttachment.create_with_path("user://config_attachment.txt"))
 		# Bytes attachment added in config callback
 		var config_bytes := SentryAttachment.create_with_bytes(
 			"Config bytes".to_utf8_buffer(), "config_bytes.txt")
@@ -140,7 +144,7 @@ func _cmd_attachment_capture() -> int:
 	_add_integration_test_context("attachment-capture")
 
 	# File attachment added after init
-	SentrySDK.add_attachment(SentryAttachment.create_with_path("res://test/fixtures/runtime_attachment.txt"))
+	SentrySDK.add_attachment(SentryAttachment.create_with_path("user://runtime_attachment.txt"))
 	# Bytes attachment added after init
 	var runtime_bytes := SentryAttachment.create_with_bytes(
 		"Runtime bytes".to_utf8_buffer(), "runtime_bytes.txt")
@@ -222,6 +226,12 @@ func _trigger_runtime_error() -> Array:
 	stack[0].line += 1 # Adjust to actual error line
 	stack.reverse() # Godot stacks are in reverse order
 	return stack
+
+
+func _write_text_file(p_path: String, p_content: String) -> void:
+	var file := FileAccess.open(p_path, FileAccess.WRITE)
+	file.store_string(p_content)
+	file.close()
 
 
 func _print_test_result(test_name: String, success: bool, message: String) -> void:
