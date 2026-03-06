@@ -36,6 +36,7 @@ func _register_commands() -> void:
 	_parser.add_command("crash-send", _cmd_crash_send, "Process and send crash report from previous session")
 	_parser.add_command("message-capture", _cmd_message_capture, "Capture a test message to Sentry")
 	_parser.add_command("runtime-error-capture", _cmd_runtime_error_capture, "Capture Godot runtime error")
+	_parser.add_command("attachment-capture", _cmd_attachment_capture, "Capture a message with custom attachments")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
 
 
@@ -124,6 +125,33 @@ func _cmd_runtime_error_capture() -> int:
 	return 0
 
 
+## Captures a message with custom attachments to Sentry.
+func _cmd_attachment_capture() -> int:
+	await _init_sentry(func(_options: SentryOptions) -> void:
+		# File attachment added in config callback
+		SentrySDK.add_attachment(SentryAttachment.create_with_path("res://test/fixtures/config_attachment.txt"))
+		# Bytes attachment added in config callback
+		var config_bytes := SentryAttachment.create_with_bytes(
+			"Config bytes".to_utf8_buffer(), "config_bytes.txt")
+		config_bytes.content_type = "text/plain"
+		SentrySDK.add_attachment(config_bytes)
+	)
+	_add_integration_test_context("attachment-capture")
+
+	# File attachment added after init
+	SentrySDK.add_attachment(SentryAttachment.create_with_path("res://test/fixtures/runtime_attachment.txt"))
+	# Bytes attachment added after init
+	var runtime_bytes := SentryAttachment.create_with_bytes(
+		"Runtime bytes".to_utf8_buffer(), "runtime_bytes.txt")
+	runtime_bytes.content_type = "text/plain"
+	SentrySDK.add_attachment(runtime_bytes)
+
+	var event_id := SentrySDK.capture_message("Attachment test message")
+	print("EVENT_CAPTURED: ", event_id)
+	_print_test_result("attachment-capture", true, "Test complete")
+	return 0
+
+
 func _cmd_run_tests(tests: String = "res://test/suites/") -> int:
 	if FileAccess.file_exists("res://test/util/test_runner.gd"):
 		print(">>> Initializing testing")
@@ -153,7 +181,7 @@ func _cmd_run_tests(tests: String = "res://test/suites/") -> int:
 
 
 ## Initializes Sentry for integration testing.
-func _init_sentry() -> void:
+func _init_sentry(p_extra_config: Callable = Callable()) -> void:
 	print("Initializing Sentry...")
 
 	SentrySDK.init(func(options: SentryOptions) -> void:
@@ -162,6 +190,8 @@ func _init_sentry() -> void:
 		options.release = "test-app@1.0.0"
 		options.environment = "integration-test"
 		options.dist = "test-dist"
+		if p_extra_config.is_valid():
+			p_extra_config.call(options)
 	)
 
 	# Wait for Sentry to initialize
