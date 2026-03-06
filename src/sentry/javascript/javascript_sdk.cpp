@@ -274,7 +274,10 @@ void JavaScriptSDK::init() {
 	ERR_FAIL_COND(!js_bridge());
 
 	file_attachments = SENTRY_OPTIONS()->get_default_attachments();
-	file_attachments.append_array(SENTRY_OPTIONS()->get_custom_attachments());
+	// Route custom attachments through add_attachment() to handle both file and bytes.
+	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_custom_attachments()) {
+		add_attachment(att);
+	}
 	SENTRY_OPTIONS()->clear_custom_attachments();
 
 	JSObjectPtr before_send_callback = JSObject::create_callback(before_send_wasm_callback);
