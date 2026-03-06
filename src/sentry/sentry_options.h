@@ -227,7 +227,7 @@ public:
 	void remove_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	_FORCE_INLINE_ Vector<Ref<SentryEventProcessor>> get_event_processors() { return event_processors; }
 
-	void add_default_attachment(const Ref<SentryAttachment> &p_attachment) { default_attachments.append(p_attachment); }
+	void add_default_attachment(const Ref<SentryAttachment> &p_attachment);
 	_FORCE_INLINE_ Vector<Ref<SentryAttachment>> get_default_attachments() const { return default_attachments; }
 
 	void add_custom_attachment(const Ref<SentryAttachment> &p_attachment) { custom_attachments.append(p_attachment); }

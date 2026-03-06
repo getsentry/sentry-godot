@@ -277,6 +277,11 @@ void SentryOptions::remove_event_processor(const Ref<SentryEventProcessor> &p_pr
 	event_processors.erase(p_processor);
 }
 
+void SentryOptions::add_default_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND_MSG(p_attachment->get_path().is_empty(), "Sentry: Internal Error: Default attachments must be file-based (bytes attachments are not allowed).");
+	default_attachments.append(p_attachment);
+}
+
 void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dsn"), set_dsn, get_dsn);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "release"), set_release, get_release);
