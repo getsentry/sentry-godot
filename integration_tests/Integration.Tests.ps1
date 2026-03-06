@@ -314,6 +314,11 @@ Describe "Platform Integration Tests" {
             $attachments.Count | Should -BeGreaterOrEqual 4 -Because "received attachments: $attachmentNames"
         }
 
+        It "Has no attachments with empty name" {
+            $emptyNames = $attachments | Where-Object { [string]::IsNullOrWhiteSpace($_.name) }
+            $emptyNames | Should -BeNullOrEmpty -Because "all attachments should have a non-empty name, received attachments: $attachmentNames"
+        }
+
         It "Has file attachment added in config callback" {
             $configFile = $attachments | Where-Object { $_.name -eq "config_attachment.txt" }
             $configFile | Should -Not -BeNullOrEmpty -Because "'config_attachment.txt' should be among received attachments: $attachmentNames"
