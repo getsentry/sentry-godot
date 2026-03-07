@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fix crash on Windows when log messages contain printf format specifiers like `%n` or `%s` without corresponding parameters; such string is now preserved as-is in the log body ([#578](https://github.com/getsentry/sentry-godot/pull/578))
+
 ## 1.4.1
 
 ### Fixes

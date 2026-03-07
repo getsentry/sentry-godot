@@ -68,6 +68,7 @@ if platform == "windows":
             "advapi32",
             "DbgHelp",
             "Version",
+            "synchronization",
         ]
     )
 elif platform == "linux":

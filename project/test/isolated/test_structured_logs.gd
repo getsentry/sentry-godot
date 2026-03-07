@@ -165,3 +165,14 @@ func test_structured_logs_attribute_methods() -> void:
 		assert_that(entry.get_attribute("meaning")).is_null()
 	, CONNECT_ONE_SHOT)
 	SentrySDK.logger.info("Test 123")
+
+
+# Format specifiers in the body without arguments should be preserved as-is,
+# not interpreted as a format string (which would cause a crash).
+func test_structured_logs_body_with_format_specifiers() -> void:
+	log_processed.connect(func(entry: SentryLog):
+		assert_str(entry.body).is_equal("Should preserve %n and not crash")
+		assert_that(entry.get_attribute("sentry.message.template")).is_null()
+		assert_that(entry.get_attribute("sentry.message.parameter.0")).is_null()
+	, CONNECT_ONE_SHOT)
+	SentrySDK.logger.info("Should preserve %n and not crash")
