@@ -151,6 +151,27 @@ inline String _uuid_as_string(sentry_uuid_t p_uuid) {
 	return str;
 }
 
+inline sentry_level_t _log_level_to_native(sentry::LogLevel p_level) {
+	switch (p_level) {
+		case sentry::LogLevel::LOG_LEVEL_TRACE:
+			return SENTRY_LEVEL_TRACE;
+		case sentry::LogLevel::LOG_LEVEL_DEBUG:
+			return SENTRY_LEVEL_DEBUG;
+		case sentry::LogLevel::LOG_LEVEL_INFO:
+			return SENTRY_LEVEL_INFO;
+		case sentry::LogLevel::LOG_LEVEL_WARN:
+			return SENTRY_LEVEL_WARNING;
+		case sentry::LogLevel::LOG_LEVEL_ERROR:
+			return SENTRY_LEVEL_ERROR;
+		case sentry::LogLevel::LOG_LEVEL_FATAL:
+			return SENTRY_LEVEL_FATAL;
+		default: {
+			ERR_PRINT("Sentry: Internal error: Unknown log level.");
+			return SENTRY_LEVEL_INFO;
+		}
+	}
+}
+
 } // unnamed namespace
 
 namespace sentry::native {
@@ -222,34 +243,7 @@ void NativeSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_
 	if (p_body.is_empty()) {
 		return;
 	}
-
-	sentry_value_t attributes = dictionary_to_attributes(p_attributes);
-
-	switch (p_level) {
-		case LOG_LEVEL_TRACE: {
-			sentry_log_trace(p_body.utf8(), attributes);
-		} break;
-		case LOG_LEVEL_DEBUG: {
-			sentry_log_debug(p_body.utf8(), attributes);
-		} break;
-		case LOG_LEVEL_INFO: {
-			sentry_log_info(p_body.utf8(), attributes);
-		} break;
-		case LOG_LEVEL_WARN: {
-			sentry_log_warn(p_body.utf8(), attributes);
-		} break;
-		case LOG_LEVEL_ERROR: {
-			sentry_log_error(p_body.utf8(), attributes);
-		} break;
-		case LOG_LEVEL_FATAL: {
-			sentry_log_fatal(p_body.utf8(), attributes);
-		} break;
-		default: {
-			sentry::logging::print_no_logger(LEVEL_WARNING,
-					vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
-			sentry_log_info(p_body.utf8(), attributes);
-		} break;
-	}
+	sentry_log(_log_level_to_native(p_level), p_body.utf8(), dictionary_to_attributes(p_attributes));
 }
 
 String NativeSDK::capture_message(const String &p_message, Level p_level) {
