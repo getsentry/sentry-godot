@@ -37,6 +37,7 @@ static func print_extra(msg: String) -> void:
 
 func _ready() -> void:
 	get_tree().logger.message_logged.connect(_push_message)
+	get_tree().logger.pool_trimmed.connect(_pull_log_messages)
 	_pull_log_messages()
 
 	msg_copied.modulate = Color.TRANSPARENT
