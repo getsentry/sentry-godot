@@ -7,7 +7,7 @@ from enum import Enum
 
 # *** Settings.
 
-VERSION = "1.4.1"
+VERSION = "1.4.2"
 COMPATIBILITY_MINIMUM = "4.5"
 
 
