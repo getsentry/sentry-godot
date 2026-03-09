@@ -135,18 +135,19 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	// Fresh options from project settings.
 	options = SentryOptions::create_from_project_settings();
 
+	// Call configuration callback
+	if (p_configuration_callback.is_valid()) {
+		is_configuring = true;
+		p_configuration_callback.call(options);
+		is_configuring = false;
+	}
+
 	// Add built-in event processors.
 	if (options->is_attach_screenshot_enabled()) {
 		options->add_event_processor(memnew(ScreenshotProcessor));
 	}
 	if (options->is_attach_scene_tree_enabled()) {
 		options->add_event_processor(memnew(ViewHierarchyProcessor));
-	}
-
-	if (p_configuration_callback.is_valid()) {
-		is_configuring = true;
-		p_configuration_callback.call(options);
-		is_configuring = false;
 	}
 
 	// Add default attachments.

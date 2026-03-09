@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fix options set in configuration callback not affecting event processor registration ([#580](https://github.com/getsentry/sentry-godot/pull/580))
+
 ## 1.4.1
 
 ### Fixes
