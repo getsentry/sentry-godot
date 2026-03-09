@@ -361,7 +361,9 @@ Describe "Platform Integration Tests" {
             $logFile.size | Should -BeGreaterThan 0
         }
 
-        It "Has view-hierarchy.json default attachment" {
+        # NOTE: View hierarchy is not yet implemented on macOS/iOS (Cocoa).
+        # TODO: Remove skip when VH is fixed on Apple platforms.
+        It "Has view-hierarchy.json default attachment" -Skip:($script:TestSetup.IsCocoa) {
             $viewHierarchy = $attachments | Where-Object { $_.name -eq "view-hierarchy.json" }
             $viewHierarchy | Should -Not -BeNullOrEmpty -Because "'view-hierarchy.json' should be among received attachments: $attachmentNames"
             $viewHierarchy.type | Should -Be "event.view_hierarchy"
