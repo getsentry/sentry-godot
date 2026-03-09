@@ -19,6 +19,8 @@ public:
 	virtual bool _supports_platform(const Ref<EditorExportPlatform> &p_platform) const override;
 	virtual PackedStringArray _get_android_libraries(const Ref<EditorExportPlatform> &p_platform, bool p_debug) const override;
 	virtual PackedStringArray _get_android_dependencies(const Ref<EditorExportPlatform> &p_platform, bool p_debug) const override;
+	virtual TypedArray<Dictionary> _get_export_options(const Ref<EditorExportPlatform> &p_platform) const override;
+	virtual String _get_export_option_warning(const Ref<EditorExportPlatform> &p_platform, const String &p_option) const override;
 };
 
 #endif // TOOLS_ENABLED
