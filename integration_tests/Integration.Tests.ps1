@@ -292,8 +292,9 @@ Describe "Platform Integration Tests" {
                 Write-GitHub "::endgroup::"
 
                 Write-GitHub "::group::Getting event attachments"
-                # 4 custom + godot.log + view-hierarchy.json = 6
-                $script:attachments = Get-SentryTestEventAttachments -EventId "$eventId" -ExpectedCount 6
+                # 4 custom + godot.log + view-hierarchy.json = 6 (5 on Cocoa — no view-hierarchy)
+                $expectedCount = if ($script:TestSetup.IsCocoa) { 5 } else { 6 }
+                $script:attachments = Get-SentryTestEventAttachments -EventId "$eventId" -ExpectedCount $expectedCount
                 $script:attachmentNames = ($script:attachments | ForEach-Object { "'$($_.name)'" }) -join ", "
                 Write-GitHub "::endgroup::"
             }
@@ -311,9 +312,11 @@ Describe "Platform Integration Tests" {
             $runResult.ExitCode | Should -Be 0
         }
 
-        It "Has at least 6 attachments" {
+        It "Has at least 5 attachments (6 on non-Cocoa)" {
             # 4 custom + godot.log + view-hierarchy.json (screenshot not tested — headless mode)
-            $attachments.Count | Should -BeGreaterOrEqual 6 -Because "received attachments: $attachmentNames"
+            # Cocoa: 5 (no view-hierarchy)
+            $expectedCount = if ($script:TestSetup.IsCocoa) { 5 } else { 6 }
+            $attachments.Count | Should -BeGreaterOrEqual $expectedCount -Because "received attachments: $attachmentNames"
         }
 
         It "Has no attachments with empty name" {
