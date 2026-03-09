@@ -6,6 +6,12 @@
 
 - Fix options set in configuration callback not affecting event processor registration ([#580](https://github.com/getsentry/sentry-godot/pull/580))
 
+### Dependencies
+
+- Bump Native SDK from v0.13.1 to v0.13.2 ([#581](https://github.com/getsentry/sentry-godot/pull/581))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0132)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.13.1...0.13.2)
+
 ## 1.4.1
 
 ### Fixes
