@@ -55,6 +55,7 @@ func _ready() -> void:
 
 func _pull_log_messages() -> void:
 	text = ""
+	_last_level = null
 	for line in get_tree().logger.message_pool:
 		_push_message(line)
 
