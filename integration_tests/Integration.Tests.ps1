@@ -154,7 +154,7 @@ AfterAll {
 Describe "Platform Integration Tests" {
     # TODO: structured logs tests
     # TODO: user feedback tests
-    # TODO: attachment tests: screenshot, VH, log file
+    # TODO: metrics tests
 
     Context "Crash Capture" {
         BeforeAll {
