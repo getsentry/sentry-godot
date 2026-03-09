@@ -67,7 +67,7 @@ func _push_message(message: String) -> void:
 		text += _linkify_uuids(message)
 
 
-func _get_message_level(line: String):
+func _get_message_level(line: String) -> Level:
 	for level_string in Level.keys():
 		if line.trim_prefix("Sentry: ").begins_with(level_string):
 			_last_level = Level[level_string]
