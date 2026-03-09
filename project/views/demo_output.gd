@@ -11,8 +11,7 @@ enum Level {
 
 var minimum_level: Level = Level.INFO
 
-var _log_file: FileAccess
-var _uuid_regex: RegEx
+var _uuid_regex: RegEx = RegEx.create_from_string(r"\b([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\b")
 var _tween: Tween
 var _last_level
 
@@ -36,17 +35,10 @@ static func print_extra(msg: String) -> void:
 	print("   ", msg)
 
 
-func _init() -> void:
-	_open_log_file()
-
-	var tween := create_tween().set_loops()
-	tween.tween_interval(0.1)
-	tween.tween_callback(_read_log)
-
-	_uuid_regex = RegEx.create_from_string(r"\b([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\b")
-
-
 func _ready() -> void:
+	get_tree().logger.message_logged.connect(_push_message)
+	_pull_log_messages()
+
 	msg_copied.modulate = Color.TRANSPARENT
 
 	var popup := verbosity_menu.get_popup()
@@ -57,20 +49,23 @@ func _ready() -> void:
 		func(id):
 			minimum_level = id
 			verbosity_menu.text = Level.keys()[minimum_level]
-			_open_log_file()
+			_pull_log_messages()
 	)
 
 
-func _open_log_file() -> void:
+func _pull_log_messages() -> void:
 	text = ""
-	var fn: String = ProjectSettings.get("debug/file_logging/log_path")
-	_log_file = FileAccess.open(fn, FileAccess.READ)
-	if not _log_file:
-		push_error("Log file not found.")
-		return
+	for line in get_tree().logger.message_pool:
+		_push_message(line)
 
 
-func _get_level(line: String):
+func _push_message(message: String) -> void:
+	var level: Level = _get_message_level(message)
+	if level >= minimum_level:
+		text += _linkify_uuids(message)
+
+
+func _get_message_level(line: String):
 	for level_string in Level.keys():
 		if line.trim_prefix("Sentry: ").begins_with(level_string):
 			_last_level = Level[level_string]
@@ -78,16 +73,7 @@ func _get_level(line: String):
 		elif line.begins_with(" "):
 			return _last_level
 	_last_level = null
-	return null
-
-
-func _read_log() -> void:
-	while _log_file.get_position() < _log_file.get_length():
-		var line: String = _log_file.get_line() + "\n"
-		var level = _get_level(line)
-		if level != null and level < minimum_level:
-			continue
-		text += _linkify_uuids(line)
+	return Level.INFO
 
 
 func _linkify_uuids(line: String) -> String:
