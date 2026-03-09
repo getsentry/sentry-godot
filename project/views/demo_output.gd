@@ -72,7 +72,7 @@ func _get_message_level(line: String) -> Level:
 		if line.trim_prefix("Sentry: ").begins_with(level_string):
 			_last_level = Level[level_string]
 			return Level[level_string]
-		elif line.begins_with(" "):
+		elif line.begins_with(" ") and _last_level != null:
 			return _last_level
 	_last_level = null
 	return Level.INFO
