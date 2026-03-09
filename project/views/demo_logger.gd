@@ -18,7 +18,7 @@ func _log_message(message: String, _error: bool) -> void:
 
 func _add_message(message: String) -> void:
 	if message_pool.size() >= MAX_MESSAGES:
-		message_pool = message_pool.slice(KEEP_MESSAGES)
+		message_pool = message_pool.slice(message_pool.size() - KEEP_MESSAGES)
 		pool_trimmed.emit()
 	message = _ansi_escape_regex.sub(message, "", true)
 	message_pool.append(message)
