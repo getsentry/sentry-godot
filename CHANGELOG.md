@@ -5,6 +5,7 @@
 ### Features
 
 - Enable tombstone support on Android ([#584](https://github.com/getsentry/sentry-godot/pull/584))
+- Add arm64 builds for Windows & Linux ([#586](https://github.com/getsentry/sentry-godot/pull/586))
 
 ### Improvements
 
