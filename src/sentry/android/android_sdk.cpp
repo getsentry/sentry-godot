@@ -115,6 +115,12 @@ void AndroidSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	android_plugin->call(ANDROID_SN(setContext), p_key, sanitize_variant(p_value));
 }
 
+void AndroidSDK::merge_context(const String &p_key, const Dictionary &p_value) {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+	android_plugin->call(ANDROID_SN(mergeContext), p_key, sanitize_variant(p_value));
+}
+
 void AndroidSDK::remove_context(const String &p_key) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);

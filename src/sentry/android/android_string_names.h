@@ -31,6 +31,7 @@ public:
 	StringName close;
 	StringName isEnabled;
 	StringName setContext;
+	StringName mergeContext;
 	StringName removeContext;
 	StringName setTag;
 	StringName removeTag;

@@ -275,6 +275,22 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun mergeContext(key: String, value: Dictionary) {
+        val scope = Sentry.getGlobalScope()
+        val existing = scope.contexts[key] as? Map<*, *>
+        existing?.let {
+            // Merge old context data into new value for keys not already present.
+            for ((k, v) in it) {
+                val kStr = k as? String ?: continue
+                if (!value.containsKey(kStr)) {
+                    value[kStr] = v
+                }
+            }
+        }
+        scope.setContexts(key, value)
+    }
+
+    @UsedByGodot
     fun removeContext(key: String) {
         Sentry.getGlobalScope().removeContexts(key)
     }
