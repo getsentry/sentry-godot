@@ -76,6 +76,24 @@ String _get_hostname() {
 	return String();
 }
 
+String _get_device_type() {
+#if defined(WINDOWS_ENABLED) || defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
+	return "Desktop";
+#elif defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+	return "Handheld";
+#elif defined(WEB_ENABLED)
+	// Detect underlying OS at runtime since a single WASM binary runs on any platform.
+	if (OS::get_singleton()->has_feature("web_android") || OS::get_singleton()->has_feature("web_ios")) {
+		return "Handheld";
+	} else if (OS::get_singleton()->has_feature("web_windows") ||
+			OS::get_singleton()->has_feature("web_linuxbsd") ||
+			OS::get_singleton()->has_feature("web_macos")) {
+		return "Desktop";
+	}
+#endif
+	return "Unknown";
+}
+
 } // unnamed namespace
 
 namespace sentry::contexts {
@@ -88,25 +106,7 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 
 	device_context["arch"] = Engine::get_singleton()->get_architecture_name();
 
-	// Device type.
-#if defined(WINDOWS_ENABLED) || defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
-	device_context["device_type"] = "Desktop";
-#elif defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
-	device_context["device_type"] = "Handheld";
-#elif defined(WEB_ENABLED)
-	// Detect underlying OS at runtime since a single WASM binary runs on any platform.
-	if (OS::get_singleton()->has_feature("web_android") || OS::get_singleton()->has_feature("web_ios")) {
-		device_context["device_type"] = "Handheld";
-	} else if (OS::get_singleton()->has_feature("web_windows") ||
-			OS::get_singleton()->has_feature("web_linuxbsd") ||
-			OS::get_singleton()->has_feature("web_macos")) {
-		device_context["device_type"] = "Desktop";
-	} else {
-		device_context["device_type"] = "Unknown";
-	}
-#else
-	device_context["device_type"] = "Unknown";
-#endif
+	device_context["device_type"] = _get_device_type();
 
 	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
 	String orientation = _screen_orientation_as_string(primary_screen);
@@ -202,13 +202,7 @@ Dictionary make_device_context_update() {
 
 Dictionary make_device_context_patch() {
 	Dictionary patch;
-#if defined(MACOS_ENABLED)
-	patch["device_type"] = "Desktop";
-#elif defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
-	patch["device_type"] = "Handheld";
-#else
-	patch["device_type"] = "Unknown";
-#endif
+	patch["device_type"] = _get_device_type();
 	return patch;
 }
 
