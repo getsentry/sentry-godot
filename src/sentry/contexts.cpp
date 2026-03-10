@@ -104,6 +104,8 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	} else {
 		device_context["device_type"] = "Unknown";
 	}
+#else
+	device_context["device_type"] = "Unknown";
 #endif
 
 	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
