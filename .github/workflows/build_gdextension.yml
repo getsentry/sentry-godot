@@ -172,6 +172,20 @@ jobs:
             arch: x86_64
             scons-flags: debug_symbols=yes
 
+          - name: 🤖 Android (x86_32, release)
+            runner: ubuntu-latest
+            platform: android
+            target: template_release
+            arch: x86_32
+            scons-flags: debug_symbols=yes
+
+          - name: 🤖 Android (x86_32, debug)
+            runner: ubuntu-latest
+            platform: android
+            target: editor
+            arch: x86_32
+            scons-flags: debug_symbols=yes
+
           - name: 🍏 iOS (arm64, release)
             runner: macos-15
             platform: ios
