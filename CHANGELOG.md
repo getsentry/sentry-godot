@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Enable tombstone support on Android ([#584](https://github.com/getsentry/sentry-godot/pull/584))
+
 ### Improvements
 
 - Add UI export hint for Android Gradle build requirement ([#582](https://github.com/getsentry/sentry-godot/pull/582))
