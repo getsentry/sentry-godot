@@ -60,19 +60,19 @@ jobs:
             arch: x86_32
             scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (noop, arm64, release)
+          - name: 🐧 Linux (arm64, release)
             runner: ubuntu-22.04-arm
             platform: linux
             target: template_release
             arch: arm64
-            scons-flags: debug_symbols=no
+            scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (noop, arm64, debug)
+          - name: 🐧 Linux (arm64, debug)
             runner: ubuntu-22.04-arm
             platform: linux
             target: editor
             arch: arm64
-            scons-flags: debug_symbols=no
+            scons-flags: debug_symbols=yes
 
           - name: 🪟 Windows (x86_64, release)
             runner: windows-latest
@@ -102,19 +102,19 @@ jobs:
             arch: x86_32
             scons-flags: debug_symbols=yes
 
-          - name: 🪟 Windows (noop, arm64, release)
+          - name: 🪟 Windows (arm64, release)
             runner: windows-latest
             platform: windows
             target: template_release
             arch: arm64
-            scons-flags: debug_symbols=no
+            scons-flags: debug_symbols=yes
 
-          - name: 🪟 Windows (noop, arm64, debug)
+          - name: 🪟 Windows (arm64, debug)
             runner: windows-latest
             platform: windows
             target: editor
             arch: arm64
-            scons-flags: debug_symbols=no
+            scons-flags: debug_symbols=yes
 
           - name: 🍎 macOS (universal, release)
             runner: macos-15
