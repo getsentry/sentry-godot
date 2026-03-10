@@ -117,6 +117,10 @@ void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) 
 	js_bridge()->call("setContext", p_key.utf8(), JSON::stringify(p_value).utf8());
 }
 
+void JavaScriptSDK::merge_context(const String &p_key, const Dictionary &p_value) {
+	ERR_PRINT("Not implemented on Web platform.");
+}
+
 void JavaScriptSDK::remove_context(const String &p_key) {
 	ERR_FAIL_COND(!js_bridge());
 	js_bridge()->call("removeContext", p_key.utf8());
