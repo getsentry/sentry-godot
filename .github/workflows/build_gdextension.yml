@@ -103,14 +103,14 @@ jobs:
             scons-flags: debug_symbols=yes
 
           - name: 🪟 Windows (arm64, release)
-            runner: windows-latest
+            runner: windows-11-arm
             platform: windows
             target: template_release
             arch: arm64
             scons-flags: debug_symbols=yes
 
           - name: 🪟 Windows (arm64, debug)
-            runner: windows-latest
+            runner: windows-11-arm
             platform: windows
             target: editor
             arch: arm64
