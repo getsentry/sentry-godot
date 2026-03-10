@@ -200,6 +200,18 @@ Dictionary make_device_context_update() {
 	return device_context;
 }
 
+Dictionary make_device_context_patch() {
+	Dictionary patch;
+#if defined(MACOS_ENABLED)
+	patch["device_type"] = "Desktop";
+#elif defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+	patch["device_type"] = "Handheld";
+#else
+	patch["device_type"] = "Unknown";
+#endif
+	return patch;
+}
+
 Dictionary make_app_context() {
 	Dictionary app_context = Dictionary();
 	ERR_FAIL_NULL_V(Time::get_singleton(), app_context);

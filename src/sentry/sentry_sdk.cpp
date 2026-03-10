@@ -275,6 +275,12 @@ void SentrySDK::_init_contexts() {
 	internal_sdk->set_context("app", sentry::contexts::make_app_context());
 #endif
 
+#if defined(SDK_COCOA) || defined(SDK_ANDROID)
+	// Patch extra fields into the platform SDK's device context.
+	// Cocoa and Android build their own device context but don't include device_type.
+	internal_sdk->merge_context("device", sentry::contexts::make_device_context_patch());
+#endif
+
 	internal_sdk->set_context("culture", sentry::contexts::make_culture_context());
 	internal_sdk->set_context("gpu", sentry::contexts::make_gpu_context());
 

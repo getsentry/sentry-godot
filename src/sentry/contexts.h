@@ -16,6 +16,10 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config);
 // dynamic and need to be updated right before the event is sent.
 Dictionary make_device_context_update();
 
+// Returns a partial device context to merge into the platform SDK's device
+// context (Cocoa/Android), adding fields it doesn't populate.
+Dictionary make_device_context_patch();
+
 Dictionary make_app_context();
 Dictionary make_gpu_context();
 Dictionary make_culture_context();
