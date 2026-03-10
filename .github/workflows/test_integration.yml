@@ -35,6 +35,10 @@ jobs:
             runner: ubuntu-latest
             godot-arch: x86_32
 
+          - test-platform: Linux
+            runner: ubuntu-22.04-arm
+            godot-arch: arm64
+
           - test-platform: Windows
             runner: windows-latest
             godot-arch: x86_64
@@ -42,6 +46,10 @@ jobs:
           - test-platform: Windows
             runner: windows-latest
             godot-arch: x86_32
+
+          - test-platform: Windows
+            runner: windows-11-arm
+            godot-arch: arm64
 
           - test-platform: macOS
             runner: macos-latest
