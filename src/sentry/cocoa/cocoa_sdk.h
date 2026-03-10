@@ -17,6 +17,7 @@ private:
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
+	virtual void merge_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void remove_context(const String &p_key) override;
 
 	virtual void set_tag(const String &p_key, const String &p_value) override;
