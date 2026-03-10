@@ -28,6 +28,8 @@ android.debug.arm32 = "res://addons/sentry/bin/android/libsentry.android.debug.a
 android.release.arm32 = "res://addons/sentry/bin/android/libsentry.android.release.arm32.so"
 android.debug.x86_64 = "res://addons/sentry/bin/android/libsentry.android.debug.x86_64.so"
 android.release.x86_64 = "res://addons/sentry/bin/android/libsentry.android.release.x86_64.so"
+android.debug.x86_32 = "res://addons/sentry/bin/android/libsentry.android.debug.x86_32.so"
+android.release.x86_32 = "res://addons/sentry/bin/android/libsentry.android.release.x86_32.so"
 
 ios.debug = "res://addons/sentry/bin/ios/libsentry.ios.debug.xcframework"
 ios.release = "res://addons/sentry/bin/ios/libsentry.ios.release.xcframework"
