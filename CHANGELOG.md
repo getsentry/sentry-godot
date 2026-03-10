@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- Add UI export hint for Android Gradle build requirement ([#582](https://github.com/getsentry/sentry-godot/pull/582))
+
 ## 1.4.2
 
 ### Fixes
