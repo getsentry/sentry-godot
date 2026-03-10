@@ -23,7 +23,7 @@ For upgrade instructions between major versions, see the [Migration Guide](https
 - **Windows**: x86_64, x86_32
 - **Linux**: x86_64, x86_32
 - **macOS**: universal (Intel and Apple Silicon)
-- **Android**: arm64, arm32, x86_64
+- **Android**: arm64, arm32, x86_64, x86_32
 - **iOS**: device and simulator
 - **Web**: supported in 1.4+
 - **W4 console forks**: coming in 2026
