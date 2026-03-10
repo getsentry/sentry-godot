@@ -33,11 +33,13 @@ web.release.wasm32 = "res://addons/sentry/bin/web/libsentry.web.release.wasm32.n
 web.debug.threads.wasm32 = "res://addons/sentry/bin/web/libsentry.web.debug.wasm32.wasm"
 web.release.threads.wasm32 = "res://addons/sentry/bin/web/libsentry.web.release.wasm32.wasm"
 
+windows.debug.arm64 = "res://addons/sentry/bin/windows/arm64/libsentry.windows.debug.arm64.dll"
+windows.release.arm64 = "res://addons/sentry/bin/windows/arm64/libsentry.windows.release.arm64.dll"
+
+linux.debug.arm64 = "res://addons/sentry/bin/linux/arm64/libsentry.linux.debug.arm64.so"
+linux.release.arm64 = "res://addons/sentry/bin/linux/arm64/libsentry.linux.release.arm64.so"
+
 ; noop libs for unsupported platforms
-windows.debug.arm64 = "res://addons/sentry/bin/noop/libsentry.windows.debug.arm64.dll"
-windows.release.arm64 = "res://addons/sentry/bin/noop/libsentry.windows.release.arm64.dll"
-linux.debug.arm64 = "res://addons/sentry/bin/noop/libsentry.linux.debug.arm64.so"
-linux.release.arm64 = "res://addons/sentry/bin/noop/libsentry.linux.release.arm64.so"
 linux.debug.rv64 = "res://addons/sentry/bin/noop/libsentry.linux.debug.rv64.so"
 linux.release.rv64 = "res://addons/sentry/bin/noop/libsentry.linux.release.rv64.so"
 
@@ -59,6 +61,15 @@ windows.x86_64 = {
 windows.x86_32 = {
 	"res://addons/sentry/bin/windows/x86_32/crashpad_handler.exe" : "",
 	"res://addons/sentry/bin/windows/x86_32/crashpad_wer.dll": ""
+}
+
+windows.arm64 = {
+	"res://addons/sentry/bin/windows/arm64/crashpad_handler.exe" : "",
+	"res://addons/sentry/bin/windows/arm64/crashpad_wer.dll": ""
+}
+
+linux.arm64 = {
+	"res://addons/sentry/bin/linux/arm64/crashpad_handler" : ""
 }
 
 macos.debug = {
