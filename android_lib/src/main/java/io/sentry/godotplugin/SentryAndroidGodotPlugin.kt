@@ -199,6 +199,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.isAnrEnabled = appHangTracking
                 options.anrTimeoutIntervalMillis = (appHangTimeoutSec * 1000.0).toLong()
                 options.shutdownTimeoutMillis = shutdownTimeoutMs.toLong()
+                options.isTombstoneEnabled = true
                 options.beforeSend =
                     SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
                         Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
