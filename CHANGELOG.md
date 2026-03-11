@@ -11,6 +11,12 @@
 
 - Add UI export hint for Android Gradle build requirement ([#582](https://github.com/getsentry/sentry-godot/pull/582))
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.57.3 to v9.6.0 ([#456](https://github.com/getsentry/sentry-godot/pull/456))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#960)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.6.0)
+
 ## 1.4.2
 
 ### Fixes
