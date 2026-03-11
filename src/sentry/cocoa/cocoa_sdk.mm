@@ -39,13 +39,20 @@ NSObject *_as_attribute(const Variant &p_value) {
 	}
 }
 
+SentryAttachmentType _attachment_type_to_objc(const String &p_attachment_type) {
+	if (p_attachment_type == "event.view_hierarchy") {
+		return kSentryAttachmentTypeViewHierarchy;
+	}
+	return kSentryAttachmentTypeEventAttachment;
+}
+
 void _add_default_attachments(objc::SentryScope *p_scope) {
 	for (const Ref<sentry::SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
 		sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
-		// TODO: Can't specify attachmentType!
 		objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:sentry::cocoa::string_to_objc(att->get_globalized_path())
 																			   filename:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_effective_filename())
-																			contentType:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_content_type())];
+																			contentType:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_content_type())
+																		 attachmentType:_attachment_type_to_objc(att->get_attachment_type())];
 		ERR_CONTINUE(objc_att == nil);
 		[p_scope addAttachment:objc_att];
 	}
@@ -226,7 +233,8 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 		attachment_objc = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(absolute_path)
 															  filename:string_to_objc(p_attachment->get_effective_filename())
-														   contentType:string_to_objc(p_attachment->get_content_type_or_default())];
+														   contentType:string_to_objc(p_attachment->get_content_type_or_default())
+														attachmentType:_attachment_type_to_objc(p_attachment->get_attachment_type())];
 	} else {
 		// Bytes attachment
 		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add bytes attachment without filename.");
@@ -237,7 +245,8 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 		attachment_objc = [[objc::SentryAttachment alloc] initWithData:bytes_objc
 															  filename:string_to_objc(p_attachment->get_filename())
-														   contentType:string_to_objc(p_attachment->get_content_type_or_default())];
+														   contentType:string_to_objc(p_attachment->get_content_type_or_default())
+														attachmentType:_attachment_type_to_objc(p_attachment->get_attachment_type())];
 	}
 
 	ERR_FAIL_NULL_MSG(attachment_objc, "Sentry: Failed to create Cocoa attachment object from the provided SentryAttachment data.");

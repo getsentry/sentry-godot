@@ -292,8 +292,8 @@ Describe "Platform Integration Tests" {
                 Write-GitHub "::endgroup::"
 
                 Write-GitHub "::group::Getting event attachments"
-                # 4 custom + godot.log + view-hierarchy.json = 6 (5 on Cocoa — no view-hierarchy)
-                $expectedCount = if ($script:TestSetup.IsCocoa) { 5 } else { 6 }
+                # 4 custom + godot.log + view-hierarchy.json = 6
+                $expectedCount = 6
                 $script:attachments = Get-SentryTestEventAttachments -EventId "$eventId" -ExpectedCount $expectedCount
                 $script:attachmentNames = ($script:attachments | ForEach-Object { "'$($_.name)'" }) -join ", "
                 Write-GitHub "::endgroup::"
@@ -312,10 +312,9 @@ Describe "Platform Integration Tests" {
             $runResult.ExitCode | Should -Be 0
         }
 
-        It "Has at least 5 attachments (6 on non-Cocoa)" {
+        It "Has at least 6 attachments" {
             # 4 custom + godot.log + view-hierarchy.json (screenshot not tested — headless mode)
-            # Cocoa: 5 (no view-hierarchy)
-            $expectedCount = if ($script:TestSetup.IsCocoa) { 5 } else { 6 }
+            $expectedCount = 6
             $attachments.Count | Should -BeGreaterOrEqual $expectedCount -Because "received attachments: $attachmentNames"
         }
 
@@ -365,8 +364,6 @@ Describe "Platform Integration Tests" {
         }
 
         It "Has view-hierarchy.json default attachment" {
-            # TODO: Remove skip when view hierarchy is implemented on Apple platforms.
-            if ($script:TestSetup.IsCocoa) { return }
             $viewHierarchy = $attachments | Where-Object { $_.name -eq "view-hierarchy.json" }
             $viewHierarchy | Should -Not -BeNullOrEmpty -Because "'view-hierarchy.json' should be among received attachments: $attachmentNames"
             $viewHierarchy.type | Should -Be "event.view_hierarchy"
