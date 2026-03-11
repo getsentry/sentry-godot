@@ -10,7 +10,7 @@ struct WineProtonInfo {
 	bool is_wine = false;
 	bool is_proton = false;
 	String wine_version; // "9.0", "8.0-3"
-	String proton_build_name; // "Proton 8.0", "Proton Experimental"
+	String proton_version; // "Proton 8.0", "Proton Experimental"
 	bool is_experimental = false;
 };
 

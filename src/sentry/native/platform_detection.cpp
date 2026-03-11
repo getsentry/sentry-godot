@@ -35,11 +35,11 @@ void _parse_wine_version(const String &p_version, sentry::native::WineProtonInfo
 		// TODO: Not sure we can reliably detect Proton based on number heuristics - need to verify this.
 		r_info.is_proton = true;
 
-		if (r_info.proton_build_name.is_empty()) {
+		if (r_info.proton_version.is_empty()) {
 			if (suffix.to_lower() == "ge") {
-				r_info.proton_build_name = "Proton-GE " + p_version;
+				r_info.proton_version = "Proton-GE " + p_version;
 			} else {
-				r_info.proton_build_name = "Proton " + p_version.substr(0, dash_pos);
+				r_info.proton_version = "Proton " + p_version.substr(0, dash_pos);
 			}
 		}
 	}
@@ -100,7 +100,7 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 		// Try to get Proton build name from PROTON_VERSION environment variable.
 		String proton_version = OS::get_singleton()->get_environment("PROTON_VERSION");
 		if (!proton_version.is_empty()) {
-			info.proton_build_name = proton_version;
+			info.proton_version = proton_version;
 			info.is_experimental = proton_version.contains("Experimental");
 		}
 	}
