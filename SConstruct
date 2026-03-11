@@ -111,7 +111,7 @@ class SDK(Enum):
 
 
 if platform in ["linux", "windows"]:
-    if arch in ["arm64", "arm32", "rv64"]:
+    if arch in ["arm32", "rv64"]:
         internal_sdk = SDK.DISABLED
     else:
         internal_sdk = SDK.NATIVE
