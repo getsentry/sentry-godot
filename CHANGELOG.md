@@ -11,6 +11,12 @@
 
 - Add UI export hint for Android Gradle build requirement ([#582](https://github.com/getsentry/sentry-godot/pull/582))
 
+### Dependencies
+
+- Bump Sentry JavaScript from v10.42.0 to v10.43.0 ([#588](https://github.com/getsentry/sentry-godot/pull/588))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10430)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.42.0...10.43.0)
+
 ## 1.4.2
 
 ### Fixes
