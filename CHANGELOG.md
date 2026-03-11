@@ -15,6 +15,7 @@
 ### Improvements
 
 - Add UI export hint for Android Gradle build requirement ([#582](https://github.com/getsentry/sentry-godot/pull/582))
+- Set `device_type` in device context ([#587](https://github.com/getsentry/sentry-godot/pull/587))
 
 ### Dependencies
 

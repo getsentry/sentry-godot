@@ -209,6 +209,17 @@ func test_app_context() -> void:
 		.must_contain("app_version") \
 		.verify()
 
+
+func test_device_context() -> void:
+	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json).describe("Device context has device_type") \
+		.at("/contexts/device/device_type") \
+		.is_string() \
+		.is_not_empty() \
+		.verify()
+
+
 # OS context is added later in processing on Web platform; so we have to skip this test.
 func test_os_context(_do_skip = OS.get_name() == "Web") -> void:
 	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
