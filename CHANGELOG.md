@@ -4,7 +4,7 @@
 
 ### Breaking changes
 
-- Bumped minimum iOS version to 15.0 due to Cocoa SDK update
+- Bumped minimum iOS version to 15.0 due to Cocoa SDK update (affects less than 1% active devices)
 
 ### Features
 
@@ -20,9 +20,9 @@
 - Bump Sentry JavaScript from v10.42.0 to v10.43.0 ([#588](https://github.com/getsentry/sentry-godot/pull/588))
   - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10430)
   - [diff](https://github.com/getsentry/sentry-javascript/compare/10.42.0...10.43.0)
-- Bump Cocoa SDK from v8.57.3 to v9.4.1 ([#442](https://github.com/getsentry/sentry-godot/pull/442))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#941)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.4.1)
+- Bump Cocoa SDK from v8.57.3 to v9.6.0 ([#442](https://github.com/getsentry/sentry-godot/pull/442))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#960)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.6.0)
   - Lowered minimum macOS deployment target from 11.0 to 10.14 to match Cocoa SDK minimum
 
 ## 1.4.2
