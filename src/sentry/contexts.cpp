@@ -437,7 +437,15 @@ HashMap<String, Dictionary> make_event_contexts() {
 	event_contexts["godot_performance"] = make_performance_context();
 
 #if defined(SDK_NATIVE) || defined(SDK_JAVASCRIPT)
+	// On native and JS, the Godot SDK owns "device" context.
+	// Fields that change at runtime are updated here.
 	event_contexts["device"] = make_device_context_update();
+#endif
+
+#if defined(SDK_COCOA)
+	// On Apple platforms, "device" context is managed by the Cocoa SDK.
+	// We are just adding additional fields to it.
+	event_contexts["device"] = make_device_context_patch();
 #endif
 
 	return event_contexts;
