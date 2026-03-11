@@ -17,6 +17,9 @@ enum LogLevel {
 godot::String log_level_as_string(LogLevel p_level);
 LogLevel log_level_from_string(const godot::String &p_value, LogLevel p_default);
 
+godot::CharString log_level_as_cstring(LogLevel p_level);
+LogLevel log_level_from_cstring(const char *p_value, LogLevel p_default);
+
 inline godot::PropertyInfo make_log_level_enum_property(const godot::String &p_name) {
 	return godot::PropertyInfo(godot::Variant::INT, p_name, godot::PROPERTY_HINT_ENUM, "Trace,Debug,Info,Warn,Error,Fatal");
 }

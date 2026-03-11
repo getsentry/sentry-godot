@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryUnit" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Unit constants for metric distributions and gauges.
+	</brief_description>
+	<description>
+		Provides predefined unit constants for use with [method SentryMetrics.gauge] and [method SentryMetrics.distribution]. Each property returns a unit string recognized by Sentry. Custom unit strings are also supported — pass any string directly to the metric methods.
+		[codeblock]
+		SentrySDK.metrics.gauge("memory_usage", OS.get_static_memory_usage(), SentryUnit.byte)
+		SentrySDK.metrics.distribution("level_load_time", load_time, SentryUnit.millisecond)
+
+		# Custom units are also supported:
+		SentrySDK.metrics.gauge("items_in_inventory", item_count, "item")
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="bit" type="String" setter="" getter="get_bit" default="&quot;bit&quot;">
+			Information unit: bit.
+		</member>
+		<member name="byte" type="String" setter="" getter="get_byte" default="&quot;byte&quot;">
+			Information unit: byte.
+		</member>
+		<member name="day" type="String" setter="" getter="get_day" default="&quot;day&quot;">
+			Duration unit: day.
+		</member>
+		<member name="exabyte" type="String" setter="" getter="get_exabyte" default="&quot;exabyte&quot;">
+			Information unit: exabyte (10^18 bytes).
+		</member>
+		<member name="exbibyte" type="String" setter="" getter="get_exbibyte" default="&quot;exbibyte&quot;">
+			Information unit: exbibyte (2^60 bytes).
+		</member>
+		<member name="gibibyte" type="String" setter="" getter="get_gibibyte" default="&quot;gibibyte&quot;">
+			Information unit: gibibyte (2^30 bytes).
+		</member>
+		<member name="gigabyte" type="String" setter="" getter="get_gigabyte" default="&quot;gigabyte&quot;">
+			Information unit: gigabyte (10^9 bytes).
+		</member>
+		<member name="hour" type="String" setter="" getter="get_hour" default="&quot;hour&quot;">
+			Duration unit: hour.
+		</member>
+		<member name="kibibyte" type="String" setter="" getter="get_kibibyte" default="&quot;kibibyte&quot;">
+			Information unit: kibibyte (2^10 bytes).
+		</member>
+		<member name="kilobyte" type="String" setter="" getter="get_kilobyte" default="&quot;kilobyte&quot;">
+			Information unit: kilobyte (10^3 bytes).
+		</member>
+		<member name="mebibyte" type="String" setter="" getter="get_mebibyte" default="&quot;mebibyte&quot;">
+			Information unit: mebibyte (2^20 bytes).
+		</member>
+		<member name="megabyte" type="String" setter="" getter="get_megabyte" default="&quot;megabyte&quot;">
+			Information unit: megabyte (10^6 bytes).
+		</member>
+		<member name="microsecond" type="String" setter="" getter="get_microsecond" default="&quot;microsecond&quot;">
+			Duration unit: microsecond.
+		</member>
+		<member name="millisecond" type="String" setter="" getter="get_millisecond" default="&quot;millisecond&quot;">
+			Duration unit: millisecond.
+		</member>
+		<member name="minute" type="String" setter="" getter="get_minute" default="&quot;minute&quot;">
+			Duration unit: minute.
+		</member>
+		<member name="nanosecond" type="String" setter="" getter="get_nanosecond" default="&quot;nanosecond&quot;">
+			Duration unit: nanosecond.
+		</member>
+		<member name="pebibyte" type="String" setter="" getter="get_pebibyte" default="&quot;pebibyte&quot;">
+			Information unit: pebibyte (2^50 bytes).
+		</member>
+		<member name="percent" type="String" setter="" getter="get_percent" default="&quot;percent&quot;">
+			Fraction unit: percent (0-100).
+		</member>
+		<member name="petabyte" type="String" setter="" getter="get_petabyte" default="&quot;petabyte&quot;">
+			Information unit: petabyte (10^15 bytes).
+		</member>
+		<member name="ratio" type="String" setter="" getter="get_ratio" default="&quot;ratio&quot;">
+			Fraction unit: ratio (0.0-1.0).
+		</member>
+		<member name="second" type="String" setter="" getter="get_second" default="&quot;second&quot;">
+			Duration unit: second.
+		</member>
+		<member name="tebibyte" type="String" setter="" getter="get_tebibyte" default="&quot;tebibyte&quot;">
+			Information unit: tebibyte (2^40 bytes).
+		</member>
+		<member name="terabyte" type="String" setter="" getter="get_terabyte" default="&quot;terabyte&quot;">
+			Information unit: terabyte (10^12 bytes).
+		</member>
+		<member name="week" type="String" setter="" getter="get_week" default="&quot;week&quot;">
+			Duration unit: week.
+		</member>
+	</members>
+</class>

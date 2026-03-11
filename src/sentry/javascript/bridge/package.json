@@ -19,14 +19,14 @@
   "type": "commonjs",
   "devDependencies": {
     "terser": "^5.44.1",
-    "terser-webpack-plugin": "^5.3.16",
+    "terser-webpack-plugin": "^5.3.17",
     "ts-loader": "^9.5.4",
     "typescript": "^5.9.3",
     "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "@sentry/browser": "^10.34.0",
-    "@sentry/wasm": "^10.34.0"
+    "@sentry/browser": "^10.43.0",
+    "@sentry/wasm": "^10.43.0"
   }
 }

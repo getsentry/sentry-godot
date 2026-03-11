@@ -172,6 +172,20 @@ jobs:
             arch: x86_64
             scons-flags: debug_symbols=yes
 
+          - name: 🤖 Android (x86_32, release)
+            runner: ubuntu-latest
+            platform: android
+            target: template_release
+            arch: x86_32
+            scons-flags: debug_symbols=yes
+
+          - name: 🤖 Android (x86_32, debug)
+            runner: ubuntu-latest
+            platform: android
+            target: editor
+            arch: x86_32
+            scons-flags: debug_symbols=yes
+
           - name: 🍏 iOS (arm64, release)
             runner: macos-15
             platform: ios
@@ -205,28 +219,28 @@ jobs:
             platform: web
             target: template_release
             arch: wasm32
-            scons-flags: debug_symbols=no threads=yes
+            scons-flags: debug_symbols=yes threads=yes
 
           - name: 🌐 Web (threads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
-            scons-flags: debug_symbols=no threads=yes
+            scons-flags: debug_symbols=yes threads=yes
 
           - name: 🌐 Web (nothreads, release)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
-            scons-flags: debug_symbols=no threads=no
+            scons-flags: debug_symbols=yes threads=no
 
           - name: 🌐 Web (nothreads, debug)
             runner: ubuntu-latest
             platform: web
             target: editor
             arch: wasm32
-            scons-flags: debug_symbols=no threads=no
+            scons-flags: debug_symbols=yes threads=no
 
     steps:
       - name: Checkout repo and submodules
@@ -300,6 +314,8 @@ jobs:
             project/
             !project/
             project/addons/sentry/
+            !project/addons/sentry/bin/**/*.lib
+            !project/addons/sentry/bin/**/*.exp
 
   android-plugin:
     name: 🤖 Android Plugin AARs

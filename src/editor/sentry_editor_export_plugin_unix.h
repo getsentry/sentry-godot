@@ -13,6 +13,7 @@ class SentryEditorExportPluginUnix : public EditorExportPlugin {
 
 private:
 	String export_path;
+	bool active = false;
 
 protected:
 	static void _bind_methods() {}

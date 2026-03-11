@@ -4,6 +4,7 @@
 #include "sentry/godot_error_types.h"
 #include "sentry/level.h"
 #include "sentry/processing/sentry_event_processor.h"
+#include "sentry/sentry_attachment.h"
 #include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
@@ -42,7 +43,16 @@ class SentryExperimental : public RefCounted {
 
 	SentryOptions *owner = nullptr;
 
+	bool enable_metrics = true;
+	Callable before_send_metric;
+
 public:
+	void set_enable_metrics(bool p_value) { enable_metrics = p_value; }
+	bool get_enable_metrics() const { return enable_metrics; }
+
+	void set_before_send_metric(const Callable &p_value) { before_send_metric = p_value; }
+	Callable get_before_send_metric() const { return before_send_metric; }
+
 	// DEPRECATED: The following accessors are deprecated and scheduled for removal.
 	void set_enable_logs(bool p_value);
 	bool get_enable_logs();
@@ -79,6 +89,7 @@ private:
 	String environment = "{auto}";
 	double sample_rate = 1.0;
 	int max_breadcrumbs = 100;
+	int shutdown_timeout_ms = 2000;
 	bool send_default_pii = false;
 
 	bool attach_log = true;
@@ -106,6 +117,10 @@ private:
 	Callable before_capture_screenshot;
 
 	Vector<Ref<SentryEventProcessor>> event_processors;
+	// Default attachments (log, screenshot, view hierarchy). Must be file-based. Survive clear_attachments().
+	Vector<Ref<SentryAttachment>> default_attachments;
+	// User attachments added during config callback, drained at init.
+	Vector<Ref<SentryAttachment>> custom_attachments;
 
 	static void _define_project_settings(const Ref<SentryOptions> &p_options);
 	static void _load_project_settings(const Ref<SentryOptions> &p_options);
@@ -147,6 +162,9 @@ public:
 
 	_FORCE_INLINE_ int get_max_breadcrumbs() const { return max_breadcrumbs; }
 	_FORCE_INLINE_ void set_max_breadcrumbs(int p_max_breadcrumbs) { max_breadcrumbs = p_max_breadcrumbs; }
+
+	_FORCE_INLINE_ int get_shutdown_timeout_ms() const { return shutdown_timeout_ms; }
+	_FORCE_INLINE_ void set_shutdown_timeout_ms(int p_shutdown_timeout_ms) { shutdown_timeout_ms = p_shutdown_timeout_ms; }
 
 	_FORCE_INLINE_ bool is_send_default_pii_enabled() const { return send_default_pii; }
 	_FORCE_INLINE_ void set_send_default_pii(bool p_enabled) { send_default_pii = p_enabled; }
@@ -210,6 +228,13 @@ public:
 	void add_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	void remove_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	_FORCE_INLINE_ Vector<Ref<SentryEventProcessor>> get_event_processors() { return event_processors; }
+
+	void add_default_attachment(const Ref<SentryAttachment> &p_attachment);
+	_FORCE_INLINE_ Vector<Ref<SentryAttachment>> get_default_attachments() const { return default_attachments; }
+
+	void add_custom_attachment(const Ref<SentryAttachment> &p_attachment) { custom_attachments.append(p_attachment); }
+	_FORCE_INLINE_ Vector<Ref<SentryAttachment>> get_custom_attachments() const { return custom_attachments; }
+	void clear_custom_attachments() { custom_attachments.clear(); }
 
 	SentryOptions();
 	~SentryOptions();

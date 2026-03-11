@@ -122,7 +122,9 @@ npm test               # Run tests
 - `project/` -- example Godot project
 - `project/addons/sentry/` -- where build artifacts are placed
 - `project/test/` -- unit tests
+- `test_web/` -- Playwright-based web/WASM test infrastructure
 - `scripts/` -- various scripts used mostly for maintenance
+- `assetlib/` -- metadata for Godot Asset Library entries
 - `doc_classes/` -- built-in Godot documentation (class reference)
 - `android_lib/` -- supporting library for Android, containing a Godot plugin that bridges the Sentry GDExtension with the native Sentry Android SDK.
 
@@ -159,6 +161,19 @@ Once the XML files are regenerated, you can begin updating the documentation for
 
 > 🛈 Our CI automatically runs tests for open PRs.
 
+### Export Presets
+
+Pre-configured export presets for testing are shipped in `exports/export_presets.cfg`. To use them, copy the file into the `project/` directory (or merge with your existing presets):
+
+```bash
+cp exports/export_presets.cfg project/export_presets.cfg
+```
+
+Available presets:
+- **Android Tests** — Android debug export with Gradle build and GDExtension support
+- **iOS Tests** — iOS debug export with custom templates
+- **Web Tests** — Web debug export with threads and GDExtension support
+
 ### Local Tests
 
 Testing is performed using the **gdUnit4** testing framework in GDScript. Unit tests (and other types of tests) are located in the `project/test/` directory. These tests can be executed from the Godot editor, except for isolated tests (see below).
@@ -168,6 +183,46 @@ Some tests require isolation, meaning they need specific options to be set and m
 For the Android platform, you can also run supporting Android library tests:
 ```bash
 ./gradlew test
+```
+
+### Web Tests
+
+Web tests run the same GDScript suite and isolated tests in a headless Chromium browser using Playwright. They require a Godot web export.
+
+#### Prerequisites
+
+1. Build the GDExtension library and JS bundle:
+    ```bash
+    scons target=template_release platform=web generate_js_bundle=yes
+    ```
+2. Export the project using the "Web Tests" preset:
+    ```bash
+    godot --headless --path project --export-debug "Web Tests" ../exports/web/index.html
+    ```
+3. Install test dependencies (first time only):
+    ```bash
+    cd test_web
+    npm install
+    npx playwright install chromium
+    ```
+
+#### Running Tests
+
+```bash
+cd test_web
+npx playwright test
+```
+
+Or use the convenience PowerShell script (handles dependency installation automatically):
+
+```powershell
+pwsh scripts/run-web-tests.ps1
+```
+
+By default, tests expect the web export in `exports/web/`. To use a different location, set the `WEB_EXPORT_DIR` environment variable:
+
+```bash
+WEB_EXPORT_DIR=path/to/export npx playwright test
 ```
 
 ### End-to-End Integration Tests
@@ -207,3 +262,17 @@ Invoke-Pester -Path Integration.Tests.ps1
 ```
 
 Tests validate crash capture, message capture, runtime error capture, and event metadata. Results are saved to `integration_tests/results/`.
+
+## Releasing
+
+### Godot Asset Library
+
+The [Godot Asset Library](https://godotengine.org/asset-library/) entry is updated automatically via the `publish-assetlib` workflow, which runs when a GitHub Release is published. It extracts the version from `SConstruct`, resolves the download URL from the release assets, and submits an edit to the AssetLib API. Pre-release versions (containing `-` in the version string) are skipped automatically.
+
+Asset metadata is stored in `assetlib/addon.yaml`. Changes to the AssetLib entry (title, description, icon, etc.) should be made through PRs updating this file.
+
+You can test the update script locally using `--dry-run`:
+
+```bash
+./scripts/publish-assetlib.sh --dry-run assetlib/addon.yaml 1.3.0 4.3
+```

@@ -39,4 +39,41 @@ LogLevel log_level_from_string(const godot::String &p_value, LogLevel p_default)
 	}
 }
 
+godot::CharString log_level_as_cstring(LogLevel p_level) {
+	switch (p_level) {
+		case LOG_LEVEL_TRACE:
+			return "trace";
+		case LOG_LEVEL_DEBUG:
+			return "debug";
+		case LOG_LEVEL_INFO:
+			return "info";
+		case LOG_LEVEL_WARN:
+			return "warn";
+		case LOG_LEVEL_ERROR:
+			return "error";
+		case LOG_LEVEL_FATAL:
+			return "fatal";
+		default:
+			return "unknown";
+	}
+}
+
+LogLevel log_level_from_cstring(const char *p_value, LogLevel p_default) {
+	if (strcmp(p_value, "trace") == 0) {
+		return LOG_LEVEL_TRACE;
+	} else if (strcmp(p_value, "debug") == 0) {
+		return LOG_LEVEL_DEBUG;
+	} else if (strcmp(p_value, "info") == 0) {
+		return LOG_LEVEL_INFO;
+	} else if (strcmp(p_value, "warn") == 0) {
+		return LOG_LEVEL_WARN;
+	} else if (strcmp(p_value, "error") == 0) {
+		return LOG_LEVEL_ERROR;
+	} else if (strcmp(p_value, "fatal") == 0) {
+		return LOG_LEVEL_FATAL;
+	} else {
+		return p_default;
+	}
+}
+
 } // namespace sentry

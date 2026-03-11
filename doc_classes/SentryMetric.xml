@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryMetric" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Metric item in Sentry.
+	</brief_description>
+	<description>
+		[SentryMetric] represents a single metric data point in Sentry Metrics. Metric objects are passed to the [member SentryExperimental.before_send_metric] callback, where they can be inspected, modified, or discarded before being sent to Sentry.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_attributes">
+			<return type="void" />
+			<param index="0" name="attributes" type="Dictionary" />
+			<description>
+				Adds multiple attributes to the metric from a Dictionary. Each key-value pair in the dictionary becomes an attribute, where the key serves as the attribute name and the value as the attribute value. This method is most efficient when adding multiple attributes at once. For single attributes, use [method set_attribute] instead.
+				[b]Note:[/b] Attributes support integers, booleans, floats, and strings. Other data types will be automatically converted to strings.
+			</description>
+		</method>
+		<method name="get_attribute" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Retrieves the value of an attribute by its name. If the attribute does not exist, returns [code]null[/code].
+			</description>
+		</method>
+		<method name="remove_attribute">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Removes an attribute from the metric by its name.
+			</description>
+		</method>
+		<method name="set_attribute">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets the value of an attribute by its name. If the attribute does not exist, it will be created.
+				[b]Note:[/b] Attributes support integers, booleans, floats, and strings. Other data types will be automatically converted to strings.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="name" type="String" setter="set_name" getter="get_name">
+			The name of the metric.
+		</member>
+		<member name="type" type="int" setter="set_type" getter="get_type" enum="SentryMetric.MetricType">
+			The type of the metric. See [enum MetricType] for possible values.
+		</member>
+		<member name="unit" type="String" setter="set_unit" getter="get_unit">
+			The unit of measurement for the metric value (e.g., [code]"millisecond"[/code], [code]"byte"[/code], [code]"percent"[/code]). An empty string indicates a unitless metric.
+		</member>
+		<member name="value" type="float" setter="set_value" getter="get_value">
+			The numeric value of the metric. For [constant METRIC_COUNTER] metrics, this is a whole number even though the property type is [code]float[/code].
+		</member>
+	</members>
+	<constants>
+		<constant name="METRIC_COUNTER" value="0" enum="MetricType">
+			Tracks how many times something happened. Each increment adds to a cumulative total. Use this for events that occur over time, such as matches started or items purchased.
+		</constant>
+		<constant name="METRIC_GAUGE" value="1" enum="MetricType">
+			Sets a specific value at a point in time, like a snapshot. The latest value replaces the previous one. Use this for current state, such as players online or memory usage.
+		</constant>
+		<constant name="METRIC_DISTRIBUTION" value="2" enum="MetricType">
+			Records numeric values to compute statistical aggregates such as p50, p95, avg, min, and max. Use this for values that vary and need statistical analysis, such as level load times.
+		</constant>
+	</constants>
+</class>

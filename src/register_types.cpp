@@ -11,8 +11,11 @@
 #include "sentry/sentry_feedback.h"
 #include "sentry/sentry_log.h"
 #include "sentry/sentry_logger.h"
+#include "sentry/sentry_metric.h"
+#include "sentry/sentry_metrics.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
+#include "sentry/sentry_unit.h"
 #include "sentry/sentry_user.h"
 
 #include <godot_cpp/classes/engine.hpp>
@@ -23,12 +26,14 @@
 #include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_log.h"
+#include "sentry/native/native_metric.h"
 #endif // SDK_NATIVE
 
 #ifdef SDK_ANDROID
 #include "sentry/android/android_breadcrumb.h"
 #include "sentry/android/android_event.h"
 #include "sentry/android/android_log.h"
+#include "sentry/android/android_metric.h"
 #include "sentry/android/android_sdk.h"
 #endif // SDK_ANDROID
 
@@ -42,6 +47,7 @@
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/javascript/javascript_event.h"
 #include "sentry/javascript/javascript_log.h"
+#include "sentry/javascript/javascript_metric.h"
 #include "sentry/javascript/javascript_sdk.h"
 #endif
 
@@ -64,12 +70,15 @@ void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryUser);
 	GDREGISTER_CLASS(SentryTimestamp);
 	GDREGISTER_CLASS(SentryLogger);
+	GDREGISTER_CLASS(SentryMetrics);
+	GDREGISTER_CLASS(SentryUnit);
 	GDREGISTER_CLASS(SentryFeedback);
 	GDREGISTER_CLASS(SentrySDK);
 	GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
 	GDREGISTER_ABSTRACT_CLASS(SentryEvent);
 	GDREGISTER_ABSTRACT_CLASS(SentryBreadcrumb);
 	GDREGISTER_ABSTRACT_CLASS(SentryLog);
+	GDREGISTER_ABSTRACT_CLASS(SentryMetric);
 	GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
@@ -80,14 +89,17 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(native::NativeEvent);
 	GDREGISTER_INTERNAL_CLASS(native::NativeBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(native::NativeLog);
+	GDREGISTER_INTERNAL_CLASS(native::NativeMetric);
 #endif
 
 #ifdef SDK_ANDROID
 	GDREGISTER_INTERNAL_CLASS(android::AndroidEvent);
 	GDREGISTER_INTERNAL_CLASS(android::AndroidBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(android::AndroidLog);
+	GDREGISTER_INTERNAL_CLASS(android::AndroidMetric);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendHandler);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendLogHandler);
+	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendMetricHandler);
 #endif
 
 #ifdef SDK_COCOA
@@ -99,9 +111,8 @@ void register_runtime_classes() {
 #ifdef SDK_JAVASCRIPT
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptEvent);
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBreadcrumb);
-	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBeforeSendHandler);
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptLog);
-	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBeforeSendLogHandler);
+	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptMetric);
 #endif
 }
 
@@ -123,6 +134,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		register_runtime_classes();
+		SentryUnit::create_singleton();
 		SentrySDK::create_singleton();
 		SentrySDK::get_singleton()->prepare_and_auto_initialize();
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
@@ -136,6 +148,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 void uninitialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		SentrySDK::destroy_singleton();
+		SentryUnit::destroy_singleton();
 	}
 }
 

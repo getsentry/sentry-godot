@@ -8,7 +8,85 @@
 
 ### Features
 
-- Support Web platform ([#488](https://github.com/getsentry/sentry-godot/pull/488))
+- Enable tombstone support on Android ([#584](https://github.com/getsentry/sentry-godot/pull/584))
+- Add Android x86_32 builds ([#585](https://github.com/getsentry/sentry-godot/pull/585))
+
+### Improvements
+
+- Add UI export hint for Android Gradle build requirement ([#582](https://github.com/getsentry/sentry-godot/pull/582))
+
+### Dependencies
+
+- Bump Sentry JavaScript from v10.42.0 to v10.43.0 ([#588](https://github.com/getsentry/sentry-godot/pull/588))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10430)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.42.0...10.43.0)
+- Bump Cocoa SDK from v8.57.3 to v9.4.1 ([#442](https://github.com/getsentry/sentry-godot/pull/442))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#941)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.4.1)
+  - Lowered minimum macOS deployment target from 11.0 to 10.14 to match Cocoa SDK minimum
+
+## 1.4.2
+
+### Fixes
+
+- Fix crash on Windows when log messages contain printf format specifiers like `%n` or `%s` without corresponding parameters; such string is now preserved as-is in the log body ([#578](https://github.com/getsentry/sentry-godot/pull/578))
+- Fix options set in configuration callback not affecting event processor registration ([#580](https://github.com/getsentry/sentry-godot/pull/580))
+
+### Dependencies
+
+- Bump Native SDK from v0.13.1 to v0.13.2 ([#581](https://github.com/getsentry/sentry-godot/pull/581))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0132)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.13.1...0.13.2)
+
+## 1.4.1
+
+### Fixes
+
+- Fix blank attachment names on Apple platforms and harden attachment handling and validation across all platforms ([#567](https://github.com/getsentry/sentry-godot/pull/567))
+- Support adding attachments inside configuration callback ([#573](https://github.com/getsentry/sentry-godot/pull/573))
+
+### Dependencies
+
+- Bump Sentry Android from v8.34.0 to v8.34.1 ([#572](https://github.com/getsentry/sentry-godot/pull/572))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8341)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.34.0...8.34.1)
+
+## 1.4.0
+
+### Features
+
+- Add Metrics support ([#553](https://github.com/getsentry/sentry-godot/pull/553))
+  - Metrics are currently not supported on Apple platforms in the Godot SDK.
+- Support `SENTRY_DSN`, `SENTRY_RELEASE`, and `SENTRY_ENVIRONMENT` environment variables ([#548](https://github.com/getsentry/sentry-godot/pull/548))
+- Add configurable `shutdown_timeout_ms` option ([#539](https://github.com/getsentry/sentry-godot/pull/539))
+- Add unit constants supported by specification that can be used with Metrics API ([#562](https://github.com/getsentry/sentry-godot/pull/562))
+- Add `SentrySDK.clear_attachments()` ([#565](https://github.com/getsentry/sentry-godot/pull/565))
+
+### Improvements
+
+- Optimize file attachment loading in WASM bridge by reducing cross-boundary round-trips ([#538](https://github.com/getsentry/sentry-godot/pull/538))
+
+### Fixes
+
+- Guard export plugins with platform feature checks ([#557](https://github.com/getsentry/sentry-godot/pull/557))
+
+### Dependencies
+
+- Bump Sentry JavaScript from v10.39.0 to v10.42.0 ([#540](https://github.com/getsentry/sentry-godot/pull/540), [#555](https://github.com/getsentry/sentry-godot/pull/555), [#560](https://github.com/getsentry/sentry-godot/pull/560))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10420)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.39.0...10.42.0)
+- Bump Native SDK from v0.12.8 to v0.13.1 ([#533](https://github.com/getsentry/sentry-godot/pull/533), [#544](https://github.com/getsentry/sentry-godot/pull/544))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0131)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.8...0.13.1)
+- Bump Sentry Android from v8.32.0 to v8.34.0 ([#531](https://github.com/getsentry/sentry-godot/pull/531), [#561](https://github.com/getsentry/sentry-godot/pull/561))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8340)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.32.0...8.34.0)
+
+## 1.4.0-beta.0
+
+### Features
+
+- Support Web platform ([#488](https://github.com/getsentry/sentry-godot/pull/488), [#532](https://github.com/getsentry/sentry-godot/pull/532))
 
 ### Dependencies
 
@@ -18,10 +96,9 @@
 - Bump Native SDK from v0.12.3 to v0.12.8 ([#487](https://github.com/getsentry/sentry-godot/pull/487))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0128)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.12.3...0.12.8)
-- Bump Cocoa SDK from v8.57.3 to v9.4.1 ([#442](https://github.com/getsentry/sentry-godot/pull/442))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#941)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.4.1)
-  - Lowered minimum macOS deployment target from 11.0 to 10.14 to match Cocoa SDK minimum
+- Bump Sentry JavaScript from v10.34.0 to v10.39.0 ([#527](https://github.com/getsentry/sentry-godot/pull/527))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10390)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.34.0...10.39.0)
 
 ## 1.3.2
 

@@ -2,6 +2,7 @@
 
 #include "sentry/util/simple_bind.h"
 
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
 namespace sentry {
@@ -21,6 +22,27 @@ Ref<SentryAttachment> SentryAttachment::create_with_bytes(const PackedByteArray 
 	attachment->bytes = p_bytes;
 	attachment->filename = p_filename;
 	return attachment;
+}
+
+void SentryAttachment::set_bytes(const PackedByteArray &p_bytes) {
+	if (!p_bytes.is_empty() && !path.is_empty()) {
+		ERR_PRINT("Sentry: Setting bytes on an attachment that already has a path set. The path will take priority; bytes will be ignored.");
+	}
+	bytes = p_bytes;
+}
+
+void SentryAttachment::set_path(const String &p_path) {
+	if (!p_path.is_empty() && !bytes.is_empty()) {
+		ERR_PRINT("Sentry: Setting path on an attachment that already has bytes set. The path will take priority; bytes will be ignored.");
+	}
+	path = p_path;
+}
+
+String SentryAttachment::get_globalized_path() const {
+	if (path.begins_with("res://") || path.begins_with("user://")) {
+		return ProjectSettings::get_singleton()->globalize_path(path);
+	}
+	return path;
 }
 
 void SentryAttachment::_bind_methods() {

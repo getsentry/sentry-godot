@@ -9,11 +9,16 @@ extends SceneTree
 
 signal before_send_log(log_entry)
 
+var logger: DemoLogger
+
 
 func _initialize() -> void:
 	if _is_running_tests_from_editor() or _is_running_cli_command():
 		# Not a normal start -- don't initialize Sentry.
 		return
+
+	logger = DemoLogger.new()
+	OS.add_logger(logger)
 
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		print("INFO: [ProjectMainLoop] Initializing SDK from GDScript")
@@ -25,6 +30,7 @@ func _initialize() -> void:
 		# Set up event callbacks
 		options.before_send = _on_before_send_to_sentry
 		options.before_send_log = _on_before_send_log_to_sentry
+		options.experimental.before_send_metric = _on_before_send_metric_to_sentry
 	)
 
 	# Post-initialize
@@ -50,6 +56,12 @@ func _on_before_send_to_sentry(ev: SentryEvent) -> SentryEvent:
 func _on_before_send_log_to_sentry(entry: SentryLog) -> SentryLog:
 	before_send_log.emit(entry)
 	return entry
+
+
+## before_send_metric
+func _on_before_send_metric_to_sentry(metric: SentryMetric) -> SentryMetric:
+	metric.set_attribute("custom_attribute", "Sentry Demo Project")
+	return metric
 
 
 func _is_running_tests_from_editor() -> bool:

@@ -39,8 +39,13 @@ public:
 	virtual void capture_feedback(const Ref<SentryFeedback> &p_feedback) override;
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
+	virtual void clear_attachments() override;
 
-	virtual void init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) override;
+	virtual void metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) override;
+	virtual void metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override;
+	virtual void metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override;
+
+	virtual void init() override;
 	virtual void close() override;
 	virtual bool is_enabled() const override;
 

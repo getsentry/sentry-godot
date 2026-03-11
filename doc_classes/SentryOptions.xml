@@ -131,6 +131,9 @@
 		<member name="send_default_pii" type="bool" setter="set_send_default_pii" getter="is_send_default_pii_enabled" default="false">
 			If [code]true[/code], the SDK will include PII (Personally Identifiable Information) with the events.
 		</member>
+		<member name="shutdown_timeout_ms" type="int" setter="set_shutdown_timeout_ms" getter="get_shutdown_timeout_ms" default="2000">
+			The maximum time in milliseconds the SDK will wait for pending events to be sent when [method SentrySDK.close] is called. If the timeout expires, the SDK will perform a forced shutdown and any unsent events may be lost.
+		</member>
 	</members>
 	<constants>
 		<constant name="MASK_NONE" value="0" enum="GodotErrorMask" is_bitfield="true">

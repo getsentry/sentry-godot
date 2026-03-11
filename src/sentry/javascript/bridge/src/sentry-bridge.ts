@@ -1,40 +1,39 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
+import type { Metric } from "@sentry/core";
 import { wasmIntegration } from "@sentry/wasm";
 
-// Stores byte buffers passed from C++ layer with ID-based retrieval.
-// Uses uint32_t range (0 to 4294967295) to stay safe within JavaScript's integer precision.
-class ByteStore {
+// ID-based store for WASM/JS interop. Assigns auto-incrementing uint32 IDs (0 is reserved).
+class IdStore<T> {
   private _lastId = 0;
-  private _buffers = new Map<number, Uint8Array>();
+  private _items = new Map<number, T>();
 
-  public get(id: number): Uint8Array | undefined {
-    return this._buffers.get(id);
+  public store(item: T): number {
+    let id = this._lastId;
+    do {
+      id = (id % 0xffffffff) + 1;
+    } while (this._items.has(id));
+    this._lastId = id;
+    this._items.set(id, item);
+    return id;
   }
 
-  public add(bytes: Uint8Array): number {
-    // Wrap around within uint32_t range (0 is reserved for error)
-    this._lastId = (this._lastId % 0xffffffff) + 1;
-    this._buffers.set(this._lastId, bytes);
-    return this._lastId;
+  public get(id: number): T | undefined {
+    return this._items.get(id);
   }
 
-  public remove(id: number): void {
-    this._buffers.delete(id);
-  }
-
-  public size(): number {
-    return this._buffers.size;
+  public release(id: number): void {
+    this._items.delete(id);
   }
 
   public clear(): void {
-    this._buffers.clear();
+    this._items.clear();
   }
 }
 
 // Stores info about attachments loaded from C++ layer during event processing.
 interface AttachmentData {
-  id: number; // the content is stored in ByteStore and referenced by this id.
+  bytes: Uint8Array;
   filename: string;
   contentType?: string;
   attachmentType?: string;
@@ -60,11 +59,54 @@ function safeParseJSON<T = any>(json: string, fallback: T): T {
 class SentryBridge {
   constructor() {}
 
-  private _byteStore = new ByteStore();
+  private _byteStore = new IdStore<Uint8Array>();
+  private _objectStore = new IdStore<object>();
+
+  public storeBytes(bytes: Uint8Array): number {
+    return this._byteStore.store(bytes);
+  }
+
+  public takeBytes(id: number): Uint8Array | undefined {
+    const bytes = this._byteStore.get(id);
+    this._byteStore.release(id);
+    return bytes;
+  }
+
+  public releaseBytes(id: number): void {
+    this._byteStore.release(id);
+  }
+
+  public storeObject(obj: any): number {
+    return this._objectStore.store(obj);
+  }
+
+  public getObject(id: number): any {
+    return this._objectStore.get(id);
+  }
+
+  public releaseObject(id: number): void {
+    this._objectStore.release(id);
+  }
+
+  public pushAttachmentData(
+    attachmentData: Array<AttachmentData>,
+    bytes: Uint8Array,
+    filename: string,
+    contentType?: string,
+    attachmentType?: string,
+  ): void {
+    attachmentData.push({
+      bytes,
+      filename,
+      contentType,
+      attachmentType,
+    });
+  }
 
   public init(
     beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void,
     beforeSendLogCallback: ((log: Sentry.Log) => void) | null,
+    beforeSendMetricCallback: ((metric: Metric) => void) | null,
     dsn: string,
     debug: boolean,
     release: string,
@@ -73,6 +115,7 @@ class SentryBridge {
     sampleRate: number,
     maxBreadcrumbs: number,
     enableLogs: boolean,
+    enableMetrics: boolean,
     sdkVersion: string,
   ): void {
     if (debug) {
@@ -88,6 +131,7 @@ class SentryBridge {
       sampleRate,
       maxBreadcrumbs,
       enableLogs,
+      enableMetrics,
       _metadata: {
         sdk: {
           name: "sentry.javascript.godot",
@@ -120,6 +164,11 @@ class SentryBridge {
 
     if (beforeSendCallback) {
       options.beforeSend = (event: Sentry.Event, hint: Sentry.EventHint) => {
+        if (!this.isEnabled()) {
+          // SDK is disabled, skip processing.
+          return null;
+        }
+
         // NOTE: Populated during processing in C++ layer
         const outAttachments: Array<AttachmentData> = [];
 
@@ -130,15 +179,13 @@ class SentryBridge {
           hint.attachments = [];
         }
         for (const attachmentData of outAttachments) {
-          const bytes = this._byteStore.get(attachmentData.id);
-          if (bytes) {
+          if (attachmentData.bytes) {
             hint.attachments.push({
-              data: bytes,
+              data: attachmentData.bytes,
               filename: attachmentData.filename,
               ...(attachmentData.contentType && { contentType: attachmentData.contentType }),
               ...(attachmentData.attachmentType && { attachmentType: attachmentData.attachmentType }),
             } as any);
-            this._byteStore.remove(attachmentData.id);
           }
         }
 
@@ -167,12 +214,24 @@ class SentryBridge {
       console.debug("Sentry: beforeSendLog callback not provided.");
     }
 
+    if (beforeSendMetricCallback) {
+      options.beforeSendMetric = (metric: Metric) => {
+        beforeSendMetricCallback(metric);
+
+        const shouldDiscard: boolean = (metric as any).shouldDiscard;
+        delete (metric as any).shouldDiscard;
+
+        return shouldDiscard ? null : metric;
+      };
+    } else {
+      console.debug("Sentry: beforeSendMetric callback not provided.");
+    }
+
     Sentry.init(options);
   }
 
-  public close(): void {
-    Sentry.close();
-    this._byteStore.clear();
+  public close(timeout: number): void {
+    Sentry.close(timeout);
   }
 
   public isEnabled(): boolean {
@@ -242,6 +301,26 @@ class SentryBridge {
     Sentry.logger.fatal(message, safeParseJSON(attributesJson || "", {}));
   }
 
+  public metricsAddCount(name: string, value: number, attributesJson?: string): void {
+    Sentry.metrics.count(name, value, {
+      attributes: safeParseJSON(attributesJson || "", {}),
+    });
+  }
+
+  public metricsAddGauge(name: string, value: number, unit: string, attributesJson?: string): void {
+    Sentry.metrics.gauge(name, value, {
+      ...(unit !== "" && { unit }),
+      attributes: safeParseJSON(attributesJson || "", {}),
+    });
+  }
+
+  public metricsAddDistribution(name: string, value: number, unit: string, attributesJson?: string): void {
+    Sentry.metrics.distribution(name, value, {
+      ...(unit !== "" && { unit }),
+      attributes: safeParseJSON(attributesJson || "", {}),
+    });
+  }
+
   public captureMessage(message: string, level: string): string {
     return Sentry.captureMessage(message, level as Sentry.SeverityLevel);
   }
@@ -280,49 +359,8 @@ class SentryBridge {
     });
   }
 
-  // *** Native-JS interop helpers
-
-  public storeBytes(bytes: Uint8Array): number {
-    return this._byteStore.add(bytes);
-  }
-
-  public mergeJsonIntoObject(obj: object, jsonString: string): void {
-    const source = safeParseJSON(jsonString, {});
-    Object.assign(obj, source);
-  }
-
-  public pushJsonObjectToArray(arr: any[], jsonString: string): void {
-    const item = safeParseJSON(jsonString, null);
-    if (item !== null) {
-      arr.push(item);
-    }
-  }
-
-  public objectToJson(obj: object): string {
-    try {
-      return JSON.stringify(obj);
-    } catch (error) {
-      console.error("Failed to stringify object:", error);
-      return "{}";
-    }
-  }
-
-  // Gets double property as string to preserve precision across the JS/C++ boundary.
-  // NOTE: Numbers lose precision when crossing JS boundary in current Godot bindings.
-  public getDoubleAsString(obj: object, prop: string): string {
-    const value = (obj as Record<string, unknown>)[prop];
-    if (typeof value === "number") {
-      return value.toString();
-    }
-    return "";
-  }
-
-  // Sets double property from string to preserve precision across the JS/C++ boundary.
-  public setDoubleFromString(obj: object, prop: string, valueStr: string): void {
-    const value = parseFloat(valueStr);
-    if (!isNaN(value)) {
-      (obj as Record<string, unknown>)[prop] = value;
-    }
+  public clearAttachments(): void {
+    Sentry.getCurrentScope().clearAttachments();
   }
 }
 

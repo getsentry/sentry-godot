@@ -39,6 +39,18 @@ NSObject *_as_attribute(const Variant &p_value) {
 	}
 }
 
+void _add_default_attachments(objc::SentryScope *p_scope) {
+	for (const Ref<sentry::SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
+		sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
+		// TODO: Can't specify attachmentType!
+		objc::SentryAttachment *objc_att = [[objc::SentryAttachment alloc] initWithPath:sentry::cocoa::string_to_objc(att->get_globalized_path())
+																			   filename:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_effective_filename())
+																			contentType:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_content_type())];
+		ERR_CONTINUE(objc_att == nil);
+		[p_scope addAttachment:objc_att];
+	}
+}
+
 } // unnamed namespace
 
 namespace sentry::cocoa {
@@ -207,21 +219,21 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	objc::SentryAttachment *attachment_objc = nil;
 
 	if (!p_attachment->get_path().is_empty()) {
-		ERR_FAIL_NULL(ProjectSettings::get_singleton());
-		String absolute_path = ProjectSettings::get_singleton()->globalize_path(p_attachment->get_path());
+		// File attachment
+		String absolute_path = p_attachment->get_globalized_path();
 
 		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
 
-		String filename = p_attachment->get_filename().is_empty() ? p_attachment->get_path().get_file() : p_attachment->get_filename();
 		attachment_objc = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(absolute_path)
-															  filename:string_to_objc(filename)
+															  filename:string_to_objc(p_attachment->get_effective_filename())
 														   contentType:string_to_objc(p_attachment->get_content_type_or_default())];
 	} else {
+		// Bytes attachment
+		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add bytes attachment without filename.");
 		PackedByteArray bytes = p_attachment->get_bytes();
-		ERR_FAIL_COND_MSG(bytes.is_empty(), "Sentry: Can't add attachment with empty bytes and no file path.");
 		NSData *bytes_objc = [NSData dataWithBytes:bytes.ptr() length:bytes.size()];
 
-		sentry::logging::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
+		sentry::logging::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
 
 		attachment_objc = [[objc::SentryAttachment alloc] initWithData:bytes_objc
 															  filename:string_to_objc(p_attachment->get_filename())
@@ -235,14 +247,29 @@ void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}];
 }
 
-void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callable &p_configuration_callback) {
+void CocoaSDK::clear_attachments() {
+	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
+		[scope clearAttachments];
+		_add_default_attachments(scope);
+	}];
+}
+
+void CocoaSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
+	WARN_PRINT_ONCE("Metrics are currently not supported on Apple platforms.");
+}
+
+void CocoaSDK::metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	WARN_PRINT_ONCE("Metrics are currently not supported on Apple platforms.");
+}
+
+void CocoaSDK::metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	WARN_PRINT_ONCE("Metrics are currently not supported on Apple platforms.");
+}
+
+void CocoaSDK::init() {
 	[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
 
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
-		if (p_configuration_callback.is_valid()) {
-			p_configuration_callback.call(SENTRY_OPTIONS());
-		}
-
 		options.dsn = string_to_objc(SENTRY_OPTIONS()->get_dsn());
 		options.debug = SENTRY_OPTIONS()->is_debug_enabled();
 		options.releaseName = string_to_objc(SENTRY_OPTIONS()->get_release());
@@ -259,6 +286,7 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 
 		options.enableAppHangTracking = SENTRY_OPTIONS()->is_app_hang_tracking_enabled();
 		options.appHangTimeoutInterval = SENTRY_OPTIONS()->get_app_hang_timeout_sec();
+		options.shutdownTimeInterval = SENTRY_OPTIONS()->get_shutdown_timeout_ms() / 1000.0;
 
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
@@ -266,21 +294,7 @@ void CocoaSDK::init(const PackedStringArray &p_global_attachments, const Callabl
 		options.enableLogs = SENTRY_OPTIONS()->get_enable_logs();
 
 		options.initialScope = ^(objc::SentryScope *scope) {
-			// Add global attachments
-			for (const String &path : p_global_attachments) {
-				sentry::logging::print_debug("adding attachment \"", path, "\"");
-				objc::SentryAttachment *att = nil;
-				if (path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
-					// TODO: Can't specify attachmentType!
-					att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(path)
-															  filename:string_to_objc("view-hierarchy.json")
-														   contentType:string_to_objc("application/json")];
-				} else {
-					att = [[objc::SentryAttachment alloc] initWithPath:string_to_objc(path)];
-				}
-				ERR_CONTINUE(att == nil);
-				[scope addAttachment:att];
-			}
+			_add_default_attachments(scope);
 
 			// Initialize default user.
 			Ref<SentryUser> user = SentryUser::create_default();

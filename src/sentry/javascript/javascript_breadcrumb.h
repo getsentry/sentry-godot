@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sentry/javascript/javascript_interop.h"
 #include "sentry/sentry_breadcrumb.h"
 
 namespace sentry::javascript {
@@ -12,9 +13,9 @@ class JavaScriptBreadcrumb : public SentryBreadcrumb {
 	friend class JavaScriptSDK;
 
 private:
-	Ref<RefCounted> js_obj;
+	JSObjectPtr js_obj;
 
-	_FORCE_INLINE_ Ref<RefCounted> get_js_object() const { return js_obj; }
+	_FORCE_INLINE_ JSObjectPtr get_js_object() const { return js_obj; }
 
 protected:
 	static void _bind_methods() {}

@@ -1,0 +1,52 @@
+name: 🧪 Web tests
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test-web:
+    name: Test Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Prepare testing
+        uses: ./.github/actions/prepare-testing
+        timeout-minutes: 15
+        with:
+          arch: x86_64
+          export-platform: web
+
+      - name: Export project for web
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          mkdir -p exports/web
+          ${GODOT} --headless --path project --export-debug "Web Tests" ../exports/web/index.html || true
+
+      - name: Verify web export
+        run: ls exports/web/*.pck
+
+      - name: Set up Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: "25"
+          cache: "npm"
+          cache-dependency-path: test_web/package-lock.json
+
+      - name: Install test dependencies
+        working-directory: test_web
+        run: |
+          npm ci
+          npx playwright install chromium
+
+      - name: Run web tests
+        working-directory: test_web
+        timeout-minutes: 10
+        run: npx playwright test

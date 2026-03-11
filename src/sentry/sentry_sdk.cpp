@@ -135,6 +135,13 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	// Fresh options from project settings.
 	options = SentryOptions::create_from_project_settings();
 
+	// Call configuration callback
+	if (p_configuration_callback.is_valid()) {
+		is_configuring = true;
+		p_configuration_callback.call(options);
+		is_configuring = false;
+	}
+
 	// Add built-in event processors.
 	if (options->is_attach_screenshot_enabled()) {
 		options->add_event_processor(memnew(ScreenshotProcessor));
@@ -143,10 +150,21 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 		options->add_event_processor(memnew(ViewHierarchyProcessor));
 	}
 
+	// Add default attachments.
+	for (const Ref<SentryAttachment> &att : _get_default_attachments()) {
+		options->add_default_attachment(att);
+	}
+
 	sentry::logging::print_debug("Initializing Sentry SDK");
-	internal_sdk->init(_get_global_attachments(), p_configuration_callback);
+	internal_sdk->init();
 
 	if (internal_sdk->is_enabled()) {
+		// Drain custom attachments added during the configuration callback.
+		for (const Ref<SentryAttachment> &att : options->get_custom_attachments()) {
+			internal_sdk->add_attachment(att);
+		}
+		options->clear_custom_attachments();
+
 		if (is_auto_initializing) {
 			// Delay contexts initialization until engine singletons are ready during early initialization.
 			callable_mp(this, &SentrySDK::_init_contexts).call_deferred();
@@ -208,7 +226,19 @@ void SentrySDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 
 void SentrySDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
+	if (is_configuring) {
+		options->add_custom_attachment(p_attachment);
+		return;
+	}
 	internal_sdk->add_attachment(p_attachment);
+}
+
+void SentrySDK::clear_attachments() {
+	if (is_configuring) {
+		options->clear_custom_attachments();
+		return;
+	}
+	internal_sdk->clear_attachments();
 }
 
 void SentrySDK::set_tag(const String &p_key, const String &p_value) {
@@ -254,15 +284,15 @@ void SentrySDK::_init_contexts() {
 	internal_sdk->set_context("environment", sentry::contexts::make_environment_context());
 }
 
-PackedStringArray SentrySDK::_get_global_attachments() {
-	PackedStringArray attachments;
+Vector<Ref<SentryAttachment>> SentrySDK::_get_default_attachments() {
+	Vector<Ref<SentryAttachment>> attachments;
 
 	// Attach LOG file.
 	if (options->is_attach_log_enabled()) {
 		String log_path = ProjectSettings::get_singleton()->get_setting("debug/file_logging/log_path");
 		if (FileAccess::file_exists(log_path)) {
 			log_path = log_path.replace("user://", OS::get_singleton()->get_user_data_dir() + "/");
-			attachments.append(log_path);
+			attachments.append(SentryAttachment::create_with_path(log_path));
 		} else {
 			ERR_PRINT("Sentry: Log file not found. Make sure \"debug/file_logging/enable_file_logging\" is turned ON in the Project Settings.");
 		}
@@ -272,14 +302,17 @@ PackedStringArray SentrySDK::_get_global_attachments() {
 	if (options->is_attach_screenshot_enabled()) {
 		String screenshot_path = OS::get_singleton()->get_user_data_dir().path_join(SENTRY_SCREENSHOT_FN);
 		DirAccess::remove_absolute(screenshot_path);
-		attachments.append(screenshot_path);
+		attachments.append(SentryAttachment::create_with_path(screenshot_path));
 	}
 
 	// Attach view hierarchy (aka scene tree info).
 	if (options->is_attach_scene_tree_enabled()) {
 		String vh_path = OS::get_singleton()->get_user_data_dir().path_join(SENTRY_VIEW_HIERARCHY_FN);
 		DirAccess::remove_absolute(vh_path);
-		attachments.append(vh_path);
+		Ref<SentryAttachment> att = SentryAttachment::create_with_path(vh_path);
+		att->set_content_type("application/json");
+		att->set_attachment_type("event.view_hierarchy");
+		attachments.append(att);
 	}
 
 	return attachments;
@@ -372,12 +405,7 @@ void SentrySDK::prepare_and_auto_initialize() {
 	}
 #endif
 
-	if (internal_sdk->get_capabilities().has_flag(InternalSDK::SUPPORTS_EARLY_INIT)) {
-		_auto_initialize();
-	} else {
-		// Defer automatic initialization when the underlying SDK cannot be initialized early.
-		callable_mp(this, &SentrySDK::_auto_initialize).call_deferred();
-	}
+	_auto_initialize();
 }
 
 void SentrySDK::_notification(int p_what) {
@@ -413,6 +441,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("capture_event", "event"), &SentrySDK::capture_event);
 	ClassDB::bind_method(D_METHOD("capture_feedback", "feedback"), &SentrySDK::capture_feedback);
 	ClassDB::bind_method(D_METHOD("add_attachment", "attachment"), &SentrySDK::add_attachment);
+	ClassDB::bind_method(D_METHOD("clear_attachments"), &SentrySDK::clear_attachments);
 
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
@@ -421,6 +450,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "logger", PROPERTY_HINT_TYPE_STRING, "SentryLogger", PROPERTY_USAGE_NONE), get_logger);
+	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "metrics", PROPERTY_HINT_TYPE_STRING, "SentryMetrics", PROPERTY_USAGE_NONE), get_metrics);
 }
 
 SentrySDK::SentrySDK() {
@@ -428,6 +458,7 @@ SentrySDK::SentrySDK() {
 
 	options = SentryOptions::create_from_project_settings();
 	logger = memnew(SentryLogger);
+	metrics = memnew(SentryMetrics);
 	internal_sdk = std::make_unique<DisabledSDK>();
 }
 
@@ -438,6 +469,8 @@ SentrySDK::~SentrySDK() {
 
 	memdelete(logger);
 	logger = nullptr;
+	memdelete(metrics);
+	metrics = nullptr;
 }
 
 } // namespace sentry

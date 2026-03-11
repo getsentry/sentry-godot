@@ -1,0 +1,16 @@
+{
+  "name": "sentry-godot-web-tests",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "serve": "tsx serve.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0",
+    "@types/escape-html": "^1.0.4",
+    "tsx": "^4.0.0"
+  },
+  "dependencies": {
+    "escape-html": "^1.0.3"
+  }
+}

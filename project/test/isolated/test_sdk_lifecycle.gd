@@ -25,6 +25,7 @@ func test_sdk_lifecycle() -> void:
 
 	SentrySDK.init(func (options: SentryOptions) -> void:
 		options.before_send = _before_send
+		options.shutdown_timeout_ms = 2000
 	)
 	assert_bool(SentrySDK.is_enabled()).is_true()
 
@@ -35,7 +36,7 @@ func test_sdk_lifecycle() -> void:
 
 	# NOTE: On Web, Sentry.close() is async - need to wait for it to complete.
 	#       isEnabled only updates after flushing is finished.
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(2.0).timeout
 	assert_bool(SentrySDK.is_enabled()).is_false()
 
 	SentrySDK.capture_message("message not captured when SDK is closed")
@@ -49,6 +50,7 @@ func test_reinit_clears_options() -> void:
 	# First init with before_send callback.
 	SentrySDK.init(func (options: SentryOptions) -> void:
 		options.before_send = _before_send
+		options.shutdown_timeout_ms = 2000
 	)
 	assert_bool(SentrySDK.is_enabled()).is_true()
 
@@ -56,6 +58,10 @@ func test_reinit_clears_options() -> void:
 	await assert_signal(self).is_emitted("callback_processed")
 
 	SentrySDK.close()
+
+	# NOTE: On Web, Sentry.close() is async - need to wait for it to complete.
+	#       isEnabled only updates after flushing is finished.
+	await get_tree().create_timer(2.0).timeout
 
 	# Re-init WITHOUT callback -- old before_send should be gone.
 	SentrySDK.init()

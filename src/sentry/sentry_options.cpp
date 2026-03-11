@@ -82,6 +82,9 @@ Callable SentryExperimental::get_before_send_log() {
 }
 
 void SentryExperimental::_bind_methods() {
+	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::BOOL, enable_metrics);
+	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::CALLABLE, before_send_metric);
+
 	// DEPRECATED: These properties are deprecated and remain for compatibility reasons.
 	// TODO: Remove these after June 2026 or in version 2.0.
 	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::BOOL, enable_logs);
@@ -108,6 +111,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(sentry::make_level_enum_property("sentry/options/diagnostic_level"), p_options->diagnostic_level);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/shutdown_timeout_ms", PROPERTY_HINT_RANGE, "0,30000"), p_options->shutdown_timeout_ms, false);
 	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
 
 	_define_setting("sentry/options/attach_log", p_options->attach_log, false);
@@ -133,19 +137,58 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/experimental/screenshot_level"), p_options->screenshot_level, false);
+
+	_define_setting("sentry/experimental/enable_metrics", p_options->get_experimental()->enable_metrics);
 }
 
 void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) {
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+	ERR_FAIL_NULL(OS::get_singleton());
 
 	p_options->auto_init = ProjectSettings::get_singleton()->get_setting("sentry/options/auto_init", p_options->auto_init);
 	p_options->skip_auto_init_on_editor_play = ProjectSettings::get_singleton()->get_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
 
-	p_options->dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
-	p_options->set_release(ProjectSettings::get_singleton()->get_setting("sentry/options/release", p_options->release));
+	// DSN: project setting > env var > default.
+	String ps_dsn = ProjectSettings::get_singleton()->get_setting("sentry/options/dsn", p_options->dsn);
+	if (ps_dsn != p_options->dsn) {
+		p_options->set_dsn(ps_dsn);
+	} else {
+		String env_dsn = OS::get_singleton()->get_environment("SENTRY_DSN");
+		if (!env_dsn.is_empty()) {
+			p_options->set_dsn(env_dsn);
+		}
+	}
+
+	// Release: project setting > env var > default.
+	String ps_release = ProjectSettings::get_singleton()->get_setting("sentry/options/release", p_options->release);
+	if (ps_release != p_options->release) {
+		p_options->set_release(ps_release);
+	} else {
+		String env_release = OS::get_singleton()->get_environment("SENTRY_RELEASE");
+		if (!env_release.is_empty()) {
+			p_options->set_release(env_release);
+		} else {
+			// Apply format substitution on the default value.
+			p_options->set_release(p_options->release);
+		}
+	}
+
 	p_options->dist = ProjectSettings::get_singleton()->get_setting("sentry/options/dist", p_options->dist);
-	p_options->set_environment(ProjectSettings::get_singleton()->get_setting("sentry/options/environment", p_options->environment));
+
+	// Environment: project setting > env var > default.
+	String ps_environment = ProjectSettings::get_singleton()->get_setting("sentry/options/environment", p_options->environment);
+	if (ps_environment != p_options->environment) {
+		p_options->set_environment(ps_environment);
+	} else {
+		String env_environment = OS::get_singleton()->get_environment("SENTRY_ENVIRONMENT");
+		if (!env_environment.is_empty()) {
+			p_options->set_environment(env_environment);
+		} else {
+			// Apply format substitution on the default value.
+			p_options->set_environment(p_options->environment);
+		}
+	}
 
 	// DebugMode is only used to represent the debug option in the project settings.
 	// The user may also set the `debug` option explicitly in a configuration callback.
@@ -155,6 +198,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/sample_rate", p_options->sample_rate);
 	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/options/max_breadcrumbs", p_options->max_breadcrumbs);
+	p_options->shutdown_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/shutdown_timeout_ms", p_options->shutdown_timeout_ms);
 	p_options->send_default_pii = ProjectSettings::get_singleton()->get_setting("sentry/options/send_default_pii", p_options->send_default_pii);
 
 	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
@@ -179,6 +223,8 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/experimental/screenshot_level", p_options->screenshot_level);
+
+	p_options->get_experimental()->enable_metrics = ProjectSettings::get_singleton()->get_setting("sentry/experimental/enable_metrics", p_options->get_experimental()->enable_metrics);
 }
 
 void SentryOptions::_init_debug_option(DebugMode p_mode) {
@@ -231,6 +277,12 @@ void SentryOptions::remove_event_processor(const Ref<SentryEventProcessor> &p_pr
 	event_processors.erase(p_processor);
 }
 
+void SentryOptions::add_default_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Internal Error: Can't add null default attachment.");
+	ERR_FAIL_COND_MSG(p_attachment->get_path().is_empty(), "Sentry: Internal Error: Default attachments must be file-based (bytes attachments are not allowed).");
+	default_attachments.append(p_attachment);
+}
+
 void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dsn"), set_dsn, get_dsn);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "release"), set_release, get_release);
@@ -240,6 +292,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "environment"), set_environment, get_environment);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "sample_rate"), set_sample_rate, get_sample_rate);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "max_breadcrumbs"), set_max_breadcrumbs, get_max_breadcrumbs);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "shutdown_timeout_ms", PROPERTY_HINT_RANGE, "0,30000"), set_shutdown_timeout_ms, get_shutdown_timeout_ms);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "send_default_pii"), set_send_default_pii, is_send_default_pii_enabled);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_log"), set_attach_log, is_attach_log_enabled);
