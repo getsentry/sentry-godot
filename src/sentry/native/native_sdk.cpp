@@ -181,12 +181,6 @@ void NativeSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	sentry_set_context(p_key.utf8(), sentry::native::variant_to_sentry_value(p_value));
 }
 
-void NativeSDK::merge_context(const String &p_key, const Dictionary &p_value) {
-	// Not implemented: On native we build the full context ourselves via set_context().
-	// If merge_context support is needed in the future, this will likely require upstream changes.
-	ERR_PRINT("Not implemented on native platforms.");
-}
-
 void NativeSDK::remove_context(const String &p_key) {
 	ERR_FAIL_COND(p_key.is_empty());
 	sentry_remove_context(p_key.utf8());

@@ -276,31 +276,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun mergeContext(key: String, value: Dictionary) {
-        val scope = Sentry.getGlobalScope()
-        val existing = scope.contexts[key]
-        if (existing is JsonUnknown) {
-            // Typed protocol object (Device, OperatingSystem, etc.).
-            val unknown = existing.unknown?.toMutableMap() ?: mutableMapOf()
-            for ((k, v) in value) {
-                unknown[k] = v
-            }
-            existing.unknown = unknown
-        } else {
-            val existingMap = existing as? Map<*, *>
-            existingMap?.let {
-                for ((k, v) in it) {
-                    val kStr = k as? String ?: continue
-                    if (!value.containsKey(kStr)) {
-                        value[kStr] = v
-                    }
-                }
-            }
-            scope.setContexts(key, value)
-        }
-    }
-
-    @UsedByGodot
     fun removeContext(key: String) {
         Sentry.getGlobalScope().removeContexts(key)
     }

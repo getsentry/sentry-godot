@@ -19,7 +19,6 @@ AndroidStringNames::AndroidStringNames() {
 	close = StringName("close");
 	isEnabled = StringName("isEnabled");
 	setContext = StringName("setContext");
-	mergeContext = StringName("mergeContext");
 	removeContext = StringName("removeContext");
 	setTag = StringName("setTag");
 	removeTag = StringName("removeTag");
