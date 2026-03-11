@@ -5,6 +5,7 @@ import io.sentry.Attachment
 import io.sentry.Breadcrumb
 import io.sentry.Hint
 import io.sentry.ISerializer
+import io.sentry.JsonUnknown
 import io.sentry.Sentry
 import io.sentry.SentryAttributes
 import io.sentry.SentryEvent
@@ -25,14 +26,14 @@ import io.sentry.protocol.SentryStackFrame
 import io.sentry.protocol.SentryStackTrace
 import io.sentry.protocol.SentryThread
 import io.sentry.protocol.User
+import java.io.File
+import java.io.StringWriter
+import kotlin.random.Random
 import org.godotengine.godot.Dictionary
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.UsedByGodot
 import org.godotengine.godot.variant.Callable
-import java.io.File
-import java.io.StringWriter
-import kotlin.random.Random
 
 
 @Suppress("unused")
@@ -277,17 +278,26 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun mergeContext(key: String, value: Dictionary) {
         val scope = Sentry.getGlobalScope()
-        val existing = scope.contexts[key] as? Map<*, *>
-        existing?.let {
-            // Merge old context data into new value for keys not already present.
-            for ((k, v) in it) {
-                val kStr = k as? String ?: continue
-                if (!value.containsKey(kStr)) {
-                    value[kStr] = v
+        val existing = scope.contexts[key]
+        if (existing is JsonUnknown) {
+            // Typed protocol object (Device, OperatingSystem, etc.).
+            val unknown = existing.unknown?.toMutableMap() ?: mutableMapOf()
+            for ((k, v) in value) {
+                unknown[k] = v
+            }
+            existing.unknown = unknown
+        } else {
+            val existingMap = existing as? Map<*, *>
+            existingMap?.let {
+                for ((k, v) in it) {
+                    val kStr = k as? String ?: continue
+                    if (!value.containsKey(kStr)) {
+                        value[kStr] = v
+                    }
                 }
             }
+            scope.setContexts(key, value)
         }
-        scope.setContexts(key, value)
     }
 
     @UsedByGodot
@@ -538,6 +548,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         if (existingContext is Dictionary) {
             // Fast path: merge Dictionary directly.
             existingContext.putAll(value)
+        } else if (existingContext is JsonUnknown) {
+            // Typed protocol object (Device, OperatingSystem, etc.).
+            val unknown = existingContext.unknown?.toMutableMap() ?: mutableMapOf()
+            for ((k, v) in value) {
+                unknown[k] = v
+            }
+            existingContext.unknown = unknown
         } else {
             val existingMap = existingContext as? Map<*, *>
             existingMap?.let {
@@ -552,7 +569,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             }
             event.contexts[key] = value
         }
-
     }
 
     @UsedByGodot
