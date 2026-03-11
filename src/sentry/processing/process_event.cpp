@@ -40,6 +40,13 @@ Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 		}
 	}
 
+	// Patch device_type into the device context on Apple platforms.
+	// The Cocoa SDK owns the device context and doesn't expose a public API to merge into it,
+	// so we inject device_type per-event here. This covers both crash and non-crash events.
+#if defined(SDK_COCOA)
+	event->merge_context("device", sentry::contexts::make_device_context_patch());
+#endif
+
 	// Event processors
 	for (const Ref<SentryEventProcessor> &processor : SENTRY_OPTIONS()->get_event_processors()) {
 		event = processor->process_event(event);
