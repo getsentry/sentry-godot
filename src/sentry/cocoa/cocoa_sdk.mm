@@ -63,13 +63,7 @@ void CocoaSDK::set_context(const String &p_key, const Dictionary &p_value) {
 }
 
 void CocoaSDK::merge_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND(p_key.is_empty());
-	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
-		NSDictionary *existing = [scope getContextForKey:string_to_objc(p_key)];
-		NSMutableDictionary *merged = existing ? [existing mutableCopy] : [NSMutableDictionary new];
-		[merged addEntriesFromDictionary:dictionary_to_objc(p_value)];
-		[scope setContextValue:merged forKey:string_to_objc(p_key)];
-	}];
+	ERR_PRINT("Not implemented on Cocoa.");
 }
 
 void CocoaSDK::remove_context(const String &p_key) {
