@@ -175,6 +175,18 @@ bool _detect_bazzite(const HashMap<String, String> &p_os_release) {
 	return false;
 }
 
+String _read_kernel_version() {
+#ifdef WINDOWS_ENABLED
+	Ref<FileAccess> f = FileAccess::open("Z:/proc/sys/kernel/osrelease", FileAccess::READ);
+#else
+	Ref<FileAccess> f = FileAccess::open("/proc/sys/kernel/osrelease", FileAccess::READ);
+#endif
+	if (!f.is_valid()) {
+		return String();
+	}
+	return f->get_line().strip_edges();
+}
+
 bool _detect_steam() {
 	String steam_app_id = OS::get_singleton()->get_environment("SteamAppId");
 	String steam_game_id = OS::get_singleton()->get_environment("SteamGameId");
@@ -201,6 +213,13 @@ const PlatformInfo &detect_platform() {
 		cached_info.is_steamos = _detect_steamos(os_release);
 		cached_info.is_bazzite = _detect_bazzite(os_release);
 		cached_info.is_steam = _detect_steam();
+#ifdef LINUX_ENABLED
+		cached_info.kernel_version = _read_kernel_version();
+#elif defined(WINDOWS_ENABLED)
+		if (cached_info.wine_proton.is_wine) {
+			cached_info.kernel_version = _read_kernel_version();
+		}
+#endif
 
 		// Populate DistroInfo.
 		if (os_release.has("PRETTY_NAME")) {

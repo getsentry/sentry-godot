@@ -31,6 +31,7 @@ struct DistroInfo {
 struct PlatformInfo {
 	WineProtonInfo wine_proton;
 	DistroInfo distro;
+	String kernel_version;
 	bool is_steamos = false;
 	bool is_bazzite = false;
 	bool is_steam = false;

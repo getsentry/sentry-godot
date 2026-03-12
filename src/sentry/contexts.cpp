@@ -358,6 +358,9 @@ Dictionary make_os_context_override() {
 		if (!distro.update_branch.is_empty()) {
 			os_context["update_branch"] = distro.update_branch;
 		}
+		if (!info.kernel_version.is_empty()) {
+			os_context["kernel_version"] = info.kernel_version;
+		}
 	}
 
 #endif // SDK_NATIVE
