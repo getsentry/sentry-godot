@@ -113,7 +113,7 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 HashMap<String, String> _parse_os_release() {
 	HashMap<String, String> fields;
 
-#if WINDOWS_ENABLED
+#ifdef WINDOWS_ENABLED
 	// Under Wine/Proton, Z:\ maps to the host root.
 	Ref<FileAccess> f = FileAccess::open("Z:/etc/os-release", FileAccess::READ);
 #else
