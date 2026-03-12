@@ -46,7 +46,7 @@ void _parse_wine_version(const String &p_version, sentry::native::WineProtonInfo
 }
 
 sentry::native::WineProtonInfo _detect_wine_proton() {
-	// NOTE: Adapted from Unreal SDK implemntation.
+	// NOTE: Adapted from Unreal SDK implementation.
 
 	sentry::native::WineProtonInfo info;
 
