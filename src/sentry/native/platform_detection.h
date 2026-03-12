@@ -9,8 +9,7 @@ namespace sentry::native {
 struct WineProtonInfo {
 	bool is_wine = false;
 	bool is_proton = false;
-	String version; // "9.0", "9.0-4"
-	String build_id; // "???"
+	String version; // "9.0", "10.0"
 	String runtime_name; // "Wine", "Proton", "Proton-GE"
 };
 

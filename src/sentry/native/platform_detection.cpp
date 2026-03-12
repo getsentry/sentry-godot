@@ -57,8 +57,6 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 #endif
 		wine_get_version_t wine_get_version =
 				reinterpret_cast<wine_get_version_t>(GetProcAddress(h_ntdll, "wine_get_version"));
-		wine_get_version_t wine_get_build_id =
-				reinterpret_cast<wine_get_version_t>(GetProcAddress(h_ntdll, "wine_get_build_id"));
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -70,11 +68,6 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 			_parse_wine_version(info.version, info);
 
 			sentry::logging::print_debug("Detected Wine version: ", info.version);
-		}
-
-		if (wine_get_build_id != nullptr) {
-			info.build_id = String::utf8(wine_get_build_id());
-			sentry::logging::print_debug("Wine build ID: ", info.build_id);
 		}
 	}
 
