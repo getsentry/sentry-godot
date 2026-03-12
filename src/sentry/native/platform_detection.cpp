@@ -123,8 +123,11 @@ HashMap<String, String> _parse_os_release() {
 		f = FileAccess::open("Z:/etc/os-release", FileAccess::READ);
 	}
 #else
-	// On native Linux, read directly.
-	Ref<FileAccess> f = FileAccess::open("/etc/os-release", FileAccess::READ);
+	// On native Linux, prefer host os-release (in case of Steam Runtime container).
+	Ref<FileAccess> f = FileAccess::open("/run/host/etc/os-release", FileAccess::READ);
+	if (!f.is_valid()) {
+		f = FileAccess::open("/etc/os-release", FileAccess::READ);
+	}
 #endif
 	if (!f.is_valid()) {
 		return fields;
