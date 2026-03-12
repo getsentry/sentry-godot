@@ -101,6 +101,7 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 		String proton_version = OS::get_singleton()->get_environment("PROTON_VERSION");
 		if (!proton_version.is_empty()) {
 			info.proton_version = proton_version;
+			sentry::logging::print_debug("Detected Proton version: ", proton_version);
 		}
 	}
 
