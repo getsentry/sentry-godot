@@ -14,6 +14,10 @@
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/time.hpp>
 
+#ifdef SDK_NATIVE
+#include "sentry/native/platform_detection.h"
+#endif
+
 #ifdef LINUX_ENABLED
 #include <limits.h>
 #include <unistd.h>
@@ -308,6 +312,74 @@ Dictionary make_display_context() {
 
 	display_context["screens"] = screen_list;
 	return display_context;
+}
+
+Dictionary make_os_context_override() {
+	Dictionary os_context;
+
+#ifdef SDK_NATIVE
+	const auto &info = sentry::native::detect_platform();
+	bool should_override = false;
+	if (info.wine_proton.is_wine) {
+		// Windows build running under Wine/Proton - override "Windows" with Linux distro info.
+		should_override = true;
+	}
+#ifdef LINUX_ENABLED
+	// On Linux, use our rich distro detection.
+	should_override = true;
+#endif
+
+	if (should_override) {
+		const auto &distro = info.distro;
+		if (!distro.name.is_empty()) {
+			os_context["name"] = distro.name;
+		} else if (info.is_steamos) {
+			os_context["name"] = "SteamOS";
+		} else if (info.is_bazzite) {
+			os_context["name"] = "Bazzite";
+		} else {
+			os_context["name"] = "Linux";
+		}
+		if (!distro.version.is_empty()) {
+			os_context["version"] = distro.version;
+		}
+		if (!distro.codename.is_empty()) {
+			os_context["codename"] = distro.codename;
+		}
+		if (!distro.build.is_empty()) {
+			os_context["build"] = distro.build;
+		}
+		if (!distro.variant.is_empty()) {
+			os_context["variant"] = distro.variant;
+		}
+		if (!distro.image_id.is_empty()) {
+			os_context["image_id"] = distro.image_id;
+		}
+		if (!distro.update_branch.is_empty()) {
+			os_context["update_branch"] = distro.update_branch;
+		}
+	}
+
+#endif // SDK_NATIVE
+
+	return os_context;
+}
+
+Dictionary make_runtime_context() {
+	Dictionary runtime_context;
+
+#ifdef SDK_NATIVE
+	const auto &info = sentry::native::detect_platform();
+	if (info.wine_proton.is_wine) {
+		runtime_context["name"] = info.wine_proton.is_proton ? "Proton" : "Wine";
+		String version = info.wine_proton.get_version();
+		if (!version.is_empty()) {
+			runtime_context["version"] = version;
+		}
+	}
+#endif // SDK_NATIVE
+
+	return runtime_context;
 }
 
 Dictionary make_godot_engine_context() {
