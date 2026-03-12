@@ -15,10 +15,12 @@ namespace {
 #ifdef WINDOWS_ENABLED
 void _parse_wine_version(const String &p_version, sentry::native::WineProtonInfo &r_info) {
 	// Wine versions typically look like:
-	// - "9.0" (standard Wine)
-	// - "8.0-3" (Proton)
+	// - "9.0" (standard Wine or Proton Experimental)
+	// - "9.0-4" (Proton)
 	// - "7.0-rc1" (Wine release candidate)
-	// - "8.0-GE" (Proton-GE)
+	// - "9.0-GE" (Proton-GE)
+
+	r_info.runtime_name = "Wine";
 
 	int dash_pos = p_version.find("-");
 	if (dash_pos < 0) {
@@ -30,30 +32,24 @@ void _parse_wine_version(const String &p_version, sentry::native::WineProtonInfo
 		return;
 	}
 
-	// Check if the part after dash is numeric (Proton style) or GE build.
-	if (suffix.is_valid_int() || suffix.to_lower() == "ge") {
-		// TODO: Not sure we can reliably detect Proton based on number heuristics - need to verify this.
+	// Detect Proton or Proton-GE from Wine version suffix pattern.
+	if (suffix.to_lower().begins_with("ge")) {
 		r_info.is_proton = true;
-
-		if (r_info.proton_version.is_empty()) {
-			if (suffix.to_lower() == "ge") {
-				r_info.proton_version = "Proton-GE " + p_version;
-			} else {
-				r_info.proton_version = "Proton " + p_version;
-			}
-		}
+		r_info.runtime_name = "Proton-GE";
+	} else if (suffix.is_valid_int()) {
+		r_info.is_proton = true;
+		r_info.runtime_name = "Proton";
+	} else {
+		r_info.runtime_name = "Wine";
 	}
 }
 
 sentry::native::WineProtonInfo _detect_wine_proton() {
-	// NOTE: Adapted from Unreal SDK implementation.
-
 	sentry::native::WineProtonInfo info;
 
-	// Detect Wine from ntdll.dll.
+	// Detect Wine via wine_get_version and wine_get_build_id exports from ntdll.dll.
 	HMODULE h_ntdll = GetModuleHandleW(L"ntdll.dll");
 	if (h_ntdll != nullptr) {
-		// wine_get_version is exported by Wine's ntdll.
 		typedef const char *(CDECL * wine_get_version_t)(void);
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -61,6 +57,8 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 #endif
 		wine_get_version_t wine_get_version =
 				reinterpret_cast<wine_get_version_t>(GetProcAddress(h_ntdll, "wine_get_version"));
+		wine_get_version_t wine_get_build_id =
+				reinterpret_cast<wine_get_version_t>(GetProcAddress(h_ntdll, "wine_get_build_id"));
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -68,41 +66,29 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 		if (wine_get_version != nullptr) {
 			const char *version = wine_get_version();
 			info.is_wine = true;
-			info.wine_version = String::utf8(version);
-			_parse_wine_version(info.wine_version, info);
+			info.version = String::utf8(version);
+			_parse_wine_version(info.version, info);
 
-			sentry::logging::print_debug("Detected Wine version: ", info.wine_version);
+			sentry::logging::print_debug("Detected Wine version: ", info.version);
+		}
+
+		if (wine_get_build_id != nullptr) {
+			info.build_id = String::utf8(wine_get_build_id());
+			sentry::logging::print_debug("Wine build ID: ", info.build_id);
 		}
 	}
 
-	// Fallback: Detect Wine from environment variables.
-	if (!info.is_wine) {
-		String wine_version = OS::get_singleton()->get_environment("WINE_VERSION");
-		if (!wine_version.is_empty()) {
-			info.is_wine = true;
-			info.wine_version = wine_version;
-			_parse_wine_version(info.wine_version, info);
-
-			sentry::logging::print_debug("Detected Wine/Proton via WINE_VERSION environment variable: ", wine_version);
-		}
-	}
-
-	// Detect Proton from expected environment variables.
+	// Detect Proton from Steam compatibility environment variables.
 	if (info.is_wine) {
 		String steam_compat_path = OS::get_singleton()->get_environment("STEAM_COMPAT_DATA_PATH");
 		String steam_compat_install = OS::get_singleton()->get_environment("STEAM_COMPAT_CLIENT_INSTALL_PATH");
 
 		if (!steam_compat_path.is_empty() || !steam_compat_install.is_empty()) {
 			info.is_proton = true;
+			if (info.runtime_name == "Wine") {
+				info.runtime_name = "Proton";
+			}
 			sentry::logging::print_debug("Detected Proton environment.");
-		}
-
-		// Try to get Proton build name from PROTON_VERSION environment variable.
-		String proton_version = OS::get_singleton()->get_environment("PROTON_VERSION");
-		if (!proton_version.is_empty()) {
-			info.is_proton = true;
-			info.proton_version = proton_version;
-			sentry::logging::print_debug("Detected Proton version: ", proton_version);
 		}
 	}
 

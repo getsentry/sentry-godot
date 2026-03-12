@@ -9,12 +9,9 @@ namespace sentry::native {
 struct WineProtonInfo {
 	bool is_wine = false;
 	bool is_proton = false;
-	String wine_version; // "9.0", "8.0-3"
-	String proton_version; // "Proton 8.0", "Proton Experimental"
-
-	String get_version() const {
-		return is_proton && !proton_version.is_empty() ? proton_version : wine_version;
-	}
+	String version; // "9.0", "9.0-4"
+	String build_id; // "???"
+	String runtime_name; // "Wine", "Proton", "Proton-GE"
 };
 
 struct DistroInfo {
