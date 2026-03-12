@@ -299,13 +299,6 @@ void SentrySDK::_init_contexts() {
 
 		// Tags.
 		const auto &platform_info = sentry::native::detect_platform();
-		if (platform_info.wine_proton.is_wine) {
-			internal_sdk->set_tag("compatibility",
-					platform_info.wine_proton.runtime_name.to_lower());
-			if (!platform_info.wine_proton.version.is_empty()) {
-				internal_sdk->set_tag("wine_version", platform_info.wine_proton.version);
-			}
-		}
 		if (platform_info.is_steam) {
 			internal_sdk->set_tag("steam", "true");
 		}
