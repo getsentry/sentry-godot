@@ -361,14 +361,8 @@ Dictionary make_os_context_override() {
 		}
 
 		// Extended fields.
-		if (!distro.codename.is_empty()) {
-			os_context["codename"] = distro.codename;
-		}
 		if (!distro.variant.is_empty()) {
 			os_context["variant"] = distro.variant;
-		}
-		if (!distro.image_id.is_empty()) {
-			os_context["image_id"] = distro.image_id;
 		}
 		if (!distro.update_branch.is_empty()) {
 			os_context["update_branch"] = distro.update_branch;

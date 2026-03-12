@@ -21,10 +21,8 @@ struct DistroInfo {
 	String name; // "SteamOS", "Bazzite"
 	String pretty_name; // "Ubuntu 24.04.3 LTS"
 	String version; // "3.7.17", "43.20260303.0 (Kinoite)", "24.04.4 LTS (Noble Numbat)"
-	String codename; // "holo", "Kinoite"
 	String build; // "20251027.1", "Stable (F43.20260303)"
 	String variant; // "steamdeck", "bazzite-deck"
-	String image_id; // "bazzite-deck-43.20260303"
 	String update_branch; // "stable", "beta"
 };
 
