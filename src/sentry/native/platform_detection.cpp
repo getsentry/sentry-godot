@@ -225,10 +225,10 @@ const PlatformInfo &detect_platform() {
 		if (os_release.has("NAME")) {
 			cached_info.distro.name = os_release["NAME"];
 		}
-
-		if (os_release.has("VERSION")) {
-			cached_info.distro.version = os_release["VERSION"];
-		} else if (os_release.has("VERSION_ID")) {
+		if (os_release.has("PRETTY_NAME")) {
+			cached_info.distro.pretty_name = os_release["PRETTY_NAME"];
+		}
+		if (os_release.has("VERSION_ID")) {
 			cached_info.distro.version = os_release["VERSION_ID"];
 		}
 

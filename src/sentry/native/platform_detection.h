@@ -20,6 +20,7 @@ struct WineProtonInfo {
 
 struct DistroInfo {
 	String name; // "SteamOS", "Bazzite"
+	String pretty_name; // "Ubuntu 24.04.3 LTS"
 	String version; // "3.7.17", "43.20260303.0 (Kinoite)"
 	String codename; // "holo", "Kinoite"
 	String build; // "20251027.1", "Stable (F43.20260303)"
