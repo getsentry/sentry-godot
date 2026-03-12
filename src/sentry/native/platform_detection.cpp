@@ -203,43 +203,41 @@ const PlatformInfo &detect_platform() {
 		cached_info.is_steam = _detect_steam();
 
 		// Populate DistroInfo.
-		if (cached_info.is_steamos || cached_info.is_bazzite) {
-			if (os_release.has("PRETTY_NAME")) {
-				cached_info.distro.name = os_release["PRETTY_NAME"];
-			} else if (os_release.has("NAME")) {
-				cached_info.distro.name = os_release["NAME"];
-			}
+		if (os_release.has("PRETTY_NAME")) {
+			cached_info.distro.name = os_release["PRETTY_NAME"];
+		} else if (os_release.has("NAME")) {
+			cached_info.distro.name = os_release["NAME"];
+		}
 
-			if (os_release.has("VERSION")) {
-				cached_info.distro.version = os_release["VERSION"];
-			} else if (os_release.has("VERSION_ID")) {
-				cached_info.distro.version = os_release["VERSION_ID"];
-			}
+		if (os_release.has("VERSION")) {
+			cached_info.distro.version = os_release["VERSION"];
+		} else if (os_release.has("VERSION_ID")) {
+			cached_info.distro.version = os_release["VERSION_ID"];
+		}
 
-			if (os_release.has("VERSION_CODENAME")) {
-				cached_info.distro.codename = os_release["VERSION_CODENAME"];
-			}
+		if (os_release.has("VERSION_CODENAME")) {
+			cached_info.distro.codename = os_release["VERSION_CODENAME"];
+		}
 
-			if (os_release.has("BUILD_ID")) {
-				cached_info.distro.build = os_release["BUILD_ID"];
-			}
+		if (os_release.has("BUILD_ID")) {
+			cached_info.distro.build = os_release["BUILD_ID"];
+		}
 
-			if (os_release.has("VARIANT_ID")) {
-				cached_info.distro.variant = os_release["VARIANT_ID"];
-			}
+		if (os_release.has("VARIANT_ID")) {
+			cached_info.distro.variant = os_release["VARIANT_ID"];
+		}
 
-			if (os_release.has("IMAGE_ID")) {
-				cached_info.distro.image_id = os_release["IMAGE_ID"];
-			}
+		if (os_release.has("IMAGE_ID")) {
+			cached_info.distro.image_id = os_release["IMAGE_ID"];
+		}
 
-			// Update/release branch:
-			// - SteamOS uses STEAMOS_DEFAULT_UPDATE_BRANCH
-			// - Bazzite uses RELEASE_TYPE
-			if (os_release.has("STEAMOS_DEFAULT_UPDATE_BRANCH")) {
-				cached_info.distro.update_branch = os_release["STEAMOS_DEFAULT_UPDATE_BRANCH"];
-			} else if (os_release.has("RELEASE_TYPE")) {
-				cached_info.distro.update_branch = os_release["RELEASE_TYPE"];
-			}
+		// Update/release branch:
+		// - SteamOS uses STEAMOS_DEFAULT_UPDATE_BRANCH
+		// - Bazzite uses RELEASE_TYPE
+		if (os_release.has("STEAMOS_DEFAULT_UPDATE_BRANCH")) {
+			cached_info.distro.update_branch = os_release["STEAMOS_DEFAULT_UPDATE_BRANCH"];
+		} else if (os_release.has("RELEASE_TYPE")) {
+			cached_info.distro.update_branch = os_release["RELEASE_TYPE"];
 		}
 	}
 	return cached_info;
