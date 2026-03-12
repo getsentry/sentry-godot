@@ -13,10 +13,84 @@
 namespace {
 
 #ifdef WINDOWS_ENABLED
+
+// Reads the precise Proton version from the filesystem.
+// Approach: STEAM_COMPAT_DATA_PATH/config_info contains paths to the Proton install directory.
+// The Proton install directory contains a "version" file with format: "<timestamp> <git-tag>".
+void _read_proton_version(const String &p_steam_compat_path, sentry::native::WineProtonInfo &r_info) {
+	if (p_steam_compat_path.is_empty()) {
+		return;
+	}
+
+	// Read config_info to find the Proton install directory.
+	Ref<FileAccess> f = FileAccess::open("Z:" + p_steam_compat_path + "/config_info", FileAccess::READ);
+	if (!f.is_valid()) {
+		return;
+	}
+
+	f->get_line(); // Skip line 1 (CURRENT_PREFIX_VERSION).
+	String fonts_dir = f->get_line().strip_edges(); // Line 2: Proton fonts directory path.
+	f.unref();
+
+	// Extract Proton root by stripping the known suffix.
+	// Modern Proton uses "files/", older versions used "dist/".
+	String proton_root;
+	if (fonts_dir.ends_with("/files/share/fonts/")) {
+		proton_root = fonts_dir.trim_suffix("/files/share/fonts/");
+	} else if (fonts_dir.ends_with("/dist/share/fonts/")) {
+		proton_root = fonts_dir.trim_suffix("/dist/share/fonts/");
+	} else {
+		sentry::logging::print_debug("Unexpected config_info fonts path: ", fonts_dir);
+		return;
+	}
+
+	// Read the version file from the compatibility tool install directory.
+	Ref<FileAccess> vf = FileAccess::open("Z:" + proton_root + "/version", FileAccess::READ);
+	if (!vf.is_valid()) {
+		return;
+	}
+	String version_line = vf->get_line().strip_edges();
+	vf.unref();
+
+	// Format: "<timestamp> <git-tag>", e.g., "1769167055 proton-10.0-4".
+	String git_tag = version_line.get_slice(" ", 1).strip_edges();
+	if (git_tag.is_empty()) {
+		return;
+	}
+
+	// If this is a Proton-like tool (contains "proton" script),
+	// determine the runtime name and version.
+	if (FileAccess::file_exists("Z:" + proton_root + "/proton")) {
+		r_info.is_proton = true;
+		if (git_tag.begins_with("proton-")) {
+			// proton-10.0-4 -> "Proton" "10.0-4"
+			r_info.runtime_name = "Proton";
+			r_info.version = git_tag.trim_prefix("proton-");
+		} else if (git_tag.begins_with("experimental-")) {
+			// experimental-10.0-20260113 -> "Proton Experimental" "10.0-20260113"
+			r_info.runtime_name = "Proton Experimental";
+			r_info.version = git_tag.trim_prefix("experimental-");
+		} else if (git_tag.begins_with("GE-Proton")) {
+			// GE-Proton9-27 -> "GE-Proton" "9-27"
+			r_info.runtime_name = "GE-Proton";
+			r_info.version = git_tag.trim_prefix("GE-Proton");
+		} else {
+			// Unknown Proton-like tool -> use directory name.
+			r_info.runtime_name = proton_root.get_file();
+			r_info.version = git_tag;
+		}
+	} else {
+		// Wine-like tool: tag might still be more informative.
+		r_info.version = git_tag;
+	}
+
+	sentry::logging::print_debug("Proton version detected from version file: ", r_info.runtime_name, " ", r_info.version);
+}
+
 sentry::native::WineProtonInfo _detect_wine_proton() {
 	sentry::native::WineProtonInfo info;
 
-	// Detect Wine via wine_get_version and wine_get_build_id exports from ntdll.dll.
+	// Detect Wine via wine_get_version export from ntdll.dll.
 	HMODULE h_ntdll = GetModuleHandleW(L"ntdll.dll");
 	if (h_ntdll != nullptr) {
 		typedef const char *(CDECL * wine_get_version_t)(void);
@@ -49,11 +123,11 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 		String steam_compat_install = OS::get_singleton()->get_environment("STEAM_COMPAT_CLIENT_INSTALL_PATH");
 
 		if (!steam_compat_path.is_empty() || !steam_compat_install.is_empty()) {
-			info.is_proton = true;
-			if (info.runtime_name == "Wine") {
-				info.runtime_name = "Proton";
-			}
-			sentry::logging::print_debug("Detected Proton environment.");
+			sentry::logging::print_debug("Detected Steam compatibility environment.");
+			// Try to read precise Proton version from filesystem.
+			// Proton writes config_info which contains paths embedding the install directory.
+			// From there, we can read the version file with the exact git tag (e.g. "proton-9.0-4").
+			_read_proton_version(steam_compat_path, info);
 		}
 	}
 
