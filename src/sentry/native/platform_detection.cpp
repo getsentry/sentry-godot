@@ -101,7 +101,6 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 		String proton_version = OS::get_singleton()->get_environment("PROTON_VERSION");
 		if (!proton_version.is_empty()) {
 			info.proton_version = proton_version;
-			info.is_experimental = proton_version.contains("Experimental");
 		}
 	}
 
@@ -206,20 +205,20 @@ const PlatformInfo &detect_platform() {
 	if (first_run) {
 		first_run = false;
 
-#ifdef WINDOWS_ENABLED
-		cached_info.wine_proton = _detect_wine_proton();
-#endif
-		HashMap<String, String> os_release = _parse_os_release();
-		cached_info.is_steamos = _detect_steamos(os_release);
-		cached_info.is_bazzite = _detect_bazzite(os_release);
-		cached_info.is_steam = _detect_steam();
+		HashMap<String, String> os_release;
 #ifdef LINUX_ENABLED
+		os_release = _parse_os_release();
 		cached_info.kernel_version = _read_kernel_version();
 #elif defined(WINDOWS_ENABLED)
+		cached_info.wine_proton = _detect_wine_proton();
 		if (cached_info.wine_proton.is_wine) {
+			os_release = _parse_os_release();
 			cached_info.kernel_version = _read_kernel_version();
 		}
 #endif
+		cached_info.is_steamos = _detect_steamos(os_release);
+		cached_info.is_bazzite = _detect_bazzite(os_release);
+		cached_info.is_steam = _detect_steam();
 
 		// Populate DistroInfo.
 		if (os_release.has("NAME")) {

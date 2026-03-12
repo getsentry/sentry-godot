@@ -11,7 +11,6 @@ struct WineProtonInfo {
 	bool is_proton = false;
 	String wine_version; // "9.0", "8.0-3"
 	String proton_version; // "Proton 8.0", "Proton Experimental"
-	bool is_experimental = false;
 
 	String get_version() const {
 		return is_proton && !proton_version.is_empty() ? proton_version : wine_version;
