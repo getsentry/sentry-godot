@@ -13,37 +13,6 @@
 namespace {
 
 #ifdef WINDOWS_ENABLED
-void _parse_wine_version(const String &p_version, sentry::native::WineProtonInfo &r_info) {
-	// Wine versions typically look like:
-	// - "9.0" (standard Wine or Proton Experimental)
-	// - "9.0-4" (Proton)
-	// - "7.0-rc1" (Wine release candidate)
-	// - "9.0-GE" (Proton-GE)
-
-	r_info.runtime_name = "Wine";
-
-	int dash_pos = p_version.find("-");
-	if (dash_pos < 0) {
-		return;
-	}
-
-	String suffix = p_version.substr(dash_pos + 1);
-	if (suffix.is_empty()) {
-		return;
-	}
-
-	// Detect Proton or Proton-GE from Wine version suffix pattern.
-	if (suffix.to_lower().begins_with("ge")) {
-		r_info.is_proton = true;
-		r_info.runtime_name = "Proton-GE";
-	} else if (suffix.is_valid_int()) {
-		r_info.is_proton = true;
-		r_info.runtime_name = "Proton";
-	} else {
-		r_info.runtime_name = "Wine";
-	}
-}
-
 sentry::native::WineProtonInfo _detect_wine_proton() {
 	sentry::native::WineProtonInfo info;
 
@@ -64,8 +33,8 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 		if (wine_get_version != nullptr) {
 			const char *version = wine_get_version();
 			info.is_wine = true;
+			info.runtime_name = "Wine";
 			info.version = String::utf8(version);
-			_parse_wine_version(info.version, info);
 
 			sentry::logging::print_debug("Detected Wine version: ", info.version);
 		}
