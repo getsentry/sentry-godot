@@ -222,9 +222,7 @@ const PlatformInfo &detect_platform() {
 #endif
 
 		// Populate DistroInfo.
-		if (os_release.has("PRETTY_NAME")) {
-			cached_info.distro.name = os_release["PRETTY_NAME"];
-		} else if (os_release.has("NAME")) {
+		if (os_release.has("NAME")) {
 			cached_info.distro.name = os_release["NAME"];
 		}
 
