@@ -32,6 +32,9 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 
 		if (wine_get_version != nullptr) {
 			const char *version = wine_get_version();
+			if (version == nullptr) {
+				version = "";
+			}
 			info.is_wine = true;
 			info.runtime_name = "Wine";
 			info.version = String::utf8(version);
