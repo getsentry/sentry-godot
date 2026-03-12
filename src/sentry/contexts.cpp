@@ -319,30 +319,45 @@ Dictionary make_os_context_override() {
 
 #ifdef SDK_NATIVE
 	const auto &info = sentry::native::detect_platform();
-	bool should_override = false;
-	if (info.wine_proton.is_wine) {
-		// Windows build running under Wine/Proton - override "Windows" with Linux distro info.
-		should_override = true;
-	}
-#ifdef LINUX_ENABLED
-	// On Linux, use our rich distro detection.
-	should_override = true;
-#endif
+	const auto &distro = info.distro;
+	bool prefer_distro_version = false;
 
-	if (should_override) {
-		const auto &distro = info.distro;
+	// Only override OS context when running SteamOS, Bazzite or in Wine/Proton.
+	if (info.is_steamos) {
+		os_context["name"] = "SteamOS";
+		prefer_distro_version = true;
+	} else if (info.is_bazzite) {
+		os_context["name"] = "Bazzite";
+		prefer_distro_version = true;
+	} else if (info.wine_proton.is_wine) {
+		// Windows build running on other Linux distro using Wine/Proton.
+		os_context["name"] = "Linux";
+		prefer_distro_version = false;
+	}
+
+	if (!os_context.is_empty()) {
+		// Spec fields.
+		String version = prefer_distro_version ? distro.version : info.kernel_version;
+		if (version.is_empty()) {
+			version = prefer_distro_version ? info.kernel_version : distro.version;
+		}
+		if (!version.is_empty()) {
+			os_context["version"] = version;
+		}
 		if (!distro.name.is_empty()) {
-			os_context["name"] = distro.name;
-		} else if (info.is_steamos) {
-			os_context["name"] = "SteamOS";
-		} else if (info.is_bazzite) {
-			os_context["name"] = "Bazzite";
-		} else {
-			os_context["name"] = "Linux";
+			os_context["distribution_name"] = distro.name;
 		}
 		if (!distro.version.is_empty()) {
-			os_context["version"] = distro.version;
+			os_context["distribution_version"] = distro.version;
 		}
+		if (!distro.pretty_name.is_empty()) {
+			os_context["distribution_pretty_name"] = distro.pretty_name;
+		}
+		if (!info.kernel_version.is_empty()) {
+			os_context["kernel_version"] = info.kernel_version;
+		}
+
+		// Extended fields.
 		if (!distro.codename.is_empty()) {
 			os_context["codename"] = distro.codename;
 		}
@@ -357,9 +372,6 @@ Dictionary make_os_context_override() {
 		}
 		if (!distro.update_branch.is_empty()) {
 			os_context["update_branch"] = distro.update_branch;
-		}
-		if (!info.kernel_version.is_empty()) {
-			os_context["kernel_version"] = info.kernel_version;
 		}
 	}
 
