@@ -344,6 +344,12 @@ Dictionary make_os_context_override() {
 		if (!version.is_empty()) {
 			os_context["version"] = version;
 		}
+		if (!distro.build.is_empty()) {
+			os_context["build"] = distro.build;
+		}
+		if (!info.kernel_version.is_empty()) {
+			os_context["kernel_version"] = info.kernel_version;
+		}
 		if (!distro.name.is_empty()) {
 			os_context["distribution_name"] = distro.name;
 		}
@@ -353,16 +359,10 @@ Dictionary make_os_context_override() {
 		if (!distro.pretty_name.is_empty()) {
 			os_context["distribution_pretty_name"] = distro.pretty_name;
 		}
-		if (!info.kernel_version.is_empty()) {
-			os_context["kernel_version"] = info.kernel_version;
-		}
 
 		// Extended fields.
 		if (!distro.codename.is_empty()) {
 			os_context["codename"] = distro.codename;
-		}
-		if (!distro.build.is_empty()) {
-			os_context["build"] = distro.build;
 		}
 		if (!distro.variant.is_empty()) {
 			os_context["variant"] = distro.variant;
