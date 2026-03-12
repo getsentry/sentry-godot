@@ -116,8 +116,12 @@ HashMap<String, String> _parse_os_release() {
 	HashMap<String, String> fields;
 
 #ifdef WINDOWS_ENABLED
-	// Under Wine/Proton, Z:\ maps to the host root.
-	Ref<FileAccess> f = FileAccess::open("Z:/etc/os-release", FileAccess::READ);
+	// Under Wine/Proton, Z:\ maps to the container/host root.
+	// Prefer /run/host/etc/os-release (host OS) over /etc/os-release (Steam Runtime container).
+	Ref<FileAccess> f = FileAccess::open("Z:/run/host/etc/os-release", FileAccess::READ);
+	if (!f.is_valid()) {
+		f = FileAccess::open("Z:/etc/os-release", FileAccess::READ);
+	}
 #else
 	// On native Linux, read directly.
 	Ref<FileAccess> f = FileAccess::open("/etc/os-release", FileAccess::READ);
