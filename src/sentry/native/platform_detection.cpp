@@ -39,7 +39,7 @@ void _parse_wine_version(const String &p_version, sentry::native::WineProtonInfo
 			if (suffix.to_lower() == "ge") {
 				r_info.proton_version = "Proton-GE " + p_version;
 			} else {
-				r_info.proton_version = "Proton " + p_version.substr(0, dash_pos);
+				r_info.proton_version = "Proton " + p_version;
 			}
 		}
 	}
