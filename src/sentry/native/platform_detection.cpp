@@ -128,6 +128,9 @@ HashMap<String, String> _parse_os_release() {
 
 	while (!f->eof_reached()) {
 		String line = f->get_line().strip_edges();
+		if (line.is_empty() || line.begins_with("#")) {
+			continue;
+		}
 		int eq_pos = line.find("=");
 		if (eq_pos < 0) {
 			continue;
