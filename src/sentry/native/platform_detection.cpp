@@ -219,14 +219,6 @@ bool _detect_steamos(const sentry::native::DistroInfo &p_distro) {
 		sentry::logging::print_debug("Detected SteamOS via os-release.");
 		return true;
 	}
-
-	// Fallback: Check environment variables.
-	String steamos_var = OS::get_singleton()->get_environment("SteamOS");
-	if (!steamos_var.is_empty()) {
-		sentry::logging::print_debug("Detected SteamOS via SteamOS environment variable.");
-		return true;
-	}
-
 	return false;
 }
 
@@ -235,7 +227,6 @@ bool _detect_bazzite(const sentry::native::DistroInfo &p_distro) {
 		sentry::logging::print_debug("Detected Bazzite via os-release");
 		return true;
 	}
-
 	return false;
 }
 
