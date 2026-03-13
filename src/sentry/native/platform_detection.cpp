@@ -116,7 +116,7 @@ void _detect_proton(const String &p_steam_compat_path, sentry::native::WineProto
 		r_info.version = git_tag;
 	}
 
-	sentry::logging::print_debug("Detected Proton version: ", r_info.runtime_name, " ", r_info.version);
+	sentry::logging::print_debug("Detected Steam compatibility tool: ", r_info.runtime_name, " ", r_info.version);
 }
 
 sentry::native::WineProtonInfo _detect_wine_proton() {
