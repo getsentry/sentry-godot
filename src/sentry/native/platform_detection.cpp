@@ -14,10 +14,39 @@ namespace {
 
 #ifdef WINDOWS_ENABLED
 
-// Reads the precise Proton version from the filesystem.
+void _detect_wine(sentry::native::WineProtonInfo &r_info) {
+	// Detect Wine via wine_get_version export from ntdll.dll.
+	HMODULE h_ntdll = GetModuleHandleW(L"ntdll.dll");
+	if (h_ntdll != nullptr) {
+		typedef const char *(CDECL * wine_get_version_t)(void);
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4191) // unsafe conversion from FARPROC
+#endif
+		wine_get_version_t wine_get_version =
+				reinterpret_cast<wine_get_version_t>(GetProcAddress(h_ntdll, "wine_get_version"));
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+		if (wine_get_version != nullptr) {
+			const char *version = wine_get_version();
+			if (version == nullptr) {
+				version = "";
+			}
+			r_info.is_wine = true;
+			r_info.runtime_name = "Wine";
+			r_info.version = String::utf8(version);
+
+			sentry::logging::print_debug("Detected Wine version: ", r_info.version);
+		}
+	}
+}
+
+// Detects the precise Proton version from the filesystem.
 // Approach: STEAM_COMPAT_DATA_PATH/config_info contains paths to the Proton install directory.
 // The Proton install directory contains a "version" file with format: "<timestamp> <git-tag>".
-void _read_proton_version(const String &p_steam_compat_path, sentry::native::WineProtonInfo &r_info) {
+void _detect_proton(const String &p_steam_compat_path, sentry::native::WineProtonInfo &r_info) {
 	if (p_steam_compat_path.is_empty()) {
 		return;
 	}
@@ -58,8 +87,7 @@ void _read_proton_version(const String &p_steam_compat_path, sentry::native::Win
 		return;
 	}
 
-	// If this is a Proton-like tool (contains "proton" script),
-	// determine the runtime name and version.
+	// Determine the runtime name and version.
 	if (FileAccess::file_exists("Z:" + proton_root + "/proton")) {
 		r_info.is_proton = true;
 		if (git_tag.begins_with("proton-")) {
@@ -84,7 +112,7 @@ void _read_proton_version(const String &p_steam_compat_path, sentry::native::Win
 			r_info.version = git_tag;
 		}
 	} else {
-		// Wine-like tool: tag might still be more informative.
+		// Other Wine-like tool: tag might still be more informative.
 		r_info.version = git_tag;
 	}
 
@@ -94,44 +122,13 @@ void _read_proton_version(const String &p_steam_compat_path, sentry::native::Win
 sentry::native::WineProtonInfo _detect_wine_proton() {
 	sentry::native::WineProtonInfo info;
 
-	// Detect Wine via wine_get_version export from ntdll.dll.
-	HMODULE h_ntdll = GetModuleHandleW(L"ntdll.dll");
-	if (h_ntdll != nullptr) {
-		typedef const char *(CDECL * wine_get_version_t)(void);
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4191) // unsafe conversion from FARPROC
-#endif
-		wine_get_version_t wine_get_version =
-				reinterpret_cast<wine_get_version_t>(GetProcAddress(h_ntdll, "wine_get_version"));
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+	_detect_wine(info);
 
-		if (wine_get_version != nullptr) {
-			const char *version = wine_get_version();
-			if (version == nullptr) {
-				version = "";
-			}
-			info.is_wine = true;
-			info.runtime_name = "Wine";
-			info.version = String::utf8(version);
-
-			sentry::logging::print_debug("Detected Wine version: ", info.version);
-		}
-	}
-
-	// Detect Proton from Steam compatibility environment variables.
 	if (info.is_wine) {
 		String steam_compat_path = OS::get_singleton()->get_environment("STEAM_COMPAT_DATA_PATH");
-		String steam_compat_install = OS::get_singleton()->get_environment("STEAM_COMPAT_CLIENT_INSTALL_PATH");
-
-		if (!steam_compat_path.is_empty() || !steam_compat_install.is_empty()) {
+		if (!steam_compat_path.is_empty()) {
 			sentry::logging::print_debug("Detected Steam compatibility environment.");
-			// Try to read precise Proton version from filesystem.
-			// Proton writes config_info which contains paths embedding the install directory.
-			// From there, we can read the version file with the exact git tag (e.g. "proton-9.0-4").
-			_read_proton_version(steam_compat_path, info);
+			_detect_proton(steam_compat_path, info);
 		}
 	}
 
@@ -139,10 +136,10 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 }
 #endif // WINDOWS_ENABLED
 
-// Parses /etc/os-release into a key-value map.
+// Parses /etc/os-release into a DistroInfo struct.
 // Format: KEY=VALUE or KEY="VALUE" (one per line).
-HashMap<String, String> _parse_os_release() {
-	HashMap<String, String> fields;
+sentry::native::DistroInfo _read_distro_info() {
+	sentry::native::DistroInfo distro;
 
 #ifdef WINDOWS_ENABLED
 	// Under Wine/Proton, Z:\ maps to the container/host root.
@@ -159,9 +156,11 @@ HashMap<String, String> _parse_os_release() {
 	}
 #endif
 	if (!f.is_valid()) {
-		return fields;
+		return distro;
 	}
 
+	// Parse os-release file.
+	HashMap<String, String> fields;
 	while (!f->eof_reached()) {
 		String line = f->get_line().strip_edges();
 		if (line.is_empty() || line.begins_with("#")) {
@@ -175,7 +174,7 @@ HashMap<String, String> _parse_os_release() {
 		String key = line.substr(0, eq_pos);
 		String value = line.substr(eq_pos + 1);
 
-		// Trim enclosing quotes or single quotes.
+		// Trim enclosing quotes.
 		if (value.length() >= 2 &&
 				((value.begins_with("\"") && value.ends_with("\"")) ||
 						(value.begins_with("'") && value.ends_with("'")))) {
@@ -185,30 +184,55 @@ HashMap<String, String> _parse_os_release() {
 		fields[key] = value;
 	}
 
-	return fields;
+	// Populate struct.
+	if (fields.has("NAME")) {
+		distro.name = fields["NAME"];
+	}
+	if (fields.has("PRETTY_NAME")) {
+		distro.pretty_name = fields["PRETTY_NAME"];
+	}
+	if (fields.has("VERSION")) {
+		distro.version = fields["VERSION"];
+	} else if (fields.has("VERSION_ID")) {
+		distro.version = fields["VERSION_ID"];
+	}
+	if (fields.has("BUILD_ID")) {
+		distro.build = fields["BUILD_ID"];
+	}
+	if (fields.has("VARIANT_ID")) {
+		distro.variant = fields["VARIANT_ID"];
+	}
+	// Update/release branch:
+	// - SteamOS uses STEAMOS_DEFAULT_UPDATE_BRANCH
+	// - Bazzite uses RELEASE_TYPE
+	if (fields.has("STEAMOS_DEFAULT_UPDATE_BRANCH")) {
+		distro.update_branch = fields["STEAMOS_DEFAULT_UPDATE_BRANCH"];
+	} else if (fields.has("RELEASE_TYPE")) {
+		distro.update_branch = fields["RELEASE_TYPE"];
+	}
+
+	return distro;
 }
 
-bool _detect_steamos(const HashMap<String, String> &p_os_release) {
-	// Primary: Check /etc/os-release.
-	if (p_os_release.has("ID") && p_os_release["ID"].to_lower() == "steamos") {
-		sentry::logging::print_debug("Detected SteamOS via /etc/os-release");
+bool _detect_steamos(const sentry::native::DistroInfo &p_distro) {
+	if (p_distro.name.to_lower() == "steamos") {
+		sentry::logging::print_debug("Detected SteamOS via os-release.");
 		return true;
 	}
 
 	// Fallback: Check environment variables.
 	String steamos_var = OS::get_singleton()->get_environment("SteamOS");
 	if (!steamos_var.is_empty()) {
-		sentry::logging::print_debug("Detected SteamOS via SteamOS environment variable");
+		sentry::logging::print_debug("Detected SteamOS via SteamOS environment variable.");
 		return true;
 	}
 
 	return false;
 }
 
-bool _detect_bazzite(const HashMap<String, String> &p_os_release) {
-	// Primary: Check /etc/os-release.
-	if (p_os_release.has("ID") && p_os_release["ID"].to_lower() == "bazzite") {
-		sentry::logging::print_debug("Detected Bazzite via /etc/os-release");
+bool _detect_bazzite(const sentry::native::DistroInfo &p_distro) {
+	if (p_distro.name.to_lower() == "bazzite") {
+		sentry::logging::print_debug("Detected Bazzite via os-release");
 		return true;
 	}
 
@@ -246,48 +270,22 @@ const PlatformInfo &detect_platform() {
 	if (first_run) {
 		first_run = false;
 
-		HashMap<String, String> os_release;
 #ifdef LINUX_ENABLED
-		os_release = _parse_os_release();
+		cached_info.distro = _read_distro_info();
 		cached_info.kernel_version = _read_kernel_version();
 #elif defined(WINDOWS_ENABLED)
 		cached_info.wine_proton = _detect_wine_proton();
 		if (cached_info.wine_proton.is_wine) {
-			os_release = _parse_os_release();
+			cached_info.distro = _read_distro_info();
 			cached_info.kernel_version = _read_kernel_version();
 		}
 #endif
-		cached_info.is_steamos = _detect_steamos(os_release);
-		cached_info.is_bazzite = _detect_bazzite(os_release);
-		cached_info.is_steam = _detect_steam();
 
-		// Populate DistroInfo.
-		if (os_release.has("NAME")) {
-			cached_info.distro.name = os_release["NAME"];
-		}
-		if (os_release.has("PRETTY_NAME")) {
-			cached_info.distro.pretty_name = os_release["PRETTY_NAME"];
-		}
-		if (os_release.has("VERSION")) {
-			cached_info.distro.version = os_release["VERSION"];
-		} else if (os_release.has("VERSION_ID")) {
-			cached_info.distro.version = os_release["VERSION_ID"];
-		}
-		if (os_release.has("BUILD_ID")) {
-			cached_info.distro.build = os_release["BUILD_ID"];
-		}
-		if (os_release.has("VARIANT_ID")) {
-			cached_info.distro.variant = os_release["VARIANT_ID"];
-		}
-		// Update/release branch:
-		// - SteamOS uses STEAMOS_DEFAULT_UPDATE_BRANCH
-		// - Bazzite uses RELEASE_TYPE
-		if (os_release.has("STEAMOS_DEFAULT_UPDATE_BRANCH")) {
-			cached_info.distro.update_branch = os_release["STEAMOS_DEFAULT_UPDATE_BRANCH"];
-		} else if (os_release.has("RELEASE_TYPE")) {
-			cached_info.distro.update_branch = os_release["RELEASE_TYPE"];
-		}
+		cached_info.is_steamos = _detect_steamos(cached_info.distro);
+		cached_info.is_bazzite = _detect_bazzite(cached_info.distro);
+		cached_info.is_steam = _detect_steam();
 	}
+
 	return cached_info;
 }
 
