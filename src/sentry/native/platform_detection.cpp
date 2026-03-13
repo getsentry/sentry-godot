@@ -79,8 +79,8 @@ void _read_proton_version(const String &p_steam_compat_path, sentry::native::Win
 			r_info.runtime_name = "Proton Hotfix";
 			r_info.version = git_tag.trim_prefix("hotfix-");
 		} else {
-			// Unknown Proton-like tool -> use directory name.
-			r_info.runtime_name = proton_root.get_file();
+			// Unrecognized Proton-like tool.
+			r_info.runtime_name = "Proton Custom";
 			r_info.version = git_tag;
 		}
 	} else {
@@ -88,7 +88,7 @@ void _read_proton_version(const String &p_steam_compat_path, sentry::native::Win
 		r_info.version = git_tag;
 	}
 
-	sentry::logging::print_debug("Proton version detected from version file: ", r_info.runtime_name, " ", r_info.version);
+	sentry::logging::print_debug("Detected Proton version: ", r_info.runtime_name, " ", r_info.version);
 }
 
 sentry::native::WineProtonInfo _detect_wine_proton() {
