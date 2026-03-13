@@ -74,6 +74,10 @@ void _read_proton_version(const String &p_steam_compat_path, sentry::native::Win
 			// GE-Proton9-27 -> "GE-Proton" "9-27"
 			r_info.runtime_name = "GE-Proton";
 			r_info.version = git_tag.trim_prefix("GE-Proton");
+		} else if (git_tag.begins_with("hotfix-")) {
+			// hotfix-20251031 -> "Proton Hotfix" "20251031"
+			r_info.runtime_name = "Proton Hotfix";
+			r_info.version = git_tag.trim_prefix("hotfix-");
 		} else {
 			// Unknown Proton-like tool -> use directory name.
 			r_info.runtime_name = proton_root.get_file();
