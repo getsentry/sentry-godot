@@ -14,6 +14,10 @@
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/time.hpp>
 
+#ifdef SDK_NATIVE
+#include "sentry/native/platform_detection.h"
+#endif
+
 #ifdef LINUX_ENABLED
 #include <limits.h>
 #include <unistd.h>
@@ -308,6 +312,87 @@ Dictionary make_display_context() {
 
 	display_context["screens"] = screen_list;
 	return display_context;
+}
+
+Dictionary make_os_context_override() {
+	Dictionary os_context;
+
+#ifdef SDK_NATIVE
+	const auto &info = sentry::native::detect_platform();
+	const auto &distro = info.distro;
+	bool prefer_distro_version = false;
+
+	// Only override OS context when running SteamOS, Bazzite or in Wine/Proton.
+	if (info.is_steamos) {
+		os_context["name"] = "SteamOS";
+		prefer_distro_version = true;
+	} else if (info.is_bazzite) {
+		os_context["name"] = "Bazzite";
+		prefer_distro_version = true;
+	} else if (info.wine_proton.is_wine) {
+		// Windows build running on other Linux distro using Wine/Proton.
+		os_context["name"] = "Linux";
+		prefer_distro_version = false;
+	}
+
+	if (!os_context.is_empty()) {
+		// Spec fields.
+		String version = prefer_distro_version ? distro.version : info.kernel_version;
+		if (version.is_empty()) {
+			version = prefer_distro_version ? info.kernel_version : distro.version;
+		}
+		if (!version.is_empty()) {
+			os_context["version"] = version;
+		}
+		if (!distro.build.is_empty()) {
+			os_context["build"] = distro.build;
+		}
+		if (!info.kernel_version.is_empty()) {
+			os_context["kernel_version"] = info.kernel_version;
+		}
+		// Only add distribution_* fields when OS name differs from distro
+		// (e.g., Wine/Proton where name="Linux" but distro is "Arch Linux").
+		// For SteamOS/Bazzite these would be redundant.
+		if (!distro.name.is_empty() &&
+				distro.name.to_lower() != String(os_context["name"]).to_lower()) {
+			os_context["distribution_name"] = distro.name;
+			if (!distro.version.is_empty()) {
+				os_context["distribution_version"] = distro.version;
+			}
+			if (!distro.pretty_name.is_empty()) {
+				os_context["distribution_pretty_name"] = distro.pretty_name;
+			}
+		}
+
+		// Extended fields.
+		if (!distro.variant.is_empty()) {
+			os_context["variant"] = distro.variant;
+		}
+		if (!distro.update_branch.is_empty()) {
+			os_context["update_branch"] = distro.update_branch;
+		}
+	}
+
+#endif // SDK_NATIVE
+
+	return os_context;
+}
+
+Dictionary make_runtime_context() {
+	Dictionary runtime_context;
+
+#ifdef SDK_NATIVE
+	const auto &info = sentry::native::detect_platform();
+	if (info.wine_proton.is_wine) {
+		const String &runtime_name = info.wine_proton.runtime_name;
+		runtime_context["name"] = !runtime_name.is_empty() ? runtime_name : "Wine";
+		if (!info.wine_proton.version.is_empty()) {
+			runtime_context["version"] = info.wine_proton.version;
+		}
+	}
+#endif // SDK_NATIVE
+
+	return runtime_context;
 }
 
 Dictionary make_godot_engine_context() {

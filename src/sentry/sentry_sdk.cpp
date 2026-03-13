@@ -22,6 +22,7 @@
 
 #ifdef SDK_NATIVE
 #include "sentry/native/native_sdk.h"
+#include "sentry/native/platform_detection.h"
 #elif SDK_ANDROID
 #include "sentry/android/android_sdk.h"
 #elif SDK_COCOA
@@ -282,6 +283,27 @@ void SentrySDK::_init_contexts() {
 	internal_sdk->set_context("display", sentry::contexts::make_display_context());
 	internal_sdk->set_context("godot_engine", sentry::contexts::make_godot_engine_context());
 	internal_sdk->set_context("environment", sentry::contexts::make_environment_context());
+
+	// Linux distro and Proton/Wine compatibility layer enrichment.
+#if defined(SDK_NATIVE)
+	{
+		// Contexts.
+		Dictionary os_override = sentry::contexts::make_os_context_override();
+		if (!os_override.is_empty()) {
+			internal_sdk->set_context("os", os_override);
+		}
+		Dictionary runtime_ctx = sentry::contexts::make_runtime_context();
+		if (!runtime_ctx.is_empty()) {
+			internal_sdk->set_context("runtime", runtime_ctx);
+		}
+
+		// Tags.
+		const auto &platform_info = sentry::native::detect_platform();
+		if (platform_info.is_steam) {
+			internal_sdk->set_tag("steam", "true");
+		}
+	}
+#endif // SDK_NATIVE
 }
 
 Vector<Ref<SentryAttachment>> SentrySDK::_get_default_attachments() {
