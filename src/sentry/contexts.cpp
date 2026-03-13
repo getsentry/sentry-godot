@@ -353,7 +353,7 @@ Dictionary make_os_context_override() {
 		// Only add distribution_* fields when OS name differs from distro
 		// (e.g., Wine/Proton where name="Linux" but distro is "Arch Linux").
 		// For SteamOS/Bazzite these would be redundant.
-		if (!distro.name.is_empty() && distro.name != os_context["name"]) {
+		if (!distro.name.is_empty() && distro.name != String(os_context["name"])) {
 			os_context["distribution_name"] = distro.name;
 			if (!distro.version.is_empty()) {
 				os_context["distribution_version"] = distro.version;
