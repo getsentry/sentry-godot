@@ -25,6 +25,9 @@
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#960)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.6.0)
   - Lowered minimum macOS deployment target from 11.0 to 10.14 to match Cocoa SDK minimum
+- Bump Sentry Android from v8.34.1 to v8.35.0 ([#592](https://github.com/getsentry/sentry-godot/pull/592))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8350)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.34.1...8.35.0)
 
 ## 1.4.2
 
