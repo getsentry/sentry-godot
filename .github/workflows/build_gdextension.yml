@@ -244,7 +244,7 @@ jobs:
 
     steps:
       - name: Checkout repo and submodules
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
           ref: ${{inputs.ref}}
@@ -306,7 +306,7 @@ jobs:
           scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}} ${{matrix.scons-flags}}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}${{ contains(matrix.scons-flags, 'threads=no') && '.nothreads' || '' }}
           # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
@@ -322,7 +322,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{inputs.ref}}
 
@@ -336,7 +336,7 @@ jobs:
         run: ./gradlew assemble
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sentry.android.godot_plugin
           # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
@@ -352,13 +352,13 @@ jobs:
     runs-on: macos-15
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{inputs.ref}}
           submodules: recursive
 
       - name: Download iOS artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: sentry.ios.*
           path: project/
@@ -383,7 +383,7 @@ jobs:
           rm -rf project/addons/sentry/bin/ios/temp/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sentry.ios-framework
           # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
@@ -393,7 +393,7 @@ jobs:
             project/addons/sentry/bin/ios/
 
       - name: Delete downloaded iOS artifacts
-        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
+        uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
         with:
           name: sentry.ios.*
 
@@ -402,7 +402,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{inputs.ref}}
 
@@ -420,7 +420,7 @@ jobs:
         run: cd src/sentry/javascript/bridge && npm run build:deploy
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sentry.web.js-bundle
           # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
@@ -435,7 +435,7 @@ jobs:
     needs: [build, android-plugin, ios-framework, js-bundle]
     steps:
       - name: Merge artifacts
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@v7
         with:
           name: sentry-godot-gdextension
           pattern: sentry.*
