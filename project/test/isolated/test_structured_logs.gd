@@ -176,3 +176,22 @@ func test_structured_logs_body_with_format_specifiers() -> void:
 		assert_that(entry.get_attribute("sentry.message.parameter.0")).is_null()
 	, CONNECT_ONE_SHOT)
 	SentrySDK.logger.info("Should preserve %n and %s and not crash")
+
+
+# NOTE: JS SDK merges global scope attributes at serialization time, after beforeSendLog.
+func test_structured_logs_with_global_attributes(_do_skip = OS.get_name() == "Web") -> void:
+	log_processed.connect(func(entry: SentryLog):
+		assert_bool(entry.get_attribute("global_bool")).is_equal(true)
+		assert_int(entry.get_attribute("global_int")).is_equal(42)
+		assert_float(entry.get_attribute("global_float")).is_equal_approx(42.5, 0.001)
+		assert_str(entry.get_attribute("global_string")).is_equal("string")
+		assert_that(entry.get_attribute("deleted_attribute")).is_null()
+	, CONNECT_ONE_SHOT)
+
+	SentrySDK.set_attribute("global_bool", true)
+	SentrySDK.set_attribute("global_int", 42)
+	SentrySDK.set_attribute("global_float", 42.5)
+	SentrySDK.set_attribute("global_string", "string")
+	SentrySDK.set_attribute("deleted_attribute", "SHOULD NOT BE PRESENT")
+	SentrySDK.remove_attribute("deleted_attribute")
+	SentrySDK.logger.info("Test with global attributes")
