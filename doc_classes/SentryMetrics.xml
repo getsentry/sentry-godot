@@ -21,6 +21,7 @@
 		SentrySDK.metrics.gauge("items_in_inventory", item_count, "item")
 		[/codeblock]
 		Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
+		You can also set global attributes using [method SentrySDK.set_attribute], which are automatically included in all metric entries.
 		[b]Note:[/b] Metrics are currently not supported on Apple platforms.
 	</description>
 	<tutorials>
