@@ -185,30 +185,42 @@ sentry::native::DistroInfo _read_distro_info() {
 	}
 
 	// Populate struct.
-	if (fields.has("NAME")) {
-		distro.name = fields["NAME"];
+	const String *name = fields.getptr("NAME");
+	if (name) {
+		distro.name = *name;
 	}
-	if (fields.has("PRETTY_NAME")) {
-		distro.pretty_name = fields["PRETTY_NAME"];
+	const String *pretty_name = fields.getptr("PRETTY_NAME");
+	if (pretty_name) {
+		distro.pretty_name = *pretty_name;
 	}
-	if (fields.has("VERSION")) {
-		distro.version = fields["VERSION"];
-	} else if (fields.has("VERSION_ID")) {
-		distro.version = fields["VERSION_ID"];
+	const String *version = fields.getptr("VERSION");
+	if (version) {
+		distro.version = *version;
+	} else {
+		const String *version_id = fields.getptr("VERSION_ID");
+		if (version_id) {
+			distro.version = *version_id;
+		}
 	}
-	if (fields.has("BUILD_ID")) {
-		distro.build = fields["BUILD_ID"];
+	const String *build = fields.getptr("BUILD_ID");
+	if (build) {
+		distro.build = *build;
 	}
-	if (fields.has("VARIANT_ID")) {
-		distro.variant = fields["VARIANT_ID"];
+	const String *variant = fields.getptr("VARIANT_ID");
+	if (variant) {
+		distro.variant = *variant;
 	}
 	// Update/release branch:
 	// - SteamOS uses STEAMOS_DEFAULT_UPDATE_BRANCH
 	// - Bazzite uses RELEASE_TYPE
-	if (fields.has("STEAMOS_DEFAULT_UPDATE_BRANCH")) {
-		distro.update_branch = fields["STEAMOS_DEFAULT_UPDATE_BRANCH"];
-	} else if (fields.has("RELEASE_TYPE")) {
-		distro.update_branch = fields["RELEASE_TYPE"];
+	const String *update_branch = fields.getptr("STEAMOS_DEFAULT_UPDATE_BRANCH");
+	if (update_branch) {
+		distro.update_branch = *update_branch;
+	} else {
+		const String *release_type = fields.getptr("RELEASE_TYPE");
+		if (release_type) {
+			distro.update_branch = *release_type;
+		}
 	}
 
 	return distro;
