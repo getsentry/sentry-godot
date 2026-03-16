@@ -320,6 +320,12 @@ Dictionary make_os_context_override() {
 #ifdef SDK_NATIVE
 	const auto &info = sentry::native::detect_platform();
 	const auto &distro = info.distro;
+
+	// Controls which version string populates the os.version field in OS context.
+	// For SteamOS/Bazzite the distro version is meaningful (e.g. "SteamOS 3.7").
+	// For generic "Linux" under Wine, the distro version comes from the host
+	// distro (e.g. Ubuntu's "24.04") and would produce a confusing display like
+	// "Linux 24.04.4 LTS (Noble Numbat)" - so we fall back to kernel version.
 	bool prefer_distro_version = false;
 
 	// Only override OS context when running SteamOS, Bazzite or in Wine/Proton.
