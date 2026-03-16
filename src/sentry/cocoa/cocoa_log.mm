@@ -63,7 +63,7 @@ void CocoaLog::set_body(const String &p_body) {
 }
 
 Variant CocoaLog::get_attribute(const String &p_name) const {
-	SentryLogAttribute *attribute = cocoa_log.attributes[string_to_objc(p_name)];
+	SentryAttribute *attribute = cocoa_log.attributes[string_to_objc(p_name)];
 	if (!attribute) {
 		return Variant();
 	}
