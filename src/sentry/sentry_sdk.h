@@ -95,6 +95,9 @@ public:
 	void add_attachment(const Ref<SentryAttachment> &p_attachment);
 	void clear_attachments();
 
+	void set_attribute(const String &p_name, const Variant &p_value);
+	void remove_attribute(const String &p_name);
+
 	// * Hidden API methods -- used in testing
 
 	void set_before_send(const Callable &p_callable) { options->set_before_send(p_callable); }
