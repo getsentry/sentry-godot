@@ -76,6 +76,24 @@ String _get_hostname() {
 	return String();
 }
 
+String _get_device_type() {
+#if defined(WINDOWS_ENABLED) || defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
+	return "Desktop";
+#elif defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+	return "Handheld";
+#elif defined(WEB_ENABLED)
+	// Detect underlying OS at runtime since a single WASM binary runs on any platform.
+	if (OS::get_singleton()->has_feature("web_android") || OS::get_singleton()->has_feature("web_ios")) {
+		return "Handheld";
+	} else if (OS::get_singleton()->has_feature("web_windows") ||
+			OS::get_singleton()->has_feature("web_linuxbsd") ||
+			OS::get_singleton()->has_feature("web_macos")) {
+		return "Desktop";
+	}
+#endif
+	return "Unknown";
+}
+
 } // unnamed namespace
 
 namespace sentry::contexts {
@@ -87,6 +105,9 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	ERR_FAIL_NULL_V(DisplayServer::get_singleton(), device_context);
 
 	device_context["arch"] = Engine::get_singleton()->get_architecture_name();
+
+	device_context["device_type"] = _get_device_type();
+
 	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
 	String orientation = _screen_orientation_as_string(primary_screen);
 	if (orientation.length() > 0) {
@@ -177,6 +198,12 @@ Dictionary make_device_context_update() {
 	}
 
 	return device_context;
+}
+
+Dictionary make_device_context_patch() {
+	Dictionary patch;
+	patch["device_type"] = _get_device_type();
+	return patch;
 }
 
 Dictionary make_app_context() {
@@ -410,6 +437,8 @@ HashMap<String, Dictionary> make_event_contexts() {
 	event_contexts["godot_performance"] = make_performance_context();
 
 #if defined(SDK_NATIVE) || defined(SDK_JAVASCRIPT)
+	// On native and JS, the Godot SDK owns "device" context.
+	// Fields that change at runtime are updated here.
 	event_contexts["device"] = make_device_context_update();
 #endif
 
