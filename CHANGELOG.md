@@ -13,6 +13,7 @@
 - Add Android x86_32 builds ([#585](https://github.com/getsentry/sentry-godot/pull/585))
 - Add arm64 builds for Windows & Linux ([#586](https://github.com/getsentry/sentry-godot/pull/586))
 - Add scene tree support on macOS and iOS ([#589](https://github.com/getsentry/sentry-godot/pull/589))
+- Support global attributes via `SentrySDK.set_attribute()` and `SentrySDK.remove_attribute()`, which are automatically included in all structured logs and metrics ([#594](https://github.com/getsentry/sentry-godot/pull/594))
 
 ### Improvements
 
