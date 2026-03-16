@@ -20,8 +20,8 @@ For upgrade instructions between major versions, see the [Migration Guide](https
 
 ## Supported platforms and architectures
 
-- **Windows**: x86_64, x86_32
-- **Linux**: x86_64, x86_32
+- **Windows**: x86_64, x86_32, arm64
+- **Linux**: x86_64, x86_32, arm64
 - **macOS**: universal (Intel and Apple Silicon)
 - **Android**: arm64, arm32, x86_64, x86_32
 - **iOS**: device and simulator

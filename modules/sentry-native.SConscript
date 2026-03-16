@@ -118,6 +118,8 @@ if platform == "windows":
         cmake_arch = "-A Win32"
     elif arch == "x86_64":
         cmake_arch = "-A x64"
+    elif arch == "arm64":
+        cmake_arch = "-A ARM64"
     else:
         print(f"ERROR: Unsupported architecture '{arch}' for platform '{platform}'")
         Exit(1)
@@ -127,6 +129,8 @@ elif platform == "linux":
         cmake_gen += ' -DSENTRY_BUILD_FORCE32=ON -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" -DLINK_OPTIONS="-m32"'
     elif arch == "x86_64":
         cmake_gen += ' -DCMAKE_C_FLAGS="-m64" -DCMAKE_CXX_FLAGS="-m64" -DLINK_OPTIONS="-m64"'
+    elif arch == "arm64":
+        pass  # Native compilation on arm64 host; no special flags needed.
     else:
         print(f"ERROR: Unsupported architecture '{arch}' for platform '{platform}'")
         Exit(1)
