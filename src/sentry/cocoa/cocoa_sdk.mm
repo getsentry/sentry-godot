@@ -276,11 +276,15 @@ void CocoaSDK::metrics_add_distribution(const String &p_name, double p_value, co
 }
 
 void CocoaSDK::set_attribute(const String &p_name, const Variant &p_value) {
-	WARN_PRINT_ONCE("Not implemented - temporary stub");
+	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
+		[scope setAttributeValue:variant_to_attribute(p_value) forKey:string_to_objc(p_name)];
+	}];
 }
 
 void CocoaSDK::remove_attribute(const String &p_name) {
-	WARN_PRINT_ONCE("Not implemented - temporary");
+	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
+		[scope removeAttributeForKey:string_to_objc(p_name)];
+	}];
 }
 
 void CocoaSDK::init() {
