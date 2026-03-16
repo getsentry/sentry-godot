@@ -24,6 +24,8 @@ Dictionary make_app_context();
 Dictionary make_gpu_context();
 Dictionary make_culture_context();
 Dictionary make_display_context();
+Dictionary make_os_context_override();
+Dictionary make_runtime_context();
 Dictionary make_godot_engine_context();
 Dictionary make_environment_context();
 Dictionary make_performance_context();

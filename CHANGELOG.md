@@ -8,6 +8,7 @@
 
 ### Features
 
+- Add SteamOS and Wine/Proton support ([#591](https://github.com/getsentry/sentry-godot/pull/591))
 - Enable tombstone support on Android ([#584](https://github.com/getsentry/sentry-godot/pull/584))
 - Add Android x86_32 builds ([#585](https://github.com/getsentry/sentry-godot/pull/585))
 - Add scene tree support on macOS and iOS ([#589](https://github.com/getsentry/sentry-godot/pull/589))
