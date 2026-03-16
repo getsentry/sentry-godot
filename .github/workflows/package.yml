@@ -24,10 +24,10 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: sentry-godot-gdextension
           path: artifact/
@@ -112,7 +112,7 @@ jobs:
           zip -r ${GITHUB_WORKSPACE}/out/${demo_archive} .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{github.sha}}
           path: out/*

@@ -19,7 +19,7 @@ jobs:
     name: Publish to Godot Asset Library
     steps:
       - name: Check out repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Extract version metadata from SConstruct
         run: |
