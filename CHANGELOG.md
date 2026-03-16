@@ -21,9 +21,9 @@
 - Bump Sentry JavaScript from v10.42.0 to v10.43.0 ([#588](https://github.com/getsentry/sentry-godot/pull/588))
   - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10430)
   - [diff](https://github.com/getsentry/sentry-javascript/compare/10.42.0...10.43.0)
-- Bump Cocoa SDK from v8.57.3 to v9.6.0 ([#442](https://github.com/getsentry/sentry-godot/pull/442))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#960)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.6.0)
+- Bump Cocoa SDK from v8.57.3 to v9.7.0 ([#442](https://github.com/getsentry/sentry-godot/pull/442), [#590](https://github.com/getsentry/sentry-godot/pull/590))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#970)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.7.0)
   - Lowered minimum macOS deployment target from 11.0 to 10.14 to match Cocoa SDK minimum
 - Bump Sentry Android from v8.34.1 to v8.35.0 ([#592](https://github.com/getsentry/sentry-godot/pull/592))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8350)
