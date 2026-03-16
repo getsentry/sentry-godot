@@ -374,6 +374,14 @@ void NativeSDK::metrics_add_distribution(const String &p_name, double p_value, c
 	sentry_metrics_distribution(p_name.utf8(), p_value, p_unit.utf8(), dictionary_to_attributes(p_attributes));
 }
 
+void NativeSDK::set_attribute(const String &p_name, const Variant &p_value) {
+	sentry_set_attribute(p_name.utf8(), variant_to_attribute(p_value));
+}
+
+void NativeSDK::remove_attribute(const String &p_name) {
+	sentry_remove_attribute(p_name.utf8());
+}
+
 void NativeSDK::init() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
