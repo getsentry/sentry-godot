@@ -110,6 +110,13 @@ AndroidStringNames::AndroidStringNames() {
 	metricAddAttributes = StringName("metricAddAttributes");
 	metricRemoveAttribute = StringName("metricRemoveAttribute");
 	releaseMetric = StringName("releaseMetric");
+
+	// Attributes.
+	setAttributeBool = StringName("setAttributeBool");
+	setAttributeLong = StringName("setAttributeLong");
+	setAttributeDouble = StringName("setAttributeDouble");
+	setAttributeString = StringName("setAttributeString");
+	removeAttribute = StringName("removeAttribute");
 }
 
 } //namespace sentry::android

@@ -365,6 +365,31 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun setAttributeBool(name: String, value: Boolean) {
+        Sentry.setAttribute(name, value)
+    }
+
+    @UsedByGodot
+    fun setAttributeLong(name: String, value: Long) {
+        Sentry.setAttribute(name, value)
+    }
+
+    @UsedByGodot
+    fun setAttributeDouble(name: String, value: Double) {
+        Sentry.setAttribute(name, value)
+    }
+
+    @UsedByGodot
+    fun setAttributeString(name: String, value: String) {
+        Sentry.setAttribute(name, value)
+    }
+
+    @UsedByGodot
+    fun removeAttribute(name: String) {
+        Sentry.removeAttribute(name)
+    }
+
+    @UsedByGodot
     fun captureMessage(message: String, level: Int): String {
         val id = Sentry.captureMessage(message, level.toSentryLevel())
         return id.toString()
