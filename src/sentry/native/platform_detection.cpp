@@ -122,10 +122,10 @@ void _detect_proton(const String &p_steam_compat_path, sentry::native::WineProto
 // Read a REG_SZ string value from an open registry key.
 String _read_registry_string(HKEY p_key, LPCWSTR p_value_name) {
 	WCHAR buffer[256];
-	DWORD buffer_len = 256;
+	DWORD buffer_len = sizeof(buffer);
 	DWORD vtype = REG_SZ;
 	if (RegQueryValueExW(p_key, p_value_name, nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len > 0) {
-		return String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+		return String::utf16((const char16_t *)buffer, buffer_len / sizeof(WCHAR)).strip_edges();
 	}
 	return String();
 }
