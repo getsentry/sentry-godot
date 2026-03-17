@@ -30,6 +30,7 @@
 		SentrySDK.logger.log(SentryLog.LOG_LEVEL_TRACE, "AI state transition")
 		[/codeblock]
 		Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
+		You can also set global attributes using [method SentrySDK.set_attribute], which are automatically included in all log entries.
 		To learn more about logs in Sentry, check out the [url=https://docs.sentry.io/product/explore/logs/]Sentry Logs[/url] product guide.
 	</description>
 	<tutorials>

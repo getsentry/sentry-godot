@@ -275,6 +275,18 @@ void CocoaSDK::metrics_add_distribution(const String &p_name, double p_value, co
 	WARN_PRINT_ONCE("Metrics are currently not supported on Apple platforms.");
 }
 
+void CocoaSDK::set_attribute(const String &p_name, const Variant &p_value) {
+	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
+		[scope setAttributeValue:variant_to_attribute(p_value) forKey:string_to_objc(p_name)];
+	}];
+}
+
+void CocoaSDK::remove_attribute(const String &p_name) {
+	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
+		[scope removeAttributeForKey:string_to_objc(p_name)];
+	}];
+}
+
 void CocoaSDK::init() {
 	[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
 

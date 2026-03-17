@@ -274,6 +274,36 @@ void AndroidSDK::metrics_add_distribution(const String &p_name, double p_value, 
 			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
 }
 
+void AndroidSDK::set_attribute(const String &p_name, const Variant &p_value) {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+
+	switch (p_value.get_type()) {
+		case Variant::Type::BOOL: {
+			android_plugin->call(ANDROID_SN(setAttributeBool), p_name, p_value);
+		} break;
+		case Variant::Type::INT: {
+			android_plugin->call(ANDROID_SN(setAttributeLong), p_name, p_value);
+		} break;
+		case Variant::Type::FLOAT: {
+			android_plugin->call(ANDROID_SN(setAttributeDouble), p_name, p_value);
+		} break;
+		case Variant::Type::STRING: {
+			android_plugin->call(ANDROID_SN(setAttributeString), p_name, p_value);
+		} break;
+		default: {
+			android_plugin->call(ANDROID_SN(setAttributeString), p_name, p_value.stringify());
+		} break;
+	}
+}
+
+void AndroidSDK::remove_attribute(const String &p_name) {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+
+	android_plugin->call(ANDROID_SN(removeAttribute), p_name);
+}
+
 void AndroidSDK::_add_default_attachments() {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);

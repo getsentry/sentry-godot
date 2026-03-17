@@ -265,6 +265,16 @@ void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary 
 	internal_sdk->set_context(p_key, p_value);
 }
 
+void SentrySDK::set_attribute(const String &p_name, const Variant &p_value) {
+	ERR_FAIL_COND_MSG(p_name.is_empty(), "Sentry: Can't set attribute with an empty name.");
+	internal_sdk->set_attribute(p_name, p_value);
+}
+
+void SentrySDK::remove_attribute(const String &p_name) {
+	ERR_FAIL_COND_MSG(p_name.is_empty(), "Sentry: Can't remove attribute with an empty name.");
+	internal_sdk->remove_attribute(p_name);
+}
+
 void SentrySDK::_init_contexts() {
 	sentry::logging::print_debug("initializing contexts");
 
@@ -464,6 +474,8 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("capture_feedback", "feedback"), &SentrySDK::capture_feedback);
 	ClassDB::bind_method(D_METHOD("add_attachment", "attachment"), &SentrySDK::add_attachment);
 	ClassDB::bind_method(D_METHOD("clear_attachments"), &SentrySDK::clear_attachments);
+	ClassDB::bind_method(D_METHOD("set_attribute", "name", "value"), &SentrySDK::set_attribute);
+	ClassDB::bind_method(D_METHOD("remove_attribute", "name"), &SentrySDK::remove_attribute);
 
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);

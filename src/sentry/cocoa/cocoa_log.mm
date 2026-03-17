@@ -4,19 +4,6 @@
 
 namespace {
 
-SentryLogAttribute *_as_attribute(const Variant &p_variant) {
-	switch (p_variant.get_type()) {
-		case Variant::BOOL:
-			return [[SentryLogAttribute alloc] initWithBoolean:(bool)p_variant];
-		case Variant::INT:
-			return [[SentryLogAttribute alloc] initWithInteger:(int64_t)p_variant];
-		case Variant::FLOAT:
-			return [[SentryLogAttribute alloc] initWithDouble:(double)p_variant];
-		default:
-			return [[SentryLogAttribute alloc] initWithString:sentry::cocoa::string_to_objc(p_variant)];
-	}
-}
-
 sentry::LogLevel _log_level_from_objc(SentryLogLevel p_level) {
 	switch (p_level) {
 		case SentryLogLevelTrace:
@@ -76,7 +63,7 @@ void CocoaLog::set_body(const String &p_body) {
 }
 
 Variant CocoaLog::get_attribute(const String &p_name) const {
-	SentryLogAttribute *attribute = cocoa_log.attributes[string_to_objc(p_name)];
+	SentryAttribute *attribute = cocoa_log.attributes[string_to_objc(p_name)];
 	if (!attribute) {
 		return Variant();
 	}
@@ -86,7 +73,7 @@ Variant CocoaLog::get_attribute(const String &p_name) const {
 
 void CocoaLog::set_attribute(const String &p_name, const Variant &p_value) {
 	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy];
-	[mut_attributes setObject:_as_attribute(p_value) forKey:string_to_objc(p_name)];
+	[mut_attributes setObject:variant_to_attribute(p_value) forKey:string_to_objc(p_name)];
 	cocoa_log.attributes = mut_attributes;
 }
 
@@ -96,7 +83,7 @@ void CocoaLog::add_attributes(const Dictionary &p_attributes) {
 	for (int i = 0; i < keys.size(); i++) {
 		const String &key = keys[i].stringify();
 		const Variant &value = p_attributes[key];
-		[mut_attributes setObject:_as_attribute(value) forKey:string_to_objc(key)];
+		[mut_attributes setObject:variant_to_attribute(value) forKey:string_to_objc(key)];
 	}
 	cocoa_log.attributes = mut_attributes;
 }

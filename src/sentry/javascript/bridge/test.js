@@ -77,6 +77,8 @@ try {
 			"metricsAddCount",
 			"metricsAddGauge",
 			"metricsAddDistribution",
+			"setAttribute",
+			"removeAttribute",
 		];
 
 		console.log("📋 Method availability check:");
@@ -247,6 +249,14 @@ try {
 
 		runTest("metricsAddDistribution()", () => {
 			bridge.metricsAddDistribution("test.dist", 100, "byte", '{"key": "value"}');
+		});
+
+		runTest("setAttribute()", () => {
+			bridge.setAttribute("test-attr", "test-value");
+		});
+
+		runTest("removeAttribute()", () => {
+			bridge.removeAttribute("test-attr");
 		});
 
 		runTest("close()", () => {

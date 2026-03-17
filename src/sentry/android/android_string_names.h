@@ -122,6 +122,13 @@ public:
 	StringName metricAddAttributes;
 	StringName metricRemoveAttribute;
 	StringName releaseMetric;
+
+	// Attributes.
+	StringName setAttributeBool;
+	StringName setAttributeLong;
+	StringName setAttributeDouble;
+	StringName setAttributeString;
+	StringName removeAttribute;
 };
 
 } //namespace sentry::android

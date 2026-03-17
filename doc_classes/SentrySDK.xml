@@ -113,6 +113,13 @@
 				Returns whether the SDK is enabled, i.e. whether it is initialized and active.
 			</description>
 		</method>
+		<method name="remove_attribute">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Removes the global attribute with the given [param name] previously set with [method SentrySDK.set_attribute].
+			</description>
+		</method>
 		<method name="remove_tag">
 			<return type="void" />
 			<param index="0" name="key" type="String" />
@@ -124,6 +131,25 @@
 			<return type="void" />
 			<description>
 				Removes the user data previously set with [method SentrySDK.set_user].
+			</description>
+		</method>
+		<method name="set_attribute">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets a global attribute with the specified [param name] and [param value]. Global attributes are automatically included in all structured logs and metrics. Supported value types are [bool], [int], [float], and [String]. Other types will be stringified.
+				[codeblock]
+				SentrySDK.set_attribute("level", "castle")
+				SentrySDK.set_attribute("difficulty", "hard")
+
+				# All subsequent logs and metrics will include these attributes
+				SentrySDK.logger.info("Level loaded")
+				SentrySDK.metrics.count("enemy_defeated")
+
+				# Clear when returning to the main menu
+				SentrySDK.remove_attribute("level")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_context">

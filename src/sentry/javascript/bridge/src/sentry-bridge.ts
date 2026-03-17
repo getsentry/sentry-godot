@@ -321,6 +321,15 @@ class SentryBridge {
     });
   }
 
+  public setAttribute(name: string, value: any): void {
+    // Value is sanitized at C++ boundary
+    Sentry.getGlobalScope().setAttribute(name, value);
+  }
+
+  public removeAttribute(name: string): void {
+    Sentry.getGlobalScope().removeAttribute(name);
+  }
+
   public captureMessage(message: string, level: string): string {
     return Sentry.captureMessage(message, level as Sentry.SeverityLevel);
   }

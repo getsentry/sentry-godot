@@ -48,6 +48,9 @@ public:
 	virtual void metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) = 0;
 	virtual void metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) = 0;
 
+	virtual void set_attribute(const String &p_name, const Variant &p_value) = 0;
+	virtual void remove_attribute(const String &p_name) = 0;
+
 	virtual void init() = 0;
 	virtual void close() = 0;
 	virtual bool is_enabled() const = 0;

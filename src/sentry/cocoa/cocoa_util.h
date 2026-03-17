@@ -76,6 +76,21 @@ godot::Variant variant_from_objc(const NSObject *p_object);
 NSDictionary *dictionary_to_objc(const godot::Dictionary &p_dictionary);
 NSArray<NSString *> *string_array_to_objc(const godot::PackedStringArray &p_array);
 
+_FORCE_INLINE_ SentryAttribute *variant_to_attribute(const godot::Variant &p_variant) {
+	switch (p_variant.get_type()) {
+		case godot::Variant::BOOL:
+			return [[SentryAttribute alloc] initWithBoolean:p_variant.operator bool()];
+		case godot::Variant::INT:
+			return [[SentryAttribute alloc] initWithInteger:p_variant.operator int64_t()];
+		case godot::Variant::FLOAT:
+			return [[SentryAttribute alloc] initWithDouble:p_variant.operator double()];
+		case godot::Variant::STRING:
+			return [[SentryAttribute alloc] initWithString:string_to_objc(p_variant.operator godot::String())];
+		default:
+			return [[SentryAttribute alloc] initWithString:string_to_objc(p_variant.stringify())];
+	}
+}
+
 } //namespace sentry::cocoa
 
 #endif // COCOA_UTIL_H

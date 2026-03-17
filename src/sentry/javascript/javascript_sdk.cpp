@@ -270,6 +270,32 @@ void JavaScriptSDK::metrics_add_distribution(const String &p_name, double p_valu
 	js_bridge()->call("metricsAddDistribution", p_name.utf8(), p_value, p_unit.utf8(), attr_value.utf8());
 }
 
+void JavaScriptSDK::set_attribute(const String &p_name, const Variant &p_value) {
+	ERR_FAIL_COND(!js_bridge());
+	switch (p_value.get_type()) {
+		case Variant::Type::BOOL: {
+			js_bridge()->call("setAttribute", p_name.utf8(), p_value.operator bool());
+		} break;
+		case Variant::Type::INT: {
+			js_bridge()->call("setAttribute", p_name.utf8(), p_value.operator int64_t());
+		} break;
+		case Variant::Type::FLOAT: {
+			js_bridge()->call("setAttribute", p_name.utf8(), p_value.operator double());
+		} break;
+		case Variant::Type::STRING: {
+			js_bridge()->call("setAttribute", p_name.utf8(), p_value.operator String().utf8());
+		} break;
+		default: {
+			js_bridge()->call("setAttribute", p_name.utf8(), p_value.stringify().utf8());
+		} break;
+	}
+}
+
+void JavaScriptSDK::remove_attribute(const String &p_name) {
+	ERR_FAIL_COND(!js_bridge());
+	js_bridge()->call("removeAttribute", p_name.utf8());
+}
+
 void JavaScriptSDK::init() {
 	ERR_FAIL_COND(!js_bridge());
 
