@@ -1,5 +1,4 @@
-#ifndef SENTRY_LEVEL_H
-#define SENTRY_LEVEL_H
+#pragma once
 
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/string.hpp>
@@ -24,5 +23,3 @@ Level int_to_level(int p_value);
 Level level_from_string(const godot::String &p_value, Level p_default);
 
 } // namespace sentry
-
-#endif // SENTRY_LEVEL_H

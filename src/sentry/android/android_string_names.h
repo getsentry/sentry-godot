@@ -1,5 +1,4 @@
-#ifndef SENTRY_ANDROID_STRING_NAMES_H
-#define SENTRY_ANDROID_STRING_NAMES_H
+#pragma once
 
 #include <godot_cpp/variant/string_name.hpp>
 
@@ -24,7 +23,7 @@ private:
 	AndroidStringNames();
 
 public:
-	_FORCE_INLINE_ static AndroidStringNames *get_singleton() { return singleton; }
+	_ALWAYS_INLINE_ static AndroidStringNames *get_singleton() { return singleton; }
 
 	// API methods.
 	StringName init;
@@ -134,5 +133,3 @@ public:
 } //namespace sentry::android
 
 #define ANDROID_SN(m_arg) sentry::android::AndroidStringNames::get_singleton()->m_arg
-
-#endif // SENTRY_ANDROID_STRING_NAMES_H

@@ -1,5 +1,4 @@
-#ifndef SENTRY_ANDROID_SDK_H
-#define SENTRY_ANDROID_SDK_H
+#pragma once
 
 #include "sentry/internal_sdk.h"
 
@@ -60,7 +59,7 @@ private:
 	SentryAndroidBeforeSendLogHandler *before_send_log_handler = nullptr;
 	SentryAndroidBeforeSendMetricHandler *before_send_metric_handler = nullptr;
 
-	_FORCE_INLINE_ Object *_get_android_plugin() const { return ObjectDB::get_instance(android_plugin_instance_id); }
+	_ALWAYS_INLINE_ Object *_get_android_plugin() const { return ObjectDB::get_instance(android_plugin_instance_id); }
 
 	void _add_default_attachments();
 
@@ -108,5 +107,3 @@ public:
 };
 
 } //namespace sentry::android
-
-#endif // SENTRY_ANDROID_SDK_H

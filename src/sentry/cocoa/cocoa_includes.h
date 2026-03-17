@@ -1,5 +1,4 @@
-#ifndef COCOA_INCLUDES_H
-#define COCOA_INCLUDES_H
+#pragma once
 
 #ifdef __OBJC__
 
@@ -47,5 +46,3 @@ using SentryLog = void;
 } // namespace objc
 
 #endif // __OBJC__
-
-#endif // COCOA_INCLUDES_H

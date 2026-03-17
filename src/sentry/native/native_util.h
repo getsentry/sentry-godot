@@ -1,5 +1,4 @@
-#ifndef NATIVE_UTIL_H
-#define NATIVE_UTIL_H
+#pragma once
 
 #include "godot_cpp/core/defs.hpp"
 #include "sentry/level.h"
@@ -26,7 +25,7 @@ Level native_to_level(sentry_level_t p_native_level);
 CharString level_to_cstring(Level p_level);
 Level cstring_to_level(const CharString &p_cstring);
 
-_FORCE_INLINE_ void sentry_value_set_or_remove_string_by_key(sentry_value_t value, const char *k, const String &v) {
+_ALWAYS_INLINE_ void sentry_value_set_or_remove_string_by_key(sentry_value_t value, const char *k, const String &v) {
 	if (v.is_empty()) {
 		sentry_value_remove_by_key(value, k);
 	} else {
@@ -42,5 +41,3 @@ void sentry_value_set_attribute(sentry_value_t p_native, const String &p_name, c
 void sentry_value_add_attributes(sentry_value_t p_native, const Dictionary &p_attributes);
 
 } //namespace sentry::native
-
-#endif // NATIVE_UTIL_H

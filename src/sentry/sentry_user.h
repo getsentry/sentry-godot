@@ -1,5 +1,4 @@
-#ifndef SENTRY_USER_H
-#define SENTRY_USER_H
+#pragma once
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/string.hpp>
@@ -47,5 +46,3 @@ public:
 };
 
 } // namespace sentry
-
-#endif // SENTRY_USER_H

@@ -1,5 +1,4 @@
-#ifndef DISABLED_SDK_H
-#define DISABLED_SDK_H
+#pragma once
 
 #include "disabled_breadcrumb.h"
 #include "disabled_event.h"
@@ -47,5 +46,3 @@ class DisabledSDK : public InternalSDK {
 };
 
 } // namespace sentry
-
-#endif // DISABLED_SDK_H

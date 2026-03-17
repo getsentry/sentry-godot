@@ -1,5 +1,4 @@
-#ifndef COCOA_SDK_H
-#define COCOA_SDK_H
+#pragma once
 
 #include "sentry/internal_sdk.h"
 
@@ -57,5 +56,3 @@ public:
 };
 
 } //namespace sentry::cocoa
-
-#endif // COCOA_SDK_H

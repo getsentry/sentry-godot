@@ -1,5 +1,4 @@
-#ifndef SENTRY_ANDROID_EVENT_H
-#define SENTRY_ANDROID_EVENT_H
+#pragma once
 
 #include "sentry/sentry_event.h"
 
@@ -71,5 +70,3 @@ public:
 };
 
 } //namespace sentry::android
-
-#endif // SENTRY_ANDROID_EVENT_H

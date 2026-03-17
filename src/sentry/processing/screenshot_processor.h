@@ -1,5 +1,4 @@
-#ifndef SCREENSHOT_EVENT_PROCESSOR_H
-#define SCREENSHOT_EVENT_PROCESSOR_H
+#pragma once
 
 #include "sentry/processing/sentry_event_processor.h"
 
@@ -26,5 +25,3 @@ public:
 };
 
 } // namespace sentry
-
-#endif // SCREENSHOT_EVENT_PROCESSOR_H

@@ -1,5 +1,4 @@
-#ifndef COCOA_BREADCRUMB_H
-#define COCOA_BREADCRUMB_H
+#pragma once
 
 #include "sentry/cocoa/cocoa_includes.h"
 #include "sentry/sentry_breadcrumb.h"
@@ -16,7 +15,7 @@ protected:
 	static void _bind_methods() {}
 
 public:
-	_FORCE_INLINE_ objc::SentryBreadcrumb *get_cocoa_breadcrumb() const { return cocoa_breadcrumb; }
+	_ALWAYS_INLINE_ objc::SentryBreadcrumb *get_cocoa_breadcrumb() const { return cocoa_breadcrumb; }
 
 	virtual void set_message(const String &p_message) override;
 	virtual String get_message() const override;
@@ -39,5 +38,3 @@ public:
 };
 
 } //namespace sentry::cocoa
-
-#endif // COCOA_BREADCRUMB_H

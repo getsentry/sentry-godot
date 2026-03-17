@@ -1,5 +1,4 @@
-#ifndef NATIVE_SDK_H
-#define NATIVE_SDK_H
+#pragma once
 
 #include "sentry/internal_sdk.h"
 
@@ -58,5 +57,3 @@ public:
 };
 
 } //namespace sentry::native
-
-#endif // NATIVE_SDK_H

@@ -1,5 +1,4 @@
-#ifndef DISABLED_EVENT_H
-#define DISABLED_EVENT_H
+#pragma once
 
 #include "sentry/sentry_event.h"
 
@@ -65,5 +64,3 @@ public:
 };
 
 } // namespace sentry
-
-#endif // DISABLED_EVENT_H

@@ -33,7 +33,7 @@ private:
 	uint32_t max_entries = 0;
 
 public:
-	_FORCE_INLINE_ bool can_enter() const { return *counter_ptr <= max_entries; }
+	_ALWAYS_INLINE_ bool can_enter() const { return *counter_ptr <= max_entries; }
 
 	RecursionGuard(uint32_t *p_counter_ptr, uint32_t p_max_entries) :
 			counter_ptr(p_counter_ptr), max_entries(p_max_entries) {

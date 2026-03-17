@@ -1,5 +1,4 @@
-#ifndef ANDROID_BREADCRUMB_H
-#define ANDROID_BREADCRUMB_H
+#pragma once
 
 #include "sentry/sentry_breadcrumb.h"
 
@@ -40,5 +39,3 @@ public:
 };
 
 } //namespace sentry::android
-
-#endif // ANDROID_BREADCRUMB_H

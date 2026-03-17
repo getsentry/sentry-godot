@@ -1,5 +1,4 @@
-#ifndef COCOA_EVENT_H
-#define COCOA_EVENT_H
+#pragma once
 
 #include "sentry/cocoa/cocoa_includes.h"
 #include "sentry/sentry_event.h"
@@ -16,7 +15,7 @@ protected:
 	static void _bind_methods() {}
 
 public:
-	_FORCE_INLINE_ objc::SentryEvent *get_cocoa_event() const { return cocoa_event; }
+	_ALWAYS_INLINE_ objc::SentryEvent *get_cocoa_event() const { return cocoa_event; }
 
 	virtual String get_id() const override;
 
@@ -65,5 +64,3 @@ public:
 };
 
 } // namespace sentry::cocoa
-
-#endif // COCOA_EVENT_H

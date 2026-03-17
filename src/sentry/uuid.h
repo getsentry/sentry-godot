@@ -1,5 +1,4 @@
-#ifndef UUID_H
-#define UUID_H
+#pragma once
 
 #include <godot_cpp/variant/string.hpp>
 
@@ -11,5 +10,3 @@ String make_uuid();
 String make_uuid_no_dashes();
 
 } // namespace sentry::uuid
-
-#endif // UUID_H
