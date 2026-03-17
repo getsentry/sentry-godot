@@ -24,11 +24,10 @@ struct DistroInfo {
 
 // SMBIOS system information
 struct ProductInfo {
-	String name; // product_name
-	String manufacturer; // sys_vendor
-	String family; // product_family
-	String version; // product_version
-	String model_id; // internal hardware revision
+	String name;
+	String manufacturer;
+	String family;
+	String version;
 };
 
 // SMBIOS baseboard information
