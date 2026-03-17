@@ -173,13 +173,9 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 #ifdef SDK_NATIVE
 	native::PlatformInfo platform = native::detect_platform();
 
-	// Prefer whichever is longer/more specific - vendors are inconsistent about
-	// which field gets the user-recognizable model string.
-	_set_context_value(device_context, "model", model,
-			platform.product.family.length() > platform.product.name.length()
-					? platform.product.family
-					: platform.product.name,
-			platform.product.name, // fallback to product name
+	_set_context_value(device_context, "model",
+			platform.product.name,
+			platform.product.family, // fallback to product family
 			platform.board.name); // ...or board name
 	_set_context_value(device_context, "manufacturer", platform.product.manufacturer);
 
