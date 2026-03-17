@@ -171,7 +171,7 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	device_context["device_unique_identifier"] = installation_id;
 
 #ifdef SDK_NATIVE
-	native::PlatformInfo platform = native::detect_platform();
+	const native::PlatformInfo &platform = native::detect_platform();
 
 	// Override values with SMBIOS hardware identity.
 	_set_context_value(device_context, "model",
@@ -179,6 +179,7 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 			platform.product.family, // fallback to product family
 			platform.board.name); // ...or board name
 	_set_context_value(device_context, "manufacturer", platform.product.manufacturer);
+	_set_context_value(device_context, "family", platform.product.family);
 
 	// Steam Deck overrides
 	if (platform.is_steamdeck) {
