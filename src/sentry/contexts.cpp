@@ -140,7 +140,7 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 			platform.product.family,
 			platform.product.name, // fallback to product name
 			platform.board.name); // ...or board name
-	_set_context_value(device_context, "manufacturer", platform.product.vendor);
+	_set_context_value(device_context, "manufacturer", platform.product.manufacturer);
 
 	// Steam Deck overrides
 	if (platform.is_steamdeck) {

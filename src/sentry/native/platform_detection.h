@@ -22,20 +22,21 @@ struct DistroInfo {
 	String update_branch; // "stable", "beta"
 };
 
+// SMBIOS system information
 struct ProductInfo {
 	String name; // product_name
-	String vendor; // sys_vendor
+	String manufacturer; // sys_vendor
 	String family; // product_family
 	String version; // product_version
 	String model_id; // internal hardware revision
 };
 
+// SMBIOS baseboard information
 struct BoardInfo {
 	String name;
 	String vendor;
 	String version;
 	String bios_version;
-	String ec_firmware;
 };
 
 struct PlatformInfo {
