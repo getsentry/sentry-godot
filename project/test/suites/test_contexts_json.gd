@@ -220,24 +220,23 @@ func test_device_context() -> void:
 		.verify()
 
 
-# On PC, manufacturer, model and family should be populated in device context
-# using SMBIOS data.
+# On PC, manufacturer, model and family should be populated in device context.
 func test_device_context_on_pc(_do_skip = OS.get_name() not in ["Windows", "Linux"]) -> void:
 	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
 
-	assert_json(json).describe("Device context has manufacturer from SMBIOS") \
+	assert_json(json).describe("Device context has manufacturer") \
 		.at("/contexts/device/manufacturer") \
 		.is_string() \
 		.is_not_empty() \
 		.verify()
 
-	assert_json(json).describe("Device context has model from SMBIOS") \
+	assert_json(json).describe("Device context has model") \
 		.at("/contexts/device/model") \
 		.is_string() \
 		.is_not_empty() \
 		.verify()
 
-	assert_json(json).describe("Device context has family from SMBIOS") \
+	assert_json(json).describe("Device context has family") \
 		.at("/contexts/device/family") \
 		.is_string() \
 		.is_not_empty() \
