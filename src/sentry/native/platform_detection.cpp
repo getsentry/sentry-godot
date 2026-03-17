@@ -124,8 +124,9 @@ String _read_registry_string(HKEY p_key, LPCWSTR p_value_name) {
 	WCHAR buffer[256];
 	DWORD buffer_len = sizeof(buffer);
 	DWORD vtype = REG_SZ;
-	if (RegQueryValueExW(p_key, p_value_name, nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len > 0) {
-		return String::utf16((const char16_t *)buffer, buffer_len / sizeof(WCHAR)).strip_edges();
+	if (RegQueryValueExW(p_key, p_value_name, nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len > sizeof(WCHAR)) {
+		int64_t len = (buffer_len / sizeof(WCHAR)) - 1; // exclude null terminator
+		return String::utf16((const char16_t *)buffer, len).strip_edges();
 	}
 	return String();
 }
