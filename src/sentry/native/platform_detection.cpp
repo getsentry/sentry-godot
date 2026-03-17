@@ -140,9 +140,9 @@ String _read_rootfs_file(const String &p_rootfs_path) {
 	ERR_FAIL_COND_V(!p_rootfs_path.begins_with("/"), String());
 
 #ifdef WINDOWS_ENABLED
-	Ref<FileAccess> f = FileAccess::open("Z:/run/host" + p_file, FileAccess::READ);
+	Ref<FileAccess> f = FileAccess::open("Z:/run/host" + p_rootfs_path, FileAccess::READ);
 	if (!f.is_valid()) {
-		f = FileAccess::open("Z:" + p_file, FileAccess::READ);
+		f = FileAccess::open("Z:" + p_rootfs_path, FileAccess::READ);
 	}
 #else
 	Ref<FileAccess> f = FileAccess::open(p_rootfs_path, FileAccess::READ);
