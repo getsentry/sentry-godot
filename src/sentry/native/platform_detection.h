@@ -35,7 +35,6 @@ struct BoardInfo {
 	String name;
 	String vendor;
 	String version;
-	String bios_version;
 };
 
 struct PlatformInfo {

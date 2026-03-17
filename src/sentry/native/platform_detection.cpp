@@ -197,7 +197,6 @@ sentry::native::BoardInfo _read_board_info() {
 	board.name = _read_rootfs_file("/sys/class/dmi/id/board_name");
 	board.vendor = _read_rootfs_file("/sys/class/dmi/id/board_vendor");
 	board.version = _read_rootfs_file("/sys/class/dmi/id/board_version");
-	board.bios_version = _read_rootfs_file("/sys/class/dmi/id/bios_version");
 #endif // LINUX_ENABLED
 
 #ifdef WINDOWS_ENABLED
@@ -206,7 +205,6 @@ sentry::native::BoardInfo _read_board_info() {
 		board.name = _read_registry_string(hkey, L"BaseBoardProduct");
 		board.vendor = _read_registry_string(hkey, L"BaseBoardManufacturer");
 		board.version = _read_registry_string(hkey, L"BaseBoardVersion");
-		board.bios_version = _read_registry_string(hkey, L"BIOSVersion");
 		RegCloseKey(hkey);
 	}
 #endif // WINDOWS_ENABLED
