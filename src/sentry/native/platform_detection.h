@@ -22,13 +22,32 @@ struct DistroInfo {
 	String update_branch; // "stable", "beta"
 };
 
+struct ProductInfo {
+	String name; // product_name
+	String vendor; // sys_vendor
+	String family; // product_family
+	String version; // product_version
+	String model_id; // internal hardware revision
+};
+
+struct BoardInfo {
+	String name;
+	String vendor;
+	String version;
+	String bios_version;
+	String ec_firmware;
+};
+
 struct PlatformInfo {
+	ProductInfo product;
+	BoardInfo board;
 	WineProtonInfo wine_proton;
 	DistroInfo distro;
 	String kernel_version;
 	bool is_steamos = false;
 	bool is_bazzite = false;
 	bool is_steam = false;
+	bool is_steamdeck = false;
 };
 
 // Runs platform detection checks. Results are cached after the first call.

@@ -131,6 +131,36 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 		device_context["model"] = model;
 	}
 
+#ifdef SDK_NATIVE
+	native::PlatformInfo platform = native::detect_platform();
+
+	if (!platform.product.family.is_empty()) {
+		// Product family is the most likely place to contain actual model info,
+		// such as laptop or handheld model.
+		device_context["model"] = platform.product.family;
+	} else if (!platform.product.name.is_empty()) {
+		device_context["model"] = platform.product.name;
+	} else if (!platform.board.name.is_empty()) {
+		device_context["model"] = platform.board.name;
+	}
+
+	if (!platform.product.vendor.is_empty()) {
+		device_context["manufacturer"] = platform.product.vendor;
+	}
+
+	// Steam Deck overrides
+	if (platform.is_steamdeck) {
+		device_context["device_type"] = "Handheld";
+		device_context["family"] = "Steam Deck";
+		if (platform.product.family == "Sephiroth") {
+			device_context["model"] = "Steam Deck OLED";
+		} else if (platform.product.family == "Aerith") {
+			device_context["model"] = "Steam Deck LCD";
+		}
+		device_context["model_id"] = platform.product.name;
+	}
+#endif // SDK_NATIVE
+
 	// Note: Godot Engine doesn't support changing screen resolution.
 	Vector2i resolution = DisplayServer::get_singleton()->screen_get_size(primary_screen);
 	device_context["screen_width_pixels"] = resolution.x;
