@@ -173,6 +173,7 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 #ifdef SDK_NATIVE
 	native::PlatformInfo platform = native::detect_platform();
 
+	// Override values with SMBIOS hardware identity.
 	_set_context_value(device_context, "model",
 			platform.product.name,
 			platform.product.family, // fallback to product family
