@@ -133,28 +133,6 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 		device_context["model"] = model;
 	}
 
-#ifdef SDK_NATIVE
-	native::PlatformInfo platform = native::detect_platform();
-
-	_set_context_value(device_context, "model",
-			platform.product.family,
-			platform.product.name, // fallback to product name
-			platform.board.name); // ...or board name
-	_set_context_value(device_context, "manufacturer", platform.product.manufacturer);
-
-	// Steam Deck overrides
-	if (platform.is_steamdeck) {
-		device_context["device_type"] = "Handheld";
-		device_context["family"] = "Steam Deck";
-		if (platform.product.family == "Sephiroth") {
-			device_context["model"] = "Steam Deck OLED";
-		} else if (platform.product.family == "Aerith") {
-			device_context["model"] = "Steam Deck LCD";
-		}
-		_set_context_value(device_context, "model_id", platform.product.name);
-	}
-#endif // SDK_NATIVE
-
 	// Note: Godot Engine doesn't support changing screen resolution.
 	Vector2i resolution = DisplayServer::get_singleton()->screen_get_size(primary_screen);
 	device_context["screen_width_pixels"] = resolution.x;
@@ -191,6 +169,28 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	// Read/initialize installation id.
 	String installation_id = p_runtime_config->get_installation_id();
 	device_context["device_unique_identifier"] = installation_id;
+
+#ifdef SDK_NATIVE
+	native::PlatformInfo platform = native::detect_platform();
+
+	_set_context_value(device_context, "model",
+			platform.product.family,
+			platform.product.name, // fallback to product name
+			platform.board.name); // ...or board name
+	_set_context_value(device_context, "manufacturer", platform.product.manufacturer);
+
+	// Steam Deck overrides
+	if (platform.is_steamdeck) {
+		device_context["device_type"] = "Handheld";
+		device_context["family"] = "Steam Deck";
+		if (platform.product.family == "Sephiroth") {
+			device_context["model"] = "Steam Deck OLED";
+		} else if (platform.product.family == "Aerith") {
+			device_context["model"] = "Steam Deck LCD";
+		}
+		_set_context_value(device_context, "model_id", platform.product.name);
+	}
+#endif // SDK_NATIVE
 
 	return device_context;
 }
