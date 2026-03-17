@@ -172,8 +172,8 @@ sentry::native::ProductInfo _read_product_info() {
 #ifdef LINUX_ENABLED
 	product.name = _read_rootfs_file("/sys/class/dmi/id/product_name");
 	product.family = _read_rootfs_file("/sys/class/dmi/id/product_family");
-	product.version = _read_rootfs_file("/sys/class/dmi/id/product_version");
 	product.manufacturer = _read_rootfs_file("/sys/class/dmi/id/sys_vendor");
+	product.board_name = _read_rootfs_file("/sys/class/dmi/id/board_name");
 #endif // LINUX_ENABLED
 
 #ifdef WINDOWS_ENABLED
@@ -181,35 +181,13 @@ sentry::native::ProductInfo _read_product_info() {
 	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Hardware\\Description\\System\\BIOS", 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
 		product.name = _read_registry_string(hkey, L"SystemProductName");
 		product.family = _read_registry_string(hkey, L"SystemFamily");
-		product.version = _read_registry_string(hkey, L"SystemVersion");
 		product.manufacturer = _read_registry_string(hkey, L"SystemManufacturer");
+		product.board_name = _read_registry_string(hkey, L"BaseBoardProduct");
 		RegCloseKey(hkey);
 	}
 #endif // WINDOWS_ENABLED
 
 	return product;
-}
-
-sentry::native::BoardInfo _read_board_info() {
-	sentry::native::BoardInfo board;
-
-#ifdef LINUX_ENABLED
-	board.name = _read_rootfs_file("/sys/class/dmi/id/board_name");
-	board.vendor = _read_rootfs_file("/sys/class/dmi/id/board_vendor");
-	board.version = _read_rootfs_file("/sys/class/dmi/id/board_version");
-#endif // LINUX_ENABLED
-
-#ifdef WINDOWS_ENABLED
-	HKEY hkey;
-	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Hardware\\Description\\System\\BIOS", 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
-		board.name = _read_registry_string(hkey, L"BaseBoardProduct");
-		board.vendor = _read_registry_string(hkey, L"BaseBoardManufacturer");
-		board.version = _read_registry_string(hkey, L"BaseBoardVersion");
-		RegCloseKey(hkey);
-	}
-#endif // WINDOWS_ENABLED
-
-	return board;
 }
 
 // Parses /etc/os-release into a DistroInfo struct.
@@ -348,7 +326,6 @@ const PlatformInfo &detect_platform() {
 		first_run = false;
 
 		cached_info.product = _read_product_info();
-		cached_info.board = _read_board_info();
 
 #if defined(LINUX_ENABLED)
 		cached_info.distro = _read_distro_info();

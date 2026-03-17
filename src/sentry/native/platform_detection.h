@@ -22,24 +22,16 @@ struct DistroInfo {
 	String update_branch; // "stable", "beta"
 };
 
-// SMBIOS system information
+// SMBIOS system and baseboard identity
 struct ProductInfo {
-	String name;
-	String manufacturer;
-	String family;
-	String version;
-};
-
-// SMBIOS baseboard information
-struct BoardInfo {
-	String name;
-	String vendor;
-	String version;
+	String name; // "Inspiron 15 5510", "Jupiter"
+	String manufacturer; // "Dell Inc.", "Valve"
+	String family; // "Inspiron", "Aerith"
+	String board_name; // "0MJFHK", "Jupiter"
 };
 
 struct PlatformInfo {
 	ProductInfo product;
-	BoardInfo board;
 	WineProtonInfo wine_proton;
 	DistroInfo distro;
 	String kernel_version;

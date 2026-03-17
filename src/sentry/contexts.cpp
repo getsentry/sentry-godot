@@ -177,7 +177,7 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	_set_context_value(device_context, "model",
 			platform.product.name,
 			platform.product.family, // fallback to product family
-			platform.board.name); // ...or board name
+			platform.product.board_name); // ...or board name
 	_set_context_value(device_context, "manufacturer", platform.product.manufacturer);
 	_set_context_value(device_context, "family", platform.product.family);
 
