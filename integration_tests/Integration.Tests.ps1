@@ -139,15 +139,11 @@ BeforeAll {
     Connect-SentryApi `
         -ApiToken $script:TestSetup.AuthToken `
         -DSN $script:TestSetup.Dsn
-
-    Connect-Device -Platform $script:TestSetup.Platform
-    Install-DeviceApp -Path $script:TestSetup.Executable
 }
 
 
 AfterAll {
     Disconnect-SentryApi
-    Disconnect-Device
 }
 
 
@@ -156,6 +152,9 @@ Describe "Platform Integration Tests" {
     # TODO: metrics tests
 
     BeforeAll {
+        Connect-Device -Platform $script:TestSetup.Platform
+        Install-DeviceApp -Path $script:TestSetup.Executable
+
         # Run all test actions upfront to minimize device idle time.
         # This prevents SauceLabs session timeouts that occur when the device
         # sits idle during Sentry API polling (up to 120s per event) between launches.
@@ -164,6 +163,8 @@ Describe "Platform Integration Tests" {
         $script:attachmentRunResult = Invoke-TestAction -Action "attachment-capture"
         $script:runtimeErrorRunResult = Invoke-TestAction -Action "runtime-error-capture"
         $script:logRunResult = Invoke-TestAction -Action "log-capture"
+
+        Disconnect-Device
     }
 
     Context "Crash Capture" {
