@@ -233,6 +233,11 @@ func _cmd_metric_capture() -> int:
 	SentrySDK.metrics.gauge("test.integration.gauge", 15.0, "byte", attributes)
 
 	print("METRIC_TRIGGERED: ", test_id)
+
+	# Flush pending data before exit
+	SentrySDK.close()
+	await get_tree().create_timer(1.0).timeout
+
 	_print_test_result("metric-capture", true, "Test complete")
 	return 0
 
