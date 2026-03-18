@@ -152,7 +152,6 @@ AfterAll {
 
 
 Describe "Platform Integration Tests" {
-    # TODO: structured logs tests
     # TODO: user feedback tests
     # TODO: metrics tests
 
@@ -164,6 +163,7 @@ Describe "Platform Integration Tests" {
         $script:messageRunResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("TestMessage")
         $script:attachmentRunResult = Invoke-TestAction -Action "attachment-capture"
         $script:runtimeErrorRunResult = Invoke-TestAction -Action "runtime-error-capture"
+        $script:logRunResult = Invoke-TestAction -Action "log-capture"
     }
 
     Context "Crash Capture" {
@@ -532,6 +532,78 @@ Describe "Platform Integration Tests" {
             for ($i = 1; $i -lt $framePositions.Count; $i++) {
                 $framePositions[$i] | Should -BeGreaterThan $framePositions[$i-1] -Because "Frames should appear in correct order"
             }
+        }
+    }
+
+    Context "Structured Logging" {
+        BeforeAll {
+            $runResult = $script:logRunResult
+
+            # Parse test ID from output (format: LOG_TRIGGERED: <test-id>)
+            $logTriggeredLines = @($runResult.Output | Where-Object { $_ -match 'LOG_TRIGGERED: ' })
+            $testId = $null
+            $capturedLogs = @()
+
+            if ($logTriggeredLines.Count -gt 0) {
+                $testId = ($logTriggeredLines[0] -split 'LOG_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured Test ID: $testId" -ForegroundColor Cyan
+
+                Write-GitHub "::group::Getting structured log"
+                try {
+                    $capturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $testId -Fields @('handler_added', 'deleted_log_attribute', 'global_attribute', 'deleted_global_attribute')
+                }
+                catch {
+                    Write-Host "Warning: $_" -ForegroundColor Red
+                }
+                Write-GitHub "::endgroup::"
+            }
+            else {
+                Write-Host "Warning: No LOG_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+
+            $log = if ($capturedLogs) { $capturedLogs[0] } else { $null }
+        }
+
+        It "Outputs LOG_TRIGGERED with test ID" {
+            $testId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Outputs TEST_RESULT with success" {
+            $testResultLine = $runResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success":true'
+        }
+
+        It "Captures structured log in Sentry" {
+            $log | Should -Not -BeNullOrEmpty
+        }
+
+        It "Has correct log message" {
+            $log.message | Should -Match 'Integration test structured log'
+        }
+
+        It "Has correct severity level" {
+            $log.severity | Should -Be 'warn'
+        }
+
+        It "Has test_id attribute matching captured ID" {
+            $log.'test_id' | Should -Be $testId
+        }
+
+        It "Has attribute added by before_send_log" {
+            $log.'handler_added' | Should -Be 'added_value'
+        }
+
+        It "Does not have attribute removed by before_send_log" {
+            $log.'deleted_log_attribute' | Should -BeNullOrEmpty
+        }
+
+        It "Has global attribute" {
+            $log.'global_attribute' | Should -Be 'global_value'
+        }
+
+        It "Does not have removed global attribute" {
+            $log.'deleted_global_attribute' | Should -BeNullOrEmpty
         }
     }
 }

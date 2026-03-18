@@ -37,6 +37,7 @@ func _register_commands() -> void:
 	_parser.add_command("message-capture", _cmd_message_capture, "Capture a test message to Sentry")
 	_parser.add_command("runtime-error-capture", _cmd_runtime_error_capture, "Capture Godot runtime error")
 	_parser.add_command("attachment-capture", _cmd_attachment_capture, "Capture a message with custom attachments")
+	_parser.add_command("log-capture", _cmd_log_capture, "Capture a structured log to Sentry")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
 
 
@@ -158,6 +159,47 @@ func _cmd_attachment_capture() -> int:
 	print("EVENT_CAPTURED: ", event_id)
 	_print_test_result("attachment-capture", true, "Test complete")
 	return 0
+
+
+## Captures a structured log to Sentry.
+func _cmd_log_capture() -> int:
+	await _init_sentry(func(options: SentryOptions) -> void:
+		options.enable_logs = true
+		options.before_send_log = _before_send_log
+	)
+	_add_integration_test_context("log-capture")
+
+	# Generate unique test ID for correlation
+	# NOTE: Borrowing UUID generation from SentryUser class.
+	var uuid_gen := SentryUser.new()
+	uuid_gen.generate_new_id()
+	var test_id := uuid_gen.id
+
+	# Set global attributes (merged into all logs)
+	SentrySDK.set_attribute("global_attribute", "global_value")
+	SentrySDK.set_attribute("deleted_global_attribute", "should_not_appear")
+	SentrySDK.remove_attribute("deleted_global_attribute")
+
+	# Send structured log with attributes
+	SentrySDK.logger.warn("Integration test structured log", [], {
+		"test_id": test_id,
+		"deleted_log_attribute": "original_value",
+	})
+
+	print("LOG_TRIGGERED: ", test_id)
+
+	# Flush pending data before exit
+	SentrySDK.close()
+	await get_tree().create_timer(1.0).timeout
+
+	_print_test_result("log-capture", true, "Test complete")
+	return 0
+
+
+func _before_send_log(entry: SentryLog) -> SentryLog:
+	entry.set_attribute("handler_added", "added_value")
+	entry.remove_attribute("deleted_log_attribute")
+	return entry
 
 
 func _cmd_run_tests(tests: String = "res://test/suites/") -> int:
