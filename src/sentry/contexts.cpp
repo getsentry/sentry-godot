@@ -98,6 +98,15 @@ String _get_device_type() {
 	return "Unknown";
 }
 
+template <typename... Fallbacks>
+inline void _set_context_value(Dictionary &p_context, const String &p_key, const String &p_value, Fallbacks... p_fallbacks) {
+	if (!p_value.is_empty()) {
+		p_context[p_key] = p_value;
+	} else if constexpr (sizeof...(p_fallbacks) > 0) {
+		_set_context_value(p_context, p_key, p_fallbacks...);
+	}
+}
+
 } // unnamed namespace
 
 namespace sentry::contexts {
@@ -108,22 +117,15 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	ERR_FAIL_NULL_V(Engine::get_singleton(), device_context);
 	ERR_FAIL_NULL_V(DisplayServer::get_singleton(), device_context);
 
-	device_context["arch"] = Engine::get_singleton()->get_architecture_name();
-
-	device_context["device_type"] = _get_device_type();
+	_set_context_value(device_context, "arch", Engine::get_singleton()->get_architecture_name());
+	_set_context_value(device_context, "device_type", _get_device_type());
 
 	int primary_screen = DisplayServer::get_singleton()->get_primary_screen();
-	String orientation = _screen_orientation_as_string(primary_screen);
-	if (orientation.length() > 0) {
-		device_context["orientation"] = orientation;
-	}
+	_set_context_value(device_context, "orientation", _screen_orientation_as_string(primary_screen));
 
 	// Set device.name to hostname if server.
 	if (SENTRY_OPTIONS()->is_send_default_pii_enabled() && OS::get_singleton()->has_feature("dedicated_server")) {
-		String host = _get_hostname();
-		if (!host.is_empty()) {
-			device_context["name"] = host;
-		}
+		_set_context_value(device_context, "name", _get_hostname());
 	}
 
 	String model = OS::get_singleton()->get_model_name();
@@ -162,15 +164,35 @@ Dictionary make_device_context(const Ref<RuntimeConfig> &p_runtime_config) {
 	}
 
 	device_context["processor_count"] = OS::get_singleton()->get_processor_count();
-
-	String cpu_desc = OS::get_singleton()->get_processor_name();
-	if (!cpu_desc.is_empty()) {
-		device_context["cpu_description"] = cpu_desc;
-	}
+	_set_context_value(device_context, "cpu_description", OS::get_singleton()->get_processor_name());
 
 	// Read/initialize installation id.
 	String installation_id = p_runtime_config->get_installation_id();
 	device_context["device_unique_identifier"] = installation_id;
+
+#ifdef SDK_NATIVE
+	const native::PlatformInfo &platform = native::detect_platform();
+
+	// Override values with SMBIOS hardware identity.
+	_set_context_value(device_context, "model",
+			platform.product.name,
+			platform.product.family, // fallback to product family
+			platform.product.board_name); // ...or board name
+	_set_context_value(device_context, "manufacturer", platform.product.manufacturer);
+	_set_context_value(device_context, "family", platform.product.family);
+
+	// Steam Deck overrides
+	if (platform.is_steamdeck) {
+		device_context["device_type"] = "Handheld";
+		device_context["family"] = "Steam Deck";
+		if (platform.product.family == "Sephiroth") {
+			device_context["model"] = "Steam Deck OLED";
+		} else if (platform.product.family == "Aerith") {
+			device_context["model"] = "Steam Deck LCD";
+		}
+		_set_context_value(device_context, "model_id", platform.product.name);
+	}
+#endif // SDK_NATIVE
 
 	return device_context;
 }

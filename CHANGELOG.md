@@ -19,6 +19,7 @@
 
 - Add UI export hint for Android Gradle build requirement ([#582](https://github.com/getsentry/sentry-godot/pull/582))
 - Set `device_type` in device context ([#587](https://github.com/getsentry/sentry-godot/pull/587))
+- Enrich device context with SMBIOS hardware identity and identify Steam Deck ([#597](https://github.com/getsentry/sentry-godot/pull/597))
 
 ### Dependencies
 

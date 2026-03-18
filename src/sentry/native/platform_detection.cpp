@@ -119,6 +119,18 @@ void _detect_proton(const String &p_steam_compat_path, sentry::native::WineProto
 	sentry::logging::print_debug("Detected Steam compatibility tool: ", r_info.runtime_name, " ", r_info.version);
 }
 
+// Read a REG_SZ string value from an open registry key.
+String _read_registry_string(HKEY p_key, LPCWSTR p_value_name) {
+	WCHAR buffer[256];
+	DWORD buffer_len = sizeof(buffer);
+	DWORD vtype = REG_SZ;
+	if (RegQueryValueExW(p_key, p_value_name, nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len > sizeof(WCHAR)) {
+		int64_t len = (buffer_len / sizeof(WCHAR)) - 1; // exclude null terminator
+		return String::utf16((const char16_t *)buffer, len).strip_edges();
+	}
+	return String();
+}
+
 sentry::native::WineProtonInfo _detect_wine_proton() {
 	sentry::native::WineProtonInfo info;
 
@@ -135,6 +147,49 @@ sentry::native::WineProtonInfo _detect_wine_proton() {
 	return info;
 }
 #endif // WINDOWS_ENABLED
+
+String _read_rootfs_file(const String &p_rootfs_path) {
+	ERR_FAIL_COND_V(!p_rootfs_path.begins_with("/"), String());
+
+#ifdef WINDOWS_ENABLED
+	Ref<FileAccess> f = FileAccess::open("Z:/run/host" + p_rootfs_path, FileAccess::READ);
+	if (!f.is_valid()) {
+		f = FileAccess::open("Z:" + p_rootfs_path, FileAccess::READ);
+	}
+#else
+	Ref<FileAccess> f = FileAccess::open(p_rootfs_path, FileAccess::READ);
+#endif
+
+	if (!f.is_valid()) {
+		return String();
+	}
+	return f->get_line().strip_edges();
+}
+
+// See https://www.dmtf.org/standards/smbios
+sentry::native::ProductInfo _read_product_info() {
+	sentry::native::ProductInfo product;
+
+#ifdef LINUX_ENABLED
+	product.name = _read_rootfs_file("/sys/class/dmi/id/product_name");
+	product.family = _read_rootfs_file("/sys/class/dmi/id/product_family");
+	product.manufacturer = _read_rootfs_file("/sys/class/dmi/id/sys_vendor");
+	product.board_name = _read_rootfs_file("/sys/class/dmi/id/board_name");
+#endif // LINUX_ENABLED
+
+#ifdef WINDOWS_ENABLED
+	HKEY hkey;
+	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Hardware\\Description\\System\\BIOS", 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
+		product.name = _read_registry_string(hkey, L"SystemProductName");
+		product.family = _read_registry_string(hkey, L"SystemFamily");
+		product.manufacturer = _read_registry_string(hkey, L"SystemManufacturer");
+		product.board_name = _read_registry_string(hkey, L"BaseBoardProduct");
+		RegCloseKey(hkey);
+	}
+#endif // WINDOWS_ENABLED
+
+	return product;
+}
 
 // Parses /etc/os-release into a DistroInfo struct.
 // Format: KEY=VALUE or KEY="VALUE" (one per line).
@@ -251,6 +306,15 @@ bool _detect_steam() {
 	return !steam_app_id.is_empty() || !steam_game_id.is_empty() || !steam_overlay_id.is_empty();
 }
 
+bool _detect_steamdeck(const sentry::native::ProductInfo &p_product) {
+	if (p_product.manufacturer == "Valve") {
+		if (p_product.family == "Aerith" || p_product.family == "Sephiroth") {
+			return true;
+		}
+	}
+	return false;
+}
+
 } // unnamed namespace
 
 namespace sentry::native {
@@ -262,7 +326,9 @@ const PlatformInfo &detect_platform() {
 	if (first_run) {
 		first_run = false;
 
-#ifdef LINUX_ENABLED
+		cached_info.product = _read_product_info();
+
+#if defined(LINUX_ENABLED)
 		cached_info.distro = _read_distro_info();
 		cached_info.kernel_version = _read_kernel_version();
 #elif defined(WINDOWS_ENABLED)
@@ -276,6 +342,7 @@ const PlatformInfo &detect_platform() {
 		cached_info.is_steamos = _detect_steamos(cached_info.distro);
 		cached_info.is_bazzite = _detect_bazzite(cached_info.distro);
 		cached_info.is_steam = _detect_steam();
+		cached_info.is_steamdeck = _detect_steamdeck(cached_info.product);
 	}
 
 	return cached_info;
