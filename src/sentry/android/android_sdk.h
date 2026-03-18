@@ -59,7 +59,7 @@ private:
 	SentryAndroidBeforeSendLogHandler *before_send_log_handler = nullptr;
 	SentryAndroidBeforeSendMetricHandler *before_send_metric_handler = nullptr;
 
-	_ALWAYS_INLINE_ Object *_get_android_plugin() const { return ObjectDB::get_instance(android_plugin_instance_id); }
+	_FORCE_INLINE_ Object *_get_android_plugin() const { return ObjectDB::get_instance(android_plugin_instance_id); }
 
 	void _add_default_attachments();
 

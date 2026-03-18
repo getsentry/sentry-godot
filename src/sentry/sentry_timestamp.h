@@ -29,10 +29,10 @@ public:
 	// Create with microseconds since Unix epoch – lossless.
 	static Ref<SentryTimestamp> from_microseconds_since_unix_epoch(int64_t p_microseconds);
 
-	_ALWAYS_INLINE_ int64_t get_microseconds_since_unix_epoch() const { return microseconds_since_unix_epoch; }
-	_ALWAYS_INLINE_ void set_microseconds_since_unix_epoch(int64_t p_microseconds) { microseconds_since_unix_epoch = p_microseconds; }
+	_FORCE_INLINE_ int64_t get_microseconds_since_unix_epoch() const { return microseconds_since_unix_epoch; }
+	_FORCE_INLINE_ void set_microseconds_since_unix_epoch(int64_t p_microseconds) { microseconds_since_unix_epoch = p_microseconds; }
 
-	_ALWAYS_INLINE_ bool equals(const Ref<SentryTimestamp> &p_other) {
+	_FORCE_INLINE_ bool equals(const Ref<SentryTimestamp> &p_other) {
 		return p_other.is_valid() ? microseconds_since_unix_epoch == p_other->microseconds_since_unix_epoch : false;
 	}
 
@@ -40,7 +40,7 @@ public:
 	String to_rfc3339() const;
 
 	// Return seconds since Unix epoch as double with microsecond precision.
-	_ALWAYS_INLINE_ double to_unix_time() const { return microseconds_since_unix_epoch * 0.000'001; }
+	_FORCE_INLINE_ double to_unix_time() const { return microseconds_since_unix_epoch * 0.000'001; }
 };
 
 } // namespace sentry

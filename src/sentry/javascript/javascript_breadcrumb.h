@@ -15,7 +15,7 @@ class JavaScriptBreadcrumb : public SentryBreadcrumb {
 private:
 	JSObjectPtr js_obj;
 
-	_ALWAYS_INLINE_ JSObjectPtr get_js_object() const { return js_obj; }
+	_FORCE_INLINE_ JSObjectPtr get_js_object() const { return js_obj; }
 
 protected:
 	static void _bind_methods() {}

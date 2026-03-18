@@ -15,7 +15,7 @@ protected:
 	static void _bind_methods() {}
 
 public:
-	_ALWAYS_INLINE_ objc::SentryBreadcrumb *get_cocoa_breadcrumb() const { return cocoa_breadcrumb; }
+	_FORCE_INLINE_ objc::SentryBreadcrumb *get_cocoa_breadcrumb() const { return cocoa_breadcrumb; }
 
 	virtual void set_message(const String &p_message) override;
 	virtual String get_message() const override;

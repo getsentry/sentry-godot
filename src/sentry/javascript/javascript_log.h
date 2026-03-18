@@ -15,7 +15,7 @@ protected:
 	static void _bind_methods() {}
 
 public:
-	_ALWAYS_INLINE_ JSObjectPtr get_js_object() const { return js_obj; }
+	_FORCE_INLINE_ JSObjectPtr get_js_object() const { return js_obj; }
 
 	virtual LogLevel get_level() const override;
 	virtual void set_level(LogLevel p_level) override;

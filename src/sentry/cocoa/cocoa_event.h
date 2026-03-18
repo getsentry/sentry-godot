@@ -15,7 +15,7 @@ protected:
 	static void _bind_methods() {}
 
 public:
-	_ALWAYS_INLINE_ objc::SentryEvent *get_cocoa_event() const { return cocoa_event; }
+	_FORCE_INLINE_ objc::SentryEvent *get_cocoa_event() const { return cocoa_event; }
 
 	virtual String get_id() const override;
 

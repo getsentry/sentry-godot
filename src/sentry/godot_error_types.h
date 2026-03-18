@@ -22,10 +22,10 @@ enum GodotErrorMask {
 };
 
 // Used for exporting as PropertyInfo.
-_ALWAYS_INLINE_ godot::String GODOT_ERROR_MASK_EXPORT_STRING() { return "Error,Warning,Script,Shader"; }
+_FORCE_INLINE_ godot::String GODOT_ERROR_MASK_EXPORT_STRING() { return "Error,Warning,Script,Shader"; }
 
-_ALWAYS_INLINE_ Level get_sentry_level_for_godot_error_type(GodotErrorType p_error_type) { return p_error_type == GodotErrorType::ERROR_TYPE_WARNING ? LEVEL_WARNING : LEVEL_ERROR; }
-_ALWAYS_INLINE_ LogLevel get_sentry_log_level_for_godot_error_type(GodotErrorType p_error_type) { return p_error_type == GodotErrorType::ERROR_TYPE_WARNING ? LOG_LEVEL_WARN : LOG_LEVEL_ERROR; }
-_ALWAYS_INLINE_ GodotErrorMask godot_error_type_as_mask(GodotErrorType p_error_type) { return (GodotErrorMask)(1 << int(p_error_type)); }
+_FORCE_INLINE_ Level get_sentry_level_for_godot_error_type(GodotErrorType p_error_type) { return p_error_type == GodotErrorType::ERROR_TYPE_WARNING ? LEVEL_WARNING : LEVEL_ERROR; }
+_FORCE_INLINE_ LogLevel get_sentry_log_level_for_godot_error_type(GodotErrorType p_error_type) { return p_error_type == GodotErrorType::ERROR_TYPE_WARNING ? LOG_LEVEL_WARN : LOG_LEVEL_ERROR; }
+_FORCE_INLINE_ GodotErrorMask godot_error_type_as_mask(GodotErrorType p_error_type) { return (GodotErrorMask)(1 << int(p_error_type)); }
 
 } //namespace sentry

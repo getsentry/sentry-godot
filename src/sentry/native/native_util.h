@@ -25,7 +25,7 @@ Level native_to_level(sentry_level_t p_native_level);
 CharString level_to_cstring(Level p_level);
 Level cstring_to_level(const CharString &p_cstring);
 
-_ALWAYS_INLINE_ void sentry_value_set_or_remove_string_by_key(sentry_value_t value, const char *k, const String &v) {
+_FORCE_INLINE_ void sentry_value_set_or_remove_string_by_key(sentry_value_t value, const char *k, const String &v) {
 	if (v.is_empty()) {
 		sentry_value_remove_by_key(value, k);
 	} else {

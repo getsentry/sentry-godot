@@ -23,7 +23,7 @@ private:
 	AndroidStringNames();
 
 public:
-	_ALWAYS_INLINE_ static AndroidStringNames *get_singleton() { return singleton; }
+	_FORCE_INLINE_ static AndroidStringNames *get_singleton() { return singleton; }
 
 	// API methods.
 	StringName init;

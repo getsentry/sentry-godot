@@ -60,9 +60,9 @@ public:
 	static void destroy_singleton();
 	static SentrySDK *get_singleton() { return singleton; }
 
-	_ALWAYS_INLINE_ Ref<SentryOptions> get_options() const { return options; }
-	_ALWAYS_INLINE_ sentry::InternalSDK *get_internal_sdk() const { return internal_sdk.get(); }
-	_ALWAYS_INLINE_ Ref<RuntimeConfig> get_runtime_config() const { return runtime_config; }
+	_FORCE_INLINE_ Ref<SentryOptions> get_options() const { return options; }
+	_FORCE_INLINE_ sentry::InternalSDK *get_internal_sdk() const { return internal_sdk.get(); }
+	_FORCE_INLINE_ Ref<RuntimeConfig> get_runtime_config() const { return runtime_config; }
 
 	// * Exported API
 
@@ -80,8 +80,8 @@ public:
 	void set_user(const Ref<SentryUser> &p_user);
 	void remove_user();
 
-	_ALWAYS_INLINE_ SentryLogger *get_logger() const { return logger; }
-	_ALWAYS_INLINE_ SentryMetrics *get_metrics() const { return metrics; }
+	_FORCE_INLINE_ SentryLogger *get_logger() const { return logger; }
+	_FORCE_INLINE_ SentryMetrics *get_metrics() const { return metrics; }
 
 	String capture_message(const String &p_message, sentry::Level p_level = sentry::LEVEL_INFO);
 	String get_last_event_id() const;

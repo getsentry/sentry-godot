@@ -10,7 +10,7 @@ namespace sentry::bind {
 // Registers the specified property and its accessors in the ClassDB.
 // Note: This function is used in the macros defined below.
 template <auto Setter, auto Getter>
-_ALWAYS_INLINE_ void bind_property(const godot::StringName &p_class, const godot::PropertyInfo &p_info, const godot::StringName &p_setter_name, const godot::StringName &p_getter_name) {
+_FORCE_INLINE_ void bind_property(const godot::StringName &p_class, const godot::PropertyInfo &p_info, const godot::StringName &p_setter_name, const godot::StringName &p_getter_name) {
 	godot::ClassDB::bind_method(D_METHOD(p_setter_name, p_info.name), Setter);
 	godot::ClassDB::bind_method(D_METHOD(p_getter_name), Getter);
 	godot::ClassDB::add_property(p_class, p_info, p_setter_name, p_getter_name);
@@ -18,7 +18,7 @@ _ALWAYS_INLINE_ void bind_property(const godot::StringName &p_class, const godot
 
 // Registers read-only property and its getter in the ClassDB.
 template <auto Getter>
-_ALWAYS_INLINE_ void bind_property_readonly(const godot::StringName &p_class, const godot::PropertyInfo &p_info, const godot::StringName &p_getter_name) {
+_FORCE_INLINE_ void bind_property_readonly(const godot::StringName &p_class, const godot::PropertyInfo &p_info, const godot::StringName &p_getter_name) {
 	godot::ClassDB::bind_method(D_METHOD(p_getter_name), Getter);
 	godot::ClassDB::add_property(p_class, p_info, "", p_getter_name);
 }
