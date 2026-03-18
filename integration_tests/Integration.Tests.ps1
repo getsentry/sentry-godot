@@ -160,14 +160,17 @@ Describe "Platform Integration Tests" {
         # Run all test actions upfront to minimize device idle time.
         # This prevents SauceLabs session timeouts that occur when the device
         # sits idle during Sentry API polling (up to 120s per event) between launches.
-        $script:crashRunResult = Invoke-TestAction -Action "crash-capture"
-        $script:messageRunResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("TestMessage")
-        $script:attachmentRunResult = Invoke-TestAction -Action "attachment-capture"
-        $script:runtimeErrorRunResult = Invoke-TestAction -Action "runtime-error-capture"
-        $script:logRunResult = Invoke-TestAction -Action "log-capture"
-        $script:metricRunResult = Invoke-TestAction -Action "metric-capture"
-
-        Disconnect-Device
+        try {
+            $script:crashRunResult = Invoke-TestAction -Action "crash-capture"
+            $script:messageRunResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("TestMessage")
+            $script:attachmentRunResult = Invoke-TestAction -Action "attachment-capture"
+            $script:runtimeErrorRunResult = Invoke-TestAction -Action "runtime-error-capture"
+            $script:logRunResult = Invoke-TestAction -Action "log-capture"
+            $script:metricRunResult = Invoke-TestAction -Action "metric-capture"
+        }
+        finally {
+            Disconnect-Device
+        }
     }
 
     Context "Crash Capture" {
