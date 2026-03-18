@@ -55,11 +55,9 @@ func _cmd_crash_capture() -> int:
 
 	print("Triggering controlled crash...")
 
-	# NOTE: Borrowing UUID generation from SentryUser class.
-	var uuid_gen := SentryUser.new()
-	uuid_gen.generate_new_id()
-	SentrySDK.set_tag("test.crash_id", uuid_gen.id)
-	print("EVENT_CAPTURED: ", uuid_gen.id)
+	var crash_id: String = _generate_uuid()
+	SentrySDK.set_tag("test.crash_id", crash_id)
+	print("EVENT_CAPTURED: ", crash_id)
 
 	_print_test_result("crash-capture", true, "Pre-crash setup complete")
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("About to trigger controlled crash"))
@@ -170,16 +168,12 @@ func _cmd_log_capture() -> int:
 	)
 	_add_integration_test_context("log-capture")
 
-	# Generate unique test ID for correlation
-	# NOTE: Borrowing UUID generation from SentryUser class.
-	var uuid_gen := SentryUser.new()
-	uuid_gen.generate_new_id()
-	var test_id := uuid_gen.id
-
 	# Set global attributes (merged into all logs)
 	SentrySDK.set_attribute("global_attribute", "global_value")
 	SentrySDK.set_attribute("deleted_global_attribute", "should_not_appear")
 	SentrySDK.remove_attribute("deleted_global_attribute")
+
+	var test_id: String = _generate_uuid()
 
 	# Send structured log with attributes
 	SentrySDK.logger.warn("Integration test structured log", [], {
@@ -211,16 +205,12 @@ func _cmd_metric_capture() -> int:
 	)
 	_add_integration_test_context("metric-capture")
 
-	# Generate unique test ID for correlation
-	# NOTE: Borrowing UUID generation from SentryUser class.
-	var uuid_gen := SentryUser.new()
-	uuid_gen.generate_new_id()
-	var test_id := uuid_gen.id
-
 	# Set global attributes (merged into all metrics)
 	SentrySDK.set_attribute("global_attribute", "global_value")
 	SentrySDK.set_attribute("deleted_global_attribute", "should_not_appear")
 	SentrySDK.remove_attribute("deleted_global_attribute")
+
+	var test_id: String = _generate_uuid()
 
 	var attributes := {
 		"test_id": test_id,
@@ -323,6 +313,13 @@ func _write_text_file(p_path: String, p_content: String) -> void:
 	var file := FileAccess.open(p_path, FileAccess.WRITE)
 	file.store_string(p_content)
 	file.close()
+
+
+func _generate_uuid() -> String:
+	# NOTE: Borrowing UUID generation from SentryUser class.
+	var user := SentryUser.new()
+	user.generate_new_id()
+	return user.id
 
 
 func _print_test_result(test_name: String, success: bool, message: String) -> void:
