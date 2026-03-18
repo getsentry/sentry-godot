@@ -60,14 +60,14 @@ jobs:
             godot-arch: x86_64
             test-executable: ./exports/android.apk
             export-platform: android
-            saucelabs-device: Samsung_Galaxy.*
+            saucelabs-device: Samsung_Galaxy_S25_16_real_sjc1
 
           - test-platform: iOSSauceLabs
             runner: macos-latest
             godot-arch: universal
             test-executable: ./exports/ios/ios.ipa
             export-platform: ios
-            saucelabs-device: iPhone.*
+            saucelabs-device: iPhone_17_Pro_real_sjc1
 
     steps:
       - name: Checkout repo
