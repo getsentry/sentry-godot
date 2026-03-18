@@ -168,14 +168,12 @@ func _cmd_log_capture() -> int:
 	)
 	_add_integration_test_context("log-capture")
 
-	# Set global attributes (merged into all logs)
 	SentrySDK.set_attribute("global_attribute", "global_value")
 	SentrySDK.set_attribute("deleted_global_attribute", "should_not_appear")
 	SentrySDK.remove_attribute("deleted_global_attribute")
 
 	var test_id: String = _generate_uuid()
 
-	# Send structured log with attributes
 	SentrySDK.logger.warn("Integration test structured log", [], {
 		"test_id": test_id,
 		"deleted_log_attribute": "original_value",
@@ -183,7 +181,6 @@ func _cmd_log_capture() -> int:
 
 	print("LOG_TRIGGERED: ", test_id)
 
-	# Flush pending data before exit
 	SentrySDK.close()
 	await get_tree().create_timer(1.0).timeout
 
@@ -205,7 +202,6 @@ func _cmd_metric_capture() -> int:
 	)
 	_add_integration_test_context("metric-capture")
 
-	# Set global attributes (merged into all metrics)
 	SentrySDK.set_attribute("global_attribute", "global_value")
 	SentrySDK.set_attribute("deleted_global_attribute", "should_not_appear")
 	SentrySDK.remove_attribute("deleted_global_attribute")
@@ -217,14 +213,12 @@ func _cmd_metric_capture() -> int:
 		"deleted_metric_attribute": "original_value",
 	}
 
-	# Emit all three metric types
 	SentrySDK.metrics.count("test.integration.counter", 1, attributes)
 	SentrySDK.metrics.distribution("test.integration.distribution", 42.5, "millisecond", attributes)
 	SentrySDK.metrics.gauge("test.integration.gauge", 15.0, "byte", attributes)
 
 	print("METRIC_TRIGGERED: ", test_id)
 
-	# Flush pending data before exit
 	SentrySDK.close()
 	await get_tree().create_timer(1.0).timeout
 
