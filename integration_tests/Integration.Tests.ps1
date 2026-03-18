@@ -595,7 +595,7 @@ Describe "Platform Integration Tests" {
         }
 
         It "Has test_id attribute matching captured ID" {
-            $log.'test_id' | Should -Be $testId
+            $log.test_id | Should -Be $testId
         }
 
         It "Has attribute added by before_send_log" {
