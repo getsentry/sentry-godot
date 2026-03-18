@@ -155,13 +155,13 @@ Describe "Platform Integration Tests" {
     # TODO: user feedback tests
 
     BeforeAll {
-        Connect-Device -Platform $script:TestSetup.Platform
-        Install-DeviceApp -Path $script:TestSetup.Executable
-
         # Run all test actions upfront to minimize device idle time.
         # This prevents SauceLabs session timeouts that occur when the device
         # sits idle during Sentry API polling (up to 120s per event) between launches.
         try {
+            Connect-Device -Platform $script:TestSetup.Platform
+            Install-DeviceApp -Path $script:TestSetup.Executable
+
             $script:crashRunResult = Invoke-TestAction -Action "crash-capture"
             $script:messageRunResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("TestMessage")
             $script:attachmentRunResult = Invoke-TestAction -Action "attachment-capture"
