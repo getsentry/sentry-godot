@@ -38,6 +38,7 @@ func _register_commands() -> void:
 	_parser.add_command("runtime-error-capture", _cmd_runtime_error_capture, "Capture Godot runtime error")
 	_parser.add_command("attachment-capture", _cmd_attachment_capture, "Capture a message with custom attachments")
 	_parser.add_command("log-capture", _cmd_log_capture, "Capture a structured log to Sentry")
+	_parser.add_command("metric-capture", _cmd_metric_capture, "Capture metrics to Sentry")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
 
 
@@ -200,6 +201,46 @@ func _before_send_log(entry: SentryLog) -> SentryLog:
 	entry.set_attribute("handler_added", "added_value")
 	entry.remove_attribute("deleted_log_attribute")
 	return entry
+
+
+## Captures counter, distribution, and gauge metrics to Sentry.
+func _cmd_metric_capture() -> int:
+	await _init_sentry(func(options: SentryOptions) -> void:
+		options.experimental.enable_metrics = true
+		options.experimental.before_send_metric = _before_send_metric
+	)
+	_add_integration_test_context("metric-capture")
+
+	# Generate unique test ID for correlation
+	# NOTE: Borrowing UUID generation from SentryUser class.
+	var uuid_gen := SentryUser.new()
+	uuid_gen.generate_new_id()
+	var test_id := uuid_gen.id
+
+	# Set global attributes (merged into all metrics)
+	SentrySDK.set_attribute("global_attribute", "global_value")
+	SentrySDK.set_attribute("deleted_global_attribute", "should_not_appear")
+	SentrySDK.remove_attribute("deleted_global_attribute")
+
+	var attributes := {
+		"test_id": test_id,
+		"deleted_metric_attribute": "original_value",
+	}
+
+	# Emit all three metric types
+	SentrySDK.metrics.count("test.integration.counter", 1, attributes)
+	SentrySDK.metrics.distribution("test.integration.distribution", 42.5, "millisecond", attributes)
+	SentrySDK.metrics.gauge("test.integration.gauge", 15.0, "byte", attributes)
+
+	print("METRIC_TRIGGERED: ", test_id)
+	_print_test_result("metric-capture", true, "Test complete")
+	return 0
+
+
+func _before_send_metric(metric: SentryMetric) -> SentryMetric:
+	metric.set_attribute("handler_added", "added_value")
+	metric.remove_attribute("deleted_metric_attribute")
+	return metric
 
 
 func _cmd_run_tests(tests: String = "res://test/suites/") -> int:

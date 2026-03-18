@@ -22,6 +22,10 @@ $global:DebugPreference = "Continue"
 # Import utility functions
 . $PSScriptRoot/Utils.ps1
 
+# Detect Apple target platform at discovery time (before BeforeAll runs).
+# Used to skip tests for features unsupported on Apple platforms (e.g., metrics).
+$IsCocoa = $env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
+    (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS)
 
 BeforeAll {
     # Run integration test action on device
@@ -88,8 +92,7 @@ BeforeAll {
         Platform = $env:SENTRY_TEST_PLATFORM
         AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
         IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
-        IsCocoa = ($env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
-            (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS))
+        IsCocoa = $IsCocoa
         iOSBundleId = "io.sentry.SentryGodotProject"
         iOSApplicationLogFile = "@io.sentry.SentryGodotProject:documents/logs/godot.log"
     }
@@ -149,7 +152,6 @@ AfterAll {
 
 Describe "Platform Integration Tests" {
     # TODO: user feedback tests
-    # TODO: metrics tests
 
     BeforeAll {
         Connect-Device -Platform $script:TestSetup.Platform
@@ -163,6 +165,7 @@ Describe "Platform Integration Tests" {
         $script:attachmentRunResult = Invoke-TestAction -Action "attachment-capture"
         $script:runtimeErrorRunResult = Invoke-TestAction -Action "runtime-error-capture"
         $script:logRunResult = Invoke-TestAction -Action "log-capture"
+        $script:metricRunResult = Invoke-TestAction -Action "metric-capture"
 
         Disconnect-Device
     }
@@ -605,6 +608,107 @@ Describe "Platform Integration Tests" {
 
         It "Does not have removed global attribute" {
             $log.'deleted_global_attribute' | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Metrics Capture" -Skip:$IsCocoa {
+        BeforeAll {
+            $runResult = $script:metricRunResult
+
+            # Parse test ID from output (format: METRIC_TRIGGERED: <test-id>)
+            $metricTriggeredLines = @($runResult.Output | Where-Object { $_ -match 'METRIC_TRIGGERED: ' })
+            $testId = $null
+            $counterMetrics = @()
+            $distributionMetrics = @()
+            $gaugeMetrics = @()
+
+            if ($metricTriggeredLines.Count -gt 0) {
+                $testId = ($metricTriggeredLines[0] -split 'METRIC_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured Test ID: $testId" -ForegroundColor Cyan
+
+                $metricFields = @('handler_added', 'deleted_metric_attribute', 'global_attribute', 'deleted_global_attribute')
+
+                Write-GitHub "::group::Getting metrics"
+                try {
+                    $counterMetrics = Get-SentryTestMetric -MetricName 'test.integration.counter' -AttributeName 'test_id' -AttributeValue $testId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (counter): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $distributionMetrics = Get-SentryTestMetric -MetricName 'test.integration.distribution' -AttributeName 'test_id' -AttributeValue $testId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (distribution): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $gaugeMetrics = Get-SentryTestMetric -MetricName 'test.integration.gauge' -AttributeName 'test_id' -AttributeValue $testId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (gauge): $_" -ForegroundColor Red
+                }
+                Write-GitHub "::endgroup::"
+            }
+            else {
+                Write-Host "Warning: No METRIC_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+
+            $counter = if ($counterMetrics) { $counterMetrics[0] } else { $null }
+            $distribution = if ($distributionMetrics) { $distributionMetrics[0] } else { $null }
+            $gauge = if ($gaugeMetrics) { $gaugeMetrics[0] } else { $null }
+        }
+
+        It "Outputs METRIC_TRIGGERED with test ID" {
+            $testId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Outputs TEST_RESULT with success" {
+            $testResultLine = $runResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success":true'
+        }
+
+        It "Captures counter metric" {
+            $counter | Should -Not -BeNullOrEmpty
+            $counter.'metric.name' | Should -Be 'test.integration.counter'
+            $counter.'metric.type' | Should -Be 'counter'
+            $counter.value | Should -Be 1.0
+        }
+
+        It "Captures distribution metric" {
+            $distribution | Should -Not -BeNullOrEmpty
+            $distribution.'metric.name' | Should -Be 'test.integration.distribution'
+            $distribution.'metric.type' | Should -Be 'distribution'
+            $distribution.value | Should -Be 42.5
+        }
+
+        It "Captures gauge metric" {
+            $gauge | Should -Not -BeNullOrEmpty
+            $gauge.'metric.name' | Should -Be 'test.integration.gauge'
+            $gauge.'metric.type' | Should -Be 'gauge'
+            $gauge.value | Should -Be 15.0
+        }
+
+        It "Has attribute added by before_send_metric" {
+            $counter.'handler_added' | Should -Be 'added_value'
+        }
+
+        It "Does not have attribute removed by before_send_metric" {
+            $counter.'deleted_metric_attribute' | Should -BeNullOrEmpty
+        }
+
+        It "Has test_id attribute matching captured ID" {
+            $counter.test_id | Should -Be $testId
+        }
+
+        It "Has global attribute" {
+            $counter.'global_attribute' | Should -Be 'global_value'
+        }
+
+        It "Does not have removed global attribute" {
+            $counter.'deleted_global_attribute' | Should -BeNullOrEmpty
         }
     }
 }
