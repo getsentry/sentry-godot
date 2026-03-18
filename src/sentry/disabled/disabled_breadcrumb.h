@@ -1,5 +1,4 @@
-#ifndef DISABLED_BREADCRUMB_H
-#define DISABLED_BREADCRUMB_H
+#pragma once
 
 #include "sentry/level.h"
 #include "sentry/sentry_breadcrumb.h"
@@ -38,5 +37,3 @@ public:
 };
 
 } // namespace sentry
-
-#endif // DISABLED_BREADCRUMB_H

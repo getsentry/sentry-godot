@@ -1,5 +1,4 @@
-#ifndef VIEW_HIERARCHY_PROCESSOR_H
-#define VIEW_HIERARCHY_PROCESSOR_H
+#pragma once
 
 #include "sentry/processing/sentry_event_processor.h"
 #include "sentry/processing/view_hierarchy_builder.h"
@@ -26,5 +25,3 @@ public:
 };
 
 } // namespace sentry
-
-#endif // VIEW_HIERARCHY_PROCESSOR_H

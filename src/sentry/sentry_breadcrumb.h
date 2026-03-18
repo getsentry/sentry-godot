@@ -1,5 +1,4 @@
-#ifndef SENTRY_BREADCRUMB_H
-#define SENTRY_BREADCRUMB_H
+#pragma once
 
 #include "sentry/level.h"
 #include "sentry/sentry_timestamp.h"
@@ -40,5 +39,3 @@ public:
 };
 
 } //namespace sentry
-
-#endif // SENTRY_BREADCRUMB_H

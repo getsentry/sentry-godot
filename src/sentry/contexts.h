@@ -1,5 +1,4 @@
-#ifndef CONTEXTS_H
-#define CONTEXTS_H
+#pragma once
 
 #include "runtime_config.h"
 
@@ -34,5 +33,3 @@ Dictionary make_performance_context();
 HashMap<String, Dictionary> make_event_contexts();
 
 } //namespace sentry::contexts
-
-#endif // CONTEXTS_H

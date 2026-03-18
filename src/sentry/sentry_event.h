@@ -1,5 +1,4 @@
-#ifndef SENTRY_EVENT_H
-#define SENTRY_EVENT_H
+#pragma once
 
 #include "sentry/level.h"
 #include "sentry/sentry_timestamp.h"
@@ -86,5 +85,3 @@ public:
 };
 
 } // namespace sentry
-
-#endif // SENTRY_EVENT_H

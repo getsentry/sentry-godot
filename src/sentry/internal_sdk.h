@@ -1,5 +1,4 @@
-#ifndef INTERNAL_SDK_H
-#define INTERNAL_SDK_H
+#pragma once
 
 #include "sentry/level.h"
 #include "sentry/log_level.h"
@@ -59,5 +58,3 @@ public:
 };
 
 } //namespace sentry
-
-#endif // INTERNAL_SDK_H

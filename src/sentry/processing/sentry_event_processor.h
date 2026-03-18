@@ -1,5 +1,4 @@
-#ifndef SENTRY_EVENT_PROCESSOR_H
-#define SENTRY_EVENT_PROCESSOR_H
+#pragma once
 
 #include "sentry/sentry_event.h"
 
@@ -25,5 +24,3 @@ public:
 };
 
 } // namespace sentry
-
-#endif // SENTRY_EVENT_PROCESSOR_H

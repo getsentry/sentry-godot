@@ -1,5 +1,4 @@
-#ifndef COCOA_BREADCRUMB_H
-#define COCOA_BREADCRUMB_H
+#pragma once
 
 #include "sentry/cocoa/cocoa_includes.h"
 #include "sentry/sentry_breadcrumb.h"
@@ -39,5 +38,3 @@ public:
 };
 
 } //namespace sentry::cocoa
-
-#endif // COCOA_BREADCRUMB_H

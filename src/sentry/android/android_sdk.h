@@ -1,5 +1,4 @@
-#ifndef SENTRY_ANDROID_SDK_H
-#define SENTRY_ANDROID_SDK_H
+#pragma once
 
 #include "sentry/internal_sdk.h"
 
@@ -108,5 +107,3 @@ public:
 };
 
 } //namespace sentry::android
-
-#endif // SENTRY_ANDROID_SDK_H

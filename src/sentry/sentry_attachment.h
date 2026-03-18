@@ -1,5 +1,4 @@
-#ifndef SENTRY_ATTACHMENT_H
-#define SENTRY_ATTACHMENT_H
+#pragma once
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
@@ -55,5 +54,3 @@ public:
 };
 
 } // namespace sentry
-
-#endif // SENTRY_ATTACHMENT_H

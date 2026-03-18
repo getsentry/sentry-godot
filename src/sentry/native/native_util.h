@@ -1,5 +1,4 @@
-#ifndef NATIVE_UTIL_H
-#define NATIVE_UTIL_H
+#pragma once
 
 #include "godot_cpp/core/defs.hpp"
 #include "sentry/level.h"
@@ -42,5 +41,3 @@ void sentry_value_set_attribute(sentry_value_t p_native, const String &p_name, c
 void sentry_value_add_attributes(sentry_value_t p_native, const Dictionary &p_attributes);
 
 } //namespace sentry::native
-
-#endif // NATIVE_UTIL_H

@@ -1,5 +1,4 @@
-#ifndef SENTRY_EDITOR_EXPORT_PLUGIN_UNIX_H
-#define SENTRY_EDITOR_EXPORT_PLUGIN_UNIX_H
+#pragma once
 
 #if defined(TOOLS_ENABLED) && !defined(WINDOWS_ENABLED)
 
@@ -26,5 +25,3 @@ public:
 };
 
 #endif // # TOOLS_ENABLED && !WINDOWS_ENABLED
-
-#endif // SENTRY_EDITOR_EXPORT_PLUGIN_UNIX_H

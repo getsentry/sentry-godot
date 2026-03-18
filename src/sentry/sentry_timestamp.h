@@ -1,5 +1,4 @@
-#ifndef SENTRY_TIMESTAMP_H
-#define SENTRY_TIMESTAMP_H
+#pragma once
 
 #include <godot_cpp/classes/ref_counted.hpp>
 
@@ -45,5 +44,3 @@ public:
 };
 
 } // namespace sentry
-
-#endif // SENTRY_TIMESTAMP_H

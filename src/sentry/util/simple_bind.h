@@ -1,5 +1,4 @@
-#ifndef SIMPLE_BIND_H
-#define SIMPLE_BIND_H
+#pragma once
 
 #include <godot_cpp/core/class_db.hpp>
 
@@ -44,5 +43,3 @@ _FORCE_INLINE_ void bind_property_readonly(const godot::StringName &p_class, con
 	m_type m_property = m_default;                                  \
 	void set_##m_property(m_type p_value) { m_property = p_value; } \
 	m_type get_##m_property() { return m_property; }
-
-#endif // SIMPLE_BIND_H

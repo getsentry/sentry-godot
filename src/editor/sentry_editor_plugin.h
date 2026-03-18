@@ -1,5 +1,4 @@
-#ifndef SENTRY_EDITOR_PLUGIN_H
-#define SENTRY_EDITOR_PLUGIN_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
 
@@ -24,5 +23,3 @@ public:
 };
 
 #endif // TOOLS_ENABLED
-
-#endif // SENTRY_EDITOR_PLUGIN_H

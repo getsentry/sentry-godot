@@ -1,5 +1,4 @@
-#ifndef SENTRY_PRINT_H
-#define SENTRY_PRINT_H
+#pragma once
 
 #include "sentry/level.h"
 #include "sentry/logging/state.h"
@@ -124,5 +123,3 @@ void print_fatal(const Variant &p_arg1, const Args &...p_args) {
 	}
 
 } //namespace sentry::logging
-
-#endif // SENTRY_PRINT_H

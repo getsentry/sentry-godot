@@ -1,5 +1,4 @@
-#ifndef LOGGER_ERROR_TYPES_H
-#define LOGGER_ERROR_TYPES_H
+#pragma once
 
 #include "sentry/level.h"
 #include "sentry/log_level.h"
@@ -30,5 +29,3 @@ _FORCE_INLINE_ LogLevel get_sentry_log_level_for_godot_error_type(GodotErrorType
 _FORCE_INLINE_ GodotErrorMask godot_error_type_as_mask(GodotErrorType p_error_type) { return (GodotErrorMask)(1 << int(p_error_type)); }
 
 } //namespace sentry
-
-#endif // LOGGER_ERROR_TYPES_H

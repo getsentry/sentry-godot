@@ -1,5 +1,4 @@
-#ifndef NATIVE_EVENT_H
-#define NATIVE_EVENT_H
+#pragma once
 
 #include "sentry/sentry_event.h"
 
@@ -68,5 +67,3 @@ public:
 };
 
 } //namespace sentry::native
-
-#endif // NATIVE_EVENT_H

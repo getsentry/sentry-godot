@@ -1,5 +1,4 @@
-#ifndef COCOA_EVENT_H
-#define COCOA_EVENT_H
+#pragma once
 
 #include "sentry/cocoa/cocoa_includes.h"
 #include "sentry/sentry_event.h"
@@ -65,5 +64,3 @@ public:
 };
 
 } // namespace sentry::cocoa
-
-#endif // COCOA_EVENT_H

@@ -1,5 +1,4 @@
-#ifndef COCOA_UTIL_H
-#define COCOA_UTIL_H
+#pragma once
 
 #include "cocoa_includes.h"
 #include "sentry/level.h"
@@ -92,5 +91,3 @@ _FORCE_INLINE_ SentryAttribute *variant_to_attribute(const godot::Variant &p_var
 }
 
 } //namespace sentry::cocoa
-
-#endif // COCOA_UTIL_H

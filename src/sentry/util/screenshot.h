@@ -1,5 +1,4 @@
-#ifndef SCREENSHOT_H
-#define SCREENSHOT_H
+#pragma once
 
 namespace godot {
 
@@ -12,5 +11,3 @@ namespace sentry::util {
 godot::PackedByteArray take_screenshot();
 
 }
-
-#endif // SCREENSHOT_H

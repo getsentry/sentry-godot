@@ -1,5 +1,4 @@
-#ifndef RUNTIME_CONFIG_H
-#define RUNTIME_CONFIG_H
+#pragma once
 
 #include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
@@ -31,5 +30,3 @@ public:
 };
 
 } // namespace sentry
-
-#endif // RUNTIME_CONFIG_H

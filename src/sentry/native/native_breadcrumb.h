@@ -1,5 +1,4 @@
-#ifndef NATIVE_BREADCRUMB_H
-#define NATIVE_BREADCRUMB_H
+#pragma once
 
 #include "sentry/sentry_breadcrumb.h"
 
@@ -41,5 +40,3 @@ public:
 };
 
 } //namespace sentry::native
-
-#endif // NATIVE_BREADCRUMB_H

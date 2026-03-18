@@ -1,5 +1,4 @@
-#ifndef SENTRY_LOGGER_H
-#define SENTRY_LOGGER_H
+#pragma once
 
 #include "sentry/godot_error_types.h"
 
@@ -92,5 +91,3 @@ public:
 };
 
 } //namespace sentry::logging
-
-#endif // SENTRY_LOGGER_H

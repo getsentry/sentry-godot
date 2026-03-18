@@ -1,5 +1,4 @@
-#ifndef SENTRY_PROCESS_EVENT_H
-#define SENTRY_PROCESS_EVENT_H
+#pragma once
 
 #include "sentry/sentry_event.h"
 
@@ -10,5 +9,3 @@ namespace sentry {
 Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event);
 
 } //namespace sentry
-
-#endif // SENTRY_PROCESS_EVENT_H

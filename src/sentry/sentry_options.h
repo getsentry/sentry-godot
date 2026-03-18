@@ -1,5 +1,4 @@
-#ifndef SENTRY_OPTIONS_H
-#define SENTRY_OPTIONS_H
+#pragma once
 
 #include "sentry/godot_error_types.h"
 #include "sentry/level.h"
@@ -243,5 +242,3 @@ public:
 } // namespace sentry
 
 VARIANT_BITFIELD_CAST(sentry::SentryOptions::GodotErrorMask);
-
-#endif // SENTRY_OPTIONS_H

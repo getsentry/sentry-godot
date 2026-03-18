@@ -1,5 +1,4 @@
-#ifndef SENTRY_SINGLETON_H
-#define SENTRY_SINGLETON_H
+#pragma once
 
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
@@ -116,5 +115,3 @@ public:
 } // namespace sentry
 
 VARIANT_ENUM_CAST(sentry::SentrySDK::Level);
-
-#endif // SENTRY_SINGLETON_H
