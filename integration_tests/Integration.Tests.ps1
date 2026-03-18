@@ -24,7 +24,7 @@ $global:DebugPreference = "Continue"
 
 # Detect Apple target platform at discovery time (before BeforeAll runs).
 # Used to skip tests for features unsupported on Apple platforms (e.g., metrics).
-$IsCocoa = $env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
+$script:IsCocoa = $env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
     (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS)
 
 BeforeAll {
@@ -92,7 +92,8 @@ BeforeAll {
         Platform = $env:SENTRY_TEST_PLATFORM
         AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
         IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
-        IsCocoa = $IsCocoa
+        IsCocoa = ($env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
+            (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS))
         iOSBundleId = "io.sentry.SentryGodotProject"
         iOSApplicationLogFile = "@io.sentry.SentryGodotProject:documents/logs/godot.log"
     }
@@ -614,7 +615,7 @@ Describe "Platform Integration Tests" {
         }
     }
 
-    Context "Metrics Capture" -Skip:$IsCocoa {
+    Context "Metrics Capture" -Skip:$script:IsCocoa {
         BeforeAll {
             $runResult = $script:metricRunResult
 
