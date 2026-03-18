@@ -156,9 +156,19 @@ Describe "Platform Integration Tests" {
     # TODO: user feedback tests
     # TODO: metrics tests
 
+    BeforeAll {
+        # Run all test actions upfront to minimize device idle time.
+        # This prevents SauceLabs session timeouts that occur when the device
+        # sits idle during Sentry API polling (up to 120s per event) between launches.
+        $script:crashRunResult = Invoke-TestAction -Action "crash-capture"
+        $script:messageRunResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("TestMessage")
+        $script:attachmentRunResult = Invoke-TestAction -Action "attachment-capture"
+        $script:runtimeErrorRunResult = Invoke-TestAction -Action "runtime-error-capture"
+    }
+
     Context "Crash Capture" {
         BeforeAll {
-            $runResult = Invoke-TestAction -Action "crash-capture"
+            $runResult = $script:crashRunResult
 
             $eventId = Get-EventIds -appOutput $runResult.Output -expectedCount 1
             if ($eventId) {
@@ -242,7 +252,7 @@ Describe "Platform Integration Tests" {
         BeforeAll {
             $script:TEST_MESSAGE = "TestMessage"
 
-            $runResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("$TEST_MESSAGE")
+            $runResult = $script:messageRunResult
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
             if ($eventId) {
@@ -283,7 +293,7 @@ Describe "Platform Integration Tests" {
 
     Context "Attachment Capture" {
         BeforeAll {
-            $runResult = Invoke-TestAction -Action "attachment-capture"
+            $runResult = $script:attachmentRunResult
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
             if ($eventId) {
@@ -375,7 +385,7 @@ Describe "Platform Integration Tests" {
         # TODO: Test local variables
         # TODO: Test exact script source context (should we?)
         BeforeAll {
-            $runResult = Invoke-TestAction -Action "runtime-error-capture"
+            $runResult = $script:runtimeErrorRunResult
 
             $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
             if ($eventId) {
