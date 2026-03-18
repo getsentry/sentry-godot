@@ -576,6 +576,14 @@ Describe "Platform Integration Tests" {
             $testId | Should -Not -BeNullOrEmpty
         }
 
+        It "Exits with code zero" {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
+            $runResult.ExitCode | Should -Be 0
+        }
+
         It "Outputs TEST_RESULT with success" {
             $testResultLine = $runResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
             $testResultLine | Should -Not -BeNullOrEmpty
@@ -666,6 +674,14 @@ Describe "Platform Integration Tests" {
 
         It "Outputs METRIC_TRIGGERED with test ID" {
             $testId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Exits with code zero" {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
+            $runResult.ExitCode | Should -Be 0
         }
 
         It "Outputs TEST_RESULT with success" {
