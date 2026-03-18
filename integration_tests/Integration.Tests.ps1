@@ -599,19 +599,19 @@ Describe "Platform Integration Tests" {
         }
 
         It "Has attribute added by before_send_log" {
-            $log.'handler_added' | Should -Be 'added_value'
+            $log.handler_added | Should -Be 'added_value'
         }
 
         It "Does not have attribute removed by before_send_log" {
-            $log.'deleted_log_attribute' | Should -BeNullOrEmpty
+            $log.deleted_log_attribute | Should -BeNullOrEmpty
         }
 
         It "Has global attribute" {
-            $log.'global_attribute' | Should -Be 'global_value'
+            $log.global_attribute | Should -Be 'global_value'
         }
 
         It "Does not have removed global attribute" {
-            $log.'deleted_global_attribute' | Should -BeNullOrEmpty
+            $log.deleted_global_attribute | Should -BeNullOrEmpty
         }
     }
 
@@ -696,23 +696,33 @@ Describe "Platform Integration Tests" {
         }
 
         It "Has attribute added by before_send_metric" {
-            $counter.'handler_added' | Should -Be 'added_value'
+            $counter.handler_added | Should -Be 'added_value'
+            $distribution.handler_added | Should -Be 'added_value'
+            $gauge.handler_added | Should -Be 'added_value'
         }
 
         It "Does not have attribute removed by before_send_metric" {
-            $counter.'deleted_metric_attribute' | Should -BeNullOrEmpty
+            $counter.deleted_metric_attribute | Should -BeNullOrEmpty
+            $distribution.deleted_metric_attribute | Should -BeNullOrEmpty
+            $gauge.deleted_metric_attribute | Should -BeNullOrEmpty
         }
 
         It "Has test_id attribute matching captured ID" {
             $counter.test_id | Should -Be $testId
+            $distribution.test_id | Should -Be $testId
+            $gauge.test_id | Should -Be $testId
         }
 
         It "Has global attribute" {
-            $counter.'global_attribute' | Should -Be 'global_value'
+            $counter.global_attribute | Should -Be 'global_value'
+            $distribution.global_attribute | Should -Be 'global_value'
+            $gauge.global_attribute | Should -Be 'global_value'
         }
 
         It "Does not have removed global attribute" {
-            $counter.'deleted_global_attribute' | Should -BeNullOrEmpty
+            $counter.deleted_global_attribute | Should -BeNullOrEmpty
+            $distribution.deleted_global_attribute | Should -BeNullOrEmpty
+            $gauge.deleted_global_attribute | Should -BeNullOrEmpty
         }
     }
 }
