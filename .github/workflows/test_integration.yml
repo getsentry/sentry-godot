@@ -69,6 +69,12 @@ jobs:
             export-platform: ios
             saucelabs-device: iPhone_17_Pro_real_sjc1
 
+          - test-platform: Web
+            runner: ubuntu-latest
+            godot-arch: x86_64
+            test-executable: ./exports/web
+            export-platform: web
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -117,6 +123,33 @@ jobs:
             echo "Error: Export failed - file does not exist: ${{github.workspace}}/${{matrix.test-executable}}"
             exit 1
           fi
+
+      - name: "Web: Export project"
+        if: matrix.export-platform == 'web'
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          mkdir -p exports/web
+          ${GODOT} --headless --path project --export-debug "Web Tests" ../exports/web/index.html || true
+
+      - name: "Web: Verify export"
+        if: matrix.export-platform == 'web'
+        run: ls exports/web/*.pck
+
+      - name: "Web: Set up Node.js"
+        if: matrix.export-platform == 'web'
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: "25"
+          cache: "npm"
+          cache-dependency-path: test_web/package-lock.json
+
+      - name: "Web: Install dependencies"
+        if: matrix.export-platform == 'web'
+        working-directory: test_web
+        run: |
+          npm ci
+          npx playwright install chromium
 
       - name: Run integration tests
         shell: pwsh
