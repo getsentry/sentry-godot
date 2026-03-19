@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const COMPLETION_MARKER = ">>> Test run complete with code: ";
-const PROJECT_DIR = path.resolve(__dirname, "../project");
+const PROJECT_DIR = path.resolve(import.meta.dirname, "../project");
 
 // Discover test paths: suite tests first, then each isolated test file.
 // Mirrors the pattern in scripts/run-android-tests.sh.

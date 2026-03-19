@@ -28,7 +28,7 @@ interface ExportInfo {
 }
 
 function discoverExportFiles(): ExportInfo {
-  const SAFE_FILENAME = /^[\w.-]+$/;
+  const SAFE_FILENAME = /^[\w][\w.-]*$/;
   const files = fs.readdirSync(EXPORT_DIR).filter((f) => SAFE_FILENAME.test(f));
 
   // Find .pck to derive executable name
