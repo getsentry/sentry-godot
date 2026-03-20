@@ -4,6 +4,9 @@
 
 ### Dependencies
 
+- Bump Cocoa SDK from v9.7.0 to v9.8.0 ([#605](https://github.com/getsentry/sentry-godot/pull/605))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#980)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.7.0...9.8.0)
 - Bump Native SDK from v0.13.2 to v0.13.3 ([#606](https://github.com/getsentry/sentry-godot/pull/606))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0133)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.13.2...0.13.3)
