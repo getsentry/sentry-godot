@@ -37,6 +37,8 @@ func _register_commands() -> void:
 	_parser.add_command("message-capture", _cmd_message_capture, "Capture a test message to Sentry")
 	_parser.add_command("runtime-error-capture", _cmd_runtime_error_capture, "Capture Godot runtime error")
 	_parser.add_command("attachment-capture", _cmd_attachment_capture, "Capture a message with custom attachments")
+	_parser.add_command("log-capture", _cmd_log_capture, "Capture a structured log to Sentry")
+	_parser.add_command("metric-capture", _cmd_metric_capture, "Capture metrics to Sentry")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
 
 
@@ -53,11 +55,9 @@ func _cmd_crash_capture() -> int:
 
 	print("Triggering controlled crash...")
 
-	# NOTE: Borrowing UUID generation from SentryUser class.
-	var uuid_gen := SentryUser.new()
-	uuid_gen.generate_new_id()
-	SentrySDK.set_tag("test.crash_id", uuid_gen.id)
-	print("EVENT_CAPTURED: ", uuid_gen.id)
+	var crash_id: String = _generate_uuid()
+	SentrySDK.set_tag("test.crash_id", crash_id)
+	print("EVENT_CAPTURED: ", crash_id)
 
 	_print_test_result("crash-capture", true, "Pre-crash setup complete")
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("About to trigger controlled crash"))
@@ -160,6 +160,78 @@ func _cmd_attachment_capture() -> int:
 	return 0
 
 
+## Captures a structured log to Sentry.
+func _cmd_log_capture() -> int:
+	await _init_sentry(func(options: SentryOptions) -> void:
+		options.enable_logs = true
+		options.before_send_log = _before_send_log
+	)
+	_add_integration_test_context("log-capture")
+
+	SentrySDK.set_attribute("global_attribute", "global_value")
+	SentrySDK.set_attribute("deleted_global_attribute", "should_not_appear")
+	SentrySDK.remove_attribute("deleted_global_attribute")
+
+	var test_id: String = _generate_uuid()
+
+	SentrySDK.logger.warn("Integration test structured log", [], {
+		"test_id": test_id,
+		"deleted_log_attribute": "original_value",
+	})
+
+	print("LOG_TRIGGERED: ", test_id)
+
+	SentrySDK.close()
+	await get_tree().create_timer(1.0).timeout
+
+	_print_test_result("log-capture", true, "Test complete")
+	return 0
+
+
+func _before_send_log(entry: SentryLog) -> SentryLog:
+	entry.set_attribute("handler_added", "added_value")
+	entry.remove_attribute("deleted_log_attribute")
+	return entry
+
+
+## Captures counter, distribution, and gauge metrics to Sentry.
+func _cmd_metric_capture() -> int:
+	await _init_sentry(func(options: SentryOptions) -> void:
+		options.experimental.enable_metrics = true
+		options.experimental.before_send_metric = _before_send_metric
+	)
+	_add_integration_test_context("metric-capture")
+
+	SentrySDK.set_attribute("global_attribute", "global_value")
+	SentrySDK.set_attribute("deleted_global_attribute", "should_not_appear")
+	SentrySDK.remove_attribute("deleted_global_attribute")
+
+	var test_id: String = _generate_uuid()
+
+	var attributes := {
+		"test_id": test_id,
+		"deleted_metric_attribute": "original_value",
+	}
+
+	SentrySDK.metrics.count("test.integration.counter", 1, attributes)
+	SentrySDK.metrics.distribution("test.integration.distribution", 42.5, "millisecond", attributes)
+	SentrySDK.metrics.gauge("test.integration.gauge", 15.0, "byte", attributes)
+
+	print("METRIC_TRIGGERED: ", test_id)
+
+	SentrySDK.close()
+	await get_tree().create_timer(1.0).timeout
+
+	_print_test_result("metric-capture", true, "Test complete")
+	return 0
+
+
+func _before_send_metric(metric: SentryMetric) -> SentryMetric:
+	metric.set_attribute("handler_added", "added_value")
+	metric.remove_attribute("deleted_metric_attribute")
+	return metric
+
+
 func _cmd_run_tests(tests: String = "res://test/suites/") -> int:
 	if FileAccess.file_exists("res://test/util/test_runner.gd"):
 		print(">>> Initializing testing")
@@ -235,6 +307,13 @@ func _write_text_file(p_path: String, p_content: String) -> void:
 	var file := FileAccess.open(p_path, FileAccess.WRITE)
 	file.store_string(p_content)
 	file.close()
+
+
+func _generate_uuid() -> String:
+	# NOTE: Borrowing UUID generation from SentryUser class.
+	var user := SentryUser.new()
+	user.generate_new_id()
+	return user.id
 
 
 func _print_test_result(test_name: String, success: bool, message: String) -> void:
