@@ -2,9 +2,11 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GodotProjectDir>$(MSBuildProjectDirectory)</GodotProjectDir>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="GodotSharp" Version="4.5.0" />
+    <PackageReference Include="Godot.SourceGenerators" Version="4.5.0" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <PackageReference Include="Sentry" Version="6.2.0" />
   </ItemGroup>
 </Project>
