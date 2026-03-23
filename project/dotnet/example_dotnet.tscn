@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcl5v0rbxxcnw"]
+
+[ext_resource type="Script" uid="uid://rsyugh6m5hna" path="res://dotnet/ExampleDotnet.cs" id="1_o44kr"]
+
+[node name="ExampleDotnet" type="Node2D"]
+script = ExtResource("1_o44kr")
