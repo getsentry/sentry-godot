@@ -22,6 +22,10 @@ $global:DebugPreference = "Continue"
 # Import utility functions
 . $PSScriptRoot/Utils.ps1
 
+# Detect Apple target platform at discovery time (before BeforeAll runs).
+# Used to skip tests for features unsupported on Apple platforms (e.g., metrics).
+$script:IsCocoa = $env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
+    (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS)
 
 BeforeAll {
     # Run integration test action on device
@@ -139,31 +143,35 @@ BeforeAll {
     Connect-SentryApi `
         -ApiToken $script:TestSetup.AuthToken `
         -DSN $script:TestSetup.Dsn
-
-    Connect-Device -Platform $script:TestSetup.Platform
-    Install-DeviceApp -Path $script:TestSetup.Executable
 }
 
 
 AfterAll {
     Disconnect-SentryApi
-    Disconnect-Device
 }
 
 
 Describe "Platform Integration Tests" {
-    # TODO: structured logs tests
     # TODO: user feedback tests
-    # TODO: metrics tests
 
     BeforeAll {
         # Run all test actions upfront to minimize device idle time.
         # This prevents SauceLabs session timeouts that occur when the device
         # sits idle during Sentry API polling (up to 120s per event) between launches.
-        $script:crashRunResult = Invoke-TestAction -Action "crash-capture"
-        $script:messageRunResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("TestMessage")
-        $script:attachmentRunResult = Invoke-TestAction -Action "attachment-capture"
-        $script:runtimeErrorRunResult = Invoke-TestAction -Action "runtime-error-capture"
+        try {
+            Connect-Device -Platform $script:TestSetup.Platform
+            Install-DeviceApp -Path $script:TestSetup.Executable
+
+            $script:crashRunResult = Invoke-TestAction -Action "crash-capture"
+            $script:messageRunResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("TestMessage")
+            $script:attachmentRunResult = Invoke-TestAction -Action "attachment-capture"
+            $script:runtimeErrorRunResult = Invoke-TestAction -Action "runtime-error-capture"
+            $script:logRunResult = Invoke-TestAction -Action "log-capture"
+            $script:metricRunResult = Invoke-TestAction -Action "metric-capture"
+        }
+        finally {
+            Disconnect-Device
+        }
     }
 
     Context "Crash Capture" {
@@ -532,6 +540,205 @@ Describe "Platform Integration Tests" {
             for ($i = 1; $i -lt $framePositions.Count; $i++) {
                 $framePositions[$i] | Should -BeGreaterThan $framePositions[$i-1] -Because "Frames should appear in correct order"
             }
+        }
+    }
+
+    Context "Structured Logging" {
+        BeforeAll {
+            $runResult = $script:logRunResult
+
+            # Parse test ID from output (format: LOG_TRIGGERED: <test-id>)
+            $logTriggeredLines = @($runResult.Output | Where-Object { $_ -match 'LOG_TRIGGERED: ' })
+            $testId = $null
+            $capturedLogs = @()
+
+            if ($logTriggeredLines.Count -gt 0) {
+                $testId = ($logTriggeredLines[0] -split 'LOG_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured Test ID: $testId" -ForegroundColor Cyan
+
+                Write-GitHub "::group::Getting structured log"
+                try {
+                    $capturedLogs = Get-SentryTestLog -AttributeName 'test_id' -AttributeValue $testId -Fields @('handler_added', 'deleted_log_attribute', 'global_attribute', 'deleted_global_attribute')
+                }
+                catch {
+                    Write-Host "Warning: $_" -ForegroundColor Red
+                }
+                Write-GitHub "::endgroup::"
+            }
+            else {
+                Write-Host "Warning: No LOG_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+
+            $log = if ($capturedLogs) { $capturedLogs[0] } else { $null }
+        }
+
+        It "Outputs LOG_TRIGGERED with test ID" {
+            $testId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Exits with code zero" {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
+            $runResult.ExitCode | Should -Be 0
+        }
+
+        It "Outputs TEST_RESULT with success" {
+            $testResultLine = $runResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success":true'
+        }
+
+        It "Captures structured log in Sentry" {
+            $log | Should -Not -BeNullOrEmpty
+        }
+
+        It "Has correct log message" {
+            $log.message | Should -Match 'Integration test structured log'
+        }
+
+        It "Has correct severity level" {
+            $log.severity | Should -Be 'warn'
+        }
+
+        It "Has test_id attribute matching captured ID" {
+            $log.test_id | Should -Be $testId
+        }
+
+        It "Has attribute added by before_send_log" {
+            $log.handler_added | Should -Be 'added_value'
+        }
+
+        It "Does not have attribute removed by before_send_log" {
+            $log.deleted_log_attribute | Should -BeNullOrEmpty
+        }
+
+        It "Has global attribute" {
+            $log.global_attribute | Should -Be 'global_value'
+        }
+
+        It "Does not have removed global attribute" {
+            $log.deleted_global_attribute | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Metrics Capture" -Skip:$script:IsCocoa {
+        BeforeAll {
+            $runResult = $script:metricRunResult
+
+            # Parse test ID from output (format: METRIC_TRIGGERED: <test-id>)
+            $metricTriggeredLines = @($runResult.Output | Where-Object { $_ -match 'METRIC_TRIGGERED: ' })
+            $testId = $null
+            $counterMetrics = @()
+            $distributionMetrics = @()
+            $gaugeMetrics = @()
+
+            if ($metricTriggeredLines.Count -gt 0) {
+                $testId = ($metricTriggeredLines[0] -split 'METRIC_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured Test ID: $testId" -ForegroundColor Cyan
+
+                $metricFields = @('handler_added', 'deleted_metric_attribute', 'global_attribute', 'deleted_global_attribute')
+
+                Write-GitHub "::group::Getting metrics"
+                try {
+                    $counterMetrics = Get-SentryTestMetric -MetricName 'test.integration.counter' -AttributeName 'test_id' -AttributeValue $testId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (counter): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $distributionMetrics = Get-SentryTestMetric -MetricName 'test.integration.distribution' -AttributeName 'test_id' -AttributeValue $testId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (distribution): $_" -ForegroundColor Red
+                }
+
+                try {
+                    $gaugeMetrics = Get-SentryTestMetric -MetricName 'test.integration.gauge' -AttributeName 'test_id' -AttributeValue $testId -Fields $metricFields
+                }
+                catch {
+                    Write-Host "Warning (gauge): $_" -ForegroundColor Red
+                }
+                Write-GitHub "::endgroup::"
+            }
+            else {
+                Write-Host "Warning: No METRIC_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+
+            $counter = if ($counterMetrics) { $counterMetrics[0] } else { $null }
+            $distribution = if ($distributionMetrics) { $distributionMetrics[0] } else { $null }
+            $gauge = if ($gaugeMetrics) { $gaugeMetrics[0] } else { $null }
+        }
+
+        It "Outputs METRIC_TRIGGERED with test ID" {
+            $testId | Should -Not -BeNullOrEmpty
+        }
+
+        It "Exits with code zero" {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
+            $runResult.ExitCode | Should -Be 0
+        }
+
+        It "Outputs TEST_RESULT with success" {
+            $testResultLine = $runResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success":true'
+        }
+
+        It "Captures counter metric" {
+            $counter | Should -Not -BeNullOrEmpty
+            $counter.'metric.name' | Should -Be 'test.integration.counter'
+            $counter.'metric.type' | Should -Be 'counter'
+            $counter.value | Should -Be 1.0
+        }
+
+        It "Captures distribution metric" {
+            $distribution | Should -Not -BeNullOrEmpty
+            $distribution.'metric.name' | Should -Be 'test.integration.distribution'
+            $distribution.'metric.type' | Should -Be 'distribution'
+            $distribution.value | Should -Be 42.5
+        }
+
+        It "Captures gauge metric" {
+            $gauge | Should -Not -BeNullOrEmpty
+            $gauge.'metric.name' | Should -Be 'test.integration.gauge'
+            $gauge.'metric.type' | Should -Be 'gauge'
+            $gauge.value | Should -Be 15.0
+        }
+
+        It "Has attribute added by before_send_metric" {
+            $counter.handler_added | Should -Be 'added_value'
+            $distribution.handler_added | Should -Be 'added_value'
+            $gauge.handler_added | Should -Be 'added_value'
+        }
+
+        It "Does not have attribute removed by before_send_metric" {
+            $counter.deleted_metric_attribute | Should -BeNullOrEmpty
+            $distribution.deleted_metric_attribute | Should -BeNullOrEmpty
+            $gauge.deleted_metric_attribute | Should -BeNullOrEmpty
+        }
+
+        It "Has test_id attribute matching captured ID" {
+            $counter.test_id | Should -Be $testId
+            $distribution.test_id | Should -Be $testId
+            $gauge.test_id | Should -Be $testId
+        }
+
+        It "Has global attribute" {
+            $counter.global_attribute | Should -Be 'global_value'
+            $distribution.global_attribute | Should -Be 'global_value'
+            $gauge.global_attribute | Should -Be 'global_value'
+        }
+
+        It "Does not have removed global attribute" {
+            $counter.deleted_global_attribute | Should -BeNullOrEmpty
+            $distribution.deleted_global_attribute | Should -BeNullOrEmpty
+            $gauge.deleted_global_attribute | Should -BeNullOrEmpty
         }
     }
 }
