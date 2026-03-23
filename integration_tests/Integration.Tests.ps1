@@ -26,6 +26,7 @@ $global:DebugPreference = "Continue"
 # Used to skip tests for features unsupported on Apple platforms (e.g., metrics).
 $script:IsCocoa = $env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
     (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS)
+$script:IsWeb = $env:SENTRY_TEST_PLATFORM -ieq "Web"
 
 BeforeAll {
     # Run integration test action on device
@@ -38,6 +39,10 @@ BeforeAll {
 
         # ACT: Run test action in application on device
         Write-Host "Running $Action..."
+
+        if ($script:TestSetup.IsWeb) {
+            return Invoke-WebTestAction -Action $Action -AdditionalArgs $AdditionalArgs
+        }
 
         $args = $script:TestSetup.Args + @($Action) + $AdditionalArgs
         $execPath = $script:TestSetup.Executable
@@ -79,6 +84,47 @@ BeforeAll {
         return $runResult
     }
 
+    # Run a Web test action via headless Chromium
+    function Invoke-WebTestAction {
+        param (
+            [Parameter(Mandatory=$true)]
+            [string]$Action,
+            [string[]]$AdditionalArgs = @()
+        )
+
+        $runnerScript = Join-Path $PSScriptRoot "../test_web/run-action.ts"
+        $exportDir = (Resolve-Path $script:TestSetup.Executable).Path
+        $godotArgs = $script:TestSetup.Args + @($Action) + $AdditionalArgs
+        $testWebDir = Join-Path $PSScriptRoot "../test_web"
+
+        $process = Start-Process -FilePath "npx" `
+            -ArgumentList (@("tsx", $runnerScript, $exportDir) + $godotArgs) `
+            -WorkingDirectory $testWebDir `
+            -NoNewWindow -PassThru `
+            -RedirectStandardOutput "$PSScriptRoot/results/${Action}-stdout.txt" `
+            -RedirectStandardError "$PSScriptRoot/results/${Action}-stderr.txt"
+
+        $process | Wait-Process -Timeout 150 -ErrorAction SilentlyContinue
+        if (-not $process.HasExited) {
+            Write-Warning "Web runner timed out for '$Action', killing process"
+            $process.Kill()
+        }
+
+        $output = @(Get-Content "$PSScriptRoot/results/${Action}-stdout.txt" -ErrorAction SilentlyContinue)
+
+        $runResult = [PSCustomObject]@{
+            Output = $output
+            ExitCode = $process.ExitCode
+        }
+        $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
+
+        Write-GitHub "::group::Browser console output ($Action)"
+        $runResult.Output | ForEach-Object { Write-Host $_ }
+        Write-GitHub "::endgroup::"
+
+        return $runResult
+    }
+
     # Create directory for the test results
     New-Item -ItemType Directory -Path "$PSScriptRoot/results/" -ErrorAction Continue 2>&1 | Out-Null
     Set-OutputDir -Path "$PSScriptRoot/results/"
@@ -94,6 +140,7 @@ BeforeAll {
         IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
         IsCocoa = ($env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
             (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS))
+        IsWeb = ($env:SENTRY_TEST_PLATFORM -ieq "Web")
         iOSBundleId = "io.sentry.SentryGodotProject"
         iOSApplicationLogFile = "@io.sentry.SentryGodotProject:documents/logs/godot.log"
     }
@@ -159,10 +206,14 @@ Describe "Platform Integration Tests" {
         # This prevents SauceLabs session timeouts that occur when the device
         # sits idle during Sentry API polling (up to 120s per event) between launches.
         try {
-            Connect-Device -Platform $script:TestSetup.Platform
-            Install-DeviceApp -Path $script:TestSetup.Executable
+            if (-not $script:TestSetup.IsWeb) {
+                Connect-Device -Platform $script:TestSetup.Platform
+                Install-DeviceApp -Path $script:TestSetup.Executable
+            }
 
-            $script:crashRunResult = Invoke-TestAction -Action "crash-capture"
+            if (-not $script:TestSetup.IsWeb) {
+                $script:crashRunResult = Invoke-TestAction -Action "crash-capture"
+            }
             $script:messageRunResult = Invoke-TestAction -Action "message-capture" -AdditionalArgs @("TestMessage")
             $script:attachmentRunResult = Invoke-TestAction -Action "attachment-capture"
             $script:runtimeErrorRunResult = Invoke-TestAction -Action "runtime-error-capture"
@@ -170,11 +221,13 @@ Describe "Platform Integration Tests" {
             $script:metricRunResult = Invoke-TestAction -Action "metric-capture"
         }
         finally {
-            Disconnect-Device
+            if (-not $script:TestSetup.IsWeb) {
+                Disconnect-Device
+            }
         }
     }
 
-    Context "Crash Capture" {
+    Context "Crash Capture" -Skip:$script:IsWeb {
         BeforeAll {
             $runResult = $script:crashRunResult
 
