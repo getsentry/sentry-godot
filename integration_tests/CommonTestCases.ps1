@@ -137,7 +137,10 @@ $CommonTestCases = @(
             $SentryEvent.contexts.os | Should -Not -BeNullOrEmpty
             $SentryEvent.contexts.os.os | Should -Not -BeNullOrEmpty
             $SentryEvent.contexts.os.name | Should -Not -BeNullOrEmpty
-            $SentryEvent.contexts.os.version | Should -Not -BeNullOrEmpty
+            if (-not $TestSetup.IsWeb) {
+                # On Web, OS version may not be available.
+                $SentryEvent.contexts.os.version | Should -Not -BeNullOrEmpty
+            }
         }
     }
     @{ Name = "Contains Godot contexts"; TestBlock = {
