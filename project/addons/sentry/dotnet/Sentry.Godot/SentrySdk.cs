@@ -7,20 +7,16 @@ using Sentry.Godot.Internal;
 namespace Sentry.Godot;
 
 public class SentrySdk {
-	static IDisposable _exceptionHandler;
+	static IDisposable? _exceptionHandler;
 
-	// TODO: Use options
-	public static void Init() {
+	public static void Init(Action<SentryOptions>? configureOptions = null) {
 		GodotLog.Debug("Initializing Sentry in .NET...");
 
 		Sentry.SentrySdk.Init(options => {
-			options.Dsn = "https://3f1e095cf2e14598a0bd5b4ff324f712@o447951.ingest.us.sentry.io/6680910";
-			options.Debug = true;
-			options.SendDefaultPii = false;
-			options.AddInAppExclude("Godot"); // TODO: check if it works
+			// TODO: Apply ProjectSettings
+			options.AddInAppExclude("Godot");
+			configureOptions?.Invoke(options);
 		});
-
-		NativeBridge.SetTag("biome", "jungle");
 
 		InitFirstChanceExceptionHandler();
 	}

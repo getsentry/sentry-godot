@@ -47,7 +47,7 @@ internal class CoreClrExceptionHandler : EventListener {
 		AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
 	}
 
-	private void OnFirstChanceException(object sender, FirstChanceExceptionEventArgs e) {
+	private void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e) {
 		if (_isProcessing) {
 			return;
 		}
@@ -93,7 +93,7 @@ internal class CoreClrExceptionHandler : EventListener {
 			GodotLog.Debug($"ExceptionCatchStart: method='{methodName}', " +
 					$"sourceOsThreadId={sourceOsTid}, queueSize={queue.Count}");
 
-			string bridgeClass = methodName != null ? GetGodotBridgeClass(methodName) : null;
+			string? bridgeClass = methodName != null ? GetGodotBridgeClass(methodName) : null;
 
 			if (bridgeClass != null && queue.TryDequeue(out var exception)) {
 				GodotLog.Debug($"Capturing .NET exception caught by {bridgeClass}:\n  {exception.GetType().FullName}: \"{exception.Message}\"");
@@ -121,7 +121,7 @@ internal class CoreClrExceptionHandler : EventListener {
 	/// Returns the Godot bridge class name (e.g. "Godot.Bridge.CSharpInstanceBridge") if the
 	/// method signature matches a known bridge catch site, or null if it's not a bridge method.
 	/// </summary>
-	private static string GetGodotBridgeClass(string methodSignature) {
+	private static string? GetGodotBridgeClass(string methodSignature) {
 		if (!methodSignature.Contains("[GodotSharp]")) {
 			return null;
 		}

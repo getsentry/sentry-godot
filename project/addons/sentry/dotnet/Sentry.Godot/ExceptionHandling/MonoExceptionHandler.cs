@@ -26,7 +26,7 @@ public class MonoExceptionHandler : IDisposable {
 	// Only the most recent exception matters: _LogError always wants the last one thrown
 	// (the one the bridge caught), so a single slot replaces the previous drain-to-last queue.
 	[ThreadStatic]
-	private static Exception _lastException;
+	private static Exception? _lastException;
 
 	// Re-entrancy guard per thread.
 	[ThreadStatic]
@@ -41,7 +41,7 @@ public class MonoExceptionHandler : IDisposable {
 		GodotLog.Debug("Registered Logger-based exception handler.");
 	}
 
-	private void OnFirstChanceException(object sender, FirstChanceExceptionEventArgs e) {
+	private void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e) {
 		if (_isProcessing) {
 			return;
 		}
@@ -58,7 +58,8 @@ public class MonoExceptionHandler : IDisposable {
 
 		// Validate that _LogError was triggered by _lastException, not a stale one.
 		// The bridge passes the exception type name (and possibly message) as the "code" parameter.
-		if (code == null || !code.StartsWith(_lastException.GetType().FullName, StringComparison.Ordinal)) {
+		var expectedType = _lastException.GetType().FullName;
+		if (expectedType == null || code == null || !code.StartsWith(expectedType, StringComparison.Ordinal)) {
 			// Not triggered by the current exception - ignore.
 			return;
 		}
@@ -66,16 +67,14 @@ public class MonoExceptionHandler : IDisposable {
 		try {
 			_isProcessing = true;
 
-			var exception = _lastException;
+			var exception = _lastException!;
 			_lastException = null;
 
-			if (exception != null) {
-				GodotLog.Debug($"Capturing .NET exception caught by Godot bridge:\n  {exception.GetType().FullName}: \"{exception.Message}\"");
-				exception.SetSentryMechanism("Godot.Bridge",
-						"This exception was caught by the Godot engine bridge error handler. The application continued running.",
-						handled: false);
-				Sentry.SentrySdk.CaptureException(exception);
-			}
+			GodotLog.Debug($"Capturing .NET exception caught by Godot bridge:\n  {exception.GetType().FullName}: \"{exception.Message}\"");
+			exception.SetSentryMechanism("Godot.Bridge",
+					"This exception was caught by the Godot engine bridge error handler. The application continued running.",
+					handled: false);
+			Sentry.SentrySdk.CaptureException(exception);
 		} finally {
 			_isProcessing = false;
 		}
