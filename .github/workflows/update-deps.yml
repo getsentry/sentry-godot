@@ -16,7 +16,7 @@ jobs:
   sentry-native:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@v3
+      - uses: getsentry/github-workflows/updater@26f565c05d0dd49f703d238706b775883037d76b # v3
         with:
           path: modules/sentry-native
           name: Native SDK
@@ -25,7 +25,7 @@ jobs:
   sentry-cocoa:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@v3
+      - uses: getsentry/github-workflows/updater@26f565c05d0dd49f703d238706b775883037d76b # v3
         with:
           path: modules/sentry-cocoa.properties
           name: Cocoa SDK
@@ -34,7 +34,7 @@ jobs:
   sentry-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@v3
+      - uses: getsentry/github-workflows/updater@26f565c05d0dd49f703d238706b775883037d76b # v3
         with:
           path: scripts/android-version.ps1
           name: Sentry Android
@@ -43,7 +43,7 @@ jobs:
   sentry-javascript:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@v3
+      - uses: getsentry/github-workflows/updater@26f565c05d0dd49f703d238706b775883037d76b # v3
         with:
           path: scripts/javascript-version.ps1
           name: Sentry JavaScript
@@ -52,7 +52,7 @@ jobs:
   gdunit4:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@v3
+      - uses: getsentry/github-workflows/updater@26f565c05d0dd49f703d238706b775883037d76b # v3
         with:
           path: modules/gdUnit4
           name: gdUnit 4
@@ -62,7 +62,7 @@ jobs:
   wasm-split:
     runs-on: ubuntu-latest
     steps:
-      - uses: getsentry/github-workflows/updater@v3
+      - uses: getsentry/github-workflows/updater@26f565c05d0dd49f703d238706b775883037d76b # v3
         with:
           path: modules/wasm-split.properties
           name: wasm-split
