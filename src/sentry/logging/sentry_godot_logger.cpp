@@ -289,6 +289,19 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 		return;
 	}
 
+	// Skip C# exceptions - handled in managed layer.
+	if (p_file.to_lower().ends_with(".cs")) {
+		return;
+	} else if (p_file.is_empty()) {
+		// File can be empty in MonoVM - use heuristic to detect C# errors.
+		for (int i = 0; i < p_script_backtraces.size(); i++) {
+			const Ref<ScriptBacktrace> &backtrace = p_script_backtraces[i];
+			if (backtrace->get_language_name() == "C#" && backtrace->get_frame_count() > 0) {
+				return;
+			}
+		}
+	}
+
 	static thread_local uint32_t num_entries = 0;
 	constexpr uint32_t MAX_ENTRIES = 5;
 	RecursionGuard feedback_loop_guard{ &num_entries, MAX_ENTRIES };

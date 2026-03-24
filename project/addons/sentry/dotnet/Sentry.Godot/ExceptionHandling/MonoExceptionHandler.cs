@@ -21,8 +21,6 @@ namespace Sentry.Godot.ExceptionHandling;
 /// with the debugger attached, but only on CoreCLR (PC/Mac).
 /// </summary>
 public class MonoExceptionHandler : IDisposable {
-	private const int CSHARP_LANG_INDEX = 1;
-
 	// Last exception per thread. Both FirstChanceException and _LogError run on the
 	// same thread, so [ThreadStatic] is sufficient — no cross-thread synchronization needed.
 	// Only the most recent exception matters: _LogError always wants the last one thrown
@@ -53,21 +51,21 @@ public class MonoExceptionHandler : IDisposable {
 				$"'{e.Exception.Message}', managedTid={System.Environment.CurrentManagedThreadId}");
 	}
 
-	internal void OnLogError(global::Godot.Collections.Array<ScriptBacktrace> scriptBacktraces) {
-		if (_isProcessing) {
+	internal void OnLogError(string file, string code) {
+		if (_isProcessing || _lastException == null) {
 			return;
 		}
 
-		if (scriptBacktraces[CSHARP_LANG_INDEX].GetFrameCount() == 0) {
-			// Not a C# error
+		// Validate that _LogError was triggered by _lastException, not a stale one.
+		// The bridge passes the exception type name (and possibly message) as the "code" parameter.
+		if (code == null || !code.StartsWith(_lastException.GetType().FullName, StringComparison.Ordinal)) {
+			// Not triggered by the current exception - ignore.
 			return;
 		}
 
 		try {
 			_isProcessing = true;
 
-			// Read and clear before calling CaptureException - any internal exceptions
-			// thrown during processing are dropped by the _isProcessing guard.
 			var exception = _lastException;
 			_lastException = null;
 
@@ -102,7 +100,7 @@ public partial class SentryLogger : global::Godot.Logger {
 	public override void _LogError(string function, string file, int line, string code,
 			string rationale, bool editorNotify, int errorType,
 			global::Godot.Collections.Array<ScriptBacktrace> scriptBacktraces) {
-		// GodotLog.Debug($"LogError: function={function}, file={file}, line={line}, code={code}, rationale={rationale}, errorType={errorType}");
-		_handler.OnLogError(scriptBacktraces);
+		GodotLog.Debug($"LogError: function={function}, file={file}, line={line}, code={code}, rationale={rationale}, errorType={errorType}");
+		_handler.OnLogError(file, code);
 	}
 }
