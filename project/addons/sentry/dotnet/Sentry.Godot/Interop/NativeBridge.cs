@@ -2,11 +2,12 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Sentry.Godot;
+namespace Sentry.Godot.Interop;
 
-// Will be used to control native layer SDK, initialize, sync scope, etc.
-// TODO: should be internal
-public static class NativeBridge {
+// <summary>
+// Handles native layer SDK operations, such as initialize, scope syncing ops, etc.
+// </summary>
+internal static class NativeBridge {
 	internal const string Lib = "sentry-godot";
 	private static bool _initialized;
 

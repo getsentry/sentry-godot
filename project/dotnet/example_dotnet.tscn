@@ -2,5 +2,46 @@
 
 [ext_resource type="Script" uid="uid://rsyugh6m5hna" path="res://dotnet/ExampleDotnet.cs" id="1_o44kr"]
 
-[node name="ExampleDotnet" type="Node2D"]
+[node name="ExampleDotnet" type="CanvasLayer"]
 script = ExtResource("1_o44kr")
+
+[node name="Actions" type="VBoxContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -142.0
+offset_top = -15.5
+offset_right = 142.0
+offset_bottom = 15.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="TriggerException" type="Button" parent="Actions"]
+layout_mode = 2
+text = "Trigger Exception"
+
+[node name="TriggerThreadException" type="Button" parent="Actions"]
+layout_mode = 2
+text = "Trigger Exception from thread (will CRASH!)"
+
+[node name="TriggerHandledException" type="Button" parent="Actions"]
+layout_mode = 2
+text = "Trigger user-handled Exception"
+
+[node name="TriggerRethrow" type="Button" parent="Actions"]
+layout_mode = 2
+text = "Trigger rethrow"
+
+[node name="TriggerWrappedRethrow" type="Button" parent="Actions"]
+layout_mode = 2
+text = "Trigger wrapped rethrow"
+
+[connection signal="pressed" from="Actions/TriggerException" to="." method="TriggerException"]
+[connection signal="pressed" from="Actions/TriggerThreadException" to="." method="TriggerThreadException"]
+[connection signal="pressed" from="Actions/TriggerHandledException" to="." method="TriggerHandledException"]
+[connection signal="pressed" from="Actions/TriggerRethrow" to="." method="TriggerRethrow"]
+[connection signal="pressed" from="Actions/TriggerWrappedRethrow" to="." method="TriggerWrappedRethrow"]
