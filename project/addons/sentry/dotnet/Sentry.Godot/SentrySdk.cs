@@ -13,17 +13,31 @@ public class SentrySdk {
 	/// Initializes the .NET SDK with an optional configuration callback.
 	/// </summary>
 	public static void Init(Action<SentryGodotOptions>? configureOptions = null) {
-		GodotLog.Debug("Initializing Sentry in .NET...");
-
 		var godotOptions = new SentryGodotOptions();
 		godotOptions.AddInAppExclude("Godot");
 		godotOptions.ApplyNativeOptions();
 		configureOptions?.Invoke(godotOptions);
 		godotOptions.ApplyTemplateSubstitutions();
 
-		Sentry.SentrySdk.Init(godotOptions);
-
+		InitDotnet(godotOptions);
 		InitNativeIfNeeded(godotOptions);
+	}
+
+	/// <summary>
+	/// Initializes the .NET SDK from a native SentryOptions object.
+	/// Called by the native init callback when native layer initializes first.
+	/// </summary>
+	internal static void InitFromNativeOptions(GodotObject nativeOpts) {
+		var godotOptions = new SentryGodotOptions();
+		godotOptions.AddInAppExclude("Godot");
+		godotOptions.ApplyNativeOptions(nativeOpts);
+
+		InitDotnet(godotOptions);
+	}
+
+	private static void InitDotnet(SentryGodotOptions godotOptions) {
+		GodotLog.Debug("Initializing Sentry in .NET...");
+		Sentry.SentrySdk.Init(godotOptions);
 		InitFirstChanceExceptionHandler();
 	}
 

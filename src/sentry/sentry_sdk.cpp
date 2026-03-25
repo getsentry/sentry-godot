@@ -181,7 +181,16 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 			}
 			OS::get_singleton()->add_logger(godot_logger);
 		}
+
+		// Signal .NET layer to initialize, passing the final options.
+		if (dotnet_init_callback.is_valid()) {
+			dotnet_init_callback.call(options);
+		}
 	}
+}
+
+void SentrySDK::set_dotnet_init_callback(const Callable &p_callback) {
+	dotnet_init_callback = p_callback;
 }
 
 void SentrySDK::close() {
@@ -483,11 +492,12 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attribute", "name", "value"), &SentrySDK::set_attribute);
 	ClassDB::bind_method(D_METHOD("remove_attribute", "name"), &SentrySDK::remove_attribute);
 
-	// Hidden API methods -- used in testing.
+	// Hidden API methods.
+	ClassDB::bind_method(D_METHOD("_set_dotnet_init_callback", "callback"), &SentrySDK::set_dotnet_init_callback);
+	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
 	ClassDB::bind_method(D_METHOD("_get_before_send"), &SentrySDK::get_before_send);
-	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "logger", PROPERTY_HINT_TYPE_STRING, "SentryLogger", PROPERTY_USAGE_NONE), get_logger);
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "metrics", PROPERTY_HINT_TYPE_STRING, "SentryMetrics", PROPERTY_USAGE_NONE), get_metrics);

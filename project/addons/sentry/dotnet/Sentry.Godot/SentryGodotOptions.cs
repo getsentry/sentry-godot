@@ -16,10 +16,10 @@ public sealed class SentryGodotOptions : SentryOptions {
 	public System.TimeSpan AppHangTimeout { get; set; } = System.TimeSpan.FromSeconds(5.0);
 
 	/// <summary>
-	/// Reads resolved options from the native GDExtension SentryOptions.
+	/// Reads resolved options from the native SentryOptions.
 	/// </summary>
 	/// <remarks>
-	/// Since the native SDK initializes before .NET, treat it as single
+	/// Since the native SDK initializes before .NET, treat native options as single
 	/// source of truth for those options that are common to both.
 	/// </remarks>
 	internal void ApplyNativeOptions() {
@@ -31,10 +31,17 @@ public sealed class SentryGodotOptions : SentryOptions {
 		var nativeOpts = ClassDB.ClassCallStatic("SentryOptions", "create_from_project_settings")
 								 .AsGodotObject();
 		if (nativeOpts == null) {
-			GodotLog.Error("Failed to create native SentryOptions from project settings.");
+			GodotLog.Error("Internal: Failed to create native SentryOptions from project settings.");
 			return;
 		}
 
+		ApplyNativeOptions(nativeOpts);
+	}
+
+	/// <summary>
+	/// Reads resolved options from the provided native SentryOptions object.
+	/// </summary>
+	internal void ApplyNativeOptions(GodotObject nativeOpts) {
 		Dsn = (string)nativeOpts.Get("dsn");
 		Release = (string)nativeOpts.Get("release");
 		Distribution = (string)nativeOpts.Get("dist");
@@ -50,10 +57,8 @@ public sealed class SentryGodotOptions : SentryOptions {
 		// Godot-specific options
 		AttachLog = (bool)nativeOpts.Get("attach_log");
 		AttachSceneTree = (bool)nativeOpts.Get("attach_scene_tree");
-
 		AttachScreenshot = (bool)nativeOpts.Get("attach_screenshot");
 		ScreenshotLevel = (SentryLevel)(int)nativeOpts.Get("screenshot_level");
-
 		AppHangTracking = (bool)nativeOpts.Get("app_hang_tracking");
 		AppHangTimeout = System.TimeSpan.FromSeconds((double)nativeOpts.Get("app_hang_timeout_sec"));
 
@@ -70,7 +75,7 @@ public sealed class SentryGodotOptions : SentryOptions {
 		}
 
 		if (Environment == "{auto}") {
-			// Native layer defines auto-detection
+			// Auto-detection is defined in the native layer.
 			var detectedEnv = NativeBridge.DetectEnvironment();
 			if (detectedEnv != null) {
 				Environment = detectedEnv;

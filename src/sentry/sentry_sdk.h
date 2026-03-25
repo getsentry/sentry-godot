@@ -39,6 +39,7 @@ private:
 	Ref<sentry::logging::SentryGodotLogger> godot_logger;
 	bool is_auto_initializing = false;
 	bool is_configuring = false;
+	Callable dotnet_init_callback;
 
 	// Public API for logs and metrics
 	SentryLogger *logger = nullptr;
@@ -67,6 +68,7 @@ public:
 	// * Exported API
 
 	void init(const Callable &p_configuration_callback = Callable());
+	void set_dotnet_init_callback(const Callable &p_callback);
 	void close();
 	bool is_enabled() const { return internal_sdk->is_enabled(); }
 
