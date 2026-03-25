@@ -37,6 +37,7 @@ $CommonTestCases = @(
                 "Windows" = "native"
                 "Linux" = "native"
                 "macOS" = "cocoa"
+                "Web" = "javascript"
             }
 
             if ($expectedPlatform.ContainsKey($TestSetup.Platform)) {
@@ -77,6 +78,9 @@ $CommonTestCases = @(
                 $expectedOS = "Android"
             } elseif ($TestSetup.Platform -match "iOS") {
                 $expectedOS = "iOS"
+            } elseif ($TestSetup.IsWeb) {
+                # On Web, OS context reflects the browser's host OS
+                $expectedOS = "Linux|Windows|macOS|Mac OS"
             }
             ($SentryEvent.tags | Where-Object { $_.key -eq "os" }).value | Should -Match $expectedOS
         }
@@ -133,7 +137,10 @@ $CommonTestCases = @(
             $SentryEvent.contexts.os | Should -Not -BeNullOrEmpty
             $SentryEvent.contexts.os.os | Should -Not -BeNullOrEmpty
             $SentryEvent.contexts.os.name | Should -Not -BeNullOrEmpty
-            $SentryEvent.contexts.os.version | Should -Not -BeNullOrEmpty
+            if (-not $TestSetup.IsWeb) {
+                # On Web, OS version may not be available.
+                $SentryEvent.contexts.os.version | Should -Not -BeNullOrEmpty
+            }
         }
     }
     @{ Name = "Contains Godot contexts"; TestBlock = {
