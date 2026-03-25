@@ -7,7 +7,7 @@ namespace Sentry.Godot.Interop;
 // <summary>
 // Handles native layer SDK operations, such as initialize, scope syncing ops, etc.
 // </summary>
-internal static class NativeBridge {
+internal static partial class NativeBridge {
 	internal const string Lib = "sentry-godot";
 	private static bool _initialized;
 
@@ -34,8 +34,11 @@ internal static class NativeBridge {
 		});
 	}
 
-	[DllImport(Lib)]
-	private static extern unsafe void csharp_interop_sdk_set_tag(
+	private const int InteropSmallStringLen = 64;
+	private const int SizeOfChar32 = 4;
+
+	[LibraryImport(Lib)]
+	private static unsafe partial void csharp_interop_sdk_set_tag(
 			char *key, int keyLen, char *value, int valueLen);
 
 	public static unsafe void SetTag(string key, string value) {
@@ -43,5 +46,18 @@ internal static class NativeBridge {
 				fixed(char *valPtr = value) {
 			csharp_interop_sdk_set_tag(keyPtr, key.Length, valPtr, value.Length);
 		}
+	}
+
+	[LibraryImport(Lib)]
+	private static unsafe partial int csharp_interop_detect_environment(
+			uint *buffer, int bufferCodepoints);
+
+	public static unsafe string? DetectEnvironment() {
+		uint *buffer = stackalloc uint[InteropSmallStringLen];
+		int len = csharp_interop_detect_environment(buffer, InteropSmallStringLen);
+		if (len <= 0) {
+			return null;
+		}
+		return System.Text.Encoding.UTF32.GetString((byte *)buffer, len * SizeOfChar32);
 	}
 }

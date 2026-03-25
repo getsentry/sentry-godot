@@ -9,14 +9,19 @@ namespace Sentry.Godot;
 public class SentrySdk {
 	static IDisposable? _exceptionHandler;
 
-	public static void Init(Action<SentryOptions>? configureOptions = null) {
+	public static void Init(Action<SentryGodotOptions>? configureOptions = null) {
 		GodotLog.Debug("Initializing Sentry in .NET...");
 
-		Sentry.SentrySdk.Init(options => {
-			// TODO: Apply ProjectSettings
-			options.AddInAppExclude("Godot");
-			configureOptions?.Invoke(options);
-		});
+		var godotOptions = new SentryGodotOptions();
+		godotOptions.AddInAppExclude("Godot");
+		godotOptions.ApplyProjectSettings();
+		configureOptions?.Invoke(godotOptions);
+		godotOptions.ApplyTemplateSubstitutions();
+
+		Sentry.SentrySdk.Init(godotOptions);
+
+		// Test
+		// NativeBridge.SetTag("biome", "moon");
 
 		InitFirstChanceExceptionHandler();
 	}
