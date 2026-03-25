@@ -12,6 +12,9 @@ public sealed class SentryGodotOptions : SentryOptions {
 	public bool AttachScreenshot { get; set; } = false;
 	public SentryLevel ScreenshotLevel { get; set; } = SentryLevel.Fatal;
 
+	public bool AppHangTracking { get; set; } = false;
+	public System.TimeSpan AppHangTimeout { get; set; } = System.TimeSpan.FromSeconds(5.0);
+
 	/// <summary>
 	/// Reads resolved options from the native GDExtension SentryOptions.
 	/// </summary>
@@ -47,10 +50,13 @@ public sealed class SentryGodotOptions : SentryOptions {
 		// Godot-specific options
 		AttachLog = (bool)nativeOpts.Get("attach_log");
 		AttachSceneTree = (bool)nativeOpts.Get("attach_scene_tree");
+
 		AttachScreenshot = (bool)nativeOpts.Get("attach_screenshot");
 		ScreenshotLevel = (SentryLevel)(int)nativeOpts.Get("screenshot_level");
 
-		// TODO: app_hang_tracking, app_hang_timeout_sec
+		AppHangTracking = (bool)nativeOpts.Get("app_hang_tracking");
+		AppHangTimeout = System.TimeSpan.FromSeconds((double)nativeOpts.Get("app_hang_timeout_sec"));
+
 		// TODO: logger_* settings
 	}
 
