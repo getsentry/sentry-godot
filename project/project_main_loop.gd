@@ -20,18 +20,18 @@ func _initialize() -> void:
 	logger = DemoLogger.new()
 	OS.add_logger(logger)
 
-	SentrySDK.init(func(options: SentryOptions) -> void:
-		print("INFO: [ProjectMainLoop] Initializing SDK from GDScript")
-
-		options.debug = true
-		options.release = "sentry-godot-demo@" + ProjectSettings.get_setting("application/config/version")
-		options.environment = "demo"
-
-		# Set up event callbacks
-		options.before_send = _on_before_send_to_sentry
-		options.before_send_log = _on_before_send_log_to_sentry
-		options.experimental.before_send_metric = _on_before_send_metric_to_sentry
-	)
+	#SentrySDK.init(func(options: SentryOptions) -> void:
+		#print("INFO: [ProjectMainLoop] Initializing SDK from GDScript")
+#
+		#options.debug = true
+		#options.release = "sentry-godot-demo@" + ProjectSettings.get_setting("application/config/version")
+		#options.environment = "demo"
+#
+		## Set up event callbacks
+		#options.before_send = _on_before_send_to_sentry
+		#options.before_send_log = _on_before_send_log_to_sentry
+		#options.experimental.before_send_metric = _on_before_send_metric_to_sentry
+	#)
 
 	# Post-initialize
 	# SentrySDK.add_attachment(...)

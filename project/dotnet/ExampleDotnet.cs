@@ -5,6 +5,7 @@ using Sentry.Godot;
 
 public partial class ExampleDotnet : CanvasLayer {
 	public override void _Ready() {
+		SentrySdk.Init();
 	}
 
 	public void TriggerException() {

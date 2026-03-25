@@ -23,10 +23,40 @@ public class SentrySdk {
 
 		Sentry.SentrySdk.Init(godotOptions);
 
-		// TODO: If native SDK hasn't initialized yet (manual init case),
-		// signal it to init now: NativeBridge.InitNative(godotOptions) or smth like this
-
+		InitNativeIfNeeded(godotOptions);
 		InitFirstChanceExceptionHandler();
+	}
+
+	/// <summary>
+	/// If the native SDK hasn't initialized yet (in case of a manual init),
+	/// signal it to init with options synced from the .NET configuration callback.
+	/// </summary>
+	private static void InitNativeIfNeeded(SentryGodotOptions godotOptions) {
+		var sdk = Engine.GetSingleton("SentrySDK");
+		if (sdk == null || (bool)sdk.Call("is_enabled")) {
+			return;
+		}
+
+		// TODO: Cache StringName instances? Should probably be selective.
+		sdk.Call("init", Callable.From<GodotObject>(nativeOpts => {
+			nativeOpts.Set("dsn", godotOptions.Dsn ?? "");
+			nativeOpts.Set("release", godotOptions.Release ?? "");
+			nativeOpts.Set("dist", godotOptions.Distribution ?? "");
+			nativeOpts.Set("environment", godotOptions.Environment ?? "");
+			nativeOpts.Set("debug", godotOptions.Debug);
+			nativeOpts.Set("diagnostic_level", (int)godotOptions.DiagnosticLevel);
+			nativeOpts.Set("sample_rate", godotOptions.SampleRate ?? 1.0);
+			nativeOpts.Set("max_breadcrumbs", godotOptions.MaxBreadcrumbs);
+			nativeOpts.Set("shutdown_timeout_ms", (int)godotOptions.ShutdownTimeout.TotalMilliseconds);
+			nativeOpts.Set("send_default_pii", godotOptions.SendDefaultPii);
+			nativeOpts.Set("attach_log", godotOptions.AttachLog);
+			nativeOpts.Set("attach_scene_tree", godotOptions.AttachSceneTree);
+			nativeOpts.Set("attach_screenshot", godotOptions.AttachScreenshot);
+			nativeOpts.Set("screenshot_level", (int)godotOptions.ScreenshotLevel);
+			nativeOpts.Set("app_hang_tracking", godotOptions.AppHangTracking);
+			nativeOpts.Set("app_hang_timeout_sec", (double)godotOptions.AppHangTimeout.TotalSeconds);
+			// TODO: logger_* settings
+		}));
 	}
 
 	private static void InitFirstChanceExceptionHandler() {
