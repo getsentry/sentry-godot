@@ -9,6 +9,9 @@ namespace Sentry.Godot;
 public class SentrySdk {
 	static IDisposable? _exceptionHandler;
 
+	/// <summary>
+	/// Initializes the .NET SDK with an optional configuration callback.
+	/// </summary>
 	public static void Init(Action<SentryGodotOptions>? configureOptions = null) {
 		GodotLog.Debug("Initializing Sentry in .NET...");
 
@@ -20,8 +23,8 @@ public class SentrySdk {
 
 		Sentry.SentrySdk.Init(godotOptions);
 
-		// TODO: On manual init, need to send signal to native layer to initialize, syncing options.
-		//       On automatic init, native layer is already initialized by the time managed layer gets to act.
+		// TODO: If native SDK hasn't initialized yet (manual init case),
+		// signal it to init now: NativeBridge.InitNative(godotOptions) or smth like this
 
 		InitFirstChanceExceptionHandler();
 	}
