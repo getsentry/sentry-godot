@@ -6,39 +6,99 @@ using Sentry.Godot.Internal;
 namespace Sentry.Godot;
 
 public sealed class SentryGodotOptions : SentryOptions {
+	/// <summary>
+	/// If enabled, the SDK will attach the Godot log file to the event.
+	/// </summary>
 	public bool AttachLog { get; set; } = true;
 
+	/// <summary>
+	/// If enabled, the SDK captures scene tree hierarchy data with each event.
+	/// </summary>
 	public bool AttachSceneTree { get; set; } = false;
 
-	public bool AttachScreenshot { get; set; } = false;
-	public SentryLevel ScreenshotLevel { get; set; } = SentryLevel.Fatal;
-
-	public bool AppHangTracking { get; set; } = false;
-	public System.TimeSpan AppHangTimeout { get; set; } = System.TimeSpan.FromSeconds(5.0);
-
 	/// <summary>
-	/// Enables logger that reports GDScript and engine runtime errors to Sentry.
+	/// If enabled, the SDK captures screenshots for events meeting or exceeding <see cref="ScreenshotLevel"/>.
 	/// </summary>
 	/// <remarks>
-	/// This setting does not control .NET errors.
+	/// This feature is experimental and may impact performance. Test before enabling in production.
+	/// </remarks>
+	public bool AttachScreenshot { get; set; } = false;
+
+	/// <summary>
+	/// Minimum event level for which screenshots are captured.
+	/// </summary>
+	public SentryLevel ScreenshotLevel { get; set; } = SentryLevel.Fatal;
+
+	/// <summary>
+	/// If enabled, the SDK monitors the main thread and reports hang events
+	/// when it becomes unresponsive for longer than <see cref="AppHangTimeout"/>.
+	/// </summary>
+	/// <remarks>
+	/// Only supported on Android, iOS, and macOS.
+	/// </remarks>
+	public bool AppHangTracking { get; set; } = false;
+
+	/// <summary>
+	/// Duration after which the application is considered to have hanged.
+	/// </summary>
+	public TimeSpan AppHangTimeout { get; set; } = TimeSpan.FromSeconds(5.0);
+
+	/// <summary>
+	/// If enabled, the SDK captures logged GDScript and engine runtime errors as events and/or breadcrumbs,
+	/// as defined by <see cref="LoggerEventMask"/> and <see cref="LoggerBreadcrumbMask"/>.
+	/// </summary>
+	/// <remarks>
+	/// This setting controls GDScript/engine error reporting, not .NET errors.
 	/// </remarks>
 	public bool LoggerEnabled { get; set; } = true;
 
+	/// <summary>
+	/// If enabled, the SDK includes surrounding source code of logged errors, if available.
+	/// </summary>
+	/// <remarks>
+	/// This setting controls GDScript error reporting, not .NET errors.
+	/// </remarks>
 	public bool LoggerIncludeSource { get; set; } = false;
+
+	/// <summary>
+	/// If enabled, the SDK includes local variables from stack traces when capturing script errors.
+	/// </summary>
+	/// <remarks>
+	/// May impact performance, especially for applications with frequent errors or deep call stacks.
+	/// This setting controls GDScript error reporting, not .NET errors.
+	/// </remarks>
 	public bool LoggerIncludeVariables { get; set; } = false;
+
+	/// <summary>
+	/// If enabled, log messages (such as <c>Print()</c> statements) are captured as breadcrumbs.
+	/// </summary>
 	public bool LoggerMessagesAsBreadcrumbs { get; set; } = true;
 
+	/// <summary>
+	/// Bitfield mask for Godot error types.
+	/// </summary>
 	[Flags]
 	public enum GodotErrorMask {
+		/// <summary>No errors captured.</summary>
 		None = 0,
+		/// <summary>Native (C++) errors, which may also originate from a script.</summary>
 		Error = 1,
+		/// <summary>Warnings.</summary>
 		Warning = 2,
+		/// <summary>Script errors.</summary>
 		Script = 4,
+		/// <summary>Shader errors.</summary>
 		Shader = 8,
 	}
 
+	/// <summary>
+	/// Specifies which error types are captured as Sentry events.
+	/// </summary>
 	public GodotErrorMask LoggerEventMask = GodotErrorMask.Error | GodotErrorMask.Script | GodotErrorMask.Shader;
 
+	/// <summary>
+	/// Specifies which error types are captured as breadcrumbs.
+	/// </summary>
 	public GodotErrorMask LoggerBreadcrumbMask = GodotErrorMask.Error | GodotErrorMask.Script | GodotErrorMask.Shader | GodotErrorMask.Warning;
 
 	// TODO: add logger limits
