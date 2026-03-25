@@ -14,14 +14,14 @@ public class SentrySdk {
 
 		var godotOptions = new SentryGodotOptions();
 		godotOptions.AddInAppExclude("Godot");
-		godotOptions.ApplyProjectSettings();
+		godotOptions.ApplyNativeOptions();
 		configureOptions?.Invoke(godotOptions);
 		godotOptions.ApplyTemplateSubstitutions();
 
 		Sentry.SentrySdk.Init(godotOptions);
 
-		// Test
-		// NativeBridge.SetTag("biome", "moon");
+		// TODO: On manual init, need to send signal to native layer to initialize, syncing options.
+		//       On automatic init, native layer is already initialized by the time managed layer gets to act.
 
 		InitFirstChanceExceptionHandler();
 	}
