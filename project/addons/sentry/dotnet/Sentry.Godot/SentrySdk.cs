@@ -51,26 +51,7 @@ public class SentrySdk {
 			return;
 		}
 
-		// TODO: Cache StringName instances? Should probably be selective.
-		sdk.Call("init", Callable.From<GodotObject>(nativeOpts => {
-			nativeOpts.Set("dsn", godotOptions.Dsn ?? "");
-			nativeOpts.Set("release", godotOptions.Release ?? "");
-			nativeOpts.Set("dist", godotOptions.Distribution ?? "");
-			nativeOpts.Set("environment", godotOptions.Environment ?? "");
-			nativeOpts.Set("debug", godotOptions.Debug);
-			nativeOpts.Set("diagnostic_level", (int)godotOptions.DiagnosticLevel);
-			nativeOpts.Set("sample_rate", godotOptions.SampleRate ?? 1.0);
-			nativeOpts.Set("max_breadcrumbs", godotOptions.MaxBreadcrumbs);
-			nativeOpts.Set("shutdown_timeout_ms", (int)godotOptions.ShutdownTimeout.TotalMilliseconds);
-			nativeOpts.Set("send_default_pii", godotOptions.SendDefaultPii);
-			nativeOpts.Set("attach_log", godotOptions.AttachLog);
-			nativeOpts.Set("attach_scene_tree", godotOptions.AttachSceneTree);
-			nativeOpts.Set("attach_screenshot", godotOptions.AttachScreenshot);
-			nativeOpts.Set("screenshot_level", (int)godotOptions.ScreenshotLevel);
-			nativeOpts.Set("app_hang_tracking", godotOptions.AppHangTracking);
-			nativeOpts.Set("app_hang_timeout_sec", (double)godotOptions.AppHangTimeout.TotalSeconds);
-			// TODO: logger_* settings
-		}));
+		sdk.Call("init", Callable.From<GodotObject>(godotOptions.SyncToNativeOptions));
 	}
 
 	private static void InitFirstChanceExceptionHandler() {

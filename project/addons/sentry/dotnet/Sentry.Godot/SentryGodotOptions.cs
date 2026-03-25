@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using Sentry.Godot.Interop;
 using Sentry.Godot.Internal;
@@ -14,6 +15,33 @@ public sealed class SentryGodotOptions : SentryOptions {
 
 	public bool AppHangTracking { get; set; } = false;
 	public System.TimeSpan AppHangTimeout { get; set; } = System.TimeSpan.FromSeconds(5.0);
+
+	/// <summary>
+	/// Enables logger that reports GDScript and engine runtime errors to Sentry.
+	/// </summary>
+	/// <remarks>
+	/// This setting does not control .NET errors.
+	/// </remarks>
+	public bool LoggerEnabled { get; set; } = true;
+
+	public bool LoggerIncludeSource { get; set; } = false;
+	public bool LoggerIncludeVariables { get; set; } = false;
+	public bool LoggerMessagesAsBreadcrumbs { get; set; } = true;
+
+	[Flags]
+	public enum GodotErrorMask {
+		None = 0,
+		Error = 1,
+		Warning = 2,
+		Script = 4,
+		Shader = 8,
+	}
+
+	public GodotErrorMask LoggerEventMask = GodotErrorMask.Error | GodotErrorMask.Script | GodotErrorMask.Shader;
+
+	public GodotErrorMask LoggerBreadcrumbMask = GodotErrorMask.Error | GodotErrorMask.Script | GodotErrorMask.Shader | GodotErrorMask.Warning;
+
+	// TODO: add logger limits
 
 	/// <summary>
 	/// Reads resolved options from the native SentryOptions.
@@ -39,7 +67,7 @@ public sealed class SentryGodotOptions : SentryOptions {
 	}
 
 	/// <summary>
-	/// Reads resolved options from the provided native SentryOptions object.
+	/// Reads resolved options from the provided SentryOptions object from native layer.
 	/// </summary>
 	internal void ApplyNativeOptions(GodotObject nativeOpts) {
 		Dsn = (string)nativeOpts.Get("dsn");
@@ -62,7 +90,43 @@ public sealed class SentryGodotOptions : SentryOptions {
 		AppHangTracking = (bool)nativeOpts.Get("app_hang_tracking");
 		AppHangTimeout = System.TimeSpan.FromSeconds((double)nativeOpts.Get("app_hang_timeout_sec"));
 
-		// TODO: logger_* settings
+		// Logger options
+		LoggerEnabled = (bool)nativeOpts.Get("logger_enabled");
+		LoggerIncludeSource = (bool)nativeOpts.Get("logger_include_source");
+		LoggerIncludeVariables = (bool)nativeOpts.Get("logger_include_variables");
+		LoggerMessagesAsBreadcrumbs = (bool)nativeOpts.Get("logger_messages_as_breadcrumbs");
+		LoggerEventMask = (GodotErrorMask)(int)nativeOpts.Get("logger_event_mask");
+		LoggerBreadcrumbMask = (GodotErrorMask)(int)nativeOpts.Get("logger_breadcrumb_mask");
+	}
+
+	/// <summary>
+	/// Syncs the options to the provided SentryOptions object from native layer.
+	/// </summary>
+	internal void SyncToNativeOptions(GodotObject nativeOpts) {
+		nativeOpts.Set("dsn", Dsn ?? "");
+		nativeOpts.Set("release", Release ?? "");
+		nativeOpts.Set("dist", Distribution ?? "");
+		nativeOpts.Set("environment", Environment ?? "");
+		nativeOpts.Set("debug", Debug);
+		nativeOpts.Set("diagnostic_level", (int)DiagnosticLevel);
+		nativeOpts.Set("sample_rate", SampleRate ?? 1.0);
+		nativeOpts.Set("max_breadcrumbs", MaxBreadcrumbs);
+		nativeOpts.Set("shutdown_timeout_ms", (int)ShutdownTimeout.TotalMilliseconds);
+		nativeOpts.Set("send_default_pii", SendDefaultPii);
+
+		nativeOpts.Set("attach_log", AttachLog);
+		nativeOpts.Set("attach_scene_tree", AttachSceneTree);
+		nativeOpts.Set("attach_screenshot", AttachScreenshot);
+		nativeOpts.Set("screenshot_level", (int)ScreenshotLevel);
+		nativeOpts.Set("app_hang_tracking", AppHangTracking);
+		nativeOpts.Set("app_hang_timeout_sec", (double)AppHangTimeout.TotalSeconds);
+
+		nativeOpts.Set("logger_enabled", LoggerEnabled);
+		nativeOpts.Set("logger_include_source", LoggerIncludeSource);
+		nativeOpts.Set("logger_include_variables", LoggerIncludeVariables);
+		nativeOpts.Set("logger_messages_as_breadcrumbs", LoggerMessagesAsBreadcrumbs);
+		nativeOpts.Set("logger_event_mask", (int)LoggerEventMask);
+		nativeOpts.Set("logger_breadcrumb_mask", (int)LoggerBreadcrumbMask);
 	}
 
 	/// <summary>
