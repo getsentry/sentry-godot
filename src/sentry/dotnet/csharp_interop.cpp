@@ -1,7 +1,6 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
 #include "sentry/sentry_sdk.h"
-#include <cstring>
 
 #ifdef _WIN32
 #define CSHARP_EXPORT __declspec(dllexport)
@@ -20,6 +19,11 @@ struct InteropString {
 	int64_t len;
 };
 
+CSHARP_EXPORT InteropString csharp_interop_detect_environment() {
+	const String &env = environment::detect_godot_environment();
+	return { env.ptr(), env.length() };
+}
+
 CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int key_len,
 		const char16_t *value, int value_len) {
 	String k = String::utf16(key, key_len);
@@ -27,9 +31,9 @@ CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int key_len,
 	SentrySDK::get_singleton()->set_tag(k, v);
 }
 
-CSHARP_EXPORT InteropString csharp_interop_detect_environment() {
-	const String &env = environment::detect_godot_environment();
-	return { env.ptr(), env.length() };
+CSHARP_EXPORT void csharp_interop_sdk_remove_tag(const char16_t *key, int key_len) {
+	String k = String::utf16(key, key_len);
+	SentrySDK::get_singleton()->remove_tag(k);
 }
 
 CSHARP_EXPORT void csharp_interop_set_trace(const char *p_trace_id, const char *p_parent_span_id) {

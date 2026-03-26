@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Sentry.Godot.Internal;
+using Godot;
+using Godot.Collections;
 
 namespace Sentry.Godot.Interop;
 
@@ -12,6 +14,7 @@ namespace Sentry.Godot.Interop;
 internal static partial class NativeBridge {
 	internal const string Lib = "sentry-godot";
 	private static bool _initialized;
+	private static GodotObject _nativeSdk = Engine.GetSingleton(StringNames.SentrySDK);
 
 	[ModuleInitializer]
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2255")]
@@ -52,21 +55,75 @@ internal static partial class NativeBridge {
 	}
 
 	[LibraryImport(Lib)]
+	private static unsafe partial InteropString csharp_interop_detect_environment();
+
+	public static unsafe string? DetectEnvironment() {
+		return csharp_interop_detect_environment().ToManaged();
+	}
+
+	public static void AddBreadcrumb(Breadcrumb breadcrumb) {
+		var crumb = ClassDB.ClassCallStatic(StringNames.SentryBreadcrumb, StringNames.create).AsGodotObject();
+
+		if (breadcrumb.Message is not null) {
+			crumb.Set(StringNames.message, breadcrumb.Message);
+		}
+		if (breadcrumb.Category is not null) {
+			crumb.Set(StringNames.category, breadcrumb.Category);
+		}
+		if (breadcrumb.Type is not null) {
+			crumb.Set(StringNames.type, breadcrumb.Type);
+		}
+		if (breadcrumb.Data is not null) {
+			var data = new Dictionary();
+			foreach (var kv in breadcrumb.Data) {
+				data[kv.Key] = kv.Value;
+			}
+			crumb.Set(StringNames.data, data);
+		}
+
+		crumb.Set(StringNames.level, breadcrumb.Level switch {
+			BreadcrumbLevel.Debug => 0,
+			BreadcrumbLevel.Info => 1,
+			BreadcrumbLevel.Warning => 2,
+			BreadcrumbLevel.Error => 3,
+			BreadcrumbLevel.Fatal => 4,
+			_ => 1,
+		});
+
+		_nativeSdk.Call(StringNames.add_breadcrumb, crumb);
+	}
+
+	[LibraryImport(Lib)]
 	private static unsafe partial void csharp_interop_sdk_set_tag(
 			char *key, int keyLen, char *value, int valueLen);
 
 	public static unsafe void SetTag(string key, string value) {
-		fixed(char *keyPtr = key)
-				fixed(char *valPtr = value) {
+		fixed(char *keyPtr = key) fixed(char *valPtr = value) {
 			csharp_interop_sdk_set_tag(keyPtr, key.Length, valPtr, value.Length);
 		}
 	}
 
 	[LibraryImport(Lib)]
-	private static unsafe partial InteropString csharp_interop_detect_environment();
+	private static unsafe partial void csharp_interop_sdk_remove_tag(
+			char *key, int keyLen);
 
-	public static unsafe string? DetectEnvironment() {
-		return csharp_interop_detect_environment().ToManaged();
+	public static unsafe void RemoveTag(string key) {
+		fixed(char *keyPtr = key) {
+			csharp_interop_sdk_remove_tag(keyPtr, key.Length);
+		}
+	}
+
+	public static unsafe void SetUser(SentryUser? user) {
+		if (user is null) {
+			_nativeSdk.Call(StringNames.remove_user);
+		} else {
+			var nativeUser = ClassDB.Instantiate(StringNames.SentryUser).AsGodotObject();
+			nativeUser.Set(StringNames.username, user.Username ?? "");
+			nativeUser.Set(StringNames.email, user.Email ?? "");
+			nativeUser.Set(StringNames.id, user.Id ?? "");
+			nativeUser.Set(StringNames.ip_address, user.IpAddress ?? "");
+			_nativeSdk.Call(StringNames.set_user, nativeUser);
+		}
 	}
 
 	[LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
