@@ -1,3 +1,4 @@
+#include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
 #include "sentry/sentry_sdk.h"
 #include <cstring>
@@ -32,6 +33,10 @@ CSHARP_EXPORT int csharp_interop_detect_environment(char32_t *r_buffer, int p_le
 
 CSHARP_EXPORT void csharp_interop_set_trace(const char *p_trace_id, const char *p_parent_span_id) {
 	SentrySDK::get_singleton()->set_trace(p_trace_id, p_parent_span_id);
+}
+
+CSHARP_EXPORT const char *csharp_interop_get_sdk_version() {
+	return SENTRY_GODOT_SDK_VERSION;
 }
 
 } // extern "C"

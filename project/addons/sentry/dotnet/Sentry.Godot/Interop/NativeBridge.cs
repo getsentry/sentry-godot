@@ -67,4 +67,12 @@ internal static partial class NativeBridge {
 	public static unsafe void SetTrace(string traceId, string parentSpanId) {
 		csharp_interop_set_trace(traceId, parentSpanId);
 	}
+
+	// Returns compile-time constant - don't free!
+	[LibraryImport(Lib)]
+	private static partial IntPtr csharp_interop_get_sdk_version();
+
+	public static string GetSdkVersion() {
+		return Marshal.PtrToStringUTF8(csharp_interop_get_sdk_version()) ?? "0.0.0";
+	}
 }
