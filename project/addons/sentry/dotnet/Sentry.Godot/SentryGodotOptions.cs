@@ -130,33 +130,33 @@ public sealed class SentryGodotOptions : SentryOptions {
 	/// Reads resolved options from the provided SentryOptions object from native layer.
 	/// </summary>
 	internal void ApplyNativeOptions(GodotObject nativeOpts) {
-		Dsn = (string)nativeOpts.Get("dsn");
-		Release = (string)nativeOpts.Get("release");
-		Distribution = (string)nativeOpts.Get("dist");
-		Environment = (string)nativeOpts.Get("environment");
-		Debug = (bool)nativeOpts.Get("debug");
-		DiagnosticLevel = (SentryLevel)(int)nativeOpts.Get("diagnostic_level");
+		Dsn = nativeOpts.Get("dsn").AsString();
+		Release = nativeOpts.Get("release").AsString();
+		Distribution = nativeOpts.Get("dist").AsString();
+		Environment = nativeOpts.Get("environment").AsString();
+		Debug = nativeOpts.Get("debug").AsBool();
+		DiagnosticLevel = (SentryLevel)nativeOpts.Get("diagnostic_level").AsInt16();
 		SampleRate = (float)nativeOpts.Get("sample_rate");
-		MaxBreadcrumbs = (int)nativeOpts.Get("max_breadcrumbs");
-		ShutdownTimeout = System.TimeSpan.FromMilliseconds((int)nativeOpts.Get("shutdown_timeout_ms"));
-		SendDefaultPii = (bool)nativeOpts.Get("send_default_pii");
-		EnableLogs = (bool)nativeOpts.Get("enable_logs");
+		MaxBreadcrumbs = nativeOpts.Get("max_breadcrumbs").AsInt32();
+		ShutdownTimeout = System.TimeSpan.FromMilliseconds(nativeOpts.Get("shutdown_timeout_ms").AsDouble());
+		SendDefaultPii = nativeOpts.Get("send_default_pii").AsBool();
+		EnableLogs = nativeOpts.Get("enable_logs").AsBool();
 
 		// Godot-specific options
-		AttachLog = (bool)nativeOpts.Get("attach_log");
-		AttachSceneTree = (bool)nativeOpts.Get("attach_scene_tree");
-		AttachScreenshot = (bool)nativeOpts.Get("attach_screenshot");
-		ScreenshotLevel = (SentryLevel)(int)nativeOpts.Get("screenshot_level");
-		AppHangTracking = (bool)nativeOpts.Get("app_hang_tracking");
-		AppHangTimeout = System.TimeSpan.FromSeconds((double)nativeOpts.Get("app_hang_timeout_sec"));
+		AttachLog = nativeOpts.Get("attach_log").AsBool();
+		AttachSceneTree = nativeOpts.Get("attach_scene_tree").AsBool();
+		AttachScreenshot = nativeOpts.Get("attach_screenshot").AsBool();
+		ScreenshotLevel = (SentryLevel)nativeOpts.Get("screenshot_level").AsInt16();
+		AppHangTracking = nativeOpts.Get("app_hang_tracking").AsBool();
+		AppHangTimeout = System.TimeSpan.FromSeconds(nativeOpts.Get("app_hang_timeout_sec").AsDouble());
 
 		// Logger options
-		LoggerEnabled = (bool)nativeOpts.Get("logger_enabled");
-		LoggerIncludeSource = (bool)nativeOpts.Get("logger_include_source");
-		LoggerIncludeVariables = (bool)nativeOpts.Get("logger_include_variables");
-		LoggerMessagesAsBreadcrumbs = (bool)nativeOpts.Get("logger_messages_as_breadcrumbs");
-		LoggerEventMask = (GodotErrorMask)(int)nativeOpts.Get("logger_event_mask");
-		LoggerBreadcrumbMask = (GodotErrorMask)(int)nativeOpts.Get("logger_breadcrumb_mask");
+		LoggerEnabled = nativeOpts.Get("logger_enabled").AsBool();
+		LoggerIncludeSource = nativeOpts.Get("logger_include_source").AsBool();
+		LoggerIncludeVariables = nativeOpts.Get("logger_include_variables").AsBool();
+		LoggerMessagesAsBreadcrumbs = nativeOpts.Get("logger_messages_as_breadcrumbs").AsBool();
+		LoggerEventMask = (GodotErrorMask)nativeOpts.Get("logger_event_mask").AsInt16();
+		LoggerBreadcrumbMask = (GodotErrorMask)nativeOpts.Get("logger_breadcrumb_mask").AsInt16();
 
 		var experimentalOpts = nativeOpts.Get("experimental").AsGodotObject();
 		Experimental.EnableMetrics = experimentalOpts.Get("enable_metrics").AsBool();
