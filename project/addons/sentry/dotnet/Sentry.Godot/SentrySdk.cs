@@ -14,8 +14,6 @@ public class SentrySdk {
 	/// </summary>
 	public static void Init(Action<SentryGodotOptions>? configureOptions = null) {
 		var godotOptions = new SentryGodotOptions();
-		// TODO: check if it works
-		godotOptions.AddInAppExclude("Godot");
 		godotOptions.ApplyNativeOptions();
 		configureOptions?.Invoke(godotOptions);
 		godotOptions.ApplyTemplateSubstitutions();
@@ -30,7 +28,6 @@ public class SentrySdk {
 	/// </summary>
 	internal static void InitFromNativeOptions(GodotObject nativeOpts) {
 		var godotOptions = new SentryGodotOptions();
-		godotOptions.AddInAppExclude("Godot");
 		godotOptions.ApplyNativeOptions(nativeOpts);
 
 		InitDotnet(godotOptions);
@@ -41,6 +38,7 @@ public class SentrySdk {
 		godotOptions.EnableScopeSync = true;
 		godotOptions.ScopeObserver = new GodotScopeObserver();
 		godotOptions.AddIntegration(new GodotSdkIntegration());
+		godotOptions.AddInAppExclude("Godot"); // Godot's bridge layer (aka mono glue)
 		Sentry.SentrySdk.Init(godotOptions);
 		InitFirstChanceExceptionHandler();
 	}
