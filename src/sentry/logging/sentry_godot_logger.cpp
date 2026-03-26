@@ -49,6 +49,10 @@ bool _get_script_context(const String &p_file, int p_line, String &r_context_lin
 		return false;
 	}
 
+	if (!ResourceLoader::get_singleton()->exists(p_file)) {
+		return false;
+	}
+
 	Ref<Script> script = ResourceLoader::get_singleton()->load(p_file);
 
 	// ! Note: Script source code context is only automatically provided if GDScript is exported as text (not binary tokens).
