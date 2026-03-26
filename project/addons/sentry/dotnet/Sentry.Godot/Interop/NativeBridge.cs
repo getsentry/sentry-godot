@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Sentry.Godot.Interop;
 
@@ -37,6 +38,17 @@ internal static partial class NativeBridge {
 	private const int InteropSmallStringLen = 64;
 	private const int SizeOfChar32 = 4;
 
+	[StructLayout(LayoutKind.Sequential)]
+	private struct InteropString {
+		public IntPtr Ptr;
+		public long Len;
+
+		public readonly unsafe string? ToManaged() {
+			var len32 = (int)Len;
+			return len32 > 0 ? Encoding.UTF32.GetString((byte *)Ptr, len32 * 4) : null;
+		}
+	}
+
 	[LibraryImport(Lib)]
 	private static unsafe partial void csharp_interop_sdk_set_tag(
 			char *key, int keyLen, char *value, int valueLen);
@@ -49,16 +61,10 @@ internal static partial class NativeBridge {
 	}
 
 	[LibraryImport(Lib)]
-	private static unsafe partial int csharp_interop_detect_environment(
-			uint *buffer, int bufferCodepoints);
+	private static unsafe partial InteropString csharp_interop_detect_environment();
 
 	public static unsafe string? DetectEnvironment() {
-		uint *buffer = stackalloc uint[InteropSmallStringLen];
-		int len = csharp_interop_detect_environment(buffer, InteropSmallStringLen);
-		if (len <= 0) {
-			return null;
-		}
-		return System.Text.Encoding.UTF32.GetString((byte *)buffer, len * SizeOfChar32);
+		return csharp_interop_detect_environment().ToManaged();
 	}
 
 	[LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
@@ -68,7 +74,7 @@ internal static partial class NativeBridge {
 		csharp_interop_set_trace(traceId, parentSpanId);
 	}
 
-	// Returns compile-time constant - don't free!
+	// Returns compile-time literal - don't free!
 	[LibraryImport(Lib)]
 	private static partial IntPtr csharp_interop_get_sdk_version();
 
