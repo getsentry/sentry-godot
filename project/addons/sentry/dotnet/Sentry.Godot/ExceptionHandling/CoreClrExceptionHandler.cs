@@ -87,6 +87,8 @@ internal class CoreClrExceptionHandler : EventListener {
 		try {
 			_isProcessing = true;
 
+			// TODO: consider optimizations
+
 			var queue = _threadExceptions.GetOrAdd(sourceOsTid,
 					_ => new ConcurrentQueue<Exception>());
 

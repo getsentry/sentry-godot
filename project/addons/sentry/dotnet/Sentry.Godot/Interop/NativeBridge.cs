@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using Sentry.Godot.Internal;
 
 namespace Sentry.Godot.Interop;
 
@@ -15,6 +16,7 @@ internal static partial class NativeBridge {
 	[ModuleInitializer]
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2255")]
 	internal static void Init() {
+		// TODO: probably remove
 		if (_initialized)
 			return;
 		_initialized = true;
@@ -22,7 +24,7 @@ internal static partial class NativeBridge {
 		// Library path set by GDExtension via env var before .NET started
 		var libPath = System.Environment.GetEnvironmentVariable("SENTRY_GODOT_LIB_PATH");
 		if (string.IsNullOrEmpty(libPath)) {
-			Console.WriteLine("[SentryBridge] WARNING: SENTRY_GODOT_LIB_PATH not set");
+			GodotLog.Error("Internal: SENTRY_GODOT_LIB_PATH not set.");
 			return;
 		}
 

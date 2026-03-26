@@ -14,6 +14,7 @@ public class SentrySdk {
 	/// </summary>
 	public static void Init(Action<SentryGodotOptions>? configureOptions = null) {
 		var godotOptions = new SentryGodotOptions();
+		// TODO: check if it works
 		godotOptions.AddInAppExclude("Godot");
 		godotOptions.ApplyNativeOptions();
 		configureOptions?.Invoke(godotOptions);
