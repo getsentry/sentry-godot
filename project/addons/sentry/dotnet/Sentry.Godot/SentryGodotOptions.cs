@@ -157,6 +157,9 @@ public sealed class SentryGodotOptions : SentryOptions {
 		LoggerMessagesAsBreadcrumbs = (bool)nativeOpts.Get("logger_messages_as_breadcrumbs");
 		LoggerEventMask = (GodotErrorMask)(int)nativeOpts.Get("logger_event_mask");
 		LoggerBreadcrumbMask = (GodotErrorMask)(int)nativeOpts.Get("logger_breadcrumb_mask");
+
+		var experimentalOpts = nativeOpts.Get("experimental").AsGodotObject();
+		Experimental.EnableMetrics = experimentalOpts.Get("enable_metrics").AsBool();
 	}
 
 	/// <summary>
@@ -173,6 +176,7 @@ public sealed class SentryGodotOptions : SentryOptions {
 		nativeOpts.Set("max_breadcrumbs", MaxBreadcrumbs);
 		nativeOpts.Set("shutdown_timeout_ms", (int)ShutdownTimeout.TotalMilliseconds);
 		nativeOpts.Set("send_default_pii", SendDefaultPii);
+		nativeOpts.Set("enable_logs", EnableLogs);
 
 		nativeOpts.Set("attach_log", AttachLog);
 		nativeOpts.Set("attach_scene_tree", AttachSceneTree);
@@ -187,6 +191,9 @@ public sealed class SentryGodotOptions : SentryOptions {
 		nativeOpts.Set("logger_messages_as_breadcrumbs", LoggerMessagesAsBreadcrumbs);
 		nativeOpts.Set("logger_event_mask", (int)LoggerEventMask);
 		nativeOpts.Set("logger_breadcrumb_mask", (int)LoggerBreadcrumbMask);
+
+		var experimentalOpts = nativeOpts.Get("experimental").AsGodotObject();
+		experimentalOpts.Set("enable_metrics", Experimental.EnableMetrics);
 	}
 
 	/// <summary>
