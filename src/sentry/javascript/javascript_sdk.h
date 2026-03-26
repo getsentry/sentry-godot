@@ -45,6 +45,8 @@ public:
 	virtual void set_attribute(const String &p_name, const Variant &p_value) override;
 	virtual void remove_attribute(const String &p_name) override;
 
+	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) override;
+
 	virtual void init() override;
 	virtual void close() override;
 	virtual bool is_enabled() const override;

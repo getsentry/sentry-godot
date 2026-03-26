@@ -382,6 +382,10 @@ void NativeSDK::remove_attribute(const String &p_name) {
 	sentry_remove_attribute(p_name.utf8());
 }
 
+void NativeSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
+	sentry_set_trace(p_trace_id.ascii(), p_parent_span_id.ascii());
+}
+
 void NativeSDK::init() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());

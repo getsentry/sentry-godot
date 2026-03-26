@@ -30,4 +30,8 @@ CSHARP_EXPORT int csharp_interop_detect_environment(char32_t *r_buffer, int p_le
 	return env_len;
 }
 
+CSHARP_EXPORT void csharp_interop_set_trace(const char *p_trace_id, const char *p_parent_span_id) {
+	SentrySDK::get_singleton()->set_trace(p_trace_id, p_parent_span_id);
+}
+
 } // extern "C"

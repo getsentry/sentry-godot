@@ -37,6 +37,8 @@ public class SentrySdk {
 
 	private static void InitDotnet(SentryGodotOptions godotOptions) {
 		GodotLog.Debug("Initializing Sentry in .NET...");
+		godotOptions.EnableScopeSync = true;
+		godotOptions.ScopeObserver = new GodotScopeObserver();
 		Sentry.SentrySdk.Init(godotOptions);
 		InitFirstChanceExceptionHandler();
 	}

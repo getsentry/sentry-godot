@@ -60,4 +60,11 @@ internal static partial class NativeBridge {
 		}
 		return System.Text.Encoding.UTF32.GetString((byte *)buffer, len * SizeOfChar32);
 	}
+
+	[LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
+	private static partial void csharp_interop_set_trace(string traceId, string spanId);
+
+	public static unsafe void SetTrace(string traceId, string parentSpanId) {
+		csharp_interop_set_trace(traceId, parentSpanId);
+	}
 }

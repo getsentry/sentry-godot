@@ -326,6 +326,10 @@ void SentrySDK::_init_contexts() {
 #endif // SDK_NATIVE
 }
 
+void SentrySDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
+	internal_sdk->set_trace(p_trace_id, p_parent_span_id);
+}
+
 Vector<Ref<SentryAttachment>> SentrySDK::_get_default_attachments() {
 	Vector<Ref<SentryAttachment>> attachments;
 
