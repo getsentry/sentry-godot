@@ -59,38 +59,21 @@ public class SentrySdk {
 	}
 
 	private static void InitFirstChanceExceptionHandler() {
-		// FYI: We use FirstChanceException to intercept exceptions handled by the Godot
-		// bridge in try-catch blocks. The exception handlers below are responsible
-		// for identifying which exceptions were caught by the Godot bridge.
-		if (IsCoreCLR()) {
-			// CoreCLR emits ExceptionCatchStart events via EventListener.
-			// This approach doesn't work with NativeAOT or MonoVM.
-			GodotLog.Debug("CoreCLR runtime detected - using EventListener-based exception handler.");
+		// Both handlers use FirstChanceException to intercept exceptions caught by
+		// Godot's bridge in try-catch blocks. They differ in how they detect the catch.
+		if (EngineDebugger.IsActive()) {
+			// During debugger sessions (projects played from editor), Godot suppresses
+			// error logging, so LoggerExceptionHandler can't detect bridge catches.
+			// CoreClrExceptionHandler uses EventListener events instead - works with
+			// debugger but has more overhead and only supports CoreCLR (i.e. PC and Mac).
+			GodotLog.Debug("Debugger active - using EventListener-based exception handler.");
 			_exceptionHandler = new CoreClrExceptionHandler();
-			// _exceptionHandler = new MonoExceptionHandler();
 		} else {
-			// MonoVM and NativeAOT don't emit ExceptionCatchStart events.
-			// Fall back to Logger-based approach to detect bridge-caught exceptions.
-			// Note: MonoExceptionHandler works with CoreCLR too, but it doesn't
-			// intercept exceptions during debugger sessions (projects played from editor),
-			// so we need both handlers.
-			GodotLog.Debug("Non-CoreCLR runtime detected - using Logger-based exception handler.");
-			_exceptionHandler = new MonoExceptionHandler();
+			// LoggerExceptionHandler uses Godot's Logger to detect bridge catches.
+			// More efficient and works on all runtimes (CoreCLR, MonoVM, NativeAOT).
+			GodotLog.Debug("Using Logger-based exception handler.");
+			_exceptionHandler = new LoggerExceptionHandler();
 		}
 		GodotLog.Debug(".NET first chance exception handler initialized.");
-	}
-
-	private static bool IsCoreCLR() {
-		if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported) {
-			// No dynamic code support -> NativeAOT
-			return false;
-		}
-
-		var hasMonoRuntime = Type.GetType("Mono.RuntimeStructs, System.Private.CoreLib") != null;
-		if (hasMonoRuntime) {
-			return false;
-		}
-
-		return true;
 	}
 }

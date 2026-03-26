@@ -7,20 +7,17 @@ using Sentry.Godot.Internal;
 namespace Sentry.Godot.ExceptionHandling;
 
 /// <summary>
-/// Fallback exception handler for platforms where EventListener doesn't emit
-/// ExceptionCatchStart events (Android/MonoVM, iOS/NativeAOT).
-///
 /// Uses FirstChanceException to capture the last exception per thread,
 /// and Godot Logger to detect when Godot's bridge catches one.
 /// When _LogError fires with C# stack frames, we capture the cached exception.
-///
-/// Note: Despite its name, this handler works on all runtimes (not just Mono).
-/// However, Godot doesn't log .NET exceptions when its debugger is active,
+/// </summary>
+/// <remarks>
+/// Note that, Godot doesn't log .NET exceptions when its debugger is active,
 /// so this handler alone is not sufficient on desktop platforms during debugging.
 /// That's why CoreClrExceptionHandler also exists - it captures exceptions even
 /// with the debugger attached, but only on CoreCLR (PC/Mac).
-/// </summary>
-public class MonoExceptionHandler : IDisposable {
+/// </remarks>
+public class LoggerExceptionHandler : IDisposable {
 	// Last exception per thread. Both FirstChanceException and _LogError run on the
 	// same thread, so [ThreadStatic] is sufficient — no cross-thread synchronization needed.
 	// Only the most recent exception matters: _LogError always wants the last one thrown
@@ -34,7 +31,7 @@ public class MonoExceptionHandler : IDisposable {
 
 	private readonly SentryLogger _logger;
 
-	public MonoExceptionHandler() {
+	public LoggerExceptionHandler() {
 		AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
 		_logger = new SentryLogger(this);
 		OS.AddLogger(_logger);
@@ -86,13 +83,13 @@ public class MonoExceptionHandler : IDisposable {
 }
 
 /// <summary>
-/// Godot Logger that forwards C# error events to MonoExceptionHandler.
+/// Godot Logger that forwards C# error events to LoggerExceptionHandler.
 /// This helps to flag exceptions as unhandled by the user code and capture them.
 /// </summary>
 public partial class SentryLogger : global::Godot.Logger {
-	private readonly MonoExceptionHandler _handler;
+	private readonly LoggerExceptionHandler _handler;
 
-	public SentryLogger(MonoExceptionHandler handler) {
+	public SentryLogger(LoggerExceptionHandler handler) {
 		_handler = handler;
 	}
 
