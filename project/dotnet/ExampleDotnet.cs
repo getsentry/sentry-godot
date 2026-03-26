@@ -46,4 +46,9 @@ public partial class ExampleDotnet : CanvasLayer {
 			throw new InvalidOperationException("Wrapped rethrow", ex);
 		}
 	}
+
+	public void TriggerEngineError() {
+		GD.Print("Triggering engine error...");
+		GD.Load("res://resource_does_not_exist.tres");
+	}
 }

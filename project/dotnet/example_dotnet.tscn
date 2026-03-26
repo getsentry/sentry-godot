@@ -40,8 +40,13 @@ text = "Trigger rethrow"
 layout_mode = 2
 text = "Trigger wrapped rethrow"
 
+[node name="TriggerEngineError" type="Button" parent="Actions"]
+layout_mode = 2
+text = "Trigger engine error"
+
 [connection signal="pressed" from="Actions/TriggerException" to="." method="TriggerException"]
 [connection signal="pressed" from="Actions/TriggerThreadException" to="." method="TriggerThreadException"]
 [connection signal="pressed" from="Actions/TriggerHandledException" to="." method="TriggerHandledException"]
 [connection signal="pressed" from="Actions/TriggerRethrow" to="." method="TriggerRethrow"]
 [connection signal="pressed" from="Actions/TriggerWrappedRethrow" to="." method="TriggerWrappedRethrow"]
+[connection signal="pressed" from="Actions/TriggerEngineError" to="." method="TriggerEngineError"]
