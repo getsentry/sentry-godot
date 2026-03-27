@@ -12,7 +12,6 @@ internal sealed class GodotSdkIntegration : ISdkIntegration {
 		hub.ConfigureScope(scope => {
 			scope.Sdk.Name = "sentry.dotnet.godot";
 			scope.Sdk.Version = NativeBridge.GetSdkVersion();
-			scope.User = NativeBridge.GetUser();
 		});
 	}
 }

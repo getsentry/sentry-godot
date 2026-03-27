@@ -18,8 +18,8 @@ public class SentrySdk {
 		configureOptions?.Invoke(godotOptions);
 		godotOptions.ApplyTemplateSubstitutions();
 
-		InitNativeIfNeeded(godotOptions); // preserve same order for consistency
 		InitDotnet(godotOptions);
+		InitNativeIfNeeded(godotOptions);
 	}
 
 	/// <summary>

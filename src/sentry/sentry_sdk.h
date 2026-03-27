@@ -34,7 +34,6 @@ private:
 	static SentrySDK *singleton;
 
 	Ref<SentryOptions> options;
-	Ref<SentryUser> last_user;
 	std::unique_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
 	Ref<sentry::logging::SentryGodotLogger> godot_logger;
@@ -65,7 +64,6 @@ public:
 	_FORCE_INLINE_ Ref<SentryOptions> get_options() const { return options; }
 	_FORCE_INLINE_ sentry::InternalSDK *get_internal_sdk() const { return internal_sdk.get(); }
 	_FORCE_INLINE_ Ref<RuntimeConfig> get_runtime_config() const { return runtime_config; }
-	_FORCE_INLINE_ Ref<SentryUser> get_last_user() const { return last_user; }
 
 	// * Exported API
 

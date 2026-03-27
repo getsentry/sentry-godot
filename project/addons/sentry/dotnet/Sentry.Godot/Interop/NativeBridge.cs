@@ -134,17 +134,6 @@ internal static partial class NativeBridge {
 		}
 	}
 
-	public static SentryUser GetUser() {
-		var nativeUser = _nativeSdk.Call(StringNames._get_last_user).AsGodotObject();
-
-		return new SentryUser {
-			Id = nativeUser.Get(StringNames.id).AsString(),
-			Username = nativeUser.Get(StringNames.username).AsString(),
-			Email = nativeUser.Get(StringNames.email).AsString(),
-			IpAddress = nativeUser.Get(StringNames.ip_address).AsString()
-		};
-	}
-
 	[LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
 	private static partial void csharp_interop_set_trace(string traceId, string spanId);
 
