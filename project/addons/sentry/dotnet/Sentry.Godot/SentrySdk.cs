@@ -8,6 +8,7 @@ namespace Sentry.Godot;
 
 public class SentrySdk {
 	static IDisposable? _exceptionHandler;
+	internal static SentryGodotOptions? CurrentOptions { get; private set; }
 
 	/// <summary>
 	/// Initializes the .NET SDK with an optional configuration callback.
@@ -34,6 +35,7 @@ public class SentrySdk {
 	}
 
 	private static void InitDotnet(SentryGodotOptions godotOptions) {
+		CurrentOptions = godotOptions;
 		GodotLog.Debug("Initializing Sentry in .NET...");
 		godotOptions.EnableScopeSync = true;
 		godotOptions.ScopeObserver = new GodotScopeObserver();
