@@ -39,13 +39,9 @@ public class LoggerExceptionHandler : IDisposable {
 	}
 
 	private void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e) {
-		if (_isProcessing) {
-			return;
+		if (!_isProcessing) {
+			_lastException = e.Exception;
 		}
-
-		_lastException = e.Exception;
-		GodotLog.Debug($"FirstChanceException: {e.Exception.GetType().Name}: " +
-				$"'{e.Exception.Message}', managedTid={System.Environment.CurrentManagedThreadId}");
 	}
 
 	internal void OnLogError(string file, string code) {

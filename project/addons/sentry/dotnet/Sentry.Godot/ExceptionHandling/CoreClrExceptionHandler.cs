@@ -17,26 +17,27 @@ namespace Sentry.Godot.ExceptionHandling;
 ///
 /// Key insight: FirstChanceException runs on the throwing thread, but EventListener
 /// callbacks run on a dedicated background thread. We correlate via OS thread ID.
+/// A FIFO queue per thread is needed because multiple FirstChanceException events
+/// fire synchronously before the EventListener processes any ExceptionCatchStart.
 /// </summary>
 internal class CoreClrExceptionHandler : EventListener {
 	private const int ExceptionCatchStart_EventId = 250;
 	private const long ExceptionKeyword = 0x8000;
 
-	// Godot bridge classes that wrap user code in try-catch.
+	// Godot bridge catch sites: IL signature prefix → display name.
 	// ExceptionCatchStart passes MethodName containing full IL signature, e.g.:
 	//   "valuetype ... [GodotSharp] Godot.Bridge.CSharpInstanceBridge::Call(...)"
-	private static readonly string[] _godotBridgeClasses = new[] {
-		"Godot.Bridge.CSharpInstanceBridge::",
-		"Godot.Bridge.ScriptManagerBridge::",
-		"Godot.DelegateUtils::",
-		"Godot.SignalAwaiter::",
-		"Godot.GD::",
+	private static readonly(string Prefix, string DisplayName)[] _godotBridgeMethods = {
+		("Godot.Bridge.CSharpInstanceBridge::", "Godot.Bridge.CSharpInstanceBridge"),
+		("Godot.Bridge.ScriptManagerBridge::", "Godot.Bridge.ScriptManagerBridge"),
+		("Godot.DelegateUtils::", "Godot.DelegateUtils"),
+		("Godot.SignalAwaiter::", "Godot.SignalAwaiter"),
+		("Godot.GD::", "Godot.GD"),
 	};
 
-	// FIFO queue of exceptions per OS thread ID.
-	// FirstChanceException enqueues via gettid(), ExceptionCatchStart dequeues via eventData.OSThreadId.
-	// A queue is needed because multiple FirstChanceException events fire synchronously on the
-	// throwing thread before the EventListener (on a separate thread) processes any of them.
+	private static readonly Func<long, ConcurrentQueue<Exception>> _queueFactory =
+			_ => new();
+
 	private readonly ConcurrentDictionary<long, ConcurrentQueue<Exception>> _threadExceptions = new();
 
 	// Re-entrancy guard per thread.
@@ -56,12 +57,8 @@ internal class CoreClrExceptionHandler : EventListener {
 			_isProcessing = true;
 
 			long osThreadId = NativeThreadId.GetCurrentThreadId();
-			var queue = _threadExceptions.GetOrAdd(osThreadId,
-					_ => new ConcurrentQueue<Exception>());
+			var queue = _threadExceptions.GetOrAdd(osThreadId, _queueFactory);
 			queue.Enqueue(e.Exception);
-
-			GodotLog.Debug($"FirstChanceException: {e.Exception.GetType().Name}: " +
-					$"'{e.Exception.Message}', osTid={osThreadId}, queueSize={queue.Count}");
 		} finally {
 			_isProcessing = false;
 		}
@@ -81,56 +78,60 @@ internal class CoreClrExceptionHandler : EventListener {
 	}
 
 	private void HandleExceptionCatchStart(EventWrittenEventArgs eventData) {
-		var methodName = eventData.Payload?[2] as string;
 		var sourceOsTid = eventData.OSThreadId;
+
+		// Check bridge match first — skip dictionary work for non-bridge catches.
+		string? bridgeName = eventData.Payload?[2] is string methodName ? GetGodotBridgeName(methodName) : null;
 
 		try {
 			_isProcessing = true;
 
-			// TODO: consider optimizations
+			if (bridgeName != null) {
+				if (_threadExceptions.TryGetValue(sourceOsTid, out var queue) &&
+						queue.TryDequeue(out var exception)) {
+					GodotLog.Debug($"Capturing .NET exception caught by {bridgeName} (queue={queue.Count}):\n   {exception.GetType().FullName}: \"{exception.Message}\"");
+					exception.SetSentryMechanism(bridgeName,
+							"This exception was caught by the Godot engine bridge error handler. The application continued running.",
+							handled: false);
+					Sentry.SentrySdk.CaptureException(exception);
 
-			var queue = _threadExceptions.GetOrAdd(sourceOsTid,
-					_ => new ConcurrentQueue<Exception>());
-
-			GodotLog.Debug($"ExceptionCatchStart: method='{methodName}', " +
-					$"sourceOsThreadId={sourceOsTid}, queueSize={queue.Count}");
-
-			string? bridgeClass = methodName != null ? GetGodotBridgeClass(methodName) : null;
-
-			if (bridgeClass != null && queue.TryDequeue(out var exception)) {
-				GodotLog.Debug($"Capturing .NET exception caught by {bridgeClass}:\n  {exception.GetType().FullName}: \"{exception.Message}\"");
-				exception.SetSentryMechanism(bridgeClass,
-						"This exception was caught by the Godot engine bridge error handler. The application continued running.",
-						handled: false);
-				Sentry.SentrySdk.CaptureException(exception);
-			} else if (bridgeClass != null) {
-				GodotLog.Error($"Detected .NET exception caught by \"{bridgeClass}\", but no exception in queue for OS thread {sourceOsTid}. Ignored.");
+					if (queue.IsEmpty) {
+						_threadExceptions.TryRemove(sourceOsTid, out _);
+					}
+				} else {
+					GodotLog.Error($"Detected .NET exception caught by \"{bridgeName}\", but no exception in queue for OS thread {sourceOsTid}. Ignored.");
+				}
 			} else {
 				// Caught by user code — dequeue and discard.
-				queue.TryDequeue(out _);
-				GodotLog.Debug($"Detected .NET exception that was handled by non-bridge code. Ignored.");
-			}
-
-			if (queue.IsEmpty) {
-				_threadExceptions.TryRemove(sourceOsTid, out _);
+				if (_threadExceptions.TryGetValue(sourceOsTid, out var queue)) {
+					queue.TryDequeue(out _);
+					if (queue.IsEmpty) {
+						_threadExceptions.TryRemove(sourceOsTid, out _);
+					}
+				}
 			}
 		} finally {
 			_isProcessing = false;
 		}
 	}
 
+	private const string GodotSharpMarker = "[GodotSharp] ";
+
 	/// <summary>
-	/// Returns the Godot bridge class name (e.g. "Godot.Bridge.CSharpInstanceBridge") if the
-	/// method signature matches a known bridge catch site, or null if it's not a bridge method.
+	/// Returns the display name of the Godot bridge class if the method signature matches
+	/// a known bridge catch site, or null if it's not a bridge method.
 	/// </summary>
-	private static string? GetGodotBridgeClass(string methodSignature) {
-		if (!methodSignature.Contains("[GodotSharp]")) {
+	private static string? GetGodotBridgeName(string methodSignature) {
+		ReadOnlySpan<char> span = methodSignature;
+		var idx = span.IndexOf(GodotSharpMarker);
+		if (idx < 0) {
 			return null;
 		}
 
-		foreach (var bridgeClass in _godotBridgeClasses) {
-			if (methodSignature.Contains(bridgeClass)) {
-				return bridgeClass.TrimEnd(':');
+		var afterMarker = span[(idx + GodotSharpMarker.Length)..];
+		foreach (var (prefix, displayName) in _godotBridgeMethods) {
+			if (afterMarker.StartsWith(prefix)) {
+				return displayName;
 			}
 		}
 		return null;
