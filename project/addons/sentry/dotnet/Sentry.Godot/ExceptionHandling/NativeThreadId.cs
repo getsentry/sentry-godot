@@ -9,11 +9,13 @@ namespace Sentry.Godot.ExceptionHandling;
 /// </summary>
 internal static class NativeThreadId {
 	public static long GetCurrentThreadId() {
-		if (OperatingSystem.IsWindows())
+		if (OperatingSystem.IsWindows()) {
 			return Windows_GetCurrentThreadId();
+		}
 
-		if (OperatingSystem.IsLinux() || OperatingSystem.IsAndroid())
+		if (OperatingSystem.IsLinux() || OperatingSystem.IsAndroid()) {
 			return Linux_gettid();
+		}
 
 		if (OperatingSystem.IsMacOS() || OperatingSystem.IsIOS()) {
 			Macos_pthread_threadid_np(IntPtr.Zero, out ulong tid);

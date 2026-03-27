@@ -94,12 +94,12 @@ public sealed class SentryGodotOptions : SentryOptions {
 	/// <summary>
 	/// Specifies which error types are captured as Sentry events.
 	/// </summary>
-	public GodotErrorMask LoggerEventMask = GodotErrorMask.Error | GodotErrorMask.Script | GodotErrorMask.Shader;
+	public GodotErrorMask LoggerEventMask { get; set; } = GodotErrorMask.Error | GodotErrorMask.Script | GodotErrorMask.Shader;
 
 	/// <summary>
 	/// Specifies which error types are captured as breadcrumbs.
 	/// </summary>
-	public GodotErrorMask LoggerBreadcrumbMask = GodotErrorMask.Error | GodotErrorMask.Script | GodotErrorMask.Shader | GodotErrorMask.Warning;
+	public GodotErrorMask LoggerBreadcrumbMask { get; set; } = GodotErrorMask.Error | GodotErrorMask.Script | GodotErrorMask.Shader | GodotErrorMask.Warning;
 
 	// TODO: add logger limits
 

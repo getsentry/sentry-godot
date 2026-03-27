@@ -8,20 +8,20 @@ using Godot.Collections;
 
 namespace Sentry.Godot.Interop;
 
-// <summary>
-// Handles native layer SDK operations, such as initialize, scope syncing ops, etc.
-// </summary>
+/// <summary>
+/// Handles native layer SDK operations, such as initialize, scope syncing ops, etc.
+/// </summary>
 internal static partial class NativeBridge {
 	internal const string Lib = "sentry-godot";
 	private static bool _initialized;
-	private static GodotObject _nativeSdk = Engine.GetSingleton(StringNames.SentrySDK);
+	private static readonly GodotObject _nativeSdk = Engine.GetSingleton(StringNames.SentrySDK);
 
 	[ModuleInitializer]
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2255")]
 	internal static void Init() {
-		// TODO: probably remove
-		if (_initialized)
+		if (_initialized) {
 			return;
+		}
 		_initialized = true;
 
 		// Library path set by GDExtension via env var before .NET started
@@ -40,7 +40,6 @@ internal static partial class NativeBridge {
 		});
 	}
 
-	private const int InteropSmallStringLen = 64;
 	private const int SizeOfChar32 = 4;
 
 	[LibraryImport(Lib)]
@@ -141,7 +140,9 @@ internal static partial class NativeBridge {
 		csharp_interop_set_trace(traceId, parentSpanId);
 	}
 
-	// Returns compile-time literal - don't free!
+	/// <remarks>
+	/// Returns compile-time literal - don't free!
+	/// </remarks>
 	[LibraryImport(Lib)]
 	private static partial IntPtr csharp_interop_get_sdk_version();
 

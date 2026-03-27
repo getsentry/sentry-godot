@@ -6,7 +6,7 @@ namespace Sentry.Godot.Interop;
 /// <summary>
 /// Scope Observer to sync changes to native layer.
 /// </summary>
-public class GodotScopeObserver : IScopeObserver {
+internal class GodotScopeObserver : IScopeObserver {
 	[ThreadStatic]
 	private static bool _addingBreadcrumb;
 	[ThreadStatic]

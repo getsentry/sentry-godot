@@ -17,7 +17,7 @@ namespace Sentry.Godot.ExceptionHandling;
 /// That's why CoreClrExceptionHandler also exists - it captures exceptions even
 /// with the debugger attached, but only on CoreCLR (PC/Mac).
 /// </remarks>
-public class LoggerExceptionHandler : IDisposable {
+internal class LoggerExceptionHandler : IDisposable {
 	// Last exception per thread. Both FirstChanceException and _LogError run on the
 	// same thread, so [ThreadStatic] is sufficient — no cross-thread synchronization needed.
 	// Only the most recent exception matters: _LogError always wants the last one thrown
@@ -82,7 +82,7 @@ public class LoggerExceptionHandler : IDisposable {
 /// Godot Logger that forwards C# error events to LoggerExceptionHandler.
 /// This helps to flag exceptions as unhandled by the user code and capture them.
 /// </summary>
-public partial class SentryLogger : global::Godot.Logger {
+internal partial class SentryLogger : global::Godot.Logger {
 	private readonly LoggerExceptionHandler _handler;
 
 	public SentryLogger(LoggerExceptionHandler handler) {

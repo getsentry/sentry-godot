@@ -40,7 +40,8 @@ internal class CoreClrExceptionHandler : EventListener {
 
 	private readonly ConcurrentDictionary<long, ConcurrentQueue<Exception>> _threadExceptions = new();
 
-	// Re-entrancy guard per thread.
+	// Prevents re-entrancy when CaptureException itself throws (e.g. serialization).
+	// ThreadStatic so the EventListener thread and throwing thread are guarded independently.
 	[ThreadStatic]
 	private static bool _isProcessing;
 

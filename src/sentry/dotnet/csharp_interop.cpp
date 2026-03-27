@@ -10,8 +10,6 @@
 
 using namespace sentry;
 
-constexpr int INTEROP_SMALL_STRING_LEN = 64;
-
 extern "C" {
 
 // Native-owned string handle for passing Godot Strings across the interop boundary.
