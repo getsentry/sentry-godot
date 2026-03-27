@@ -14,14 +14,27 @@ constexpr int INTEROP_SMALL_STRING_LEN = 64;
 
 extern "C" {
 
-struct InteropString {
+// Native-owned string handle for passing Godot Strings across the interop boundary.
+// C# must call csharp_interop_string_free() after reading the data.
+struct GodotStringHandle {
 	const char32_t *ptr;
 	int64_t len;
+	void *handle; // Opaque: heap-allocated String* that owns the refcount.
 };
 
-CSHARP_EXPORT InteropString csharp_interop_detect_environment() {
-	const String &env = environment::detect_godot_environment();
-	return { env.ptr(), env.length() };
+GodotStringHandle _make_handle(const String &p_str) {
+	String *owned = memnew(String(p_str));
+	return { owned->ptr(), owned->length(), (void *)owned };
+}
+
+CSHARP_EXPORT void csharp_interop_string_free(void *p_handle) {
+	if (p_handle) {
+		memdelete((String *)p_handle);
+	}
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_detect_environment() {
+	return _make_handle(environment::detect_godot_environment());
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int key_len,

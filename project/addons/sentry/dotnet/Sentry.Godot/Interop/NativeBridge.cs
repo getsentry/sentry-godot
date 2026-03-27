@@ -43,22 +43,30 @@ internal static partial class NativeBridge {
 	private const int InteropSmallStringLen = 64;
 	private const int SizeOfChar32 = 4;
 
+	[LibraryImport(Lib)]
+	private static partial void csharp_interop_string_free(IntPtr handle);
+
 	[StructLayout(LayoutKind.Sequential)]
-	private struct InteropString {
+	private struct GodotStringHandle {
 		public IntPtr Ptr;
 		public long Len;
+		public IntPtr Handle;
 
-		public readonly unsafe string? ToManaged() {
-			var len32 = (int)Len;
-			return len32 > 0 ? Encoding.UTF32.GetString((byte *)Ptr, len32 * 4) : null;
+		public readonly unsafe string? TakeString() {
+			if (Ptr == IntPtr.Zero) {
+				return null;
+			}
+			var s = Encoding.UTF32.GetString((byte *)Ptr, (int)Len * SizeOfChar32);
+			csharp_interop_string_free(Handle);
+			return s;
 		}
 	}
 
 	[LibraryImport(Lib)]
-	private static unsafe partial InteropString csharp_interop_detect_environment();
+	private static unsafe partial GodotStringHandle csharp_interop_detect_environment();
 
 	public static unsafe string? DetectEnvironment() {
-		return csharp_interop_detect_environment().ToManaged();
+		return csharp_interop_detect_environment().TakeString();
 	}
 
 	public static void AddBreadcrumb(Breadcrumb breadcrumb) {
