@@ -24,4 +24,5 @@ internal static class StringNames {
 	public static readonly StringName id = "id";
 	public static readonly StringName ip_address = "ip_address";
 	public static readonly StringName set_user = "set_user";
+	public static readonly StringName _get_last_user = "_get_last_user";
 }

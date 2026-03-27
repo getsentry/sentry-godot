@@ -263,7 +263,8 @@ void SentrySDK::remove_tag(const String &p_key) {
 }
 
 void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
-	internal_sdk->set_user(p_user);
+	last_user = p_user->duplicate();
+	internal_sdk->set_user(last_user);
 }
 
 void SentrySDK::remove_user() {
@@ -496,8 +497,9 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attribute", "name", "value"), &SentrySDK::set_attribute);
 	ClassDB::bind_method(D_METHOD("remove_attribute", "name"), &SentrySDK::remove_attribute);
 
-	// Hidden API methods.
+	// Hidden internal API methods.
 	ClassDB::bind_method(D_METHOD("_set_dotnet_init_callback", "callback"), &SentrySDK::set_dotnet_init_callback);
+	ClassDB::bind_method(D_METHOD("_get_last_user"), &SentrySDK::get_last_user);
 	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
