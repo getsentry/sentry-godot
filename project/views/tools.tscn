@@ -29,7 +29,7 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Start metrics"
 
-[node name="MetricsTimer" type="Timer" parent="."]
+[node name="MetricsTimer" type="Timer" parent="SendMetricsButton"]
 unique_name_in_owner = true
 
 [node name="TestDiverseContextButton" type="Button" parent="."]
@@ -39,5 +39,5 @@ text = "Test diverse context"
 
 [connection signal="pressed" from="RunTestsButton" to="." method="_on_run_tests_button_pressed"]
 [connection signal="pressed" from="SendMetricsButton" to="." method="_on_send_metrics_button_pressed"]
-[connection signal="timeout" from="MetricsTimer" to="." method="_on_metrics_timer_timeout"]
+[connection signal="timeout" from="SendMetricsButton/MetricsTimer" to="." method="_on_metrics_timer_timeout"]
 [connection signal="pressed" from="TestDiverseContextButton" to="." method="_on_test_diverse_context_button_pressed"]
