@@ -1,7 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="uid://dpppyaeqgrcn1"]
+[gd_scene load_steps=7 format=3 uid="uid://dpppyaeqgrcn1"]
 
 [ext_resource type="Script" uid="uid://cw2874mkwddfr" path="res://mobile.gd" id="1_bj8h8"]
-[ext_resource type="PackedScene" uid="uid://bt3152vsiyit" path="res://views/metrics.tscn" id="2_7lrhq"]
 [ext_resource type="PackedScene" uid="uid://bxi26vu5tlqas" path="res://views/capture_events.tscn" id="2_xux57"]
 [ext_resource type="PackedScene" uid="uid://dyoaec2d7uung" path="res://views/enrich_events.tscn" id="3_p64qd"]
 [ext_resource type="PackedScene" uid="uid://cywnvytpa2bec" path="res://views/tools.tscn" id="4_p64qd"]
@@ -12,8 +11,6 @@ BoxContainer/constants/separation = 8
 
 [node name="Mobile" type="CanvasLayer"]
 script = ExtResource("1_bj8h8")
-
-[node name="Metrics" parent="." instance=ExtResource("2_7lrhq")]
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 anchors_preset = 15

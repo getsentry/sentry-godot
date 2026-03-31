@@ -5,6 +5,7 @@ extends VBoxContainer
 var _isolated_test_files: PackedStringArray
 var _dots_timer: Timer
 var _dot_count: int
+var _sending_metrics: bool = false
 
 
 func _ready() -> void:
@@ -54,6 +55,23 @@ func _stop_dots_animation(button: MenuButton) -> void:
 		_dots_timer.queue_free()
 		_dots_timer = null
 	button.text = "Run isolated test..."
+
+
+func _on_send_metrics_button_pressed() -> void:
+	_sending_metrics = !_sending_metrics
+	if _sending_metrics:
+		%SendMetricsButton.text = "Stop metrics"
+		DemoOutput.print_info("Started sending metrics.")
+		%MetricsTimer.start(1.0)
+		_on_metrics_timer_timeout()
+	else:
+		%SendMetricsButton.text = "Start metrics"
+		DemoOutput.print_info("Stopped sending metrics.")
+		%MetricsTimer.stop()
+
+
+func _on_metrics_timer_timeout() -> void:
+	SentrySDK.metrics.gauge("static_memory_usage", OS.get_static_memory_usage(), "byte")
 
 
 func _on_run_tests_button_pressed() -> void:
