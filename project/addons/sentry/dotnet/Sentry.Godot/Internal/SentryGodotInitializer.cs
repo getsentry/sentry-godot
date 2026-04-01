@@ -10,7 +10,7 @@ public static class SentryGodotInitializer {
 	public static void AutoInit() {
 		NativeBridge.RegisterDotnetInit();
 		if (NativeBridge.IsEnabled()) {
-			// Native layer is already initialized - initialize .NET layer.
+			GodotLog.Debug("Native is already initialized, proceeding with .NET initialization.");
 			SentrySdk.Init();
 		}
 	}

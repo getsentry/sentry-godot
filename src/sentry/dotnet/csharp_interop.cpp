@@ -1,5 +1,6 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
+#include "sentry/logging/print.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_user.h"
@@ -198,6 +199,12 @@ CSHARP_EXPORT void csharp_interop_sdk_set_user(
 
 CSHARP_EXPORT void csharp_interop_sdk_remove_user() {
 	SentrySDK::get_singleton()->remove_user();
+}
+
+CSHARP_EXPORT void csharp_interop_log(int32_t level, const char16_t *msg, int32_t len) {
+	sentry::logging::print(
+			static_cast<sentry::Level>(level),
+			String::utf16(msg, len));
 }
 
 } // extern "C"

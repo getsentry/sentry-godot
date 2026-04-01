@@ -80,6 +80,7 @@ internal static partial class NativeBridge {
 
 	public static unsafe void RegisterDotnetInit() {
 		csharp_interop_register_dotnet_init(&DotnetInitCallback);
+		GodotLog.Debug(".NET layer is ready for SDK init.");
 	}
 
 	[LibraryImport(Lib)]
@@ -189,5 +190,14 @@ internal static partial class NativeBridge {
 
 	public static string GetSdkVersion() {
 		return Marshal.PtrToStringUTF8(csharp_interop_get_sdk_version()) ?? "0.0.0";
+	}
+
+	[LibraryImport(Lib)]
+	private static unsafe partial void csharp_interop_log(int level, char *msg, int len);
+
+	public static unsafe void Log(SentryLevel level, string message) {
+		fixed(char *ptr = message) {
+			csharp_interop_log((int)level, ptr, message.Length);
+		}
 	}
 }
