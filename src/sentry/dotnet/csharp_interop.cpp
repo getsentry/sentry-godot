@@ -31,6 +31,32 @@ CSHARP_EXPORT void csharp_interop_string_free(void *p_handle) {
 	}
 }
 
+// Managed-owned string map for passing Dictionary<string, string> across P/Invoke.
+// C# builds and pins this; native reads it synchronously during the call.
+// Buffer layout: key1+val1+key2+val2... concatenated as UTF-16.
+// Lengths array: key1_len, val1_len, key2_len, val2_len, ... (2*pair_count entries).
+struct ManagedStringMap {
+	const char16_t *buffer;
+	const int32_t *lengths;
+	int32_t pair_count;
+};
+
+// Decode a ManagedStringMap into a Godot Dictionary (String -> String).
+static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map) {
+	Dictionary dict;
+	const char16_t *ptr = map.buffer;
+	for (int32_t i = 0; i < map.pair_count; i++) {
+		int32_t key_len = map.lengths[i * 2];
+		int32_t val_len = map.lengths[i * 2 + 1];
+		String key = String::utf16(ptr, key_len);
+		ptr += key_len;
+		String val = String::utf16(ptr, val_len);
+		ptr += val_len;
+		dict[key] = val;
+	}
+	return dict;
+}
+
 CSHARP_EXPORT GodotStringHandle csharp_interop_detect_environment() {
 	return _make_handle(environment::detect_godot_environment());
 }
