@@ -204,6 +204,16 @@ internal static partial class NativeBridge {
 	}
 
 	[LibraryImport(Lib)]
+	private static unsafe partial byte csharp_interop_is_android();
+
+	/// <remarks>
+	/// OperatingSystem.IsAndroid() returns false on Godot Android.
+	/// </remarks>
+	public static bool IsAndroid() {
+		return csharp_interop_is_android() != 0;
+	}
+
+	[LibraryImport(Lib)]
 	private static unsafe partial void csharp_interop_sdk_init(ManagedOptions opts);
 
 	public static unsafe void InitNativeSdk(SentryGodotOptions opts) {

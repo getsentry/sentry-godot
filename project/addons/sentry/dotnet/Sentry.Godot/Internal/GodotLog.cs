@@ -8,7 +8,7 @@ namespace Sentry.Godot.Internal;
 internal static class GodotLog {
 	private static bool ShouldPrint(SentryLevel level) {
 		var opts = SentrySdk.CurrentOptions;
-		return opts is null || (opts.Debug && opts.DiagnosticLevel >= level);
+		return opts is null || (opts.Debug && level >= opts.DiagnosticLevel);
 	}
 
 	internal static void Debug(string message) {

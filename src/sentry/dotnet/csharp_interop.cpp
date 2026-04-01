@@ -236,6 +236,14 @@ CSHARP_EXPORT bool csharp_interop_is_debugger_active() {
 	return EngineDebugger::get_singleton() && EngineDebugger::get_singleton()->is_active();
 }
 
+CSHARP_EXPORT bool csharp_interop_is_android() {
+#ifdef ANDROID_ENABLED
+	return true;
+#else
+	return false;
+#endif
+}
+
 static ManagedOptions s_pending_managed_opts;
 
 static void _apply_pending_managed_options(const Ref<SentryOptions> &options) {

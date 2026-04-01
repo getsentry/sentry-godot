@@ -1,7 +1,7 @@
 using System;
 using Sentry.Godot.ExceptionHandling;
-using Sentry.Godot.Interop;
 using Sentry.Godot.Internal;
+using Sentry.Godot.Interop;
 
 namespace Sentry.Godot;
 
@@ -53,6 +53,9 @@ public class SentrySdk {
 			// CoreClrExceptionHandler uses EventListener events instead - works with
 			// debugger but has more overhead and only supports CoreCLR (i.e. PC and Mac).
 			GodotLog.Debug("Debugger active - using EventListener-based exception handler.");
+			if (NativeBridge.IsAndroid()) {
+				GodotLog.Warn("Can't capture exceptions in .NET layer on Android while Godot debugger is active.");
+			}
 			_exceptionHandler = new CoreClrExceptionHandler();
 		} else {
 			// LoggerExceptionHandler uses Godot's Logger to detect bridge catches.

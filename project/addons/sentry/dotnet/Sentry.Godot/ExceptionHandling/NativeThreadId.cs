@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Sentry.Godot.Internal;
+using Sentry.Godot.Interop;
 
 namespace Sentry.Godot.ExceptionHandling;
 
@@ -13,7 +14,7 @@ internal static class NativeThreadId {
 			return Windows_GetCurrentThreadId();
 		}
 
-		if (OperatingSystem.IsLinux() || OperatingSystem.IsAndroid()) {
+		if (OperatingSystem.IsLinux() || NativeBridge.IsAndroid()) {
 			return Linux_gettid();
 		}
 
