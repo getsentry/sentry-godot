@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Sentry.Godot.Internal;
@@ -13,32 +12,7 @@ namespace Sentry.Godot.Interop;
 /// </summary>
 internal static partial class NativeBridge {
 	internal const string Lib = "sentry-godot";
-	private static bool _initialized;
 	private static readonly GodotObject _nativeSdk = Engine.GetSingleton(StringNames.SentrySDK);
-
-	[ModuleInitializer]
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2255")]
-	internal static void Init() {
-		if (_initialized) {
-			return;
-		}
-		_initialized = true;
-
-		// Library path set by GDExtension via env var before .NET started
-		var libPath = System.Environment.GetEnvironmentVariable("SENTRY_GODOT_LIB_PATH");
-		if (string.IsNullOrEmpty(libPath)) {
-			GodotLog.Error("Internal: SENTRY_GODOT_LIB_PATH not set.");
-			return;
-		}
-
-		// Resolve actual GDExtension library path at runtime
-		NativeLibrary.SetDllImportResolver(typeof(NativeBridge).Assembly, (name, asm, path) => {
-			if (name == Lib) {
-				return NativeLibrary.Load(libPath);
-			}
-			return IntPtr.Zero;
-		});
-	}
 
 	private const int SizeOfChar32 = 4;
 
