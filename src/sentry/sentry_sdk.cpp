@@ -4,6 +4,7 @@
 #include "sentry/common_defs.h"
 #include "sentry/contexts.h"
 #include "sentry/disabled/disabled_sdk.h"
+#include "sentry/dotnet/csharp_interop.h"
 #include "sentry/godot_singletons.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/screenshot_processor.h"
@@ -182,15 +183,9 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 			OS::get_singleton()->add_logger(godot_logger);
 		}
 
-		// Signal .NET layer to initialize, passing the final options.
-		if (dotnet_init_callback.is_valid()) {
-			dotnet_init_callback.call(options);
-		}
+		// Signal .NET layer to initialize.
+		sentry::dotnet::init();
 	}
-}
-
-void SentrySDK::set_dotnet_init_callback(const Callable &p_callback) {
-	dotnet_init_callback = p_callback;
 }
 
 void SentrySDK::close() {
@@ -497,7 +492,6 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_attribute", "name"), &SentrySDK::remove_attribute);
 
 	// Hidden API methods.
-	ClassDB::bind_method(D_METHOD("_set_dotnet_init_callback", "callback"), &SentrySDK::set_dotnet_init_callback);
 	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
