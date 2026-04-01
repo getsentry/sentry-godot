@@ -43,9 +43,9 @@ internal static partial class NativeBridge {
 		public GodotStringHandle environment;
 		public byte debug;
 		public int diagnostic_level;
-		public float sample_rate;
+		public double sample_rate;
 		public int max_breadcrumbs;
-		public int shutdown_timeout_ms;
+		public double shutdown_timeout_ms;
 		public byte send_default_pii;
 		public byte enable_logs;
 		public byte attach_log;
@@ -53,7 +53,7 @@ internal static partial class NativeBridge {
 		public byte attach_screenshot;
 		public int screenshot_level;
 		public byte app_hang_tracking;
-		public int app_hang_timeout_sec;
+		public double app_hang_timeout_sec;
 		public byte logger_enabled;
 		public byte logger_include_source;
 		public byte logger_include_variables;
@@ -68,6 +68,41 @@ internal static partial class NativeBridge {
 
 	[LibraryImport(Lib)]
 	private static unsafe partial OptionsData csharp_interop_get_options_defaults();
+
+	private static void ApplyOptionsData(OptionsData data, SentryGodotOptions opts) {
+		opts.Dsn = data.dsn.TakeString() ?? "";
+		opts.Release = data.release.TakeString();
+		opts.Distribution = data.dist.TakeString();
+		opts.Environment = data.environment.TakeString();
+		opts.Debug = data.debug != 0;
+		opts.DiagnosticLevel = (SentryLevel)data.diagnostic_level;
+		opts.SampleRate = (float)data.sample_rate;
+		opts.MaxBreadcrumbs = data.max_breadcrumbs;
+		opts.ShutdownTimeout = TimeSpan.FromMilliseconds(data.shutdown_timeout_ms);
+		opts.SendDefaultPii = data.send_default_pii != 0;
+		opts.EnableLogs = data.enable_logs != 0;
+		opts.AttachLog = data.attach_log != 0;
+		opts.AttachSceneTree = data.attach_scene_tree != 0;
+		opts.AttachScreenshot = data.attach_screenshot != 0;
+		opts.ScreenshotLevel = (SentryLevel)data.screenshot_level;
+		opts.AppHangTracking = data.app_hang_tracking != 0;
+		opts.AppHangTimeout = TimeSpan.FromSeconds(data.app_hang_timeout_sec);
+		opts.LoggerEnabled = data.logger_enabled != 0;
+		opts.LoggerIncludeSource = data.logger_include_source != 0;
+		opts.LoggerIncludeVariables = data.logger_include_variables != 0;
+		opts.LoggerMessagesAsBreadcrumbs = data.logger_messages_as_breadcrumbs != 0;
+		opts.LoggerEventMask = (SentryGodotOptions.GodotErrorMask)data.logger_event_mask;
+		opts.LoggerBreadcrumbMask = (SentryGodotOptions.GodotErrorMask)data.logger_breadcrumb_mask;
+		opts.Experimental.EnableMetrics = data.enable_metrics != 0;
+	}
+
+	public static void ApplyNativeOptions(SentryGodotOptions opts) {
+		ApplyOptionsData(csharp_interop_get_options(), opts);
+	}
+
+	public static void ApplyNativeOptionsDefaults(SentryGodotOptions opts) {
+		ApplyOptionsData(csharp_interop_get_options_defaults(), opts);
+	}
 
 	[LibraryImport(Lib)]
 	private static unsafe partial void csharp_interop_register_dotnet_init(
@@ -88,6 +123,20 @@ internal static partial class NativeBridge {
 
 	public static unsafe string? DetectEnvironment() {
 		return csharp_interop_detect_environment().TakeString();
+	}
+
+	[LibraryImport(Lib)]
+	private static unsafe partial GodotStringHandle csharp_interop_get_app_name();
+
+	[LibraryImport(Lib)]
+	private static unsafe partial GodotStringHandle csharp_interop_get_app_version();
+
+	public static string GetAppName() {
+		return csharp_interop_get_app_name().TakeString() ?? "";
+	}
+
+	public static string GetAppVersion() {
+		return csharp_interop_get_app_version().TakeString() ?? "";
 	}
 
 	[LibraryImport(Lib)]

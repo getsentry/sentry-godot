@@ -5,6 +5,8 @@
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_user.h"
 
+#include <godot_cpp/classes/project_settings.hpp>
+
 #ifdef _WIN32
 #define CSHARP_EXPORT __declspec(dllexport)
 #else
@@ -145,6 +147,14 @@ CSHARP_EXPORT void csharp_interop_register_dotnet_init(void (*fn)()) {
 
 CSHARP_EXPORT GodotStringHandle csharp_interop_detect_environment() {
 	return _make_handle(environment::detect_godot_environment());
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_get_app_name() {
+	return _make_handle(ProjectSettings::get_singleton()->get_setting("application/config/name"));
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_get_app_version() {
+	return _make_handle(ProjectSettings::get_singleton()->get_setting("application/config/version"));
 }
 
 CSHARP_EXPORT bool csharp_interop_sdk_is_enabled() {

@@ -1,5 +1,4 @@
 using System;
-using Godot;
 using Sentry.Godot.Interop;
 using Sentry.Godot.Internal;
 
@@ -111,89 +110,7 @@ public sealed class SentryGodotOptions : SentryOptions {
 	/// source of truth for those options that are common to both.
 	/// </remarks>
 	internal void ApplyNativeOptions() {
-		if (!ClassDB.ClassExists("SentryOptions")) {
-			GodotLog.Error("SentryOptions class not found! Is the Sentry GDExtension loaded?");
-			return;
-		}
-
-		var nativeOpts = ClassDB.ClassCallStatic("SentryOptions", "create_from_project_settings")
-								 .AsGodotObject();
-		if (nativeOpts == null) {
-			GodotLog.Error("Internal: Failed to create native SentryOptions from project settings.");
-			return;
-		}
-
-		ApplyNativeOptions(nativeOpts);
-	}
-
-	/// <summary>
-	/// Reads resolved options from the provided SentryOptions object from native layer.
-	/// </summary>
-	internal void ApplyNativeOptions(GodotObject nativeOpts) {
-		Dsn = nativeOpts.Get("dsn").AsString();
-		Release = nativeOpts.Get("release").AsString();
-		Distribution = nativeOpts.Get("dist").AsString();
-		Environment = nativeOpts.Get("environment").AsString();
-		Debug = nativeOpts.Get("debug").AsBool();
-		DiagnosticLevel = (SentryLevel)nativeOpts.Get("diagnostic_level").AsInt16();
-		SampleRate = (float)nativeOpts.Get("sample_rate");
-		MaxBreadcrumbs = nativeOpts.Get("max_breadcrumbs").AsInt32();
-		ShutdownTimeout = System.TimeSpan.FromMilliseconds(nativeOpts.Get("shutdown_timeout_ms").AsDouble());
-		SendDefaultPii = nativeOpts.Get("send_default_pii").AsBool();
-		EnableLogs = nativeOpts.Get("enable_logs").AsBool();
-
-		// Godot-specific options
-		AttachLog = nativeOpts.Get("attach_log").AsBool();
-		AttachSceneTree = nativeOpts.Get("attach_scene_tree").AsBool();
-		AttachScreenshot = nativeOpts.Get("attach_screenshot").AsBool();
-		ScreenshotLevel = (SentryLevel)nativeOpts.Get("screenshot_level").AsInt16();
-		AppHangTracking = nativeOpts.Get("app_hang_tracking").AsBool();
-		AppHangTimeout = System.TimeSpan.FromSeconds(nativeOpts.Get("app_hang_timeout_sec").AsDouble());
-
-		// Logger options
-		LoggerEnabled = nativeOpts.Get("logger_enabled").AsBool();
-		LoggerIncludeSource = nativeOpts.Get("logger_include_source").AsBool();
-		LoggerIncludeVariables = nativeOpts.Get("logger_include_variables").AsBool();
-		LoggerMessagesAsBreadcrumbs = nativeOpts.Get("logger_messages_as_breadcrumbs").AsBool();
-		LoggerEventMask = (GodotErrorMask)nativeOpts.Get("logger_event_mask").AsInt16();
-		LoggerBreadcrumbMask = (GodotErrorMask)nativeOpts.Get("logger_breadcrumb_mask").AsInt16();
-
-		var experimentalOpts = nativeOpts.Get("experimental").AsGodotObject();
-		Experimental.EnableMetrics = experimentalOpts.Get("enable_metrics").AsBool();
-	}
-
-	/// <summary>
-	/// Syncs the options to the provided SentryOptions object from native layer.
-	/// </summary>
-	internal void SyncToNativeOptions(GodotObject nativeOpts) {
-		nativeOpts.Set("dsn", Dsn ?? "");
-		nativeOpts.Set("release", Release ?? "");
-		nativeOpts.Set("dist", Distribution ?? "");
-		nativeOpts.Set("environment", Environment ?? "");
-		nativeOpts.Set("debug", Debug);
-		nativeOpts.Set("diagnostic_level", (int)DiagnosticLevel);
-		nativeOpts.Set("sample_rate", SampleRate ?? 1.0);
-		nativeOpts.Set("max_breadcrumbs", MaxBreadcrumbs);
-		nativeOpts.Set("shutdown_timeout_ms", (int)ShutdownTimeout.TotalMilliseconds);
-		nativeOpts.Set("send_default_pii", SendDefaultPii);
-		nativeOpts.Set("enable_logs", EnableLogs);
-
-		nativeOpts.Set("attach_log", AttachLog);
-		nativeOpts.Set("attach_scene_tree", AttachSceneTree);
-		nativeOpts.Set("attach_screenshot", AttachScreenshot);
-		nativeOpts.Set("screenshot_level", (int)ScreenshotLevel);
-		nativeOpts.Set("app_hang_tracking", AppHangTracking);
-		nativeOpts.Set("app_hang_timeout_sec", (double)AppHangTimeout.TotalSeconds);
-
-		nativeOpts.Set("logger_enabled", LoggerEnabled);
-		nativeOpts.Set("logger_include_source", LoggerIncludeSource);
-		nativeOpts.Set("logger_include_variables", LoggerIncludeVariables);
-		nativeOpts.Set("logger_messages_as_breadcrumbs", LoggerMessagesAsBreadcrumbs);
-		nativeOpts.Set("logger_event_mask", (int)LoggerEventMask);
-		nativeOpts.Set("logger_breadcrumb_mask", (int)LoggerBreadcrumbMask);
-
-		var experimentalOpts = nativeOpts.Get("experimental").AsGodotObject();
-		experimentalOpts.Set("enable_metrics", Experimental.EnableMetrics);
+		NativeBridge.ApplyNativeOptions(this);
 	}
 
 	/// <summary>
@@ -201,17 +118,16 @@ public sealed class SentryGodotOptions : SentryOptions {
 	/// </summary>
 	internal void ApplyTemplateSubstitutions() {
 		if (Release != null) {
-			Release = Release.Replace("{app_name}", (string)ProjectSettings.GetSetting("application/config/name"))
-							  .Replace("{app_version}", (string)ProjectSettings.GetSetting("application/config/version"));
+			Release = Release.Replace("{app_name}", NativeBridge.GetAppName())
+							  .Replace("{app_version}", NativeBridge.GetAppVersion());
 		}
 
 		if (Environment == "{auto}") {
-			// Auto-detection is defined in the native layer.
 			var detectedEnv = NativeBridge.DetectEnvironment();
 			if (detectedEnv != null) {
 				Environment = detectedEnv;
 			} else {
-				GodotLog.Error("Internal: Failed to detect environment automatically.");
+				GodotLog.Error("Failed to detect environment automatically.");
 			}
 		}
 	}
