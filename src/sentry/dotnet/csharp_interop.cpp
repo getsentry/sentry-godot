@@ -57,12 +57,88 @@ static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map)
 	return dict;
 }
 
+struct OptionsData {
+	// NOTE: Strings are native-owned, but C# should "take" all strings or it will leak.
+	GodotStringHandle dsn;
+	GodotStringHandle release;
+	GodotStringHandle dist;
+	GodotStringHandle environment;
+
+	// Value types
+	bool debug;
+	int32_t diagnostic_level;
+	double sample_rate;
+	int32_t max_breadcrumbs;
+	double shutdown_timeout_ms;
+	bool send_default_pii;
+	bool enable_logs;
+
+	// Godot-specific
+	bool attach_log;
+	bool attach_scene_tree;
+	bool attach_screenshot;
+	int32_t screenshot_level;
+	bool app_hang_tracking;
+	double app_hang_timeout_sec;
+
+	// Logger
+	bool logger_enabled;
+	bool logger_include_source;
+	bool logger_include_variables;
+	bool logger_messages_as_breadcrumbs;
+	int32_t logger_event_mask;
+	int32_t logger_breadcrumb_mask;
+
+	// Experimental
+	bool enable_metrics;
+};
+
+void _populate_options_data(OptionsData &r_data, const Ref<SentryOptions> &options) {
+	r_data.dsn = _make_handle(options->get_dsn());
+	r_data.release = _make_handle(options->get_release());
+	r_data.dist = _make_handle(options->get_dist());
+	r_data.environment = _make_handle(options->get_environment());
+	r_data.debug = options->is_debug_enabled();
+	r_data.diagnostic_level = options->get_diagnostic_level();
+	r_data.sample_rate = options->get_sample_rate();
+	r_data.max_breadcrumbs = options->get_max_breadcrumbs();
+	r_data.shutdown_timeout_ms = options->get_shutdown_timeout_ms();
+	r_data.send_default_pii = options->is_send_default_pii_enabled();
+	r_data.enable_logs = options->get_enable_logs();
+	r_data.attach_log = options->is_attach_log_enabled();
+	r_data.attach_scene_tree = options->is_attach_scene_tree_enabled();
+	r_data.attach_screenshot = options->is_attach_screenshot_enabled();
+	r_data.screenshot_level = options->get_screenshot_level();
+	r_data.app_hang_tracking = options->is_app_hang_tracking_enabled();
+	r_data.app_hang_timeout_sec = options->get_app_hang_timeout_sec();
+	r_data.logger_enabled = options->is_logger_enabled();
+	r_data.logger_include_source = options->is_logger_include_source_enabled();
+	r_data.logger_include_variables = options->is_logger_include_variables_enabled();
+	r_data.logger_messages_as_breadcrumbs = options->is_logger_messages_as_breadcrumbs_enabled();
+	r_data.logger_event_mask = options->get_logger_event_mask();
+	r_data.logger_breadcrumb_mask = options->get_logger_breadcrumb_mask();
+	r_data.enable_metrics = options->get_experimental()->get_enable_metrics();
+}
+
+// *** Functions called from C#
+
+CSHARP_EXPORT OptionsData csharp_interop_get_options() {
+	OptionsData data;
+	_populate_options_data(data, SentrySDK::get_singleton()->get_options());
+	return data;
+}
+
+CSHARP_EXPORT OptionsData csharp_interop_get_options_defaults() {
+	OptionsData data;
+	_populate_options_data(data, SentryOptions::create_from_project_settings());
+	return data;
+}
+
 CSHARP_EXPORT GodotStringHandle csharp_interop_detect_environment() {
 	return _make_handle(environment::detect_godot_environment());
 }
 
-CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int key_len,
-		const char16_t *value, int value_len) {
+CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int key_len, const char16_t *value, int value_len) {
 	String k = String::utf16(key, key_len);
 	String v = String::utf16(value, value_len);
 	SentrySDK::get_singleton()->set_tag(k, v);

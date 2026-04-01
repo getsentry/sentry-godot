@@ -35,6 +35,40 @@ internal static partial class NativeBridge {
 		}
 	}
 
+	[StructLayout(LayoutKind.Sequential)]
+	private struct OptionsData {
+		public GodotStringHandle dsn;
+		public GodotStringHandle release;
+		public GodotStringHandle dist;
+		public GodotStringHandle environment;
+		public byte debug;
+		public int diagnostic_level;
+		public float sample_rate;
+		public int max_breadcrumbs;
+		public int shutdown_timeout_ms;
+		public byte send_default_pii;
+		public byte enable_logs;
+		public byte attach_log;
+		public byte attach_scene_tree;
+		public byte attach_screenshot;
+		public int screenshot_level;
+		public byte app_hang_tracking;
+		public int app_hang_timeout_sec;
+		public byte logger_enabled;
+		public byte logger_include_source;
+		public byte logger_include_variables;
+		public byte logger_messages_as_breadcrumbs;
+		public int logger_event_mask;
+		public int logger_breadcrumb_mask;
+		public byte enable_metrics;
+	}
+
+	[LibraryImport(Lib)]
+	private static unsafe partial OptionsData csharp_interop_get_options();
+
+	[LibraryImport(Lib)]
+	private static unsafe partial OptionsData csharp_interop_get_options_defaults();
+
 	[LibraryImport(Lib)]
 	private static unsafe partial GodotStringHandle csharp_interop_detect_environment();
 
