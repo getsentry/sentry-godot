@@ -10,6 +10,8 @@
 
 using namespace sentry;
 
+static void (*s_dotnet_init_fn)() = nullptr;
+
 extern "C" {
 
 // Native-owned string handle for passing Godot Strings across the interop boundary.
@@ -138,6 +140,10 @@ CSHARP_EXPORT GodotStringHandle csharp_interop_detect_environment() {
 	return _make_handle(environment::detect_godot_environment());
 }
 
+CSHARP_EXPORT bool csharp_interop_sdk_is_enabled() {
+	return SentrySDK::get_singleton()->is_enabled();
+}
+
 CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int key_len, const char16_t *value, int value_len) {
 	String k = String::utf16(key, key_len);
 	String v = String::utf16(value, value_len);
@@ -157,4 +163,20 @@ CSHARP_EXPORT const char *csharp_interop_get_sdk_version() {
 	return SENTRY_GODOT_SDK_VERSION;
 }
 
+CSHARP_EXPORT void csharp_interop_register_dotnet_init(void (*fn)()) {
+	s_dotnet_init_fn = fn;
+}
+
 } // extern "C"
+
+// *** Functions called from native
+
+namespace sentry::dotnet {
+
+void init() {
+	if (s_dotnet_init_fn) {
+		s_dotnet_init_fn();
+	}
+}
+
+} // namespace sentry::dotnet

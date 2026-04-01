@@ -70,10 +70,30 @@ internal static partial class NativeBridge {
 	private static unsafe partial OptionsData csharp_interop_get_options_defaults();
 
 	[LibraryImport(Lib)]
+	private static unsafe partial void csharp_interop_register_dotnet_init(
+			delegate *unmanaged[Cdecl]<void> fn);
+
+	[UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static void DotnetInitCallback() {
+		SentrySdk.Init();
+	}
+
+	public static unsafe void RegisterDotnetInit() {
+		csharp_interop_register_dotnet_init(&DotnetInitCallback);
+	}
+
+	[LibraryImport(Lib)]
 	private static unsafe partial GodotStringHandle csharp_interop_detect_environment();
 
 	public static unsafe string? DetectEnvironment() {
 		return csharp_interop_detect_environment().TakeString();
+	}
+
+	[LibraryImport(Lib)]
+	private static unsafe partial byte csharp_interop_sdk_is_enabled();
+
+	public static bool IsEnabled() {
+		return csharp_interop_sdk_is_enabled() != 0;
 	}
 
 	public static void AddBreadcrumb(Breadcrumb breadcrumb) {
