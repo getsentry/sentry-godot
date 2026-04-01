@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
 using System.Runtime.ExceptionServices;
-using Godot;
 using Sentry.Godot.Internal;
 
 namespace Sentry.Godot.ExceptionHandling;
