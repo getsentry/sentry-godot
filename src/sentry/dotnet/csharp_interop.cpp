@@ -5,6 +5,7 @@
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_user.h"
 
+#include <godot_cpp/classes/engine_debugger.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 
 #ifdef _WIN32
@@ -64,7 +65,7 @@ static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map)
 	return dict;
 }
 
-struct OptionsData {
+struct NativeOptions {
 	// NOTE: Strings are native-owned, but C# should "take" all strings or it will leak.
 	GodotStringHandle dsn;
 	GodotStringHandle release;
@@ -100,7 +101,71 @@ struct OptionsData {
 	bool enable_metrics;
 };
 
-void _populate_options_data(OptionsData &r_data, const Ref<SentryOptions> &options) {
+// Managed-owned options for passing C# options to native.
+// C# pins strings; native reads synchronously. No free needed.
+struct ManagedOptions {
+	const char16_t *dsn;
+	int32_t dsn_len;
+	const char16_t *release;
+	int32_t release_len;
+	const char16_t *dist;
+	int32_t dist_len;
+	const char16_t *environment;
+	int32_t environment_len;
+
+	bool debug;
+	int32_t diagnostic_level;
+	double sample_rate;
+	int32_t max_breadcrumbs;
+	double shutdown_timeout_ms;
+	bool send_default_pii;
+	bool enable_logs;
+
+	bool attach_log;
+	bool attach_scene_tree;
+	bool attach_screenshot;
+	int32_t screenshot_level;
+	bool app_hang_tracking;
+	double app_hang_timeout_sec;
+
+	bool logger_enabled;
+	bool logger_include_source;
+	bool logger_include_variables;
+	bool logger_messages_as_breadcrumbs;
+	int32_t logger_event_mask;
+	int32_t logger_breadcrumb_mask;
+
+	bool enable_metrics;
+};
+
+static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions> options) {
+	options->set_dsn(String::utf16(data.dsn, data.dsn_len));
+	options->set_release(String::utf16(data.release, data.release_len));
+	options->set_dist(String::utf16(data.dist, data.dist_len));
+	options->set_environment(String::utf16(data.environment, data.environment_len));
+	options->set_debug_enabled(data.debug);
+	options->set_diagnostic_level((Level)data.diagnostic_level);
+	options->set_sample_rate(data.sample_rate);
+	options->set_max_breadcrumbs(data.max_breadcrumbs);
+	options->set_shutdown_timeout_ms(data.shutdown_timeout_ms);
+	options->set_send_default_pii(data.send_default_pii);
+	options->set_enable_logs(data.enable_logs);
+	options->set_attach_log(data.attach_log);
+	options->set_attach_scene_tree(data.attach_scene_tree);
+	options->set_attach_screenshot(data.attach_screenshot);
+	options->set_screenshot_level((Level)data.screenshot_level);
+	options->set_app_hang_tracking(data.app_hang_tracking);
+	options->set_app_hang_timeout_sec(data.app_hang_timeout_sec);
+	options->set_logger_enabled(data.logger_enabled);
+	options->set_logger_include_source(data.logger_include_source);
+	options->set_logger_include_variables(data.logger_include_variables);
+	options->set_logger_messages_as_breadcrumbs(data.logger_messages_as_breadcrumbs);
+	options->set_logger_event_mask(data.logger_event_mask);
+	options->set_logger_breadcrumb_mask(data.logger_breadcrumb_mask);
+	options->get_experimental()->set_enable_metrics(data.enable_metrics);
+}
+
+void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &options) {
 	r_data.dsn = _make_handle(options->get_dsn());
 	r_data.release = _make_handle(options->get_release());
 	r_data.dist = _make_handle(options->get_dist());
@@ -129,14 +194,14 @@ void _populate_options_data(OptionsData &r_data, const Ref<SentryOptions> &optio
 
 // *** Functions called from C#
 
-CSHARP_EXPORT OptionsData csharp_interop_get_options() {
-	OptionsData data;
+CSHARP_EXPORT NativeOptions csharp_interop_get_options() {
+	NativeOptions data;
 	_populate_options_data(data, SentrySDK::get_singleton()->get_options());
 	return data;
 }
 
-CSHARP_EXPORT OptionsData csharp_interop_get_options_defaults() {
-	OptionsData data;
+CSHARP_EXPORT NativeOptions csharp_interop_get_options_defaults() {
+	NativeOptions data;
 	_populate_options_data(data, SentryOptions::create_from_project_settings());
 	return data;
 }
@@ -159,6 +224,21 @@ CSHARP_EXPORT GodotStringHandle csharp_interop_get_app_version() {
 
 CSHARP_EXPORT bool csharp_interop_sdk_is_enabled() {
 	return SentrySDK::get_singleton()->is_enabled();
+}
+
+CSHARP_EXPORT bool csharp_interop_is_debugger_active() {
+	return EngineDebugger::get_singleton() && EngineDebugger::get_singleton()->is_active();
+}
+
+static ManagedOptions s_pending_managed_opts;
+
+static void _apply_pending_managed_options(const Ref<SentryOptions> &options) {
+	_apply_managed_options(s_pending_managed_opts, options);
+}
+
+CSHARP_EXPORT void csharp_interop_sdk_init(ManagedOptions managed_opts) {
+	s_pending_managed_opts = managed_opts;
+	SentrySDK::get_singleton()->init(callable_mp_static(_apply_pending_managed_options));
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(

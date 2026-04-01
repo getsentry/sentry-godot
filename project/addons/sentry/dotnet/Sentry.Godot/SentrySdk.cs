@@ -1,5 +1,4 @@
 using System;
-using Godot;
 using Sentry.Godot.ExceptionHandling;
 using Sentry.Godot.Interop;
 using Sentry.Godot.Internal;
@@ -23,45 +22,32 @@ public class SentrySdk {
 		InitNativeIfNeeded(godotOptions);
 	}
 
-	/// <summary>
-	/// Initializes the .NET SDK from a native SentryOptions object.
-	/// Called by the native init callback when native layer initializes first.
-	/// </summary>
-	internal static void InitFromNativeOptions(GodotObject nativeOpts) {
-		var godotOptions = new SentryGodotOptions();
-		godotOptions.ApplyNativeOptions(nativeOpts);
-
-		InitDotnet(godotOptions);
-	}
-
 	private static void InitDotnet(SentryGodotOptions godotOptions) {
 		CurrentOptions = godotOptions;
 		GodotLog.Debug("Initializing Sentry in .NET...");
 		godotOptions.EnableScopeSync = true;
 		godotOptions.ScopeObserver = new GodotScopeObserver();
 		godotOptions.AddIntegration(new GodotSdkIntegration());
-		godotOptions.AddInAppExclude("Godot"); // Godot's bridge layer (aka mono glue)
+		godotOptions.AddInAppExclude("Godot");
 		Sentry.SentrySdk.Init(godotOptions);
 		InitFirstChanceExceptionHandler();
 	}
 
 	/// <summary>
-	/// If the native SDK hasn't initialized yet (in case of a manual init),
-	/// signal it to init with options synced from the .NET configuration callback.
+	/// If the native SDK hasn't initialized yet (manual init case),
+	/// trigger native initialization via P/Invoke.
 	/// </summary>
 	private static void InitNativeIfNeeded(SentryGodotOptions godotOptions) {
-		var sdk = Engine.GetSingleton("SentrySDK");
-		if (sdk == null || (bool)sdk.Call("is_enabled")) {
+		if (NativeBridge.IsEnabled()) {
 			return;
 		}
-
-		sdk.Call("init", Callable.From<GodotObject>(godotOptions.SyncToNativeOptions));
+		NativeBridge.InitNativeSdk(godotOptions);
 	}
 
 	private static void InitFirstChanceExceptionHandler() {
 		// Both handlers use FirstChanceException to intercept exceptions caught by
 		// Godot's bridge in try-catch blocks. They differ in how they detect the catch.
-		if (EngineDebugger.IsActive()) {
+		if (NativeBridge.IsDebuggerActive()) {
 			// During debugger sessions (projects played from editor), Godot suppresses
 			// error logging, so LoggerExceptionHandler can't detect bridge catches.
 			// CoreClrExceptionHandler uses EventListener events instead - works with

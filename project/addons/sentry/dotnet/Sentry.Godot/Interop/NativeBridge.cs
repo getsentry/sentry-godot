@@ -36,7 +36,7 @@ internal static partial class NativeBridge {
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
-	private struct OptionsData {
+	private struct NativeOptions {
 		public GodotStringHandle dsn;
 		public GodotStringHandle release;
 		public GodotStringHandle dist;
@@ -63,13 +63,45 @@ internal static partial class NativeBridge {
 		public byte enable_metrics;
 	}
 
-	[LibraryImport(Lib)]
-	private static unsafe partial OptionsData csharp_interop_get_options();
+	[StructLayout(LayoutKind.Sequential)]
+	private unsafe struct ManagedOptions {
+		public char *dsn;
+		public int dsn_len;
+		public char *release;
+		public int release_len;
+		public char *dist;
+		public int dist_len;
+		public char *environment;
+		public int environment_len;
+		public byte debug;
+		public int diagnostic_level;
+		public double sample_rate;
+		public int max_breadcrumbs;
+		public double shutdown_timeout_ms;
+		public byte send_default_pii;
+		public byte enable_logs;
+		public byte attach_log;
+		public byte attach_scene_tree;
+		public byte attach_screenshot;
+		public int screenshot_level;
+		public byte app_hang_tracking;
+		public double app_hang_timeout_sec;
+		public byte logger_enabled;
+		public byte logger_include_source;
+		public byte logger_include_variables;
+		public byte logger_messages_as_breadcrumbs;
+		public int logger_event_mask;
+		public int logger_breadcrumb_mask;
+		public byte enable_metrics;
+	}
 
 	[LibraryImport(Lib)]
-	private static unsafe partial OptionsData csharp_interop_get_options_defaults();
+	private static unsafe partial NativeOptions csharp_interop_get_options();
 
-	private static void ApplyOptionsData(OptionsData data, SentryGodotOptions opts) {
+	[LibraryImport(Lib)]
+	private static unsafe partial NativeOptions csharp_interop_get_options_defaults();
+
+	private static void ApplyNativeOptions(NativeOptions data, SentryGodotOptions opts) {
 		opts.Dsn = data.dsn.TakeString() ?? "";
 		opts.Release = data.release.TakeString();
 		opts.Distribution = data.dist.TakeString();
@@ -97,11 +129,11 @@ internal static partial class NativeBridge {
 	}
 
 	public static void ApplyNativeOptions(SentryGodotOptions opts) {
-		ApplyOptionsData(csharp_interop_get_options(), opts);
+		ApplyNativeOptions(csharp_interop_get_options(), opts);
 	}
 
 	public static void ApplyNativeOptionsDefaults(SentryGodotOptions opts) {
-		ApplyOptionsData(csharp_interop_get_options_defaults(), opts);
+		ApplyNativeOptions(csharp_interop_get_options_defaults(), opts);
 	}
 
 	[LibraryImport(Lib)]
@@ -144,6 +176,60 @@ internal static partial class NativeBridge {
 
 	public static bool IsEnabled() {
 		return csharp_interop_sdk_is_enabled() != 0;
+	}
+
+	[LibraryImport(Lib)]
+	private static unsafe partial byte csharp_interop_is_debugger_active();
+
+	public static bool IsDebuggerActive() {
+		return csharp_interop_is_debugger_active() != 0;
+	}
+
+	[LibraryImport(Lib)]
+	private static unsafe partial void csharp_interop_sdk_init(ManagedOptions opts);
+
+	public static unsafe void InitNativeSdk(SentryGodotOptions opts) {
+		var dsn = opts.Dsn ?? "";
+		var release = opts.Release ?? "";
+		var dist = opts.Distribution ?? "";
+		var env = opts.Environment ?? "";
+
+		fixed(char *dsnPtr = dsn)
+				fixed(char *relPtr = release)
+						fixed(char *distPtr = dist)
+								fixed(char *envPtr = env) {
+			var managed = new ManagedOptions {
+				dsn = dsnPtr,
+				dsn_len = dsn.Length,
+				release = relPtr,
+				release_len = release.Length,
+				dist = distPtr,
+				dist_len = dist.Length,
+				environment = envPtr,
+				environment_len = env.Length,
+				debug = (byte)(opts.Debug ? 1 : 0),
+				diagnostic_level = (int)opts.DiagnosticLevel,
+				sample_rate = opts.SampleRate ?? 1.0,
+				max_breadcrumbs = opts.MaxBreadcrumbs,
+				shutdown_timeout_ms = opts.ShutdownTimeout.TotalMilliseconds,
+				send_default_pii = (byte)(opts.SendDefaultPii ? 1 : 0),
+				enable_logs = (byte)(opts.EnableLogs ? 1 : 0),
+				attach_log = (byte)(opts.AttachLog ? 1 : 0),
+				attach_scene_tree = (byte)(opts.AttachSceneTree ? 1 : 0),
+				attach_screenshot = (byte)(opts.AttachScreenshot ? 1 : 0),
+				screenshot_level = (int)opts.ScreenshotLevel,
+				app_hang_tracking = (byte)(opts.AppHangTracking ? 1 : 0),
+				app_hang_timeout_sec = opts.AppHangTimeout.TotalSeconds,
+				logger_enabled = (byte)(opts.LoggerEnabled ? 1 : 0),
+				logger_include_source = (byte)(opts.LoggerIncludeSource ? 1 : 0),
+				logger_include_variables = (byte)(opts.LoggerIncludeVariables ? 1 : 0),
+				logger_messages_as_breadcrumbs = (byte)(opts.LoggerMessagesAsBreadcrumbs ? 1 : 0),
+				logger_event_mask = (int)opts.LoggerEventMask,
+				logger_breadcrumb_mask = (int)opts.LoggerBreadcrumbMask,
+				enable_metrics = (byte)(opts.Experimental.EnableMetrics ? 1 : 0),
+			};
+			csharp_interop_sdk_init(managed);
+		}
 	}
 
 	[LibraryImport(Lib)]
