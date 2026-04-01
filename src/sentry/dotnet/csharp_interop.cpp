@@ -1,6 +1,8 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
+#include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_sdk.h"
+#include "sentry/sentry_user.h"
 
 #ifdef _WIN32
 #define CSHARP_EXPORT __declspec(dllexport)
@@ -136,12 +138,30 @@ CSHARP_EXPORT OptionsData csharp_interop_get_options_defaults() {
 	return data;
 }
 
+CSHARP_EXPORT void csharp_interop_register_dotnet_init(void (*fn)()) {
+	s_dotnet_init_fn = fn;
+}
+
 CSHARP_EXPORT GodotStringHandle csharp_interop_detect_environment() {
 	return _make_handle(environment::detect_godot_environment());
 }
 
 CSHARP_EXPORT bool csharp_interop_sdk_is_enabled() {
 	return SentrySDK::get_singleton()->is_enabled();
+}
+
+CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(
+		const char16_t *message, int32_t message_len,
+		const char16_t *category, int32_t category_len,
+		const char16_t *type, int32_t type_len,
+		int32_t level,
+		ManagedStringMap data) {
+	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(String::utf16(message, message_len));
+	crumb->set_category(String::utf16(category, category_len));
+	crumb->set_type(String::utf16(type, type_len));
+	crumb->set_level((Level)level);
+	crumb->set_data(_managed_string_map_to_dictionary(data));
+	SentrySDK::get_singleton()->add_breadcrumb(crumb);
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int key_len, const char16_t *value, int value_len) {
@@ -163,8 +183,21 @@ CSHARP_EXPORT const char *csharp_interop_get_sdk_version() {
 	return SENTRY_GODOT_SDK_VERSION;
 }
 
-CSHARP_EXPORT void csharp_interop_register_dotnet_init(void (*fn)()) {
-	s_dotnet_init_fn = fn;
+CSHARP_EXPORT void csharp_interop_sdk_set_user(
+		const char16_t *username, int32_t username_len,
+		const char16_t *email, int32_t email_len,
+		const char16_t *id, int32_t id_len,
+		const char16_t *ip_address, int32_t ip_address_len) {
+	Ref<SentryUser> user = SentryUser::create_default();
+	user->set_username(String::utf16(username, username_len));
+	user->set_email(String::utf16(email, email_len));
+	user->set_id(String::utf16(id, id_len));
+	user->set_ip_address(String::utf16(ip_address, ip_address_len));
+	SentrySDK::get_singleton()->set_user(user);
+}
+
+CSHARP_EXPORT void csharp_interop_sdk_remove_user() {
+	SentrySDK::get_singleton()->remove_user();
 }
 
 } // extern "C"

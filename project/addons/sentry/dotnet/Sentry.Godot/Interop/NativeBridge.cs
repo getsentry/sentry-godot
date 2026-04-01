@@ -2,17 +2,17 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using Sentry.Godot.Internal;
-using Godot;
-using Godot.Collections;
 
 namespace Sentry.Godot.Interop;
+
+// NOTE: It's important to keep this file free of GodotSharp references.
+//       Godot-provided bindings are not safe to use during early init path, especially on Android.
 
 /// <summary>
 /// Handles native layer SDK operations, such as initialize, scope syncing ops, etc.
 /// </summary>
 internal static partial class NativeBridge {
 	internal const string Lib = "sentry-godot";
-	private static readonly GodotObject _nativeSdk = Engine.GetSingleton(StringNames.SentrySDK);
 
 	private const int SizeOfChar32 = 4;
 
@@ -96,36 +96,38 @@ internal static partial class NativeBridge {
 		return csharp_interop_sdk_is_enabled() != 0;
 	}
 
-	public static void AddBreadcrumb(Breadcrumb breadcrumb) {
-		var crumb = ClassDB.ClassCallStatic(StringNames.SentryBreadcrumb, StringNames.create).AsGodotObject();
+	[LibraryImport(Lib)]
+	private static unsafe partial void csharp_interop_sdk_add_breadcrumb(
+			char *message, int messageLen,
+			char *category, int categoryLen,
+			char *type, int typeLen,
+			int level,
+			ManagedStringMap data);
 
-		if (breadcrumb.Message is not null) {
-			crumb.Set(StringNames.message, breadcrumb.Message);
-		}
-		if (breadcrumb.Category is not null) {
-			crumb.Set(StringNames.category, breadcrumb.Category);
-		}
-		if (breadcrumb.Type is not null) {
-			crumb.Set(StringNames.type, breadcrumb.Type);
-		}
-		if (breadcrumb.Data is not null) {
-			var data = new Dictionary();
-			foreach (var kv in breadcrumb.Data) {
-				data[kv.Key] = kv.Value;
-			}
-			crumb.Set(StringNames.data, data);
-		}
-
-		crumb.Set(StringNames.level, breadcrumb.Level switch {
+	public static unsafe void AddBreadcrumb(Breadcrumb breadcrumb) {
+		var msg = breadcrumb.Message ?? "";
+		var cat = breadcrumb.Category ?? "";
+		var typ = breadcrumb.Type ?? "";
+		int level = breadcrumb.Level switch {
 			BreadcrumbLevel.Debug => 0,
 			BreadcrumbLevel.Info => 1,
 			BreadcrumbLevel.Warning => 2,
 			BreadcrumbLevel.Error => 3,
 			BreadcrumbLevel.Fatal => 4,
 			_ => 1,
-		});
+		};
 
-		_nativeSdk.Call(StringNames.add_breadcrumb, crumb);
+		ManagedStringMap.Marshall(breadcrumb.Data, map => {
+			fixed(char *msgPtr = msg)
+					fixed(char *catPtr = cat)
+							fixed(char *typPtr = typ) {
+				csharp_interop_sdk_add_breadcrumb(
+						msgPtr, msg.Length,
+						catPtr, cat.Length,
+						typPtr, typ.Length,
+						level, map);
+			}
+		});
 	}
 
 	[LibraryImport(Lib)]
@@ -148,16 +150,27 @@ internal static partial class NativeBridge {
 		}
 	}
 
+	[LibraryImport(Lib)]
+	private static unsafe partial void csharp_interop_sdk_remove_user();
+
+	[LibraryImport(Lib)]
+	private static unsafe partial void csharp_interop_sdk_set_user(
+			char *username, int usernameLen, char *email, int emailLen, char *id, int idLen, char *ipAddress, int ipAddressLen);
+
 	public static unsafe void SetUser(SentryUser? user) {
 		if (user is null) {
-			_nativeSdk.Call(StringNames.remove_user);
+			csharp_interop_sdk_remove_user();
 		} else {
-			var nativeUser = ClassDB.Instantiate(StringNames.SentryUser).AsGodotObject();
-			nativeUser.Set(StringNames.username, user.Username ?? "");
-			nativeUser.Set(StringNames.email, user.Email ?? "");
-			nativeUser.Set(StringNames.id, user.Id ?? "");
-			nativeUser.Set(StringNames.ip_address, user.IpAddress ?? "");
-			_nativeSdk.Call(StringNames.set_user, nativeUser);
+			fixed(char *usernamePtr = user.Username)
+					fixed(char *emailPtr = user.Email)
+							fixed(char *idPtr = user.Id)
+									fixed(char *ipAddressPtr = user.IpAddress) {
+				csharp_interop_sdk_set_user(
+						usernamePtr, user.Username?.Length ?? 0,
+						emailPtr, user.Email?.Length ?? 0,
+						idPtr, user.Id?.Length ?? 0,
+						ipAddressPtr, user.IpAddress?.Length ?? 0);
+			}
 		}
 	}
 

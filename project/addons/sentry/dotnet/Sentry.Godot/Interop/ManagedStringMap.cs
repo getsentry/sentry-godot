@@ -22,7 +22,7 @@ internal unsafe struct ManagedStringMap {
 	/// resulting struct to native function call (aka P/Invoke).
 	/// The map is only valid for the duration of the call (owned by managed code).
 	/// </summary>
-	public static void Marshall(IDictionary<string, string> dict, NativeAction nativeFunc) {
+	public static void Marshall(IReadOnlyDictionary<string, string>? dict, NativeAction nativeFunc) {
 		if (dict == null || dict.Count == 0) {
 			nativeFunc(default);
 			return;
