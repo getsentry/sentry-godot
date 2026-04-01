@@ -151,6 +151,24 @@ internal static partial class NativeBridge {
 	}
 
 	[LibraryImport(Lib)]
+	private static unsafe partial void csharp_interop_register_logger_error_handler(
+			delegate *unmanaged[Cdecl]<char *, int, char *, int, void> fn);
+
+	private static Action<string, string>? _loggerErrorHandler;
+
+	[UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+	private static unsafe void LoggerErrorCallback(char *code, int codeLen, char *file, int fileLen) {
+		_loggerErrorHandler?.Invoke(
+				new string(file, 0, fileLen),
+				new string(code, 0, codeLen));
+	}
+
+	public static unsafe void RegisterLoggerErrorHandler(Action<string, string> handler) {
+		_loggerErrorHandler = handler;
+		csharp_interop_register_logger_error_handler(&LoggerErrorCallback);
+	}
+
+	[LibraryImport(Lib)]
 	private static unsafe partial GodotStringHandle csharp_interop_detect_environment();
 
 	public static unsafe string? DetectEnvironment() {

@@ -1,5 +1,6 @@
 #include "sentry_godot_logger.h"
 
+#include "sentry/dotnet/csharp_interop.h"
 #include "sentry/logging/print.h"
 #include "sentry/logging/state.h"
 #include "sentry/sentry_options.h"
@@ -294,14 +295,16 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 		return;
 	}
 
-	// Skip C# exceptions - handled in managed layer.
+	// Forward C# exceptions to the .NET layer for capture.
 	if (p_file.to_lower().ends_with(".cs")) {
+		sentry::dotnet::handle_logger_error(p_file, p_code);
 		return;
 	} else if (p_file.is_empty()) {
 		// File can be empty in MonoVM - use heuristic to detect C# errors.
 		for (int i = 0; i < p_script_backtraces.size(); i++) {
 			const Ref<ScriptBacktrace> &backtrace = p_script_backtraces[i];
 			if (backtrace->get_language_name() == "C#" && backtrace->get_frame_count() > 0) {
+				sentry::dotnet::handle_logger_error(p_file, p_code);
 				return;
 			}
 		}

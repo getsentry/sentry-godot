@@ -1,15 +1,14 @@
 using System;
 using System.Runtime.ExceptionServices;
-using Godot;
-using Sentry;
+using Sentry.Godot.Interop;
 using Sentry.Godot.Internal;
 
 namespace Sentry.Godot.ExceptionHandling;
 
 /// <summary>
 /// Uses FirstChanceException to capture the last exception per thread,
-/// and Godot Logger to detect when Godot's bridge catches one.
-/// When _LogError fires with C# stack frames, we capture the cached exception.
+/// and native Godot Logger to detect when Godot's bridge catches one.
+/// When the native logger detects C# error, we capture the cached exception.
 /// </summary>
 /// <remarks>
 /// Note that, Godot doesn't log .NET exceptions when its debugger is active,
@@ -18,10 +17,8 @@ namespace Sentry.Godot.ExceptionHandling;
 /// with the debugger attached, but only on CoreCLR (PC/Mac).
 /// </remarks>
 internal class LoggerExceptionHandler : IDisposable {
-	// Last exception per thread. Both FirstChanceException and _LogError run on the
-	// same thread, so [ThreadStatic] is sufficient — no cross-thread synchronization needed.
-	// Only the most recent exception matters: _LogError always wants the last one thrown
-	// (the one the bridge caught), so a single slot replaces the previous drain-to-last queue.
+	// Last exception per thread. Both FirstChanceException and the native logger callback
+	// run on the same thread, so [ThreadStatic] should be enough - no synchronization needed.
 	[ThreadStatic]
 	private static Exception? _lastException;
 
@@ -29,22 +26,19 @@ internal class LoggerExceptionHandler : IDisposable {
 	[ThreadStatic]
 	private static bool _isProcessing;
 
-	private readonly SentryLogger _logger;
-
 	public LoggerExceptionHandler() {
 		AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
-		_logger = new SentryLogger(this);
-		OS.AddLogger(_logger);
+		NativeBridge.RegisterLoggerErrorHandler(OnLogError);
 		GodotLog.Debug("Registered Logger-based exception handler.");
 	}
 
-	private void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e) {
+	private static void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e) {
 		if (!_isProcessing) {
 			_lastException = e.Exception;
 		}
 	}
 
-	internal void OnLogError(string file, string code) {
+	private static void OnLogError(string file, string code) {
 		if (_isProcessing || _lastException == null) {
 			return;
 		}
@@ -75,24 +69,5 @@ internal class LoggerExceptionHandler : IDisposable {
 
 	public void Dispose() {
 		AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
-	}
-}
-
-/// <summary>
-/// Godot Logger that forwards C# error events to LoggerExceptionHandler.
-/// This helps to flag exceptions as unhandled by the user code and capture them.
-/// </summary>
-internal partial class SentryLogger : global::Godot.Logger {
-	private readonly LoggerExceptionHandler _handler;
-
-	public SentryLogger(LoggerExceptionHandler handler) {
-		_handler = handler;
-	}
-
-	public override void _LogError(string function, string file, int line, string code,
-			string rationale, bool editorNotify, int errorType,
-			global::Godot.Collections.Array<ScriptBacktrace> scriptBacktraces) {
-		GodotLog.Debug($"LogError: function={function}, file={file}, line={line}, code={code}, rationale={rationale}, errorType={errorType}");
-		_handler.OnLogError(file, code);
 	}
 }

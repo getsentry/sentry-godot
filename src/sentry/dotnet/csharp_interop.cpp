@@ -17,6 +17,7 @@
 using namespace sentry;
 
 static void (*s_dotnet_init_fn)() = nullptr;
+static void (*s_dotnet_logger_error_fn)(const char16_t *code, int32_t code_len, const char16_t *file, int32_t file_len) = nullptr;
 
 extern "C" {
 
@@ -210,6 +211,11 @@ CSHARP_EXPORT void csharp_interop_register_dotnet_init(void (*fn)()) {
 	s_dotnet_init_fn = fn;
 }
 
+CSHARP_EXPORT void csharp_interop_register_logger_error_handler(
+		void (*fn)(const char16_t *code, int32_t code_len, const char16_t *file, int32_t file_len)) {
+	s_dotnet_logger_error_fn = fn;
+}
+
 CSHARP_EXPORT GodotStringHandle csharp_interop_detect_environment() {
 	return _make_handle(environment::detect_godot_environment());
 }
@@ -306,6 +312,16 @@ namespace sentry::dotnet {
 void init() {
 	if (s_dotnet_init_fn) {
 		s_dotnet_init_fn();
+	}
+}
+
+void handle_logger_error(const String &p_file, const String &p_code) {
+	if (s_dotnet_logger_error_fn) {
+		Char16String code_utf16 = p_code.utf16();
+		Char16String file_utf16 = p_file.utf16();
+		s_dotnet_logger_error_fn(
+				(const char16_t *)code_utf16.get_data(), code_utf16.length(),
+				(const char16_t *)file_utf16.get_data(), file_utf16.length());
 	}
 }
 
