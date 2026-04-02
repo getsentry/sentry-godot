@@ -9,6 +9,8 @@ from enum import Enum
 
 VERSION = "1.5.0"
 COMPATIBILITY_MINIMUM = "4.5"
+IOS_MIN_VERSION = "15.0"
+MACOS_DEPLOYMENT_TARGET = "10.14"
 
 
 # *** Generate version header.
@@ -53,11 +55,15 @@ def add_custom_bool_option(name, description, default=False):
     })
 
 
-# Define our custom options
+# Define our custom options.
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
 add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux, Android, Web)", True)
 add_custom_bool_option("generate_js_bundle", "Generate JavaScript bundle", False)
+
+# Set project defaults for godot-cpp options.
+ARGUMENTS.setdefault("ios_min_version", IOS_MIN_VERSION)
+ARGUMENTS.setdefault("macos_deployment_target", MACOS_DEPLOYMENT_TARGET)
 
 # Workaround: Remove custom options from ARGUMENTS to avoid warnings from godot-cpp.
 # Godot complains about variables it does not recognize. See: https://github.com/godotengine/godot-cpp/issues/1334
