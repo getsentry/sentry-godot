@@ -2,7 +2,10 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "export_utils.h"
 #include <godot_cpp/classes/editor_export_platform.hpp>
+
+using namespace sentry::editor;
 
 String SentryEditorExportPluginAndroid::_get_name() const {
 	return "SentryAndroidExportPlugin";
@@ -28,23 +31,14 @@ PackedStringArray SentryEditorExportPluginAndroid::_get_android_dependencies(con
 
 TypedArray<Dictionary> SentryEditorExportPluginAndroid::_get_export_options(const Ref<EditorExportPlatform> &p_platform) const {
 	TypedArray<Dictionary> options;
-	Dictionary option;
 	// HACK: Adding a hidden option so we can show a warning at the bottom of the export dialog.
-	option["option"] = Dictionary(PropertyInfo(
-			Variant::BOOL,
-			"sentry/_export_check",
-			PROPERTY_HINT_NONE,
-			String(),
-			PROPERTY_USAGE_NONE));
-	option["default_value"] = true;
-	options.push_back(option);
+	options.push_back(make_hidden_export_check_option());
 	return options;
 }
 
 String SentryEditorExportPluginAndroid::_get_export_option_warning(const Ref<EditorExportPlatform> &p_platform, const String &p_option) const {
-	// HACK: Also check "sentry/_export_check" so the warning appears at the bottom of the export dialog.
-	//       Godot shows bottom-bar warnings through a separate code path that only checks plugin-owned options.
-	if ((p_option == "gradle_build/use_gradle_build" || p_option == "sentry/_export_check") &&
+	// HACK: Godot shows bottom-bar warnings through a separate code path that only checks plugin-owned options.
+	if (is_builtin_option_or_hidden_export_option(p_option, "gradle_build/use_gradle_build") &&
 			get_option("gradle_build/use_gradle_build") == Variant(false)) {
 		return "Sentry requires \"Use Gradle Build\" to be enabled for Android exports.";
 	}

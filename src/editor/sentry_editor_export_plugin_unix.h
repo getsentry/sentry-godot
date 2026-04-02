@@ -24,4 +24,4 @@ public:
 	virtual void _export_end() override;
 };
 
-#endif // # TOOLS_ENABLED && !WINDOWS_ENABLED
+#endif // TOOLS_ENABLED && !WINDOWS_ENABLED

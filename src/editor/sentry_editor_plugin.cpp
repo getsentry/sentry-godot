@@ -3,6 +3,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "editor/sentry_editor_export_plugin_android.h"
+#include "editor/sentry_editor_export_plugin_ios.h"
 #include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_export_plugin_web.h"
 #include "sentry/logging/print.h"
@@ -28,6 +29,11 @@ void SentryEditorPlugin::_notification(int p_what) {
 				web_export_plugin = Ref(memnew(SentryEditorExportPluginWeb));
 			}
 			add_export_plugin(web_export_plugin);
+
+			if (ios_export_plugin.is_null()) {
+				ios_export_plugin = Ref(memnew(SentryEditorExportPluginIOS));
+			}
+			add_export_plugin(ios_export_plugin);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -46,6 +52,11 @@ void SentryEditorPlugin::_notification(int p_what) {
 			if (web_export_plugin.is_valid()) {
 				remove_export_plugin(web_export_plugin);
 				web_export_plugin.unref();
+			}
+
+			if (ios_export_plugin.is_valid()) {
+				remove_export_plugin(ios_export_plugin);
+				ios_export_plugin.unref();
 			}
 		} break;
 	}
