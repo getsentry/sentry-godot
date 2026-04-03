@@ -45,6 +45,10 @@ public class SentrySdk {
 	}
 
 	private static void InitFirstChanceExceptionHandler() {
+		if (_exceptionHandler is not null) {
+			return;
+		}
+
 		// Both handlers use FirstChanceException to intercept exceptions caught by
 		// Godot's bridge in try-catch blocks. They differ in how they detect the catch.
 		if (NativeBridge.IsDebuggerActive()) {
