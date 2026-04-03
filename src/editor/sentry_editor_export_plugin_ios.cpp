@@ -4,6 +4,7 @@
 
 #include "export_utils.h"
 #include "gen/sdk_version.gen.h"
+#include "sentry/logging/print.h"
 
 using namespace sentry::editor;
 
@@ -31,6 +32,13 @@ String SentryEditorExportPluginIOS::_get_export_option_warning(const Ref<EditorE
 		}
 	}
 	return String();
+}
+
+void SentryEditorExportPluginIOS::_export_end() {
+	String min_ios_version = get_option("application/min_ios_version");
+	if (min_ios_version.to_float() < SENTRY_IOS_MIN_VERSION) {
+		ERR_PRINT_ED("Sentry requires \"Min iOS version\" to be 15.0 or higher. The export completed, but the app may fail App Store Connect validation. Please update this export setting before distributing your app.");
+	}
 }
 
 #endif // TOOLS_ENABLED

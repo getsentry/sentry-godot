@@ -18,6 +18,7 @@ public:
 	virtual bool _supports_platform(const Ref<EditorExportPlatform> &p_platform) const override;
 	virtual TypedArray<Dictionary> _get_export_options(const Ref<EditorExportPlatform> &p_platform) const override;
 	virtual String _get_export_option_warning(const Ref<EditorExportPlatform> &p_platform, const String &p_option) const override;
+	virtual void _export_end() override;
 
 	SentryEditorExportPluginIOS() = default;
 };
