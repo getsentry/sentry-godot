@@ -74,32 +74,32 @@ struct NativeOptions {
 	GodotStringHandle environment;
 
 	// Value types
-	bool debug;
+	uint8_t debug;
 	int32_t diagnostic_level;
 	double sample_rate;
 	int32_t max_breadcrumbs;
 	double shutdown_timeout_ms;
-	bool send_default_pii;
-	bool enable_logs;
+	uint8_t send_default_pii;
+	uint8_t enable_logs;
 
 	// Godot-specific
-	bool attach_log;
-	bool attach_scene_tree;
-	bool attach_screenshot;
+	uint8_t attach_log;
+	uint8_t attach_scene_tree;
+	uint8_t attach_screenshot;
 	int32_t screenshot_level;
-	bool app_hang_tracking;
+	uint8_t app_hang_tracking;
 	double app_hang_timeout_sec;
 
 	// Logger
-	bool logger_enabled;
-	bool logger_include_source;
-	bool logger_include_variables;
-	bool logger_messages_as_breadcrumbs;
+	uint8_t logger_enabled;
+	uint8_t logger_include_source;
+	uint8_t logger_include_variables;
+	uint8_t logger_messages_as_breadcrumbs;
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
 
 	// Experimental
-	bool enable_metrics;
+	uint8_t enable_metrics;
 };
 
 // Managed-owned options for passing C# options to native.
@@ -114,29 +114,29 @@ struct ManagedOptions {
 	const char16_t *environment;
 	int32_t environment_len;
 
-	bool debug;
+	uint8_t debug;
 	int32_t diagnostic_level;
 	double sample_rate;
 	int32_t max_breadcrumbs;
 	double shutdown_timeout_ms;
-	bool send_default_pii;
-	bool enable_logs;
+	uint8_t send_default_pii;
+	uint8_t enable_logs;
 
-	bool attach_log;
-	bool attach_scene_tree;
-	bool attach_screenshot;
+	uint8_t attach_log;
+	uint8_t attach_scene_tree;
+	uint8_t attach_screenshot;
 	int32_t screenshot_level;
-	bool app_hang_tracking;
+	uint8_t app_hang_tracking;
 	double app_hang_timeout_sec;
 
-	bool logger_enabled;
-	bool logger_include_source;
-	bool logger_include_variables;
-	bool logger_messages_as_breadcrumbs;
+	uint8_t logger_enabled;
+	uint8_t logger_include_source;
+	uint8_t logger_include_variables;
+	uint8_t logger_messages_as_breadcrumbs;
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
 
-	bool enable_metrics;
+	uint8_t enable_metrics;
 };
 
 static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions> options) {
