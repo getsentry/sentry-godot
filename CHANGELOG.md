@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### Improvement
+### Improvements
 
 - Show export warning when iOS minimum version is too low for Sentry ([#628](https://github.com/getsentry/sentry-godot/pull/628))
 
