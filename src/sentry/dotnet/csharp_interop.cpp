@@ -253,6 +253,7 @@ static void _apply_pending_managed_options(const Ref<SentryOptions> &options) {
 CSHARP_EXPORT void csharp_interop_sdk_init(ManagedOptions managed_opts) {
 	s_pending_managed_opts = managed_opts;
 	SentrySDK::get_singleton()->init(callable_mp_static(_apply_pending_managed_options));
+	s_pending_managed_opts = {};
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(
