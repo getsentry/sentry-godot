@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix iOS XCFramework plist reporting minimum version 12.0 instead of 15.0 ([#627](https://github.com/getsentry/sentry-godot/pull/627))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.7.0 to v9.8.0 ([#605](https://github.com/getsentry/sentry-godot/pull/605))
