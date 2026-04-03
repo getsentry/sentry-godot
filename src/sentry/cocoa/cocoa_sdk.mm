@@ -1,3 +1,4 @@
+
 #include "cocoa_sdk.h"
 
 #include "cocoa_breadcrumb.h"
@@ -289,7 +290,7 @@ void CocoaSDK::remove_attribute(const String &p_name) {
 
 void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
 	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
-		[scope setSpanId:string_to_objc(p_span_id) traceId:string_to_objc(p_trace_id)];
+		[scope setSpanId:string_to_objc(p_parent_span_id) traceId:string_to_objc(p_trace_id)];
 	}];
 }
 
