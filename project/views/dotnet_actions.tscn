@@ -1,0 +1,41 @@
+[gd_scene load_steps=2 format=3 uid="uid://bx3y2j67mnqob"]
+
+[ext_resource type="Script" uid="uid://b2rnv8bm161qs" path="res://views/DotnetActions.cs" id="1_166lo"]
+
+[node name="Dotnet" type="VBoxContainer"]
+offset_right = 342.0
+offset_bottom = 250.0
+script = ExtResource("1_166lo")
+
+[node name="Header - _NET" type="Label" parent="."]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = ".NET"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="TriggerException" type="Button" parent="."]
+layout_mode = 2
+text = "Exception"
+
+[node name="TriggerThreadException" type="Button" parent="."]
+layout_mode = 2
+text = "Exception from thread (will CRASH!)"
+
+[node name="TriggerHandledException" type="Button" parent="."]
+layout_mode = 2
+text = "Handled exception"
+
+[node name="TriggerRethrow" type="Button" parent="."]
+layout_mode = 2
+text = "Rethrow"
+
+[node name="TriggerWrappedRethrow" type="Button" parent="."]
+layout_mode = 2
+text = "Wrapped rethrow"
+
+[connection signal="pressed" from="TriggerException" to="." method="TriggerException"]
+[connection signal="pressed" from="TriggerThreadException" to="." method="TriggerThreadException"]
+[connection signal="pressed" from="TriggerHandledException" to="." method="TriggerHandledException"]
+[connection signal="pressed" from="TriggerRethrow" to="." method="TriggerRethrow"]
+[connection signal="pressed" from="TriggerWrappedRethrow" to="." method="TriggerWrappedRethrow"]

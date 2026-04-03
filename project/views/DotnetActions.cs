@@ -1,13 +1,8 @@
 using Godot;
 using System;
 using System.Threading;
-using Sentry.Godot;
 
-public partial class ExampleDotnet : CanvasLayer {
-	public override void _Ready() {
-		// SentrySdk.Init();
-	}
-
+public partial class DotnetActions : VBoxContainer {
 	public void TriggerException() {
 		GD.Print("Triggering exception...");
 		throw new Exception("Test CSharp exceptions");
@@ -45,10 +40,5 @@ public partial class ExampleDotnet : CanvasLayer {
 		} catch (Exception ex) {
 			throw new InvalidOperationException("Wrapped rethrow", ex);
 		}
-	}
-
-	public void TriggerEngineError() {
-		GD.Print("Triggering engine error...");
-		GD.Load("res://resource_does_not_exist.tres");
 	}
 }

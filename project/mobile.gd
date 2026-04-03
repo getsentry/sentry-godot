@@ -6,3 +6,8 @@ func _ready() -> void:
 	get_viewport().get_window().content_scale_factor = 3.0
 	get_viewport().get_window().content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	get_viewport().get_window().content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
+
+	# Add .NET actions if editor has support for .NET
+	if ClassDB.class_exists("CSharpScript"):
+		var dotnet_scene: PackedScene = load("res://views/dotnet_actions.tscn")
+		%TabContainer.add_child(dotnet_scene.instantiate())
