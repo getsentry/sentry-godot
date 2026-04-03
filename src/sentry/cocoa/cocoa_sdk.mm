@@ -1,4 +1,3 @@
-
 #include "cocoa_sdk.h"
 
 #include "cocoa_breadcrumb.h"

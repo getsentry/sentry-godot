@@ -270,7 +270,7 @@ CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(
 	SentrySDK::get_singleton()->add_breadcrumb(crumb);
 }
 
-CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int key_len, const char16_t *value, int value_len) {
+CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int key_len, const char16_t *value, int32_t value_len) {
 	String k = String::utf16(key, key_len);
 	String v = String::utf16(value, value_len);
 	SentrySDK::get_singleton()->set_tag(k, v);
