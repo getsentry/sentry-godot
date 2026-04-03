@@ -25,8 +25,7 @@ internal static class NativeThreadId {
 
 		// NOTE: Exporting for Web with C# is currently not supported in Godot 4.
 
-		GodotLog.Error("Failed to get native thread ID for .NET managed thread.");
-		return Environment.CurrentManagedThreadId;
+		throw new PlatformNotSupportedException("NativeThreadId used on unsupported platform");
 	}
 
 	[DllImport("kernel32.dll", EntryPoint = "GetCurrentThreadId")]
