@@ -28,7 +28,7 @@ String SentryEditorExportPluginIOS::_get_export_option_warning(const Ref<EditorE
 	if (is_builtin_option_or_hidden_export_option(p_option, "application/min_ios_version")) {
 		String min_ios_version = get_option("application/min_ios_version");
 		if (min_ios_version.to_float() < SENTRY_IOS_MIN_VERSION) {
-			return "Sentry requires \"Min iOS version\" 15.0 or higher. Please adjust this setting.";
+			return vformat("Sentry requires \"Min iOS version\" %.1f or higher. Please adjust this setting.", SENTRY_IOS_MIN_VERSION);
 		}
 	}
 	return String();
@@ -37,7 +37,7 @@ String SentryEditorExportPluginIOS::_get_export_option_warning(const Ref<EditorE
 void SentryEditorExportPluginIOS::_export_end() {
 	String min_ios_version = get_option("application/min_ios_version");
 	if (min_ios_version.to_float() < SENTRY_IOS_MIN_VERSION) {
-		ERR_PRINT_ED("Sentry requires \"Min iOS version\" to be 15.0 or higher. The export completed, but the app may fail App Store Connect validation. Please update this export setting before distributing your app.");
+		ERR_PRINT_ED(vformat("Sentry requires \"Min iOS version\" to be %.1f or higher. The export completed, but the app may fail App Store Connect validation. Please update this export setting before distributing your app.", SENTRY_IOS_MIN_VERSION));
 	}
 }
 
