@@ -282,6 +282,7 @@ CSHARP_EXPORT void csharp_interop_sdk_remove_tag(const char16_t *key, int key_le
 }
 
 CSHARP_EXPORT void csharp_interop_set_trace(const char *p_trace_id, const char *p_parent_span_id) {
+	// NOTE: Passing ANSI here - trace_id and span_id are safe.
 	SentrySDK::get_singleton()->set_trace(p_trace_id, p_parent_span_id);
 }
 
