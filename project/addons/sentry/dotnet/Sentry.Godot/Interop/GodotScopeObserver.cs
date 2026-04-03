@@ -15,6 +15,8 @@ internal class GodotScopeObserver : IScopeObserver {
 	private static bool _unsettingTag;
 	[ThreadStatic]
 	private static bool _settingUser;
+	[ThreadStatic]
+	private static bool _settingTraceId;
 
 	public void AddBreadcrumb(Breadcrumb breadcrumb) {
 		if (_addingBreadcrumb) {
@@ -68,6 +70,15 @@ internal class GodotScopeObserver : IScopeObserver {
 		}
 	}
 
-	public void SetTrace(SentryId traceId, SpanId parentSpanId) =>
+	public void SetTrace(SentryId traceId, SpanId parentSpanId) {
+		if (_settingTraceId) {
+			return;
+		}
+		_settingTraceId = true;
+		try {
 			NativeBridge.SetTrace(traceId.ToString(), parentSpanId.ToString());
+		} finally {
+			_settingTraceId = false;
+		}
+	}
 }
