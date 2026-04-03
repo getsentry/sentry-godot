@@ -46,7 +46,7 @@ public:
 
 bool _get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) {
 	// Don't fetch C# context - fails to load and leads to errors.
-	if (p_file.is_empty() || p_file.ends_with(".cs")) {
+	if (p_file.is_empty() || p_file.to_lower().ends_with(".cs")) {
 		return false;
 	}
 
