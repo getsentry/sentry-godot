@@ -167,6 +167,7 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 }
 
 void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &options) {
+	r_data = {};
 	r_data.dsn = _make_handle(options->get_dsn());
 	r_data.release = _make_handle(options->get_release());
 	r_data.dist = _make_handle(options->get_dist());
