@@ -8,25 +8,17 @@ namespace Sentry.Godot.Interop;
 /// </summary>
 internal class GodotScopeObserver : IScopeObserver {
 	[ThreadStatic]
-	private static bool _addingBreadcrumb;
-	[ThreadStatic]
-	private static bool _settingTag;
-	[ThreadStatic]
-	private static bool _unsettingTag;
-	[ThreadStatic]
-	private static bool _settingUser;
-	[ThreadStatic]
-	private static bool _settingTraceId;
+	private static bool _syncing;
 
 	public void AddBreadcrumb(Breadcrumb breadcrumb) {
-		if (_addingBreadcrumb) {
+		if (_syncing) {
 			return;
 		}
-		_addingBreadcrumb = true;
+		_syncing = true;
 		try {
 			NativeBridge.AddBreadcrumb(breadcrumb);
 		} finally {
-			_addingBreadcrumb = false;
+			_syncing = false;
 		}
 	}
 
@@ -35,50 +27,50 @@ internal class GodotScopeObserver : IScopeObserver {
 	}
 
 	public void SetTag(string key, string value) {
-		if (_settingTag) {
+		if (_syncing) {
 			return;
 		}
-		_settingTag = true;
+		_syncing = true;
 		try {
 			NativeBridge.SetTag(key, value);
 		} finally {
-			_settingTag = false;
+			_syncing = false;
 		}
 	}
 
 	public void UnsetTag(string key) {
-		if (_unsettingTag) {
+		if (_syncing) {
 			return;
 		}
-		_unsettingTag = true;
+		_syncing = true;
 		try {
 			NativeBridge.RemoveTag(key);
 		} finally {
-			_unsettingTag = false;
+			_syncing = false;
 		}
 	}
 
 	public void SetUser(SentryUser? user) {
-		if (_settingUser) {
+		if (_syncing) {
 			return;
 		}
-		_settingUser = true;
+		_syncing = true;
 		try {
 			NativeBridge.SetUser(user);
 		} finally {
-			_settingUser = false;
+			_syncing = false;
 		}
 	}
 
 	public void SetTrace(SentryId traceId, SpanId parentSpanId) {
-		if (_settingTraceId) {
+		if (_syncing) {
 			return;
 		}
-		_settingTraceId = true;
+		_syncing = true;
 		try {
 			NativeBridge.SetTrace(traceId.ToString(), parentSpanId.ToString());
 		} finally {
-			_settingTraceId = false;
+			_syncing = false;
 		}
 	}
 }
