@@ -2,15 +2,19 @@
 
 ## Unreleased
 
+### Improvements
+
+- Show export warning when iOS minimum version is too low for Sentry ([#628](https://github.com/getsentry/sentry-godot/pull/628))
+
 ### Fixes
 
 - Fix iOS XCFramework plist reporting minimum version 12.0 instead of 15.0 ([#627](https://github.com/getsentry/sentry-godot/pull/627))
 
 ### Dependencies
 
-- Bump Cocoa SDK from v9.7.0 to v9.8.0 ([#605](https://github.com/getsentry/sentry-godot/pull/605))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#980)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.7.0...9.8.0)
+- Bump Cocoa SDK from v9.7.0 to v9.9.0 ([#605](https://github.com/getsentry/sentry-godot/pull/605), [#631](https://github.com/getsentry/sentry-godot/pull/631))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#990)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.7.0...9.9.0)
 - Bump Native SDK from v0.13.2 to v0.13.4 ([#606](https://github.com/getsentry/sentry-godot/pull/606), [#621](https://github.com/getsentry/sentry-godot/pull/621))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0134)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.13.2...0.13.4)
