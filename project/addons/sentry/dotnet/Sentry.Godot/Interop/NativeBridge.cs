@@ -5,9 +5,6 @@ using Sentry.Godot.Internal;
 
 namespace Sentry.Godot.Interop;
 
-// NOTE: It's important to keep this file free of GodotSharp references.
-//       Godot-provided bindings are not safe to use during early init path, especially on Android.
-
 /// <summary>
 /// Handles native layer SDK operations, such as initialize, scope syncing ops, etc.
 /// </summary>
