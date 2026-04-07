@@ -2,10 +2,13 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "export_utils.h"
 #include "sentry/logging/print.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+
+using namespace sentry::editor;
 
 String SentryEditorExportPluginWeb::_get_name() const {
 	return "SentryEditorExportPluginWeb";
@@ -21,6 +24,8 @@ TypedArray<Dictionary> SentryEditorExportPluginWeb::_get_export_options(const Re
 	option["option"] = Dictionary(PropertyInfo(Variant::BOOL, "sentry/inject_script"));
 	option["default_value"] = true;
 	options.push_back(option);
+	// HACK: Adding a hidden option so we can show a warning at the bottom of the export dialog.
+	options.push_back(make_hidden_export_check_option());
 	return options;
 }
 
@@ -85,9 +90,8 @@ void SentryEditorExportPluginWeb::_export_begin(const PackedStringArray &p_featu
 }
 
 String SentryEditorExportPluginWeb::_get_export_option_warning(const Ref<EditorExportPlatform> &p_platform, const String &p_option) const {
-	// HACK: Also check "sentry/inject_script" so the warning appears at the bottom of the export dialog.
-	//       Godot shows bottom-bar warnings through a separate code path that only checks plugin-owned options.
-	if ((p_option == "variant/extensions_support" || p_option == "sentry/inject_script") &&
+	// HACK: Godot shows bottom-bar warnings through a separate code path that only checks plugin-owned options.
+	if (is_builtin_option_or_hidden_export_option(p_option, "variant/extensions_support") &&
 			get_option("variant/extensions_support") == Variant(false)) {
 		return "Sentry requires \"Extension Support\" to be enabled for Web exports.";
 	}

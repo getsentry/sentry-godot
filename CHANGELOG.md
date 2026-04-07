@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Improvements
+
+- Show export warning when iOS minimum version is too low for Sentry ([#628](https://github.com/getsentry/sentry-godot/pull/628))
+
 ### Fixes
 
 - Fix iOS XCFramework plist reporting minimum version 12.0 instead of 15.0 ([#627](https://github.com/getsentry/sentry-godot/pull/627))
