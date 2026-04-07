@@ -33,7 +33,16 @@ internal static partial class NativeBridge {
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
+	private struct LoggerLimitsData {
+		public int events_per_frame;
+		public int repeated_error_window_ms;
+		public int throttle_events;
+		public int throttle_window_ms;
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
 	private struct NativeOptions {
+		public LoggerLimitsData logger_limits;
 		public GodotStringHandle dsn;
 		public GodotStringHandle release;
 		public GodotStringHandle dist;
@@ -62,6 +71,7 @@ internal static partial class NativeBridge {
 
 	[StructLayout(LayoutKind.Sequential)]
 	private unsafe struct ManagedOptions {
+		public LoggerLimitsData logger_limits;
 		public char *dsn;
 		public int dsn_len;
 		public char *release;
@@ -99,6 +109,12 @@ internal static partial class NativeBridge {
 	private static unsafe partial NativeOptions csharp_interop_get_options_defaults();
 
 	private static void ApplyNativeOptions(NativeOptions data, SentryGodotOptions opts) {
+		opts.LoggerLimits = new SentryLoggerLimits {
+			EventsPerFrame = data.logger_limits.events_per_frame,
+			RepeatedErrorWindow = TimeSpan.FromMilliseconds(data.logger_limits.repeated_error_window_ms),
+			ThrottleEvents = data.logger_limits.throttle_events,
+			ThrottleWindow = TimeSpan.FromMilliseconds(data.logger_limits.throttle_window_ms),
+		};
 		opts.Dsn = data.dsn.TakeString() ?? "";
 		opts.Release = data.release.TakeString();
 		opts.Distribution = data.dist.TakeString();
@@ -224,6 +240,12 @@ internal static partial class NativeBridge {
 						fixed(char *distPtr = dist)
 								fixed(char *envPtr = env) {
 			var managed = new ManagedOptions {
+				logger_limits = new LoggerLimitsData {
+					events_per_frame = opts.LoggerLimits.EventsPerFrame,
+					repeated_error_window_ms = (int)opts.LoggerLimits.RepeatedErrorWindow.TotalMilliseconds,
+					throttle_events = opts.LoggerLimits.ThrottleEvents,
+					throttle_window_ms = (int)opts.LoggerLimits.ThrottleWindow.TotalMilliseconds,
+				},
 				dsn = dsnPtr,
 				dsn_len = dsn.Length,
 				release = relPtr,

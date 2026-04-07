@@ -66,7 +66,16 @@ static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map)
 	return dict;
 }
 
+struct LoggerLimitsData {
+	int32_t events_per_frame;
+	int32_t repeated_error_window_ms;
+	int32_t throttle_events;
+	int32_t throttle_window_ms;
+};
+
 struct NativeOptions {
+	LoggerLimitsData logger_limits;
+
 	// NOTE: Strings are native-owned, but C# should "take" all strings or it will leak.
 	GodotStringHandle dsn;
 	GodotStringHandle release;
@@ -105,6 +114,8 @@ struct NativeOptions {
 // Managed-owned options for passing C# options to native.
 // C# pins strings; native reads synchronously. No free needed.
 struct ManagedOptions {
+	LoggerLimitsData logger_limits;
+
 	const char16_t *dsn;
 	int32_t dsn_len;
 	const char16_t *release;
@@ -140,6 +151,16 @@ struct ManagedOptions {
 };
 
 static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions> options) {
+	Ref<SentryLoggerLimits> logger_limits = options->get_logger_limits();
+	if (logger_limits.is_null()) {
+		logger_limits.instantiate();
+		options->set_logger_limits(logger_limits);
+	}
+	logger_limits->set_events_per_frame(data.logger_limits.events_per_frame);
+	logger_limits->set_repeated_error_window_ms(data.logger_limits.repeated_error_window_ms);
+	logger_limits->set_throttle_events(data.logger_limits.throttle_events);
+	logger_limits->set_throttle_window_ms(data.logger_limits.throttle_window_ms);
+
 	options->set_dsn(String::utf16(data.dsn, data.dsn_len));
 	options->set_release(String::utf16(data.release, data.release_len));
 	options->set_dist(String::utf16(data.dist, data.dist_len));
@@ -168,6 +189,14 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 
 void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &options) {
 	r_data = {};
+
+	r_data.logger_limits = {
+		.events_per_frame = options->get_logger_limits()->get_events_per_frame(),
+		.repeated_error_window_ms = options->get_logger_limits()->get_repeated_error_window_ms(),
+		.throttle_events = options->get_logger_limits()->get_throttle_events(),
+		.throttle_window_ms = options->get_logger_limits()->get_throttle_window_ms(),
+	};
+
 	r_data.dsn = _make_handle(options->get_dsn());
 	r_data.release = _make_handle(options->get_release());
 	r_data.dist = _make_handle(options->get_dist());

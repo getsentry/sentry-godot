@@ -100,7 +100,14 @@ public sealed class SentryGodotOptions : SentryOptions {
 	/// </summary>
 	public GodotErrorMask LoggerBreadcrumbMask { get; set; } = GodotErrorMask.Error | GodotErrorMask.Script | GodotErrorMask.Shader | GodotErrorMask.Warning;
 
-	// TODO: add logger limits
+	/// <summary>
+	/// Defines throttling limits for the error logger. These limits are used to prevent the SDK from sending
+	/// too many non-critical and repeating error events. See <see cref="SentryLoggerLimits"/>.
+	/// </summary>
+	/// <remarks>
+	/// This setting controls GDScript/engine error reporting, not .NET errors.
+	/// </remarks>
+	public SentryLoggerLimits LoggerLimits { get; set; } = new SentryLoggerLimits();
 
 	/// <summary>
 	/// Reads resolved options from the native SentryOptions.
@@ -131,4 +138,37 @@ public sealed class SentryGodotOptions : SentryOptions {
 			}
 		}
 	}
+}
+
+/// <summary>
+/// Specifies throttling limits for the error logger.
+/// These limits govern the behavior of throttling and are used to prevent the SDK from sending
+/// too many non-critical and repeating error events.
+/// </summary>
+public sealed class SentryLoggerLimits {
+	/// <summary>
+	/// Specifies the maximum number of error events to send per processed frame. If exceeded,
+	/// no further errors will be captured until the next frame.
+	/// </summary>
+	public int EventsPerFrame { get; set; } = 5;
+
+	/// <summary>
+	/// Specifies the minimum time interval between two identical errors. If exceeded,
+	/// no further errors from the same line of code with the identical message will be
+	/// captured until the next interval. Set to zero to disable this limit.
+	/// </summary>
+	public TimeSpan RepeatedErrorWindow { get; set; } = TimeSpan.FromMilliseconds(1000);
+
+	/// <summary>
+	/// Specifies the maximum number of events allowed within a sliding time window
+	/// of <see cref="ThrottleWindow"/>. If exceeded, errors will be captured as
+	/// breadcrumbs only until capacity is freed.
+	/// </summary>
+	public int ThrottleEvents { get; set; } = 20;
+
+	/// <summary>
+	/// Specifies the time window for <see cref="ThrottleEvents"/>.
+	/// Set to zero to disable this limit.
+	/// </summary>
+	public TimeSpan ThrottleWindow { get; set; } = TimeSpan.FromMilliseconds(10000);
 }
