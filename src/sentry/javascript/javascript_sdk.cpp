@@ -296,10 +296,6 @@ void JavaScriptSDK::remove_attribute(const String &p_name) {
 	js_bridge()->call("removeAttribute", p_name.utf8());
 }
 
-void JavaScriptSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
-	WARN_PRINT_ONCE("Not implemented.");
-}
-
 void JavaScriptSDK::init() {
 	ERR_FAIL_COND(!js_bridge());
 

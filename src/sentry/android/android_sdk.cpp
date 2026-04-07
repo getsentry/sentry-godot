@@ -304,13 +304,6 @@ void AndroidSDK::remove_attribute(const String &p_name) {
 	android_plugin->call(ANDROID_SN(removeAttribute), p_name);
 }
 
-void AndroidSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
-	Object *android_plugin = _get_android_plugin();
-	ERR_FAIL_NULL(android_plugin);
-
-	android_plugin->call(ANDROID_SN(setTrace), p_trace_id, p_parent_span_id);
-}
-
 void AndroidSDK::_add_default_attachments() {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);

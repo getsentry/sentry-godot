@@ -287,12 +287,6 @@ void CocoaSDK::remove_attribute(const String &p_name) {
 	}];
 }
 
-void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
-	objc::SentryId *trace_id = [[objc::SentryId alloc] initWithUUIDString:string_to_objc(p_trace_id)];
-	objc::SentrySpanId *span_id = [[objc::SentrySpanId alloc] initWithValue:string_to_objc(p_parent_span_id)];
-	[PrivateSentrySDKOnly setTrace:trace_id spanId:span_id];
-}
-
 void CocoaSDK::init() {
 	[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
 

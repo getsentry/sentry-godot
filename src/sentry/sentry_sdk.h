@@ -97,8 +97,6 @@ public:
 	void set_attribute(const String &p_name, const Variant &p_value);
 	void remove_attribute(const String &p_name);
 
-	void set_trace(const String &p_trace_id, const String &p_parent_span_id);
-
 	// * Hidden API methods -- used in testing
 
 	void set_before_send(const Callable &p_callable) { options->set_before_send(p_callable); }

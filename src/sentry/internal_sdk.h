@@ -50,8 +50,6 @@ public:
 	virtual void set_attribute(const String &p_name, const Variant &p_value) = 0;
 	virtual void remove_attribute(const String &p_name) = 0;
 
-	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) = 0;
-
 	virtual void init() = 0;
 	virtual void close() = 0;
 	virtual bool is_enabled() const = 0;

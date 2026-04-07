@@ -47,7 +47,6 @@ public:
 	StringName addFileAttachment;
 	StringName addBytesAttachment;
 	StringName clearAttachments;
-	StringName setTrace;
 
 	// Event methods.
 	StringName eventGetId;
