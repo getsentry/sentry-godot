@@ -8,6 +8,7 @@
 #endif
 #import <Sentry/Sentry-Swift.h>
 #import <Sentry/SentryId.h>
+#import <Sentry/SentrySpanId.h>
 
 namespace objc {
 
@@ -31,6 +32,7 @@ using SentryFrame = ::SentryFrame;
 using SentryThread = ::SentryThread;
 using SentryFeedback = ::SentryFeedback;
 using SentryLog = ::SentryLog;
+using SentrySpanId = ::SentrySpanId;
 
 } // namespace objc
 
