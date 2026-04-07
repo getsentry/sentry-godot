@@ -284,8 +284,6 @@ void SentryOptions::add_default_attachment(const Ref<SentryAttachment> &p_attach
 }
 
 void SentryOptions::_bind_methods() {
-	ClassDB::bind_static_method("SentryOptions", D_METHOD("create_from_project_settings"), &SentryOptions::create_from_project_settings);
-
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dsn"), set_dsn, get_dsn);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "release"), set_release, get_release);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dist"), set_dist, get_dist);
