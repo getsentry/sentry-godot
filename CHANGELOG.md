@@ -9,6 +9,7 @@
 ### Fixes
 
 - Fix iOS XCFramework plist reporting minimum version 12.0 instead of 15.0 ([#627](https://github.com/getsentry/sentry-godot/pull/627))
+- Guard against accessing view hierarchy before scene tree is ready ([#630](https://github.com/getsentry/sentry-godot/pull/630))
 
 ### Dependencies
 
