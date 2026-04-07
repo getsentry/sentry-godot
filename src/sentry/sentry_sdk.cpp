@@ -491,11 +491,11 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attribute", "name", "value"), &SentrySDK::set_attribute);
 	ClassDB::bind_method(D_METHOD("remove_attribute", "name"), &SentrySDK::remove_attribute);
 
-	// Hidden API methods.
-	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
+	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
 	ClassDB::bind_method(D_METHOD("_get_before_send"), &SentrySDK::get_before_send);
+	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "logger", PROPERTY_HINT_TYPE_STRING, "SentryLogger", PROPERTY_USAGE_NONE), get_logger);
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "metrics", PROPERTY_HINT_TYPE_STRING, "SentryMetrics", PROPERTY_USAGE_NONE), get_metrics);
