@@ -15,6 +15,7 @@ import io.sentry.SentryLogEventAttributeValue
 import io.sentry.SentryLogLevel
 import io.sentry.SentryMetricsEvent
 import io.sentry.SentryOptions
+import io.sentry.android.core.InternalSentrySdk
 import io.sentry.android.core.SentryAndroid
 import io.sentry.logger.SentryLogParameters
 import io.sentry.metrics.SentryMetricsParameters
@@ -317,6 +318,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun addBreadcrumb(handle: Int) {
         val crumb = getBreadcrumb(handle) ?: return
         Sentry.addBreadcrumb(crumb)
+    }
+
+    @UsedByGodot
+    fun setTrace(traceId: String, parentSpanId: String) {
+        InternalSentrySdk.setTrace(traceId, parentSpanId, null, null)
     }
 
     @UsedByGodot
