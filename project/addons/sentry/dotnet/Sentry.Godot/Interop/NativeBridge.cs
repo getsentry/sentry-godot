@@ -6,7 +6,7 @@ using Sentry.Godot.Internal;
 namespace Sentry.Godot.Interop;
 
 /// <summary>
-/// Handles native layer SDK operations, such as initialize, scope syncing ops, etc.
+/// Handles native layer SDK operations via P/Invoke.
 /// </summary>
 internal static partial class NativeBridge {
 	internal const string Lib = "sentry-godot";
@@ -277,91 +277,6 @@ internal static partial class NativeBridge {
 			};
 			csharp_interop_sdk_init(managed);
 		}
-	}
-
-	[LibraryImport(Lib)]
-	private static unsafe partial void csharp_interop_sdk_add_breadcrumb(
-			char *message, int messageLen,
-			char *category, int categoryLen,
-			char *type, int typeLen,
-			int level,
-			ManagedStringMap data);
-
-	public static unsafe void AddBreadcrumb(Breadcrumb breadcrumb) {
-		var msg = breadcrumb.Message ?? "";
-		var cat = breadcrumb.Category ?? "";
-		var typ = breadcrumb.Type ?? "";
-		int level = breadcrumb.Level switch {
-			BreadcrumbLevel.Debug => 0,
-			BreadcrumbLevel.Info => 1,
-			BreadcrumbLevel.Warning => 2,
-			BreadcrumbLevel.Error => 3,
-			BreadcrumbLevel.Fatal => 4,
-			_ => 1,
-		};
-
-		ManagedStringMap.Marshall(breadcrumb.Data, map => {
-			fixed(char *msgPtr = msg)
-					fixed(char *catPtr = cat)
-							fixed(char *typPtr = typ) {
-				csharp_interop_sdk_add_breadcrumb(
-						msgPtr, msg.Length,
-						catPtr, cat.Length,
-						typPtr, typ.Length,
-						level, map);
-			}
-		});
-	}
-
-	[LibraryImport(Lib)]
-	private static unsafe partial void csharp_interop_sdk_set_tag(
-			char *key, int keyLen, char *value, int valueLen);
-
-	public static unsafe void SetTag(string key, string value) {
-		fixed(char *keyPtr = key) fixed(char *valPtr = value) {
-			csharp_interop_sdk_set_tag(keyPtr, key.Length, valPtr, value.Length);
-		}
-	}
-
-	[LibraryImport(Lib)]
-	private static unsafe partial void csharp_interop_sdk_remove_tag(
-			char *key, int keyLen);
-
-	public static unsafe void RemoveTag(string key) {
-		fixed(char *keyPtr = key) {
-			csharp_interop_sdk_remove_tag(keyPtr, key.Length);
-		}
-	}
-
-	[LibraryImport(Lib)]
-	private static unsafe partial void csharp_interop_sdk_remove_user();
-
-	[LibraryImport(Lib)]
-	private static unsafe partial void csharp_interop_sdk_set_user(
-			char *username, int usernameLen, char *email, int emailLen, char *id, int idLen, char *ipAddress, int ipAddressLen);
-
-	public static unsafe void SetUser(SentryUser? user) {
-		if (user is null) {
-			csharp_interop_sdk_remove_user();
-		} else {
-			fixed(char *usernamePtr = user.Username)
-					fixed(char *emailPtr = user.Email)
-							fixed(char *idPtr = user.Id)
-									fixed(char *ipAddressPtr = user.IpAddress) {
-				csharp_interop_sdk_set_user(
-						usernamePtr, user.Username?.Length ?? 0,
-						emailPtr, user.Email?.Length ?? 0,
-						idPtr, user.Id?.Length ?? 0,
-						ipAddressPtr, user.IpAddress?.Length ?? 0);
-			}
-		}
-	}
-
-	[LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
-	private static partial void csharp_interop_set_trace(string traceId, string spanId);
-
-	public static unsafe void SetTrace(string traceId, string parentSpanId) {
-		csharp_interop_set_trace(traceId, parentSpanId);
 	}
 
 	/// <remarks>

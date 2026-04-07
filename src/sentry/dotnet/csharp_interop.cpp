@@ -1,9 +1,7 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/environment.h"
 #include "sentry/logging/print.h"
-#include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_sdk.h"
-#include "sentry/sentry_user.h"
 
 #include <godot_cpp/classes/engine_debugger.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
@@ -38,32 +36,6 @@ CSHARP_EXPORT void csharp_interop_string_free(void *p_handle) {
 	if (p_handle) {
 		memdelete((String *)p_handle);
 	}
-}
-
-// Managed-owned string map for passing Dictionary<string, string> across P/Invoke.
-// C# builds and pins this; native reads it synchronously during the call.
-// Buffer layout: key1+val1+key2+val2... concatenated as UTF-16.
-// Lengths array: key1_len, val1_len, key2_len, val2_len, ... (2*pair_count entries).
-struct ManagedStringMap {
-	const char16_t *buffer;
-	const int32_t *lengths;
-	int32_t pair_count;
-};
-
-// Decode a ManagedStringMap into a Godot Dictionary (String -> String).
-static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map) {
-	Dictionary dict;
-	const char16_t *ptr = map.buffer;
-	for (int32_t i = 0; i < map.pair_count; i++) {
-		int32_t key_len = map.lengths[i * 2];
-		int32_t val_len = map.lengths[i * 2 + 1];
-		String key = String::utf16(ptr, key_len);
-		ptr += key_len;
-		String val = String::utf16(ptr, val_len);
-		ptr += val_len;
-		dict[key] = val;
-	}
-	return dict;
 }
 
 struct LoggerLimitsData {
@@ -286,55 +258,8 @@ CSHARP_EXPORT void csharp_interop_sdk_init(ManagedOptions managed_opts) {
 	s_pending_managed_opts = {};
 }
 
-CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(
-		const char16_t *message, int32_t message_len,
-		const char16_t *category, int32_t category_len,
-		const char16_t *type, int32_t type_len,
-		int32_t level,
-		ManagedStringMap data) {
-	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(String::utf16(message, message_len));
-	crumb->set_category(String::utf16(category, category_len));
-	crumb->set_type(String::utf16(type, type_len));
-	crumb->set_level((Level)level);
-	crumb->set_data(_managed_string_map_to_dictionary(data));
-	SentrySDK::get_singleton()->add_breadcrumb(crumb);
-}
-
-CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int32_t key_len, const char16_t *value, int32_t value_len) {
-	String k = String::utf16(key, key_len);
-	String v = String::utf16(value, value_len);
-	SentrySDK::get_singleton()->set_tag(k, v);
-}
-
-CSHARP_EXPORT void csharp_interop_sdk_remove_tag(const char16_t *key, int key_len) {
-	String k = String::utf16(key, key_len);
-	SentrySDK::get_singleton()->remove_tag(k);
-}
-
-CSHARP_EXPORT void csharp_interop_set_trace(const char *p_trace_id, const char *p_parent_span_id) {
-	// NOTE: Passing ANSI here - trace_id and span_id are safe.
-	SentrySDK::get_singleton()->set_trace(p_trace_id, p_parent_span_id);
-}
-
 CSHARP_EXPORT const char *csharp_interop_get_sdk_version() {
 	return SENTRY_GODOT_SDK_VERSION;
-}
-
-CSHARP_EXPORT void csharp_interop_sdk_set_user(
-		const char16_t *username, int32_t username_len,
-		const char16_t *email, int32_t email_len,
-		const char16_t *id, int32_t id_len,
-		const char16_t *ip_address, int32_t ip_address_len) {
-	Ref<SentryUser> user = SentryUser::create_default();
-	user->set_username(String::utf16(username, username_len));
-	user->set_email(String::utf16(email, email_len));
-	user->set_id(String::utf16(id, id_len));
-	user->set_ip_address(String::utf16(ip_address, ip_address_len));
-	SentrySDK::get_singleton()->set_user(user);
-}
-
-CSHARP_EXPORT void csharp_interop_sdk_remove_user() {
-	SentrySDK::get_singleton()->remove_user();
 }
 
 CSHARP_EXPORT void csharp_interop_log(int32_t level, const char16_t *msg, int32_t len) {

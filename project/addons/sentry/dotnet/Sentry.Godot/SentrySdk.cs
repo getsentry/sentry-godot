@@ -26,8 +26,6 @@ public class SentrySdk {
 		CurrentOptions = godotOptions;
 		GodotLog.Debug("Initializing Sentry in .NET...");
 		godotOptions.IsGlobalModeEnabled = true;
-		godotOptions.EnableScopeSync = true;
-		godotOptions.ScopeObserver = new GodotScopeObserver();
 		godotOptions.AddIntegration(new GodotSdkIntegration());
 		godotOptions.AddInAppExclude("Godot");
 		Sentry.SentrySdk.Init(godotOptions);
