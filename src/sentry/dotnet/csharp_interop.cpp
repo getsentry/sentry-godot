@@ -162,12 +162,10 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &options) {
 	r_data = {};
 
-	r_data.logger_limits = {
-		.events_per_frame = options->get_logger_limits()->get_events_per_frame(),
-		.repeated_error_window_ms = options->get_logger_limits()->get_repeated_error_window_ms(),
-		.throttle_events = options->get_logger_limits()->get_throttle_events(),
-		.throttle_window_ms = options->get_logger_limits()->get_throttle_window_ms(),
-	};
+	r_data.logger_limits.events_per_frame = options->get_logger_limits()->get_events_per_frame();
+	r_data.logger_limits.repeated_error_window_ms = options->get_logger_limits()->get_repeated_error_window_ms();
+	r_data.logger_limits.throttle_events = options->get_logger_limits()->get_throttle_events();
+	r_data.logger_limits.throttle_window_ms = options->get_logger_limits()->get_throttle_window_ms();
 
 	r_data.dsn = _make_handle(options->get_dsn());
 	r_data.release = _make_handle(options->get_release());
