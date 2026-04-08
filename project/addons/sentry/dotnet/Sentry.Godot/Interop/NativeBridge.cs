@@ -172,7 +172,7 @@ internal static partial class NativeBridge
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
     private static void DotnetInitCallback()
     {
-        SentrySdk.Init();
+        SentrySdk.InitFromNative();
     }
 
     public static unsafe void RegisterDotnetInit()

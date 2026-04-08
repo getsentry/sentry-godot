@@ -124,6 +124,14 @@ public sealed class SentryGodotOptions : SentryOptions
     }
 
     /// <summary>
+    /// Applies default option values from the native layer, which may be overridden by the user callback.
+    /// </summary>
+    internal void ApplyNativeOptionsDefaults()
+    {
+        NativeBridge.ApplyNativeOptionsDefaults(this);
+    }
+
+    /// <summary>
     /// Applies template substitutions to options that may have been set by user callback.
     /// </summary>
     internal void ApplyTemplateSubstitutions()

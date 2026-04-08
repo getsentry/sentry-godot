@@ -26,12 +26,39 @@ public class SentrySdk
         try
         {
             var godotOptions = new SentryGodotOptions();
-            godotOptions.ApplyNativeOptions();
+            godotOptions.ApplyNativeOptionsDefaults();
             configureOptions?.Invoke(godotOptions);
             godotOptions.ApplyTemplateSubstitutions();
 
             // Use the same order as in automatic initialization for consistency.
             InitNativeIfNeeded(godotOptions);
+            InitDotnet(godotOptions);
+        }
+        finally
+        {
+            _initializing = false;
+        }
+    }
+
+    /// <summary>
+    /// Initializes the .NET SDK using resolved options from the native layer.
+    /// </summary>
+    /// <remarks>
+    /// Always called by the native SDK after initialization, but should only take
+    /// effect when the native layer is auto-initialized or initialized from GDScript.
+    /// </remarks>
+    internal static void InitFromNative()
+    {
+        if (_initializing)
+        {
+            return;
+        }
+        _initializing = true;
+        try
+        {
+            var godotOptions = new SentryGodotOptions();
+            godotOptions.ApplyNativeOptions();
+            godotOptions.ApplyTemplateSubstitutions();
             InitDotnet(godotOptions);
         }
         finally
