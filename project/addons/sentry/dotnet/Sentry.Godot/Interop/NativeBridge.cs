@@ -26,13 +26,18 @@ internal static partial class NativeBridge
 
         public readonly unsafe string? TakeString()
         {
-            if (Ptr == IntPtr.Zero)
+            try
             {
-                return null;
+                if (Ptr == IntPtr.Zero)
+                {
+                    return null;
+                }
+                return Encoding.UTF32.GetString((byte*)Ptr, (int)Len * SizeOfChar32);
             }
-            var s = Encoding.UTF32.GetString((byte*)Ptr, (int)Len * SizeOfChar32);
-            csharp_interop_string_free(Handle);
-            return s;
+            finally
+            {
+                csharp_interop_string_free(Handle);
+            }
         }
     }
 
