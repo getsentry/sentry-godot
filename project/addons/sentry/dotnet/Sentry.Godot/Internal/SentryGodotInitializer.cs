@@ -14,7 +14,7 @@ public static class SentryGodotInitializer
         if (NativeBridge.IsEnabled())
         {
             GodotLog.Debug("Native is already initialized, proceeding with .NET initialization.");
-            SentrySdk.Init();
+            SentrySdk.InitFromNative();
         }
     }
 }
