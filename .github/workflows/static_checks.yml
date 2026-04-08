@@ -6,6 +6,10 @@ on:
 permissions:
   contents: read
 
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
 jobs:
   static-checks:
     runs-on: ubuntu-latest
@@ -21,11 +25,11 @@ jobs:
         with:
           arch: x86_64
 
+      - name: Restore .NET packages
+        run: dotnet restore "project/Sentry demo project.sln"
+
       - name: Check code style
         uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
-        env:
-          DOTNET_NOLOGO: true
-          DOTNET_CLI_TELEMETRY_OPTOUT: true
 
       - name: Check class documentation
         if: success() || failure()
