@@ -9,7 +9,6 @@ project/.vscode/
 project/reports/
 project/android/
 project/.godot/
-project.net/
 
 # Export related
 exports/*
