@@ -32,7 +32,7 @@ internal static class NativeLibResolver {
 		// Use typeof(NativeLibResolver) to get our assembly without referencing NativeBridge
 		// (which has Godot type dependencies that break coreclr_initialize on Android).
 		NativeLibrary.SetDllImportResolver(typeof(NativeLibResolver).Assembly, (name, asm, path) => {
-			if (name == "sentry-godot") {
+			if (name == NativeBridge.Lib) {
 				return NativeLibrary.Load(libPath);
 			}
 			return IntPtr.Zero;

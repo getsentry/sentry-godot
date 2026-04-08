@@ -23,7 +23,7 @@ internal class CoreClrExceptionHandler : EventListener {
 	private const int ExceptionCatchStart_EventId = 250;
 	private const long ExceptionKeyword = 0x8000;
 
-	// Godot bridge catch sites: IL signature prefix → display name.
+	// Godot bridge catch sites: IL signature prefix -> display name.
 	// ExceptionCatchStart passes MethodName containing full IL signature, e.g.:
 	//   "valuetype ... [GodotSharp] Godot.Bridge.CSharpInstanceBridge::Call(...)"
 	private static readonly(string Prefix, string DisplayName)[] _godotBridgeMethods = {
@@ -80,13 +80,13 @@ internal class CoreClrExceptionHandler : EventListener {
 	private void HandleExceptionCatchStart(EventWrittenEventArgs eventData) {
 		var sourceOsTid = eventData.OSThreadId;
 
-		// Check bridge match first — skip dictionary work for non-bridge catches.
-		string? bridgeName = eventData.Payload?[2] is string methodName ? GetGodotBridgeName(methodName) : null;
-
 		try {
 			_isProcessing = true;
 
+			string? bridgeName = eventData.Payload?[2] is string methodName ? GetGodotBridgeName(methodName) : null;
+
 			if (bridgeName != null) {
+				// Caught by Godot bridge code.
 				if (_threadExceptions.TryGetValue(sourceOsTid, out var queue) &&
 						queue.TryDequeue(out var exception)) {
 					GodotLog.Debug($"Capturing .NET exception caught by {bridgeName} (queue={queue.Count}):\n   {exception.GetType().FullName}: \"{exception.Message}\"");
@@ -102,7 +102,7 @@ internal class CoreClrExceptionHandler : EventListener {
 					GodotLog.Error($"Detected .NET exception caught by \"{bridgeName}\", but no exception in queue for OS thread {sourceOsTid}. Ignored.");
 				}
 			} else {
-				// Caught by user code — dequeue and discard.
+				// Caught by user code.
 				if (_threadExceptions.TryGetValue(sourceOsTid, out var queue)) {
 					queue.TryDequeue(out _);
 					if (queue.IsEmpty) {

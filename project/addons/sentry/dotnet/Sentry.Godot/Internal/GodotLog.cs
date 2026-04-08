@@ -3,7 +3,7 @@ using Sentry.Godot.Interop;
 namespace Sentry.Godot.Internal;
 
 /// <summary>
-/// Wrapper around Godot's logging functions via P/Invoke.
+/// Wrapper around native logging functions via P/Invoke.
 /// </summary>
 internal static class GodotLog {
 	private static bool ShouldPrint(SentryLevel level) {
