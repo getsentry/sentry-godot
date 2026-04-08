@@ -8,6 +8,7 @@ namespace Sentry.Godot;
 public class SentrySdk
 {
     static IDisposable? _exceptionHandler;
+    static bool _initializing;
     internal static SentryGodotOptions? CurrentOptions { get; private set; }
 
     public static bool IsEnabled => Sentry.SentrySdk.IsEnabled;
@@ -17,13 +18,25 @@ public class SentrySdk
     /// </summary>
     public static void Init(Action<SentryGodotOptions>? configureOptions = null)
     {
-        var godotOptions = new SentryGodotOptions();
-        godotOptions.ApplyNativeOptions();
-        configureOptions?.Invoke(godotOptions);
-        godotOptions.ApplyTemplateSubstitutions();
+        if (_initializing)
+        {
+            return;
+        }
+        _initializing = true;
+        try
+        {
+            var godotOptions = new SentryGodotOptions();
+            godotOptions.ApplyNativeOptions();
+            configureOptions?.Invoke(godotOptions);
+            godotOptions.ApplyTemplateSubstitutions();
 
-        InitDotnet(godotOptions);
-        InitNativeIfNeeded(godotOptions);
+            InitDotnet(godotOptions);
+            InitNativeIfNeeded(godotOptions);
+        }
+        finally
+        {
+            _initializing = false;
+        }
     }
 
     private static void InitDotnet(SentryGodotOptions godotOptions)
