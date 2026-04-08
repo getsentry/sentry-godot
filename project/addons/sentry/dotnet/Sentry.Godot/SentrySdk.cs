@@ -22,6 +22,11 @@ public class SentrySdk
         {
             return;
         }
+        if (IsEnabled)
+        {
+            GodotLog.Error("Sentry .NET SDK is already initialized. Ignoring Init() call.");
+            return;
+        }
         _initializing = true;
         try
         {
