@@ -10,6 +10,8 @@ public class SentrySdk
     static IDisposable? _exceptionHandler;
     internal static SentryGodotOptions? CurrentOptions { get; private set; }
 
+    public static bool IsEnabled => Sentry.SentrySdk.IsEnabled;
+
     /// <summary>
     /// Initializes the .NET SDK with an optional configuration callback.
     /// </summary>
