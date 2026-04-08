@@ -256,6 +256,10 @@ CSHARP_EXPORT void csharp_interop_sdk_init(ManagedOptions managed_opts) {
 	s_pending_managed_opts = {};
 }
 
+CSHARP_EXPORT void csharp_interop_sdk_close() {
+	SentrySDK::get_singleton()->close();
+}
+
 CSHARP_EXPORT const char *csharp_interop_get_sdk_version() {
 	return SENTRY_GODOT_SDK_VERSION;
 }

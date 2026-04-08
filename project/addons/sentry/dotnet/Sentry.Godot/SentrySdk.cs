@@ -96,6 +96,18 @@ public class SentrySdk
         NativeBridge.InitNativeSdk(godotOptions);
     }
 
+    /// <summary>
+    /// Flushes the events and disables the SDK.
+    /// </summary>
+    public static void Close()
+    {
+        _exceptionHandler?.Dispose();
+        _exceptionHandler = null;
+        CurrentOptions = null;
+        Sentry.SentrySdk.Close();
+        NativeBridge.CloseNativeSdk();
+    }
+
     private static void InitFirstChanceExceptionHandler()
     {
         if (_exceptionHandler is not null)

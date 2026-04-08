@@ -309,6 +309,14 @@ internal static partial class NativeBridge
         }
     }
 
+    [LibraryImport(Lib)]
+    private static partial void csharp_interop_sdk_close();
+
+    public static void CloseNativeSdk()
+    {
+        csharp_interop_sdk_close();
+    }
+
     /// <remarks>
     /// Returns compile-time literal - don't free!
     /// </remarks>
