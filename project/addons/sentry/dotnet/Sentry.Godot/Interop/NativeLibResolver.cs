@@ -6,9 +6,6 @@ namespace Sentry.Godot.Interop;
 
 /// <summary>
 /// Resolves the sentry-godot GDExtension library at runtime.
-/// Kept in a separate class with no Godot type references so it can safely
-/// run from a [ModuleInitializer] on Android, where the assembly may load
-/// on a background thread before Godot APIs are available.
 /// </summary>
 internal static class NativeLibResolver
 {
@@ -32,9 +29,6 @@ internal static class NativeLibResolver
             return;
         }
 
-        // Resolve actual GDExtension library path at runtime.
-        // Use typeof(NativeLibResolver) to get our assembly without referencing NativeBridge
-        // (which has Godot type dependencies that break coreclr_initialize on Android).
         NativeLibrary.SetDllImportResolver(typeof(NativeLibResolver).Assembly, (name, asm, path) =>
         {
             if (name == NativeBridge.Lib)
