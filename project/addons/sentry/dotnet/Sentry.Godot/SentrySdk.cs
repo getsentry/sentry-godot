@@ -76,9 +76,6 @@ public class SentrySdk
     {
         CurrentOptions = godotOptions;
         GodotLog.Debug("Initializing Sentry in .NET...");
-        godotOptions.IsGlobalModeEnabled = true;
-        godotOptions.AddIntegration(new GodotSdkIntegration());
-        godotOptions.AddInAppExclude("Godot");
         Sentry.SentrySdk.Init(godotOptions);
         InitFirstChanceExceptionHandler();
     }

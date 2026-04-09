@@ -6,6 +6,13 @@ namespace Sentry.Godot;
 
 public sealed class SentryGodotOptions : SentryOptions
 {
+    public SentryGodotOptions()
+    {
+        IsGlobalModeEnabled = true;
+        AddInAppExclude("Godot");
+        AddIntegration(new GodotSdkIntegration());
+    }
+
     /// <summary>
     /// If enabled, the SDK will attach the Godot log file to the event.
     /// </summary>
