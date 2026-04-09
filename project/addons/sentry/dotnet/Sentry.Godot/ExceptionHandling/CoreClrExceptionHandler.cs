@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Runtime.ExceptionServices;
 using Sentry.Godot.Internal;
@@ -35,10 +35,9 @@ internal class CoreClrExceptionHandler : EventListener
         ("Godot.GD::", "Godot.GD"),
     };
 
-    private static readonly Func<long, ConcurrentQueue<Exception>> _queueFactory =
-            _ => new();
-
-    private readonly ConcurrentDictionary<long, ConcurrentQueue<Exception>> _threadExceptions = new();
+    // Single lock guards both _threadExceptions and the per-thread queues.
+    private readonly object _lock = new();
+    private readonly Dictionary<long, Queue<Exception>> _threadExceptions = [];
 
     // Prevents re-entrancy when CaptureException itself throws (e.g. serialization).
     // ThreadStatic so the EventListener thread and throwing thread are guarded independently.
@@ -62,8 +61,15 @@ internal class CoreClrExceptionHandler : EventListener
             _isProcessing = true;
 
             long osThreadId = NativeThreadId.GetCurrentThreadId();
-            var queue = _threadExceptions.GetOrAdd(osThreadId, _queueFactory);
-            queue.Enqueue(e.Exception);
+            lock (_lock)
+            {
+                if (!_threadExceptions.TryGetValue(osThreadId, out var queue))
+                {
+                    queue = new Queue<Exception>();
+                    _threadExceptions[osThreadId] = queue;
+                }
+                queue.Enqueue(e.Exception);
+            }
         }
         finally
         {
@@ -91,46 +97,36 @@ internal class CoreClrExceptionHandler : EventListener
     private void HandleExceptionCatchStart(EventWrittenEventArgs eventData)
     {
         var sourceOsTid = eventData.OSThreadId;
+        string? bridgeName = eventData.Payload?[2] is string methodName ? GetGodotBridgeName(methodName) : null;
 
         try
         {
             _isProcessing = true;
 
-            string? bridgeName = eventData.Payload?[2] is string methodName ? GetGodotBridgeName(methodName) : null;
+            Exception? dequeued = null;
+            int remainingInQueue = 0;
 
-            if (bridgeName != null)
+            lock (_lock)
             {
-                // Caught by Godot bridge code.
-                if (_threadExceptions.TryGetValue(sourceOsTid, out var queue) &&
-                        queue.TryDequeue(out var exception))
-                {
-                    GodotLog.Debug($"Capturing .NET exception caught by {bridgeName} (queue={queue.Count}):\n   {exception.GetType().FullName}: \"{exception.Message}\"");
-                    exception.SetSentryMechanism(bridgeName,
-                            "This exception was caught by the Godot engine bridge error handler. The application continued running.",
-                            handled: false);
-                    Sentry.SentrySdk.CaptureException(exception);
-
-                    if (queue.IsEmpty)
-                    {
-                        _threadExceptions.TryRemove(sourceOsTid, out _);
-                    }
-                }
-                else
-                {
-                    GodotLog.Error($"Detected .NET exception caught by \"{bridgeName}\", but no exception in queue for OS thread {sourceOsTid}. Ignored.");
-                }
-            }
-            else
-            {
-                // Caught by user code.
+                // Invariant: queues in _threadExceptions are always non-empty.
                 if (_threadExceptions.TryGetValue(sourceOsTid, out var queue))
                 {
-                    queue.TryDequeue(out _);
-                    if (queue.IsEmpty)
+                    dequeued = queue.Dequeue();
+                    remainingInQueue = queue.Count;
+                    if (remainingInQueue == 0)
                     {
-                        _threadExceptions.TryRemove(sourceOsTid, out _);
+                        _threadExceptions.Remove(sourceOsTid);
                     }
                 }
+            }
+
+            if (dequeued is not null && bridgeName is not null)
+            {
+                GodotLog.Debug($"Capturing .NET exception caught by {bridgeName} (queue={remainingInQueue}):\n   {dequeued.GetType().FullName}: \"{dequeued.Message}\"");
+                dequeued.SetSentryMechanism(bridgeName,
+                        "This exception was caught by the Godot engine bridge error handler. The application continued running.",
+                        handled: false);
+                Sentry.SentrySdk.CaptureException(dequeued);
             }
         }
         finally
