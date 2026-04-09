@@ -11,7 +11,6 @@
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
-#include "sentry/util/library_path.h"
 #include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
