@@ -201,6 +201,12 @@ internal static partial class NativeBridge
         csharp_interop_register_logger_error_handler(&LoggerErrorCallback);
     }
 
+    public static unsafe void UnregisterLoggerErrorHandler()
+    {
+        csharp_interop_register_logger_error_handler(null);
+        _loggerErrorHandler = null;
+    }
+
     [LibraryImport(Lib)]
     private static unsafe partial GodotStringHandle csharp_interop_detect_environment();
 

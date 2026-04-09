@@ -80,5 +80,6 @@ internal class LoggerExceptionHandler : IDisposable
     public void Dispose()
     {
         AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
+        NativeBridge.UnregisterLoggerErrorHandler();
     }
 }
