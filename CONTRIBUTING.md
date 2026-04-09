@@ -11,6 +11,7 @@ Sentry SDK for Godot Engine can be built for Windows x86_64, Linux x86_64, macOS
 - CMake -- to build sentry-native SDK
 - clang-format & pre-commit -- for style checks
 - Android Studio -- to build supporting library for Android
+- .NET SDK 8.0 or later -- to build the .NET layer
 
 On Windows, if you have `scoop` installed, you can easily install most of the required packages with the following command:
 ```
@@ -118,9 +119,11 @@ npm test               # Run tests
 ## Project Structure
 
 - `src/` -- Godot extension source code
+- `src/sentry/dotnet/` -- C++ side of the .NET interop
 - `modules/` -- various submodules, such as `godot-cpp` and other SDKs like `sentry-native`
 - `project/` -- example Godot project
 - `project/addons/sentry/` -- where build artifacts are placed
+- `project/addons/sentry/dotnet/` -- the .NET layer with Sentry.Godot library and integration glue
 - `project/test/` -- unit tests
 - `test_web/` -- Playwright-based web/WASM test infrastructure
 - `scripts/` -- various scripts used mostly for maintenance
@@ -130,7 +133,7 @@ npm test               # Run tests
 
 ## Formatting Code
 
-Please run `clang-format` before submitting a PR to adhere to our code style. You can also install [pre-commit](https://pre-commit.com/) hooks for automatic formatting on commit:
+Please run `clang-format` before submitting a PR to adhere to our code style. C# files are formatted with `dotnet format` instead. Both run via [pre-commit](https://pre-commit.com/) hooks for automatic formatting on commit:
 ```sh
 pre-commit install
 ```
