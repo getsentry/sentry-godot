@@ -398,11 +398,6 @@ void SentrySDK::_demo_helper_crash_app() {
 }
 
 void SentrySDK::prepare_and_auto_initialize() {
-	// Set library path env var before .NET runtime starts.
-	// C# reads this to register DllImportResolver for interop.
-	OS::get_singleton()->set_environment("SENTRY_GODOT_LIB_PATH",
-			sentry::util::get_gdextension_library_path());
-
 	// Create platform-specific SDK backend (replaces the default DisabledSDK).
 #ifdef SDK_NATIVE
 	internal_sdk = std::make_unique<sentry::native::NativeSDK>();
