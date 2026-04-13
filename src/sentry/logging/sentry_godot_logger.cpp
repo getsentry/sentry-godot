@@ -6,6 +6,7 @@
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/util/hash.h"
+#include "sentry/util/text.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
@@ -46,7 +47,7 @@ public:
 
 bool _get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) {
 	// Don't fetch C# context - fails to load and leads to errors.
-	if (p_file.is_empty() || p_file.to_lower().ends_with(".cs")) {
+	if (p_file.is_empty() || sentry::util::ends_with_nocase_ascii(p_file, ".cs")) {
 		return false;
 	}
 
@@ -296,7 +297,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 	}
 
 	// Forward C# exceptions to the .NET layer for capture.
-	if (p_file.to_lower().ends_with(".cs")) {
+	if (sentry::util::ends_with_nocase_ascii(p_file, ".cs")) {
 		sentry::dotnet::handle_logger_error(p_file, p_code);
 		return;
 	} else if (p_file.is_empty()) {
