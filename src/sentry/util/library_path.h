@@ -1,5 +1,6 @@
 #pragma once
 
+#include <godot_cpp/godot.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 namespace sentry::util {
