@@ -176,7 +176,14 @@ internal static partial class NativeBridge
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
     private static void DotnetInitCallback()
     {
-        SentrySdk.InitFromNative();
+        try
+        {
+            SentrySdk.InitFromNative();
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to initialize Sentry .NET layer: {ex}");
+        }
     }
 
     public static unsafe void RegisterDotnetInit()
@@ -194,9 +201,16 @@ internal static partial class NativeBridge
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
     private static unsafe void LoggerErrorCallback(char* code, int codeLen, char* file, int fileLen)
     {
-        _loggerErrorHandler?.Invoke(
-                new string(file, 0, fileLen),
-                new string(code, 0, codeLen));
+        try
+        {
+            _loggerErrorHandler?.Invoke(
+                    new string(file, 0, fileLen),
+                    new string(code, 0, codeLen));
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward Godot logger error to Sentry .NET layer: {ex}");
+        }
     }
 
     public static unsafe void RegisterLoggerErrorHandler(Action<string, string> handler)
