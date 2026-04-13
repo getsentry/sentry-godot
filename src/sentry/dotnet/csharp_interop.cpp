@@ -21,6 +21,7 @@ extern "C" {
 
 // Native-owned string handle for passing Godot Strings across the interop boundary.
 // C# must call csharp_interop_string_free() after reading the data.
+// Must match layout of GodotStringHandle in NativeBridge.cs.
 struct GodotStringHandle {
 	const char32_t *ptr;
 	int64_t len;
@@ -38,6 +39,7 @@ CSHARP_EXPORT void csharp_interop_string_free(void *p_handle) {
 	}
 }
 
+// Must match layout of LoggerLimitsData in NativeBridge.cs.
 struct LoggerLimitsData {
 	int32_t events_per_frame;
 	int32_t repeated_error_window_ms;
@@ -45,6 +47,7 @@ struct LoggerLimitsData {
 	int32_t throttle_window_ms;
 };
 
+// Must match layout of NativeOptions in NativeBridge.cs.
 struct NativeOptions {
 	LoggerLimitsData logger_limits;
 
@@ -85,6 +88,7 @@ struct NativeOptions {
 
 // Managed-owned options for passing C# options to native.
 // C# pins strings; native reads synchronously. No free needed.
+// Must match layout of ManagedOptions in NativeBridge.cs.
 struct ManagedOptions {
 	LoggerLimitsData logger_limits;
 

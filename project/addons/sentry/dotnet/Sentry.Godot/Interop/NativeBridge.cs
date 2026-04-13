@@ -17,6 +17,7 @@ internal static partial class NativeBridge
     [LibraryImport(Lib)]
     private static partial void csharp_interop_string_free(IntPtr handle);
 
+    // Must match layout of GodotStringHandle in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
     private struct GodotStringHandle
     {
@@ -41,6 +42,7 @@ internal static partial class NativeBridge
         }
     }
 
+    // Must match layout of LoggerLimitsData in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
     private struct LoggerLimitsData
     {
@@ -50,6 +52,7 @@ internal static partial class NativeBridge
         public int throttle_window_ms;
     }
 
+    // Must match layout of NativeOptions in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
     private struct NativeOptions
     {
@@ -80,6 +83,7 @@ internal static partial class NativeBridge
         public byte enable_metrics;
     }
 
+    // Must match layout of ManagedOptions in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
     private unsafe struct ManagedOptions
     {
