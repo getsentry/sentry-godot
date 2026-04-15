@@ -8,7 +8,14 @@ namespace Sentry.Godot;
 public class SentrySdk
 {
     static IDisposable? _exceptionHandler;
+
+    // Re-entry guard for the Init() -> native init() -> InitFromNative() chain:
+    // Init() triggers native initialization, which signals back into the .NET
+    // layer via InitFromNative() and would otherwise run InitDotnet() a second
+    // time.
+    // Doesn't need locking, because the whole call chain runs on the same thread.
     static bool _initializing;
+
     internal static SentryGodotOptions? CurrentOptions { get; private set; }
 
     public static bool IsEnabled => Sentry.SentrySdk.IsEnabled;
