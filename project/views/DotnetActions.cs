@@ -56,4 +56,29 @@ public partial class DotnetActions : VBoxContainer
             throw new InvalidOperationException("Wrapped rethrow", ex);
         }
     }
+
+    // Regression test for listener-lag correlation: an exception is replaced by
+    // another thrown from a finally block, swallowed by user code, and then a
+    // real exception is thrown that should reach the bridge. The bridge must
+    // report "Real bridge exception", not the earlier swallowed exception.
+    public void TriggerNestedException()
+    {
+        GD.Print("Triggering nested finally-replaced exception...");
+        try
+        {
+            try
+            {
+                throw new InvalidOperationException("Replaced in finally");
+            }
+            finally
+            {
+                throw new ArgumentException("Replaces in-flight exception");
+            }
+        }
+        catch (ArgumentException)
+        {
+        }
+
+        throw new Exception("Real bridge exception");
+    }
 }
