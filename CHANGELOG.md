@@ -22,9 +22,9 @@
 - Bump Sentry JavaScript from v10.44.0 to v10.48.0 ([#607](https://github.com/getsentry/sentry-godot/pull/607), [#615](https://github.com/getsentry/sentry-godot/pull/615), [#624](https://github.com/getsentry/sentry-godot/pull/624), [#638](https://github.com/getsentry/sentry-godot/pull/638))
   - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10480)
   - [diff](https://github.com/getsentry/sentry-javascript/compare/10.44.0...10.48.0)
-- Bump Sentry Android from v8.36.0 to v8.38.0 ([#614](https://github.com/getsentry/sentry-godot/pull/614), [#616](https://github.com/getsentry/sentry-godot/pull/616), [#636](https://github.com/getsentry/sentry-godot/pull/636))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8380)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.36.0...8.38.0)
+- Bump Sentry Android from v8.36.0 to v8.39.1 ([#614](https://github.com/getsentry/sentry-godot/pull/614), [#616](https://github.com/getsentry/sentry-godot/pull/616), [#636](https://github.com/getsentry/sentry-godot/pull/636), [#641](https://github.com/getsentry/sentry-godot/pull/641))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8391)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.36.0...8.39.1)
 
 ## 1.5.0
 
