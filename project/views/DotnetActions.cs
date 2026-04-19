@@ -7,36 +7,35 @@ public partial class DotnetActions : VBoxContainer
     public void TriggerException()
     {
         GD.Print("Triggering exception...");
-        throw new Exception("Test CSharp exceptions");
+        throw new Exception("Exception (should be captured)");
     }
 
     public void TriggerThreadException()
     {
-        GD.Print("Triggering exception from thread...");
-        var thread = new Thread(() => throw new Exception("Test CSharp thread exception"));
+        GD.Print("Triggering thread exception (likely to crash)...");
+        var thread = new Thread(() => throw new Exception("Thread exception (should be captured)"));
         thread.Start();
         thread.Join();
     }
 
-    public void TriggerHandledException()
+    public void TriggerUserHandled()
     {
-        GD.Print("Triggering handled exception...");
+        GD.Print("Triggering user-handled exception...");
         try
         {
-            throw new InvalidOperationException("This is handled by user code and should not be captured");
+            throw new InvalidOperationException("User-handled (should NOT be captured)");
         }
-        catch (Exception e)
+        catch
         {
-            GD.Print($"User caught: {e.Message}");
         }
     }
 
-    public void TriggerRethrow()
+    public void TriggerBareRethrow()
     {
-        GD.Print("Triggering rethrow...");
+        GD.Print("Triggering bare rethrow...");
         try
         {
-            throw new Exception("Rethrow with throw;");
+            throw new Exception("Bare rethrow (should be captured)");
         }
         catch
         {
@@ -49,48 +48,44 @@ public partial class DotnetActions : VBoxContainer
         GD.Print("Triggering wrapped rethrow...");
         try
         {
-            throw new Exception("Inner exception");
+            throw new Exception("Inner (should NOT be captured)");
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Wrapped rethrow", ex);
+            throw new InvalidOperationException("Wrapped (should be captured)", ex);
         }
     }
 
-    // Regression test for listener-lag correlation: an exception is replaced by
-    // another thrown from a finally block, swallowed by user code, and then a
-    // real exception is thrown that should reach the bridge. The bridge must
-    // report "Real bridge exception", not the earlier swallowed exception.
-    public void TriggerNestedException()
+    public void TriggerNestedFinally()
     {
-        GD.Print("Triggering nested finally-replaced exception...");
+        GD.Print("Triggering nested finally throw...");
         try
         {
             try
             {
-                throw new InvalidOperationException("Replaced in finally");
+                throw new InvalidOperationException("Replaced in finally (should NOT be captured)");
             }
             finally
             {
-                throw new ArgumentException("Replaces in-flight exception");
+                throw new ArgumentException("Thrown from finally, user-caught (should NOT be captured)");
             }
         }
         catch (ArgumentException)
         {
         }
 
-        throw new Exception("Real bridge exception");
+        throw new Exception("Post-catch throw (should be captured)");
     }
 
     public void TriggerReplacedThenRethrown()
     {
-        GD.Print("Triggering replaced-then-rethrown exception...");
+        GD.Print("Triggering replaced-then-rethrown...");
 
         try
         {
-            try { throw new Exception("X (should NOT be captured)"); }
-            finally { throw new Exception("Y (should be captured)"); }   // Y replaces X
+            try { throw new Exception("Replaced in finally (should NOT be captured)"); }
+            finally { throw new Exception("Thrown from finally, rethrown (should be captured)"); }
         }
-        catch { throw; }       // rethrow Y
+        catch { throw; }
     }
 }

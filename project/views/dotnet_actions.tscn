@@ -20,23 +20,23 @@ text = "Exception"
 
 [node name="TriggerThreadException" type="Button" parent="."]
 layout_mode = 2
-text = "Exception from thread (will CRASH!)"
+text = "Thread exception (will CRASH!)"
 
-[node name="TriggerHandledException" type="Button" parent="."]
+[node name="TriggerUserHandled" type="Button" parent="."]
 layout_mode = 2
-text = "Handled exception"
+text = "User-handled"
 
-[node name="TriggerRethrow" type="Button" parent="."]
+[node name="TriggerBareRethrow" type="Button" parent="."]
 layout_mode = 2
-text = "Rethrow"
+text = "Bare rethrow"
 
 [node name="TriggerWrappedRethrow" type="Button" parent="."]
 layout_mode = 2
 text = "Wrapped rethrow"
 
-[node name="TriggerNestedException" type="Button" parent="."]
+[node name="TriggerNestedFinally" type="Button" parent="."]
 layout_mode = 2
-text = "Nested finally throw"
+text = "Nested finally"
 
 [node name="TriggerReplacedThenRethrown" type="Button" parent="."]
 layout_mode = 2
@@ -44,8 +44,8 @@ text = "Replaced then rethrown"
 
 [connection signal="pressed" from="TriggerException" to="." method="TriggerException"]
 [connection signal="pressed" from="TriggerThreadException" to="." method="TriggerThreadException"]
-[connection signal="pressed" from="TriggerHandledException" to="." method="TriggerHandledException"]
-[connection signal="pressed" from="TriggerRethrow" to="." method="TriggerRethrow"]
+[connection signal="pressed" from="TriggerUserHandled" to="." method="TriggerUserHandled"]
+[connection signal="pressed" from="TriggerBareRethrow" to="." method="TriggerBareRethrow"]
 [connection signal="pressed" from="TriggerWrappedRethrow" to="." method="TriggerWrappedRethrow"]
-[connection signal="pressed" from="TriggerNestedException" to="." method="TriggerNestedException"]
+[connection signal="pressed" from="TriggerNestedFinally" to="." method="TriggerNestedFinally"]
 [connection signal="pressed" from="TriggerReplacedThenRethrown" to="." method="TriggerReplacedThenRethrown"]
