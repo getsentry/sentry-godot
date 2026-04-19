@@ -6,9 +6,19 @@ using Sentry.Godot.Internal;
 
 namespace Sentry.Godot.ExceptionHandling;
 
+// TODO: remove debug prints when PR is ready
 
+/// <summary>
+/// Collects managed exceptions via FirstChanceException and keeps them in a
+/// per-thread FIFO queue for later correlation with CLR catch events.
+/// </summary>
 /// <remarks>
-/// Runs on the throwing thread.
+/// Thread-safety: OnFirstChanceException runs on the throwing thread;
+/// DrainPending() runs on the listener's thread and guarded by lock.
+///
+/// Capture scope: consumers wrap their capture call in EnterCaptureScope().
+/// Any FirstChanceException that fires on the same thread inside that scope is
+/// dropped, preventing feedback loops if the capture path itself throws.
 /// </remarks>
 internal class FirstChanceExceptionPool : IDisposable
 {
@@ -90,20 +100,23 @@ internal class FirstChanceExceptionPool : IDisposable
 
 /// <summary>
 /// Detects "unhandled" C# exceptions in Godot by combining FirstChanceException
-/// with .NET runtime EventSource events. When ExceptionCatchStart reports a Godot
-/// bridge method as the catcher, the exception is classified as unhandled by user
-/// code and sent to Sentry.
-///
-/// See: https://learn.microsoft.com/en-us/dotnet/fundamentals/diagnostics/runtime-exception-events
-///
-/// Key insight: FirstChanceException runs on the throwing thread, but EventListener
-/// callbacks run on a dedicated background thread. We correlate via OS thread ID.
-/// A FIFO queue per thread is needed because multiple FirstChanceException events
-/// fire synchronously before the EventListener processes any ExceptionCatchStart.
-/// TODO: ^^ Update this ^^.
+/// with .NET runtime EventSource events. When ExceptionCatchStart reports a
+/// Godot bridge method as the catcher, the exception is classified as unhandled
+/// by user code and sent to Sentry.
 /// </summary>
 /// <remarks>
-/// Runs on the listerner thread.
+/// Key insight: FirstChanceException runs on the throwing thread, but
+/// EventListener callbacks run on a dedicated background thread. We correlate
+/// via OS thread ID. A FIFO queue per thread is needed because multiple
+/// FirstChanceException events fire synchronously before the EventListener
+/// processes any ExceptionCatchStart(250).
+///
+/// ExceptionThrown(80) is emitted before FirstChanceException, but their
+/// arrival order on the listener side is racey, so we must not depend on it.
+/// The only reliable ordering here is that both arrive before
+/// ExceptionCatchStart(250).
+///
+/// See: https://learn.microsoft.com/en-us/dotnet/fundamentals/diagnostics/runtime-exception-events
 /// </remarks>
 internal class CoreClrExceptionHandler : EventListener
 {
@@ -165,9 +178,7 @@ internal class CoreClrExceptionHandler : EventListener
 
 
     /// <remarks>
-    /// Runs on the listener thread, emitted before FCE, and before ExceptionCatchStart event.
-    /// Usually it arrives after FCE event, but we should NOT depend on it.
-    /// It's enough that it always arrives before ExceptionCatchStart event.
+    /// Runs on the listener thread.
     /// </remarks>
     private void HandleExceptionThrown(EventWrittenEventArgs eventData)
     {
@@ -184,7 +195,7 @@ internal class CoreClrExceptionHandler : EventListener
     }
 
     /// <remarks>
-    /// Runs on the listener thread, after FCE and ExceptionThrown.
+    /// Runs on the listener thread.
     /// </remarks>
     private void HandleExceptionCatchStart(EventWrittenEventArgs eventData)
     {
