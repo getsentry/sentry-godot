@@ -30,7 +30,7 @@ internal class FirstChanceExceptionPool : IDisposable
     }
 
     private readonly object _pendingLock = new();
-    private readonly Dictionary<long, LinkedList<Exception>> _pending = []; // OSThreadId => pending exceptions
+    private readonly Dictionary<long, Queue<Exception>> _pending = []; // OSThreadId => pending exceptions
 
     public FirstChanceExceptionPool()
     {
@@ -54,7 +54,7 @@ internal class FirstChanceExceptionPool : IDisposable
                 p = [];
                 _pending[osThreadId] = p;
             }
-            p.AddLast(e.Exception);
+            p.Enqueue(e.Exception);
         }
     }
 
@@ -67,24 +67,17 @@ internal class FirstChanceExceptionPool : IDisposable
                 return null;
             }
 
-            var node = list.First!;
-            for (int i = 0; i < drainCount - 1; i++)
+            Exception matched;
+            do
             {
-                node = node.Next!;
-            }
-            var matched = node.Value;
+                matched = list.Dequeue();
+            } while (--drainCount > 0);
 
-            // Drain matched + everything older.
-            for (var n = node; n is not null;)
-            {
-                var prev = n.Previous;
-                list.Remove(n);
-                n = prev;
-            }
             if (list.Count == 0)
             {
                 _pending.Remove(threadId);
             }
+
             return matched;
         }
     }
