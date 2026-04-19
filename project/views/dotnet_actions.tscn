@@ -38,9 +38,14 @@ text = "Wrapped rethrow"
 layout_mode = 2
 text = "Nested finally throw"
 
+[node name="TriggerReplacedThenRethrown" type="Button" parent="."]
+layout_mode = 2
+text = "Replaced then rethrown"
+
 [connection signal="pressed" from="TriggerException" to="." method="TriggerException"]
 [connection signal="pressed" from="TriggerThreadException" to="." method="TriggerThreadException"]
 [connection signal="pressed" from="TriggerHandledException" to="." method="TriggerHandledException"]
 [connection signal="pressed" from="TriggerRethrow" to="." method="TriggerRethrow"]
 [connection signal="pressed" from="TriggerWrappedRethrow" to="." method="TriggerWrappedRethrow"]
 [connection signal="pressed" from="TriggerNestedException" to="." method="TriggerNestedException"]
+[connection signal="pressed" from="TriggerReplacedThenRethrown" to="." method="TriggerReplacedThenRethrown"]

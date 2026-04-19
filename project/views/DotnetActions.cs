@@ -81,4 +81,16 @@ public partial class DotnetActions : VBoxContainer
 
         throw new Exception("Real bridge exception");
     }
+
+    public void TriggerReplacedThenRethrown()
+    {
+        GD.Print("Triggering replaced-then-rethrown exception...");
+
+        try
+        {
+            try { throw new Exception("X (should NOT be captured)"); }
+            finally { throw new Exception("Y (should be captured)"); }   // Y replaces X
+        }
+        catch { throw; }       // rethrow Y
+    }
 }
