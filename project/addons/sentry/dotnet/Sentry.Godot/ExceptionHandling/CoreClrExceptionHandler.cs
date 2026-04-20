@@ -33,7 +33,7 @@ internal class FirstChanceExceptionPool : IDisposable
 
     private static readonly CaptureScopeToken _statelessCaptureToken = new();
 
-    public static CaptureScopeToken EnterCaptureScope()
+    public static IDisposable EnterCaptureScope()
     {
         _inCaptureScope = true;
         return _statelessCaptureToken; // safe to reuse
