@@ -6,7 +6,7 @@ Set-StrictMode -Version latest
 
 $sconsFile = "$PSScriptRoot/../SConstruct"
 $content = Get-Content $sconsFile
-$content -replace 'VERSION = ".*"', ('VERSION = "' + $newVersion + '"') | Out-File $sconsFile
+$content -replace '^VERSION = "[^"]*"', ('VERSION = "' + $newVersion + '"') | Out-File $sconsFile
 
 # Check that the version was updated.
 if ("$content" -eq "$(Get-Content $sconsFile)") {
