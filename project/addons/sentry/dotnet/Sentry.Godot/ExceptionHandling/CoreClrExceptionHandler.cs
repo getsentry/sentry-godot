@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Runtime.ExceptionServices;
@@ -47,6 +48,29 @@ internal class FirstChanceExceptionPool : IDisposable
         AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
     }
 
+    public void Dispose()
+    {
+        AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
+    }
+
+    internal event Action<long>? ThreadDied;
+
+    private sealed class ThreadCleanupSentinel(long threadId, FirstChanceExceptionPool owner)
+    {
+        private readonly long _threadId = threadId;
+        private readonly WeakReference<FirstChanceExceptionPool> _owner = new(owner);
+        ~ThreadCleanupSentinel()
+        {
+            if (_owner.TryGetTarget(out var pool))
+            {
+                pool.ThreadDied?.Invoke(_threadId);
+            }
+        }
+    }
+
+    [ThreadStatic]
+    private static ThreadCleanupSentinel? _sentinel;
+
     private void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e)
     {
         if (_inCaptureScope)
@@ -63,6 +87,7 @@ internal class FirstChanceExceptionPool : IDisposable
             {
                 p = [];
                 _pending[osThreadId] = p;
+                _sentinel = new ThreadCleanupSentinel(osThreadId, this);
             }
             p.Enqueue(e.Exception);
         }
@@ -72,7 +97,7 @@ internal class FirstChanceExceptionPool : IDisposable
     {
         lock (_pendingLock)
         {
-            if (!_pending.TryGetValue(threadId, out var list) || list.Count < drainCount)
+            if (!_pending.TryGetValue(threadId, out var queue) || queue.Count < drainCount)
             {
                 return null;
             }
@@ -80,21 +105,27 @@ internal class FirstChanceExceptionPool : IDisposable
             Exception matched;
             do
             {
-                matched = list.Dequeue();
+                matched = queue.Dequeue();
             } while (--drainCount > 0);
 
-            if (list.Count == 0)
-            {
-                _pending.Remove(threadId);
-            }
+            // Leaves the queue in place even when emptied; cleanup is handled by RemoveThreads().
 
             return matched;
         }
     }
 
-    public void Dispose()
+    /// <remarks>
+    /// Called by CoreClrExceptionHandler to clean up dead threads from the pending list.
+    /// </remarks>
+    internal void RemoveThreads(IReadOnlyList<long> deadThreads)
     {
-        AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
+        lock (_pendingLock)
+        {
+            for (int i = 0; i < deadThreads.Count; i++)
+            {
+                _pending.Remove(deadThreads[i]);
+            }
+        }
     }
 }
 
@@ -143,6 +174,24 @@ internal class CoreClrExceptionHandler : EventListener
     }
     private readonly Dictionary<long, ThreadContext> _threadContexts = []; // only listener thread
 
+    private static readonly TimeSpan CleanupInterval = TimeSpan.FromSeconds(2);
+
+    // Bring out your dead!
+    private readonly ConcurrentQueue<long> _deadThreadsIncoming = new();
+    private readonly List<long> _deadThreadsPendingCleanup = [];
+    private DateTime _lastCleanup = DateTime.UtcNow;
+
+    public CoreClrExceptionHandler()
+    {
+        _exceptionsPool.ThreadDied += _deadThreadsIncoming.Enqueue;
+    }
+
+    public override void Dispose()
+    {
+        _exceptionsPool.Dispose();
+        base.Dispose();
+    }
+
     protected override void OnEventSourceCreated(EventSource eventSource)
     {
         if (eventSource.Name == "Microsoft-Windows-DotNETRuntime")
@@ -172,10 +221,10 @@ internal class CoreClrExceptionHandler : EventListener
                 break;
             case ExceptionCatchStart_EventId:
                 HandleExceptionCatchStart(eventData);
+                CleanupDeadThreads();
                 break;
         }
     }
-
 
     /// <remarks>
     /// Runs on the listener thread.
@@ -234,6 +283,32 @@ internal class CoreClrExceptionHandler : EventListener
         }
     }
 
+    /// <remarks>
+    /// Dead threads observed this cycle are removed next cycle, so in-flight
+    /// events have time to drain.
+    /// </remarks>
+    private void CleanupDeadThreads()
+    {
+        if (_lastCleanup + CleanupInterval > DateTime.UtcNow)
+        {
+            return;
+        }
+
+        _lastCleanup = DateTime.UtcNow;
+
+        _exceptionsPool.RemoveThreads(_deadThreadsPendingCleanup);
+        for (int i = 0; i < _deadThreadsPendingCleanup.Count; i++)
+        {
+            _threadContexts.Remove(_deadThreadsPendingCleanup[i]);
+        }
+        _deadThreadsPendingCleanup.Clear();
+
+        while (_deadThreadsIncoming.TryDequeue(out var deadTid))
+        {
+            _deadThreadsPendingCleanup.Add(deadTid);
+        }
+    }
+
     private const string GodotSharpMarker = "[GodotSharp] ";
 
     /// <summary>
@@ -258,11 +333,5 @@ internal class CoreClrExceptionHandler : EventListener
             }
         }
         return null;
-    }
-
-    public override void Dispose()
-    {
-        _exceptionsPool.Dispose();
-        base.Dispose();
     }
 }
