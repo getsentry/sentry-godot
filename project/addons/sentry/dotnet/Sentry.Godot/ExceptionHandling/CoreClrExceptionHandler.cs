@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using Sentry.Godot.Internal;
 
 namespace Sentry.Godot.ExceptionHandling;
@@ -58,12 +59,21 @@ internal class FirstChanceExceptionPool : IDisposable
     private sealed class ThreadCleanupSentinel(long threadId, FirstChanceExceptionPool owner)
     {
         private readonly long _threadId = threadId;
-        private readonly WeakReference<FirstChanceExceptionPool> _owner = new(owner);
+        private readonly GCHandle _ownerHandle = GCHandle.Alloc(owner, GCHandleType.Weak);
+
         ~ThreadCleanupSentinel()
         {
-            if (_owner.TryGetTarget(out var pool))
+            try
             {
-                pool.ThreadDied?.Invoke(_threadId);
+                if (_ownerHandle.Target is FirstChanceExceptionPool pool)
+                {
+                    GodotLog.Debug($"[diag] Emitting ThreadDied: {_threadId}");
+                    pool.ThreadDied?.Invoke(_threadId);
+                }
+            }
+            finally
+            {
+                _ownerHandle.Free();
             }
         }
     }
@@ -300,6 +310,7 @@ internal class CoreClrExceptionHandler : EventListener
         for (int i = 0; i < _deadThreadsPendingCleanup.Count; i++)
         {
             _threadContexts.Remove(_deadThreadsPendingCleanup[i]);
+            GodotLog.Debug($"CleanupDeadThreads: removed dead thread {_deadThreadsPendingCleanup[i]}");
         }
         _deadThreadsPendingCleanup.Clear();
 

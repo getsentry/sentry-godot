@@ -13,9 +13,13 @@ public partial class DotnetActions : VBoxContainer
     public void TriggerThreadException()
     {
         GD.Print("Triggering thread exception (likely to crash)...");
-        var thread = new Thread(() => throw new Exception("Thread exception (should be captured)"));
+        var thread = new Thread(() => { try { throw new Exception("Thread exception (should be captured)"); } catch { } });
         thread.Start();
         thread.Join();
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
     }
 
     public void TriggerUserHandled()
