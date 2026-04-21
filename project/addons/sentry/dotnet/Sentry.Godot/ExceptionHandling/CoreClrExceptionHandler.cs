@@ -105,6 +105,7 @@ internal class FirstChanceExceptionPool : IDisposable
         {
             if (!_pending.TryGetValue(threadId, out var queue) || queue.Count < drainCount)
             {
+                queue?.Clear();
                 return null;
             }
 
