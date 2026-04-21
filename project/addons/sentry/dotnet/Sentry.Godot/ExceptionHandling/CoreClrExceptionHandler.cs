@@ -8,8 +8,6 @@ using Sentry.Godot.Internal;
 
 namespace Sentry.Godot.ExceptionHandling;
 
-// TODO: remove debug prints when PR is ready
-
 /// <summary>
 /// Collects managed exceptions via FirstChanceException and keeps them in a
 /// per-thread FIFO queue for later correlation with CLR catch events.
@@ -67,7 +65,6 @@ internal class FirstChanceExceptionPool : IDisposable
             {
                 if (_ownerHandle.Target is FirstChanceExceptionPool pool)
                 {
-                    GodotLog.Debug($"[diag] Emitting ThreadDied: {_threadId}");
                     pool.ThreadDied?.Invoke(_threadId);
                 }
             }
@@ -89,7 +86,6 @@ internal class FirstChanceExceptionPool : IDisposable
         }
 
         long osThreadId = NativeThreadId.GetCurrentThreadId();
-        GodotLog.Debug($"[diag] FCE tid={osThreadId} type={e.Exception.GetType().Name}");
 
         lock (_pendingLock)
         {
@@ -242,7 +238,6 @@ internal class CoreClrExceptionHandler : EventListener
     private void HandleExceptionThrown(EventWrittenEventArgs eventData)
     {
         var tid = eventData.OSThreadId;
-        GodotLog.Debug($"[diag] THROW srcTid={tid} handlerTid={NativeThreadId.GetCurrentThreadId()} throwTs={eventData.TimeStamp:HH:mm:ss.fffffff}");
 
         // Track how many exceptions have been thrown before catch.
         if (!_threadContexts.TryGetValue(tid, out var ctx))
@@ -264,8 +259,6 @@ internal class CoreClrExceptionHandler : EventListener
             var sourceThreadId = eventData.OSThreadId;
             string? bridgeName = eventData.Payload?[2] is string methodName ? GetGodotBridgeName(methodName) : null;
 
-            GodotLog.Debug($"[diag] CATCH srcTid={sourceThreadId} handlerTid={NativeThreadId.GetCurrentThreadId()} ts={eventData.TimeStamp:HH:mm:ss.fffffff} method={eventData.Payload?[2] as string ?? "<null>"}");
-
             if (!_threadContexts.TryGetValue(sourceThreadId, out var ctx))
             {
                 ctx = new ThreadContext { throwCount = 0 };
@@ -275,8 +268,6 @@ internal class CoreClrExceptionHandler : EventListener
             var drainCount = Math.Max(ctx.throwCount, 1);
             Exception? matched = _exceptionsPool.DrainPending(sourceThreadId, drainCount);
             ctx.throwCount = 0;
-
-            GodotLog.Debug($"[diag] match tid={sourceThreadId} bridge={bridgeName} matched={matched?.GetType().Name ?? "<null>"}");
 
             if (matched is not null && bridgeName is not null)
             {
@@ -310,7 +301,6 @@ internal class CoreClrExceptionHandler : EventListener
         for (int i = 0; i < _deadThreadsPendingCleanup.Count; i++)
         {
             _threadContexts.Remove(_deadThreadsPendingCleanup[i]);
-            GodotLog.Debug($"CleanupDeadThreads: removed dead thread {_deadThreadsPendingCleanup[i]}");
         }
         _deadThreadsPendingCleanup.Clear();
 
