@@ -84,10 +84,10 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             switch (member)
             {
                 case IPropertySymbol property:
-                    GenerateProperty(sb, property, indent);
+                    GenerateProperty(sb, property, indent, "static ", "Sentry.SentrySdk", isTopLevel: true);
                     break;
                 case IMethodSymbol method when method.MethodKind == MethodKind.Ordinary:
-                    GenerateMethod(sb, method, indent);
+                    GenerateMethod(sb, method, indent, "static ", "Sentry.SentrySdk");
                     break;
             }
         }
@@ -120,20 +120,19 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
 
             var nestedMembers = nestedType.GetMembers()
                 .Where(m => m.DeclaredAccessibility == Accessibility.Public && !m.IsStatic)
-                .OrderBy(m => m.Name);
+                .OrderBy(m => m.Kind)
+                .ThenBy(m => m.Name);
 
             foreach (var nestedMember in nestedMembers)
             {
-                if (nestedMember is IPropertySymbol nestedProp)
+                switch (nestedMember)
                 {
-                    sb.AppendLine();
-                    AppendXmlDoc(sb, nestedProp, $"{indent}    ");
-                    var returnType = FormatType(nestedProp.Type);
-                    sb.AppendLine($"{indent}    public {returnType} {nestedProp.Name}");
-                    sb.AppendLine($"{indent}    {{");
-                    sb.AppendLine($"{indent}        [DebuggerStepThrough]");
-                    sb.AppendLine($"{indent}        get => {qualifier}.{nestedProp.Name};");
-                    sb.AppendLine($"{indent}    }}");
+                    case IPropertySymbol nestedProp:
+                        GenerateProperty(sb, nestedProp, $"{indent}    ", "", qualifier, isTopLevel: false);
+                        break;
+                    case IMethodSymbol nestedMethod when nestedMethod.MethodKind == MethodKind.Ordinary:
+                        GenerateMethod(sb, nestedMethod, $"{indent}    ", "", qualifier);
+                        break;
                 }
             }
 
@@ -142,42 +141,45 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
     }
 
     private static void GenerateProperty(
-        StringBuilder sb, IPropertySymbol property, string indent)
+        StringBuilder sb, IPropertySymbol property, string indent,
+        string staticModifier, string qualifier, bool isTopLevel)
     {
-        // Properties whose type is a public nested type of the upstream SDK get a
-        // static instance of our auto-discovered wrapper type.
-        if (property.Type is INamedTypeSymbol nestedType
+        // Top-level properties whose type is a public nested type of the upstream SDK
+        // get a static instance of our auto-discovered wrapper type.
+        if (isTopLevel
+            && property.Type is INamedTypeSymbol nestedType
             && nestedType.DeclaredAccessibility == Accessibility.Public
             && SymbolEqualityComparer.Default.Equals(nestedType.ContainingType, property.ContainingType))
         {
             sb.AppendLine();
             AppendXmlDoc(sb, property, indent);
-            sb.AppendLine($"{indent}public static {nestedType.Name} {property.Name} {{ get; }} = new();");
+            sb.AppendLine($"{indent}public {staticModifier}{nestedType.Name} {property.Name} {{ get; }} = new();");
             return;
         }
 
         var returnType = FormatType(property.Type);
-        var qualifier = $"Sentry.SentrySdk.{property.Name}";
+        var accessor = $"{qualifier}.{property.Name}";
 
         sb.AppendLine();
         AppendXmlDoc(sb, property, indent);
 
         if (property.IsReadOnly)
         {
-            sb.AppendLine($"{indent}public static {returnType} {property.Name} {{ [DebuggerStepThrough] get => {qualifier}; }}");
+            sb.AppendLine($"{indent}public {staticModifier}{returnType} {property.Name} {{ [DebuggerStepThrough] get => {accessor}; }}");
         }
         else
         {
-            sb.AppendLine($"{indent}public static {returnType} {property.Name}");
+            sb.AppendLine($"{indent}public {staticModifier}{returnType} {property.Name}");
             sb.AppendLine($"{indent}{{");
-            sb.AppendLine($"{indent}    [DebuggerStepThrough] get => {qualifier};");
-            sb.AppendLine($"{indent}    [DebuggerStepThrough] set => {qualifier} = value;");
+            sb.AppendLine($"{indent}    [DebuggerStepThrough] get => {accessor};");
+            sb.AppendLine($"{indent}    [DebuggerStepThrough] set => {accessor} = value;");
             sb.AppendLine($"{indent}}}");
         }
     }
 
     private static void GenerateMethod(
-        StringBuilder sb, IMethodSymbol method, string indent)
+        StringBuilder sb, IMethodSymbol method, string indent,
+        string staticModifier, string qualifier)
     {
         var returnType = FormatType(method.ReturnType);
 
@@ -249,8 +251,8 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         }
         sb.AppendLine($"{indent}[DebuggerStepThrough]");
 
-        var call = $"Sentry.SentrySdk.{method.Name}{typeParams}({argList})";
-        sb.AppendLine($"{indent}public static {returnType} {method.Name}{typeParams}({paramList}){constraintStr}");
+        var call = $"{qualifier}.{method.Name}{typeParams}({argList})";
+        sb.AppendLine($"{indent}public {staticModifier}{returnType} {method.Name}{typeParams}({paramList}){constraintStr}");
         sb.AppendLine($"{indent}    => {call};");
     }
 
