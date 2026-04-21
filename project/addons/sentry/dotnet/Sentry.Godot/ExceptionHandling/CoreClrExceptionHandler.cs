@@ -201,11 +201,6 @@ internal class CoreClrExceptionHandler : EventListener
             EnableEvents(eventSource, EventLevel.Informational, (EventKeywords)ExceptionKeyword);
             GodotLog.Debug("Subscribed to Microsoft-Windows-DotNETRuntime events.");
         }
-        else if (eventSource.Name == "Sentry-Godot-Exceptions")
-        {
-            EnableEvents(eventSource, EventLevel.Informational);
-            GodotLog.Debug("Subscribed to Sentry-Godot-Exceptions events.");
-        }
     }
 
     protected override void OnEventWritten(EventWrittenEventArgs eventData)
