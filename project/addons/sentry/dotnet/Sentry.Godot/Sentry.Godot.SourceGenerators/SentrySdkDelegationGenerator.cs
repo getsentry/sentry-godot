@@ -213,6 +213,11 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                 paramStr = $"ref {paramStr}";
                 arguments.Add($"ref {param.Name}");
             }
+            else if (param.IsParams)
+            {
+                paramStr = $"params {paramStr}";
+                arguments.Add(param.Name);
+            }
             else
             {
                 arguments.Add(param.Name);
