@@ -289,6 +289,15 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
     {
         if (value is null)
         {
+            // Non-nullable value-type parameters with `= default` report a null
+            // ExplicitDefaultValue. Emitting "null" would be a compile error;
+            // emit `default(T)` instead. Nullable<T> is excluded so `int? x = null`
+            // still emits as "null".
+            if (type is { IsValueType: true }
+                && type.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T)
+            {
+                return $"default({FormatType(type)})";
+            }
             return "null";
         }
 
