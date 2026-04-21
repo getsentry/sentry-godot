@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Sentry.Godot.SourceGenerators;
@@ -289,7 +290,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
 
         if (value is string s)
         {
-            return $"\"{s}\"";
+            return SymbolDisplay.FormatLiteral(s, quote: true);
         }
 
         if (value is bool b)
@@ -299,7 +300,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
 
         if (value is char c)
         {
-            return $"'{c}'";
+            return SymbolDisplay.FormatLiteral(c, quote: true);
         }
 
         return FormatPrimitiveLiteral(value);
@@ -358,8 +359,11 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             }
             else if (name == "System.ObsoleteAttribute")
             {
-                var msg = attr.ConstructorArguments.Length > 0
-                    ? $"(\"{attr.ConstructorArguments[0].Value}\")"
+                var message = attr.ConstructorArguments.Length > 0
+                    ? attr.ConstructorArguments[0].Value as string
+                    : null;
+                var msg = message is not null
+                    ? $"({SymbolDisplay.FormatLiteral(message, quote: true)})"
                     : "";
                 attrs.Add($"[Obsolete{msg}]");
             }
