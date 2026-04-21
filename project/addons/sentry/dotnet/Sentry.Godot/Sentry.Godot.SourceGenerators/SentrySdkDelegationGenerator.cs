@@ -275,26 +275,27 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         {
             return "";
         }
+        return FormatConstantValue(param.Type, param.ExplicitDefaultValue);
+    }
 
-        var value = param.ExplicitDefaultValue;
-
+    private static string FormatConstantValue(ITypeSymbol? type, object? value)
+    {
         if (value is null)
         {
             return "null";
         }
 
-        if (param.Type.TypeKind == TypeKind.Enum)
+        if (type is { TypeKind: TypeKind.Enum })
         {
-            var enumType = param.Type;
-            foreach (var member in enumType.GetMembers())
+            foreach (var member in type.GetMembers())
             {
                 if (member is IFieldSymbol field && field.HasConstantValue &&
                     field.ConstantValue?.Equals(value) == true)
                 {
-                    return $"{FormatType(enumType)}.{field.Name}";
+                    return $"{FormatType(type)}.{field.Name}";
                 }
             }
-            return $"({FormatType(enumType)}){FormatPrimitiveLiteral(value)}";
+            return $"({FormatType(type)}){FormatPrimitiveLiteral(value)}";
         }
 
         if (value is string s)
@@ -313,6 +314,27 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         }
 
         return FormatPrimitiveLiteral(value);
+    }
+
+    private static string FormatTypedConstant(TypedConstant tc)
+    {
+        if (tc.IsNull)
+        {
+            return "null";
+        }
+
+        if (tc.Kind == TypedConstantKind.Array)
+        {
+            var items = tc.Values.Select(FormatTypedConstant);
+            return $"new[] {{ {string.Join(", ", items)} }}";
+        }
+
+        if (tc.Kind == TypedConstantKind.Type && tc.Value is ITypeSymbol typeValue)
+        {
+            return $"typeof({FormatType(typeValue)})";
+        }
+
+        return FormatConstantValue(tc.Type, tc.Value);
     }
 
     private static string FormatPrimitiveLiteral(object value)
@@ -355,30 +377,56 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         return string.Join(", ", parts);
     }
 
+    /// <summary>
+    /// Attributes that must not be forwarded to the generated wrapper — either
+    /// compiler-synthesized or already emitted unconditionally by the generator itself.
+    /// </summary>
+    private static readonly HashSet<string> SkipAttributes =
+    [
+        "System.Diagnostics.DebuggerStepThroughAttribute",
+        "System.Runtime.CompilerServices.NullableContextAttribute",
+        "System.Runtime.CompilerServices.NullableAttribute",
+        "System.Runtime.CompilerServices.AsyncStateMachineAttribute",
+        "System.Runtime.CompilerServices.IteratorStateMachineAttribute",
+        "System.Runtime.CompilerServices.CompilerGeneratedAttribute",
+    ];
+
     private static List<string> GetMethodAttributes(IMethodSymbol method)
     {
         var attrs = new List<string>();
-
         foreach (var attr in method.GetAttributes())
         {
             var name = attr.AttributeClass?.ToDisplayString();
-            if (name == "System.ComponentModel.EditorBrowsableAttribute")
+            if (name is null || SkipAttributes.Contains(name))
             {
-                attrs.Add("[EditorBrowsable(EditorBrowsableState.Never)]");
+                continue;
             }
-            else if (name == "System.ObsoleteAttribute")
-            {
-                var message = attr.ConstructorArguments.Length > 0
-                    ? attr.ConstructorArguments[0].Value as string
-                    : null;
-                var msg = message is not null
-                    ? $"({SymbolDisplay.FormatLiteral(message, quote: true)})"
-                    : "";
-                attrs.Add($"[Obsolete{msg}]");
-            }
+            attrs.Add(FormatAttribute(attr));
+        }
+        return attrs;
+    }
+
+    private static string FormatAttribute(AttributeData attr)
+    {
+        var typeName = FormatType(attr.AttributeClass!);
+        if (typeName.EndsWith("Attribute"))
+        {
+            typeName = typeName.Substring(0, typeName.Length - "Attribute".Length);
         }
 
-        return attrs;
+        var args = new List<string>();
+        foreach (var arg in attr.ConstructorArguments)
+        {
+            args.Add(FormatTypedConstant(arg));
+        }
+        foreach (var named in attr.NamedArguments)
+        {
+            args.Add($"{named.Key} = {FormatTypedConstant(named.Value)}");
+        }
+
+        return args.Count > 0
+            ? $"[{typeName}({string.Join(", ", args)})]"
+            : $"[{typeName}]";
     }
 
     private static void AppendXmlDoc(StringBuilder sb, ISymbol symbol, string indent)
