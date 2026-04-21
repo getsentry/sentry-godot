@@ -174,11 +174,7 @@ internal class CoreClrExceptionHandler : EventListener
         ("Godot.GD::", "Godot.GD"),
     };
 
-    private class ThreadContext
-    {
-        public int throwCount;
-    }
-    private readonly Dictionary<long, ThreadContext> _threadContexts = []; // only listener thread
+    private readonly Dictionary<long, int> _throwCounts = []; // tid => pre-catch throw count; only listener thread
 
     private static readonly TimeSpan CleanupInterval = TimeSpan.FromSeconds(2);
 
@@ -240,12 +236,8 @@ internal class CoreClrExceptionHandler : EventListener
         var tid = eventData.OSThreadId;
 
         // Track how many exceptions have been thrown before catch.
-        if (!_threadContexts.TryGetValue(tid, out var ctx))
-        {
-            ctx = new ThreadContext { throwCount = 0 };
-            _threadContexts[tid] = ctx;
-        }
-        ctx.throwCount++;
+        _throwCounts.TryGetValue(tid, out var count);
+        _throwCounts[tid] = count + 1;
     }
 
     /// <remarks>
@@ -259,15 +251,10 @@ internal class CoreClrExceptionHandler : EventListener
             var sourceThreadId = eventData.OSThreadId;
             string? bridgeName = eventData.Payload?[2] is string methodName ? GetGodotBridgeName(methodName) : null;
 
-            if (!_threadContexts.TryGetValue(sourceThreadId, out var ctx))
-            {
-                ctx = new ThreadContext { throwCount = 0 };
-                _threadContexts[sourceThreadId] = ctx;
-            }
-
-            var drainCount = Math.Max(ctx.throwCount, 1);
+            _throwCounts.TryGetValue(sourceThreadId, out var throwCount);
+            var drainCount = Math.Max(throwCount, 1);
             Exception? matched = _exceptionsPool.DrainPending(sourceThreadId, drainCount);
-            ctx.throwCount = 0;
+            _throwCounts[sourceThreadId] = 0;
 
             if (matched is not null && bridgeName is not null)
             {
@@ -300,7 +287,7 @@ internal class CoreClrExceptionHandler : EventListener
         _exceptionsPool.RemoveThreads(_deadThreadsPendingCleanup);
         for (int i = 0; i < _deadThreadsPendingCleanup.Count; i++)
         {
-            _threadContexts.Remove(_deadThreadsPendingCleanup[i]);
+            _throwCounts.Remove(_deadThreadsPendingCleanup[i]);
         }
         _deadThreadsPendingCleanup.Clear();
 
