@@ -21,15 +21,6 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         "Close"
     ];
 
-    /// <summary>
-    /// Types whose members should be recursively generated as nested classes.
-    /// Maps upstream type name to the wrapper class name.
-    /// </summary>
-    private static readonly Dictionary<string, string> NestedWrapperTypes = new()
-    {
-        { "ExperimentalSentrySdk", "ExperimentalSentrySdk" },
-    };
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterSourceOutput(context.CompilationProvider, Execute);
@@ -101,17 +92,12 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             }
         }
 
-        // Generate nested wrapper types (e.g. ExperimentalSentrySdk).
-        foreach (var nested in NestedWrapperTypes)
+        // Generate wrapper classes for every public nested type exposed via a public
+        // static property. This auto-discovers upstream hubs like ExperimentalSentrySdk.
+        foreach (var nestedType in sourceType.GetTypeMembers()
+            .Where(t => t.DeclaredAccessibility == Accessibility.Public)
+            .OrderBy(t => t.Name))
         {
-            var nestedType = sourceType.GetTypeMembers(nested.Key)
-                .FirstOrDefault(t => t.DeclaredAccessibility == Accessibility.Public);
-            if (nestedType is null)
-            {
-                continue;
-            }
-
-            // Find the outer static property that exposes this nested type.
             var outerProperty = sourceType.GetMembers()
                 .OfType<IPropertySymbol>()
                 .FirstOrDefault(p => p.IsStatic
@@ -126,9 +112,9 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
 
             sb.AppendLine();
             AppendXmlDoc(sb, nestedType, indent);
-            sb.AppendLine($"{indent}public sealed class {nested.Value}");
+            sb.AppendLine($"{indent}public sealed class {nestedType.Name}");
             sb.AppendLine($"{indent}{{");
-            sb.AppendLine($"{indent}    internal {nested.Value}()");
+            sb.AppendLine($"{indent}    internal {nestedType.Name}()");
             sb.AppendLine($"{indent}    {{");
             sb.AppendLine($"{indent}    }}");
 
@@ -158,12 +144,15 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
     private static void GenerateProperty(
         StringBuilder sb, IPropertySymbol property, string indent)
     {
-        // Properties whose type is a nested wrapper get a static instance of our wrapper type.
-        if (NestedWrapperTypes.TryGetValue(property.Type.Name, out var wrapperName))
+        // Properties whose type is a public nested type of the upstream SDK get a
+        // static instance of our auto-discovered wrapper type.
+        if (property.Type is INamedTypeSymbol nestedType
+            && nestedType.DeclaredAccessibility == Accessibility.Public
+            && SymbolEqualityComparer.Default.Equals(nestedType.ContainingType, property.ContainingType))
         {
             sb.AppendLine();
             AppendXmlDoc(sb, property, indent);
-            sb.AppendLine($"{indent}public static {wrapperName} {property.Name} {{ get; }} = new();");
+            sb.AppendLine($"{indent}public static {nestedType.Name} {property.Name} {{ get; }} = new();");
             return;
         }
 
