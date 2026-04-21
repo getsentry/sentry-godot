@@ -21,6 +21,24 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         "Close"
     ];
 
+    private const string DiagnosticCategory = "Sentry.Godot.SourceGenerators";
+
+    private static readonly DiagnosticDescriptor UpstreamSdkNotFound = new(
+        id: "SGSDK001",
+        title: "Upstream Sentry SDK type not found",
+        messageFormat: "'Sentry.SentrySdk' could not be resolved — ensure the 'Sentry' NuGet package is referenced",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor GodotSdkNotFound = new(
+        id: "SGSDK002",
+        title: "Sentry.Godot SDK partial class not found",
+        messageFormat: "'Sentry.Godot.SentrySdk' could not be resolved — the hand-written partial class required by the generator is missing",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterSourceOutput(context.CompilationProvider, Execute);
@@ -32,6 +50,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         var upstreamSdk = compilation.GetTypeByMetadataName("Sentry.SentrySdk");
         if (upstreamSdk is null)
         {
+            context.ReportDiagnostic(Diagnostic.Create(UpstreamSdkNotFound, Location.None));
             return;
         }
 
@@ -39,6 +58,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         var godotSdk = compilation.GetTypeByMetadataName("Sentry.Godot.SentrySdk");
         if (godotSdk is null)
         {
+            context.ReportDiagnostic(Diagnostic.Create(GodotSdkNotFound, Location.None));
             return;
         }
 
