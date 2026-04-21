@@ -104,10 +104,10 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             switch (member)
             {
                 case IPropertySymbol property:
-                    GenerateProperty(sb, property, indent, "static ", "Sentry.SentrySdk", isTopLevel: true);
+                    GenerateProperty(sb, property, indent, "static ", "global::Sentry.SentrySdk", isTopLevel: true);
                     break;
                 case IMethodSymbol method when method.MethodKind == MethodKind.Ordinary:
-                    GenerateMethod(sb, method, indent, "static ", "Sentry.SentrySdk");
+                    GenerateMethod(sb, method, indent, "static ", "global::Sentry.SentrySdk");
                     break;
             }
         }
@@ -128,7 +128,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                 continue;
             }
 
-            var qualifier = $"Sentry.SentrySdk.{outerProperty.Name}";
+            var qualifier = $"global::Sentry.SentrySdk.{outerProperty.Name}";
 
             sb.AppendLine();
             AppendXmlDoc(sb, nestedType, indent);
@@ -289,7 +289,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
     private static string FormatType(ITypeSymbol type)
     {
         var format = new SymbolDisplayFormat(
-            globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+            globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
             typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
             genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
             miscellaneousOptions:
