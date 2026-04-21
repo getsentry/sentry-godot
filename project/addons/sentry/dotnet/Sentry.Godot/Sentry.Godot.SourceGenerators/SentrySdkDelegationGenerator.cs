@@ -111,6 +111,19 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                 continue;
             }
 
+            // Find the outer static property that exposes this nested type.
+            var outerProperty = sourceType.GetMembers()
+                .OfType<IPropertySymbol>()
+                .FirstOrDefault(p => p.IsStatic
+                    && p.DeclaredAccessibility == Accessibility.Public
+                    && SymbolEqualityComparer.Default.Equals(p.Type, nestedType));
+            if (outerProperty is null)
+            {
+                continue;
+            }
+
+            var qualifier = $"Sentry.SentrySdk.{outerProperty.Name}";
+
             sb.AppendLine();
             AppendXmlDoc(sb, nestedType, indent);
             sb.AppendLine($"{indent}public sealed class {nested.Value}");
@@ -133,7 +146,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                     sb.AppendLine($"{indent}    public {returnType} {nestedProp.Name}");
                     sb.AppendLine($"{indent}    {{");
                     sb.AppendLine($"{indent}        [DebuggerStepThrough]");
-                    sb.AppendLine($"{indent}        get => Sentry.SentrySdk.Experimental.{nestedProp.Name};");
+                    sb.AppendLine($"{indent}        get => {qualifier}.{nestedProp.Name};");
                     sb.AppendLine($"{indent}    }}");
                 }
             }
@@ -146,11 +159,11 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         StringBuilder sb, IPropertySymbol property, string indent)
     {
         // Properties whose type is a nested wrapper get a static instance of our wrapper type.
-        if (NestedWrapperTypes.ContainsKey(property.Type.Name))
+        if (NestedWrapperTypes.TryGetValue(property.Type.Name, out var wrapperName))
         {
             sb.AppendLine();
             AppendXmlDoc(sb, property, indent);
-            sb.AppendLine($"{indent}public static {property.Type.Name} Experimental {{ get; }} = new();");
+            sb.AppendLine($"{indent}public static {wrapperName} {property.Name} {{ get; }} = new();");
             return;
         }
 
