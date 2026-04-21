@@ -4,7 +4,7 @@
 
 ### Features
 
-- Add C# (.NET) support ([#629](https://github.com/getsentry/sentry-godot/pull/629))
+- *Experimental*: Add C# (.NET) support ([#629](https://github.com/getsentry/sentry-godot/pull/629))
 
 ### Improvements
 
