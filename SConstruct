@@ -175,6 +175,7 @@ sources += Glob("src/sentry/*.cpp")
 sources += Glob("src/sentry/logging/*.cpp")
 sources += Glob("src/sentry/processing/*.cpp")
 sources += Glob("src/sentry/util/*.cpp")
+sources += Glob("src/sentry/dotnet/*.cpp")
 
 # Backend-specific sources.
 if internal_sdk == SDK.NATIVE:

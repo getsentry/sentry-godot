@@ -3,3 +3,12 @@ repos:
     rev: f9a52e87b6cdcb01b0a62b8611d9ba9f2dad0067 # v19.1.7
     hooks:
       - id: clang-format
+        exclude: \.(cs)$
+
+  - repo: local
+    hooks:
+      - id: dotnet-format
+        name: dotnet-format
+        language: system
+        entry: dotnet format "project/Sentry demo project.sln" --include
+        types_or: [c#]

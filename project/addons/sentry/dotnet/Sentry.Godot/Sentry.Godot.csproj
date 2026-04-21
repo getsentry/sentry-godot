@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GodotProjectDir>$(MSBuildProjectDirectory)</GodotProjectDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Sentry" Version="6.2.0" />
+  </ItemGroup>
+</Project>

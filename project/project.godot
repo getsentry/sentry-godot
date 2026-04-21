@@ -14,7 +14,7 @@ config/name="Sentry demo project"
 config/version="1.6.0"
 run/main_scene="uid://cqiowj0jydds1"
 run/main_loop_type="ProjectMainLoop"
-config/features=PackedStringArray("4.5")
+config/features=PackedStringArray("4.5", "C#")
 run/flush_stdout_on_print=true
 config/icon="uid://djdyhgbcdue6n"
 
@@ -31,6 +31,10 @@ window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=1
+
+[dotnet]
+
+project/assembly_name="Sentry demo project"
 
 [editor_plugins]
 

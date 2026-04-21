@@ -4,12 +4,14 @@
 #include "sentry/common_defs.h"
 #include "sentry/contexts.h"
 #include "sentry/disabled/disabled_sdk.h"
+#include "sentry/dotnet/csharp_interop.h"
 #include "sentry/godot_singletons.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
+#include "sentry/util/library_path.h"
 #include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
@@ -180,6 +182,9 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 			}
 			OS::get_singleton()->add_logger(godot_logger);
 		}
+
+		// Signal .NET layer to initialize.
+		sentry::dotnet::init();
 	}
 }
 
@@ -393,6 +398,17 @@ void SentrySDK::_demo_helper_crash_app() {
 }
 
 void SentrySDK::prepare_and_auto_initialize() {
+	// Set library path env var before .NET runtime starts.
+	// C# reads this to register DllImportResolver for interop.
+	OS::get_singleton()->set_environment("SENTRY_GODOT_LIB_PATH",
+			sentry::util::get_gdextension_library_path());
+
+	// Signal editor vs. game context to the managed [ModuleInitializer] via environment variable.
+	// This is used by the managed code to skip initialization in the Godot editor process.
+	// Always write, even "0", because F5-play child process inherits this from the editor.
+	OS::get_singleton()->set_environment("SENTRY_GODOT_EDITOR_HINT",
+			Engine::get_singleton()->is_editor_hint() ? "1" : "0");
+
 	// Create platform-specific SDK backend (replaces the default DisabledSDK).
 #ifdef SDK_NATIVE
 	internal_sdk = std::make_unique<sentry::native::NativeSDK>();

@@ -1,10 +1,12 @@
 #include "sentry_godot_logger.h"
 
+#include "sentry/dotnet/csharp_interop.h"
 #include "sentry/logging/print.h"
 #include "sentry/logging/state.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/util/hash.h"
+#include "sentry/util/text.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
@@ -44,7 +46,12 @@ public:
 };
 
 bool _get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) {
-	if (p_file.is_empty()) {
+	// Don't fetch C# context - fails to load and leads to errors.
+	if (p_file.is_empty() || sentry::util::ends_with_nocase_ascii(p_file, ".cs")) {
+		return false;
+	}
+
+	if (!ResourceLoader::get_singleton()->exists(p_file)) {
 		return false;
 	}
 
@@ -287,6 +294,21 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 		const TypedArray<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!SentrySDK::get_singleton()) {
 		return;
+	}
+
+	// Forward C# exceptions to the .NET layer for capture.
+	if (sentry::util::ends_with_nocase_ascii(p_file, ".cs")) {
+		sentry::dotnet::handle_logger_error(p_file, p_code);
+		return;
+	} else if (p_file.is_empty()) {
+		// File can be empty in MonoVM - use heuristic to detect C# errors.
+		for (int i = 0; i < p_script_backtraces.size(); i++) {
+			const Ref<ScriptBacktrace> &backtrace = p_script_backtraces[i];
+			if (backtrace->get_language_name() == "C#" && backtrace->get_frame_count() > 0) {
+				sentry::dotnet::handle_logger_error(p_file, p_code);
+				return;
+			}
+		}
 	}
 
 	static thread_local uint32_t num_entries = 0;

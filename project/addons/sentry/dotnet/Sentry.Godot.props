@@ -1,0 +1,15 @@
+<!--
+  Sentry SDK for Godot - .NET integration
+
+  Add the following line to your .csproj to enable:
+    <Import Project="addons/sentry/dotnet/Sentry.Godot.props" />
+
+  TODO: Auto-include this file in the user's project.
+-->
+<Project>
+  <!-- Use the source project and exclude its files from the main build -->
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)Sentry.Godot/Sentry.Godot.csproj')">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)Sentry.Godot/Sentry.Godot.csproj" />
+    <Compile Remove="$(MSBuildThisFileDirectory)Sentry.Godot/**/*.cs" />
+  </ItemGroup>
+</Project>

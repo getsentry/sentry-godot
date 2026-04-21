@@ -11,6 +11,7 @@ Sentry SDK for Godot Engine can be built for Windows x86_64, Linux x86_64, macOS
 - CMake -- to build sentry-native SDK
 - clang-format & pre-commit -- for style checks
 - Android Studio -- to build supporting library for Android
+- .NET SDK 8.0 or later -- to build the .NET layer
 
 On Windows, if you have `scoop` installed, you can easily install most of the required packages with the following command:
 ```
@@ -118,9 +119,11 @@ npm test               # Run tests
 ## Project Structure
 
 - `src/` -- Godot extension source code
+- `src/sentry/dotnet/` -- C++ side of the .NET interop
 - `modules/` -- various submodules, such as `godot-cpp` and other SDKs like `sentry-native`
 - `project/` -- example Godot project
 - `project/addons/sentry/` -- where build artifacts are placed
+- `project/addons/sentry/dotnet/` -- the .NET layer with Sentry.Godot library and integration glue
 - `project/test/` -- unit tests
 - `test_web/` -- Playwright-based web/WASM test infrastructure
 - `scripts/` -- various scripts used mostly for maintenance
@@ -128,9 +131,40 @@ npm test               # Run tests
 - `doc_classes/` -- built-in Godot documentation (class reference)
 - `android_lib/` -- supporting library for Android, containing a Godot plugin that bridges the Sentry GDExtension with the native Sentry Android SDK.
 
+## Initialization Flow
+
+Sentry for Godot consists of two layers: a native GDExtension and a managed C# library (loaded only in Godot's .NET edition with C# scripts). Initialization can be triggered from either layer. The diagram below shows the three expected initialization scenarios; dashed steps are reached only when managed .NET assemblies are loaded.
+
+**Scenario A: Automatic Initialization** (Auto Init setting)
+
+```mermaid
+flowchart LR
+    A1["Native auto-inits early"] --> A2["C# assembly loads"] --> A3["C# auto-inits, syncing options from native"]
+    classDef dashed stroke-dasharray: 5 5
+    class A2,A3 dashed
+```
+
+**Scenario B: Initialized manually from GDScript**
+
+```mermaid
+flowchart LR
+    B1["GDScript calls init"] --> B2["GDScript config callback"] --> B3["Native inits"] --> B4["C# inits, syncing options from native"]
+    classDef dashed stroke-dasharray: 5 5
+    class B4 dashed
+```
+
+**Scenario C: Initialized manually from C#**
+
+```mermaid
+flowchart LR
+    C1["C# calls init"] --> C2["C# config callback, syncing defaults from native"] --> C3["Native inits, syncing options from C# layer"] --> C4["C# inits"]
+    classDef dashed stroke-dasharray: 5 5
+    class C2,C4 dashed
+```
+
 ## Formatting Code
 
-Please run `clang-format` before submitting a PR to adhere to our code style. You can also install [pre-commit](https://pre-commit.com/) hooks for automatic formatting on commit:
+Please run `clang-format` before submitting a PR to adhere to our code style. C# files are formatted with `dotnet format` instead. Both run via [pre-commit](https://pre-commit.com/) hooks for automatic formatting on commit:
 ```sh
 pre-commit install
 ```
