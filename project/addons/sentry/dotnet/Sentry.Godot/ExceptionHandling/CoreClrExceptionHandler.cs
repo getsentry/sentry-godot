@@ -89,13 +89,13 @@ internal class FirstChanceExceptionPool : IDisposable
 
         lock (_pendingLock)
         {
-            if (!_pending.TryGetValue(osThreadId, out var p))
+            if (!_pending.TryGetValue(osThreadId, out var queue))
             {
-                p = [];
-                _pending[osThreadId] = p;
+                queue = [];
+                _pending[osThreadId] = queue;
                 _sentinel = new ThreadCleanupSentinel(osThreadId, this);
             }
-            p.Enqueue(e.Exception);
+            queue.Enqueue(e.Exception);
         }
     }
 
@@ -251,10 +251,9 @@ internal class CoreClrExceptionHandler : EventListener
             var sourceThreadId = eventData.OSThreadId;
             string? bridgeName = eventData.Payload?[2] is string methodName ? GetGodotBridgeName(methodName) : null;
 
-            _throwCounts.TryGetValue(sourceThreadId, out var throwCount);
+            _throwCounts.Remove(sourceThreadId, out var throwCount);
             var drainCount = Math.Max(throwCount, 1);
             Exception? matched = _exceptionsPool.DrainPending(sourceThreadId, drainCount);
-            _throwCounts[sourceThreadId] = 0;
 
             if (matched is not null && bridgeName is not null)
             {
