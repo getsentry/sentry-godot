@@ -158,7 +158,12 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         StringBuilder sb, IPropertySymbol property, string indent,
         string staticModifier, string qualifier, bool isTopLevel)
     {
-        var attrs = GetForwardedAttributes(property);
+        sb.AppendLine();
+        AppendXmlDoc(sb, property, indent);
+        foreach (var attr in GetForwardedAttributes(property))
+        {
+            sb.AppendLine($"{indent}{attr}");
+        }
 
         // Top-level properties whose type is a public nested type of the upstream SDK
         // get a static instance of our auto-discovered wrapper type.
@@ -167,25 +172,12 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             && nestedType.DeclaredAccessibility == Accessibility.Public
             && SymbolEqualityComparer.Default.Equals(nestedType.ContainingType, property.ContainingType))
         {
-            sb.AppendLine();
-            AppendXmlDoc(sb, property, indent);
-            foreach (var attr in attrs)
-            {
-                sb.AppendLine($"{indent}{attr}");
-            }
             sb.AppendLine($"{indent}public {staticModifier}{nestedType.Name} {property.Name} {{ get; }} = new();");
             return;
         }
 
         var returnType = FormatType(property.Type);
         var accessor = $"{qualifier}.{property.Name}";
-
-        sb.AppendLine();
-        AppendXmlDoc(sb, property, indent);
-        foreach (var attr in attrs)
-        {
-            sb.AppendLine($"{indent}{attr}");
-        }
 
         if (property.IsReadOnly)
         {
@@ -253,7 +245,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
 
             if (param.HasExplicitDefaultValue)
             {
-                paramStr += $" = {FormatDefaultValue(param)}";
+                paramStr += $" = {FormatConstantValue(param.Type, param.ExplicitDefaultValue)}";
             }
 
             parameters.Add(paramStr);
@@ -291,15 +283,6 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                 SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
         return type.ToDisplayString(format);
-    }
-
-    private static string FormatDefaultValue(IParameterSymbol param)
-    {
-        if (!param.HasExplicitDefaultValue)
-        {
-            return "";
-        }
-        return FormatConstantValue(param.Type, param.ExplicitDefaultValue);
     }
 
     private static string FormatConstantValue(ITypeSymbol? type, object? value)
@@ -463,19 +446,18 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
 
         // The raw XML is wrapped in <member name="...">...</member>.
         // Extract the inner content.
-        var lines = xml!.Split('\n');
-        foreach (var rawLine in lines)
+        foreach (var rawLine in xml!.Split('\n'))
         {
-            var line = rawLine.TrimEnd('\r');
-            if (line.TrimStart().StartsWith("<member") || line.TrimStart().StartsWith("</member"))
+            var trimmed = rawLine.TrimEnd('\r').TrimStart();
+            if (trimmed.Length == 0)
             {
                 continue;
             }
-            if (string.IsNullOrWhiteSpace(line))
+            if (trimmed.StartsWith("<member") || trimmed.StartsWith("</member"))
             {
                 continue;
             }
-            sb.AppendLine($"{indent}/// {line.TrimStart()}");
+            sb.AppendLine($"{indent}/// {trimmed}");
         }
     }
 }
