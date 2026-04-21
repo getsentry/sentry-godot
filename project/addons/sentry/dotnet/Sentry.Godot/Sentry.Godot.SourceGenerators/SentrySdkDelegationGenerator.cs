@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -282,7 +284,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                     return $"{FormatType(enumType)}.{field.Name}";
                 }
             }
-            return $"({FormatType(enumType)}){value}";
+            return $"({FormatType(enumType)}){FormatPrimitiveLiteral(value)}";
         }
 
         if (value is string s)
@@ -295,7 +297,28 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             return b ? "true" : "false";
         }
 
-        return value.ToString()!;
+        if (value is char c)
+        {
+            return $"'{c}'";
+        }
+
+        return FormatPrimitiveLiteral(value);
+    }
+
+    private static string FormatPrimitiveLiteral(object value)
+    {
+        var inv = CultureInfo.InvariantCulture;
+        return value switch
+        {
+            float f => f.ToString("R", inv) + "F",
+            double d => d.ToString("R", inv) + "D",
+            decimal m => m.ToString(inv) + "M",
+            long l => l.ToString(inv) + "L",
+            ulong ul => ul.ToString(inv) + "UL",
+            uint u => u.ToString(inv) + "U",
+            IFormattable fmt => fmt.ToString(null, inv),
+            _ => value.ToString()!,
+        };
     }
 
     private static string GetTypeParameterConstraints(ITypeParameterSymbol tp)
