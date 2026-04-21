@@ -12,10 +12,11 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
     /// <summary>
     /// Methods to skip — these have custom implementations in the hand-written partial class.
     /// </summary>
-    private static readonly HashSet<string> SkipMethods = new()
-    {
+    private static readonly HashSet<string> SkipMethods =
+    [
         "Init",
-    };
+        "Close"
+    ];
 
     /// <summary>
     /// Types whose members should be recursively generated as nested classes.
