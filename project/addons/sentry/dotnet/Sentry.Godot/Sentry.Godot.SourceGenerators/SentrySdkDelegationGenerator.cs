@@ -144,6 +144,8 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         StringBuilder sb, IPropertySymbol property, string indent,
         string staticModifier, string qualifier, bool isTopLevel)
     {
+        var attrs = GetForwardedAttributes(property);
+
         // Top-level properties whose type is a public nested type of the upstream SDK
         // get a static instance of our auto-discovered wrapper type.
         if (isTopLevel
@@ -153,6 +155,10 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         {
             sb.AppendLine();
             AppendXmlDoc(sb, property, indent);
+            foreach (var attr in attrs)
+            {
+                sb.AppendLine($"{indent}{attr}");
+            }
             sb.AppendLine($"{indent}public {staticModifier}{nestedType.Name} {property.Name} {{ get; }} = new();");
             return;
         }
@@ -162,6 +168,10 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
 
         sb.AppendLine();
         AppendXmlDoc(sb, property, indent);
+        foreach (var attr in attrs)
+        {
+            sb.AppendLine($"{indent}{attr}");
+        }
 
         if (property.IsReadOnly)
         {
@@ -241,7 +251,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             ? " " + string.Join(" ", typeConstraints)
             : "";
 
-        var attrs = GetMethodAttributes(method);
+        var attrs = GetForwardedAttributes(method);
 
         sb.AppendLine();
         AppendXmlDoc(sb, method, indent);
@@ -391,10 +401,10 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         "System.Runtime.CompilerServices.CompilerGeneratedAttribute",
     ];
 
-    private static List<string> GetMethodAttributes(IMethodSymbol method)
+    private static List<string> GetForwardedAttributes(ISymbol symbol)
     {
         var attrs = new List<string>();
-        foreach (var attr in method.GetAttributes())
+        foreach (var attr in symbol.GetAttributes())
         {
             var name = attr.AttributeClass?.ToDisplayString();
             if (name is null || SkipAttributes.Contains(name))
