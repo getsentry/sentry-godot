@@ -99,6 +99,8 @@ internal class FirstChanceExceptionPool : IDisposable
         }
     }
 
+    private bool _warnedAboutUnderfill = false;
+
     public Exception? DrainPending(long threadId, int drainCount)
     {
         lock (_pendingLock)
@@ -107,7 +109,7 @@ internal class FirstChanceExceptionPool : IDisposable
             {
                 // This handler is not designed to wait for FCE as "underfilling" is highly unlikely to happen.
                 // But if it does, clear the queue to avoid stale data.
-                GodotLog.Error($"Could not match this exception to the current thread state for thread {threadId}. Found {queue?.Count ?? 0} pending exception(s), but expected at least {drainCount}. The exception will be skipped to avoid using stale data.");
+                GodotLog.ErrorOnce(ref _warnedAboutUnderfill, $"Could not match this exception to the current thread state for thread {threadId}. Found {queue?.Count ?? 0} pending exception(s), but expected at least {drainCount}. The exception will be skipped to avoid using stale data.");
                 queue?.Clear();
                 return null;
             }
