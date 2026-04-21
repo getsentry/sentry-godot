@@ -116,6 +116,14 @@ npm run clean          # Clean build artifacts
 npm test               # Run tests
 ```
 
+### .NET Layer
+
+The .NET layer (`project/addons/sentry/dotnet/Sentry.Godot/`) auto-generates a passthrough delegation from `Sentry.Godot.SentrySdk` to the upstream `Sentry.SentrySdk` via a Roslyn source generator. To inspect the generated file, run from the project directory:
+
+```sh
+dotnet build /p:EmitCompilerGeneratedFiles=true /p:CompilerGeneratedFilesOutputPath=/tmp/gen
+```
+
 ## Project Structure
 
 - `src/` -- Godot extension source code
