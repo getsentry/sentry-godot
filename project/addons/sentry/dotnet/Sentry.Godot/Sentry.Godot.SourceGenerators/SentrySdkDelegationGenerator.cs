@@ -125,7 +125,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             var qualifier = $"global::Sentry.SentrySdk.{outerProperty.Name}";
 
             sb.AppendLine();
-            AppendXmlDoc(sb, nestedType, indent);
+            AppendInheritDoc(sb, nestedType, indent);
             sb.AppendLine($"{indent}public sealed class {nestedType.Name}");
             sb.AppendLine($"{indent}{{");
             sb.AppendLine($"{indent}    internal {nestedType.Name}()");
@@ -159,7 +159,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         string staticModifier, string qualifier, bool isTopLevel)
     {
         sb.AppendLine();
-        AppendXmlDoc(sb, property, indent);
+        AppendInheritDoc(sb, property, indent);
         foreach (var attr in GetForwardedAttributes(property))
         {
             sb.AppendLine($"{indent}{attr}");
@@ -260,7 +260,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         var attrs = GetForwardedAttributes(method);
 
         sb.AppendLine();
-        AppendXmlDoc(sb, method, indent);
+        AppendInheritDoc(sb, method, indent);
         foreach (var attr in attrs)
         {
             sb.AppendLine($"{indent}{attr}");
@@ -445,28 +445,17 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             : $"[{typeName}]";
     }
 
-    private static void AppendXmlDoc(StringBuilder sb, ISymbol symbol, string indent)
+    // We can't emit the upstream doc text literally: GetDocumentationCommentXml()
+    // returns empty for types loaded via a metadata reference. But the doc-comment
+    // ID is always available, so cref-based inheritance lets any Roslyn-aware
+    // tooling resolve the target's docs from the referenced package's .xml file.
+    private static void AppendInheritDoc(StringBuilder sb, ISymbol symbol, string indent)
     {
-        var xml = symbol.GetDocumentationCommentXml();
-        if (string.IsNullOrWhiteSpace(xml))
+        var docId = symbol.GetDocumentationCommentId();
+        if (docId is null)
         {
             return;
         }
-
-        // The raw XML is wrapped in <member name="...">...</member>.
-        // Extract the inner content.
-        foreach (var rawLine in xml!.Split('\n'))
-        {
-            var trimmed = rawLine.TrimEnd('\r').TrimStart();
-            if (trimmed.Length == 0)
-            {
-                continue;
-            }
-            if (trimmed.StartsWith("<member") || trimmed.StartsWith("</member"))
-            {
-                continue;
-            }
-            sb.AppendLine($"{indent}/// {trimmed}");
-        }
+        sb.AppendLine($"{indent}/// <inheritdoc cref=\"{docId}\"/>");
     }
 }
