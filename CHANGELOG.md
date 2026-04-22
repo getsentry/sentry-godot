@@ -5,6 +5,7 @@
 ### Features
 
 - *Experimental*: Add C# (.NET) support ([#629](https://github.com/getsentry/sentry-godot/pull/629))
+  - Expose the full Sentry .NET SDK API on `Sentry.Godot.SentrySdk` ([#657](https://github.com/getsentry/sentry-godot/pull/657))
 
 ### Improvements
 
