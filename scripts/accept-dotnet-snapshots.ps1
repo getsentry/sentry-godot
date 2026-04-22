@@ -11,9 +11,14 @@ Push-Location $testDir
 try {
     Write-Host "Regenerating received snapshots..." -ForegroundColor Cyan
     dotnet test --nologo
+    $testExit = $LASTEXITCODE
 
     $received = @(Get-ChildItem -Filter "*.received.txt")
     if ($received.Count -eq 0) {
+        if ($testExit -ne 0) {
+            Write-Error "Tests failed without producing a snapshot — likely a compilation or runtime error unrelated to snapshot drift. See the output above."
+            exit $testExit
+        }
         Write-Host "No drift — nothing to promote." -ForegroundColor Green
         exit 0
     }
