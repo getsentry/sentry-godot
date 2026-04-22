@@ -17,6 +17,8 @@ public class SentrySdkDelegationGeneratorTests
     [Fact]
     public Task Run()
     {
+        var ct = TestContext.Current.CancellationToken;
+
         var source = """
             namespace Sentry.Godot;
             public static partial class SentrySdk { }
@@ -28,13 +30,13 @@ public class SentrySdkDelegationGeneratorTests
 
         var compilation = CSharpCompilation.Create(
             assemblyName: "Sentry.Godot.Test",
-            syntaxTrees: [CSharpSyntaxTree.ParseText(source)],
+            syntaxTrees: [CSharpSyntaxTree.ParseText(source, cancellationToken: ct)],
             references: references,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var driver = CSharpGeneratorDriver
             .Create(new SentrySdkDelegationGenerator())
-            .RunGenerators(compilation);
+            .RunGenerators(compilation, ct);
 
         var result = driver.GetRunResult().Results.Single();
         Assert.Null(result.Exception);
