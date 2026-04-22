@@ -405,7 +405,13 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         var inv = CultureInfo.InvariantCulture;
         return value switch
         {
+            float f when float.IsNaN(f) => "float.NaN",
+            float f when float.IsPositiveInfinity(f) => "float.PositiveInfinity",
+            float f when float.IsNegativeInfinity(f) => "float.NegativeInfinity",
             float f => f.ToString("R", inv) + "F",
+            double d when double.IsNaN(d) => "double.NaN",
+            double d when double.IsPositiveInfinity(d) => "double.PositiveInfinity",
+            double d when double.IsNegativeInfinity(d) => "double.NegativeInfinity",
             double d => d.ToString("R", inv) + "D",
             decimal m => m.ToString(inv) + "M",
             long l => l.ToString(inv) + "L",
