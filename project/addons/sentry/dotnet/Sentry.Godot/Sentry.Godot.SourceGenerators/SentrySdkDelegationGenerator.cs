@@ -430,7 +430,9 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         }
         else if (tp.HasReferenceTypeConstraint)
         {
-            parts.Add("class");
+            parts.Add(tp.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated
+                ? "class?"
+                : "class");
         }
         else if (tp.HasNotNullConstraint)
         {
