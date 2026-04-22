@@ -12,9 +12,4 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)Sentry.Godot/Sentry.Godot.csproj" />
     <Compile Remove="$(MSBuildThisFileDirectory)Sentry.Godot/**/*.cs" />
   </ItemGroup>
-
-  <!-- Test project is development-only; its .cs files would otherwise leak into the consuming project's compilation -->
-  <ItemGroup>
-    <Compile Remove="$(MSBuildThisFileDirectory)Sentry.Godot.SourceGenerators.Tests/**/*.cs" />
-  </ItemGroup>
 </Project>

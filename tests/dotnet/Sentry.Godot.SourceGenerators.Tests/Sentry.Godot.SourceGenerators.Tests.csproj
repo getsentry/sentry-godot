@@ -20,6 +20,6 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sentry.Godot\Sentry.Godot.SourceGenerators\Sentry.Godot.SourceGenerators.csproj" />
+    <ProjectReference Include="..\..\..\project\addons\sentry\dotnet\Sentry.Godot\Sentry.Godot.SourceGenerators\Sentry.Godot.SourceGenerators.csproj" />
   </ItemGroup>
 </Project>
