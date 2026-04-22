@@ -39,6 +39,14 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor UnsupportedMemberKind = new(
+        id: "SGSDK003",
+        title: "Unsupported upstream member kind",
+        messageFormat: "Public member '{0}' of kind {1} on '{2}' is not forwarded by the generator",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterSourceOutput(context.CompilationProvider, Execute);
@@ -73,7 +81,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         sb.AppendLine("public static partial class SentrySdk");
         sb.AppendLine("{");
 
-        GenerateMembers(sb, upstreamSdk, "    ");
+        GenerateMembers(context, sb, upstreamSdk, "    ");
 
         sb.AppendLine("}");
 
@@ -81,7 +89,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
     }
 
     private static void GenerateMembers(
-        StringBuilder sb, INamedTypeSymbol sourceType, string indent)
+        SourceProductionContext context, StringBuilder sb, INamedTypeSymbol sourceType, string indent)
     {
         var members = sourceType.GetMembers()
             .Where(m => m.DeclaredAccessibility == Accessibility.Public && m.IsStatic)
@@ -102,6 +110,9 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                     break;
                 case IMethodSymbol method when method.MethodKind == MethodKind.Ordinary:
                     GenerateMethod(sb, method, indent, "static ", "global::Sentry.SentrySdk");
+                    break;
+                default:
+                    ReportUnsupportedMember(context, member);
                     break;
             }
         }
@@ -147,11 +158,26 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                     case IMethodSymbol nestedMethod when nestedMethod.MethodKind == MethodKind.Ordinary:
                         GenerateMethod(sb, nestedMethod, $"{indent}    ", "", qualifier);
                         break;
+                    default:
+                        ReportUnsupportedMember(context, nestedMember);
+                        break;
                 }
             }
 
             sb.AppendLine($"{indent}}}");
         }
+    }
+
+    private static void ReportUnsupportedMember(SourceProductionContext context, ISymbol member)
+    {
+        // Skip accessors; they're represented via the parent property/event symbol.
+        if (member is IMethodSymbol { AssociatedSymbol: not null })
+        {
+            return;
+        }
+        context.ReportDiagnostic(Diagnostic.Create(
+            UnsupportedMemberKind, Location.None,
+            member.Name, member.Kind, member.ContainingType!.ToDisplayString()));
     }
 
     private static void GenerateProperty(
