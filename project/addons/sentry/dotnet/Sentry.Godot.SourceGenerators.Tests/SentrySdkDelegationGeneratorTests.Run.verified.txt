@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Sentry.Godot;
 
-public static partial class SentrySdk2
+public static partial class SentrySdk
 {
 
     /// <inheritdoc cref="M:Sentry.SentrySdk.AddBreadcrumb(System.String,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.String},Sentry.BreadcrumbLevel)"/>
