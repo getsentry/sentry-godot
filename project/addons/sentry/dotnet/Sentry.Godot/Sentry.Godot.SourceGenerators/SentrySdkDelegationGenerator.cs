@@ -415,13 +415,21 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
     {
         var parts = new List<string>();
 
-        if (tp.HasReferenceTypeConstraint)
+        if (tp.HasUnmanagedTypeConstraint)
+        {
+            parts.Add("unmanaged");
+        }
+        else if (tp.HasValueTypeConstraint)
+        {
+            parts.Add("struct");
+        }
+        else if (tp.HasReferenceTypeConstraint)
         {
             parts.Add("class");
         }
-        if (tp.HasValueTypeConstraint)
+        else if (tp.HasNotNullConstraint)
         {
-            parts.Add("struct");
+            parts.Add("notnull");
         }
         foreach (var constraint in tp.ConstraintTypes)
         {
