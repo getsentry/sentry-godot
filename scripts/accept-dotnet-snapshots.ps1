@@ -1,14 +1,11 @@
 #!/usr/bin/env pwsh
 
-# Regenerate and promote the .NET source-generator snapshot baseline.
-# Use when the generator output has intentionally changed (e.g. after a
-# Sentry NuGet bump): regenerates *.received.txt, moves it over *.verified.txt,
-# then re-runs the tests to confirm the promoted baseline matches.
+# Accept the drifted .NET source-generator snapshot as the new baseline.
+# Use after intentional changes (e.g. a Sentry NuGet bump).
 
 $PSNativeCommandUseErrorActionPreference = $false
 
-$scriptDir = Split-Path -Parent (Resolve-Path $MyInvocation.MyCommand.Path)
-$testDir = Join-Path $scriptDir "../tests/dotnet/Sentry.Godot.SourceGenerators.Tests"
+$testDir = Join-Path $PSScriptRoot "../tests/dotnet/Sentry.Godot.SourceGenerators.Tests"
 
 Push-Location $testDir
 try {
@@ -21,10 +18,10 @@ try {
         exit 0
     }
 
-    foreach ($f in $received) {
-        $dest = $f.FullName -replace "\.received\.txt$", ".verified.txt"
-        Write-Host "Promoting $($f.Name) -> $(Split-Path -Leaf $dest)" -ForegroundColor Cyan
-        Move-Item -Force $f.FullName $dest
+    foreach ($file in $received) {
+        $dest = $file.FullName -replace "\.received\.txt$", ".verified.txt"
+        Write-Host "Promoting $($file.Name) -> $(Split-Path -Leaf $dest)" -ForegroundColor Cyan
+        Move-Item -Force $file.FullName $dest
     }
 
     Write-Host "Confirming promoted baseline..." -ForegroundColor Cyan
