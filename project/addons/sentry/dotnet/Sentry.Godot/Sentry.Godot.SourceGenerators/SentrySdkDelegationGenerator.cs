@@ -389,7 +389,13 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         if (tc.Kind == TypedConstantKind.Array)
         {
             var items = tc.Values.Select(FormatTypedConstant);
-            return $"new[] {{ {string.Join(", ", items)} }}";
+            // Use the declared element type so empty arrays emit valid C#
+            // (`new[] { }` is CS0826) and so inference from `items` can't
+            // diverge from the attribute parameter's declared element type.
+            var elementType = tc.Type is IArrayTypeSymbol arrayType
+                ? FormatType(arrayType.ElementType)
+                : "object";
+            return $"new {elementType}[] {{ {string.Join(", ", items)} }}";
         }
 
         if (tc.Kind == TypedConstantKind.Type && tc.Value is ITypeSymbol typeValue)
