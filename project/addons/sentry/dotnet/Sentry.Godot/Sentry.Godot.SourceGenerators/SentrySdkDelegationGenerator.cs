@@ -212,6 +212,9 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         if (isTopLevel
             && property.Type is INamedTypeSymbol nestedType
             && nestedType.DeclaredAccessibility == Accessibility.Public
+            && nestedType.TypeKind == TypeKind.Class
+            && !nestedType.IsAbstract
+            && !nestedType.IsStatic
             && SymbolEqualityComparer.Default.Equals(nestedType.ContainingType, property.ContainingType))
         {
             sb.AppendLine($"{indent}public {staticModifier}{nestedType.Name} {property.Name} {{ get; }} = new();");
