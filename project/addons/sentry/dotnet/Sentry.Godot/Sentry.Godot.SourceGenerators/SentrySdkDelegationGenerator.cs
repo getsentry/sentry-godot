@@ -244,9 +244,8 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
     {
         var returnType = FormatType(method.ReturnType);
 
-        // Build type parameters.
-        var typeParams = "";
-        var typeConstraints = new List<string>();
+        var typeParams = ""; // e.g. "<T, U>" (empty for non-generic methods)
+        var typeConstraints = new List<string>(); // e.g. ["where T : struct", "where U : class, new()"]
         if (method.IsGenericMethod)
         {
             typeParams = "<" + string.Join(", ", method.TypeParameters.Select(tp => tp.Name)) + ">";
@@ -260,9 +259,8 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             }
         }
 
-        // Build parameter list.
-        var parameters = new List<string>();
-        var arguments = new List<string>();
+        var parameters = new List<string>(); // declaration strings (e.g. "out bool flag")
+        var arguments = new List<string>(); // call-site strings (e.g. "out flag")
         foreach (var param in method.Parameters)
         {
             var paramType = FormatType(param.Type);
@@ -307,7 +305,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             ? " " + string.Join(" ", typeConstraints)
             : "";
 
-        var attrs = GetForwardedAttributes(method);
+        var attrs = GetForwardedAttributes(method); // e.g. ["[Obsolete(...)]", "[EditorBrowsable(EditorBrowsableState.Never)]"]
 
         sb.AppendLine();
         AppendInheritDoc(sb, method, indent);
@@ -350,6 +348,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
 
         if (type is { TypeKind: TypeKind.Enum })
         {
+            // Match the integer value to a named member: e.g. 2 → "BreadcrumbLevel.Info".
             foreach (var member in type.GetMembers())
             {
                 if (member is IFieldSymbol field && field.HasConstantValue &&
@@ -358,6 +357,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                     return $"{FormatType(type)}.{field.Name}";
                 }
             }
+            // Fallback for [Flags] combinations or out-of-range casts: e.g. 3 → "(BreadcrumbLevel)3".
             return $"({FormatType(type)}){FormatPrimitiveLiteral(value)}";
         }
 
