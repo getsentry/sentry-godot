@@ -124,14 +124,6 @@ The .NET layer (`project/addons/sentry/dotnet/Sentry.Godot/`) auto-generates a p
 dotnet build /p:EmitCompilerGeneratedFiles=true /p:CompilerGeneratedFilesOutputPath=/tmp/gen
 ```
 
-The generator is covered by a snapshot test in `project/addons/sentry/dotnet/Sentry.Godot.SourceGenerators.Tests/`. Run it with:
-
-```sh
-dotnet test project/addons/sentry/dotnet/Sentry.Godot.SourceGenerators.Tests
-```
-
-When the generator output changes intentionally, accept the new baseline by renaming the `*.received.cs` file Verify writes next to the existing `*.verified.cs` file.
-
 ## Project Structure
 
 - `src/` -- Godot extension source code
@@ -233,6 +225,21 @@ Some tests require isolation, meaning they need specific options to be set and m
 For the Android platform, you can also run supporting Android library tests:
 ```bash
 ./gradlew test
+```
+
+### .NET Tests
+
+The Roslyn source generator that produces the `Sentry.Godot.SentrySdk` facade is covered by a snapshot test in `tests/dotnet/Sentry.Godot.SourceGenerators.Tests/`. Run it with:
+
+```sh
+dotnet test tests/dotnet/Sentry.Godot.SourceGenerators.Tests
+```
+
+When the generator output changes intentionally, accept the new baseline by renaming the `*.received.txt` file Verify writes next to the existing `*.verified.txt` file:
+
+```sh
+mv tests/dotnet/Sentry.Godot.SourceGenerators.Tests/SentrySdkDelegationGeneratorTests.Run.received.txt \
+   tests/dotnet/Sentry.Godot.SourceGenerators.Tests/SentrySdkDelegationGeneratorTests.Run.verified.txt
 ```
 
 ### Web Tests
