@@ -53,13 +53,14 @@ jobs:
               echo ''
               echo "### Review and accept"
               echo ''
-              echo "1. Inspect the diff below and confirm the change is intentional."
-              echo "2. Promote the received file over the verified one and commit it alongside the change that caused the drift:"
+              echo "1. Inspect the diff below; confirm the change is intentional."
+              echo "2. Check out the branch locally and run the promote helper, which regenerates the snapshot, moves it over the verified baseline, and re-runs the tests to confirm:"
               echo ''
               echo '   ```sh'
-              echo "   mv tests/dotnet/Sentry.Godot.SourceGenerators.Tests/$received \\"
-              echo "      tests/dotnet/Sentry.Godot.SourceGenerators.Tests/$verified"
+              echo "   pwsh scripts/accept-dotnet-snapshots.ps1"
               echo '   ```'
+              echo ''
+              echo "3. Commit the updated \`$verified\` alongside the change that caused the drift."
               echo ''
               echo "The raw \`$received\` is also attached to this run as the \`snapshot-diffs\` artifact."
               echo ''
@@ -69,7 +70,7 @@ jobs:
               diff -u "$verified" "$received" || true
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
-            echo "::error file=tests/dotnet/Sentry.Godot.SourceGenerators.Tests/$verified::Generated SentrySdk forwarders drifted. Review the diff in the Job Summary; if intentional, promote $received over $verified and commit."
+            echo "::error file=tests/dotnet/Sentry.Godot.SourceGenerators.Tests/$verified::Generated SentrySdk forwarders drifted. Review the diff in the Job Summary; if intentional, run scripts/accept-dotnet-snapshots.ps1 and commit the updated $verified."
           done
 
       - name: Upload snapshot diffs on failure

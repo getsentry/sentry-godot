@@ -235,12 +235,13 @@ The Roslyn source generator that produces the `Sentry.Godot.SentrySdk` facade is
 dotnet test tests/dotnet/Sentry.Godot.SourceGenerators.Tests
 ```
 
-When the generator output changes intentionally, accept the new baseline by renaming the `*.received.txt` file Verify writes next to the existing `*.verified.txt` file:
+When the generator output changes intentionally, accept the new baseline with:
 
 ```sh
-mv tests/dotnet/Sentry.Godot.SourceGenerators.Tests/SentrySdkDelegationGeneratorTests.Run.received.txt \
-   tests/dotnet/Sentry.Godot.SourceGenerators.Tests/SentrySdkDelegationGeneratorTests.Run.verified.txt
+pwsh scripts/accept-dotnet-snapshots.ps1
 ```
+
+The script regenerates the `*.received.txt` file, promotes it over the existing `*.verified.txt`, and re-runs the tests to confirm the promoted baseline matches. Commit the updated `*.verified.txt` alongside the change that caused the drift.
 
 ### Web Tests
 
