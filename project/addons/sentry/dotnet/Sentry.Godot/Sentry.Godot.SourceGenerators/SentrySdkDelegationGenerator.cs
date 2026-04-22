@@ -47,6 +47,14 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor UnsupportedNestedTypeShape = new(
+        id: "SGSDK004",
+        title: "Unsupported nested type shape",
+        messageFormat: "Nested type '{0}' on '{1}' cannot be auto-wrapped; the generator expects a concrete, non-static class",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterSourceOutput(context.CompilationProvider, Execute);
@@ -130,6 +138,14 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                     && SymbolEqualityComparer.Default.Equals(p.Type, nestedType));
             if (outerProperty is null)
             {
+                continue;
+            }
+
+            if (nestedType.TypeKind != TypeKind.Class || nestedType.IsAbstract || nestedType.IsStatic)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    UnsupportedNestedTypeShape, Location.None,
+                    nestedType.Name, sourceType.ToDisplayString()));
                 continue;
             }
 
