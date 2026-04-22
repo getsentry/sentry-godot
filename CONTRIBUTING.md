@@ -124,6 +124,14 @@ The .NET layer (`project/addons/sentry/dotnet/Sentry.Godot/`) auto-generates a p
 dotnet build /p:EmitCompilerGeneratedFiles=true /p:CompilerGeneratedFilesOutputPath=/tmp/gen
 ```
 
+The generator is covered by a snapshot test in `project/addons/sentry/dotnet/Sentry.Godot.SourceGenerators.Tests/`. Run it with:
+
+```sh
+dotnet test project/addons/sentry/dotnet/Sentry.Godot.SourceGenerators.Tests
+```
+
+When the generator output changes intentionally, accept the new baseline by renaming the `*.received.cs` file Verify writes next to the existing `*.verified.cs` file.
+
 ## Project Structure
 
 - `src/` -- Godot extension source code
