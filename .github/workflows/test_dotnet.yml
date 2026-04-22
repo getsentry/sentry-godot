@@ -1,0 +1,60 @@
+name: 🧪 .NET tests
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  # Verify tries to launch a GUI diff tool on failure; headless runners need it off.
+  DiffEngine_Disabled: true
+
+jobs:
+  sourcegen-tests:
+    name: Source generator tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          submodules: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Run tests
+        working-directory: project/addons/sentry/dotnet/Sentry.Godot.SourceGenerators.Tests
+        run: dotnet test --nologo
+
+      - name: Upload snapshot diffs on failure
+        if: failure()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: snapshot-diffs
+          path: project/addons/sentry/dotnet/Sentry.Godot.SourceGenerators.Tests/*.received.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
+  demo-compile:
+    name: Demo project compiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          submodules: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build demo project
+        run: dotnet build "project/Sentry demo project.csproj" --nologo
