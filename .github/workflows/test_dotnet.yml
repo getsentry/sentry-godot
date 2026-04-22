@@ -46,13 +46,30 @@ jobs:
             diff -u "$verified" "$received" || true
             echo "::endgroup::"
             {
-              echo "## Snapshot drift: \`$received\`"
+              echo "## Generated SentrySdk forwarders drifted"
+              echo ''
+              echo "The source generator produced output that no longer matches the committed baseline \`$verified\`."
+              echo "This usually means the upstream \`Sentry\` NuGet package changed its public API surface, or the generator itself was modified."
+              echo ''
+              echo "### Review and accept"
+              echo ''
+              echo "1. Inspect the diff below and confirm the change is intentional."
+              echo "2. Promote the received file over the verified one and commit it alongside the change that caused the drift:"
+              echo ''
+              echo '   ```sh'
+              echo "   mv tests/dotnet/Sentry.Godot.SourceGenerators.Tests/$received \\"
+              echo "      tests/dotnet/Sentry.Godot.SourceGenerators.Tests/$verified"
+              echo '   ```'
+              echo ''
+              echo "The raw \`$received\` is also attached to this run as the \`snapshot-diffs\` artifact."
+              echo ''
+              echo "### Diff"
               echo ''
               echo '```diff'
               diff -u "$verified" "$received" || true
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
-            echo "::error file=tests/dotnet/Sentry.Godot.SourceGenerators.Tests/$verified::Snapshot drift vs $received — see Job Summary for full diff"
+            echo "::error file=tests/dotnet/Sentry.Godot.SourceGenerators.Tests/$verified::Generated SentrySdk forwarders drifted. Review the diff in the Job Summary; if intentional, promote $received over $verified and commit."
           done
 
       - name: Upload snapshot diffs on failure
