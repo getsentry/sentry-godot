@@ -48,27 +48,23 @@ jobs:
             {
               echo "## Generated SentrySdk forwarders drifted"
               echo ''
-              echo "The source generator produced output that no longer matches the committed baseline \`$verified\`."
-              echo "This usually means the upstream \`Sentry\` NuGet package changed its public API surface, or the generator itself was modified."
-              echo ''
-              echo "### Review and accept"
-              echo ''
-              echo "1. Inspect the diff below; confirm the change is intentional."
-              echo "2. Check out the branch locally and run the promote helper, which regenerates the snapshot, moves it over the verified baseline, and re-runs the tests to confirm:"
-              echo ''
-              echo '   ```sh'
-              echo "   pwsh scripts/accept-dotnet-snapshots.ps1"
-              echo '   ```'
-              echo ''
-              echo "3. Commit the updated \`$verified\` alongside the change that caused the drift."
-              echo ''
-              echo "The raw \`$received\` is also attached to this run as the \`snapshot-diffs\` artifact."
-              echo ''
-              echo "### Diff"
+              echo "The source generator emitted output that no longer matches \`$verified\`, the committed snapshot of its expected API. This usually happens after the upstream \`Sentry\` NuGet package bumps, or if the generator itself was edited."
               echo ''
               echo '```diff'
               diff -u "$verified" "$received" || true
               echo '```'
+              echo ''
+              echo "### Accept the new baseline"
+              echo ''
+              echo "If the diff above is expected, check out the branch locally and run:"
+              echo ''
+              echo '```sh'
+              echo "pwsh scripts/accept-dotnet-snapshots.ps1"
+              echo '```'
+              echo ''
+              echo "The script regenerates the snapshot, promotes it over \`$verified\`, and re-runs the tests to confirm. Commit the updated \`$verified\` with the change that caused the drift."
+              echo ''
+              echo "The raw snapshot produced by this run is attached as the \`snapshot-diffs\` artifact if you'd rather inspect it without a local checkout."
             } >> "$GITHUB_STEP_SUMMARY"
             echo "::error file=tests/dotnet/Sentry.Godot.SourceGenerators.Tests/$verified::Generated SentrySdk forwarders drifted. Review the diff in the Job Summary; if intentional, run scripts/accept-dotnet-snapshots.ps1 and commit the updated $verified."
           done
