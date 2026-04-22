@@ -32,7 +32,7 @@ jobs:
         working-directory: tests/dotnet/Sentry.Godot.SourceGenerators.Tests
         run: dotnet test --nologo
 
-      - name: Print snapshot diff on failure
+      - name: Report snapshot drift on failure
         if: failure()
         working-directory: tests/dotnet/Sentry.Godot.SourceGenerators.Tests
         run: |
@@ -42,9 +42,6 @@ jobs:
             if [ ! -f "$verified" ]; then
               continue
             fi
-            echo "::group::Unified diff — $verified vs $received"
-            diff -u "$verified" "$received" || true
-            echo "::endgroup::"
             {
               echo "## Generated SentrySdk forwarders drifted"
               echo ''
