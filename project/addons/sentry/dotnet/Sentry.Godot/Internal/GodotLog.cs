@@ -44,4 +44,14 @@ internal static class GodotLog
             NativeBridge.Log(SentryLevel.Error, message);
         }
     }
+
+    internal static void ErrorOnce(ref bool printed, string message)
+    {
+        if (printed || !ShouldPrint(SentryLevel.Error))
+        {
+            return;
+        }
+        printed = true;
+        NativeBridge.Log(SentryLevel.Error, message);
+    }
 }
