@@ -12,4 +12,12 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)Sentry.Godot/Sentry.Godot.csproj" />
     <Compile Remove="$(MSBuildThisFileDirectory)Sentry.Godot/**/*.cs" />
   </ItemGroup>
+
+  <!-- Analyzers that guide correct use of the Sentry SDK -->
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)Sentry.Godot.Analyzers/Sentry.Godot.Analyzers.csproj')">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)Sentry.Godot.Analyzers/Sentry.Godot.Analyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+    <Compile Remove="$(MSBuildThisFileDirectory)Sentry.Godot.Analyzers/**/*.cs" />
+  </ItemGroup>
 </Project>
