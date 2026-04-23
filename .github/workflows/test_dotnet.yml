@@ -75,6 +75,25 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  analyzer-tests:
+    name: Analyzer tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          submodules: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Run tests
+        working-directory: tests/dotnet/Sentry.Godot.Analyzers.Tests
+        run: dotnet test
+
   demo-compile:
     name: Demo project compiles
     runs-on: ubuntu-latest
