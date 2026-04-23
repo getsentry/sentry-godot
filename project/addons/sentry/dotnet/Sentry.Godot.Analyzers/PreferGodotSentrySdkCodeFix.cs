@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using System.Composition;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -26,17 +25,14 @@ public sealed class PreferGodotSentrySdkCodeFix : CodeFixProvider
         {
             return;
         }
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-        {
-            return;
-        }
 
         foreach (var diagnostic in context.Diagnostics)
         {
-            var diagnosticNode = root.FindNode(diagnostic.Location.SourceSpan);
-            var target = FindReplacementTarget(diagnosticNode, semanticModel, context.CancellationToken);
-            if (target is null)
+            // The analyzer reports on a member-access (e.g. 'Sentry.SentrySdk.Init').
+            // Replace just its qualifier so the member name is preserved. Bare
+            // identifier targets (e.g. under 'using static Sentry.SentrySdk') have
+            // no qualifier to swap — we skip offering a fix in that case.
+            if (root.FindNode(diagnostic.Location.SourceSpan) is not MemberAccessExpressionSyntax memberAccess)
             {
                 continue;
             }
@@ -44,70 +40,24 @@ public sealed class PreferGodotSentrySdkCodeFix : CodeFixProvider
             context.RegisterCodeFix(
                 CodeAction.Create(
                     title: "Use Sentry.Godot.SentrySdk",
-                    createChangedDocument: _ => Task.FromResult(ReplaceWithGodotSdk(context.Document, root, target)),
+                    createChangedDocument: _ => Task.FromResult(
+                        ReplaceWithGodotSdk(context.Document, root, memberAccess.Expression)),
                     equivalenceKey: nameof(PreferGodotSentrySdkCodeFix)),
                 diagnostic);
         }
     }
 
-    /// <summary>
-    /// Returns the syntax node that denotes the 'Sentry.SentrySdk' type reference,
-    /// so the code fix can swap just that part for 'Sentry.Godot.SentrySdk' without
-    /// disturbing the surrounding expression.
-    /// </summary>
-    private static SyntaxNode? FindReplacementTarget(SyntaxNode node, SemanticModel model, CancellationToken ct)
+    private static Document ReplaceWithGodotSdk(Document document, SyntaxNode root, ExpressionSyntax target)
     {
-        switch (node)
-        {
-            case MemberAccessExpressionSyntax memberAccess:
-                // nameof(Sentry.SentrySdk): the whole access IS the type reference.
-                if (model.GetSymbolInfo(memberAccess, ct).Symbol is INamedTypeSymbol)
-                {
-                    return memberAccess;
-                }
-                // Else the access is a member call; replace only its qualifier.
-                return memberAccess.Expression;
-
-            case IdentifierNameSyntax identifier:
-                // typeof(Sentry.SentrySdk) etc.: identifier sits inside a QualifiedName;
-                // replace the whole QualifiedName so we don't end up with "Sentry.Sentry.Godot.SentrySdk".
-                if (identifier.Parent is QualifiedNameSyntax qualified && qualified.Right == identifier)
-                {
-                    return qualified;
-                }
-                return identifier;
-
-            default:
-                return null;
-        }
-    }
-
-    private static Document ReplaceWithGodotSdk(Document document, SyntaxNode root, SyntaxNode target)
-    {
-        // Target lives in either a type slot (QualifiedNameSyntax, or a bare
-        // identifier inside typeof/QualifiedName) or an expression slot (a
-        // MemberAccessExpressionSyntax, or the Expression of one). Pick the
-        // replacement syntax kind that matches the parent slot.
-        var isTypeSlot = target switch
-        {
-            QualifiedNameSyntax => true,
-            IdentifierNameSyntax { Parent: not MemberAccessExpressionSyntax } => true,
-            _ => false,
-        };
-
-        // Preserve a leftmost alias qualifier (e.g. 'global::') if present,
-        // so 'global::Sentry.SentrySdk.X' rewrites to 'global::Sentry.Godot.SentrySdk.X'.
+        // Preserve a leftmost alias qualifier (e.g. 'global::') so
+        // 'global::Sentry.SentrySdk.X' rewrites to 'global::Sentry.Godot.SentrySdk.X'.
         var alias = GetLeftmostAlias(target);
         var qualifiedName = alias is null
             ? "Sentry.Godot.SentrySdk"
             : $"{alias}::Sentry.Godot.SentrySdk";
 
-        SyntaxNode replacement = isTypeSlot
-            ? SyntaxFactory.ParseName(qualifiedName)
-            : SyntaxFactory.ParseExpression(qualifiedName);
-        replacement = replacement.WithTriviaFrom(target);
-        var newRoot = root.ReplaceNode(target, replacement);
-        return document.WithSyntaxRoot(newRoot);
+        var replacement = SyntaxFactory.ParseExpression(qualifiedName).WithTriviaFrom(target);
+        return document.WithSyntaxRoot(root.ReplaceNode(target, replacement));
     }
 
     private static string? GetLeftmostAlias(SyntaxNode target)

@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Sentry.Godot.Analyzers;
 
@@ -28,83 +29,47 @@ public sealed class PreferGodotSentrySdkAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(AnalyzeMemberAccess, SyntaxKind.SimpleMemberAccessExpression);
-        context.RegisterSyntaxNodeAction(AnalyzeIdentifier, SyntaxKind.IdentifierName);
+        context.RegisterCompilationStartAction(OnCompilationStart);
     }
 
-    private static void AnalyzeMemberAccess(SyntaxNodeAnalysisContext context)
+    private static void OnCompilationStart(CompilationStartAnalysisContext context)
     {
-        var memberAccess = (MemberAccessExpressionSyntax)context.Node;
-
-        // Syntactic fast path: the access is only relevant if 'SentrySdk' appears
-        // as either this access's own name (type reference, e.g. 'Sentry.SentrySdk')
-        // or the rightmost name on the expression side (member call, e.g. 'SentrySdk.Init').
-        if (memberAccess.Name.Identifier.Text != "SentrySdk"
-            && GetRightmostName(memberAccess.Expression) != "SentrySdk")
+        // Resolve once per compilation; skip analysis entirely when the Sentry
+        // package isn't referenced.
+        var sentrySdkType = context.Compilation.GetTypeByMetadataName("Sentry.SentrySdk");
+        if (sentrySdkType is null)
         {
             return;
         }
 
-        var symbol = context.SemanticModel.GetSymbolInfo(memberAccess).Symbol;
-        if (symbol is null)
-        {
-            return;
-        }
-
-        // X.SentrySdk (type reference): skip if wrapped by an outer member access
-        // — the outer access carries the real member call and will be flagged.
-        if (symbol is INamedTypeSymbol typeSymbol && IsUpstreamSentrySdk(typeSymbol))
-        {
-            if (memberAccess.Parent is MemberAccessExpressionSyntax parent && parent.Expression == memberAccess)
-            {
-                return;
-            }
-            context.ReportDiagnostic(Diagnostic.Create(Rule, memberAccess.GetLocation()));
-            return;
-        }
-
-        // X.Y where Y is a static member of Sentry.SentrySdk.
-        if (symbol.ContainingType is { } containingType && IsUpstreamSentrySdk(containingType))
-        {
-            context.ReportDiagnostic(Diagnostic.Create(Rule, memberAccess.GetLocation()));
-        }
+        context.RegisterOperationAction(
+            ctx => AnalyzeOperation(ctx, sentrySdkType),
+            OperationKind.Invocation,
+            OperationKind.PropertyReference,
+            OperationKind.FieldReference,
+            OperationKind.EventReference,
+            OperationKind.MethodReference);
     }
 
-    private static void AnalyzeIdentifier(SyntaxNodeAnalysisContext context)
+    private static void AnalyzeOperation(OperationAnalysisContext context, INamedTypeSymbol sentrySdkType)
     {
-        var identifier = (IdentifierNameSyntax)context.Node;
-        if (identifier.Identifier.Text != "SentrySdk")
+        var containingType = context.Operation switch
         {
-            return;
-        }
-
-        // Member-access cases are covered by AnalyzeMemberAccess.
-        if (identifier.Parent is MemberAccessExpressionSyntax)
-        {
-            return;
-        }
-
-        if (context.SemanticModel.GetSymbolInfo(identifier).Symbol is INamedTypeSymbol typeSymbol
-            && IsUpstreamSentrySdk(typeSymbol))
-        {
-            context.ReportDiagnostic(Diagnostic.Create(Rule, identifier.GetLocation()));
-        }
-    }
-
-    private static bool IsUpstreamSentrySdk(INamedTypeSymbol type)
-        => type is
-        {
-            Name: "SentrySdk",
-            ContainingType: null,
-            ContainingNamespace: { Name: "Sentry", ContainingNamespace.IsGlobalNamespace: true }
+            IInvocationOperation invocation => invocation.TargetMethod.ContainingType,
+            IMemberReferenceOperation memberRef => memberRef.Member.ContainingType,
+            _ => null,
         };
 
-    private static string? GetRightmostName(ExpressionSyntax expression) => expression switch
-    {
-        IdentifierNameSyntax identifier => identifier.Identifier.Text,
-        MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.Text,
-        AliasQualifiedNameSyntax alias => alias.Name.Identifier.Text,
-        QualifiedNameSyntax qualified => qualified.Right.Identifier.Text,
-        _ => null,
-    };
+        if (!SymbolEqualityComparer.Default.Equals(containingType, sentrySdkType))
+        {
+            return;
+        }
+
+        // Report on the member-access (e.g. 'Sentry.SentrySdk.Init') rather than the
+        // full invocation syntax, which also contains the argument list.
+        var syntax = context.Operation.Syntax is InvocationExpressionSyntax invocationSyntax
+            ? invocationSyntax.Expression
+            : context.Operation.Syntax;
+        context.ReportDiagnostic(Diagnostic.Create(Rule, syntax.GetLocation()));
+    }
 }
