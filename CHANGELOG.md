@@ -7,6 +7,12 @@
 - *Experimental*: Add C# (.NET) support ([#629](https://github.com/getsentry/sentry-godot/pull/629), [#644](https://github.com/getsentry/sentry-godot/pull/644))
   - Expose the full Sentry .NET SDK API on `Sentry.Godot.SentrySdk` ([#657](https://github.com/getsentry/sentry-godot/pull/657))
 
+### Dependencies
+
+- Bump Sentry Android from v8.39.1 to v8.40.0 ([#660](https://github.com/getsentry/sentry-godot/pull/660))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8400)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.39.1...8.40.0)
+
 ## 1.6.0
 
 ### Improvements
