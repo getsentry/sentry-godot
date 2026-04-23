@@ -1,29 +1,173 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using Sentry.Godot.Internal;
 
 namespace Sentry.Godot.ExceptionHandling;
 
 /// <summary>
+/// Collects managed exceptions via FirstChanceException and keeps them in a
+/// per-thread FIFO queue for later correlation with CLR catch events.
+/// </summary>
+/// <remarks>
+/// Thread-safety: OnFirstChanceException runs on the throwing thread;
+/// DrainPending() runs on the listener's thread and guarded by lock.
+///
+/// Capture scope: consumers wrap their capture call in EnterCaptureScope().
+/// Any FirstChanceException that fires on the same thread inside that scope is
+/// dropped, preventing feedback loops if the capture path itself throws.
+/// </remarks>
+internal class FirstChanceExceptionPool : IDisposable
+{
+    // Prevents collecting exceptions from listener thread if it throws.
+    [ThreadStatic]
+    private static bool _inCaptureScope;
+
+    internal sealed class CaptureScopeToken : IDisposable
+    {
+        public void Dispose() => _inCaptureScope = false;
+    }
+
+    private static readonly CaptureScopeToken _statelessCaptureToken = new();
+
+    public static IDisposable EnterCaptureScope()
+    {
+        _inCaptureScope = true;
+        return _statelessCaptureToken; // safe to reuse
+    }
+
+    private readonly object _pendingLock = new();
+    private readonly Dictionary<long, Queue<Exception>> _pending = []; // OSThreadId => pending exceptions
+
+    public FirstChanceExceptionPool()
+    {
+        AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
+    }
+
+    public void Dispose()
+    {
+        AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
+    }
+
+    internal event Action<long>? ThreadDied;
+
+    private sealed class ThreadCleanupSentinel(long threadId, FirstChanceExceptionPool owner)
+    {
+        private readonly long _threadId = threadId;
+        private readonly GCHandle _ownerHandle = GCHandle.Alloc(owner, GCHandleType.Weak);
+
+        ~ThreadCleanupSentinel()
+        {
+            try
+            {
+                if (_ownerHandle.Target is FirstChanceExceptionPool pool)
+                {
+                    pool.ThreadDied?.Invoke(_threadId);
+                }
+            }
+            finally
+            {
+                _ownerHandle.Free();
+            }
+        }
+    }
+
+    [ThreadStatic]
+    private static ThreadCleanupSentinel? _sentinel;
+
+    private void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e)
+    {
+        if (_inCaptureScope)
+        {
+            return;
+        }
+
+        long osThreadId = NativeThreadId.GetCurrentThreadId();
+
+        lock (_pendingLock)
+        {
+            if (!_pending.TryGetValue(osThreadId, out var queue))
+            {
+                queue = [];
+                _pending[osThreadId] = queue;
+                _sentinel = new ThreadCleanupSentinel(osThreadId, this);
+            }
+            queue.Enqueue(e.Exception);
+        }
+    }
+
+    private bool _warnedAboutUnderfill = false;
+
+    public Exception? DrainPending(long threadId, int drainCount)
+    {
+        lock (_pendingLock)
+        {
+            if (!_pending.TryGetValue(threadId, out var queue) || queue.Count < drainCount)
+            {
+                // This handler is not designed to wait for FCE as "underfilling" is highly unlikely to happen.
+                // But if it does, clear the queue to avoid stale data.
+                GodotLog.ErrorOnce(ref _warnedAboutUnderfill, $"Could not match this exception to the current thread state for thread {threadId}. Found {queue?.Count ?? 0} pending exception(s), but expected at least {drainCount}. The exception will be skipped to avoid using stale data.");
+                queue?.Clear();
+                return null;
+            }
+
+            Exception matched;
+            do
+            {
+                matched = queue.Dequeue();
+            } while (--drainCount > 0);
+
+            // Leaves the queue in place even when emptied; cleanup is handled by RemoveThreads().
+
+            return matched;
+        }
+    }
+
+    /// <remarks>
+    /// Called by CoreClrExceptionHandler to clean up dead threads from the pending list.
+    /// </remarks>
+    internal void RemoveThreads(IReadOnlyList<long> deadThreads)
+    {
+        lock (_pendingLock)
+        {
+            for (int i = 0; i < deadThreads.Count; i++)
+            {
+                _pending.Remove(deadThreads[i]);
+            }
+        }
+    }
+}
+
+/// <summary>
 /// Detects "unhandled" C# exceptions in Godot by combining FirstChanceException
-/// with .NET runtime EventSource events. When ExceptionCatchStart reports a Godot
-/// bridge method as the catcher, the exception is classified as unhandled by user
-/// code and sent to Sentry.
+/// with .NET runtime EventSource events. When ExceptionCatchStart reports a
+/// Godot bridge method as the catcher, the exception is classified as unhandled
+/// by user code and sent to Sentry.
+/// </summary>
+/// <remarks>
+/// Key insight: FirstChanceException runs on the throwing thread, but
+/// EventListener callbacks run on a dedicated background thread. We correlate
+/// via OS thread ID. A FIFO queue per thread is needed because multiple
+/// FirstChanceException events fire synchronously before the EventListener
+/// processes any ExceptionCatchStart(250).
+///
+/// ExceptionThrown(80) is emitted before FirstChanceException, but their
+/// arrival order on the listener side is racey, so we must not depend on it.
+/// The only reliable ordering here is that both arrive before
+/// ExceptionCatchStart(250).
 ///
 /// See: https://learn.microsoft.com/en-us/dotnet/fundamentals/diagnostics/runtime-exception-events
-///
-/// Key insight: FirstChanceException runs on the throwing thread, but EventListener
-/// callbacks run on a dedicated background thread. We correlate via OS thread ID.
-/// A FIFO queue per thread is needed because multiple FirstChanceException events
-/// fire synchronously before the EventListener processes any ExceptionCatchStart.
-/// </summary>
+/// </remarks>
 internal class CoreClrExceptionHandler : EventListener
 {
+    private const int ExceptionThrown_EventId = 80;
     private const int ExceptionCatchStart_EventId = 250;
-    private const long ExceptionKeyword = 0x8000;
-    private const int MaxQueueExceptionsPerThread = 32;
+    private const long ExceptionKeyword = 0x8000; // bitmask to target exception events
+
+    private readonly FirstChanceExceptionPool _exceptionsPool = new();
 
     // Godot bridge catch sites: IL signature prefix -> display name.
     // ExceptionCatchStart passes MethodName containing full IL signature, e.g.:
@@ -36,51 +180,24 @@ internal class CoreClrExceptionHandler : EventListener
         ("Godot.GD::", "Godot.GD"),
     };
 
-    // Single lock guards both _threadExceptions and the per-thread queues.
-    private readonly object _lock = new();
-    private readonly Dictionary<long, Queue<(DateTime Timestamp, Exception Exception)>> _threadExceptions = [];
+    private readonly Dictionary<long, int> _throwCounts = []; // tid => pre-catch throw count; only listener thread
 
-    // Prevents re-entrancy when CaptureException itself throws (e.g. serialization).
-    // ThreadStatic so the EventListener thread and throwing thread are guarded independently.
-    [ThreadStatic]
-    private static bool _isProcessing;
+    private static readonly TimeSpan CleanupInterval = TimeSpan.FromSeconds(2);
+
+    // Bring out your dead!
+    private readonly ConcurrentQueue<long> _deadThreadsIncoming = new();
+    private readonly List<long> _deadThreadsPendingCleanup = [];
+    private DateTime _lastCleanup = DateTime.UtcNow;
 
     public CoreClrExceptionHandler()
     {
-        AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
+        _exceptionsPool.ThreadDied += _deadThreadsIncoming.Enqueue;
     }
 
-    private void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e)
+    public override void Dispose()
     {
-        if (_isProcessing)
-        {
-            return;
-        }
-
-        try
-        {
-            _isProcessing = true;
-
-            long osThreadId = NativeThreadId.GetCurrentThreadId();
-            var timestamp = DateTime.UtcNow;
-            lock (_lock)
-            {
-                if (!_threadExceptions.TryGetValue(osThreadId, out var queue))
-                {
-                    queue = [];
-                    _threadExceptions[osThreadId] = queue;
-                }
-                queue.Enqueue((timestamp, e.Exception));
-                if (queue.Count > MaxQueueExceptionsPerThread)
-                {
-                    queue.Dequeue();
-                }
-            }
-        }
-        finally
-        {
-            _isProcessing = false;
-        }
+        _exceptionsPool.Dispose();
+        base.Dispose();
     }
 
     protected override void OnEventSourceCreated(EventSource eventSource)
@@ -88,64 +205,95 @@ internal class CoreClrExceptionHandler : EventListener
         if (eventSource.Name == "Microsoft-Windows-DotNETRuntime")
         {
             EnableEvents(eventSource, EventLevel.Informational, (EventKeywords)ExceptionKeyword);
-            GodotLog.Debug("Subscribed to Microsoft-Windows-DotNETRuntime exception events.");
+            GodotLog.Debug("Subscribed to Microsoft-Windows-DotNETRuntime events.");
         }
     }
 
     protected override void OnEventWritten(EventWrittenEventArgs eventData)
     {
-        if (eventData.EventId == ExceptionCatchStart_EventId)
+        if (eventData.OSThreadId == NativeThreadId.GetCurrentThreadId())
         {
-            HandleExceptionCatchStart(eventData);
+            // Ignore events from the listener thread to avoid recursions.
+            return;
+        }
+
+        switch (eventData.EventId)
+        {
+            case ExceptionThrown_EventId:
+                HandleExceptionThrown(eventData);
+                break;
+            case ExceptionCatchStart_EventId:
+                HandleExceptionCatchStart(eventData);
+                CleanupDeadThreads();
+                break;
         }
     }
 
+    /// <remarks>
+    /// Runs on the listener thread.
+    /// </remarks>
+    private void HandleExceptionThrown(EventWrittenEventArgs eventData)
+    {
+        var tid = eventData.OSThreadId;
+
+        // Track how many exceptions have been thrown before catch.
+        _throwCounts.TryGetValue(tid, out var count);
+        _throwCounts[tid] = count + 1;
+    }
+
+    /// <remarks>
+    /// Runs on the listener thread.
+    /// </remarks>
     private void HandleExceptionCatchStart(EventWrittenEventArgs eventData)
     {
-        var sourceOsTid = eventData.OSThreadId;
-        var catchTimestamp = eventData.TimeStamp;
-        string? bridgeName = eventData.Payload?[2] is string methodName ? GetGodotBridgeName(methodName) : null;
-
+        using var scopeGuard = FirstChanceExceptionPool.EnterCaptureScope();
         try
         {
-            _isProcessing = true;
+            var sourceThreadId = eventData.OSThreadId;
+            string? bridgeName = eventData.Payload?[2] is string methodName ? GetGodotBridgeName(methodName) : null;
 
-            Exception? matched = null;
-            int remainingInQueue = 0;
-
-            lock (_lock)
-            {
-                // Invariant: queues in _threadExceptions are always non-empty.
-                if (_threadExceptions.TryGetValue(sourceOsTid, out var queue))
-                {
-                    // Match most recent exception recorded on this thread at or before the catch event,
-                    // and remove it and any older entries from the queue.
-                    while (queue.Count > 0 && queue.Peek().Timestamp <= catchTimestamp)
-                    {
-                        matched = queue.Dequeue().Exception;
-                    }
-
-                    if (queue.Count == 0)
-                    {
-                        _threadExceptions.Remove(sourceOsTid);
-                    }
-
-                    remainingInQueue = queue.Count;
-                }
-            }
+            _throwCounts.Remove(sourceThreadId, out var throwCount);
+            var drainCount = Math.Max(throwCount, 1);
+            Exception? matched = _exceptionsPool.DrainPending(sourceThreadId, drainCount);
 
             if (matched is not null && bridgeName is not null)
             {
-                GodotLog.Debug($"Capturing .NET exception caught by {bridgeName} (queue={remainingInQueue}):\n   {matched.GetType().FullName}: \"{matched.Message}\"");
+                GodotLog.Debug($"Capturing .NET exception caught by {bridgeName}:\n   {matched.GetType().FullName}: \"{matched.Message}\"");
                 matched.SetSentryMechanism(bridgeName,
                         "This exception was caught by the Godot engine bridge error handler. The application continued running.",
                         handled: false);
                 Sentry.SentrySdk.CaptureException(matched);
             }
         }
-        finally
+        catch (Exception ex)
         {
-            _isProcessing = false;
+            GodotLog.Error("CoreClrExceptionHandler failed to capture exception due to: " + ex);
+        }
+    }
+
+    /// <remarks>
+    /// Dead threads observed this cycle are removed next cycle, so in-flight
+    /// events have time to drain.
+    /// </remarks>
+    private void CleanupDeadThreads()
+    {
+        if (_lastCleanup + CleanupInterval > DateTime.UtcNow)
+        {
+            return;
+        }
+
+        _lastCleanup = DateTime.UtcNow;
+
+        _exceptionsPool.RemoveThreads(_deadThreadsPendingCleanup);
+        for (int i = 0; i < _deadThreadsPendingCleanup.Count; i++)
+        {
+            _throwCounts.Remove(_deadThreadsPendingCleanup[i]);
+        }
+        _deadThreadsPendingCleanup.Clear();
+
+        while (_deadThreadsIncoming.TryDequeue(out var deadTid))
+        {
+            _deadThreadsPendingCleanup.Add(deadTid);
         }
     }
 
@@ -173,11 +321,5 @@ internal class CoreClrExceptionHandler : EventListener
             }
         }
         return null;
-    }
-
-    public override void Dispose()
-    {
-        AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
-        base.Dispose();
     }
 }
