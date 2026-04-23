@@ -85,6 +85,7 @@ public sealed class PreferGodotSentrySdkAnalyzer : DiagnosticAnalyzer
         => type is
         {
             Name: "SentrySdk",
+            ContainingType: null,
             ContainingNamespace: { Name: "Sentry", ContainingNamespace.IsGlobalNamespace: true }
         };
 }

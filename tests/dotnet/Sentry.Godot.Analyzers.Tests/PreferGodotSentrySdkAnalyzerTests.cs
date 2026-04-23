@@ -59,4 +59,23 @@ public class PreferGodotSentrySdkAnalyzerTests
             void Bar() => System.Console.WriteLine("hi");
         }
         """);
+
+    // User-defined nested 'SentrySdk' inside the 'Sentry' namespace is not the
+    // upstream type — ContainingNamespace walks through containing types, so
+    // the namespace check alone isn't enough to discriminate top-level.
+    [Fact]
+    public Task NestedSentrySdkInSentryNamespace_NotFlagged() => RunAsync("""
+        namespace Sentry;
+        public class Outer
+        {
+            public class SentrySdk
+            {
+                public static void CaptureMessage(string message) { }
+            }
+        }
+        class Foo
+        {
+            void Bar() => Outer.SentrySdk.CaptureMessage("hi");
+        }
+        """);
 }
