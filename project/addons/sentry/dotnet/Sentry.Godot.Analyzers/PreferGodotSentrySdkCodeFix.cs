@@ -84,7 +84,18 @@ public sealed class PreferGodotSentrySdkCodeFix : CodeFixProvider
 
     private static Document ReplaceWithGodotSdk(Document document, SyntaxNode root, SyntaxNode target)
     {
-        SyntaxNode replacement = target is NameSyntax
+        // Target lives in either a type slot (QualifiedNameSyntax, or a bare
+        // identifier inside typeof/QualifiedName) or an expression slot (a
+        // MemberAccessExpressionSyntax, or the Expression of one). Pick the
+        // replacement syntax kind that matches the parent slot.
+        var isTypeSlot = target switch
+        {
+            QualifiedNameSyntax => true,
+            IdentifierNameSyntax { Parent: not MemberAccessExpressionSyntax } => true,
+            _ => false,
+        };
+
+        SyntaxNode replacement = isTypeSlot
             ? SyntaxFactory.ParseName("Sentry.Godot.SentrySdk")
             : SyntaxFactory.ParseExpression("Sentry.Godot.SentrySdk");
         replacement = replacement.WithTriviaFrom(target);
