@@ -35,6 +35,16 @@ public sealed class PreferGodotSentrySdkAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeMemberAccess(SyntaxNodeAnalysisContext context)
     {
         var memberAccess = (MemberAccessExpressionSyntax)context.Node;
+
+        // Syntactic fast path: the access is only relevant if 'SentrySdk' appears
+        // as either this access's own name (type reference, e.g. 'Sentry.SentrySdk')
+        // or the rightmost name on the expression side (member call, e.g. 'SentrySdk.Init').
+        if (memberAccess.Name.Identifier.Text != "SentrySdk"
+            && GetRightmostName(memberAccess.Expression) != "SentrySdk")
+        {
+            return;
+        }
+
         var symbol = context.SemanticModel.GetSymbolInfo(memberAccess).Symbol;
         if (symbol is null)
         {
@@ -88,4 +98,13 @@ public sealed class PreferGodotSentrySdkAnalyzer : DiagnosticAnalyzer
             ContainingType: null,
             ContainingNamespace: { Name: "Sentry", ContainingNamespace.IsGlobalNamespace: true }
         };
+
+    private static string? GetRightmostName(ExpressionSyntax expression) => expression switch
+    {
+        IdentifierNameSyntax identifier => identifier.Identifier.Text,
+        MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.Text,
+        AliasQualifiedNameSyntax alias => alias.Name.Identifier.Text,
+        QualifiedNameSyntax qualified => qualified.Right.Identifier.Text,
+        _ => null,
+    };
 }
