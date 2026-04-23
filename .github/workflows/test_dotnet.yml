@@ -30,7 +30,7 @@ jobs:
 
       - name: Run tests
         working-directory: tests/dotnet/Sentry.Godot.SourceGenerators.Tests
-        run: dotnet test --nologo
+        run: dotnet test
 
       - name: Report snapshot drift on failure
         if: failure()
