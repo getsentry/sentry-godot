@@ -5,7 +5,7 @@ using Sentry.Godot.Interop;
 
 namespace Sentry.Godot;
 
-public class SentrySdk
+public static partial class SentrySdk
 {
     static IDisposable? _exceptionHandler;
 
@@ -17,8 +17,6 @@ public class SentrySdk
     static bool _initializing;
 
     internal static SentryGodotOptions? CurrentOptions { get; private set; }
-
-    public static bool IsEnabled => Sentry.SentrySdk.IsEnabled;
 
     /// <summary>
     /// Initializes the .NET SDK with an optional configuration callback.
