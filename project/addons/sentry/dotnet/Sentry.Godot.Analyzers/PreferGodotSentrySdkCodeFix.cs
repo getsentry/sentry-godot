@@ -95,11 +95,40 @@ public sealed class PreferGodotSentrySdkCodeFix : CodeFixProvider
             _ => false,
         };
 
+        // Preserve a leftmost alias qualifier (e.g. 'global::') if present,
+        // so 'global::Sentry.SentrySdk.X' rewrites to 'global::Sentry.Godot.SentrySdk.X'.
+        var alias = GetLeftmostAlias(target);
+        var qualifiedName = alias is null
+            ? "Sentry.Godot.SentrySdk"
+            : $"{alias}::Sentry.Godot.SentrySdk";
+
         SyntaxNode replacement = isTypeSlot
-            ? SyntaxFactory.ParseName("Sentry.Godot.SentrySdk")
-            : SyntaxFactory.ParseExpression("Sentry.Godot.SentrySdk");
+            ? SyntaxFactory.ParseName(qualifiedName)
+            : SyntaxFactory.ParseExpression(qualifiedName);
         replacement = replacement.WithTriviaFrom(target);
         var newRoot = root.ReplaceNode(target, replacement);
         return document.WithSyntaxRoot(newRoot);
+    }
+
+    private static string? GetLeftmostAlias(SyntaxNode target)
+    {
+        var current = target;
+        while (current is not null)
+        {
+            switch (current)
+            {
+                case AliasQualifiedNameSyntax alias:
+                    return alias.Alias.Identifier.Text;
+                case MemberAccessExpressionSyntax memberAccess:
+                    current = memberAccess.Expression;
+                    break;
+                case QualifiedNameSyntax qualified:
+                    current = qualified.Left;
+                    break;
+                default:
+                    return null;
+            }
+        }
+        return null;
     }
 }

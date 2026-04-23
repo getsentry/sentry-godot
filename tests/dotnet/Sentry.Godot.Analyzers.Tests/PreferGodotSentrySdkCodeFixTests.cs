@@ -54,4 +54,19 @@ public class PreferGodotSentrySdkCodeFixTests
                 void Bar() => Sentry.Godot.SentrySdk.CaptureMessage("hi");
             }
             """);
+
+    [Fact]
+    public Task GlobalAliasQualifiedMemberCall_Rewritten() => RunAsync(
+        source: """
+            class Foo
+            {
+                void Bar() => {|SENTRYGD1001:global::Sentry.SentrySdk.CaptureMessage|}("hi");
+            }
+            """,
+        fixedSource: """
+            class Foo
+            {
+                void Bar() => global::Sentry.Godot.SentrySdk.CaptureMessage("hi");
+            }
+            """);
 }
