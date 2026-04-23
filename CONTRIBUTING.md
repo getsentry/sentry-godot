@@ -227,6 +227,22 @@ For the Android platform, you can also run supporting Android library tests:
 ./gradlew test
 ```
 
+### .NET Tests
+
+The Roslyn source generator that produces the `Sentry.Godot.SentrySdk` facade is covered by a snapshot test in `tests/dotnet/Sentry.Godot.SourceGenerators.Tests/`. Run it with:
+
+```sh
+dotnet test tests/dotnet/Sentry.Godot.SourceGenerators.Tests
+```
+
+When the generator output changes intentionally, accept the new baseline with:
+
+```sh
+pwsh scripts/accept-dotnet-snapshots.ps1
+```
+
+The script regenerates the `*.received.txt` file, promotes it over the existing `*.verified.txt`, and re-runs the tests to confirm the promoted baseline matches. Commit the updated `*.verified.txt` alongside the change that caused the drift.
+
 ### Web Tests
 
 Web tests run the same GDScript suite and isolated tests in a headless Chromium browser using Playwright. They require a Godot web export.

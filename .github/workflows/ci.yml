@@ -33,6 +33,10 @@ jobs:
     needs: build-extension
     uses: ./.github/workflows/unit_tests.yml
 
+  test-dotnet:
+    name: 🧪 .NET tests
+    uses: ./.github/workflows/test_dotnet.yml
+
   test-android:
     name: 🧪 Android tests
     needs: build-extension
@@ -73,7 +77,7 @@ jobs:
   # See issue: https://github.com/getsentry/sentry-godot/issues/41
   cleanup:
     name: 🗑️ Cleanup
-    needs: [package, unit-tests, test-android, test-web, test-integration, static-checks, test-js-bridge]
+    needs: [package, unit-tests, test-android, test-web, test-integration, static-checks, test-dotnet, test-js-bridge]
     runs-on: ubuntu-latest
     steps:
       - name: Delete sentry-godot-gdextension artifact

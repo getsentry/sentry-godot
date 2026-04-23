@@ -1,0 +1,94 @@
+name: 🧪 .NET tests
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  # Verify tries to launch a GUI diff tool on failure; headless runners need it off.
+  DiffEngine_Disabled: true
+
+jobs:
+  sourcegen-tests:
+    name: Source generator tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          submodules: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Run tests
+        working-directory: tests/dotnet/Sentry.Godot.SourceGenerators.Tests
+        run: dotnet test
+
+      - name: Report snapshot drift on failure
+        if: failure()
+        working-directory: tests/dotnet/Sentry.Godot.SourceGenerators.Tests
+        run: |
+          shopt -s nullglob
+          for received in *.received.txt; do
+            verified="${received%.received.txt}.verified.txt"
+            if [ ! -f "$verified" ]; then
+              continue
+            fi
+            {
+              echo "## Generated SentrySdk forwarders drifted"
+              echo ''
+              echo "The source generator emitted output that no longer matches \`$verified\`, the committed snapshot of its expected API. This usually happens after the upstream \`Sentry\` NuGet package bumps, or if the generator itself was edited."
+              echo ''
+              echo '```diff'
+              diff -u "$verified" "$received" || true
+              echo '```'
+              echo ''
+              echo "### Accept the new baseline"
+              echo ''
+              echo "If the diff above is expected, check out the branch locally and run:"
+              echo ''
+              echo '```sh'
+              echo "pwsh scripts/accept-dotnet-snapshots.ps1"
+              echo '```'
+              echo ''
+              echo "The script regenerates the snapshot, promotes it over \`$verified\`, and re-runs the tests to confirm. Commit the updated \`$verified\` with the change that caused the drift."
+              echo ''
+              echo "The raw snapshot produced by this run is attached as the \`snapshot-diffs\` artifact if you'd rather inspect it without a local checkout."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error file=tests/dotnet/Sentry.Godot.SourceGenerators.Tests/$verified::Generated SentrySdk forwarders drifted. Review the diff in the Job Summary; if intentional, run scripts/accept-dotnet-snapshots.ps1 and commit the updated $verified."
+          done
+
+      - name: Upload snapshot diffs on failure
+        if: failure()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: snapshot-diffs
+          path: tests/dotnet/Sentry.Godot.SourceGenerators.Tests/*.received.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
+  demo-compile:
+    name: Demo project compiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          submodules: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build demo project
+        run: dotnet build "project/Sentry demo project.csproj"
