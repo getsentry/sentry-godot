@@ -24,7 +24,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
     private const string DiagnosticCategory = "Sentry.Godot.SourceGenerators";
 
     private static readonly DiagnosticDescriptor UpstreamSdkNotFound = new(
-        id: "SGSDK001",
+        id: "SENTRYGD2001",
         title: "Upstream Sentry SDK type not found",
         messageFormat: "'Sentry.SentrySdk' could not be resolved — ensure the 'Sentry' NuGet package is referenced",
         category: DiagnosticCategory,
@@ -32,7 +32,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor GodotSdkNotFound = new(
-        id: "SGSDK002",
+        id: "SENTRYGD2002",
         title: "Sentry.Godot SDK partial class not found",
         messageFormat: "'Sentry.Godot.SentrySdk' could not be resolved — the hand-written partial class required by the generator is missing",
         category: DiagnosticCategory,
@@ -40,7 +40,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor UnsupportedMemberKind = new(
-        id: "SGSDK003",
+        id: "SENTRYGD2003",
         title: "Unsupported upstream member kind",
         messageFormat: "Public member '{0}' of kind {1} on '{2}' is not forwarded by the generator",
         category: DiagnosticCategory,
@@ -48,7 +48,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         isEnabledByDefault: true);
 
     private static readonly DiagnosticDescriptor UnsupportedNestedTypeShape = new(
-        id: "SGSDK004",
+        id: "SENTRYGD2004",
         title: "Unsupported nested type shape",
         messageFormat: "Nested type '{0}' on '{1}' cannot be auto-wrapped; the generator expects a concrete, non-static class",
         category: DiagnosticCategory,
