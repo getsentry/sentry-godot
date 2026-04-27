@@ -49,6 +49,15 @@ jobs:
           name: Sentry JavaScript
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
+  sentry-dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@26f565c05d0dd49f703d238706b775883037d76b # v3
+        with:
+          path: scripts/dotnet-version.ps1
+          name: Sentry .NET SDK
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
+
   gdunit4:
     runs-on: ubuntu-latest
     steps:
