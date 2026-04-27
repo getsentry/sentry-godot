@@ -1,0 +1,8 @@
+<!--
+  Shared package versions for Sentry .NET projects and tests.
+-->
+<Project>
+  <PropertyGroup>
+    <SentryVersion>6.2.0</SentryVersion>
+  </PropertyGroup>
+</Project>
