@@ -7,6 +7,7 @@
 - *Experimental*: Add C# (.NET) support ([#629](https://github.com/getsentry/sentry-godot/pull/629), [#644](https://github.com/getsentry/sentry-godot/pull/644))
   - Expose the full Sentry .NET SDK API on `Sentry.Godot.SentrySdk` ([#657](https://github.com/getsentry/sentry-godot/pull/657))
   - Add Roslyn analyzer that warns on direct `Sentry.SentrySdk` use and suggests `Sentry.Godot.SentrySdk` ([#663](https://github.com/getsentry/sentry-godot/pull/663))
+  - Alias bare `SentrySdk` to `Sentry.Godot.SentrySdk` to avoid ambiguity when consumer code also does `using Sentry;` ([#664](https://github.com/getsentry/sentry-godot/pull/664))
 
 ### Dependencies
 
