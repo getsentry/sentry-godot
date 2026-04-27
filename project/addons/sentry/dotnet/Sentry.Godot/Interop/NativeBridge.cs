@@ -156,7 +156,7 @@ internal static partial class NativeBridge
         opts.LoggerMessagesAsBreadcrumbs = data.logger_messages_as_breadcrumbs != 0;
         opts.LoggerEventMask = (SentryGodotOptions.GodotErrorMask)data.logger_event_mask;
         opts.LoggerBreadcrumbMask = (SentryGodotOptions.GodotErrorMask)data.logger_breadcrumb_mask;
-        opts.Experimental.EnableMetrics = data.enable_metrics != 0;
+        opts.EnableMetrics = data.enable_metrics != 0;
     }
 
     public static void ApplyNativeOptions(SentryGodotOptions opts)
@@ -327,7 +327,7 @@ internal static partial class NativeBridge
                 logger_messages_as_breadcrumbs = (byte)(opts.LoggerMessagesAsBreadcrumbs ? 1 : 0),
                 logger_event_mask = (int)opts.LoggerEventMask,
                 logger_breadcrumb_mask = (int)opts.LoggerBreadcrumbMask,
-                enable_metrics = (byte)(opts.Experimental.EnableMetrics ? 1 : 0),
+                enable_metrics = (byte)(opts.EnableMetrics ? 1 : 0),
             };
             csharp_interop_sdk_init(managed);
         }
