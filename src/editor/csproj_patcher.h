@@ -12,17 +12,13 @@ public:
 	enum class Status {
 		PATCH_NOT_NEEDED,
 		PATCHED,
-		ERR_UNCLOSED_COMMENT,
-		ERR_UNCLOSED_CDATA,
-		ERR_UNCLOSED_TAG,
-		ERR_NO_PROJECT_TAG,
-		ERR_CONTENT_EMPTY,
-		ERR_INVALID_PATH
+		ERROR
 	};
 
 	struct Result {
 		Status status;
 		std::vector<std::uint8_t> patched_content;
+		std::string_view error_message;
 	};
 
 public:

@@ -145,10 +145,10 @@ namespace sentry::editor {
 
 CsprojPatcher::Result CsprojPatcher::ensure_import(const std::string_view p_csproj_content, std::string_view p_import_path) {
 	if (p_csproj_content.empty()) {
-		return Result{ Status::ERR_CONTENT_EMPTY, {} };
+		return Result{ Status::ERROR, {}, "Csproj content is empty" };
 	}
 	if (p_import_path.empty()) {
-		return Result{ Status::ERR_INVALID_PATH, {} };
+		return Result{ Status::ERROR, {}, "Import path is empty" };
 	}
 
 	enum class State {
@@ -249,19 +249,24 @@ CsprojPatcher::Result CsprojPatcher::ensure_import(const std::string_view p_cspr
 	}
 
 	if (states.size() > 1) {
+		const char *msg;
 		switch (states.back()) {
-			case State::COMMENT:
-				return Result{ Status::ERR_UNCLOSED_COMMENT, {} };
-			case State::CDATA:
-				return Result{ Status::ERR_UNCLOSED_CDATA, {} };
+			case State::COMMENT: {
+				msg = "XML comment not closed";
+			} break;
+			case State::CDATA: {
+				msg = "XML CDATA not closed";
+			} break;
 			case State::TAG_OPEN:
 			case State::TAG_SINGLE_QUOTES:
-			case State::TAG_DOUBLE_QUOTES:
-				return Result{ Status::ERR_UNCLOSED_TAG, {} };
-			case State::NORMAL:
-				// Should not be possible since NORMAL is only pushed as first state.
-				break;
+			case State::TAG_DOUBLE_QUOTES: {
+				msg = "XML tag not closed";
+			} break;
+			default: {
+				msg = "XML parsing error";
+			} break;
 		}
+		return Result{ Status::ERROR, {}, msg };
 	}
 
 	if (import_found) {
@@ -269,7 +274,7 @@ CsprojPatcher::Result CsprojPatcher::ensure_import(const std::string_view p_cspr
 	}
 
 	if (project_closing_tag == SIZE_MAX) {
-		return Result{ Status::ERR_NO_PROJECT_TAG, {} };
+		return Result{ Status::ERROR, {}, "No <Project> tag found" };
 	}
 
 	std::vector<uint8_t> patched;
