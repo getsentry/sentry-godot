@@ -276,9 +276,6 @@ public static partial class SentrySdk
     public static void UnsetTag(string key)
         => global::Sentry.SentrySdk.UnsetTag(key);
 
-    /// <inheritdoc cref="P:Sentry.SentrySdk.Experimental"/>
-    public static ExperimentalSentrySdk Experimental { get; } = new();
-
     /// <inheritdoc cref="P:Sentry.SentrySdk.IsEnabled"/>
     public static bool IsEnabled { [DebuggerStepThrough] get => global::Sentry.SentrySdk.IsEnabled; }
 
@@ -291,14 +288,6 @@ public static partial class SentrySdk
     /// <inheritdoc cref="P:Sentry.SentrySdk.Logger"/>
     public static global::Sentry.SentryStructuredLogger Logger { [DebuggerStepThrough] get => global::Sentry.SentrySdk.Logger; }
 
-    /// <inheritdoc cref="T:Sentry.SentrySdk.ExperimentalSentrySdk"/>
-    public sealed class ExperimentalSentrySdk
-    {
-        internal ExperimentalSentrySdk()
-        {
-        }
-
-        /// <inheritdoc cref="P:Sentry.SentrySdk.ExperimentalSentrySdk.Metrics"/>
-        public global::Sentry.SentryMetricEmitter Metrics { [DebuggerStepThrough] get => global::Sentry.SentrySdk.Experimental.Metrics; }
-    }
+    /// <inheritdoc cref="P:Sentry.SentrySdk.Metrics"/>
+    public static global::Sentry.SentryMetricEmitter Metrics { [DebuggerStepThrough] get => global::Sentry.SentrySdk.Metrics; }
 }
