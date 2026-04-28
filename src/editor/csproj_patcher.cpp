@@ -30,7 +30,7 @@ std::string_view _read_tag_name(std::string_view p_tag, bool &r_is_closing_tag) 
 		r_is_closing_tag = true;
 		++i;
 	}
-	size_t start = i;
+	const size_t start = i;
 	while (i < p_tag.size() && !_is_whitespace(p_tag[i]) && p_tag[i] != '/' && p_tag[i] != '>') {
 		++i;
 	}
@@ -57,7 +57,7 @@ AttributeToken _read_next_attribute_token(std::string_view p_tag, size_t &r_idx)
 	}
 
 	// Read attribute name (until '=', whitespace, or end).
-	size_t name_start = r_idx;
+	const size_t name_start = r_idx;
 	while (!_is_end_of_tag(p_tag, r_idx) && !_is_whitespace(p_tag[r_idx]) && p_tag[r_idx] != '=') {
 		++r_idx;
 	}
@@ -86,7 +86,7 @@ AttributeToken _read_next_attribute_token(std::string_view p_tag, size_t &r_idx)
 	}
 
 	++r_idx; // skip opening quote
-	size_t value_start = r_idx;
+	const size_t value_start = r_idx;
 	while (r_idx < p_tag.size() && p_tag[r_idx] != quote) {
 		++r_idx;
 	}
@@ -151,6 +151,15 @@ CsprojPatcher::Result CsprojPatcher::ensure_import(const std::string_view p_cspr
 		return Result{ Status::ERR_INVALID_PATH, {} };
 	}
 
+	enum class State {
+		NORMAL,
+		COMMENT,
+		TAG_OPEN,
+		TAG_SINGLE_QUOTES,
+		TAG_DOUBLE_QUOTES,
+		CDATA,
+	};
+
 	std::vector<State> states;
 	states.push_back(State::NORMAL);
 
@@ -199,13 +208,13 @@ CsprojPatcher::Result CsprojPatcher::ensure_import(const std::string_view p_cspr
 					states.push_back(State::TAG_DOUBLE_QUOTES);
 					++i;
 				} else if (c == '>') {
-					std::string_view tag = p_csproj_content.substr(tag_start, i + 1 - tag_start);
+					const std::string_view tag = p_csproj_content.substr(tag_start, i + 1 - tag_start);
 					bool is_closing_tag;
-					std::string_view name = _read_tag_name(tag, is_closing_tag);
+					const std::string_view name = _read_tag_name(tag, is_closing_tag);
 					if (is_closing_tag && name == "Project") {
 						project_closing_tag = tag_start;
 					} else if (!is_closing_tag && name == "Import") {
-						std::string_view attr_value = _read_attribute_value(tag, "Project");
+						const std::string_view attr_value = _read_attribute_value(tag, "Project");
 						if (!attr_value.empty() && _is_same_path(attr_value, p_import_path)) {
 							import_found = true;
 						}

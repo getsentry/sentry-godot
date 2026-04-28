@@ -8,16 +8,6 @@ namespace sentry::editor {
 
 // Patches csproj to import a props file (e.g. Sentry.Godot.props).
 class CsprojPatcher {
-private:
-	enum class State {
-		NORMAL,
-		COMMENT,
-		TAG_OPEN,
-		TAG_SINGLE_QUOTES,
-		TAG_DOUBLE_QUOTES,
-		CDATA,
-	};
-
 public:
 	enum class Status {
 		PATCH_NOT_NEEDED,
@@ -36,6 +26,9 @@ public:
 	};
 
 public:
+	// Adds an import to the csproj content if it is not already present.
+	// p_import_path must not contain XML-special characters (&, <, >, ", ').
+	// Caller is responsible for any necessary escaping.
 	static Result ensure_import(const std::string_view p_csproj_content, std::string_view p_import_path);
 };
 
