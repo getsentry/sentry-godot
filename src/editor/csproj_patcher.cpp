@@ -131,8 +131,23 @@ std::string_view _read_attribute_value(std::string_view p_tag, std::string_view 
 }
 
 bool _is_same_path(std::string_view p_path1, std::string_view p_path2) {
-	// TODO: Must handle different path separators.
-	return p_path1 == p_path2;
+	if (p_path1.size() != p_path2.size()) {
+		return false;
+	}
+	for (size_t i = 0; i < p_path1.size(); ++i) {
+		const char c1 = p_path1[i];
+		const char c2 = p_path2[i];
+		if (c1 == c2) {
+			continue;
+		}
+		const bool c1_is_sep = (c1 == '/' || c1 == '\\');
+		const bool c2_is_sep = (c2 == '/' || c2 == '\\');
+		if (c1_is_sep && c2_is_sep) {
+			continue;
+		}
+		return false;
+	}
+	return true;
 }
 
 inline void _vector_append(std::vector<uint8_t> &p_vec, std::string_view p_str) {
