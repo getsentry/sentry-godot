@@ -177,6 +177,9 @@ std::string_view _detect_indent(std::string_view p_content, size_t p_project_clo
 
 	// Find previous line with a tag.
 	const size_t bracket_above = p_content.rfind('<', p_project_closing_tag - 1);
+	if (bracket_above == std::string_view::npos) {
+		return default_indent;
+	}
 	const size_t prev_nl = p_content.rfind('\n', bracket_above);
 	if (prev_nl == std::string_view::npos) {
 		return default_indent;
