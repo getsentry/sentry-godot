@@ -16,6 +16,17 @@ namespace {
 
 constexpr const char *PROPS_PATH = "addons/sentry/dotnet/Sentry.Godot.props";
 
+String _get_available_backup_path(const String &p_path) {
+	String base_path = p_path + String(".backup");
+	String backup_path = base_path;
+	int i = 1;
+	while (FileAccess::file_exists(backup_path)) {
+		backup_path = base_path + "." + String::num(i);
+		++i;
+	}
+	return backup_path;
+}
+
 void _patch_csproj() {
 	String assembly_name = ProjectSettings::get_singleton()->get_setting("dotnet/project/assembly_name");
 	if (assembly_name.is_empty()) {
@@ -51,7 +62,7 @@ void _patch_csproj() {
 		f->store_buffer(result.patched_content.data(), result.patched_content.size());
 		f->close();
 
-		if (DirAccess::copy_absolute(csproj_path, csproj_path + ".backup") != OK) {
+		if (DirAccess::copy_absolute(csproj_path, _get_available_backup_path(csproj_path)) != OK) {
 			ERR_PRINT_ED("Failed to backup original C# project file. Skipped patching.");
 			DirAccess::remove_absolute(temp_path);
 			return;
