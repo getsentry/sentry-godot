@@ -36,6 +36,11 @@ void _patch_csproj() {
 	}
 
 	String csproj_path = "res://" + assembly_name + ".csproj";
+	if (!FileAccess::file_exists(csproj_path)) {
+		sentry::logging::print_debug("No C# project file found - skipped patching.");
+		return;
+	}
+
 	PackedByteArray content = FileAccess::get_file_as_bytes(csproj_path);
 	if (FileAccess::get_open_error() != OK) {
 		WARN_PRINT_ED("Failed to read C# project file - skipped patching. Try restarting Godot editor.");
