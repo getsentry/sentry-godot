@@ -8,6 +8,7 @@
   - Expose the full Sentry .NET SDK API on `Sentry.Godot.SentrySdk` ([#657](https://github.com/getsentry/sentry-godot/pull/657))
   - Add Roslyn analyzer that warns on direct `Sentry.SentrySdk` use and suggests `Sentry.Godot.SentrySdk` ([#663](https://github.com/getsentry/sentry-godot/pull/663))
   - Alias bare `SentrySdk` to `Sentry.Godot.SentrySdk` to avoid ambiguity when consumer code also does `using Sentry;` ([#664](https://github.com/getsentry/sentry-godot/pull/664))
+  - Import `Sentry.Godot.props` into user's C# project automatically ([#671](https://github.com/getsentry/sentry-godot/pull/671))
 
 ### Dependencies
 
