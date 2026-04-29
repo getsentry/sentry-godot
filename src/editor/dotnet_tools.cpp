@@ -53,6 +53,7 @@ void _patch_csproj() {
 
 		if (DirAccess::copy_absolute(csproj_path, csproj_path + ".backup") != OK) {
 			ERR_PRINT_ED("Failed to backup original C# project file. Skipped patching.");
+			DirAccess::remove_absolute(temp_path);
 			return;
 		}
 
