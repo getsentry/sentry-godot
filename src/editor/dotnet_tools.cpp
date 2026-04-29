@@ -36,11 +36,11 @@ void _patch_csproj() {
 		return;
 	}
 
-	sentry::editor::CsprojPatcher::Result result = sentry::editor::CsprojPatcher::ensure_import(
+	editor::CsprojPatcher::Result result = editor::CsprojPatcher::ensure_import(
 			{ (const char *)content.ptr(), (size_t)content.size() },
 			PROPS_PATH);
 
-	if (result.status == sentry::editor::CsprojPatcher::Status::PATCHED) {
+	if (result.status == editor::CsprojPatcher::Status::PATCHED) {
 		sentry::logging::print_debug(".NET assembly detected: patching C# project file...");
 		String temp_path = csproj_path + ".tmp";
 		Ref<FileAccess> f = FileAccess::open(temp_path, FileAccess::WRITE);
@@ -60,9 +60,9 @@ void _patch_csproj() {
 			ERR_PRINT_ED("Failed to replace C# project file with patched content.");
 			DirAccess::remove_absolute(temp_path);
 		}
-	} else if (result.status == sentry::editor::CsprojPatcher::Status::ERROR) {
+	} else if (result.status == editor::CsprojPatcher::Status::ERROR) {
 		ERR_PRINT_ED("Failed to patch C# project file: " + String::utf8(result.error_message.data(), result.error_message.size()));
-	} else if (result.status == sentry::editor::CsprojPatcher::Status::PATCH_NOT_NEEDED) {
+	} else if (result.status == editor::CsprojPatcher::Status::PATCH_NOT_NEEDED) {
 		sentry::logging::print_debug(".NET assembly detected: C# project file already patched - skipped.");
 	}
 }

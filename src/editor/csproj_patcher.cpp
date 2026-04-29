@@ -141,7 +141,7 @@ inline void _vector_append(std::vector<uint8_t> &p_vec, std::string_view p_str) 
 
 } // unnamed namespace
 
-namespace sentry::editor {
+namespace editor {
 
 CsprojPatcher::Result CsprojPatcher::ensure_import(const std::string_view p_csproj_content, std::string_view p_import_path) {
 	if (p_csproj_content.empty()) {
@@ -298,4 +298,4 @@ CsprojPatcher::Result CsprojPatcher::ensure_import(const std::string_view p_cspr
 	return Result{ Status::PATCHED, patched };
 }
 
-} // namespace sentry::editor
+} //namespace editor

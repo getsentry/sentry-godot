@@ -4,7 +4,7 @@
 #include <string_view>
 #include <vector>
 
-namespace sentry::editor {
+namespace editor {
 
 // Patches C# project file to import a props file (e.g. Sentry.Godot.props).
 class CsprojPatcher {
@@ -28,4 +28,4 @@ public:
 	static Result ensure_import(const std::string_view p_csproj_content, std::string_view p_import_path);
 };
 
-} // namespace sentry::editor
+} //namespace editor
