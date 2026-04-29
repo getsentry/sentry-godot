@@ -61,7 +61,7 @@ void _patch_csproj() {
 			DirAccess::remove_absolute(temp_path);
 		}
 	} else if (result.status == sentry::editor::CsprojPatcher::Status::ERROR) {
-		ERR_PRINT_ED("Failed to patch C# project file: " + String(result.error_message.data()));
+		ERR_PRINT_ED("Failed to patch C# project file: " + String::utf8(result.error_message.data(), result.error_message.size()));
 	} else if (result.status == sentry::editor::CsprojPatcher::Status::PATCH_NOT_NEEDED) {
 		sentry::logging::print_debug(".NET assembly detected: C# project file already patched - skipped.");
 	}
