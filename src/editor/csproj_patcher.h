@@ -6,7 +6,7 @@
 
 namespace sentry::editor {
 
-// Patches csproj to import a props file (e.g. Sentry.Godot.props).
+// Patches C# project file to import a props file (e.g. Sentry.Godot.props).
 class CsprojPatcher {
 public:
 	enum class Status {
