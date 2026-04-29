@@ -139,6 +139,49 @@ inline void _vector_append(std::vector<uint8_t> &p_vec, std::string_view p_str) 
 	p_vec.insert(p_vec.end(), p_str.begin(), p_str.end());
 }
 
+std::string_view _detect_line_ending(std::string_view p_content) {
+	bool detected_return = false;
+	for (size_t i = 0; i < p_content.size(); ++i) {
+		const char c = p_content[i];
+		if (c == '\r') {
+			detected_return = true;
+		} else if (c == '\n') {
+			return detected_return ? "\r\n" : "\n";
+		} else {
+			detected_return = false;
+		}
+	}
+	return "\n";
+}
+
+std::string_view _detect_indent(std::string_view p_content, size_t p_project_closing_tag) {
+	constexpr const char *default_indent = "  ";
+	if (p_project_closing_tag == 0) {
+		return default_indent;
+	}
+
+	// Find previous line with a tag.
+	const size_t bracket_above = p_content.rfind('<', p_project_closing_tag - 1);
+	const size_t prev_nl = p_content.rfind('\n', bracket_above);
+	if (prev_nl == std::string_view::npos) {
+		return default_indent;
+	}
+	const size_t prev_line_with_tag = prev_nl + 1;
+
+	// Count indent chars.
+	size_t num_indent = 0;
+	for (size_t i = prev_line_with_tag; i < p_content.size(); ++i) {
+		const char c = p_content[i];
+		if (c == ' ' || c == '\t') {
+			++num_indent;
+		} else {
+			break;
+		}
+	}
+
+	return p_content.substr(prev_line_with_tag, num_indent);
+}
+
 } // unnamed namespace
 
 namespace editor {
@@ -284,14 +327,14 @@ CsprojPatcher::Result CsprojPatcher::ensure_import(const std::string_view p_cspr
 	const uint8_t *src = reinterpret_cast<const uint8_t *>(p_csproj_content.data());
 	patched.insert(patched.end(), src, src + project_closing_tag);
 
-	// TODO: detect whitespace
-	_vector_append(patched, "        <Import Project=\"");
+	std::string_view indent = _detect_indent(p_csproj_content, project_closing_tag);
+	_vector_append(patched, indent);
+	_vector_append(patched, "<Import Project=\"");
 	_vector_append(patched, p_import_path);
 	_vector_append(patched, "\" Condition=\"Exists('");
 	_vector_append(patched, p_import_path);
 	_vector_append(patched, "')\" />");
-	// TODO: detect line ending
-	_vector_append(patched, "\n");
+	_vector_append(patched, _detect_line_ending(p_csproj_content));
 
 	patched.insert(patched.end(), src + project_closing_tag, src + p_csproj_content.length());
 
