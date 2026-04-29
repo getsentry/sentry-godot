@@ -6,7 +6,5 @@
     <RootNamespace>Sentrydemoproject</RootNamespace>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/gdUnit4/**</DefaultItemExcludes>
   </PropertyGroup>
-
-  <Import Project="addons/sentry/dotnet/Sentry.Godot.props" />
-
+  <Import Project="addons/sentry/dotnet/Sentry.Godot.props" Condition="Exists('addons/sentry/dotnet/Sentry.Godot.props')" />
 </Project>
