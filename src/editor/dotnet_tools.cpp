@@ -51,8 +51,12 @@ void _patch_csproj() {
 		f->store_buffer(result.patched_content.data(), result.patched_content.size());
 		f->close();
 
-		Error err = DirAccess::rename_absolute(temp_path, csproj_path);
-		if (err != OK) {
+		if (DirAccess::copy_absolute(csproj_path, csproj_path + ".backup") != OK) {
+			ERR_PRINT_ED("Failed to backup original C# project file. Skipped patching.");
+			return;
+		}
+
+		if (DirAccess::rename_absolute(temp_path, csproj_path) != OK) {
 			ERR_PRINT_ED("Failed to replace C# project file with patched content.");
 			DirAccess::remove_absolute(temp_path);
 		}
