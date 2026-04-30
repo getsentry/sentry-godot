@@ -13,3 +13,6 @@
 [submodule "modules/app-runner"]
 	path = modules/app-runner
 	url = https://github.com/getsentry/app-runner.git
+[submodule "modules/doctest"]
+	path = modules/doctest
+	url = https://github.com/doctest/doctest

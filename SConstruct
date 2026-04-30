@@ -199,7 +199,7 @@ if env["tests"]:
     env.Append(CPPDEFINES=["TESTS_ENABLED"])
     # FYI: godot-cpp is built with exceptions disabled.
     env.Append(CPPDEFINES=["DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS"])
-    env.Append(CPPPATH=["tests/cpp", "vendor"])
+    env.Append(CPPPATH=["tests/cpp", "modules/doctest/doctest"])
     sources += [File("tests/cpp/cpp_test_runner.cpp")]
     sources += Glob("tests/cpp/tests/*.cpp")
 
