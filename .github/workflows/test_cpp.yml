@@ -24,6 +24,7 @@ jobs:
         run: |
           git submodule update --init --recursive --depth 1 modules/godot-cpp
           git submodule update --init --recursive --depth 1 modules/sentry-native
+          git submodule update --init --recursive --depth 1 modules/gdUnit4
 
       - name: Install Linux build deps
         run: |
