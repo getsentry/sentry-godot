@@ -143,7 +143,7 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		SentryUnit::create_singleton();
 		SentrySDK::create_singleton();
 #ifdef TESTS_ENABLED
-		// If --sentry-cpp-tests was passed, run the test session and exit before SDK auto-init.
+		// If --test-sentry was passed, run the test session and exit before SDK auto-init.
 		if (sentry::tests::should_run_cpp_tests()) {
 			sentry::tests::run_cpp_tests_and_exit();
 		}
