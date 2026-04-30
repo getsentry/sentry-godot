@@ -1,0 +1,58 @@
+name: 🧪 C++ tests
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  cpp-tests:
+    name: C++ tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GODOT_VERSION: 4.5.1-stable
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          submodules: false
+
+      - name: Checkout required submodules
+        shell: bash
+        run: |
+          git submodule update --init --recursive --depth 1 modules/godot-cpp
+          git submodule update --init --recursive --depth 1 modules/sentry-native
+
+      - name: Install Linux build deps
+        run: |
+          sudo apt update
+          sudo apt install libcurl4-openssl-dev
+
+      - name: Install SCons
+        run: python -m pip install scons
+
+      - name: Build GDExtension with tests
+        run: scons tests=yes target=editor
+
+      - name: Set up Godot
+        shell: bash
+        run: |
+          archive_file=Godot_v${GODOT_VERSION}_linux.x86_64.zip
+          url=https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/${archive_file}
+          mkdir godot
+          cd godot
+          curl -L -o godot.zip "${url}"
+          unzip -q godot.zip
+          rm godot.zip
+          bin=${PWD}/Godot_v${GODOT_VERSION}_linux.x86_64
+          chmod +x "${bin}"
+          "${bin}" --version
+          echo "GODOT=${bin}" >> $GITHUB_ENV
+
+      - name: Run tests
+        shell: bash
+        timeout-minutes: 2
+        run: |
+          "${GODOT}" --headless --path project/ --test-sentry
