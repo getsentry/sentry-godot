@@ -233,7 +233,7 @@ Internal C++ code is covered by [doctest](https://github.com/doctest/doctest) ru
 
 ```bash
 scons tests=yes target=editor
-godot --headless --path project/ --test-sentry
+godot --headless --path project/ --editor --test-sentry
 ```
 
 Forward doctest flags after `--test-sentry`, e.g. `--test-suite="CsprojPatcher"` to filter, or `--dt-help` for options.
