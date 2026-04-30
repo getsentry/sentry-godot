@@ -21,12 +21,12 @@ jobs:
 
       - name: Checkout required submodules
         shell: bash
-        run: >
-          git submodule update --init --recursive --depth 1
-              modules/godot-cpp
-              modules/sentry-native
-              modules/gdUnit4
-              modules/doctest
+        run: |
+          git submodule update --init --recursive --depth 1 \
+            modules/godot-cpp \
+            modules/sentry-native \
+            modules/gdUnit4 \
+            modules/doctest
 
       - name: Install Linux build deps
         run: |
