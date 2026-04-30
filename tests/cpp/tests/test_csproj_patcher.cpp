@@ -99,6 +99,24 @@ struct CsprojFixture {
 			"  </PropertyGroup>\n"
 			"  <Import Label=\"Sentry\" Project=\"Sentry.Godot.props\" />\n"
 			"</Project>\n";
+
+	// UTF-8 byte-order mask (EF BB BF) prefix -- written by some Windows editors.
+	static constexpr std::string_view PROJECT_WITHOUT_IMPORT_BOM =
+			"\xEF\xBB\xBF"
+			"<Project Sdk=\"Godot.NET.Sdk/4.5.0\">\n"
+			"  <PropertyGroup>\n"
+			"    <TargetFramework>net8.0</TargetFramework>\n"
+			"  </PropertyGroup>\n"
+			"</Project>\n";
+
+	static constexpr std::string_view PROJECT_PATCHED_BOM =
+			"\xEF\xBB\xBF"
+			"<Project Sdk=\"Godot.NET.Sdk/4.5.0\">\n"
+			"  <PropertyGroup>\n"
+			"    <TargetFramework>net8.0</TargetFramework>\n"
+			"  </PropertyGroup>\n"
+			"  <Import Project=\"Sentry.Godot.props\" Condition=\"Exists('Sentry.Godot.props')\" />\n"
+			"</Project>\n";
 };
 
 } // unnamed namespace
@@ -146,6 +164,12 @@ TEST_SUITE("CsprojPatcher") {
 	TEST_CASE_FIXTURE(CsprojFixture, "User-edited import is detected") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_USER_EDITED_IMPORT, IMPORT_PATH);
 		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
+	}
+
+	TEST_CASE_FIXTURE(CsprojFixture, "UTF-8 BOM is preserved") {
+		auto result = CsprojPatcher::ensure_import(PROJECT_WITHOUT_IMPORT_BOM, IMPORT_PATH);
+		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
+		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED_BOM);
 	}
 }
 
