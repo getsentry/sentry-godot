@@ -82,6 +82,14 @@ struct CsprojFixture {
 			"  <!-- <Import Project=\"Sentry.Godot.props\" /> -->\n"
 			"  <Import Project=\"Sentry.Godot.props\" Condition=\"Exists('Sentry.Godot.props')\" />\n"
 			"</Project>\n";
+
+	static constexpr std::string_view PROJECT_WITH_SINGLE_QUOTED_IMPORT =
+			"<Project Sdk=\"Godot.NET.Sdk/4.5.0\">\n"
+			"  <Import Project='Sentry.Godot.props' />\n"
+			"  <PropertyGroup>\n"
+			"    <TargetFramework>net8.0</TargetFramework>\n"
+			"  </PropertyGroup>\n"
+			"</Project>\n";
 };
 
 } // unnamed namespace
@@ -118,6 +126,11 @@ TEST_SUITE("CsprojPatcher") {
 
 	TEST_CASE_FIXTURE(CsprojFixture, "Already-patched is unchanged") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_IMPORT, IMPORT_PATH);
+		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
+	}
+
+	TEST_CASE_FIXTURE(CsprojFixture, "Single-quoted import attribute is detected") {
+		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_SINGLE_QUOTED_IMPORT, IMPORT_PATH);
 		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
 	}
 }
