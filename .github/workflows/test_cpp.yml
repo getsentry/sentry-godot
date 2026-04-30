@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   cpp-tests:
-    name: C++ tests
+    name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
