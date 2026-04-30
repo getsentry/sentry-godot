@@ -50,6 +50,21 @@ struct CsprojFixture {
 			"  </PropertyGroup>\r\n"
 			"  <Import Project=\"Sentry.Godot.props\" Condition=\"Exists('Sentry.Godot.props')\" />\r\n"
 			"</Project>\r\n";
+
+	static constexpr std::string_view PROJECT_WITHOUT_IMPORT_TABS =
+			"<Project Sdk=\"Godot.NET.Sdk/4.5.0\">\n"
+			"\t<PropertyGroup>\n"
+			"\t\t<TargetFramework>net8.0</TargetFramework>\n"
+			"\t</PropertyGroup>\n"
+			"</Project>\n";
+
+	static constexpr std::string_view PROJECT_PATCHED_TABS =
+			"<Project Sdk=\"Godot.NET.Sdk/4.5.0\">\n"
+			"\t<PropertyGroup>\n"
+			"\t\t<TargetFramework>net8.0</TargetFramework>\n"
+			"\t</PropertyGroup>\n"
+			"\t<Import Project=\"Sentry.Godot.props\" Condition=\"Exists('Sentry.Godot.props')\" />\n"
+			"</Project>\n";
 };
 
 } // unnamed namespace
@@ -70,6 +85,12 @@ TEST_SUITE("CsprojPatcher") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITHOUT_IMPORT_CRLF, IMPORT_PATH);
 		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
 		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED_CRLF);
+	}
+
+	TEST_CASE_FIXTURE(CsprojFixture, "Tab indentation preserved") {
+		auto result = CsprojPatcher::ensure_import(PROJECT_WITHOUT_IMPORT_TABS, IMPORT_PATH);
+		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
+		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED_TABS);
 	}
 
 	TEST_CASE_FIXTURE(CsprojFixture, "Already-patched is unchanged") {
