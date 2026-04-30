@@ -90,6 +90,15 @@ struct CsprojFixture {
 			"    <TargetFramework>net8.0</TargetFramework>\n"
 			"  </PropertyGroup>\n"
 			"</Project>\n";
+
+	// Simulates user-edited record: Label attribute added and Condition removed.
+	static constexpr std::string_view PROJECT_WITH_USER_EDITED_IMPORT =
+			"<Project Sdk=\"Godot.NET.Sdk/4.5.0\">\n"
+			"  <PropertyGroup>\n"
+			"    <TargetFramework>net8.0</TargetFramework>\n"
+			"  </PropertyGroup>\n"
+			"  <Import Label=\"Sentry\" Project=\"Sentry.Godot.props\" />\n"
+			"</Project>\n";
 };
 
 } // unnamed namespace
@@ -131,6 +140,11 @@ TEST_SUITE("CsprojPatcher") {
 
 	TEST_CASE_FIXTURE(CsprojFixture, "Single-quoted import attribute is detected") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_SINGLE_QUOTED_IMPORT, IMPORT_PATH);
+		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
+	}
+
+	TEST_CASE_FIXTURE(CsprojFixture, "User-edited import is detected") {
+		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_USER_EDITED_IMPORT, IMPORT_PATH);
 		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
 	}
 }
