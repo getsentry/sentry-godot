@@ -61,6 +61,7 @@ add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from 
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
 add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux, Android, Web)", True)
 add_custom_bool_option("generate_js_bundle", "Generate JavaScript bundle", False)
+add_custom_bool_option("tests", "Build C++ unit tests into the GDExtension", False)
 
 # Set project defaults for godot-cpp options.
 ARGUMENTS.setdefault("ios_min_version", IOS_MIN_VERSION)
@@ -192,6 +193,15 @@ elif internal_sdk == SDK.COCOA:
 elif internal_sdk == SDK.JAVASCRIPT:
     sources += Glob("src/sentry/javascript/*.cpp")
     env.Append(CPPDEFINES=["SDK_JAVASCRIPT"])
+
+# Include CPP tests.
+if env["tests"]:
+    env.Append(CPPDEFINES=["TESTS_ENABLED"])
+    # FYI: godot-cpp is built with exceptions disabled.
+    env.Append(CPPDEFINES=["DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS"])
+    env.Append(CPPPATH=["tests/cpp", "vendor"])
+    sources += [File("tests/cpp/cpp_test_runner.cpp")]
+    sources += Glob("tests/cpp/tests/*.cpp")
 
 # Generate documentation data.
 if env["target"] in ["editor", "template_debug"]:

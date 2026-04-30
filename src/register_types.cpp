@@ -51,6 +51,10 @@
 #include "sentry/javascript/javascript_sdk.h"
 #endif
 
+#ifdef TESTS_ENABLED
+#include "cpp_test_runner.h"
+#endif
+
 #ifdef TOOLS_ENABLED
 #include "editor/sentry_editor_export_plugin_android.h"
 #include "editor/sentry_editor_export_plugin_ios.h"
@@ -138,6 +142,12 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		register_runtime_classes();
 		SentryUnit::create_singleton();
 		SentrySDK::create_singleton();
+#ifdef TESTS_ENABLED
+		// If --sentry-cpp-tests was passed, run the test session and exit before SDK auto-init.
+		if (sentry::tests::should_run_cpp_tests()) {
+			sentry::tests::run_cpp_tests_and_exit();
+		}
+#endif
 		SentrySDK::get_singleton()->prepare_and_auto_initialize();
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 #ifdef TOOLS_ENABLED
