@@ -65,6 +65,23 @@ struct CsprojFixture {
 			"\t</PropertyGroup>\n"
 			"\t<Import Project=\"Sentry.Godot.props\" Condition=\"Exists('Sentry.Godot.props')\" />\n"
 			"</Project>\n";
+
+	static constexpr std::string_view PROJECT_WITH_COMMENTED_IMPORT =
+			"<Project Sdk=\"Godot.NET.Sdk/4.5.0\">\n"
+			"  <PropertyGroup>\n"
+			"    <TargetFramework>net8.0</TargetFramework>\n"
+			"  </PropertyGroup>\n"
+			"  <!-- <Import Project=\"Sentry.Godot.props\" /> -->\n"
+			"</Project>\n";
+
+	static constexpr std::string_view PROJECT_PATCHED_FROM_COMMENTED =
+			"<Project Sdk=\"Godot.NET.Sdk/4.5.0\">\n"
+			"  <PropertyGroup>\n"
+			"    <TargetFramework>net8.0</TargetFramework>\n"
+			"  </PropertyGroup>\n"
+			"  <!-- <Import Project=\"Sentry.Godot.props\" /> -->\n"
+			"  <Import Project=\"Sentry.Godot.props\" Condition=\"Exists('Sentry.Godot.props')\" />\n"
+			"</Project>\n";
 };
 
 } // unnamed namespace
@@ -91,6 +108,12 @@ TEST_SUITE("CsprojPatcher") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITHOUT_IMPORT_TABS, IMPORT_PATH);
 		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
 		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED_TABS);
+	}
+
+	TEST_CASE_FIXTURE(CsprojFixture, "Commented-out import is ignored") {
+		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_COMMENTED_IMPORT, IMPORT_PATH);
+		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
+		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED_FROM_COMMENTED);
 	}
 
 	TEST_CASE_FIXTURE(CsprojFixture, "Already-patched is unchanged") {
