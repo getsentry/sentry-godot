@@ -56,4 +56,4 @@ jobs:
         shell: bash
         timeout-minutes: 2
         run: |
-          "${GODOT}" --headless --path project/ --test-sentry
+          "${GODOT}" --headless --path project/ --editor --test-sentry
