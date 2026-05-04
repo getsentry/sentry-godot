@@ -14,7 +14,7 @@ project/.godot/
 exports/*
 !exports/export_presets.cfg
 
-integration_tests/results/
+tests/integration/results/
 
 # Source tree
 src/gen/
