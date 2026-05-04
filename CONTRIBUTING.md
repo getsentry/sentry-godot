@@ -227,6 +227,17 @@ For the Android platform, you can also run supporting Android library tests:
 ./gradlew test
 ```
 
+### C++ Unit Tests
+
+Internal C++ code is covered by [doctest](https://github.com/doctest/doctest) running inside a headless Godot. Tests live in `tests/cpp/tests/`. Build with `tests=yes` and pass `--test-sentry`:
+
+```bash
+scons tests=yes target=editor
+godot --headless --path project/ --editor --test-sentry
+```
+
+Forward doctest flags after `--test-sentry`, e.g. `--test-suite="CsprojPatcher"` to filter, or `--dt-help` for options.
+
 ### .NET Tests
 
 The Roslyn source generator that produces the `Sentry.Godot.SentrySdk` facade is covered by a snapshot test in `tests/dotnet/Sentry.Godot.SourceGenerators.Tests/`. Run it with:
