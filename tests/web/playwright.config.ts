@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-const WEB_EXPORT_DIR = process.env.WEB_EXPORT_DIR || "../exports/web";
+const WEB_EXPORT_DIR = process.env.WEB_EXPORT_DIR || "../../exports/web";
 
 export default defineConfig({
   testDir: ".",
