@@ -185,6 +185,12 @@ TEST_SUITE("CsprojPatcher") {
 		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
 	}
 
+	TEST_CASE_FIXTURE(CsprojFixture, "UTF-8 BOM is preserved") {
+		auto result = CsprojPatcher::ensure_import(PROJECT_WITHOUT_IMPORT_BOM, IMPORT_PATH);
+		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
+		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED_BOM);
+	}
+
 	TEST_CASE_FIXTURE(CsprojFixture, "Grouped import is preserved") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_GROUPED_IMPORT, IMPORT_PATH);
 		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
@@ -193,12 +199,6 @@ TEST_SUITE("CsprojPatcher") {
 	TEST_CASE_FIXTURE(CsprojFixture, "Wrapped import is preserved") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_WRAPPED_IMPORT, IMPORT_PATH);
 		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
-	}
-
-	TEST_CASE_FIXTURE(CsprojFixture, "UTF-8 BOM is preserved") {
-		auto result = CsprojPatcher::ensure_import(PROJECT_WITHOUT_IMPORT_BOM, IMPORT_PATH);
-		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
-		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED_BOM);
 	}
 }
 
