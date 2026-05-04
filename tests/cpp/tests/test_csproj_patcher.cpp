@@ -118,7 +118,7 @@ struct CsprojFixture {
 			"  <Import Project=\"Sentry.Godot.props\" Condition=\"Exists('Sentry.Godot.props')\" />\n"
 			"</Project>\n";
 
-	static constexpr std::string_view PROJECT_WITH_IMPORT_GROUP =
+	static constexpr std::string_view PROJECT_WITH_GROUPED_IMPORT =
 			"<Project Sdk=\"Godot.NET.Sdk/4.5.0\">\n"
 			"  <PropertyGroup>\n"
 			"    <TargetFramework>net8.0</TargetFramework>\n"
@@ -186,7 +186,7 @@ TEST_SUITE("CsprojPatcher") {
 	}
 
 	TEST_CASE_FIXTURE(CsprojFixture, "Grouped import is preserved") {
-		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_IMPORT_GROUP, IMPORT_PATH);
+		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_GROUPED_IMPORT, IMPORT_PATH);
 		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
 	}
 
