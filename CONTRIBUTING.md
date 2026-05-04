@@ -299,7 +299,7 @@ WEB_EXPORT_DIR=path/to/export npx playwright test
 
 ### End-to-End Integration Tests
 
-Integration tests validate end-to-end SDK functionality by running test actions and verifying events are captured in Sentry. Tests are located in `integration_tests/` and use PowerShell with Pester testing framework alongside the 
+Integration tests validate end-to-end SDK functionality by running test actions and verifying events are captured in Sentry. Tests are located in `tests/integration/` and use PowerShell with Pester testing framework alongside the 
 [`app-runner`](https://github.com/getsentry/app-runner) submodule.
 
 #### Prerequisites
@@ -329,11 +329,11 @@ Install-Module -Name Pester -Force -SkipPublisherCheck
 #### Running Tests
 
 ```powershell
-cd integration_tests
+cd tests/integration
 Invoke-Pester -Path Integration.Tests.ps1
 ```
 
-Tests validate crash capture, message capture, runtime error capture, and event metadata. Results are saved to `integration_tests/results/`.
+Tests validate crash capture, message capture, runtime error capture, and event metadata. Results are saved to `tests/integration/results/`.
 
 ## Releasing
 

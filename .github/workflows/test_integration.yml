@@ -162,4 +162,4 @@ jobs:
           SAUCE_REGION: us-west-1
           SAUCE_DEVICE_NAME: ${{ matrix.saucelabs-device }}
           SAUCE_SESSION_NAME: Godot ${{matrix.test-platform}} E2E Tests
-        run: Invoke-Pester -Script integration_tests/Integration.Tests.ps1
+        run: Invoke-Pester -Script tests/integration/Integration.Tests.ps1
