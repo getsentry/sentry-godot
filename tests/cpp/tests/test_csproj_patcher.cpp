@@ -117,6 +117,25 @@ struct CsprojFixture {
 			"  </PropertyGroup>\n"
 			"  <Import Project=\"Sentry.Godot.props\" Condition=\"Exists('Sentry.Godot.props')\" />\n"
 			"</Project>\n";
+
+	static constexpr std::string_view PROJECT_WITH_IMPORT_GROUP =
+			"<Project Sdk=\"Godot.NET.Sdk/4.5.0\">\n"
+			"  <PropertyGroup>\n"
+			"    <TargetFramework>net8.0</TargetFramework>\n"
+			"  </PropertyGroup>\n"
+			"  <ImportGroup>\n"
+			"    <Import Project=\"Sentry.Godot.props\" Condition=\"Exists('Sentry.Godot.props')\" />\n"
+			"  </ImportGroup>\n"
+			"</Project>\n";
+
+	static constexpr std::string_view PROJECT_WITH_WRAPPED_IMPORT =
+			"<Project Sdk=\"Godot.NET.Sdk/4.5.0\">\n"
+			"  <PropertyGroup>\n"
+			"    <TargetFramework>net8.0</TargetFramework>\n"
+			"  </PropertyGroup>\n"
+			"  <Import Project=\"Sentry.Godot.props\"\n"
+			"          Condition=\"Exists('Sentry.Godot.props')\" />\n"
+			"</Project>\n";
 };
 
 } // unnamed namespace
@@ -161,8 +180,18 @@ TEST_SUITE("CsprojPatcher") {
 		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
 	}
 
-	TEST_CASE_FIXTURE(CsprojFixture, "User-edited import is detected") {
+	TEST_CASE_FIXTURE(CsprojFixture, "User-edited import is preserved") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_USER_EDITED_IMPORT, IMPORT_PATH);
+		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
+	}
+
+	TEST_CASE_FIXTURE(CsprojFixture, "Grouped import is preserved") {
+		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_IMPORT_GROUP, IMPORT_PATH);
+		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
+	}
+
+	TEST_CASE_FIXTURE(CsprojFixture, "Wrapped import is preserved") {
+		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_WRAPPED_IMPORT, IMPORT_PATH);
 		CHECK(result.status == CsprojPatcher::Status::PATCH_NOT_NEEDED);
 	}
 
