@@ -3,7 +3,7 @@
 # Run GDScript suite and isolated tests in a headless browser using Playwright.
 # Requires a Godot web export in exports/web/ (or WEB_EXPORT_DIR).
 
-$testWebDir = Join-Path $PSScriptRoot "../test_web" | Resolve-Path
+$testWebDir = Join-Path $PSScriptRoot "../tests/web" | Resolve-Path
 
 $startDir = Get-Location
 Set-Location $testWebDir

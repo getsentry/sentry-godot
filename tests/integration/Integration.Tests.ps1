@@ -92,10 +92,10 @@ BeforeAll {
             [string[]]$AdditionalArgs = @()
         )
 
-        $runnerScript = Join-Path $PSScriptRoot "../test_web/run-action.ts"
+        $runnerScript = Join-Path $PSScriptRoot "../tests/web/run-action.ts"
         $exportDir = (Resolve-Path $script:TestSetup.Executable).Path
         $godotArgs = $script:TestSetup.Args + @($Action) + $AdditionalArgs
-        $testWebDir = Join-Path $PSScriptRoot "../test_web"
+        $testWebDir = Join-Path $PSScriptRoot "../tests/web"
 
         $process = Start-Process -FilePath "npx" `
             -ArgumentList (@("tsx", $runnerScript, $exportDir) + $godotArgs) `

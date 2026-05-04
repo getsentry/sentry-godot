@@ -38,15 +38,15 @@ jobs:
         with:
           node-version: "25"
           cache: "npm"
-          cache-dependency-path: test_web/package-lock.json
+          cache-dependency-path: tests/web/package-lock.json
 
       - name: Install test dependencies
-        working-directory: test_web
+        working-directory: tests/web
         run: |
           npm ci
           npx playwright install chromium
 
       - name: Run web tests
-        working-directory: test_web
+        working-directory: tests/web
         timeout-minutes: 10
         run: npx playwright test
