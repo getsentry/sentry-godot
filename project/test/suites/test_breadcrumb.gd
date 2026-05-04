@@ -49,7 +49,9 @@ func test_breadcrumb_default_values() -> void:
 
 
 func test_breadcrumb_timestamp_is_set_automatically() -> void:
-	const time_tolerance: float = 0.001  # 1 ms
+	# Windows: Godot uses GetSystemTime while sentry-native uses GetSystemTimePreciseAsFileTime,
+	# so readings from the two can disagree by up to a system-timer tick.
+	const time_tolerance: float = 0.05  # 50 ms
 
 	var time_before: float = Time.get_unix_time_from_system() - time_tolerance
 	await get_tree().process_frame  # small delay to ensure timestamp differs
