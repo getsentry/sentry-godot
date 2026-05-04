@@ -132,7 +132,7 @@ dotnet build /p:EmitCompilerGeneratedFiles=true /p:CompilerGeneratedFilesOutputP
 - `project/` -- example Godot project
 - `project/addons/sentry/` -- where build artifacts are placed
 - `project/addons/sentry/dotnet/` -- the .NET layer with Sentry.Godot library and integration glue
-- `project/test/` -- unit and integration tests using GDScript and public APIs
+- `project/test/` -- GDScript unit and integration tests for exported APIs, using gdUnit4
 - `scripts/` -- various scripts used mostly for maintenance
 - `assetlib/` -- metadata for Godot Asset Library entries
 - `doc_classes/` -- built-in Godot documentation (class reference)
