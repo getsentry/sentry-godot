@@ -50,7 +50,8 @@ func before() -> void:
 ## customizes SDK options for specific testing scenarios.
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.logger_messages_as_breadcrumbs = false  # this option may interfere with our normal testing
+		# Disable message breadcrumbs to avoid interfering with normal testing.
+		options.logger_breadcrumb_mask &= ~SentryOptions.MASK_MESSAGE
 	)
 
 
