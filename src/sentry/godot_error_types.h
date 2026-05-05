@@ -28,6 +28,13 @@ _FORCE_INLINE_ godot::String GODOT_ERROR_MASK_EXPORT_STRING() {
 			int(MASK_ERROR), int(MASK_WARNING), int(MASK_SCRIPT), int(MASK_SHADER), int(MASK_MESSAGE));
 }
 
+// Used for exporting `logger_event_mask` as PropertyInfo.
+// MASK_MESSAGE is omitted because log messages should not be captured as Sentry events.
+_FORCE_INLINE_ godot::String GODOT_ERROR_MASK_EXPORT_STRING_FOR_EVENTS() {
+	return godot::vformat("Error:%d,Warning:%d,Script:%d,Shader:%d",
+			int(MASK_ERROR), int(MASK_WARNING), int(MASK_SCRIPT), int(MASK_SHADER));
+}
+
 _FORCE_INLINE_ Level get_sentry_level_for_godot_error_type(GodotErrorType p_error_type) { return p_error_type == GodotErrorType::ERROR_TYPE_WARNING ? LEVEL_WARNING : LEVEL_ERROR; }
 _FORCE_INLINE_ LogLevel get_sentry_log_level_for_godot_error_type(GodotErrorType p_error_type) { return p_error_type == GodotErrorType::ERROR_TYPE_WARNING ? LOG_LEVEL_WARN : LOG_LEVEL_ERROR; }
 _FORCE_INLINE_ GodotLoggerEventMask godot_error_type_as_mask(GodotErrorType p_error_type) { return (GodotLoggerEventMask)(1 << int(p_error_type)); }

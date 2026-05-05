@@ -463,9 +463,8 @@ void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 		return;
 	}
 
-	bool as_log = SENTRY_OPTIONS()->get_enable_logs() &&
-			SENTRY_OPTIONS()->get_logger_log_mask().has_flag(GodotLoggerEventMask::MASK_MESSAGE);
-	bool as_breadcrumb = SENTRY_OPTIONS()->get_logger_breadcrumb_mask().has_flag(GodotLoggerEventMask::MASK_MESSAGE);
+	bool as_log = SENTRY_OPTIONS()->should_capture_message_log();
+	bool as_breadcrumb = SENTRY_OPTIONS()->should_capture_message_breadcrumb();
 
 	if (!as_log && !as_breadcrumb) {
 		return;

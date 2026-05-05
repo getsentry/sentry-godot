@@ -216,6 +216,8 @@ public:
 	_FORCE_INLINE_ bool should_capture_event(GodotErrorType p_error_type) { return logger_event_mask.has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
 	_FORCE_INLINE_ bool should_capture_breadcrumb(GodotErrorType p_error_type) { return logger_breadcrumb_mask.has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
 	_FORCE_INLINE_ bool should_capture_log(GodotErrorType p_error_type) { return enable_logs && logger_log_mask.has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
+	_FORCE_INLINE_ bool should_capture_message_breadcrumb() { return logger_breadcrumb_mask.has_flag(MASK_MESSAGE); }
+	_FORCE_INLINE_ bool should_capture_message_log() { return enable_logs && logger_log_mask.has_flag(MASK_MESSAGE); }
 
 	_FORCE_INLINE_ Ref<SentryLoggerLimits> get_logger_limits() const { return logger_limits; }
 	void set_logger_limits(const Ref<SentryLoggerLimits> &p_limits);

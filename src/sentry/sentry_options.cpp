@@ -126,7 +126,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
 	_define_setting("sentry/logger/include_variables", p_options->logger_include_variables, false);
 	_requires_restart("sentry/logger/include_variables");
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_event_mask, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING_FOR_EVENTS()), p_options->logger_event_mask, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_breadcrumb_mask, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/logs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_log_mask, false);
 
@@ -251,7 +251,7 @@ bool SentryOptions::is_logger_messages_as_breadcrumbs_enabled() const {
 }
 
 void SentryOptions::set_logger_messages_as_breadcrumbs(bool p_enabled) {
-	WARN_DEPRECATED_MSG("The \"messages_as_breadcrumbs\" option is deprecated. Use \"logger_breadcrumb_mask\" instead.");
+	WARN_DEPRECATED_MSG("The \"logger_messages_as_breadcrumbs\" option is deprecated. Set the MASK_MESSAGE flag in \"logger_breadcrumb_mask\" instead.");
 	if (p_enabled) {
 		logger_breadcrumb_mask.set_flag(GodotLoggerEventMask::MASK_MESSAGE);
 	} else {
@@ -343,8 +343,8 @@ void SentryOptions::_bind_methods() {
 		BIND_BITFIELD_FLAG(MASK_MESSAGE);
 	}
 
-	// DEPRECATED: These properties are deprecated and remain for compatibility reasons.
-	// TODO: Remove these after November 2026 or in version 3.0.
+	// DEPRECATED: This property is deprecated and remains for compatibility reasons.
+	// TODO: Remove it after November 2026 or in version 3.0.
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_messages_as_breadcrumbs"), set_logger_messages_as_breadcrumbs, is_logger_messages_as_breadcrumbs_enabled);
 }
 

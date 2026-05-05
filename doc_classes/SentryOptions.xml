@@ -101,6 +101,7 @@
 		</member>
 		<member name="logger_event_mask" type="int" setter="set_logger_event_mask" getter="get_logger_event_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="13">
 			Specifies the Godot logger events that are automatically captured as Sentry events. Accepts a single value or a bitwise combination of [enum GodotLoggerEventMask] masks.
+			[b]Note:[/b] [code]MASK_MESSAGE[/code] has no effect here. To capture log messages, set it in [member logger_log_mask] and/or [member logger_breadcrumb_mask] instead.
 		</member>
 		<member name="logger_include_source" type="bool" setter="set_logger_include_source" getter="is_logger_include_source_enabled" default="true">
 			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available in the exported project.
@@ -115,7 +116,7 @@
 		<member name="logger_log_mask" type="int" setter="set_logger_log_mask" getter="get_logger_log_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="0">
 			Specifies the Godot logger events that are automatically captured as Sentry logs. Accepts a single value or a bitwise combination of [enum GodotLoggerEventMask] masks.
 		</member>
-		<member name="logger_messages_as_breadcrumbs" type="bool" setter="set_logger_messages_as_breadcrumbs" getter="is_logger_messages_as_breadcrumbs_enabled" default="true" deprecated="Use the message flag in [member logger_breadcrumb_mask] instead.">
+		<member name="logger_messages_as_breadcrumbs" type="bool" setter="set_logger_messages_as_breadcrumbs" getter="is_logger_messages_as_breadcrumbs_enabled" default="true" deprecated="Set the [code]MASK_MESSAGE[/code] flag in [member logger_breadcrumb_mask] instead.">
 			If [code]true[/code], the SDK will capture log messages (such as [code]print()[/code] statements) as breadcrumbs along with events.
 		</member>
 		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">
