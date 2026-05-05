@@ -1,6 +1,7 @@
 #include "sentry_options.h"
 
 #include "sentry/environment.h"
+#include "sentry/settings_migrations.h"
 #include "sentry_sdk.h" // for SentrySDK::Level variant casts
 
 #include <godot_cpp/classes/os.hpp>
@@ -34,34 +35,6 @@ void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_
 	Dictionary info = (Dictionary)p_info;
 	info.erase("usage"); // Fix "usage" not supported warning.
 	ProjectSettings::get_singleton()->add_property_info(info);
-}
-
-void _migrate_setting(const String &p_old_name, const String &p_new_name) {
-	if (ProjectSettings::get_singleton()->has_setting(p_old_name)) {
-		Variant value = ProjectSettings::get_singleton()->get_setting(p_old_name);
-		ProjectSettings::get_singleton()->set_setting(p_new_name, value);
-		ProjectSettings::get_singleton()->set_setting(p_old_name, Variant());
-	}
-}
-
-void _migrate_messages_as_breadcrumbs() {
-	String old_setting = "sentry/logger/messages_as_breadcrumbs";
-	String mask_setting = "sentry/logger/breadcrumbs";
-
-	if (!ProjectSettings::get_singleton()->has_setting(old_setting)) {
-		return;
-	}
-
-	bool was_enabled = ProjectSettings::get_singleton()->get_setting(old_setting);
-	int mask = ProjectSettings::get_singleton()->get_setting(mask_setting,
-			int(sentry::GodotLoggerEventMask::MASK_ALL));
-	if (was_enabled) {
-		mask |= sentry::GodotLoggerEventMask::MASK_MESSAGE;
-	} else {
-		mask &= ~sentry::GodotLoggerEventMask::MASK_MESSAGE;
-	}
-	ProjectSettings::get_singleton()->set_setting(mask_setting, mask);
-	ProjectSettings::get_singleton()->set_setting(old_setting, Variant());
 }
 
 } // unnamed namespace
@@ -117,10 +90,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	// Migrate project settings from earlier SDK versions.
-	// TODO: Fold these into a versioned migration dispatcher in a follow-up.
-	_migrate_setting("sentry/experimental/enable_logs", "sentry/options/enable_logs");
-	_migrate_messages_as_breadcrumbs();
+	sentry::run_settings_migrations();
 
 	_define_setting("sentry/options/auto_init", p_options->auto_init);
 	_define_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
