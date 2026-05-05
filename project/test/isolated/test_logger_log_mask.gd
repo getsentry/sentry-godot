@@ -3,7 +3,7 @@ extends GdUnitTestSuite
 ## set in "logger_log_mask".
 
 
-var _captured: Array[SentryLog] = []
+var _captured: Array[Dictionary] = []
 
 
 func before() -> void:
@@ -21,7 +21,10 @@ func before() -> void:
 
 
 func _before_send_log(entry: SentryLog) -> SentryLog:
-	_captured.append(entry)
+	_captured.append({
+		"body": entry.body,
+		"level": entry.level,
+	})
 	return entry
 
 
