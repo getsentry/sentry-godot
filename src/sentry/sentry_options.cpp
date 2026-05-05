@@ -90,7 +90,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	sentry::run_settings_migrations();
+	sentry::run_project_settings_migrations();
 
 	_define_setting("sentry/options/auto_init", p_options->auto_init);
 	_define_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);

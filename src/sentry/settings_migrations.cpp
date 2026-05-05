@@ -72,7 +72,7 @@ namespace sentry {
 
 constexpr static int SCHEMA_VERSION = 1;
 
-void run_settings_migrations() {
+void run_project_settings_migrations() {
 	String schema_version_key = "sentry/schema_version";
 
 	bool has_version = ProjectSettings::get_singleton()->has_setting(schema_version_key);
