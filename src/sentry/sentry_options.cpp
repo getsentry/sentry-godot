@@ -44,6 +44,26 @@ void _migrate_setting(const String &p_old_name, const String &p_new_name) {
 	}
 }
 
+void _migrate_messages_as_breadcrumbs() {
+	String old_setting = "sentry/logger/messages_as_breadcrumbs";
+	String mask_setting = "sentry/logger/breadcrumbs";
+
+	if (!ProjectSettings::get_singleton()->has_setting(old_setting)) {
+		return;
+	}
+
+	bool was_enabled = ProjectSettings::get_singleton()->get_setting(old_setting);
+	int mask = ProjectSettings::get_singleton()->get_setting(mask_setting,
+			int(sentry::GodotLoggerEventMask::MASK_ALL));
+	if (was_enabled) {
+		mask |= sentry::GodotLoggerEventMask::MASK_MESSAGE;
+	} else {
+		mask &= ~sentry::GodotLoggerEventMask::MASK_MESSAGE;
+	}
+	ProjectSettings::get_singleton()->set_setting(mask_setting, mask);
+	ProjectSettings::get_singleton()->set_setting(old_setting, Variant());
+}
+
 } // unnamed namespace
 
 namespace sentry {
@@ -99,6 +119,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	// Migrate renamed project settings to their new locations
 	_migrate_setting("sentry/experimental/enable_logs", "sentry/options/enable_logs");
+	_migrate_messages_as_breadcrumbs();
 
 	_define_setting("sentry/options/auto_init", p_options->auto_init);
 	_define_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
