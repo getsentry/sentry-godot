@@ -360,7 +360,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 			event_times.push_back(now);
 		}
 
-		if (as_event || as_breadcrumb) {
+		if (as_event || as_breadcrumb || as_log) {
 			// Store timestamp to prevent repetitive logging from the same line of code.
 			error_timepoints[error_key] = now;
 		}
