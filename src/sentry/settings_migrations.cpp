@@ -45,16 +45,13 @@ void _rename_setting(const String &p_old_name, const String &p_new_name) {
 }
 
 void _migrate_messages_as_breadcrumbs() {
-	String old_setting = "sentry/logger/messages_as_breadcrumbs";
-	String mask_setting = "sentry/logger/breadcrumbs";
+	const String old_setting = "sentry/logger/messages_as_breadcrumbs";
+	const String mask_setting = "sentry/logger/breadcrumbs";
 
-	if (!ProjectSettings::get_singleton()->has_setting(old_setting)) {
-		return;
-	}
+	const bool was_enabled = ProjectSettings::get_singleton()->get_setting(old_setting, true);
+	int mask = ProjectSettings::get_singleton()->get_setting(
+			mask_setting, int(sentry::GodotLoggerEventMask::MASK_ALL));
 
-	bool was_enabled = ProjectSettings::get_singleton()->get_setting(old_setting);
-	int mask = ProjectSettings::get_singleton()->get_setting(mask_setting,
-			int(sentry::GodotLoggerEventMask::MASK_ALL));
 	if (was_enabled) {
 		mask |= sentry::GodotLoggerEventMask::MASK_MESSAGE;
 	} else {
