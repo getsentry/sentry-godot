@@ -103,6 +103,10 @@ public sealed class SentryGodotOptions : SentryOptions
     /// <summary>
     /// Specifies which Godot logger events are captured as Sentry events.
     /// </summary>
+    /// <remarks>
+    /// <see cref="GodotLoggerEventMask.Message"/> has no effect here. To capture log messages,
+    /// set it in <see cref="LoggerLogMask"/> or <see cref="LoggerBreadcrumbMask"/> instead.
+    /// </remarks>
     public GodotLoggerEventMask LoggerEventMask { get; set; } = GodotLoggerEventMask.Error | GodotLoggerEventMask.Script | GodotLoggerEventMask.Shader;
 
     /// <summary>
