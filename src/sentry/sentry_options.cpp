@@ -117,7 +117,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	// Migrate renamed project settings to their new locations
+	// Migrate project settings from earlier SDK versions.
+	// TODO: Fold these into a versioned migration dispatcher in a follow-up.
 	_migrate_setting("sentry/experimental/enable_logs", "sentry/options/enable_logs");
 	_migrate_messages_as_breadcrumbs();
 
