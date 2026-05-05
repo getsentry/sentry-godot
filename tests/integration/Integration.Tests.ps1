@@ -14,7 +14,7 @@ $ErrorActionPreference = "Stop"
 $global:DebugPreference = "Continue"
 
 # Import app-runner modules
-. $PSScriptRoot/../modules/app-runner/import-modules.ps1
+. $PSScriptRoot/../../modules/app-runner/import-modules.ps1
 
 # Import shared test cases
 . $PSScriptRoot/CommonTestCases.ps1
@@ -92,10 +92,10 @@ BeforeAll {
             [string[]]$AdditionalArgs = @()
         )
 
-        $runnerScript = Join-Path $PSScriptRoot "../test_web/run-action.ts"
+        $runnerScript = Join-Path $PSScriptRoot "../web/run-action.ts"
         $exportDir = (Resolve-Path $script:TestSetup.Executable).Path
         $godotArgs = $script:TestSetup.Args + @($Action) + $AdditionalArgs
-        $testWebDir = Join-Path $PSScriptRoot "../test_web"
+        $testWebDir = Join-Path $PSScriptRoot "../web"
 
         $process = Start-Process -FilePath "npx" `
             -ArgumentList (@("tsx", $runnerScript, $exportDir) + $godotArgs) `
@@ -162,7 +162,7 @@ BeforeAll {
     # Check DSN
     if ([string]::IsNullOrEmpty($script:TestSetup.Dsn)) {
         # Read DSN from project.godot as fallback
-        $projectGodotPath = Join-Path $PSScriptRoot "../project/project.godot"
+        $projectGodotPath = Join-Path $PSScriptRoot "../../project/project.godot"
         if (Test-Path $projectGodotPath) {
             Write-Warning "SENTRY_TEST_DSN environment variable is not set. Reading DSN from project.godot..."
             $projectContent = Get-Content $projectGodotPath -Raw

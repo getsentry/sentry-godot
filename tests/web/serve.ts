@@ -4,7 +4,7 @@ import path from "node:path";
 import escapeHtml from "escape-html";
 
 const PORT = parseInt(process.env.PORT || "8521", 10);
-const EXPORT_DIR = path.resolve(process.env.WEB_EXPORT_DIR || "../exports/web");
+const EXPORT_DIR = path.resolve(process.env.WEB_EXPORT_DIR || "../../exports/web");
 
 const MIME_TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",

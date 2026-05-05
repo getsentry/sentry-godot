@@ -132,12 +132,15 @@ dotnet build /p:EmitCompilerGeneratedFiles=true /p:CompilerGeneratedFilesOutputP
 - `project/` -- example Godot project
 - `project/addons/sentry/` -- where build artifacts are placed
 - `project/addons/sentry/dotnet/` -- the .NET layer with Sentry.Godot library and integration glue
-- `project/test/` -- unit tests
-- `test_web/` -- Playwright-based web/WASM test infrastructure
+- `project/test/` -- GDScript unit and integration tests for exported APIs, using gdUnit4
 - `scripts/` -- various scripts used mostly for maintenance
 - `assetlib/` -- metadata for Godot Asset Library entries
 - `doc_classes/` -- built-in Godot documentation (class reference)
 - `android_lib/` -- supporting library for Android, containing a Godot plugin that bridges the Sentry GDExtension with the native Sentry Android SDK.
+- `tests/cpp/` -- C++/GDExtension tests
+- `tests/dotnet/` -- .NET layer tests
+- `tests/integration/` -- end-to-end integration tests using Pester and [app-runner](https://github.com/getsentry/app-runner)
+- `tests/web/` -- Playwright-based web/WASM test infrastructure
 
 ## Initialization Flow
 
@@ -270,7 +273,7 @@ Web tests run the same GDScript suite and isolated tests in a headless Chromium 
     ```
 3. Install test dependencies (first time only):
     ```bash
-    cd test_web
+    cd tests/web
     npm install
     npx playwright install chromium
     ```
@@ -278,7 +281,7 @@ Web tests run the same GDScript suite and isolated tests in a headless Chromium 
 #### Running Tests
 
 ```bash
-cd test_web
+cd tests/web
 npx playwright test
 ```
 
@@ -296,7 +299,7 @@ WEB_EXPORT_DIR=path/to/export npx playwright test
 
 ### End-to-End Integration Tests
 
-Integration tests validate end-to-end SDK functionality by running test actions and verifying events are captured in Sentry. Tests are located in `integration_tests/` and use PowerShell with Pester testing framework alongside the 
+Integration tests validate end-to-end SDK functionality by running test actions and verifying events are captured in Sentry. Tests are located in `tests/integration/` and use PowerShell with Pester testing framework alongside the 
 [`app-runner`](https://github.com/getsentry/app-runner) submodule.
 
 #### Prerequisites
@@ -326,11 +329,11 @@ Install-Module -Name Pester -Force -SkipPublisherCheck
 #### Running Tests
 
 ```powershell
-cd integration_tests
+cd tests/integration
 Invoke-Pester -Path Integration.Tests.ps1
 ```
 
-Tests validate crash capture, message capture, runtime error capture, and event metadata. Results are saved to `integration_tests/results/`.
+Tests validate crash capture, message capture, runtime error capture, and event metadata. Results are saved to `tests/integration/results/`.
 
 ## Releasing
 
