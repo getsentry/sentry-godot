@@ -68,7 +68,7 @@ class SentryOptions : public RefCounted {
 
 public:
 	using GodotErrorType = sentry::GodotErrorType;
-	using GodotErrorMask = sentry::GodotErrorMask;
+	using GodotLoggerEventMask = sentry::GodotLoggerEventMask;
 
 private:
 	enum class DebugMode {
@@ -96,7 +96,7 @@ private:
 	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
 	bool attach_scene_tree = false;
 
-	bool enable_logs = false;
+	bool enable_logs = true;
 	Callable before_send_log;
 
 	bool app_hang_tracking = false;
@@ -105,9 +105,9 @@ private:
 	bool logger_enabled = true;
 	bool logger_include_source = true;
 	bool logger_include_variables = false;
-	bool logger_messages_as_breadcrumbs = true;
-	BitField<GodotErrorMask> logger_event_mask = int(GodotErrorMask::MASK_ALL_EXCEPT_WARNING);
-	BitField<GodotErrorMask> logger_breadcrumb_mask = int(GodotErrorMask::MASK_ALL);
+	BitField<GodotLoggerEventMask> logger_event_mask = GodotLoggerEventMask::MASK_ERROR | GodotLoggerEventMask::MASK_SCRIPT | GodotLoggerEventMask::MASK_SHADER;
+	BitField<GodotLoggerEventMask> logger_breadcrumb_mask = GodotLoggerEventMask::MASK_ALL;
+	BitField<GodotLoggerEventMask> logger_log_mask = GodotLoggerEventMask::MASK_NONE;
 	Ref<SentryLoggerLimits> logger_limits;
 
 	Ref<SentryExperimental> experimental;
@@ -201,17 +201,21 @@ public:
 	_FORCE_INLINE_ bool is_logger_include_variables_enabled() const { return logger_include_variables; }
 	_FORCE_INLINE_ void set_logger_include_variables(bool p_logger_include_variables) { logger_include_variables = p_logger_include_variables; }
 
-	_FORCE_INLINE_ bool is_logger_messages_as_breadcrumbs_enabled() const { return logger_messages_as_breadcrumbs; }
-	_FORCE_INLINE_ void set_logger_messages_as_breadcrumbs(bool p_enabled) { logger_messages_as_breadcrumbs = p_enabled; }
+	bool is_logger_messages_as_breadcrumbs_enabled() const;
+	void set_logger_messages_as_breadcrumbs(bool p_enabled);
 
-	_FORCE_INLINE_ BitField<GodotErrorMask> get_logger_event_mask() const { return logger_event_mask; }
-	_FORCE_INLINE_ void set_logger_event_mask(BitField<GodotErrorMask> p_mask) { logger_event_mask = p_mask; }
+	_FORCE_INLINE_ BitField<GodotLoggerEventMask> get_logger_event_mask() const { return logger_event_mask; }
+	_FORCE_INLINE_ void set_logger_event_mask(BitField<GodotLoggerEventMask> p_mask) { logger_event_mask = p_mask; }
 
-	_FORCE_INLINE_ BitField<GodotErrorMask> get_logger_breadcrumb_mask() const { return logger_breadcrumb_mask; }
-	_FORCE_INLINE_ void set_logger_breadcrumb_mask(BitField<GodotErrorMask> p_mask) { logger_breadcrumb_mask = p_mask; }
+	_FORCE_INLINE_ BitField<GodotLoggerEventMask> get_logger_breadcrumb_mask() const { return logger_breadcrumb_mask; }
+	_FORCE_INLINE_ void set_logger_breadcrumb_mask(BitField<GodotLoggerEventMask> p_mask) { logger_breadcrumb_mask = p_mask; }
+
+	_FORCE_INLINE_ BitField<GodotLoggerEventMask> get_logger_log_mask() const { return logger_log_mask; }
+	_FORCE_INLINE_ void set_logger_log_mask(BitField<GodotLoggerEventMask> p_mask) { logger_log_mask = p_mask; }
 
 	_FORCE_INLINE_ bool should_capture_event(GodotErrorType p_error_type) { return logger_event_mask.has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
 	_FORCE_INLINE_ bool should_capture_breadcrumb(GodotErrorType p_error_type) { return logger_breadcrumb_mask.has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
+	_FORCE_INLINE_ bool should_capture_log(GodotErrorType p_error_type) { return enable_logs && logger_log_mask.has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
 
 	_FORCE_INLINE_ Ref<SentryLoggerLimits> get_logger_limits() const { return logger_limits; }
 	void set_logger_limits(const Ref<SentryLoggerLimits> &p_limits);
@@ -241,4 +245,4 @@ public:
 
 } // namespace sentry
 
-VARIANT_BITFIELD_CAST(sentry::SentryOptions::GodotErrorMask);
+VARIANT_BITFIELD_CAST(sentry::SentryOptions::GodotLoggerEventMask);

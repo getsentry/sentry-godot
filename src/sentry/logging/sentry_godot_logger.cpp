@@ -351,7 +351,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 				!is_spammy_error;
 		as_breadcrumb = SENTRY_OPTIONS()->should_capture_breadcrumb((GodotErrorType)p_error_type) &&
 				!is_spammy_error;
-		as_log = SENTRY_OPTIONS()->get_enable_logs() &&
+		as_log = SENTRY_OPTIONS()->should_capture_log((GodotErrorType)p_error_type) &&
 				!is_spammy_error;
 
 		if (as_event) {
@@ -463,8 +463,9 @@ void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 		return;
 	}
 
-	bool as_log = SENTRY_OPTIONS()->get_enable_logs();
-	bool as_breadcrumb = SENTRY_OPTIONS()->is_logger_messages_as_breadcrumbs_enabled();
+	bool as_log = SENTRY_OPTIONS()->get_enable_logs() &&
+			SENTRY_OPTIONS()->get_logger_log_mask().has_flag(GodotLoggerEventMask::MASK_MESSAGE);
+	bool as_breadcrumb = SENTRY_OPTIONS()->get_logger_breadcrumb_mask().has_flag(GodotLoggerEventMask::MASK_MESSAGE);
 
 	if (!as_log && !as_breadcrumb) {
 		return;

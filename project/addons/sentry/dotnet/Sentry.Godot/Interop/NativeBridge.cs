@@ -77,9 +77,9 @@ internal static partial class NativeBridge
         public byte logger_enabled;
         public byte logger_include_source;
         public byte logger_include_variables;
-        public byte logger_messages_as_breadcrumbs;
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
+        public int logger_log_mask;
         public byte enable_metrics;
     }
 
@@ -112,9 +112,9 @@ internal static partial class NativeBridge
         public byte logger_enabled;
         public byte logger_include_source;
         public byte logger_include_variables;
-        public byte logger_messages_as_breadcrumbs;
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
+        public int logger_log_mask;
         public byte enable_metrics;
     }
 
@@ -153,9 +153,9 @@ internal static partial class NativeBridge
         opts.LoggerEnabled = data.logger_enabled != 0;
         opts.LoggerIncludeSource = data.logger_include_source != 0;
         opts.LoggerIncludeVariables = data.logger_include_variables != 0;
-        opts.LoggerMessagesAsBreadcrumbs = data.logger_messages_as_breadcrumbs != 0;
-        opts.LoggerEventMask = (SentryGodotOptions.GodotErrorMask)data.logger_event_mask;
-        opts.LoggerBreadcrumbMask = (SentryGodotOptions.GodotErrorMask)data.logger_breadcrumb_mask;
+        opts.LoggerEventMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_event_mask;
+        opts.LoggerBreadcrumbMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_breadcrumb_mask;
+        opts.LoggerLogMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_log_mask;
         opts.EnableMetrics = data.enable_metrics != 0;
     }
 
@@ -324,9 +324,9 @@ internal static partial class NativeBridge
                 logger_enabled = (byte)(opts.LoggerEnabled ? 1 : 0),
                 logger_include_source = (byte)(opts.LoggerIncludeSource ? 1 : 0),
                 logger_include_variables = (byte)(opts.LoggerIncludeVariables ? 1 : 0),
-                logger_messages_as_breadcrumbs = (byte)(opts.LoggerMessagesAsBreadcrumbs ? 1 : 0),
                 logger_event_mask = (int)opts.LoggerEventMask,
                 logger_breadcrumb_mask = (int)opts.LoggerBreadcrumbMask,
+                logger_log_mask = (int)opts.LoggerLogMask,
                 enable_metrics = (byte)(opts.EnableMetrics ? 1 : 0),
             };
             csharp_interop_sdk_init(managed);
