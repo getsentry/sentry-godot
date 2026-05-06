@@ -71,14 +71,6 @@ runs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Build C# demo project
-      if: inputs.dotnet == 'true'
-      shell: bash
-      env:
-        DOTNET_NOLOGO: true
-        DOTNET_CLI_TELEMETRY_OPTOUT: true
-      run: dotnet build "project/Sentry demo project.csproj"
-
     - name: Diagnostic info
       shell: bash
       run: |
