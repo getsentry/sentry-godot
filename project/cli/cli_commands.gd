@@ -12,6 +12,8 @@ extends Node
 ## Use "godot --headless --path ./project -- help" to list available commands.
 
 
+enum DotnetInitDriver { GDSCRIPT, DOTNET }
+
 var exit_code: int
 
 var _parser := CLIParser.new()
@@ -41,6 +43,7 @@ func _register_commands() -> void:
 	_parser.add_command("metric-capture", _cmd_metric_capture, "Capture metrics to Sentry")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
 	_parser.add_command("dotnet-exception-capture", _cmd_dotnet_exception_capture, "Capture a .NET exception (scenario: plain | bare-rethrow | wrapped-rethrow)")
+	_parser.add_command("dotnet-capture-via-gdscript-init", _cmd_dotnet_capture_via_gdscript_init, "Capture a .NET exception with GDScript driving init")
 
 
 ## Shows available commands and their arguments.
@@ -245,18 +248,28 @@ func _cmd_dotnet_exception_capture(p_scenario: String) -> int:
 		_:
 			printerr("Error: Unknown scenario \"%s\". Valid: plain, bare-rethrow, wrapped-rethrow" % p_scenario)
 			return 1
-	return await _run_dotnet_trigger("dotnet-exception-capture-" + p_scenario, trigger_method)
+	return await _run_dotnet_trigger("dotnet-exception-capture-" + p_scenario, trigger_method, DotnetInitDriver.DOTNET)
 
 
-## Runs a .NET exception trigger via Scenario C init.
-func _run_dotnet_trigger(p_test_type: String, p_trigger_method: StringName) -> int:
+func _cmd_dotnet_capture_via_gdscript_init() -> int:
+	return await _run_dotnet_trigger("dotnet-capture-via-gdscript-init", "TriggerException", DotnetInitDriver.GDSCRIPT)
+
+
+## Runs a .NET exception trigger with the chosen init driver.
+func _run_dotnet_trigger(p_test_type: String, p_trigger_method: StringName, p_init_driver: DotnetInitDriver) -> int:
 	var script: Script = load("res://cli/DotnetCliTriggers.cs")
 	if script == null:
 		printerr("Error: DotnetCliTriggers.cs is not available - is this a Godot .NET build?")
 		return 1
 
 	var triggers: Object = script.new()
-	triggers.InitSentryFromDotnet()
+	match p_init_driver:
+		DotnetInitDriver.GDSCRIPT:
+			# GDScript inits native; .NET auto-inits via InitFromNative().
+			await _init_sentry()
+		DotnetInitDriver.DOTNET:
+			triggers.InitSentryFromDotnet()
+
 	triggers.AddIntegrationTestContext(p_test_type)
 
 	await get_tree().create_timer(0.5).timeout

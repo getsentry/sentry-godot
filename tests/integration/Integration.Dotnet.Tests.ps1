@@ -114,6 +114,7 @@ Describe ".NET Integration Tests" {
             $script:exceptionRunResult      = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("plain")
             $script:bareRethrowRunResult    = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("bare-rethrow")
             $script:wrappedRethrowRunResult = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("wrapped-rethrow")
+            $script:gdscriptInitRunResult   = Invoke-TestAction -Action "dotnet-capture-via-gdscript-init"
         }
         finally {
             Disconnect-Device
@@ -235,6 +236,40 @@ Describe ".NET Integration Tests" {
             $outermost = $values[$values.Count - 1]
             $outermost.mechanism.type | Should -Be "Godot.Bridge"
             $outermost.mechanism.handled | Should -Be $false
+        }
+    }
+
+    Context "Dotnet with GDScript driving init" {
+        BeforeAll {
+            $runResult = $script:gdscriptInitRunResult
+
+            $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
+            if ($eventId) {
+                Write-GitHub "::group::Getting event content"
+                $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
+                Write-GitHub "::endgroup::"
+            }
+        }
+
+        It "<Name>" -ForEach $CommonTestCases {
+            & $testBlock -SentryEvent $runEvent -TestType "dotnet-capture-via-gdscript-init" -RunResult $runResult -TestSetup $script:TestSetup
+        }
+
+        It "Exits with code zero" {
+            $runResult.ExitCode | Should -Be 0
+        }
+
+        It "Has correct exception type" {
+            $runEvent.exception.values[0].type | Should -Be "System.Exception"
+        }
+
+        It "Has correct exception value" {
+            $runEvent.exception.values[0].value | Should -Be "Exception (should be captured)"
+        }
+
+        It "Has Godot.Bridge mechanism" {
+            $runEvent.exception.values[0].mechanism.type | Should -Be "Godot.Bridge"
+            $runEvent.exception.values[0].mechanism.handled | Should -Be $false
         }
     }
 }
