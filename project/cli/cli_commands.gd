@@ -274,8 +274,12 @@ func _run_dotnet_trigger(p_test_type: String, p_trigger_method: StringName, p_in
 
 	await get_tree().create_timer(0.5).timeout
 
-	# Bridge catches synchronously; LastEventId is set before this returns.
 	triggers.call(p_trigger_method)
+
+	# Give CoreClrExceptionHandler time to capture on its background thread.
+	# Currently unexercised (this suite only runs LoggerExceptionHandler), but
+	# kept so the test stays correct if that changes.
+	await get_tree().create_timer(0.5).timeout
 
 	var event_id: String = triggers.GetLastEventId()
 	print("EVENT_CAPTURED: ", event_id)
