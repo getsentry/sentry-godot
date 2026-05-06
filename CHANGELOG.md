@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Enable logs and disable auto-logging by default ([#680](https://github.com/getsentry/sentry-godot/pull/680))
+  - `SentryOptions.enable_logs` now defaults to `true`; the Godot logger integration no longer auto-captures events as Sentry Logs. Set `SentryOptions.logger_log_mask` (e.g. `MASK_ERROR | MASK_SCRIPT | MASK_SHADER`) to opt back in.
+  - Added `SentryOptions.logger_log_mask` to choose which Godot logger events are auto-captured as Sentry Logs.
+  - Renamed `SentryOptions.GodotErrorMask` to `SentryOptions.GodotLoggerEventMask` and added the `MASK_MESSAGE` flag for log messages.
+  - Deprecated `SentryOptions.logger_messages_as_breadcrumbs`; set the `MASK_MESSAGE` flag in `logger_breadcrumb_mask` instead.
+
 ### Features
 
 - *Experimental*: Add C# (.NET) support ([#629](https://github.com/getsentry/sentry-godot/pull/629), [#644](https://github.com/getsentry/sentry-godot/pull/644))

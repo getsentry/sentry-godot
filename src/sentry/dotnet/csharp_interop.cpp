@@ -78,9 +78,9 @@ struct NativeOptions {
 	uint8_t logger_enabled;
 	uint8_t logger_include_source;
 	uint8_t logger_include_variables;
-	uint8_t logger_messages_as_breadcrumbs;
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
+	int32_t logger_log_mask;
 
 	// Experimental
 	uint8_t enable_metrics;
@@ -119,9 +119,9 @@ struct ManagedOptions {
 	uint8_t logger_enabled;
 	uint8_t logger_include_source;
 	uint8_t logger_include_variables;
-	uint8_t logger_messages_as_breadcrumbs;
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
+	int32_t logger_log_mask;
 
 	uint8_t enable_metrics;
 };
@@ -157,9 +157,9 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_logger_enabled(data.logger_enabled);
 	options->set_logger_include_source(data.logger_include_source);
 	options->set_logger_include_variables(data.logger_include_variables);
-	options->set_logger_messages_as_breadcrumbs(data.logger_messages_as_breadcrumbs);
 	options->set_logger_event_mask(data.logger_event_mask);
 	options->set_logger_breadcrumb_mask(data.logger_breadcrumb_mask);
+	options->set_logger_log_mask(data.logger_log_mask);
 	options->get_experimental()->set_enable_metrics(data.enable_metrics);
 }
 
@@ -191,9 +191,9 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.logger_enabled = options->is_logger_enabled();
 	r_data.logger_include_source = options->is_logger_include_source_enabled();
 	r_data.logger_include_variables = options->is_logger_include_variables_enabled();
-	r_data.logger_messages_as_breadcrumbs = options->is_logger_messages_as_breadcrumbs_enabled();
 	r_data.logger_event_mask = options->get_logger_event_mask();
 	r_data.logger_breadcrumb_mask = options->get_logger_breadcrumb_mask();
+	r_data.logger_log_mask = options->get_logger_log_mask();
 	r_data.enable_metrics = options->get_experimental()->get_enable_metrics();
 }
 

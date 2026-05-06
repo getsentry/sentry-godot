@@ -351,7 +351,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 				!is_spammy_error;
 		as_breadcrumb = SENTRY_OPTIONS()->should_capture_breadcrumb((GodotErrorType)p_error_type) &&
 				!is_spammy_error;
-		as_log = SENTRY_OPTIONS()->get_enable_logs() &&
+		as_log = SENTRY_OPTIONS()->should_capture_log((GodotErrorType)p_error_type) &&
 				!is_spammy_error;
 
 		if (as_event) {
@@ -360,7 +360,7 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 			event_times.push_back(now);
 		}
 
-		if (as_event || as_breadcrumb) {
+		if (as_event || as_breadcrumb || as_log) {
 			// Store timestamp to prevent repetitive logging from the same line of code.
 			error_timepoints[error_key] = now;
 		}
@@ -463,8 +463,8 @@ void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 		return;
 	}
 
-	bool as_log = SENTRY_OPTIONS()->get_enable_logs();
-	bool as_breadcrumb = SENTRY_OPTIONS()->is_logger_messages_as_breadcrumbs_enabled();
+	bool as_log = SENTRY_OPTIONS()->should_capture_message_log();
+	bool as_breadcrumb = SENTRY_OPTIONS()->should_capture_message_breadcrumb();
 
 	if (!as_log && !as_breadcrumb) {
 		return;

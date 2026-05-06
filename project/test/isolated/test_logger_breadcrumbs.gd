@@ -4,7 +4,7 @@ extends SentryTestSuite
 
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.logger_messages_as_breadcrumbs = true
+		options.logger_breadcrumb_mask |= SentryOptions.MASK_MESSAGE
 	)
 
 

@@ -44,6 +44,26 @@ void _migrate_setting(const String &p_old_name, const String &p_new_name) {
 	}
 }
 
+void _migrate_messages_as_breadcrumbs() {
+	String old_setting = "sentry/logger/messages_as_breadcrumbs";
+	String mask_setting = "sentry/logger/breadcrumbs";
+
+	if (!ProjectSettings::get_singleton()->has_setting(old_setting)) {
+		return;
+	}
+
+	bool was_enabled = ProjectSettings::get_singleton()->get_setting(old_setting);
+	int mask = ProjectSettings::get_singleton()->get_setting(mask_setting,
+			int(sentry::GodotLoggerEventMask::MASK_ALL));
+	if (was_enabled) {
+		mask |= sentry::GodotLoggerEventMask::MASK_MESSAGE;
+	} else {
+		mask &= ~sentry::GodotLoggerEventMask::MASK_MESSAGE;
+	}
+	ProjectSettings::get_singleton()->set_setting(mask_setting, mask);
+	ProjectSettings::get_singleton()->set_setting(old_setting, Variant());
+}
+
 } // unnamed namespace
 
 namespace sentry {
@@ -97,8 +117,10 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	ERR_FAIL_COND(p_options.is_null());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	// Migrate renamed project settings to their new locations
+	// Migrate project settings from earlier SDK versions.
+	// TODO: Fold these into a versioned migration dispatcher in a follow-up.
 	_migrate_setting("sentry/experimental/enable_logs", "sentry/options/enable_logs");
+	_migrate_messages_as_breadcrumbs();
 
 	_define_setting("sentry/options/auto_init", p_options->auto_init);
 	_define_setting("sentry/options/skip_auto_init_on_editor_play", p_options->skip_auto_init_on_editor_play);
@@ -126,9 +148,9 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
 	_define_setting("sentry/logger/include_variables", p_options->logger_include_variables, false);
 	_requires_restart("sentry/logger/include_variables");
-	_define_setting("sentry/logger/messages_as_breadcrumbs", p_options->logger_messages_as_breadcrumbs);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_event_mask, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING_FOR_EVENTS()), p_options->logger_event_mask, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_breadcrumb_mask, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/logs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_log_mask, false);
 
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), p_options->logger_limits->events_per_frame, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->logger_limits->repeated_error_window_ms, false);
@@ -212,9 +234,9 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	p_options->logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", p_options->logger_include_source);
 	p_options->logger_include_variables = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_variables", p_options->logger_include_variables);
-	p_options->logger_messages_as_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/logger/messages_as_breadcrumbs", p_options->logger_messages_as_breadcrumbs);
 	p_options->logger_event_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/events", p_options->logger_event_mask);
 	p_options->logger_breadcrumb_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/breadcrumbs", p_options->logger_breadcrumb_mask);
+	p_options->logger_log_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/logs", p_options->logger_log_mask);
 
 	p_options->logger_limits->events_per_frame = ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/events_per_frame", p_options->logger_limits->events_per_frame);
 	p_options->logger_limits->repeated_error_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/repeated_error_window_ms", p_options->logger_limits->repeated_error_window_ms);
@@ -243,6 +265,20 @@ Ref<SentryOptions> SentryOptions::create_from_project_settings() {
 
 	_load_project_settings(options);
 	return options;
+}
+
+bool SentryOptions::is_logger_messages_as_breadcrumbs_enabled() const {
+	// DEPRECATED: Scheduled for removal.
+	return logger_breadcrumb_mask.has_flag(GodotLoggerEventMask::MASK_MESSAGE);
+}
+
+void SentryOptions::set_logger_messages_as_breadcrumbs(bool p_enabled) {
+	WARN_DEPRECATED_MSG("The \"logger_messages_as_breadcrumbs\" option is deprecated. Set the MASK_MESSAGE flag in \"logger_breadcrumb_mask\" instead.");
+	if (p_enabled) {
+		logger_breadcrumb_mask.set_flag(GodotLoggerEventMask::MASK_MESSAGE);
+	} else {
+		logger_breadcrumb_mask.clear_flag(GodotLoggerEventMask::MASK_MESSAGE);
+	}
 }
 
 void SentryOptions::set_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
@@ -309,9 +345,9 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, is_logger_include_source_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_variables"), set_logger_include_variables, is_logger_include_variables_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_messages_as_breadcrumbs"), set_logger_messages_as_breadcrumbs, is_logger_messages_as_breadcrumbs_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_event_mask"), set_logger_event_mask, get_logger_event_mask);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_breadcrumb_mask"), set_logger_breadcrumb_mask, get_logger_breadcrumb_mask);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_log_mask"), set_logger_log_mask, get_logger_log_mask);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::OBJECT, "logger_limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), set_logger_limits, get_logger_limits);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send"), set_before_send, get_before_send);
@@ -326,7 +362,12 @@ void SentryOptions::_bind_methods() {
 		BIND_BITFIELD_FLAG(MASK_WARNING);
 		BIND_BITFIELD_FLAG(MASK_SCRIPT);
 		BIND_BITFIELD_FLAG(MASK_SHADER);
+		BIND_BITFIELD_FLAG(MASK_MESSAGE);
 	}
+
+	// DEPRECATED: This property is deprecated and remains for compatibility reasons.
+	// TODO: Remove it after November 2026 or in version 3.0.
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_messages_as_breadcrumbs"), set_logger_messages_as_breadcrumbs, is_logger_messages_as_breadcrumbs_enabled);
 }
 
 SentryOptions::SentryOptions() {
