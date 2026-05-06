@@ -19,9 +19,9 @@ void _define_internal_project_setting(const String &p_name, const Variant &p_def
 }
 
 bool _has_any_persisted_sentry_settings() {
-	TypedArray<Dictionary> properties = ProjectSettings::get_singleton()->get_property_list();
+	const TypedArray<Dictionary> properties = ProjectSettings::get_singleton()->get_property_list();
 	for (int i = 0; i < properties.size(); ++i) {
-		String name = ((Dictionary)properties[i]).get("name", String());
+		const String name = ((Dictionary)properties[i]).get("name", String());
 		if (name.begins_with("sentry/")) {
 			return true;
 		}
