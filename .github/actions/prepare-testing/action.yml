@@ -56,7 +56,9 @@ runs:
 
     - name: Set up Godot
       shell: bash
-      run: ./scripts/setup-godot.sh --arch "${{ inputs.arch }}"
+      env:
+        ARCH: ${{ inputs.arch }}
+      run: ./scripts/setup-godot.sh --arch "$ARCH"
 
     - name: Diagnostic info
       shell: bash
