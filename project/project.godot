@@ -64,3 +64,4 @@ logger/logs=143
 logger/limits/throttle_window_ms=1000
 experimental/attach_screenshot=true
 experimental/screenshot_level=1
+schema_version=1
