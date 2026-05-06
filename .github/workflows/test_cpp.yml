@@ -11,8 +11,6 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      GODOT_VERSION: 4.5.1-stable
     steps:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -40,19 +38,7 @@ jobs:
         run: scons tests=yes target=editor
 
       - name: Set up Godot
-        shell: bash
-        run: |
-          archive_file=Godot_v${GODOT_VERSION}_linux.x86_64.zip
-          url=https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/${archive_file}
-          mkdir godot
-          cd godot
-          curl -L -o godot.zip "${url}"
-          unzip -q godot.zip
-          rm godot.zip
-          bin=${PWD}/Godot_v${GODOT_VERSION}_linux.x86_64
-          chmod +x "${bin}"
-          "${bin}" --version
-          echo "GODOT=${bin}" >> $GITHUB_ENV
+        run: ./scripts/setup-godot.sh
 
       - name: Run tests
         shell: bash

@@ -57,68 +57,8 @@ runs:
     - name: Set up Godot
       shell: bash
       env:
-        # Set Godot version override here (e.g. "4.5.1-stable").
-        GODOT_VERSION_OVERRIDE: 4.5.1-stable
         ARCH: ${{ inputs.arch }}
-      run: |
-        if [[ -n "$GODOT_VERSION_OVERRIDE" ]]; then
-          version="$GODOT_VERSION_OVERRIDE"
-        else
-          major_minor=$(sed -n 's/compatibility_minimum = "\([^"]*\)"/\1/p' project/addons/sentry/sentry.gdextension)
-          version="${major_minor}-stable"
-        fi
-
-        echo "Using Godot version: $version"
-        echo "GODOT_VERSION=$version" >> $GITHUB_ENV
-
-        if [[ "$RUNNER_OS" == "Windows" ]]; then
-          if [[ "$ARCH" == "x86_32" ]]; then
-            suffix=win32.exe
-          elif [[ "$ARCH" == "x86_64" ]]; then
-            suffix=win64.exe
-          elif [[ "$ARCH" == "arm64" ]]; then
-            suffix=windows_arm64.exe
-          else
-            echo "Unexpected Windows architecture: $ARCH"
-            exit 1
-          fi
-        elif [[ "$RUNNER_OS" == "Linux" ]]; then
-          if [[ "$ARCH" == "x86_32" ]]; then
-            suffix=linux.x86_32
-          elif [[ "$ARCH" == "x86_64" ]]; then
-            suffix=linux.x86_64
-          elif [[ "$ARCH" == "arm64" ]]; then
-            suffix=linux.arm64
-          else
-            echo "Unexpected Linux architecture: $ARCH"
-            exit 1
-          fi
-        elif [[ "$RUNNER_OS" == "macOS" ]]; then
-          if [[ "$ARCH" == "universal" ]]; then
-            suffix=macos.universal
-          else
-            echo "Unexpected macOS architecture: $ARCH"
-            exit 1
-          fi
-        fi
-
-        archive_file=Godot_v${version}_${suffix}.zip
-        url=https://github.com/godotengine/godot-builds/releases/download/${version}/${archive_file}
-        if [[ "$RUNNER_OS" == "macOS" ]]; then
-          bin=${GITHUB_WORKSPACE}/godot/Godot.app/Contents/MacOS/Godot
-        else
-          bin=${GITHUB_WORKSPACE}/godot/Godot_v${version}_${suffix}
-        fi
-        mkdir godot/
-        cd godot/
-        echo "Downloading ${url}"
-        curl -L -o godot.zip "${url}"
-        unzip godot.zip
-        rm godot.zip
-        chmod u+x ${bin}
-        ls -l
-        ${bin} --version
-        echo "GODOT=${bin}" >> $GITHUB_ENV
+      run: ./scripts/setup-godot.sh --arch "$ARCH"
 
     - name: Diagnostic info
       shell: bash
