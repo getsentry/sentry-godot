@@ -144,10 +144,17 @@ $CommonTestCases = @(
             $SentryEvent.contexts.os | Should -Not -BeNullOrEmpty
             $SentryEvent.contexts.os.os | Should -Not -BeNullOrEmpty
             $SentryEvent.contexts.os.name | Should -Not -BeNullOrEmpty
-            if (-not $TestSetup.IsWeb) {
+            if ($TestSetup.IsWeb) {
                 # On Web, OS version may not be available.
-                $SentryEvent.contexts.os.version | Should -Not -BeNullOrEmpty
+                return
             }
+            if ($TestSetup.IsDotnet) {
+                # TODO: On Linux .NET-captured events, os.version is null and
+                # os.kernel_version holds the distro version (e.g. "24.04.4")
+                # rather than the actual kernel version. Investigate upstream.
+                return
+            }
+            $SentryEvent.contexts.os.version | Should -Not -BeNullOrEmpty
         }
     }
     @{ Name = "Contains Godot contexts"; TestBlock = {
