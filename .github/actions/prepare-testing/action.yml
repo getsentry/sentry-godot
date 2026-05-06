@@ -63,7 +63,7 @@ runs:
       env:
         ARCH: ${{ inputs.arch }}
         MONO_FLAG: ${{ inputs.dotnet == 'true' && '--mono' || '' }}
-      run: ./scripts/setup-godot.sh --arch "$ARCH" "$MONO_FLAG"
+      run: ./scripts/setup-godot.sh --arch "$ARCH" $MONO_FLAG
 
     - name: Set up .NET
       if: inputs.dotnet == 'true'
