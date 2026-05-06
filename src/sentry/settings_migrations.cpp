@@ -73,10 +73,10 @@ namespace sentry {
 constexpr static int SCHEMA_VERSION = 1;
 
 void run_project_settings_migrations() {
-	String schema_version_key = "sentry/schema_version";
+	const String schema_version_key = "sentry/schema_version";
 
-	bool has_version = ProjectSettings::get_singleton()->has_setting(schema_version_key);
-	bool is_fresh_install = !has_version && !_has_any_persisted_sentry_settings();
+	const bool has_version = ProjectSettings::get_singleton()->has_setting(schema_version_key);
+	const bool is_fresh_install = !has_version && !_has_any_persisted_sentry_settings();
 
 	_define_internal_project_setting(schema_version_key, 0);
 
@@ -85,7 +85,7 @@ void run_project_settings_migrations() {
 		return;
 	}
 
-	int from_version = ProjectSettings::get_singleton()->get_setting(schema_version_key, 0);
+	const int from_version = ProjectSettings::get_singleton()->get_setting(schema_version_key, 0);
 
 	if (from_version > SCHEMA_VERSION) {
 		UtilityFunctions::push_warning("Sentry: Project settings are from a newer SDK version than the current version. Migration is not supported.");
