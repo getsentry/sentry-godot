@@ -9,6 +9,10 @@ inputs:
     description: Which export template will be used, lowercase (e.g., android, ios).
     required: false
     default: ""
+  dotnet:
+    description: Set to "true" to use the Godot .NET (mono) build and build the C# project.
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -58,7 +62,22 @@ runs:
       shell: bash
       env:
         ARCH: ${{ inputs.arch }}
-      run: ./scripts/setup-godot.sh --arch "$ARCH"
+        MONO_FLAG: ${{ inputs.dotnet == 'true' && '--mono' || '' }}
+      run: ./scripts/setup-godot.sh --arch "$ARCH" "$MONO_FLAG"
+
+    - name: Set up .NET
+      if: inputs.dotnet == 'true'
+      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Build C# demo project
+      if: inputs.dotnet == 'true'
+      shell: bash
+      env:
+        DOTNET_NOLOGO: true
+        DOTNET_CLI_TELEMETRY_OPTOUT: true
+      run: dotnet build "project/Sentry demo project.csproj"
 
     - name: Diagnostic info
       shell: bash

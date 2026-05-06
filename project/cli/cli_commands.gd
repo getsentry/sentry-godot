@@ -40,6 +40,7 @@ func _register_commands() -> void:
 	_parser.add_command("log-capture", _cmd_log_capture, "Capture a structured log to Sentry")
 	_parser.add_command("metric-capture", _cmd_metric_capture, "Capture metrics to Sentry")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
+	_parser.add_command("dotnet-exception-capture", _cmd_dotnet_exception_capture, "Capture a .NET exception (scenario: plain | bare-rethrow | wrapped-rethrow)")
 
 
 ## Shows available commands and their arguments.
@@ -230,6 +231,43 @@ func _before_send_metric(metric: SentryMetric) -> SentryMetric:
 	metric.set_attribute("handler_added", "added_value")
 	metric.remove_attribute("deleted_metric_attribute")
 	return metric
+
+
+func _cmd_dotnet_exception_capture(p_scenario: String) -> int:
+	var trigger_method: StringName
+	match p_scenario:
+		"plain":
+			trigger_method = "TriggerException"
+		"bare-rethrow":
+			trigger_method = "TriggerBareRethrow"
+		"wrapped-rethrow":
+			trigger_method = "TriggerWrappedRethrow"
+		_:
+			printerr("Error: Unknown scenario \"%s\". Valid: plain, bare-rethrow, wrapped-rethrow" % p_scenario)
+			return 1
+	return await _run_dotnet_trigger("dotnet-exception-capture-" + p_scenario, trigger_method)
+
+
+## Runs a .NET exception trigger via Scenario C init.
+func _run_dotnet_trigger(p_test_type: String, p_trigger_method: StringName) -> int:
+	var script: Script = load("res://cli/DotnetCliTriggers.cs")
+	if script == null:
+		printerr("Error: DotnetCliTriggers.cs is not available - is this a Godot .NET build?")
+		return 1
+
+	var triggers: Object = script.new()
+	triggers.InitSentryFromDotnet()
+	triggers.AddIntegrationTestContext(p_test_type)
+
+	await get_tree().create_timer(0.5).timeout
+
+	# Bridge catches synchronously; LastEventId is set before this returns.
+	triggers.call(p_trigger_method)
+
+	var event_id: String = triggers.GetLastEventId()
+	print("EVENT_CAPTURED: ", event_id)
+	_print_test_result(p_test_type, true, "Test complete")
+	return 0
 
 
 func _cmd_run_tests(tests: String = "res://test/suites/") -> int:

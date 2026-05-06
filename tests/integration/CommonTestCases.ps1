@@ -33,6 +33,11 @@ $CommonTestCases = @(
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
             $SentryEvent.platform | Should -Not -BeNullOrEmpty
 
+            if ($TestSetup.IsDotnet) {
+                $SentryEvent.platform | Should -Be "csharp"
+                return
+            }
+
             $expectedPlatform = @{
                 "Windows" = "native"
                 "Linux" = "native"
@@ -145,6 +150,13 @@ $CommonTestCases = @(
     }
     @{ Name = "Contains Godot contexts"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
+
+            if ($TestSetup.IsDotnet) {
+                # TODO: Sync godot_engine and godot_performance contexts from the
+                # native layer to .NET-captured events. Re-enable this assertion once
+                # the cross-layer context sync lands.
+                return
+            }
 
             if ($TestSetup.IsAndroid -and $TestType -eq "crash-capture") {
                 # Skip Godot context tests for Android crashes
