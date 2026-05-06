@@ -10,7 +10,7 @@ inputs:
     required: false
     default: ""
   dotnet:
-    description: Set to "true" to use the Godot .NET (mono) build and build the C# project.
+    description: Set to "true" to install the .NET SDK and use the Godot mono build.
     required: false
     default: "false"
 
