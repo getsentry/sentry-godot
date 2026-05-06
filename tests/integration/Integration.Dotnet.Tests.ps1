@@ -31,7 +31,15 @@ BeforeAll {
         $args = $script:TestSetup.Args + @($Action) + $AdditionalArgs
         $execPath = $script:TestSetup.Executable
 
-        $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $args
+        if ($script:TestSetup.IsAndroid) {
+            $args = ConvertTo-AndroidExtras -Arguments $args
+            $execPath = $script:TestSetup.AndroidComponent
+        } elseif ($script:TestSetup.Platform -match "iOS") {
+            $execPath = $script:TestSetup.iOSBundleId
+        }
+
+        $logFilePath = if ($script:TestSetup.Platform -eq "iOSSauceLabs") { $script:TestSetup.iOSApplicationLogFile } else { $null }
+        $runResult = Invoke-DeviceApp -ExecutablePath $execPath -Arguments $args -LogFilePath $logFilePath
 
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
 
@@ -47,11 +55,14 @@ BeforeAll {
         Dsn = $env:SENTRY_TEST_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
         Platform = $env:SENTRY_TEST_PLATFORM
-        IsAndroid = $false
-        IsCocoa = ($env:SENTRY_TEST_PLATFORM -ieq "macOS" -or
+        AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
+        IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
+        IsCocoa = ($env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
             (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS))
         IsWeb = $false
         IsDotnet = $true
+        iOSBundleId = "io.sentry.SentryGodotProject"
+        iOSApplicationLogFile = "@io.sentry.SentryGodotProject:documents/logs/godot.log"
     }
 
     if ([string]::IsNullOrEmpty($script:TestSetup.Executable)) {
@@ -138,6 +149,10 @@ Describe ".NET Integration Tests" {
         }
 
         It "Exits with code zero" {
+            if ($TestSetup.IsAndroid) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
             $runResult.ExitCode | Should -Be 0
         }
 
@@ -176,6 +191,10 @@ Describe ".NET Integration Tests" {
         }
 
         It "Exits with code zero" {
+            if ($TestSetup.IsAndroid) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
             $runResult.ExitCode | Should -Be 0
         }
 
@@ -210,6 +229,10 @@ Describe ".NET Integration Tests" {
         }
 
         It "Exits with code zero" {
+            if ($TestSetup.IsAndroid) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
             $runResult.ExitCode | Should -Be 0
         }
 
@@ -256,6 +279,10 @@ Describe ".NET Integration Tests" {
         }
 
         It "Exits with code zero" {
+            if ($TestSetup.IsAndroid) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
             $runResult.ExitCode | Should -Be 0
         }
 

@@ -96,9 +96,14 @@ runs:
     - name: Download export templates
       if: inputs.export-platform != ''
       shell: bash
+      env:
+        DOTNET: ${{ inputs.dotnet }}
       run: |
-        # Download Godot templates
-        archive_file=Godot_v${GODOT_VERSION}_export_templates.tpz
+        if [ "$DOTNET" = "true" ]; then
+            archive_file=Godot_v${GODOT_VERSION}_mono_export_templates.tpz
+        else
+            archive_file=Godot_v${GODOT_VERSION}_export_templates.tpz
+        fi
         url=https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/${archive_file}
         echo "Downloading templates from: $url"
         curl -L -o templates.zip "${url}"

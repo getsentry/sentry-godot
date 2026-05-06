@@ -93,6 +93,24 @@ jobs:
             dotnet: true
             test-script: tests/integration/Integration.Dotnet.Tests.ps1
 
+          - test-platform: AndroidSauceLabs
+            runner: ubuntu-latest
+            godot-arch: x86_64
+            dotnet: true
+            test-executable: ./exports/android.apk
+            export-platform: android
+            saucelabs-device: Samsung_Galaxy_S25_16_real_sjc1
+            test-script: tests/integration/Integration.Dotnet.Tests.ps1
+
+          - test-platform: iOSSauceLabs
+            runner: macos-latest
+            godot-arch: universal
+            dotnet: true
+            test-executable: ./exports/ios/ios.ipa
+            export-platform: ios
+            saucelabs-device: iPhone_17_Pro_real_sjc1
+            test-script: tests/integration/Integration.Dotnet.Tests.ps1
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
