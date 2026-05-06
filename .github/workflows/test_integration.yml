@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   integration-tests:
-    name: Test ${{matrix.test-platform}} ${{matrix.godot-arch}}${{matrix.dotnet && ' (dotnet)' || ''}}
+    name: Test ${{matrix.test-platform}} ${{matrix.godot-arch}}${{matrix.dotnet && ' .NET' || ''}}
     runs-on: ${{matrix.runner}}
     strategy:
       fail-fast: false
