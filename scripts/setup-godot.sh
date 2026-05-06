@@ -160,7 +160,7 @@ url="https://github.com/godotengine/godot-builds/releases/download/${VERSION}/${
 cd "$DEST"
 echo "Downloading ${url}"
 curl -fL -o godot.zip "$url"
-unzip -q godot.zip
+unzip -qo godot.zip
 rm godot.zip
 
 # --- Validate and export ---
