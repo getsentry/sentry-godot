@@ -152,7 +152,12 @@ fi
 # --- Download and extract ---
 
 mkdir -p "$DEST"
-DEST="$(cd "$DEST" && pwd)"
+# Use `pwd -W` under MINGW/Cygwin/MSYS so the path stays Windows-style
+# (e.g. D:/a/.../godot) and remains usable by non-Bash consumers like PowerShell.
+case "$(uname -s)" in
+    MINGW*|CYGWIN*|MSYS*) DEST="$(cd "$DEST" && pwd -W)" ;;
+    *)                    DEST="$(cd "$DEST" && pwd)"    ;;
+esac
 
 archive_file="Godot_v${VERSION}_${suffix}.zip"
 url="https://github.com/godotengine/godot-builds/releases/download/${VERSION}/${archive_file}"
