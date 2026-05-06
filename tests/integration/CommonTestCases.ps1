@@ -78,6 +78,14 @@ $CommonTestCases = @(
                 # TODO: On Linux .NET-captured events the os tag is absent
                 # on some distros (only contexts.os.raw_description is
                 # reliably populated). Investigate upstream.
+                # See: https://github.com/getsentry/sentry-godot/issues/687
+                return
+            }
+
+            if ($TestSetup.IsDotnet -and ($TestSetup.IsAndroid -or $TestSetup.Platform -match "iOS")) {
+                # TODO: On mobile, .NET-captured events report the underlying
+                # kernel ("Linux"/"Darwin") instead of the mobile OS.
+                # See: https://github.com/getsentry/sentry-godot/issues/688
                 return
             }
 
@@ -156,6 +164,16 @@ $CommonTestCases = @(
                 # os.kernel_version holds the distro version (e.g.
                 # "24.04.4") rather than the kernel version. Investigate
                 # upstream.
+                # See: https://github.com/getsentry/sentry-godot/issues/687
+                $SentryEvent.contexts.os.raw_description | Should -Not -BeNullOrEmpty
+                return
+            }
+
+            if ($TestSetup.IsDotnet -and ($TestSetup.IsAndroid -or $TestSetup.Platform -match "iOS")) {
+                # TODO: On mobile, .NET-captured events report the underlying
+                # kernel in contexts.os.{os,name,version} instead of the
+                # mobile OS. raw_description is still populated.
+                # See: https://github.com/getsentry/sentry-godot/issues/688
                 $SentryEvent.contexts.os.raw_description | Should -Not -BeNullOrEmpty
                 return
             }
