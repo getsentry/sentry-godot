@@ -66,11 +66,11 @@ public partial class DotnetCliTriggers : RefCounted
         GD.Print("Triggering wrapped rethrow...");
         try
         {
-            throw new Exception("Inner (should NOT be captured)");
+            throw new Exception("Inner exception");
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Wrapped (should be captured)", ex);
+            throw new InvalidOperationException("Wrapped exception", ex);
         }
     }
 }

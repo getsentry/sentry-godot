@@ -243,7 +243,7 @@ Describe ".NET Integration Tests" {
             $values | Should -Not -BeNullOrEmpty
             $outermost = $values[$values.Count - 1]
             $outermost.type | Should -Be "System.InvalidOperationException"
-            $outermost.value | Should -Be "Wrapped (should be captured)"
+            $outermost.value | Should -Be "Wrapped exception"
         }
 
         It "Includes the inner exception in the chain" {
@@ -251,7 +251,7 @@ Describe ".NET Integration Tests" {
             $values.Count | Should -BeGreaterOrEqual 2
             $inner = $values[0]
             $inner.type | Should -Be "System.Exception"
-            $inner.value | Should -Be "Inner (should NOT be captured)"
+            $inner.value | Should -Be "Inner exception"
         }
 
         It "Has Godot.Bridge mechanism on outermost exception" {
