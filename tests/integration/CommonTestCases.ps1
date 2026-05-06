@@ -74,7 +74,9 @@ $CommonTestCases = @(
     @{ Name = "Has correct OS tag"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
             if ($TestSetup.Platform -ieq "Linux") {
-                $expectedOS = "Linux|SteamOS|Bazzite"
+                # Sentry .NET reports the distro name on Linux (e.g. "Ubuntu")
+                # while the native SDK uses the kernel name ("Linux").
+                $expectedOS = "Linux|SteamOS|Bazzite|Ubuntu"
             } elseif ($TestSetup.Platform -ieq "macOS") {
                 $expectedOS = "macOS"
             } elseif ($TestSetup.Platform -ieq "Windows") {
