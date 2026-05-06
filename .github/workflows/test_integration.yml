@@ -125,6 +125,14 @@ jobs:
           export-platform: ${{ matrix.export-platform }}
           dotnet: ${{ matrix.dotnet || 'false' }}
 
+      - name: "Dotnet: Build project"
+        if: matrix.dotnet == 'true'
+        shell: bash
+        env:
+          DOTNET_NOLOGO: true
+          DOTNET_CLI_TELEMETRY_OPTOUT: true
+        run: dotnet build "project/Sentry demo project.csproj"
+
       - name: "Android: Export project"
         if: matrix.export-platform == 'android'
         timeout-minutes: 10
