@@ -93,7 +93,7 @@ fi
 
 # --- Compute archive suffix and in-archive binary path ---
 
-if [[ "$MONO" == true ]]; then
+if $MONO; then
     case "$PLATFORM" in
         windows)
             case "$ARCH" in
