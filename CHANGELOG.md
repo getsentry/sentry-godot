@@ -7,6 +7,9 @@
 - Bump Sentry Android from v8.40.0 to v8.41.0 ([#689](https://github.com/getsentry/sentry-godot/pull/689))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8410)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.40.0...8.41.0)
+- Bump Sentry JavaScript from v10.51.0 to v10.52.0 ([#693](https://github.com/getsentry/sentry-godot/pull/693))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10520)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.51.0...10.52.0)
 
 ## 2.0.0-beta.0
 
