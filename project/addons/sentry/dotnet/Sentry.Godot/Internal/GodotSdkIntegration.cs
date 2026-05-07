@@ -12,8 +12,22 @@ internal sealed class GodotSdkIntegration : ISdkIntegration
         {
             scope.Sdk.Name = "sentry.dotnet.godot";
             scope.Sdk.Version = NativeBridge.GetSdkVersion();
-            scope.Contexts.App.Name = NativeBridge.GetAppName();
-            scope.Contexts.App.Version = NativeBridge.GetAppVersion();
+            if (scope.Contexts.App.Name is null)
+            {
+                string appName = NativeBridge.GetAppName();
+                if (appName.Length > 0)
+                {
+                    scope.Contexts.App.Name = appName;
+                }
+            }
+            if (scope.Contexts.App.Version is null)
+            {
+                string appVersion = NativeBridge.GetAppVersion();
+                if (appVersion.Length > 0)
+                {
+                    scope.Contexts.App.Version = appVersion;
+                }
+            }
         });
     }
 }
