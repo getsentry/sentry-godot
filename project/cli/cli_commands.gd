@@ -41,6 +41,7 @@ func _register_commands() -> void:
 	_parser.add_command("attachment-capture", _cmd_attachment_capture, "Capture a message with custom attachments")
 	_parser.add_command("log-capture", _cmd_log_capture, "Capture a structured log to Sentry")
 	_parser.add_command("metric-capture", _cmd_metric_capture, "Capture metrics to Sentry")
+	_parser.add_command("pii-capture", _cmd_pii_capture, "Capture a message with send_default_pii enabled")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
 	_parser.add_command("dotnet-exception-capture", _cmd_dotnet_exception_capture, "Capture a .NET exception (scenario: plain | bare-rethrow | wrapped-rethrow)")
 	_parser.add_command("dotnet-capture-via-gdscript-init", _cmd_dotnet_capture_via_gdscript_init, "Capture a .NET exception with GDScript driving init")
@@ -236,6 +237,48 @@ func _before_send_metric(metric: SentryMetric) -> SentryMetric:
 	return metric
 
 
+## Captures a message with `send_default_pii` enabled to verify correct PII forwarding.
+func _cmd_pii_capture() -> int:
+	await _init_sentry(func(options: SentryOptions) -> void:
+		options.send_default_pii = true
+	)
+
+	_add_integration_test_context("pii-capture")
+
+	var event_id := SentrySDK.capture_message("PII test message")
+	print("EVENT_CAPTURED: ", event_id)
+	_print_test_result("pii-capture", true, "Test complete")
+	return 0
+
+
+func _cmd_run_tests(tests: String = "res://test/suites/") -> int:
+	if FileAccess.file_exists("res://test/util/test_runner.gd"):
+		print(">>> Initializing testing")
+		await get_tree().process_frame
+
+		var included_paths: PackedStringArray = tests.split(";", false)
+		if included_paths.is_empty():
+			printerr("No test path provided.")
+			return 1
+		print(" -- Tests included: ", included_paths)
+
+		# Add test runner node.
+		print(" -- Adding test runner...")
+		var test_runner: Node = load("res://test/util/test_runner.gd").new()
+		get_tree().root.add_child(test_runner)
+		for path in included_paths:
+			test_runner.include_tests(path)
+
+		# Wait for completion.
+		await test_runner.finished
+		print(">>> Test run complete with code: ", str(test_runner.result_code))
+
+		return test_runner.result_code
+	else:
+		printerr("Error: Test runner not found")
+		return 1
+
+
 func _cmd_dotnet_exception_capture(p_scenario: String) -> int:
 	var trigger_method: StringName
 	match p_scenario:
@@ -287,34 +330,6 @@ func _run_dotnet_trigger(p_test_type: String, p_trigger_method: StringName, p_in
 	return 0
 
 
-func _cmd_run_tests(tests: String = "res://test/suites/") -> int:
-	if FileAccess.file_exists("res://test/util/test_runner.gd"):
-		print(">>> Initializing testing")
-		await get_tree().process_frame
-
-		var included_paths: PackedStringArray = tests.split(";", false)
-		if included_paths.is_empty():
-			printerr("No test path provided.")
-			return 1
-		print(" -- Tests included: ", included_paths)
-
-		# Add test runner node.
-		print(" -- Adding test runner...")
-		var test_runner: Node = load("res://test/util/test_runner.gd").new()
-		get_tree().root.add_child(test_runner)
-		for path in included_paths:
-			test_runner.include_tests(path)
-
-		# Wait for completion.
-		await test_runner.finished
-		print(">>> Test run complete with code: ", str(test_runner.result_code))
-
-		return test_runner.result_code
-	else:
-		printerr("Error: Test runner not found")
-		return 1
-
-
 ## Initializes Sentry for integration testing.
 func _init_sentry(p_extra_config: Callable = Callable()) -> void:
 	print("Initializing Sentry...")
@@ -325,6 +340,7 @@ func _init_sentry(p_extra_config: Callable = Callable()) -> void:
 		options.release = "test-app@1.0.0"
 		options.environment = "integration-test"
 		options.dist = "test-dist"
+		options.send_default_pii = false # PII test relies on this; see CommonTestCases.ps1
 		if p_extra_config.is_valid():
 			p_extra_config.call(options)
 	)
@@ -337,7 +353,7 @@ func _init_sentry(p_extra_config: Callable = Callable()) -> void:
 func _add_integration_test_context(p_command: String) -> void:
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("Integration test started"))
 
-	var user := SentryUser.new()
+	var user := SentryUser.create_default()
 	user.id = "12345"
 	user.username = "TestUser"
 	user.email = "user-mail@test.abc"

@@ -116,6 +116,7 @@ class SentryBridge {
     maxBreadcrumbs: number,
     enableLogs: boolean,
     enableMetrics: boolean,
+    sendDefaultPii: boolean,
     sdkVersion: string,
   ): void {
     if (debug) {
@@ -132,6 +133,7 @@ class SentryBridge {
       maxBreadcrumbs,
       enableLogs,
       enableMetrics,
+      sendDefaultPii,
       _metadata: {
         sdk: {
           name: "sentry.javascript.godot",

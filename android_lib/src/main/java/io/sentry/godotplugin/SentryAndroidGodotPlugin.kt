@@ -435,7 +435,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         if (associatedEventId.isNotEmpty()) {
             feedback.setAssociatedEventId(SentryId(associatedEventId))
         }
-        Sentry.captureFeedback(feedback)
+        Sentry.feedback().capture(feedback)
     }
 
     @UsedByGodot

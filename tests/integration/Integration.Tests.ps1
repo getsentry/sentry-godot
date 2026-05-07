@@ -220,6 +220,7 @@ Describe "Platform Integration Tests" {
             $script:runtimeErrorRunResult = Invoke-TestAction -Action "runtime-error-capture"
             $script:logRunResult = Invoke-TestAction -Action "log-capture"
             $script:metricRunResult = Invoke-TestAction -Action "metric-capture"
+            $script:piiRunResult = Invoke-TestAction -Action "pii-capture"
         }
         finally {
             if (-not $script:TestSetup.IsWeb) {
@@ -793,6 +794,32 @@ Describe "Platform Integration Tests" {
             $counter.deleted_global_attribute | Should -BeNullOrEmpty
             $distribution.deleted_global_attribute | Should -BeNullOrEmpty
             $gauge.deleted_global_attribute | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "PII Capture" {
+        BeforeAll {
+            $runResult = $script:piiRunResult
+
+            $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
+            if ($eventId) {
+                Write-GitHub "::group::Getting event content"
+                $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
+                Write-GitHub "::endgroup::"
+            }
+        }
+
+        It "Exits with code zero" {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
+            $runResult.ExitCode | Should -Be 0
+        }
+
+        It "Has user.ip_address populated" {
+            $runEvent.user | Should -Not -BeNullOrEmpty
+            $runEvent.user.ip_address | Should -Not -BeNullOrEmpty
         }
     }
 }

@@ -113,6 +113,16 @@ $CommonTestCases = @(
             $SentryEvent.user.id | Should -Be "12345"
         }
     }
+    @{ Name = "Does not contain user.ip_address (PII disabled)"; TestBlock = {
+            param($TestSetup, $TestType, $SentryEvent, $RunResult)
+            # This test relies on PII to be disabled in normal runs.
+            # The dedicated "pii-capture" run verifies the inverse; see Integration.Tests.ps1.
+            if ($TestType -eq "pii-capture") {
+                return
+            }
+            $SentryEvent.user.ip_address | Should -BeNullOrEmpty
+        }
+    }
     @{ Name = "Contains breadcrumbs"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
             $SentryEvent.breadcrumbs | Should -Not -BeNullOrEmpty
