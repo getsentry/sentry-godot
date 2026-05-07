@@ -17,15 +17,16 @@
   - Add Roslyn analyzer that warns on direct `Sentry.SentrySdk` use and suggests `Sentry.Godot.SentrySdk` ([#663](https://github.com/getsentry/sentry-godot/pull/663))
   - Alias bare `SentrySdk` to `Sentry.Godot.SentrySdk` to avoid ambiguity when consumer code also does `using Sentry;` ([#664](https://github.com/getsentry/sentry-godot/pull/664))
   - Import `Sentry.Godot.props` into user's C# project automatically ([#671](https://github.com/getsentry/sentry-godot/pull/671))
+  - Populate app name and version in .NET layer configuration ([#686](https://github.com/getsentry/sentry-godot/pull/686))
 
 ### Dependencies
 
 - Bump Sentry Android from v8.39.1 to v8.40.0 ([#660](https://github.com/getsentry/sentry-godot/pull/660))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8400)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.39.1...8.40.0)
-- Bump Cocoa SDK from v9.10.0 to v9.12.0 ([#661](https://github.com/getsentry/sentry-godot/pull/661), [#676](https://github.com/getsentry/sentry-godot/pull/676))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9120)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.10.0...9.12.0)
+- Bump Cocoa SDK from v9.10.0 to v9.12.1 ([#661](https://github.com/getsentry/sentry-godot/pull/661), [#676](https://github.com/getsentry/sentry-godot/pull/676), [#690](https://github.com/getsentry/sentry-godot/pull/690))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9121)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.10.0...9.12.1)
 - Bump Sentry JavaScript from v10.49.0 to v10.51.0 ([#665](https://github.com/getsentry/sentry-godot/pull/665), [#673](https://github.com/getsentry/sentry-godot/pull/673))
   - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10510)
   - [diff](https://github.com/getsentry/sentry-javascript/compare/10.49.0...10.51.0)
