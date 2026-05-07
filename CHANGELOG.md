@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Honor `send_default_pii` option on Web platform ([#695](https://github.com/getsentry/sentry-godot/pull/695))
+
 ### Dependencies
 
 - Bump Sentry Android from v8.40.0 to v8.41.0 ([#689](https://github.com/getsentry/sentry-godot/pull/689))
