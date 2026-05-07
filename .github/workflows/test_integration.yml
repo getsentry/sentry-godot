@@ -126,7 +126,7 @@ jobs:
           dotnet: ${{ matrix.dotnet || 'false' }}
 
       - name: "Dotnet: Build project"
-        if: matrix.dotnet == 'true'
+        if: matrix.dotnet
         shell: bash
         env:
           DOTNET_NOLOGO: true
