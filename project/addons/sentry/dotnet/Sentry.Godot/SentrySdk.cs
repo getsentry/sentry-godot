@@ -82,7 +82,23 @@ public static partial class SentrySdk
         CurrentOptions = godotOptions;
         GodotLog.Debug("Initializing Sentry in .NET...");
         Sentry.SentrySdk.Init(godotOptions);
+        AdoptNativeTrace();
         InitFirstChanceExceptionHandler();
+    }
+
+    private static void AdoptNativeTrace()
+    {
+        var (traceId, parentSpanId) = NativeBridge.GetTraceContext();
+        if (string.IsNullOrEmpty(traceId))
+        {
+            return;
+        }
+        var traceHeader = new SentryTraceHeader(
+            SentryId.Parse(traceId),
+            string.IsNullOrEmpty(parentSpanId) ? SpanId.Empty : SpanId.Parse(parentSpanId),
+            isSampled: null);
+
+        Sentry.SentrySdk.ContinueTrace(traceHeader, baggageHeader: null);
     }
 
     /// <summary>

@@ -46,4 +46,15 @@ String make_uuid_no_dashes() {
 	return _uuid_to_string(_generate_uuid_v4(), FORMAT_NO_DASHES);
 }
 
+String make_rand_hex_16() {
+	std::random_device rd;
+	std::mt19937_64 gen{ rd() };
+	std::uniform_int_distribution<unsigned long long> dist;
+	const unsigned long long value = dist(gen);
+
+	char buffer[17];
+	std::snprintf(buffer, sizeof(buffer), "%016llx", value);
+	return String(buffer);
+}
+
 } // namespace sentry::uuid

@@ -118,6 +118,13 @@ internal static partial class NativeBridge
         public byte enable_metrics;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private unsafe struct NativeTraceContext
+    {
+        public GodotStringHandle trace_id;
+        public GodotStringHandle parent_span_id;
+    }
+
     [LibraryImport(Lib)]
     private static unsafe partial NativeOptions csharp_interop_get_options();
 
@@ -231,6 +238,15 @@ internal static partial class NativeBridge
     public static unsafe string? DetectEnvironment()
     {
         return csharp_interop_detect_environment().TakeString();
+    }
+
+    [LibraryImport(Lib)]
+    private static unsafe partial NativeTraceContext csharp_interop_get_trace_context();
+
+    public static unsafe (string? traceId, string? parentSpanId) GetTraceContext()
+    {
+        var nativeContext = csharp_interop_get_trace_context();
+        return (nativeContext.trace_id.TakeString(), nativeContext.parent_span_id.TakeString());
     }
 
     [LibraryImport(Lib)]
