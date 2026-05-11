@@ -1,6 +1,7 @@
 using System;
 using Sentry.Integrations;
 using Sentry.Godot.Interop;
+using Scope = Sentry.Scope;
 
 namespace Sentry.Godot.Internal;
 
@@ -8,26 +9,43 @@ internal sealed class GodotSdkIntegration : ISdkIntegration
 {
     public void Register(IHub hub, SentryOptions options)
     {
-        hub.ConfigureScope(scope =>
+        AdoptNativeTrace(hub);
+        hub.ConfigureScope(ApplyScopeChanges);
+    }
+
+    private static void AdoptNativeTrace(IHub hub)
+    {
+        var (traceId, parentSpanId) = NativeBridge.GetTraceContext();
+        if (!string.IsNullOrEmpty(traceId))
         {
-            scope.Sdk.Name = "sentry.dotnet.godot";
-            scope.Sdk.Version = NativeBridge.GetSdkVersion();
-            if (scope.Contexts.App.Name is null)
+            hub.ContinueTrace(
+                new SentryTraceHeader(
+                    SentryId.Parse(traceId),
+                    string.IsNullOrEmpty(parentSpanId) ? SpanId.Empty : SpanId.Parse(parentSpanId),
+                    isSampled: null),
+                baggageHeader: null);
+        }
+    }
+
+    private static void ApplyScopeChanges(Scope scope)
+    {
+        scope.Sdk.Name = "sentry.dotnet.godot";
+        scope.Sdk.Version = NativeBridge.GetSdkVersion();
+        if (scope.Contexts.App.Name is null)
+        {
+            string appName = NativeBridge.GetAppName();
+            if (appName.Length > 0)
             {
-                string appName = NativeBridge.GetAppName();
-                if (appName.Length > 0)
-                {
-                    scope.Contexts.App.Name = appName;
-                }
+                scope.Contexts.App.Name = appName;
             }
-            if (scope.Contexts.App.Version is null)
+        }
+        if (scope.Contexts.App.Version is null)
+        {
+            string appVersion = NativeBridge.GetAppVersion();
+            if (appVersion.Length > 0)
             {
-                string appVersion = NativeBridge.GetAppVersion();
-                if (appVersion.Length > 0)
-                {
-                    scope.Contexts.App.Version = appVersion;
-                }
+                scope.Contexts.App.Version = appVersion;
             }
-        });
+        }
     }
 }
