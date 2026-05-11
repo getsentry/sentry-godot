@@ -31,6 +31,7 @@ using SentryFrame = ::SentryFrame;
 using SentryThread = ::SentryThread;
 using SentryFeedback = ::SentryFeedback;
 using SentryLog = ::SentryLog;
+using SentrySpanId = ::SentrySpanId;
 
 } // namespace objc
 
