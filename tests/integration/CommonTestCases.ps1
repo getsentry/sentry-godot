@@ -33,6 +33,11 @@ $CommonTestCases = @(
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
             $SentryEvent.platform | Should -Not -BeNullOrEmpty
 
+            if ($TestSetup.IsDotnet) {
+                $SentryEvent.platform | Should -Be "csharp"
+                return
+            }
+
             $expectedPlatform = @{
                 "Windows" = "native"
                 "Linux" = "native"
@@ -68,6 +73,21 @@ $CommonTestCases = @(
     }
     @{ Name = "Has correct OS tag"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
+
+            if ($TestSetup.IsDotnet -and $TestSetup.Platform -ieq "Linux") {
+                # TODO: On Linux .NET-captured events the os tag is absent on some distros
+                # (only contexts.os.raw_description is reliably populated).
+                # See: https://github.com/getsentry/sentry-godot/issues/687
+                return
+            }
+
+            if ($TestSetup.IsDotnet -and ($TestSetup.IsAndroid -or $TestSetup.Platform -match "iOS")) {
+                # TODO: On mobile, .NET-captured events report the underlying kernel ("Linux"/"Darwin")
+                # instead of the mobile OS.
+                # See: https://github.com/getsentry/sentry-godot/issues/688
+                return
+            }
+
             if ($TestSetup.Platform -ieq "Linux") {
                 $expectedOS = "Linux|SteamOS|Bazzite"
             } elseif ($TestSetup.Platform -ieq "macOS") {
@@ -145,16 +165,44 @@ $CommonTestCases = @(
     @{ Name = "Contains OS context"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
             $SentryEvent.contexts.os | Should -Not -BeNullOrEmpty
+
+            if ($TestSetup.IsDotnet -and $TestSetup.Platform -ieq "Linux") {
+                # TODO: On Linux .NET-captured events only contexts.os.raw_description is reliably populated;
+                # os.os/os.name/os.version are absent on some distros and os.kernel_version holds the distro version
+                # (e.g. "24.04.4") rather than the kernel version.
+                # See: https://github.com/getsentry/sentry-godot/issues/687
+                $SentryEvent.contexts.os.raw_description | Should -Not -BeNullOrEmpty
+                return
+            }
+
+            if ($TestSetup.IsDotnet -and ($TestSetup.IsAndroid -or $TestSetup.Platform -match "iOS")) {
+                # TODO: On mobile, .NET-captured events report the underlying kernel in contexts.os.{os,name,version}
+                # instead of the mobile OS. raw_description is still populated.
+                # See: https://github.com/getsentry/sentry-godot/issues/688
+                $SentryEvent.contexts.os.raw_description | Should -Not -BeNullOrEmpty
+                return
+            }
+
             $SentryEvent.contexts.os.os | Should -Not -BeNullOrEmpty
             $SentryEvent.contexts.os.name | Should -Not -BeNullOrEmpty
-            if (-not $TestSetup.IsWeb) {
+
+            if ($TestSetup.IsWeb) {
                 # On Web, OS version may not be available.
-                $SentryEvent.contexts.os.version | Should -Not -BeNullOrEmpty
+                return
             }
+
+            $SentryEvent.contexts.os.version | Should -Not -BeNullOrEmpty
         }
     }
     @{ Name = "Contains Godot contexts"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
+
+            if ($TestSetup.IsDotnet) {
+                # TODO: Sync godot_engine and godot_performance contexts from the native layer to .NET-captured events.
+                # Re-enable this assertion once the cross-layer context sync lands.
+                # See: https://github.com/getsentry/sentry-godot/issues/650
+                return
+            }
 
             if ($TestSetup.IsAndroid -and $TestType -eq "crash-capture") {
                 # Skip Godot context tests for Android crashes

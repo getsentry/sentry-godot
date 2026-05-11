@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   integration-tests:
-    name: Test ${{matrix.test-platform}} ${{matrix.godot-arch}}
+    name: Test ${{matrix.test-platform}} ${{matrix.godot-arch}}${{matrix.dotnet && ' .NET' || ''}}
     runs-on: ${{matrix.runner}}
     strategy:
       fail-fast: false
@@ -75,6 +75,42 @@ jobs:
             test-executable: ./exports/web
             export-platform: web
 
+          - test-platform: Linux
+            runner: ubuntu-latest
+            godot-arch: x86_64
+            dotnet: true
+            test-script: tests/integration/Integration.Dotnet.Tests.ps1
+
+          - test-platform: Windows
+            runner: windows-latest
+            godot-arch: x86_64
+            dotnet: true
+            test-script: tests/integration/Integration.Dotnet.Tests.ps1
+
+          - test-platform: macOS
+            runner: macos-latest
+            godot-arch: universal
+            dotnet: true
+            test-script: tests/integration/Integration.Dotnet.Tests.ps1
+
+          - test-platform: AndroidSauceLabs
+            runner: ubuntu-latest
+            godot-arch: x86_64
+            dotnet: true
+            test-executable: ./exports/android.apk
+            export-platform: android
+            saucelabs-device: Samsung_Galaxy_S25_16_real_sjc1
+            test-script: tests/integration/Integration.Dotnet.Tests.ps1
+
+          - test-platform: iOSSauceLabs
+            runner: macos-latest
+            godot-arch: universal
+            dotnet: true
+            test-executable: ./exports/ios/ios.ipa
+            export-platform: ios
+            saucelabs-device: iPhone_17_Pro_real_sjc1
+            test-script: tests/integration/Integration.Dotnet.Tests.ps1
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -87,6 +123,15 @@ jobs:
         with:
           arch: ${{ matrix.godot-arch }}
           export-platform: ${{ matrix.export-platform }}
+          dotnet: ${{ matrix.dotnet || 'false' }}
+
+      - name: "Dotnet: Build project"
+        if: matrix.dotnet
+        shell: bash
+        env:
+          DOTNET_NOLOGO: true
+          DOTNET_CLI_TELEMETRY_OPTOUT: true
+        run: dotnet build "project/Sentry demo project.csproj"
 
       - name: "Android: Export project"
         if: matrix.export-platform == 'android'
@@ -162,4 +207,5 @@ jobs:
           SAUCE_REGION: us-west-1
           SAUCE_DEVICE_NAME: ${{ matrix.saucelabs-device }}
           SAUCE_SESSION_NAME: Godot ${{matrix.test-platform}} E2E Tests
-        run: Invoke-Pester -Script tests/integration/Integration.Tests.ps1
+          TEST_SCRIPT: ${{ matrix.test-script || 'tests/integration/Integration.Tests.ps1' }}
+        run: Invoke-Pester -Script "$env:TEST_SCRIPT"

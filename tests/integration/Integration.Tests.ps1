@@ -141,6 +141,7 @@ BeforeAll {
         IsCocoa = ($env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
             (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS))
         IsWeb = ($env:SENTRY_TEST_PLATFORM -ieq "Web")
+        IsDotnet = $false
         iOSBundleId = "io.sentry.SentryGodotProject"
         iOSApplicationLogFile = "@io.sentry.SentryGodotProject:documents/logs/godot.log"
     }
