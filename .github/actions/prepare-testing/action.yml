@@ -9,6 +9,10 @@ inputs:
     description: Which export template will be used, lowercase (e.g., android, ios).
     required: false
     default: ""
+  dotnet:
+    description: Set to "true" to install the .NET SDK and use the Godot mono build.
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -58,7 +62,14 @@ runs:
       shell: bash
       env:
         ARCH: ${{ inputs.arch }}
-      run: ./scripts/setup-godot.sh --arch "$ARCH"
+        MONO_FLAG: ${{ inputs.dotnet == 'true' && '--mono' || '' }}
+      run: ./scripts/setup-godot.sh --arch "$ARCH" $MONO_FLAG
+
+    - name: Set up .NET
+      if: inputs.dotnet == 'true'
+      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+      with:
+        dotnet-version: 8.0.x
 
     - name: Diagnostic info
       shell: bash
@@ -77,9 +88,14 @@ runs:
     - name: Download export templates
       if: inputs.export-platform != ''
       shell: bash
+      env:
+        DOTNET: ${{ inputs.dotnet }}
       run: |
-        # Download Godot templates
-        archive_file=Godot_v${GODOT_VERSION}_export_templates.tpz
+        if [ "$DOTNET" = "true" ]; then
+            archive_file=Godot_v${GODOT_VERSION}_mono_export_templates.tpz
+        else
+            archive_file=Godot_v${GODOT_VERSION}_export_templates.tpz
+        fi
         url=https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}/${archive_file}
         echo "Downloading templates from: $url"
         curl -L -o templates.zip "${url}"
