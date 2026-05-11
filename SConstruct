@@ -57,6 +57,11 @@ with open("src/gen/sdk_version.gen.h", "w") as f:
 print("Reading godot-cpp build configuration...")
 env = SConscript("modules/godot-cpp/SConstruct")
 
+# Google Play 16 KB page-size requirement (Android 15+, enforced 2026-05-31).
+# Only applies to Android — other platforms are unaffected.
+if env["platform"] == "android":
+    env.Append(LINKFLAGS=["-Wl,-z,max-page-size=16384", "-Wl,-z,common-page-size=16384"])
+
 
 # *** Build sentry-native.
 
