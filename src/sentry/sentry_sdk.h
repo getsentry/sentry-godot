@@ -30,12 +30,12 @@ public:
 	// This structure is needed to avoid circular dependencies between this and other headers that use Level enum.
 	using Level = sentry::Level;
 
-private:
 	struct TraceContext {
 		String trace_id;
 		String parent_span_id;
 	};
 
+private:
 	static SentrySDK *singleton;
 
 	Ref<SentryOptions> options;
