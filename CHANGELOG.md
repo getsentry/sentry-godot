@@ -4,7 +4,7 @@
 
 ### Features
 
-- *Experimental*: C#/.NET support (started in [#629](https://github.com/getsentry/sentry-godot/pull/629))
+- *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
 	- Sync trace context with .NET layer ([#696](https://github.com/getsentry/sentry-godot/pull/696))
 
 ### Fixes
