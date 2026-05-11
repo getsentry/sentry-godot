@@ -126,6 +126,7 @@ Describe ".NET Integration Tests" {
             $script:bareRethrowRunResult    = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("bare-rethrow")
             $script:wrappedRethrowRunResult = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("wrapped-rethrow")
             $script:gdscriptInitRunResult   = Invoke-TestAction -Action "dotnet-capture-via-gdscript-init"
+            $script:crossLayerRunResult     = Invoke-TestAction -Action "dotnet-cross-layer-capture"
         }
         finally {
             Disconnect-Device
@@ -297,6 +298,40 @@ Describe ".NET Integration Tests" {
         It "Has Godot.Bridge mechanism" {
             $runEvent.exception.values[0].mechanism.type | Should -Be "Godot.Bridge"
             $runEvent.exception.values[0].mechanism.handled | Should -Be $false
+        }
+    }
+
+    Context "Cross-layer capture" {
+        BeforeAll {
+            $runResult = $script:crossLayerRunResult
+
+            $eventIds = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 2
+            Write-GitHub "::group::Getting event content"
+            $script:nativeEvent  = Get-SentryTestEvent -EventId $eventIds[0]
+            $script:managedEvent = Get-SentryTestEvent -EventId $eventIds[1]
+            Write-GitHub "::endgroup::"
+        }
+
+        It "Exits with code zero" {
+            if ($TestSetup.IsAndroid) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
+            $runResult.ExitCode | Should -Be 0
+        }
+
+        It "Native event has trace context with non-empty trace_id" {
+            $nativeEvent.contexts.trace | Should -Not -BeNullOrEmpty
+            $nativeEvent.contexts.trace.trace_id | Should -Not -BeNullOrEmpty
+        }
+
+        It "Managed event has trace context with non-empty trace_id" {
+            $managedEvent.contexts.trace | Should -Not -BeNullOrEmpty
+            $managedEvent.contexts.trace.trace_id | Should -Not -BeNullOrEmpty
+        }
+
+        It "Native and managed events share the same trace_id" {
+            $nativeEvent.contexts.trace.trace_id | Should -Be $managedEvent.contexts.trace.trace_id
         }
     }
 }

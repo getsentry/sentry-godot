@@ -45,6 +45,7 @@ func _register_commands() -> void:
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
 	_parser.add_command("dotnet-exception-capture", _cmd_dotnet_exception_capture, "Capture a .NET exception (scenario: plain | bare-rethrow | wrapped-rethrow)")
 	_parser.add_command("dotnet-capture-via-gdscript-init", _cmd_dotnet_capture_via_gdscript_init, "Capture a .NET exception with GDScript driving init")
+	_parser.add_command("dotnet-cross-layer-capture", _cmd_dotnet_cross_layer_capture, "Capture a native and a .NET event to verify cross-layer synchronization")
 
 
 ## Shows available commands and their arguments.
@@ -296,6 +297,29 @@ func _cmd_dotnet_exception_capture(p_scenario: String) -> int:
 
 func _cmd_dotnet_capture_via_gdscript_init() -> int:
 	return await _run_dotnet_trigger("dotnet-capture-via-gdscript-init", "TriggerException", DotnetInitDriver.GDSCRIPT)
+
+
+## Captures a native and a managed event in one run to verify cross-layer synchronization.
+func _cmd_dotnet_cross_layer_capture() -> int:
+	var script: Script = load("res://cli/DotnetCliTriggers.cs")
+	if script == null:
+		printerr("Error: DotnetCliTriggers.cs is not available - is this a Godot .NET build?")
+		return 1
+	var triggers: Object = script.new()
+
+	await _init_sentry()
+
+	_add_integration_test_context("dotnet-cross-layer-capture")
+	triggers.AddIntegrationTestContext("dotnet-cross-layer-capture")
+
+	var native_event_id := SentrySDK.capture_message("Cross-layer capture - native side")
+	print("EVENT_CAPTURED: ", native_event_id)
+
+	var managed_event_id: String = triggers.CaptureMessage("Cross-layer capture - .NET side")
+	print("EVENT_CAPTURED: ", managed_event_id)
+
+	_print_test_result("dotnet-cross-layer-capture", true, "Test complete")
+	return 0
 
 
 ## Runs a .NET exception trigger with the chosen init driver.
