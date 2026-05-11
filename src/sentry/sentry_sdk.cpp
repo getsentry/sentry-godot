@@ -175,7 +175,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 
 		// Generate a new trace on init to tie native and managed errors together.
 		trace_context.trace_id = sentry::uuid::make_uuid_no_dashes();
-		trace_context.parent_span_id = sentry::uuid::make_rand_hex_16();
+		trace_context.parent_span_id = sentry::uuid::make_span_id();
 		internal_sdk->set_trace(trace_context.trace_id, trace_context.parent_span_id);
 
 		if (is_auto_initializing) {
