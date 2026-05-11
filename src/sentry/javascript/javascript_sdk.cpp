@@ -296,6 +296,10 @@ void JavaScriptSDK::remove_attribute(const String &p_name) {
 	js_bridge()->call("removeAttribute", p_name.utf8());
 }
 
+void JavaScriptSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
+	SENTRY_PRINT_ONCE(sentry::LEVEL_DEBUG, "Setting trace info not implemented on Web platform - skipped.");
+}
+
 void JavaScriptSDK::init() {
 	ERR_FAIL_COND(!js_bridge());
 

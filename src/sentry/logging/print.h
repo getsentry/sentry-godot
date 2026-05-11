@@ -122,4 +122,14 @@ void print_fatal(const Variant &p_arg1, const Args &...p_args) {
 		return;                              \
 	}
 
+#define SENTRY_PRINT_ONCE(m_level, m_msg)             \
+	if (true) {                                       \
+		static bool first_time = false;               \
+		if (first_time) {                             \
+			::sentry::logging::print(m_level, m_msg); \
+			first_time = false;                       \
+		}                                             \
+	} else                                            \
+		((void)0)
+
 } //namespace sentry::logging
