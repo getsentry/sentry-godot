@@ -34,14 +34,19 @@ $DotnetCommonTestCases = @(
     }
     @{ Name = "Native layer is enabled"; TestBlock = {
             param($RunResult)
-            $line = $RunResult.Output | Where-Object { $_ -like "SENTRY_NATIVE_ENABLED:*" } | Select-Object -First 1
-            $line | Should -Be "SENTRY_NATIVE_ENABLED: true"
+            # On Android each line carries a logcat prefix, so match the marker anywhere in the line.
+            $line = $RunResult.Output | Where-Object {
+                $_ -match "SENTRY_NATIVE_ENABLED: (true|false)"
+            } | Select-Object -First 1
+            $line | Should -Match "SENTRY_NATIVE_ENABLED: true"
         }
     }
     @{ Name = ".NET layer is enabled"; TestBlock = {
             param($RunResult)
-            $line = $RunResult.Output | Where-Object { $_ -like "SENTRY_DOTNET_ENABLED:*" } | Select-Object -First 1
-            $line | Should -Be "SENTRY_DOTNET_ENABLED: true"
+            $line = $RunResult.Output | Where-Object {
+                $_ -match "SENTRY_DOTNET_ENABLED: (true|false)"
+            } | Select-Object -First 1
+            $line | Should -Match "SENTRY_DOTNET_ENABLED: true"
         }
     }
     @{ Name = "Has correct exception type"; TestBlock = {
