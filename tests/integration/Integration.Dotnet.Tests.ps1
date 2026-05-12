@@ -18,10 +18,6 @@ $global:DebugPreference = "Continue"
 . $PSScriptRoot/CommonTestCases.ps1
 . $PSScriptRoot/Utils.ps1
 
-# Testing the auto-init path requires override.cfg to enable it.
-# Mobile exports are sealed, so override.cfg cannot be applied there.
-$script:skipAutoInitTests = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs", "iOSSauceLabs"))
-
 $DotnetCommonTestCases = @(
     @{ Name = "Exits with code zero"; TestBlock = {
             param($TestSetup, $RunResult)
@@ -182,13 +178,13 @@ Describe ".NET Integration Tests" {
             $script:gdscriptInitRunResult   = Invoke-TestAction -Action "dotnet-capture-via-gdscript-init"
             $script:crossLayerRunResult     = Invoke-TestAction -Action "dotnet-cross-layer-capture"
 
-            if (-not $script:skipAutoInitTests) {
-                # Auto-init reads options from project settings. Use override.cfg to enable it for this run without
-                # changing checked-in settings.
-                # Keep release/environment/dist aligned with cli_commands.gd, because auto-init runs without an init
-                # callback, but the tests still expect these values.
+            # Auto-init reads options from project settings. Use override.cfg to enable it just for this run.
+            # Mobile exports are sealed, so override.cfg cannot be applied there.
+            if ($env:SENTRY_TEST_PLATFORM -notin @("Adb", "AndroidSauceLabs", "iOSSauceLabs")) {
                 $overridePath = Join-Path $PSScriptRoot "../../project/override.cfg"
                 try {
+                    # Keep release/environment/dist aligned with cli_commands.gd, because auto-init runs without an init
+                    # callback, but the tests still expect these values.
                     Set-Content -Path $overridePath -Value @"
 [sentry]
 
@@ -331,7 +327,7 @@ options/debug_printing=0
         }
     }
 
-    Context "Dotnet with native auto-init driving init" -Skip:$script:skipAutoInitTests {
+    Context "Dotnet with native auto-init driving init" -Skip:($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs", "iOSSauceLabs")) {
         BeforeAll {
             $runResult = $script:autoInitRunResult
 
