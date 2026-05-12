@@ -9,6 +9,8 @@ public sealed class SentryGodotOptions : SentryOptions
     public SentryGodotOptions()
     {
         IsGlobalModeEnabled = true;
+        EnableScopeSync = true;
+        ScopeObserver = new GodotScopeObserver();
         AddInAppExclude("Godot");
         AddIntegration(new GodotSdkIntegration());
     }

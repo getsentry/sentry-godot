@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Sentry.Godot.Internal;
@@ -123,6 +124,72 @@ internal static partial class NativeBridge
     {
         public GodotStringHandle trace_id;
         public GodotStringHandle parent_span_id;
+    }
+
+    // Managed-owned string map for passing Dictionary<string, string> across P/Invoke.
+    // Buffer layout: key1+val1+key2+val2... concatenated as UTF-16.
+    // Lengths array: key1_len, val1_len, key2_len, val2_len, ... (2*pair_count entries).
+    // Must match layout of ManagedStringMap in csharp_interop.cpp.
+    [StructLayout(LayoutKind.Sequential)]
+    private unsafe struct ManagedStringMap
+    {
+        public char* Buffer;
+        public int* Lengths;
+        public int PairCount;
+    }
+
+    private delegate void ManagedStringMapAction(ManagedStringMap map);
+
+    /// <summary>
+    /// Marshals a dictionary into a stack-allocated interleaved buffer and passes the resulting struct to a native
+    /// function call. The map is only valid for the duration of the call (owned by managed code).
+    /// </summary>
+    private static unsafe void MarshallStringMap(IReadOnlyDictionary<string, string>? dict, ManagedStringMapAction nativeFunc)
+    {
+        if (dict == null || dict.Count == 0)
+        {
+            nativeFunc(default);
+            return;
+        }
+
+        int pairCount = dict.Count;
+
+        Span<int> lengthSpan = pairCount * 2 <= 256
+                ? stackalloc int[pairCount * 2]
+                : new int[pairCount * 2];
+        int totalChars = 0;
+        int i = 0;
+        foreach (var kv in dict)
+        {
+            lengthSpan[i++] = kv.Key.Length;
+            lengthSpan[i++] = kv.Value.Length;
+            totalChars += kv.Key.Length + kv.Value.Length;
+        }
+
+        Span<char> buffer = totalChars <= 512
+                ? stackalloc char[totalChars]
+                : new char[totalChars];
+
+        int pos = 0;
+        foreach (var kv in dict)
+        {
+            kv.Key.AsSpan().CopyTo(buffer.Slice(pos));
+            pos += kv.Key.Length;
+            kv.Value.AsSpan().CopyTo(buffer.Slice(pos));
+            pos += kv.Value.Length;
+        }
+
+        fixed (char* bufPtr = buffer)
+        fixed (int* lenPtr = lengthSpan)
+        {
+            var map = new ManagedStringMap
+            {
+                Buffer = bufPtr,
+                Lengths = lenPtr,
+                PairCount = pairCount
+            };
+            nativeFunc(map);
+        }
     }
 
     [LibraryImport(Lib)]
@@ -376,6 +443,98 @@ internal static partial class NativeBridge
         fixed (char* ptr = message)
         {
             csharp_interop_log((int)level, ptr, message.Length);
+        }
+    }
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_sdk_add_breadcrumb(
+            char* message, int messageLen,
+            char* category, int categoryLen,
+            char* type, int typeLen,
+            int level,
+            ManagedStringMap data);
+
+    public static unsafe void AddBreadcrumb(Breadcrumb breadcrumb)
+    {
+        var msg = breadcrumb.Message ?? "";
+        var cat = breadcrumb.Category ?? "";
+        var type = breadcrumb.Type ?? "";
+        int level = breadcrumb.Level switch
+        {
+            BreadcrumbLevel.Debug => 0,
+            BreadcrumbLevel.Info => 1,
+            BreadcrumbLevel.Warning => 2,
+            BreadcrumbLevel.Error => 3,
+            BreadcrumbLevel.Fatal => 4,
+            _ => 1,
+        };
+
+        MarshallStringMap(breadcrumb.Data, map =>
+        {
+            fixed (char* msgPtr = msg)
+            fixed (char* catPtr = cat)
+            fixed (char* typePtr = type)
+            {
+                csharp_interop_sdk_add_breadcrumb(
+                        msgPtr, msg.Length,
+                        catPtr, cat.Length,
+                        typePtr, type.Length,
+                        level, map);
+            }
+        });
+    }
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_sdk_set_tag(
+            char* key, int keyLen, char* value, int valueLen);
+
+    public static unsafe void SetTag(string key, string value)
+    {
+        fixed (char* keyPtr = key)
+        fixed (char* valPtr = value)
+        {
+            csharp_interop_sdk_set_tag(keyPtr, key.Length, valPtr, value.Length);
+        }
+    }
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_sdk_remove_tag(
+            char* key, int keyLen);
+
+    public static unsafe void RemoveTag(string key)
+    {
+        fixed (char* keyPtr = key)
+        {
+            csharp_interop_sdk_remove_tag(keyPtr, key.Length);
+        }
+    }
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_sdk_remove_user();
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_sdk_set_user(
+            char* username, int usernameLen, char* email, int emailLen, char* id, int idLen, char* ipAddress, int ipAddressLen);
+
+    public static unsafe void SetUser(SentryUser? user)
+    {
+        if (user is null)
+        {
+            csharp_interop_sdk_remove_user();
+        }
+        else
+        {
+            fixed (char* usernamePtr = user.Username)
+            fixed (char* emailPtr = user.Email)
+            fixed (char* idPtr = user.Id)
+            fixed (char* ipAddressPtr = user.IpAddress)
+            {
+                csharp_interop_sdk_set_user(
+                        usernamePtr, user.Username?.Length ?? 0,
+                        emailPtr, user.Email?.Length ?? 0,
+                        idPtr, user.Id?.Length ?? 0,
+                        ipAddressPtr, user.IpAddress?.Length ?? 0);
+            }
         }
     }
 }
