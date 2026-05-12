@@ -1,5 +1,8 @@
 using Godot;
 using System;
+using System.Collections.Generic;
+using Sentry;
+using Sentry.Godot;
 
 /// <summary>
 /// Helpers used by GDScript CLI commands to drive .NET integration tests.
@@ -35,6 +38,42 @@ public partial class DotnetCliTriggers : RefCounted
         Sentry.Godot.SentrySdk.SetTag("test.type", testType);
 
         Sentry.Godot.SentrySdk.AddBreadcrumb("Context configuration finished");
+    }
+
+    /// <summary>
+    /// Sets .NET-only scope items used by the cross-layer capture test to verify
+    /// that these items propagate to native events (tags, breadcrumbs, etc.).
+    /// </summary>
+    public void AddCrossLayerScopeSyncProbes()
+    {
+        SentrySdk.SetTag("dotnet.scope.synced", "from-dotnet");
+        SentrySdk.SetTag("dotnet.scope.removed", "should-not-appear");
+        SentrySdk.UnsetTag("dotnet.scope.removed");
+        SentrySdk.AddBreadcrumb("Synced from .NET");
+
+        // Breadcrumb with data exercises the ManagedStringMap marshalling path.
+        var data = new Dictionary<string, string>
+        {
+            ["http.url"] = "https://example.test/api/v1/probe",
+            ["http.status"] = "200",
+            ["unicode"] = "Hello 世界! 👋",
+        };
+        SentrySdk.AddBreadcrumb(
+            message: "Synced data breadcrumb from .NET",
+            category: "dotnet.probe",
+            type: "http",
+            data: data);
+
+        SentrySdk.ConfigureScope(scope =>
+        {
+            scope.User = new SentryUser
+            {
+                Id = "99999",
+                Username = "DotnetSyncedUser",
+                Email = "dotnet-synced@test.abc",
+                IpAddress = "1.2.3.4",
+            };
+        });
     }
 
     public string GetLastEventId()
