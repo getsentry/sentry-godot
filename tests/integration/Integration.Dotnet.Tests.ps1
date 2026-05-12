@@ -34,12 +34,14 @@ $DotnetCommonTestCases = @(
     }
     @{ Name = "Native layer is enabled"; TestBlock = {
             param($RunResult)
-            $RunResult.Output | Where-Object { $_ -eq "SENTRY_NATIVE_ENABLED: true" } | Should -Not -BeNullOrEmpty
+            $line = $RunResult.Output | Where-Object { $_ -like "SENTRY_NATIVE_ENABLED:*" } | Select-Object -First 1
+            $line | Should -Be "SENTRY_NATIVE_ENABLED: true"
         }
     }
     @{ Name = ".NET layer is enabled"; TestBlock = {
             param($RunResult)
-            $RunResult.Output | Where-Object { $_ -eq "SENTRY_DOTNET_ENABLED: true" } | Should -Not -BeNullOrEmpty
+            $line = $RunResult.Output | Where-Object { $_ -like "SENTRY_DOTNET_ENABLED:*" } | Select-Object -First 1
+            $line | Should -Be "SENTRY_DOTNET_ENABLED: true"
         }
     }
     @{ Name = "Has correct exception type"; TestBlock = {
