@@ -42,6 +42,12 @@ public partial class DotnetCliTriggers : RefCounted
         return Sentry.Godot.SentrySdk.LastEventId.ToString();
     }
 
+    public string CaptureMessage(string message)
+    {
+        GD.Print("Capturing message in .NET layer: ", message);
+        return Sentry.Godot.SentrySdk.CaptureMessage(message).ToString();
+    }
+
     public void TriggerException()
     {
         GD.Print("Triggering exception...");

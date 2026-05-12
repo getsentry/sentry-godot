@@ -126,6 +126,11 @@ struct ManagedOptions {
 	uint8_t enable_metrics;
 };
 
+struct NativeTraceContext {
+	GodotStringHandle trace_id;
+	GodotStringHandle parent_span_id;
+};
+
 static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions> options) {
 	Ref<SentryLoggerLimits> logger_limits = options->get_logger_limits();
 	if (logger_limits.is_null()) {
@@ -218,6 +223,16 @@ CSHARP_EXPORT void csharp_interop_register_dotnet_init(void (*fn)()) {
 CSHARP_EXPORT void csharp_interop_register_logger_error_handler(
 		void (*fn)(const char16_t *code, int32_t code_len, const char16_t *file, int32_t file_len)) {
 	s_dotnet_logger_error_fn = fn;
+}
+
+CSHARP_EXPORT NativeTraceContext csharp_interop_get_trace_context() {
+	auto ctx = SentrySDK::get_singleton()->get_trace_context();
+
+	NativeTraceContext interop_ctx;
+	interop_ctx.trace_id = _make_handle(ctx.trace_id);
+	interop_ctx.parent_span_id = _make_handle(ctx.parent_span_id);
+
+	return interop_ctx;
 }
 
 CSHARP_EXPORT GodotStringHandle csharp_interop_detect_environment() {

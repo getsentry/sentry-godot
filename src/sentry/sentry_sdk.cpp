@@ -13,6 +13,7 @@
 #include "sentry/sentry_options.h"
 #include "sentry/util/library_path.h"
 #include "sentry/util/simple_bind.h"
+#include "sentry/uuid.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/engine.hpp>
@@ -171,6 +172,11 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 			internal_sdk->add_attachment(att);
 		}
 		options->clear_custom_attachments();
+
+		// Generate a new trace on init to tie native and managed errors together.
+		trace_context.trace_id = sentry::uuid::make_uuid_no_dashes();
+		trace_context.parent_span_id = sentry::uuid::make_span_id();
+		internal_sdk->set_trace(trace_context.trace_id, trace_context.parent_span_id);
 
 		if (is_auto_initializing) {
 			// Delay contexts initialization until engine singletons are ready during early initialization.

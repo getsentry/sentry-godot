@@ -36,6 +36,7 @@ AndroidStringNames::AndroidStringNames() {
 	addFileAttachment = StringName("addFileAttachment");
 	addBytesAttachment = StringName("addBytesAttachment");
 	clearAttachments = StringName("clearAttachments");
+	setTrace = StringName("setTrace");
 
 	// Event methods.
 	eventGetId = StringName("eventGetId");

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Features
+
+- *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
+	- Sync trace context with .NET layer ([#696](https://github.com/getsentry/sentry-godot/pull/696))
+
 ### Fixes
 
 - Honor `send_default_pii` option on Web platform ([#695](https://github.com/getsentry/sentry-godot/pull/695))

@@ -30,6 +30,11 @@ public:
 	// This structure is needed to avoid circular dependencies between this and other headers that use Level enum.
 	using Level = sentry::Level;
 
+	struct TraceContext {
+		String trace_id;
+		String parent_span_id;
+	};
+
 private:
 	static SentrySDK *singleton;
 
@@ -39,6 +44,8 @@ private:
 	Ref<sentry::logging::SentryGodotLogger> godot_logger;
 	bool is_auto_initializing = false;
 	bool is_configuring = false;
+
+	TraceContext trace_context;
 
 	// Public API for logs and metrics
 	SentryLogger *logger = nullptr;
@@ -104,6 +111,8 @@ public:
 	Callable get_before_send() { return options->get_before_send(); }
 
 	void prepare_and_auto_initialize();
+
+	_FORCE_INLINE_ TraceContext get_trace_context() const { return trace_context; }
 
 	SentrySDK();
 	~SentrySDK();
