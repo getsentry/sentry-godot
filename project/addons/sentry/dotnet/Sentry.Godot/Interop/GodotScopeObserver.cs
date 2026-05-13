@@ -6,6 +6,9 @@ namespace Sentry.Godot.Interop;
 /// <summary>
 /// Scope Observer to sync changes to native layer.
 /// </summary>
+/// <remarks>
+/// Local scope changes are NOT synced, which prevents them from leaking into the native current scope.
+/// </remarks>
 internal class GodotScopeObserver : IScopeObserver
 {
     [ThreadStatic]
@@ -13,7 +16,7 @@ internal class GodotScopeObserver : IScopeObserver
 
     public void AddBreadcrumb(Breadcrumb breadcrumb)
     {
-        if (_syncing)
+        if (_syncing || SentrySdk.InLocalScope)
         {
             return;
         }
@@ -35,7 +38,7 @@ internal class GodotScopeObserver : IScopeObserver
 
     public void SetTag(string key, string value)
     {
-        if (_syncing)
+        if (_syncing || SentrySdk.InLocalScope)
         {
             return;
         }
@@ -52,7 +55,7 @@ internal class GodotScopeObserver : IScopeObserver
 
     public void UnsetTag(string key)
     {
-        if (_syncing)
+        if (_syncing || SentrySdk.InLocalScope)
         {
             return;
         }
@@ -69,7 +72,7 @@ internal class GodotScopeObserver : IScopeObserver
 
     public void SetUser(SentryUser? user)
     {
-        if (_syncing)
+        if (_syncing || SentrySdk.InLocalScope)
         {
             return;
         }
@@ -86,9 +89,7 @@ internal class GodotScopeObserver : IScopeObserver
 
     public void SetTrace(SentryId traceId, SpanId parentSpanId)
     {
-        // Trace context is owned by the native layer and shared with .NET at init
-        // via NativeBridge.GetTraceContext(). Scope-level trace changes are not
-        // propagated back to native.
+        // TODO: forward to native trace API once wired through NativeBridge.
     }
 
     public void AddAttachment(SentryAttachment attachment)

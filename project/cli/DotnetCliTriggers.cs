@@ -74,6 +74,21 @@ public partial class DotnetCliTriggers : RefCounted
                 IpAddress = "1.2.3.4",
             };
         });
+
+        // Per-call scope mutations must NOT leak to the native current scope.
+        // Verified by assertions in the cross-layer test.
+        SentrySdk.CaptureMessage("Per-call scope probe", scope =>
+        {
+            scope.SetTag("dotnet.per_call_scope.tag", "should_not_leak");
+            scope.AddBreadcrumb("Per-call leak breadcrumb");
+            scope.UnsetTag("dotnet.scope.synced");
+            scope.User = new SentryUser
+            {
+                Id = "should_not_leak",
+                Username = "should_not_leak",
+                Email = "should_not_leak@test.abc",
+            };
+        });
     }
 
     public string GetLastEventId()

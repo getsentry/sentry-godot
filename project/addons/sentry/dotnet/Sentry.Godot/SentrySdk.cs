@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using Sentry.Godot.ExceptionHandling;
 using Sentry.Godot.Internal;
 using Sentry.Godot.Interop;
@@ -15,6 +17,16 @@ public static partial class SentrySdk
     // time.
     // Doesn't need locking, because the whole call chain runs on the same thread.
     static bool _initializing;
+
+    [ThreadStatic] private static bool _inLocalScope;
+    internal static bool InLocalScope => _inLocalScope;
+
+    private readonly struct LocalScopeGuard : IDisposable
+    {
+        private readonly bool _prev;
+        public LocalScopeGuard() { _prev = _inLocalScope; _inLocalScope = true; }
+        public void Dispose() => _inLocalScope = _prev;
+    }
 
     internal static SentryGodotOptions? CurrentOptions { get; private set; }
 
@@ -140,5 +152,50 @@ public static partial class SentrySdk
             _exceptionHandler = new LoggerExceptionHandler();
         }
         GodotLog.Debug(".NET first chance exception handler initialized.");
+    }
+
+    [DebuggerStepThrough]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static SentryId CaptureEvent(SentryEvent evt, Action<Scope> configureScope)
+    {
+        using var _ = new LocalScopeGuard();
+        return Sentry.SentrySdk.CaptureEvent(evt, configureScope);
+    }
+
+    [DebuggerStepThrough]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static SentryId CaptureEvent(SentryEvent evt, SentryHint? hint, Action<Scope> configureScope)
+    {
+        using var _ = new LocalScopeGuard();
+        return Sentry.SentrySdk.CaptureEvent(evt, hint, configureScope);
+    }
+
+    [DebuggerStepThrough]
+    public static SentryId CaptureException(Exception exception, Action<Scope> configureScope)
+    {
+        using var _ = new LocalScopeGuard();
+        return Sentry.SentrySdk.CaptureException(exception, configureScope);
+    }
+
+    [DebuggerStepThrough]
+    public static SentryId CaptureMessage(string message, Action<Scope> configureScope, SentryLevel level = SentryLevel.Info)
+    {
+        using var _ = new LocalScopeGuard();
+        return Sentry.SentrySdk.CaptureMessage(message, configureScope, level);
+    }
+
+    [DebuggerStepThrough]
+    public static SentryId CaptureFeedback(SentryFeedback feedback, Action<Scope> configureScope, SentryHint? hint = null)
+    {
+        using var _ = new LocalScopeGuard();
+        return Sentry.SentrySdk.CaptureFeedback(feedback, configureScope, hint);
+    }
+
+    [DebuggerStepThrough]
+    public static SentryId CaptureFeedback(SentryFeedback feedback, out CaptureFeedbackResult result,
+        Action<Scope> configureScope, SentryHint? hint = null)
+    {
+        using var _ = new LocalScopeGuard();
+        return Sentry.SentrySdk.CaptureFeedback(feedback, out result, configureScope, hint);
     }
 }

@@ -21,6 +21,38 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         "Close"
     ];
 
+    /// <remarks>
+    /// Capture methods with <c>Action&lt;Scope&gt;</c> overloads clone the current scope and replay
+    /// scope mutations through the observer. These overloads are implemented by hand so the
+    /// observer can ignore local-scope changes.
+    /// </remarks>
+    private static readonly HashSet<string> LocalScopeCaptureMethods =
+    [
+        "CaptureEvent",
+        "CaptureException",
+        "CaptureMessage",
+        "CaptureFeedback"
+    ];
+
+    private static bool IsLocalScopeCapture(IMethodSymbol method)
+    {
+        if (!LocalScopeCaptureMethods.Contains(method.Name))
+        {
+            return false;
+        }
+        foreach (var p in method.Parameters)
+        {
+            if (p.Type is INamedTypeSymbol named &&
+                named.Name == "Action" &&
+                named.TypeArguments.Length == 1 &&
+                named.TypeArguments[0].ToDisplayString() == "Sentry.Scope")
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private const string DiagnosticCategory = "Sentry.Godot.SourceGenerators";
 
     private static readonly DiagnosticDescriptor UpstreamSdkNotFound = new(
@@ -117,6 +149,10 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                     GenerateProperty(sb, property, indent, "static ", "global::Sentry.SentrySdk", isTopLevel: true);
                     break;
                 case IMethodSymbol method when method.MethodKind == MethodKind.Ordinary:
+                    if (IsLocalScopeCapture(method))
+                    {
+                        continue;
+                    }
                     GenerateMethod(sb, method, indent, "static ", "global::Sentry.SentrySdk");
                     break;
                 default:
