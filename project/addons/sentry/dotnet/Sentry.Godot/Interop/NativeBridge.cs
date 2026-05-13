@@ -524,16 +524,21 @@ internal static partial class NativeBridge
         }
         else
         {
-            fixed (char* usernamePtr = user.Username)
-            fixed (char* emailPtr = user.Email)
-            fixed (char* idPtr = user.Id)
-            fixed (char* ipAddressPtr = user.IpAddress)
+            var username = user.Username ?? "";
+            var email = user.Email ?? "";
+            var id = user.Id ?? "";
+            var ipAddress = user.IpAddress ?? "";
+
+            fixed (char* usernamePtr = username)
+            fixed (char* emailPtr = email)
+            fixed (char* idPtr = id)
+            fixed (char* ipAddressPtr = ipAddress)
             {
                 csharp_interop_sdk_set_user(
-                        usernamePtr, user.Username?.Length ?? 0,
-                        emailPtr, user.Email?.Length ?? 0,
-                        idPtr, user.Id?.Length ?? 0,
-                        ipAddressPtr, user.IpAddress?.Length ?? 0);
+                        usernamePtr, username.Length,
+                        emailPtr, email.Length,
+                        idPtr, id.Length,
+                        ipAddressPtr, ipAddress.Length);
             }
         }
     }
