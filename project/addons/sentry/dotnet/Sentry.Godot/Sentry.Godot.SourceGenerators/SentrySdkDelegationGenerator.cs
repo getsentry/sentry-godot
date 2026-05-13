@@ -13,45 +13,50 @@ namespace Sentry.Godot.SourceGenerators;
 public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
 {
     /// <summary>
-    /// Methods to skip — these have custom implementations in the hand-written partial class.
+    /// Names of public SDK members that are implemented manually in the partial class.
+    /// Use this list only when all overloads for a method name, or any property with the
+    /// same name, should be suppressed from generated forwarding wrappers.
     /// </summary>
-    private static readonly HashSet<string> SkipMethods =
+    private static readonly HashSet<string> HandWrittenMembers =
     [
         "Init",
         "Close"
     ];
 
+    /// <summary>
+    /// Method overloads that are implemented manually in the partial class.
+    /// </summary>
     /// <remarks>
-    /// Capture methods with <c>Action&lt;Scope&gt;</c> overloads clone the current scope and replay
-    /// scope mutations through the observer. These overloads are implemented by hand so the
-    /// observer can ignore local-scope changes.
+    /// Entries use <see cref="SignatureFormat"/> so only the listed overload is skipped;
+    /// new upstream overloads are still generated and reviewed via snapshot diffs.
+    /// See <c>SentrySdk.cs</c> for the implementations.
     /// </remarks>
-    private static readonly HashSet<string> LocalScopeCaptureMethods =
+    private static readonly HashSet<string> HandWrittenOverloads =
     [
-        "CaptureEvent",
-        "CaptureException",
-        "CaptureMessage",
-        "CaptureFeedback"
+        // Hand-written wrappers guard local scope changes from leaking into the native layer current scope.
+        "CaptureEvent(SentryEvent, Action<Scope>)",
+        "CaptureEvent(SentryEvent, SentryHint?, Action<Scope>)",
+        "CaptureException(Exception, Action<Scope>)",
+        "CaptureMessage(string, Action<Scope>, SentryLevel)",
+        "CaptureFeedback(SentryFeedback, Action<Scope>, SentryHint?)",
+        "CaptureFeedback(SentryFeedback, out CaptureFeedbackResult, Action<Scope>, SentryHint?)",
     ];
 
-    private static bool IsLocalScopeCapture(IMethodSymbol method)
-    {
-        if (!LocalScopeCaptureMethods.Contains(method.Name))
-        {
-            return false;
-        }
-        foreach (var p in method.Parameters)
-        {
-            if (p.Type is INamedTypeSymbol named &&
-                named.Name == "Action" &&
-                named.TypeArguments.Length == 1 &&
-                named.TypeArguments[0].ToDisplayString() == "Sentry.Scope")
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+    private static readonly SymbolDisplayFormat SignatureFormat = new(
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypes,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        memberOptions: SymbolDisplayMemberOptions.IncludeParameters,
+        parameterOptions:
+            SymbolDisplayParameterOptions.IncludeType |
+            SymbolDisplayParameterOptions.IncludeParamsRefOut,
+        miscellaneousOptions:
+            SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
+            SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
+    private static bool IsHandWritten(ISymbol member) =>
+        HandWrittenMembers.Contains(member.Name) ||
+        (member is IMethodSymbol method &&
+         HandWrittenOverloads.Contains(method.ToDisplayString(SignatureFormat)));
 
     private const string DiagnosticCategory = "Sentry.Godot.SourceGenerators";
 
@@ -138,7 +143,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
 
         foreach (var member in members)
         {
-            if (SkipMethods.Contains(member.Name))
+            if (IsHandWritten(member))
             {
                 continue;
             }
@@ -149,10 +154,6 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
                     GenerateProperty(sb, property, indent, "static ", "global::Sentry.SentrySdk", isTopLevel: true);
                     break;
                 case IMethodSymbol method when method.MethodKind == MethodKind.Ordinary:
-                    if (IsLocalScopeCapture(method))
-                    {
-                        continue;
-                    }
                     GenerateMethod(sb, method, indent, "static ", "global::Sentry.SentrySdk");
                     break;
                 default:
