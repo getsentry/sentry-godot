@@ -180,7 +180,7 @@ public static partial class SentrySdk
         return Sentry.SentrySdk.CaptureException(exception, configureScope);
     }
 
-    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureFeedback(Sentry.SentryFeedback,System.Action{Sentry.Scope},Sentry.SentryHint)"/>
+    /// <inheritdoc cref="M:Sentry.HubExtensions.CaptureFeedback(Sentry.IHub,Sentry.SentryFeedback,System.Action{Sentry.Scope},Sentry.SentryHint)"/>
     [DebuggerStepThrough]
     public static SentryId CaptureFeedback(SentryFeedback feedback, Action<Scope> configureScope, SentryHint? hint = null)
     {
@@ -188,7 +188,7 @@ public static partial class SentrySdk
         return Sentry.SentrySdk.CaptureFeedback(feedback, configureScope, hint);
     }
 
-    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureFeedback(Sentry.SentryFeedback,Sentry.CaptureFeedbackResult@,System.Action{Sentry.Scope},Sentry.SentryHint)"/>
+    /// <inheritdoc cref="M:Sentry.IHub.CaptureFeedback(Sentry.SentryFeedback,Sentry.CaptureFeedbackResult@,System.Action{Sentry.Scope},Sentry.SentryHint)"/>
     [DebuggerStepThrough]
     public static SentryId CaptureFeedback(SentryFeedback feedback, out CaptureFeedbackResult result,
         Action<Scope> configureScope, SentryHint? hint = null)
