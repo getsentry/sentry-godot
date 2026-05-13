@@ -153,16 +153,13 @@ internal static partial class NativeBridge
         }
 
         int pairCount = dict.Count;
-
         Span<int> lengthSpan = pairCount * 2 <= 256
                 ? stackalloc int[pairCount * 2]
                 : new int[pairCount * 2];
+
         int totalChars = 0;
-        int i = 0;
         foreach (var kv in dict)
         {
-            lengthSpan[i++] = kv.Key.Length;
-            lengthSpan[i++] = kv.Value.Length;
             totalChars += kv.Key.Length + kv.Value.Length;
         }
 
@@ -170,9 +167,12 @@ internal static partial class NativeBridge
                 ? stackalloc char[totalChars]
                 : new char[totalChars];
 
+        int i = 0;
         int pos = 0;
         foreach (var kv in dict)
         {
+            lengthSpan[i++] = kv.Key.Length;
+            lengthSpan[i++] = kv.Value.Length;
             kv.Key.AsSpan().CopyTo(buffer.Slice(pos));
             pos += kv.Key.Length;
             kv.Value.AsSpan().CopyTo(buffer.Slice(pos));
