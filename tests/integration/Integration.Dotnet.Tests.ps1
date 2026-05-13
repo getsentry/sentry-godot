@@ -413,24 +413,24 @@ options/debug_printing=0
             $crumb.data."unicode" | Should -Be "Hello 世界! 👋"
         }
 
-        It "Managed event omits tag set in per-call scope callback" {
+        It "Managed event omits tag set in local scope callback" {
             # Sanity check: upstream CaptureEvent clones the current scope and discards it.
-            ($managedEvent.tags | Where-Object { $_.key -eq "dotnet.per_call_scope.tag" }) | Should -BeNullOrEmpty
+            ($managedEvent.tags | Where-Object { $_.key -eq "dotnet.local_scope.tag" }) | Should -BeNullOrEmpty
         }
 
-        It "Native event omits tag set in per-call scope callback" {
-            ($nativeEvent.tags | Where-Object { $_.key -eq "dotnet.per_call_scope.tag" }) | Should -BeNullOrEmpty
+        It "Native event omits tag set in local scope callback" {
+            ($nativeEvent.tags | Where-Object { $_.key -eq "dotnet.local_scope.tag" }) | Should -BeNullOrEmpty
         }
 
-        It "Native event omits breadcrumb added in per-call scope callback" {
-            $nativeEvent.breadcrumbs.values | Where-Object { $_.message -eq "Per-call leak breadcrumb" } | Should -BeNullOrEmpty
+        It "Native event omits breadcrumb added in local scope callback" {
+            $nativeEvent.breadcrumbs.values | Where-Object { $_.message -eq "Local scope leak breadcrumb" } | Should -BeNullOrEmpty
         }
 
-        It "Native event preserves tag despite UnsetTag in per-call scope callback" {
+        It "Native event preserves tag despite UnsetTag in local scope callback" {
             ($nativeEvent.tags | Where-Object { $_.key -eq "dotnet.scope.synced" }).value | Should -Be "from-dotnet"
         }
 
-        It "Native event preserves user despite SetUser in per-call scope callback" {
+        It "Native event preserves user despite SetUser in local scope callback" {
             $nativeEvent.user.id | Should -Be "99999"
             $nativeEvent.user.username | Should -Be "DotnetSyncedUser"
             $nativeEvent.user.email | Should -Be "dotnet-synced@test.abc"

@@ -75,12 +75,12 @@ public partial class DotnetCliTriggers : RefCounted
             };
         });
 
-        // Per-call scope mutations must NOT leak to the native current scope.
+        // Local scope mutations must NOT leak to the native current scope.
         // Verified by assertions in the cross-layer test.
-        SentrySdk.CaptureMessage("Per-call scope probe", scope =>
+        SentrySdk.CaptureMessage("Local scope probe", scope =>
         {
-            scope.SetTag("dotnet.per_call_scope.tag", "should_not_leak");
-            scope.AddBreadcrumb("Per-call leak breadcrumb");
+            scope.SetTag("dotnet.local_scope.tag", "should_not_leak");
+            scope.AddBreadcrumb("Local scope leak breadcrumb");
             scope.UnsetTag("dotnet.scope.synced");
             scope.User = new SentryUser
             {
