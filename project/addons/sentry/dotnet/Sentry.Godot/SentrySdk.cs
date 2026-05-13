@@ -154,6 +154,7 @@ public static partial class SentrySdk
         GodotLog.Debug(".NET first chance exception handler initialized.");
     }
 
+    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureEvent(Sentry.SentryEvent,System.Action{Sentry.Scope})"/>
     [DebuggerStepThrough]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static SentryId CaptureEvent(SentryEvent evt, Action<Scope> configureScope)
@@ -162,6 +163,7 @@ public static partial class SentrySdk
         return Sentry.SentrySdk.CaptureEvent(evt, configureScope);
     }
 
+    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureEvent(Sentry.SentryEvent,Sentry.SentryHint,System.Action{Sentry.Scope})"/>
     [DebuggerStepThrough]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static SentryId CaptureEvent(SentryEvent evt, SentryHint? hint, Action<Scope> configureScope)
@@ -170,6 +172,7 @@ public static partial class SentrySdk
         return Sentry.SentrySdk.CaptureEvent(evt, hint, configureScope);
     }
 
+    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureException(System.Exception,System.Action{Sentry.Scope})"/>
     [DebuggerStepThrough]
     public static SentryId CaptureException(Exception exception, Action<Scope> configureScope)
     {
@@ -177,13 +180,7 @@ public static partial class SentrySdk
         return Sentry.SentrySdk.CaptureException(exception, configureScope);
     }
 
-    [DebuggerStepThrough]
-    public static SentryId CaptureMessage(string message, Action<Scope> configureScope, SentryLevel level = SentryLevel.Info)
-    {
-        using var _ = new LocalScopeGuard();
-        return Sentry.SentrySdk.CaptureMessage(message, configureScope, level);
-    }
-
+    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureFeedback(Sentry.SentryFeedback,System.Action{Sentry.Scope},Sentry.SentryHint)"/>
     [DebuggerStepThrough]
     public static SentryId CaptureFeedback(SentryFeedback feedback, Action<Scope> configureScope, SentryHint? hint = null)
     {
@@ -191,11 +188,20 @@ public static partial class SentrySdk
         return Sentry.SentrySdk.CaptureFeedback(feedback, configureScope, hint);
     }
 
+    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureFeedback(Sentry.SentryFeedback,Sentry.CaptureFeedbackResult@,System.Action{Sentry.Scope},Sentry.SentryHint)"/>
     [DebuggerStepThrough]
     public static SentryId CaptureFeedback(SentryFeedback feedback, out CaptureFeedbackResult result,
         Action<Scope> configureScope, SentryHint? hint = null)
     {
         using var _ = new LocalScopeGuard();
         return Sentry.SentrySdk.CaptureFeedback(feedback, out result, configureScope, hint);
+    }
+
+    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureMessage(System.String,System.Action{Sentry.Scope},Sentry.SentryLevel)"/>
+    [DebuggerStepThrough]
+    public static SentryId CaptureMessage(string message, Action<Scope> configureScope, SentryLevel level = SentryLevel.Info)
+    {
+        using var _ = new LocalScopeGuard();
+        return Sentry.SentrySdk.CaptureMessage(message, configureScope, level);
     }
 }
