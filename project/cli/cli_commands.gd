@@ -12,7 +12,7 @@ extends Node
 ## Use "godot --headless --path ./project -- help" to list available commands.
 
 
-enum DotnetInitDriver { GDSCRIPT, DOTNET }
+enum DotnetInitDriver { GDSCRIPT, DOTNET, AUTO }
 
 var exit_code: int
 
@@ -45,6 +45,7 @@ func _register_commands() -> void:
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
 	_parser.add_command("dotnet-exception-capture", _cmd_dotnet_exception_capture, "Capture a .NET exception (scenario: plain | bare-rethrow | wrapped-rethrow)")
 	_parser.add_command("dotnet-capture-via-gdscript-init", _cmd_dotnet_capture_via_gdscript_init, "Capture a .NET exception with GDScript driving init")
+	_parser.add_command("dotnet-capture-via-auto-init", _cmd_dotnet_capture_via_auto_init, "Capture a .NET exception with native auto-init driving init")
 	_parser.add_command("dotnet-cross-layer-capture", _cmd_dotnet_cross_layer_capture, "Capture a native and a .NET event to verify cross-layer synchronization")
 
 
@@ -299,6 +300,10 @@ func _cmd_dotnet_capture_via_gdscript_init() -> int:
 	return await _run_dotnet_trigger("dotnet-capture-via-gdscript-init", "TriggerException", DotnetInitDriver.GDSCRIPT)
 
 
+func _cmd_dotnet_capture_via_auto_init() -> int:
+	return await _run_dotnet_trigger("dotnet-capture-via-auto-init", "TriggerException", DotnetInitDriver.AUTO)
+
+
 ## Captures a native and a managed event in one run to verify cross-layer synchronization.
 func _cmd_dotnet_cross_layer_capture() -> int:
 	var script: Script = load("res://cli/DotnetCliTriggers.cs")
@@ -336,6 +341,12 @@ func _run_dotnet_trigger(p_test_type: String, p_trigger_method: StringName, p_in
 			await _init_sentry()
 		DotnetInitDriver.DOTNET:
 			triggers.InitSentryFromDotnet()
+		DotnetInitDriver.AUTO:
+			# SDK is expected to auto-init via "auto_init" project setting.
+			pass
+
+	print("SENTRY_NATIVE_ENABLED: ", SentrySDK.is_enabled())
+	print("SENTRY_DOTNET_ENABLED: ", triggers.IsSdkEnabled())
 
 	triggers.AddIntegrationTestContext(p_test_type)
 

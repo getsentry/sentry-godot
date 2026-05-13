@@ -18,6 +18,56 @@ $global:DebugPreference = "Continue"
 . $PSScriptRoot/CommonTestCases.ps1
 . $PSScriptRoot/Utils.ps1
 
+$DotnetCommonTestCases = @(
+    @{ Name = "Exits with code zero"; TestBlock = {
+            param($TestSetup, $RunResult)
+            if ($TestSetup.IsAndroid) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
+            $RunResult.ExitCode | Should -Be 0
+        }
+    }
+    @{ Name = "Native layer is enabled"; TestBlock = {
+            param($RunResult)
+            # On Android each line carries a logcat prefix, so match the marker anywhere in the line.
+            $line = $RunResult.Output | Where-Object {
+                $_ -match "SENTRY_NATIVE_ENABLED: (true|false)"
+            } | Select-Object -First 1
+            $line | Should -Match "SENTRY_NATIVE_ENABLED: true"
+        }
+    }
+    @{ Name = ".NET layer is enabled"; TestBlock = {
+            param($RunResult)
+            $line = $RunResult.Output | Where-Object {
+                $_ -match "SENTRY_DOTNET_ENABLED: (true|false)"
+            } | Select-Object -First 1
+            $line | Should -Match "SENTRY_DOTNET_ENABLED: true"
+        }
+    }
+    @{ Name = "Has correct exception type"; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.exception.values[0].type | Should -Be "System.Exception"
+        }
+    }
+    @{ Name = "Has correct exception value"; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.exception.values[0].value | Should -Be "Exception (should be captured)"
+        }
+    }
+    @{ Name = "Has Godot.Bridge mechanism"; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.exception.values[0].mechanism.type | Should -Be "Godot.Bridge"
+            $SentryEvent.exception.values[0].mechanism.handled | Should -Be $false
+        }
+    }
+    @{ Name = "Has stacktrace frames"; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.exception.values[0].stacktrace.frames | Should -Not -BeNullOrEmpty
+        }
+    }
+)
+
 BeforeAll {
     function Invoke-TestAction {
         param (
@@ -122,56 +172,36 @@ Describe ".NET Integration Tests" {
             Connect-Device -Platform $script:TestSetup.Platform
             Install-DeviceApp -Path $script:TestSetup.Executable
 
-            $script:exceptionRunResult      = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("plain")
+            $script:dotnetInitRunResult      = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("plain")
             $script:bareRethrowRunResult    = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("bare-rethrow")
             $script:wrappedRethrowRunResult = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("wrapped-rethrow")
             $script:gdscriptInitRunResult   = Invoke-TestAction -Action "dotnet-capture-via-gdscript-init"
             $script:crossLayerRunResult     = Invoke-TestAction -Action "dotnet-cross-layer-capture"
+
+            # Auto-init reads options from project settings. Use override.cfg to enable it just for this run.
+            # Mobile exports are sealed, so override.cfg cannot be applied there.
+            if ($env:SENTRY_TEST_PLATFORM -notin @("Adb", "AndroidSauceLabs", "iOSSauceLabs")) {
+                $overridePath = Join-Path $PSScriptRoot "../../project/override.cfg"
+                try {
+                    # Keep release/environment/dist aligned with cli_commands.gd, because auto-init runs without an init
+                    # callback, but the tests still expect these values.
+                    Set-Content -Path $overridePath -Value @"
+[sentry]
+
+options/auto_init=true
+options/release="test-app@1.0.0"
+options/environment="integration-test"
+options/dist="test-dist"
+options/debug_printing=0
+"@
+                    $script:autoInitRunResult = Invoke-TestAction -Action "dotnet-capture-via-auto-init"
+                } finally {
+                    Remove-Item $overridePath -ErrorAction SilentlyContinue
+                }
+            }
         }
         finally {
             Disconnect-Device
-        }
-    }
-
-    Context "Plain Exception" {
-        BeforeAll {
-            $runResult = $script:exceptionRunResult
-
-            $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
-            if ($eventId) {
-                Write-GitHub "::group::Getting event content"
-                $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
-                Write-GitHub "::endgroup::"
-            }
-        }
-
-        It "<Name>" -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType "dotnet-exception-capture-plain" -RunResult $runResult -TestSetup $script:TestSetup
-        }
-
-        It "Exits with code zero" {
-            if ($TestSetup.IsAndroid) {
-                # app-runner doesn't support exit code on Android.
-                return
-            }
-            $runResult.ExitCode | Should -Be 0
-        }
-
-        It "Has correct exception type" {
-            $runEvent.exception.values[0].type | Should -Be "System.Exception"
-        }
-
-        It "Has correct exception value" {
-            $runEvent.exception.values[0].value | Should -Be "Exception (should be captured)"
-        }
-
-        It "Has Godot.Bridge mechanism" {
-            $runEvent.exception.values[0].mechanism.type | Should -Be "Godot.Bridge"
-            $runEvent.exception.values[0].mechanism.handled | Should -Be $false
-        }
-
-        It "Has stacktrace frames" {
-            $runEvent.exception.values[0].stacktrace.frames | Should -Not -BeNullOrEmpty
         }
     }
 
@@ -185,10 +215,6 @@ Describe ".NET Integration Tests" {
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
                 Write-GitHub "::endgroup::"
             }
-        }
-
-        It "<Name>" -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType "dotnet-exception-capture-bare-rethrow" -RunResult $runResult -TestSetup $script:TestSetup
         }
 
         It "Exits with code zero" {
@@ -225,10 +251,6 @@ Describe ".NET Integration Tests" {
             }
         }
 
-        It "<Name>" -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType "dotnet-exception-capture-wrapped-rethrow" -RunResult $runResult -TestSetup $script:TestSetup
-        }
-
         It "Exits with code zero" {
             if ($TestSetup.IsAndroid) {
                 # app-runner doesn't support exit code on Android.
@@ -263,6 +285,27 @@ Describe ".NET Integration Tests" {
         }
     }
 
+    Context "Dotnet with CSharp driving init" {
+        BeforeAll {
+            $runResult = $script:dotnetInitRunResult
+
+            $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
+            if ($eventId) {
+                Write-GitHub "::group::Getting event content"
+                $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
+                Write-GitHub "::endgroup::"
+            }
+        }
+
+        It "<Name>" -ForEach $CommonTestCases {
+            & $testBlock -SentryEvent $runEvent -TestType "dotnet-exception-capture-plain" -RunResult $runResult -TestSetup $script:TestSetup
+        }
+
+        It "<Name>" -ForEach $DotnetCommonTestCases {
+            & $TestBlock -SentryEvent $runEvent -RunResult $runResult -TestSetup $script:TestSetup
+        }
+    }
+
     Context "Dotnet with GDScript driving init" {
         BeforeAll {
             $runResult = $script:gdscriptInitRunResult
@@ -279,25 +322,29 @@ Describe ".NET Integration Tests" {
             & $testBlock -SentryEvent $runEvent -TestType "dotnet-capture-via-gdscript-init" -RunResult $runResult -TestSetup $script:TestSetup
         }
 
-        It "Exits with code zero" {
-            if ($TestSetup.IsAndroid) {
-                # app-runner doesn't support exit code on Android.
-                return
+        It "<Name>" -ForEach $DotnetCommonTestCases {
+            & $TestBlock -SentryEvent $runEvent -RunResult $runResult -TestSetup $script:TestSetup
+        }
+    }
+
+    Context "Dotnet with native auto-init driving init" -Skip:($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs", "iOSSauceLabs")) {
+        BeforeAll {
+            $runResult = $script:autoInitRunResult
+
+            $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
+            if ($eventId) {
+                Write-GitHub "::group::Getting event content"
+                $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
+                Write-GitHub "::endgroup::"
             }
-            $runResult.ExitCode | Should -Be 0
         }
 
-        It "Has correct exception type" {
-            $runEvent.exception.values[0].type | Should -Be "System.Exception"
+        It "<Name>" -ForEach $CommonTestCases {
+            & $testBlock -SentryEvent $runEvent -TestType "dotnet-capture-via-auto-init" -RunResult $runResult -TestSetup $script:TestSetup
         }
 
-        It "Has correct exception value" {
-            $runEvent.exception.values[0].value | Should -Be "Exception (should be captured)"
-        }
-
-        It "Has Godot.Bridge mechanism" {
-            $runEvent.exception.values[0].mechanism.type | Should -Be "Godot.Bridge"
-            $runEvent.exception.values[0].mechanism.handled | Should -Be $false
+        It "<Name>" -ForEach $DotnetCommonTestCases {
+            & $TestBlock -SentryEvent $runEvent -RunResult $runResult -TestSetup $script:TestSetup
         }
     }
 

@@ -48,6 +48,11 @@ public partial class DotnetCliTriggers : RefCounted
         return Sentry.Godot.SentrySdk.CaptureMessage(message).ToString();
     }
 
+    public bool IsSdkEnabled()
+    {
+        return Sentry.Godot.SentrySdk.IsEnabled;
+    }
+
     public void TriggerException()
     {
         GD.Print("Triggering exception...");
