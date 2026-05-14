@@ -4,6 +4,7 @@
 #include "sentry/level.h"
 #include "sentry/processing/sentry_event_processor.h"
 #include "sentry/sentry_attachment.h"
+#include "sentry/sentry_scope_observer.h"
 #include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
@@ -116,6 +117,7 @@ private:
 	Callable before_capture_screenshot;
 
 	Vector<Ref<SentryEventProcessor>> event_processors;
+	Vector<Ref<SentryScopeObserver>> scope_observers;
 	// Default attachments (log, screenshot, view hierarchy). Must be file-based. Survive clear_attachments().
 	Vector<Ref<SentryAttachment>> default_attachments;
 	// User attachments added during config callback, drained at init.
@@ -233,6 +235,9 @@ public:
 	void add_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	void remove_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	_FORCE_INLINE_ Vector<Ref<SentryEventProcessor>> get_event_processors() { return event_processors; }
+
+	void add_scope_observer(const Ref<SentryScopeObserver> &p_scope_observer);
+	_FORCE_INLINE_ Vector<Ref<SentryScopeObserver>> get_scope_observers() { return scope_observers; }
 
 	void add_default_attachment(const Ref<SentryAttachment> &p_attachment);
 	_FORCE_INLINE_ Vector<Ref<SentryAttachment>> get_default_attachments() const { return default_attachments; }
