@@ -4,15 +4,14 @@ using Sentry;
 namespace Sentry.Godot.Interop;
 
 /// <summary>
-/// Scope Observer to sync changes to native layer.
+/// Synchronizes scope changes to native layer.
 /// </summary>
 /// <remarks>
 /// Local scope changes are NOT synced, which prevents them from leaking into the native current scope.
 /// </remarks>
 internal class GodotScopeObserver : IScopeObserver
 {
-    [ThreadStatic]
-    private static bool _syncing;
+    [ThreadStatic] private static bool _syncing;
 
     public void AddBreadcrumb(Breadcrumb breadcrumb)
     {

@@ -337,7 +337,8 @@ CSHARP_EXPORT void csharp_interop_sdk_set_user(
 		const char16_t *email, int32_t email_len,
 		const char16_t *id, int32_t id_len,
 		const char16_t *ip_address, int32_t ip_address_len) {
-	Ref<SentryUser> user = SentryUser::create_default();
+	Ref<SentryUser> user;
+	user.instantiate();
 	user->set_username(String::utf16(username, username_len));
 	user->set_email(String::utf16(email, email_len));
 	user->set_id(String::utf16(id, id_len));
