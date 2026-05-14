@@ -163,9 +163,11 @@ internal static partial class NativeBridge
             totalChars += kv.Key.Length + kv.Value.Length;
         }
 
-        Span<char> buffer = totalChars <= 512
-                ? stackalloc char[totalChars]
-                : new char[totalChars];
+        // Allocate at least one char so `fixed` produces a non-null pointer for empty pairs.
+        int bufferLen = Math.Max(totalChars, 1);
+        Span<char> buffer = bufferLen <= 512
+                ? stackalloc char[bufferLen]
+                : new char[bufferLen];
 
         int i = 0;
         int pos = 0;
