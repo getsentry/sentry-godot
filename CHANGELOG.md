@@ -5,8 +5,8 @@
 ### Features
 
 - *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
-	- Sync trace context with .NET layer ([#696](https://github.com/getsentry/sentry-godot/pull/696))
-  - Sync breadcrumbs, tags and user changes from .NET to native ([#701](https://github.com/getsentry/sentry-godot/pull/701))
+  - Sync trace context with .NET layer ([#696](https://github.com/getsentry/sentry-godot/pull/696))
+  - Sync breadcrumbs, tags and user changes from .NET layer to native layer ([#701](https://github.com/getsentry/sentry-godot/pull/701))
 
 ### Fixes
 
