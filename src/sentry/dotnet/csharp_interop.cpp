@@ -330,7 +330,7 @@ CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int32_t key_l
 	SentrySDK::get_singleton()->set_tag(k, v);
 }
 
-CSHARP_EXPORT void csharp_interop_sdk_remove_tag(const char16_t *key, int key_len) {
+CSHARP_EXPORT void csharp_interop_sdk_remove_tag(const char16_t *key, int32_t key_len) {
 	String k = String::utf16(key, key_len);
 	SentrySDK::get_singleton()->remove_tag(k);
 }
