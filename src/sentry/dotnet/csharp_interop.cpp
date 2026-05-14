@@ -16,9 +16,6 @@
 
 using namespace sentry;
 
-static void (*s_dotnet_init_fn)() = nullptr;
-static void (*s_dotnet_logger_error_fn)(const char16_t *code, int32_t code_len, const char16_t *file, int32_t file_len) = nullptr;
-
 extern "C" {
 
 // Native-owned string handle for passing Godot Strings across the interop boundary.
@@ -69,6 +66,16 @@ static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map)
 	}
 	return dict;
 }
+
+// Managed functions that are called from native layer.
+// Must match ManagedFunctions struct in NativeBridge.cs.
+struct ManagedFunctions {
+	void (*init)();
+	void (*logger_error)(const char16_t *code, int32_t code_len, const char16_t *file, int32_t file_len);
+	void (*add_breadcrumb)(const char16_t *message, int32_t message_len, const char16_t *category, int32_t category_len, int32_t level, const char16_t *type, int32_t type_len);
+};
+
+static ManagedFunctions s_managed_funcs = {};
 
 // Must match layout of LoggerLimitsData in NativeBridge.cs.
 struct LoggerLimitsData {
@@ -235,6 +242,10 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 
 // *** Functions called from C#
 
+CSHARP_EXPORT void csharp_interop_register_managed_functions(ManagedFunctions p_functions) {
+	s_managed_funcs = p_functions;
+}
+
 CSHARP_EXPORT NativeOptions csharp_interop_get_options() {
 	NativeOptions data;
 	_populate_options_data(data, SentrySDK::get_singleton()->get_options());
@@ -245,15 +256,6 @@ CSHARP_EXPORT NativeOptions csharp_interop_get_options_defaults() {
 	NativeOptions data;
 	_populate_options_data(data, SentryOptions::create_from_project_settings());
 	return data;
-}
-
-CSHARP_EXPORT void csharp_interop_register_dotnet_init(void (*fn)()) {
-	s_dotnet_init_fn = fn;
-}
-
-CSHARP_EXPORT void csharp_interop_register_logger_error_handler(
-		void (*fn)(const char16_t *code, int32_t code_len, const char16_t *file, int32_t file_len)) {
-	s_dotnet_logger_error_fn = fn;
 }
 
 CSHARP_EXPORT NativeTraceContext csharp_interop_get_trace_context() {
@@ -370,18 +372,31 @@ CSHARP_EXPORT void csharp_interop_log(int32_t level, const char16_t *msg, int32_
 namespace sentry::dotnet {
 
 void init() {
-	if (s_dotnet_init_fn) {
-		s_dotnet_init_fn();
+	if (s_managed_funcs.init) {
+		s_managed_funcs.init();
 	}
 }
 
 void handle_logger_error(const String &p_file, const String &p_code) {
-	if (s_dotnet_logger_error_fn) {
+	if (s_managed_funcs.logger_error) {
 		Char16String code_utf16 = p_code.utf16();
 		Char16String file_utf16 = p_file.utf16();
-		s_dotnet_logger_error_fn(
-				(const char16_t *)code_utf16.get_data(), code_utf16.length(),
-				(const char16_t *)file_utf16.get_data(), file_utf16.length());
+		s_managed_funcs.logger_error(
+				code_utf16.get_data(), code_utf16.length(),
+				file_utf16.get_data(), file_utf16.length());
+	}
+}
+
+void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
+	if (s_managed_funcs.add_breadcrumb) {
+		Char16String message_utf16 = p_breadcrumb->get_message().utf16();
+		Char16String category_utf16 = p_breadcrumb->get_category().utf16();
+		Char16String type = p_breadcrumb->get_type().utf16();
+		s_managed_funcs.add_breadcrumb(
+				message_utf16.get_data(), message_utf16.length(),
+				category_utf16.get_data(), category_utf16.length(),
+				static_cast<int32_t>(p_breadcrumb->get_level()),
+				type.get_data(), type.length());
 	}
 }
 

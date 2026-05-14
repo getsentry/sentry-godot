@@ -160,7 +160,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	}
 
 	// Add built-in scope observers.
-	if (OS::get_singleton()->has_feature("mono")) {
+	if (ClassDB::class_exists("CSharpScript")) {
 		options->add_scope_observer(memnew(sentry::dotnet::DotnetScopeObserver));
 	}
 

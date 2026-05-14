@@ -1,5 +1,7 @@
 #pragma once
 
+#include "sentry/sentry_breadcrumb.h"
+
 #include <godot_cpp/variant/string.hpp>
 
 using namespace godot;
@@ -11,5 +13,7 @@ void init();
 
 // Forwards a C# exception error to the .NET layer for capture.
 void handle_logger_error(const String &p_file, const String &p_code);
+
+void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb);
 
 } // namespace sentry::dotnet
