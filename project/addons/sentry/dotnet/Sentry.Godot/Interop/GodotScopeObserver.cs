@@ -11,6 +11,7 @@ namespace Sentry.Godot.Interop;
 /// </remarks>
 internal class GodotScopeObserver : IScopeObserver
 {
+    // Prevent feedback loops when syncing scope changes across layers.
     [ThreadStatic] private static bool _syncing;
 
     public void AddBreadcrumb(Breadcrumb breadcrumb)
