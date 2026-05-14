@@ -9,6 +9,10 @@ public sealed class SentryGodotOptions : SentryOptions
     public SentryGodotOptions()
     {
         IsGlobalModeEnabled = true;
+
+        // Native layer owns sessions; .NET-side tracking would double-count.
+        AutoSessionTracking = false;
+
         AddInAppExclude("Godot");
         AddIntegration(new GodotSdkIntegration());
     }
