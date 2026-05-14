@@ -54,6 +54,9 @@ struct ManagedStringMap {
 // Decode a ManagedStringMap into a Godot Dictionary (String -> String).
 static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map) {
 	Dictionary dict;
+	if (map.pair_count <= 0 || map.buffer == nullptr || map.lengths == nullptr) {
+		return dict;
+	}
 	const char16_t *ptr = map.buffer;
 	for (int32_t i = 0; i < map.pair_count; i++) {
 		int32_t key_len = map.lengths[i * 2];
