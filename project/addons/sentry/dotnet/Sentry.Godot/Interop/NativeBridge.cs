@@ -200,7 +200,9 @@ internal static partial class NativeBridge
     {
         public delegate* unmanaged[Cdecl]<void> init;
         public delegate* unmanaged[Cdecl]<char*, int, char*, int, void> logger_error;
-        public delegate* unmanaged[Cdecl]<char*, int, char*, int, int, char*, int, void> add_breadcrumb;
+        public delegate* unmanaged[Cdecl]<char*, int, char*, int, char*, int, int, void> add_breadcrumb;
+        public delegate* unmanaged[Cdecl]<char*, int, char*, int, void> set_tag;
+        public delegate* unmanaged[Cdecl]<char*, int, void> remove_tag;
     }
 
     [LibraryImport(Lib)]
@@ -217,6 +219,8 @@ internal static partial class NativeBridge
             init = &DotnetInitCallback,
             logger_error = &LoggerErrorCallback,
             add_breadcrumb = &AddBreadcrumbCallback,
+            set_tag = &SetTagCallback,
+            remove_tag = &RemoveTagCallback,
         });
     }
 
@@ -264,13 +268,13 @@ internal static partial class NativeBridge
     private static unsafe void AddBreadcrumbCallback(
         char* message, int messageLen,
         char* category, int categoryLen,
-        int level,
-        char* type, int typeLen
+        char* type, int typeLen,
+        int level
     )
     {
         try
         {
-            SentrySdk.AddBreadcrumb(
+            Sentry.Godot.SentrySdk.AddBreadcrumb(
                 message: new string(message, 0, messageLen),
                 category: new string(category, 0, categoryLen),
                 level: level switch
@@ -288,6 +292,21 @@ internal static partial class NativeBridge
         {
             GodotLog.Error($"Failed to forward breadcrumb to Sentry .NET layer: {ex}");
         }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static unsafe void SetTagCallback(
+        char* key, int keyLen,
+        char* value, int valueLen)
+    {
+        Sentry.Godot.SentrySdk.SetTag(new string(key, 0, keyLen), new string(value, 0, valueLen));
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static unsafe void RemoveTagCallback(
+        char* key, int keyLen)
+    {
+        Sentry.Godot.SentrySdk.UnsetTag(new string(key, 0, keyLen));
     }
 
     [LibraryImport(Lib)]

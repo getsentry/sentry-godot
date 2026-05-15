@@ -16,4 +16,7 @@ void handle_logger_error(const String &p_file, const String &p_code);
 
 void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb);
 
+void set_tag(const String &p_key, const String &p_value);
+void remove_tag(const String &p_key);
+
 } // namespace sentry::dotnet

@@ -72,7 +72,9 @@ static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map)
 struct ManagedFunctions {
 	void (*init)();
 	void (*logger_error)(const char16_t *code, int32_t code_len, const char16_t *file, int32_t file_len);
-	void (*add_breadcrumb)(const char16_t *message, int32_t message_len, const char16_t *category, int32_t category_len, int32_t level, const char16_t *type, int32_t type_len);
+	void (*add_breadcrumb)(const char16_t *message, int32_t message_len, const char16_t *category, int32_t category_len, const char16_t *type, int32_t type_len, int32_t level);
+	void (*set_tag)(const char16_t *name, int32_t name_len, const char16_t *value, int32_t value_len);
+	void (*remove_tag)(const char16_t *name, int32_t name_len);
 };
 
 static ManagedFunctions s_managed_funcs = {};
@@ -396,8 +398,26 @@ void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 		s_managed_funcs.add_breadcrumb(
 				message_utf16.get_data(), message_utf16.length(),
 				category_utf16.get_data(), category_utf16.length(),
-				static_cast<int32_t>(p_breadcrumb->get_level()),
-				type.get_data(), type.length());
+				type.get_data(), type.length(),
+				static_cast<int32_t>(p_breadcrumb->get_level()));
+	}
+}
+
+void set_tag(const String &p_key, const String &p_value) {
+	if (s_managed_funcs.set_tag) {
+		Char16String key_utf16 = p_key.utf16();
+		Char16String value_utf16 = p_value.utf16();
+		s_managed_funcs.set_tag(
+				key_utf16.get_data(), key_utf16.length(),
+				value_utf16.get_data(), value_utf16.length());
+	}
+}
+
+void remove_tag(const String &p_key) {
+	if (s_managed_funcs.remove_tag) {
+		Char16String key_utf16 = p_key.utf16();
+		s_managed_funcs.remove_tag(
+				key_utf16.get_data(), key_utf16.length());
 	}
 }
 
