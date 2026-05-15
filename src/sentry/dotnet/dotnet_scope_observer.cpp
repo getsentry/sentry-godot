@@ -34,6 +34,10 @@ void DotnetScopeObserver::set_user(const Ref<SentryUser> &p_user) {
 	if (SyncGuard::is_syncing()) {
 		return;
 	}
+	if (p_user.is_null()) {
+		remove_user();
+		return;
+	}
 	SyncGuard guard;
 	sentry::dotnet::set_user(p_user);
 }
