@@ -278,6 +278,7 @@ internal static partial class NativeBridge
     {
         try
         {
+            using var _ = new GodotScopeObserver.SyncGuard();
             Sentry.Godot.SentrySdk.AddBreadcrumb(
                 message: new string(message, 0, messageLen),
                 category: new string(category, 0, categoryLen),
@@ -305,6 +306,7 @@ internal static partial class NativeBridge
     {
         try
         {
+            using var _ = new GodotScopeObserver.SyncGuard();
             Sentry.Godot.SentrySdk.SetTag(new string(key, 0, keyLen), new string(value, 0, valueLen));
         }
         catch (Exception ex)
@@ -319,6 +321,7 @@ internal static partial class NativeBridge
     {
         try
         {
+            using var _ = new GodotScopeObserver.SyncGuard();
             Sentry.Godot.SentrySdk.UnsetTag(new string(key, 0, keyLen));
         }
         catch (Exception ex)
@@ -336,6 +339,7 @@ internal static partial class NativeBridge
     {
         try
         {
+            using var _ = new GodotScopeObserver.SyncGuard();
             Sentry.Godot.SentrySdk.ConfigureScope(scope =>
             {
                 scope.User = new Sentry.SentryUser
@@ -358,6 +362,7 @@ internal static partial class NativeBridge
     {
         try
         {
+            using var _ = new GodotScopeObserver.SyncGuard();
             Sentry.Godot.SentrySdk.ConfigureScope(scope =>
             {
                 scope.User = new Sentry.SentryUser();

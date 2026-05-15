@@ -1,4 +1,5 @@
 #include "gen/sdk_version.gen.h"
+#include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/environment.h"
 #include "sentry/logging/print.h"
 #include "sentry/sentry_breadcrumb.h"
@@ -322,6 +323,7 @@ CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(
 		const char16_t *type, int32_t type_len,
 		int32_t level,
 		ManagedStringMap data) {
+	sentry::dotnet::DotnetScopeObserver::SyncGuard guard;
 	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(String::utf16(message, message_len));
 	crumb->set_category(String::utf16(category, category_len));
 	crumb->set_type(String::utf16(type, type_len));
@@ -331,12 +333,14 @@ CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int32_t key_len, const char16_t *value, int32_t value_len) {
+	sentry::dotnet::DotnetScopeObserver::SyncGuard guard;
 	String k = String::utf16(key, key_len);
 	String v = String::utf16(value, value_len);
 	SentrySDK::get_singleton()->set_tag(k, v);
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_remove_tag(const char16_t *key, int32_t key_len) {
+	sentry::dotnet::DotnetScopeObserver::SyncGuard guard;
 	String k = String::utf16(key, key_len);
 	SentrySDK::get_singleton()->remove_tag(k);
 }
@@ -346,6 +350,7 @@ CSHARP_EXPORT void csharp_interop_sdk_set_user(
 		const char16_t *username, int32_t username_len,
 		const char16_t *email, int32_t email_len,
 		const char16_t *ip_address, int32_t ip_address_len) {
+	sentry::dotnet::DotnetScopeObserver::SyncGuard guard;
 	Ref<SentryUser> user;
 	user.instantiate();
 	user->set_id(String::utf16(id, id_len));
@@ -356,6 +361,7 @@ CSHARP_EXPORT void csharp_interop_sdk_set_user(
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_remove_user() {
+	sentry::dotnet::DotnetScopeObserver::SyncGuard guard;
 	SentrySDK::get_singleton()->remove_user();
 }
 
