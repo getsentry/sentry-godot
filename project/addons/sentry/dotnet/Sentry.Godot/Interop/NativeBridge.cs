@@ -258,12 +258,12 @@ internal static partial class NativeBridge
         }
     }
 
-    public static unsafe void RegisterLoggerErrorHandler(Action<string, string> handler)
+    public static unsafe void SetLoggerErrorHandler(Action<string, string> handler)
     {
         _loggerErrorHandler = handler;
     }
 
-    public static unsafe void UnregisterLoggerErrorHandler()
+    public static unsafe void ClearLoggerErrorHandler()
     {
         _loggerErrorHandler = null;
     }
