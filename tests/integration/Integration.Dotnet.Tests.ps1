@@ -418,6 +418,29 @@ options/debug_printing=0
             ($managedEvent.tags | Where-Object { $_.key -eq "dotnet.local_scope.tag" }) | Should -BeNullOrEmpty
         }
 
+        It "Managed event contains tag set from native" {
+            ($managedEvent.tags | Where-Object { $_.key -eq "native.scope.synced" }).value | Should -Be "from-native"
+        }
+
+        It "Managed event omits tag removed from native" {
+            ($managedEvent.tags | Where-Object { $_.key -eq "native.scope.removed" }) | Should -BeNullOrEmpty
+        }
+
+        It "Managed event includes breadcrumb added from native" {
+            $managedEvent.breadcrumbs.values | Where-Object { $_.message -eq "Synced from native" } | Should -Not -BeNullOrEmpty
+        }
+
+        # TODO: Test breadcrumb.data propagates native => managed once SentryBreadcrumb::get_data() lands;
+        #       currently, add_breadcrumb() forwarder in csharp_interop.cpp omits data field.
+
+        It "Managed event contains user context set from native" {
+            $managedEvent.user | Should -Not -BeNullOrEmpty
+            $managedEvent.user.id | Should -Be "88888"
+            $managedEvent.user.username | Should -Be "NativeSyncedUser"
+            $managedEvent.user.email | Should -Be "native-synced@test.abc"
+            $managedEvent.user.ip_address | Should -Be "5.6.7.8"
+        }
+
         It "Native event omits tag set in local scope callback" {
             ($nativeEvent.tags | Where-Object { $_.key -eq "dotnet.local_scope.tag" }) | Should -BeNullOrEmpty
         }
