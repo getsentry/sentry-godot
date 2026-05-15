@@ -340,10 +340,10 @@ internal static partial class NativeBridge
             {
                 scope.User = new Sentry.SentryUser
                 {
-                    Id = new string(id, 0, idLen),
-                    Username = new string(username, 0, usernameLen),
-                    Email = new string(email, 0, emailLen),
-                    IpAddress = new string(ip, 0, ipLen)
+                    Id = idLen > 0 ? new string(id, 0, idLen) : null,
+                    Username = usernameLen > 0 ? new string(username, 0, usernameLen) : null,
+                    Email = emailLen > 0 ? new string(email, 0, emailLen) : null,
+                    IpAddress = ipLen > 0 ? new string(ip, 0, ipLen) : null,
                 };
             });
         }
