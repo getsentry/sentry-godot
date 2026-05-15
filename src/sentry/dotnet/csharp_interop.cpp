@@ -75,6 +75,8 @@ struct ManagedFunctions {
 	void (*add_breadcrumb)(const char16_t *message, int32_t message_len, const char16_t *category, int32_t category_len, const char16_t *type, int32_t type_len, int32_t level);
 	void (*set_tag)(const char16_t *name, int32_t name_len, const char16_t *value, int32_t value_len);
 	void (*remove_tag)(const char16_t *name, int32_t name_len);
+	void (*set_user)(const char16_t *id, int32_t id_len, const char16_t *username, int32_t username_len, const char16_t *email, int32_t email_len, const char16_t *ip, int32_t ip_len);
+	void (*remove_user)();
 };
 
 static ManagedFunctions s_managed_funcs = {};
@@ -340,15 +342,15 @@ CSHARP_EXPORT void csharp_interop_sdk_remove_tag(const char16_t *key, int32_t ke
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_set_user(
+		const char16_t *id, int32_t id_len,
 		const char16_t *username, int32_t username_len,
 		const char16_t *email, int32_t email_len,
-		const char16_t *id, int32_t id_len,
 		const char16_t *ip_address, int32_t ip_address_len) {
 	Ref<SentryUser> user;
 	user.instantiate();
+	user->set_id(String::utf16(id, id_len));
 	user->set_username(String::utf16(username, username_len));
 	user->set_email(String::utf16(email, email_len));
-	user->set_id(String::utf16(id, id_len));
 	user->set_ip_address(String::utf16(ip_address, ip_address_len));
 	SentrySDK::get_singleton()->set_user(user);
 }
@@ -418,6 +420,27 @@ void remove_tag(const String &p_key) {
 		Char16String key_utf16 = p_key.utf16();
 		s_managed_funcs.remove_tag(
 				key_utf16.get_data(), key_utf16.length());
+	}
+}
+
+void set_user(const Ref<SentryUser> &p_user) {
+	if (s_managed_funcs.set_user) {
+		Char16String id_utf16 = p_user->get_id().utf16();
+		Char16String username_utf16 = p_user->get_username().utf16();
+		Char16String email_utf16 = p_user->get_email().utf16();
+		Char16String ip_utf16 = p_user->get_ip_address().utf16();
+
+		s_managed_funcs.set_user(
+				id_utf16.get_data(), id_utf16.length(),
+				username_utf16.get_data(), username_utf16.length(),
+				email_utf16.get_data(), email_utf16.length(),
+				ip_utf16.get_data(), ip_utf16.length());
+	}
+}
+
+void remove_user() {
+	if (s_managed_funcs.remove_user) {
+		s_managed_funcs.remove_user();
 	}
 }
 

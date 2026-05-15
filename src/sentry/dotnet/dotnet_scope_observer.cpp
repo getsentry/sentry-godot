@@ -17,9 +17,11 @@ void DotnetScopeObserver::remove_tag(const String &p_key) {
 }
 
 void DotnetScopeObserver::set_user(const Ref<SentryUser> &p_user) {
+	sentry::dotnet::set_user(p_user);
 }
 
 void DotnetScopeObserver::remove_user() {
+	sentry::dotnet::remove_user();
 }
 
 } //namespace sentry::dotnet

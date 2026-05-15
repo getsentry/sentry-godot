@@ -203,6 +203,8 @@ internal static partial class NativeBridge
         public delegate* unmanaged[Cdecl]<char*, int, char*, int, char*, int, int, void> add_breadcrumb;
         public delegate* unmanaged[Cdecl]<char*, int, char*, int, void> set_tag;
         public delegate* unmanaged[Cdecl]<char*, int, void> remove_tag;
+        public delegate* unmanaged[Cdecl]<char*, int, char*, int, char*, int, char*, int, void> set_user;
+        public delegate* unmanaged[Cdecl]<void> remove_user;
     }
 
     [LibraryImport(Lib)]
@@ -221,6 +223,8 @@ internal static partial class NativeBridge
             add_breadcrumb = &AddBreadcrumbCallback,
             set_tag = &SetTagCallback,
             remove_tag = &RemoveTagCallback,
+            set_user = &SetUserCallback,
+            remove_user = &RemoveUserCallback,
         });
     }
 
@@ -299,14 +303,70 @@ internal static partial class NativeBridge
         char* key, int keyLen,
         char* value, int valueLen)
     {
-        Sentry.Godot.SentrySdk.SetTag(new string(key, 0, keyLen), new string(value, 0, valueLen));
+        try
+        {
+            Sentry.Godot.SentrySdk.SetTag(new string(key, 0, keyLen), new string(value, 0, valueLen));
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward set_tag to Sentry .NET layer: {ex}");
+        }
     }
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
     private static unsafe void RemoveTagCallback(
         char* key, int keyLen)
     {
-        Sentry.Godot.SentrySdk.UnsetTag(new string(key, 0, keyLen));
+        try
+        {
+            Sentry.Godot.SentrySdk.UnsetTag(new string(key, 0, keyLen));
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward remove_tag to Sentry .NET layer: {ex}");
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static unsafe void SetUserCallback(
+        char* id, int idLen,
+        char* username, int usernameLen,
+        char* email, int emailLen,
+        char* ip, int ipLen)
+    {
+        try
+        {
+            Sentry.Godot.SentrySdk.ConfigureScope(scope =>
+            {
+                scope.User = new Sentry.SentryUser
+                {
+                    Id = new string(id, 0, idLen),
+                    Username = new string(username, 0, usernameLen),
+                    Email = new string(email, 0, emailLen),
+                    IpAddress = new string(ip, 0, ipLen)
+                };
+            });
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward set_user to Sentry .NET layer: {ex}");
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static unsafe void RemoveUserCallback()
+    {
+        try
+        {
+            Sentry.Godot.SentrySdk.ConfigureScope(scope =>
+            {
+                scope.User = new Sentry.SentryUser();
+            });
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward remove_user to Sentry .NET layer: {ex}");
+        }
     }
 
     [LibraryImport(Lib)]
@@ -575,7 +635,7 @@ internal static partial class NativeBridge
 
     [LibraryImport(Lib)]
     private static unsafe partial void csharp_interop_sdk_set_user(
-            char* username, int usernameLen, char* email, int emailLen, char* id, int idLen, char* ipAddress, int ipAddressLen);
+            char* id, int idLen, char* username, int usernameLen, char* email, int emailLen, char* ipAddress, int ipAddressLen);
 
     public static unsafe void SetUser(SentryUser? user)
     {
@@ -596,9 +656,9 @@ internal static partial class NativeBridge
             fixed (char* ipAddressPtr = ipAddress)
             {
                 csharp_interop_sdk_set_user(
+                        idPtr, id.Length,
                         usernamePtr, username.Length,
                         emailPtr, email.Length,
-                        idPtr, id.Length,
                         ipAddressPtr, ipAddress.Length);
             }
         }
