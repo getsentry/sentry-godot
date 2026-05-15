@@ -91,7 +91,7 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
 	GDREGISTER_INTERNAL_CLASS(ViewHierarchyProcessor);
 	GDREGISTER_INTERNAL_CLASS(logging::SentryGodotLogger);
-	GDREGISTER_ABSTRACT_CLASS(SentryScopeObserver);
+	GDREGISTER_INTERNAL_CLASS(SentryScopeObserver);
 	GDREGISTER_INTERNAL_CLASS(sentry::dotnet::DotnetScopeObserver);
 
 #ifdef SDK_NATIVE

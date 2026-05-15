@@ -16,13 +16,13 @@ protected:
 	static void _bind_methods() {}
 
 public:
-	virtual void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) = 0;
+	virtual void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {}
 
-	virtual void set_tag(const String &p_key, const String &p_value) = 0;
-	virtual void remove_tag(const String &p_key) = 0;
+	virtual void set_tag(const String &p_key, const String &p_value) {}
+	virtual void remove_tag(const String &p_key) {}
 
-	virtual void set_user(const Ref<SentryUser> &p_user) = 0;
-	virtual void remove_user() = 0;
+	virtual void set_user(const Ref<SentryUser> &p_user) {}
+	virtual void remove_user() {}
 
 	virtual ~SentryScopeObserver() = default;
 };
