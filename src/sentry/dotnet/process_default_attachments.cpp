@@ -8,7 +8,7 @@
 namespace sentry::dotnet {
 
 void process_default_attachments() {
-	// Use a dummy event to process default attachments.
+	// Use a dummy event to trigger screenshot and view hiererarchy creation.
 	// TODO: Replace this with the full .NET event pipeline when it lands.
 	sentry::logging::print_debug("Processing default attachments...");
 	Ref<DisabledEvent> dummy_event;
