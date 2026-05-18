@@ -136,12 +136,20 @@ struct NativeOptions {
 
 	// Experimental
 	uint8_t enable_metrics;
-
-	// Default attachments are file-based; revisit this approach if that changes.
-	// This array must be freed by calling csharp_interop_free_array().
-	AttachmentMeta *default_attachments;
-	int32_t default_attachments_count;
 };
+
+// Generic array handle for returning native-allocated arrays across the interop boundary.
+// C# casts "ptr" to the concrete element type and must free it via csharp_interop_free_array().
+struct NativeArray {
+	void *ptr;
+	int32_t count;
+};
+
+CSHARP_EXPORT void csharp_interop_free_array(void *p_array) {
+	if (p_array) {
+		Memory::free_static(p_array, true);
+	}
+}
 
 // Managed-owned options for passing C# options to native.
 // C# pins strings; native reads synchronously. No free needed.
@@ -257,24 +265,6 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.logger_breadcrumb_mask = options->get_logger_breadcrumb_mask();
 	r_data.logger_log_mask = options->get_logger_log_mask();
 	r_data.enable_metrics = options->get_experimental()->get_enable_metrics();
-
-	const Vector<Ref<SentryAttachment>> &atts = options->get_default_attachments();
-	r_data.default_attachments_count = atts.size();
-	r_data.default_attachments = r_data.default_attachments_count > 0
-			? memnew_arr(AttachmentMeta, r_data.default_attachments_count)
-			: nullptr;
-	for (int32_t i = 0; i < r_data.default_attachments_count; ++i) {
-		r_data.default_attachments[i].path = _make_handle(atts[i]->get_path());
-		r_data.default_attachments[i].filename = _make_handle(atts[i]->get_filename());
-		r_data.default_attachments[i].content_type = _make_handle(atts[i]->get_content_type());
-		r_data.default_attachments[i].attachment_type = _make_handle(atts[i]->get_attachment_type());
-	}
-}
-
-CSHARP_EXPORT void csharp_interop_free_array(void *p_array) {
-	if (p_array) {
-		Memory::free_static(p_array, true);
-	}
 }
 
 // *** Functions called from C#
@@ -293,6 +283,23 @@ CSHARP_EXPORT NativeOptions csharp_interop_get_options_defaults() {
 	NativeOptions data;
 	_populate_options_data(data, SentryOptions::create_from_project_settings());
 	return data;
+}
+
+CSHARP_EXPORT NativeArray csharp_interop_get_default_attachments() {
+	NativeArray result = {};
+	const Vector<Ref<SentryAttachment>> &atts = SentrySDK::get_singleton()->get_options()->get_default_attachments();
+	result.count = atts.size();
+	if (result.count > 0) {
+		AttachmentMeta *items = memnew_arr(AttachmentMeta, result.count);
+		for (int32_t i = 0; i < result.count; ++i) {
+			items[i].path = _make_handle(atts[i]->get_path());
+			items[i].filename = _make_handle(atts[i]->get_filename());
+			items[i].content_type = _make_handle(atts[i]->get_content_type());
+			items[i].attachment_type = _make_handle(atts[i]->get_attachment_type());
+		}
+		result.ptr = items;
+	}
+	return result;
 }
 
 CSHARP_EXPORT NativeTraceContext csharp_interop_get_trace_context() {
