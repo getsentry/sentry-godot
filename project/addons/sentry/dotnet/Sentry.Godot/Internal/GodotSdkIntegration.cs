@@ -48,6 +48,13 @@ internal sealed class GodotSdkIntegration : ISdkIntegration
             }
         }
 
+        AddDefaultAttachments(scope);
+    }
+
+    private static void AddDefaultAttachments(Scope scope)
+    {
+        // Don't propagate these scope changes to the native layer.
+        using var _ = new GodotScopeObserver.SyncGuard();
         foreach (SentryAttachment att in Sentry.Godot.SentrySdk.CurrentOptions!.DefaultAttachments)
         {
             scope.AddAttachment(att);
