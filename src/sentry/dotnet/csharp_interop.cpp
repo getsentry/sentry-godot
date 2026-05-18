@@ -401,12 +401,12 @@ void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	if (s_managed_funcs.add_breadcrumb) {
 		Char16String message_utf16 = p_breadcrumb->get_message().utf16();
 		Char16String category_utf16 = p_breadcrumb->get_category().utf16();
-		Char16String type = p_breadcrumb->get_type().utf16();
+		Char16String type_utf16 = p_breadcrumb->get_type().utf16();
 		// TODO: SentryBreadcrumb::get_data() is not implemented
 		s_managed_funcs.add_breadcrumb(
 				message_utf16.get_data(), message_utf16.length(),
 				category_utf16.get_data(), category_utf16.length(),
-				type.get_data(), type.length(),
+				type_utf16.get_data(), type_utf16.length(),
 				static_cast<int32_t>(p_breadcrumb->get_level()));
 	}
 }
