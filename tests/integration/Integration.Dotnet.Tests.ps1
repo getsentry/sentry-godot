@@ -389,8 +389,8 @@ options/debug_printing=0
             ($nativeEvent.tags | Where-Object { $_.key -eq "dotnet.scope.removed" }) | Should -BeNullOrEmpty
         }
 
-        It "Native event includes breadcrumb added from .NET" {
-            $nativeEvent.breadcrumbs.values | Where-Object { $_.message -eq "Synced from .NET" } | Should -Not -BeNullOrEmpty
+        It "Native event includes breadcrumb added from .NET exactly once" {
+            @($nativeEvent.breadcrumbs.values | Where-Object { $_.message -eq "Synced from .NET" }) | Should -HaveCount 1
         }
 
         It "Native event contains user context set from .NET" {
@@ -426,8 +426,8 @@ options/debug_printing=0
             ($managedEvent.tags | Where-Object { $_.key -eq "native.scope.removed" }) | Should -BeNullOrEmpty
         }
 
-        It "Managed event includes breadcrumb added from native" {
-            $managedEvent.breadcrumbs.values | Where-Object { $_.message -eq "Synced from native" } | Should -Not -BeNullOrEmpty
+        It "Managed event includes breadcrumb added from native exactly once" {
+            @($managedEvent.breadcrumbs.values | Where-Object { $_.message -eq "Synced from native" }) | Should -HaveCount 1
         }
 
         # TODO: Test breadcrumb.data propagates native => managed once SentryBreadcrumb::get_data() lands;
