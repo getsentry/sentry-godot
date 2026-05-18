@@ -66,6 +66,30 @@ $DotnetCommonTestCases = @(
             $SentryEvent.exception.values[0].stacktrace.frames | Should -Not -BeNullOrEmpty
         }
     }
+    @{ Name = "Has at least 2 attachments"; TestBlock = {
+            # godot.log + view-hierarchy.json
+            $expectedCount = 2
+            $script:attachments.Count | Should -BeGreaterOrEqual $expectedCount -Because "received attachments: $script:attachmentNames"
+        }
+    }
+    @{ Name = "Has no attachments with empty name"; TestBlock = {
+            $emptyNames = $script:attachments | Where-Object { [string]::IsNullOrWhiteSpace($_.name) }
+            $emptyNames | Should -BeNullOrEmpty -Because "all attachments should have a non-empty name, received attachments: $script:attachmentNames"
+        }
+    }
+    @{ Name = "Has godot.log default attachment"; TestBlock = {
+            $logFile = $script:attachments | Where-Object { $_.name -eq "godot.log" }
+            $logFile | Should -Not -BeNullOrEmpty -Because "'godot.log' should be among received attachments: $script:attachmentNames"
+            $logFile.size | Should -BeGreaterThan 0
+        }
+    }
+    @{ Name = "Has view-hierarchy.json default attachment"; TestBlock = {
+            $viewHierarchy = $script:attachments | Where-Object { $_.name -eq "view-hierarchy.json" }
+            $viewHierarchy | Should -Not -BeNullOrEmpty -Because "'view-hierarchy.json' should be among received attachments: $script:attachmentNames"
+            $viewHierarchy.type | Should -Be "event.view_hierarchy"
+            $viewHierarchy.size | Should -BeGreaterThan 0
+        }
+    }
 )
 
 BeforeAll {
@@ -183,8 +207,9 @@ Describe ".NET Integration Tests" {
             if ($env:SENTRY_TEST_PLATFORM -notin @("Adb", "AndroidSauceLabs", "iOSSauceLabs")) {
                 $overridePath = Join-Path $PSScriptRoot "../../project/override.cfg"
                 try {
-                    # Keep release/environment/dist aligned with cli_commands.gd, because auto-init runs without an init
-                    # callback, but the tests still expect these values.
+                    # Keep these options aligned with cli_commands.gd and DotnetCliTriggers.cs, because auto-init runs
+                    # without an init callback, but the tests still expect these values.
+                    # Screenshot stays disabled because CI runs headless.
                     Set-Content -Path $overridePath -Value @"
 [sentry]
 
@@ -193,6 +218,9 @@ options/release="test-app@1.0.0"
 options/environment="integration-test"
 options/dist="test-dist"
 options/debug_printing=0
+options/attach_log=true
+options/attach_scene_tree=true
+experimental/attach_screenshot=false
 "@
                     $script:autoInitRunResult = Invoke-TestAction -Action "dotnet-capture-via-auto-init"
                 } finally {
@@ -294,6 +322,13 @@ options/debug_printing=0
                 Write-GitHub "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
                 Write-GitHub "::endgroup::"
+
+                Write-GitHub "::group::Getting event attachments"
+                # godot.log + view-hierarchy.json
+                $expectedAttachmentCount = 2
+                $script:attachments = Get-SentryTestEventAttachments -EventId "$eventId" -ExpectedCount $expectedAttachmentCount
+                $script:attachmentNames = ($script:attachments | ForEach-Object { "'$($_.name)'" }) -join ", "
+                Write-GitHub "::endgroup::"
             }
         }
 
@@ -315,6 +350,13 @@ options/debug_printing=0
                 Write-GitHub "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
                 Write-GitHub "::endgroup::"
+
+                Write-GitHub "::group::Getting event attachments"
+                # godot.log + view-hierarchy.json
+                $expectedAttachmentCount = 2
+                $script:attachments = Get-SentryTestEventAttachments -EventId "$eventId" -ExpectedCount $expectedAttachmentCount
+                $script:attachmentNames = ($script:attachments | ForEach-Object { "'$($_.name)'" }) -join ", "
+                Write-GitHub "::endgroup::"
             }
         }
 
@@ -335,6 +377,13 @@ options/debug_printing=0
             if ($eventId) {
                 Write-GitHub "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
+                Write-GitHub "::endgroup::"
+
+                Write-GitHub "::group::Getting event attachments"
+                # godot.log + view-hierarchy.json
+                $expectedAttachmentCount = 2
+                $script:attachments = Get-SentryTestEventAttachments -EventId "$eventId" -ExpectedCount $expectedAttachmentCount
+                $script:attachmentNames = ($script:attachments | ForEach-Object { "'$($_.name)'" }) -join ", "
                 Write-GitHub "::endgroup::"
             }
         }
