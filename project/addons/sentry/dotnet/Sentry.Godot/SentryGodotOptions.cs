@@ -17,6 +17,8 @@ public sealed class SentryGodotOptions : SentryOptions
 
         AddInAppExclude("Godot");
         AddIntegration(new GodotSdkIntegration());
+
+        AddEventProcessor(new DefaultAttachmentsProcessor());
     }
 
     /// <summary>

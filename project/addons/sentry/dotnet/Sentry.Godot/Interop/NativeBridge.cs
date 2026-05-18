@@ -550,6 +550,14 @@ internal static partial class NativeBridge
         csharp_interop_sdk_close();
     }
 
+    [LibraryImport(Lib)]
+    private static partial void csharp_interop_process_default_attachments();
+
+    public static void ProcessDefaultAttachments()
+    {
+        csharp_interop_process_default_attachments();
+    }
+
     /// <remarks>
     /// Returns compile-time literal - don't free!
     /// </remarks>

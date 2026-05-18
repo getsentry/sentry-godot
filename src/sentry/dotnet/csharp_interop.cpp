@@ -1,5 +1,6 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
+#include "sentry/dotnet/process_default_attachments.h"
 #include "sentry/environment.h"
 #include "sentry/logging/print.h"
 #include "sentry/sentry_breadcrumb.h"
@@ -315,6 +316,10 @@ CSHARP_EXPORT void csharp_interop_sdk_init(ManagedOptions managed_opts) {
 
 CSHARP_EXPORT void csharp_interop_sdk_close() {
 	SentrySDK::get_singleton()->close();
+}
+
+CSHARP_EXPORT void csharp_interop_process_default_attachments() {
+	sentry::dotnet::process_default_attachments();
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(
