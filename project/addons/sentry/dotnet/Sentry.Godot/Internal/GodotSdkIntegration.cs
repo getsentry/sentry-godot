@@ -47,5 +47,10 @@ internal sealed class GodotSdkIntegration : ISdkIntegration
                 scope.Contexts.App.Version = appVersion;
             }
         }
+
+        foreach (SentryAttachment att in Sentry.Godot.SentrySdk.CurrentOptions!.DefaultAttachments)
+        {
+            scope.AddAttachment(att);
+        }
     }
 }

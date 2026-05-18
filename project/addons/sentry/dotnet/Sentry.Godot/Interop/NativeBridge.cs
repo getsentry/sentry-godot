@@ -53,6 +53,16 @@ internal static partial class NativeBridge
         public int throttle_window_ms;
     }
 
+    // Must match layout of AttachmentMeta in csharp_interop.cpp.
+    [StructLayout(LayoutKind.Sequential)]
+    private struct AttachmentMeta
+    {
+        public GodotStringHandle path;
+        public GodotStringHandle filename;
+        public GodotStringHandle content_type;
+        public GodotStringHandle attachment_type;
+    }
+
     // Must match layout of NativeOptions in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
     private struct NativeOptions
@@ -82,6 +92,9 @@ internal static partial class NativeBridge
         public int logger_breadcrumb_mask;
         public int logger_log_mask;
         public byte enable_metrics;
+        // Must be freed with csharp_interop_free_array().
+        public IntPtr default_attachments;
+        public int default_attachments_count;
     }
 
     // Must match layout of ManagedOptions in csharp_interop.cpp.
@@ -413,7 +426,38 @@ internal static partial class NativeBridge
         opts.LoggerBreadcrumbMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_breadcrumb_mask;
         opts.LoggerLogMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_log_mask;
         opts.EnableMetrics = data.enable_metrics != 0;
+
+        unsafe
+        {
+            for (int i = 0; i < data.default_attachments_count; ++i)
+            {
+                var p = (AttachmentMeta*)data.default_attachments;
+                string? path = p[i].path.TakeString();
+                string? filename = p[i].filename.TakeString();
+                string? contentType = p[i].content_type.TakeString();
+                string? attachmentType = p[i].attachment_type.TakeString();
+
+                if (path is null)
+                {
+                    continue;
+                }
+                opts.AddDefaultAttachment(new SentryAttachment(
+                    type: attachmentType switch
+                    {
+                        "event.view_hierarchy" => AttachmentType.ViewHierarchy,
+                        _ => AttachmentType.Default,
+                    },
+                    content: new FileAttachmentContent(path),
+                    fileName: filename ?? System.IO.Path.GetFileName(path),
+                    contentType: contentType
+                ));
+            }
+            csharp_interop_free_array(data.default_attachments);
+        }
     }
+
+    [LibraryImport(Lib)]
+    private static partial void csharp_interop_free_array(IntPtr array);
 
     public static void ApplyNativeOptions(SentryGodotOptions opts)
     {

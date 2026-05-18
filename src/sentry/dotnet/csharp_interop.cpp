@@ -91,6 +91,14 @@ struct LoggerLimitsData {
 	int32_t throttle_window_ms;
 };
 
+// Must match layout of AttachmentMeta in NativeBridge.cs.
+struct AttachmentMeta {
+	GodotStringHandle path;
+	GodotStringHandle filename;
+	GodotStringHandle content_type;
+	GodotStringHandle attachment_type;
+};
+
 // Must match layout of NativeOptions in NativeBridge.cs.
 struct NativeOptions {
 	LoggerLimitsData logger_limits;
@@ -128,6 +136,11 @@ struct NativeOptions {
 
 	// Experimental
 	uint8_t enable_metrics;
+
+	// Default attachments are file-based; revisit this approach if that changes.
+	// This array must be freed by calling csharp_interop_free_array().
+	AttachmentMeta *default_attachments;
+	int32_t default_attachments_count;
 };
 
 // Managed-owned options for passing C# options to native.
@@ -244,6 +257,24 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.logger_breadcrumb_mask = options->get_logger_breadcrumb_mask();
 	r_data.logger_log_mask = options->get_logger_log_mask();
 	r_data.enable_metrics = options->get_experimental()->get_enable_metrics();
+
+	const Vector<Ref<SentryAttachment>> &atts = options->get_default_attachments();
+	r_data.default_attachments_count = atts.size();
+	r_data.default_attachments = r_data.default_attachments_count > 0
+			? memnew_arr(AttachmentMeta, r_data.default_attachments_count)
+			: nullptr;
+	for (int32_t i = 0; i < r_data.default_attachments_count; ++i) {
+		r_data.default_attachments[i].path = _make_handle(atts[i]->get_path());
+		r_data.default_attachments[i].filename = _make_handle(atts[i]->get_filename());
+		r_data.default_attachments[i].content_type = _make_handle(atts[i]->get_content_type());
+		r_data.default_attachments[i].attachment_type = _make_handle(atts[i]->get_attachment_type());
+	}
+}
+
+CSHARP_EXPORT void csharp_interop_free_array(void *p_array) {
+	if (p_array) {
+		Memory::free_static(p_array, true);
+	}
 }
 
 // *** Functions called from C#
