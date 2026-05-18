@@ -147,6 +147,8 @@ struct NativeArray {
 
 CSHARP_EXPORT void csharp_interop_free_array(void *p_array) {
 	if (p_array) {
+		// Equivalent to memdelete_arr() for trivially-destructible types.
+		// memdelete_arr() can't be used directly here because the call site only has a void*.
 		Memory::free_static(p_array, true);
 	}
 }
