@@ -51,37 +51,10 @@ public static partial class SentrySdk
     public static global::Sentry.SentryId CaptureEvent(global::Sentry.SentryEvent evt, global::Sentry.Scope? scope = null, global::Sentry.SentryHint? hint = null)
         => global::Sentry.SentrySdk.CaptureEvent(evt, scope, hint);
 
-    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureEvent(Sentry.SentryEvent,System.Action{Sentry.Scope})"/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    [DebuggerStepThrough]
-    public static global::Sentry.SentryId CaptureEvent(global::Sentry.SentryEvent evt, global::System.Action<global::Sentry.Scope> configureScope)
-        => global::Sentry.SentrySdk.CaptureEvent(evt, configureScope);
-
-    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureEvent(Sentry.SentryEvent,Sentry.SentryHint,System.Action{Sentry.Scope})"/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    [DebuggerStepThrough]
-    public static global::Sentry.SentryId CaptureEvent(global::Sentry.SentryEvent evt, global::Sentry.SentryHint? hint, global::System.Action<global::Sentry.Scope> configureScope)
-        => global::Sentry.SentrySdk.CaptureEvent(evt, hint, configureScope);
-
     /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureException(System.Exception)"/>
     [DebuggerStepThrough]
     public static global::Sentry.SentryId CaptureException(global::System.Exception exception)
         => global::Sentry.SentrySdk.CaptureException(exception);
-
-    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureException(System.Exception,System.Action{Sentry.Scope})"/>
-    [DebuggerStepThrough]
-    public static global::Sentry.SentryId CaptureException(global::System.Exception exception, global::System.Action<global::Sentry.Scope> configureScope)
-        => global::Sentry.SentrySdk.CaptureException(exception, configureScope);
-
-    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureFeedback(Sentry.SentryFeedback,System.Action{Sentry.Scope},Sentry.SentryHint)"/>
-    [DebuggerStepThrough]
-    public static global::Sentry.SentryId CaptureFeedback(global::Sentry.SentryFeedback feedback, global::System.Action<global::Sentry.Scope> configureScope, global::Sentry.SentryHint? hint = null)
-        => global::Sentry.SentrySdk.CaptureFeedback(feedback, configureScope, hint);
-
-    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureFeedback(Sentry.SentryFeedback,Sentry.CaptureFeedbackResult@,System.Action{Sentry.Scope},Sentry.SentryHint)"/>
-    [DebuggerStepThrough]
-    public static global::Sentry.SentryId CaptureFeedback(global::Sentry.SentryFeedback feedback, out global::Sentry.CaptureFeedbackResult result, global::System.Action<global::Sentry.Scope> configureScope, global::Sentry.SentryHint? hint = null)
-        => global::Sentry.SentrySdk.CaptureFeedback(feedback, out result, configureScope, hint);
 
     /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureFeedback(Sentry.SentryFeedback,Sentry.Scope,Sentry.SentryHint)"/>
     [DebuggerStepThrough]
@@ -102,11 +75,6 @@ public static partial class SentrySdk
     [DebuggerStepThrough]
     public static global::Sentry.SentryId CaptureMessage(string message, global::Sentry.SentryLevel level = global::Sentry.SentryLevel.Info)
         => global::Sentry.SentrySdk.CaptureMessage(message, level);
-
-    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureMessage(System.String,System.Action{Sentry.Scope},Sentry.SentryLevel)"/>
-    [DebuggerStepThrough]
-    public static global::Sentry.SentryId CaptureMessage(string message, global::System.Action<global::Sentry.Scope> configureScope, global::Sentry.SentryLevel level = global::Sentry.SentryLevel.Info)
-        => global::Sentry.SentrySdk.CaptureMessage(message, configureScope, level);
 
     /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureSession(Sentry.SessionUpdate)"/>
     [DebuggerStepThrough]

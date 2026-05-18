@@ -380,5 +380,60 @@ options/debug_printing=0
         It "Native and managed events share the same trace_id" {
             $nativeEvent.contexts.trace.trace_id | Should -Be $managedEvent.contexts.trace.trace_id
         }
+
+        It "Native event contains tag set from .NET" {
+            ($nativeEvent.tags | Where-Object { $_.key -eq "dotnet.scope.synced" }).value | Should -Be "from-dotnet"
+        }
+
+        It "Native event omits tag removed from .NET" {
+            ($nativeEvent.tags | Where-Object { $_.key -eq "dotnet.scope.removed" }) | Should -BeNullOrEmpty
+        }
+
+        It "Native event includes breadcrumb added from .NET" {
+            $nativeEvent.breadcrumbs.values | Where-Object { $_.message -eq "Synced from .NET" } | Should -Not -BeNullOrEmpty
+        }
+
+        It "Native event contains user context set from .NET" {
+            $nativeEvent.user | Should -Not -BeNullOrEmpty
+            $nativeEvent.user.id | Should -Be "99999"
+            $nativeEvent.user.username | Should -Be "DotnetSyncedUser"
+            $nativeEvent.user.email | Should -Be "dotnet-synced@test.abc"
+            $nativeEvent.user.ip_address | Should -Be "1.2.3.4"
+        }
+
+        It "Native event includes breadcrumb data marshalled from .NET" {
+            $crumbs = @($nativeEvent.breadcrumbs.values | Where-Object { $_.message -eq "Synced data breadcrumb from .NET" })
+            $crumbs | Should -HaveCount 1
+            $crumb = $crumbs[0]
+            $crumb.category | Should -Be "dotnet.probe"
+            $crumb.type | Should -Be "http"
+            $crumb.data | Should -Not -BeNullOrEmpty
+            $crumb.data."http.url" | Should -Be "https://example.test/api/v1/probe"
+            $crumb.data."http.status" | Should -Be "200"
+            $crumb.data."unicode" | Should -Be "Hello 世界! 👋"
+        }
+
+        It "Managed event omits tag set in local scope callback" {
+            # Sanity check: upstream CaptureEvent clones the current scope and discards it.
+            ($managedEvent.tags | Where-Object { $_.key -eq "dotnet.local_scope.tag" }) | Should -BeNullOrEmpty
+        }
+
+        It "Native event omits tag set in local scope callback" {
+            ($nativeEvent.tags | Where-Object { $_.key -eq "dotnet.local_scope.tag" }) | Should -BeNullOrEmpty
+        }
+
+        It "Native event omits breadcrumb added in local scope callback" {
+            $nativeEvent.breadcrumbs.values | Where-Object { $_.message -eq "Local scope leak breadcrumb" } | Should -BeNullOrEmpty
+        }
+
+        It "Native event preserves tag despite UnsetTag in local scope callback" {
+            ($nativeEvent.tags | Where-Object { $_.key -eq "dotnet.scope.synced" }).value | Should -Be "from-dotnet"
+        }
+
+        It "Native event preserves user despite SetUser in local scope callback" {
+            $nativeEvent.user.id | Should -Be "99999"
+            $nativeEvent.user.username | Should -Be "DotnetSyncedUser"
+            $nativeEvent.user.email | Should -Be "dotnet-synced@test.abc"
+        }
     }
 }

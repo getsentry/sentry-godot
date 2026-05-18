@@ -316,6 +316,7 @@ func _cmd_dotnet_cross_layer_capture() -> int:
 
 	_add_integration_test_context("dotnet-cross-layer-capture")
 	triggers.AddIntegrationTestContext("dotnet-cross-layer-capture")
+	triggers.AddCrossLayerScopeSyncProbes()
 
 	var native_event_id := SentrySDK.capture_message("Cross-layer capture - native side")
 	print("EVENT_CAPTURED: ", native_event_id)

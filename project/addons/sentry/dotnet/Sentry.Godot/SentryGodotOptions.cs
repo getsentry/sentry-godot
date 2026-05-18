@@ -9,6 +9,8 @@ public sealed class SentryGodotOptions : SentryOptions
     public SentryGodotOptions()
     {
         IsGlobalModeEnabled = true;
+        EnableScopeSync = true;
+        ScopeObserver = new GodotScopeObserver();
 
         // Native layer owns sessions; .NET-side tracking would double-count.
         AutoSessionTracking = false;
