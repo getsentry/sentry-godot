@@ -480,7 +480,9 @@ internal static partial class NativeBridge
                     _ => AttachmentType.Default,
                 },
                 content: new FileAttachmentContent(path),
-                fileName: filename ?? System.IO.Path.GetFileName(path),
+                fileName: String.IsNullOrEmpty(filename)
+                        ? System.IO.Path.GetFileName(path)
+                        : filename,
                 contentType: contentType
             ));
         }
