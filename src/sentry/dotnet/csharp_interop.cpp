@@ -358,8 +358,8 @@ CSHARP_EXPORT void csharp_interop_sdk_close() {
 	SentrySDK::get_singleton()->close();
 }
 
-CSHARP_EXPORT void csharp_interop_process_default_attachments() {
-	sentry::dotnet::process_default_attachments();
+CSHARP_EXPORT void csharp_interop_process_default_attachments(int32_t level) {
+	sentry::dotnet::process_default_attachments(static_cast<sentry::Level>(level));
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(

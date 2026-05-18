@@ -6,7 +6,7 @@ internal class DefaultAttachmentsProcessor : ISentryEventProcessor
 {
     public SentryEvent? Process(SentryEvent @event)
     {
-        Sentry.Godot.Interop.NativeBridge.ProcessDefaultAttachments();
+        Sentry.Godot.Interop.NativeBridge.ProcessDefaultAttachments(@event.Level ?? SentryLevel.Error);
         return @event;
     }
 }

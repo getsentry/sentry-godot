@@ -613,11 +613,11 @@ internal static partial class NativeBridge
     }
 
     [LibraryImport(Lib)]
-    private static partial void csharp_interop_process_default_attachments();
+    private static partial void csharp_interop_process_default_attachments(int level);
 
-    public static void ProcessDefaultAttachments()
+    public static void ProcessDefaultAttachments(SentryLevel level)
     {
-        csharp_interop_process_default_attachments();
+        csharp_interop_process_default_attachments((int)level);
     }
 
     /// <remarks>
