@@ -43,6 +43,18 @@ internal static partial class NativeBridge
         }
     }
 
+    // Must match layout of NativeArray in csharp_interop.cpp.
+    // Cast Ptr to the concrete element type and free via csharp_interop_free_array().
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeArray
+    {
+        public IntPtr Ptr;
+        public int Count;
+    }
+
+    [LibraryImport(Lib)]
+    private static partial void csharp_interop_free_array(IntPtr array);
+
     // Must match layout of LoggerLimitsData in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
     private struct LoggerLimitsData
@@ -92,15 +104,6 @@ internal static partial class NativeBridge
         public int logger_breadcrumb_mask;
         public int logger_log_mask;
         public byte enable_metrics;
-    }
-
-    // Must match layout of NativeArray in csharp_interop.cpp.
-    // Cast Ptr to the concrete element type and free via csharp_interop_free_array().
-    [StructLayout(LayoutKind.Sequential)]
-    private struct NativeArray
-    {
-        public IntPtr Ptr;
-        public int Count;
     }
 
     // Must match layout of ManagedOptions in csharp_interop.cpp.
@@ -433,9 +436,6 @@ internal static partial class NativeBridge
         opts.LoggerLogMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_log_mask;
         opts.EnableMetrics = data.enable_metrics != 0;
     }
-
-    [LibraryImport(Lib)]
-    private static partial void csharp_interop_free_array(IntPtr array);
 
     public static void ApplyNativeOptions(SentryGodotOptions opts)
     {
