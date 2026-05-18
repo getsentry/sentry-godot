@@ -294,7 +294,7 @@ CSHARP_EXPORT NativeArray csharp_interop_get_default_attachments() {
 	if (result.count > 0) {
 		AttachmentMeta *items = memnew_arr(AttachmentMeta, result.count);
 		for (int32_t i = 0; i < result.count; ++i) {
-			items[i].path = _make_handle(atts[i]->get_path());
+			items[i].path = _make_handle(atts[i]->get_globalized_path());
 			items[i].filename = _make_handle(atts[i]->get_filename());
 			items[i].content_type = _make_handle(atts[i]->get_content_type());
 			items[i].attachment_type = _make_handle(atts[i]->get_attachment_type());
