@@ -1,4 +1,5 @@
 #include "gen/sdk_version.gen.h"
+#include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/environment.h"
 #include "sentry/logging/print.h"
 #include "sentry/sentry_breadcrumb.h"
@@ -15,9 +16,6 @@
 #endif
 
 using namespace sentry;
-
-static void (*s_dotnet_init_fn)() = nullptr;
-static void (*s_dotnet_logger_error_fn)(const char16_t *code, int32_t code_len, const char16_t *file, int32_t file_len) = nullptr;
 
 extern "C" {
 
@@ -69,6 +67,20 @@ static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map)
 	}
 	return dict;
 }
+
+// Managed functions that are called from native layer.
+// Must match ManagedFunctions struct in NativeBridge.cs.
+struct ManagedFunctions {
+	void (*init)();
+	void (*logger_error)(const char16_t *code, int32_t code_len, const char16_t *file, int32_t file_len);
+	void (*add_breadcrumb)(const char16_t *message, int32_t message_len, const char16_t *category, int32_t category_len, const char16_t *type, int32_t type_len, int32_t level);
+	void (*set_tag)(const char16_t *name, int32_t name_len, const char16_t *value, int32_t value_len);
+	void (*remove_tag)(const char16_t *name, int32_t name_len);
+	void (*set_user)(const char16_t *id, int32_t id_len, const char16_t *username, int32_t username_len, const char16_t *email, int32_t email_len, const char16_t *ip, int32_t ip_len);
+	void (*remove_user)();
+};
+
+static ManagedFunctions s_managed_funcs = {};
 
 // Must match layout of LoggerLimitsData in NativeBridge.cs.
 struct LoggerLimitsData {
@@ -235,6 +247,10 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 
 // *** Functions called from C#
 
+CSHARP_EXPORT void csharp_interop_register_managed_functions(ManagedFunctions p_functions) {
+	s_managed_funcs = p_functions;
+}
+
 CSHARP_EXPORT NativeOptions csharp_interop_get_options() {
 	NativeOptions data;
 	_populate_options_data(data, SentrySDK::get_singleton()->get_options());
@@ -245,15 +261,6 @@ CSHARP_EXPORT NativeOptions csharp_interop_get_options_defaults() {
 	NativeOptions data;
 	_populate_options_data(data, SentryOptions::create_from_project_settings());
 	return data;
-}
-
-CSHARP_EXPORT void csharp_interop_register_dotnet_init(void (*fn)()) {
-	s_dotnet_init_fn = fn;
-}
-
-CSHARP_EXPORT void csharp_interop_register_logger_error_handler(
-		void (*fn)(const char16_t *code, int32_t code_len, const char16_t *file, int32_t file_len)) {
-	s_dotnet_logger_error_fn = fn;
 }
 
 CSHARP_EXPORT NativeTraceContext csharp_interop_get_trace_context() {
@@ -316,6 +323,7 @@ CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(
 		const char16_t *type, int32_t type_len,
 		int32_t level,
 		ManagedStringMap data) {
+	sentry::dotnet::DotnetScopeObserver::SyncGuard guard;
 	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create(String::utf16(message, message_len));
 	crumb->set_category(String::utf16(category, category_len));
 	crumb->set_type(String::utf16(type, type_len));
@@ -325,31 +333,35 @@ CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_set_tag(const char16_t *key, int32_t key_len, const char16_t *value, int32_t value_len) {
+	sentry::dotnet::DotnetScopeObserver::SyncGuard guard;
 	String k = String::utf16(key, key_len);
 	String v = String::utf16(value, value_len);
 	SentrySDK::get_singleton()->set_tag(k, v);
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_remove_tag(const char16_t *key, int32_t key_len) {
+	sentry::dotnet::DotnetScopeObserver::SyncGuard guard;
 	String k = String::utf16(key, key_len);
 	SentrySDK::get_singleton()->remove_tag(k);
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_set_user(
+		const char16_t *id, int32_t id_len,
 		const char16_t *username, int32_t username_len,
 		const char16_t *email, int32_t email_len,
-		const char16_t *id, int32_t id_len,
 		const char16_t *ip_address, int32_t ip_address_len) {
+	sentry::dotnet::DotnetScopeObserver::SyncGuard guard;
 	Ref<SentryUser> user;
 	user.instantiate();
+	user->set_id(String::utf16(id, id_len));
 	user->set_username(String::utf16(username, username_len));
 	user->set_email(String::utf16(email, email_len));
-	user->set_id(String::utf16(id, id_len));
 	user->set_ip_address(String::utf16(ip_address, ip_address_len));
 	SentrySDK::get_singleton()->set_user(user);
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_remove_user() {
+	sentry::dotnet::DotnetScopeObserver::SyncGuard guard;
 	SentrySDK::get_singleton()->remove_user();
 }
 
@@ -370,18 +382,71 @@ CSHARP_EXPORT void csharp_interop_log(int32_t level, const char16_t *msg, int32_
 namespace sentry::dotnet {
 
 void init() {
-	if (s_dotnet_init_fn) {
-		s_dotnet_init_fn();
+	if (s_managed_funcs.init) {
+		s_managed_funcs.init();
 	}
 }
 
 void handle_logger_error(const String &p_file, const String &p_code) {
-	if (s_dotnet_logger_error_fn) {
+	if (s_managed_funcs.logger_error) {
 		Char16String code_utf16 = p_code.utf16();
 		Char16String file_utf16 = p_file.utf16();
-		s_dotnet_logger_error_fn(
-				(const char16_t *)code_utf16.get_data(), code_utf16.length(),
-				(const char16_t *)file_utf16.get_data(), file_utf16.length());
+		s_managed_funcs.logger_error(
+				code_utf16.get_data(), code_utf16.length(),
+				file_utf16.get_data(), file_utf16.length());
+	}
+}
+
+void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
+	if (s_managed_funcs.add_breadcrumb) {
+		Char16String message_utf16 = p_breadcrumb->get_message().utf16();
+		Char16String category_utf16 = p_breadcrumb->get_category().utf16();
+		Char16String type_utf16 = p_breadcrumb->get_type().utf16();
+		// TODO: SentryBreadcrumb::get_data() is not implemented
+		s_managed_funcs.add_breadcrumb(
+				message_utf16.get_data(), message_utf16.length(),
+				category_utf16.get_data(), category_utf16.length(),
+				type_utf16.get_data(), type_utf16.length(),
+				static_cast<int32_t>(p_breadcrumb->get_level()));
+	}
+}
+
+void set_tag(const String &p_key, const String &p_value) {
+	if (s_managed_funcs.set_tag) {
+		Char16String key_utf16 = p_key.utf16();
+		Char16String value_utf16 = p_value.utf16();
+		s_managed_funcs.set_tag(
+				key_utf16.get_data(), key_utf16.length(),
+				value_utf16.get_data(), value_utf16.length());
+	}
+}
+
+void remove_tag(const String &p_key) {
+	if (s_managed_funcs.remove_tag) {
+		Char16String key_utf16 = p_key.utf16();
+		s_managed_funcs.remove_tag(
+				key_utf16.get_data(), key_utf16.length());
+	}
+}
+
+void set_user(const Ref<SentryUser> &p_user) {
+	if (s_managed_funcs.set_user) {
+		Char16String id_utf16 = p_user->get_id().utf16();
+		Char16String username_utf16 = p_user->get_username().utf16();
+		Char16String email_utf16 = p_user->get_email().utf16();
+		Char16String ip_utf16 = p_user->get_ip_address().utf16();
+
+		s_managed_funcs.set_user(
+				id_utf16.get_data(), id_utf16.length(),
+				username_utf16.get_data(), username_utf16.length(),
+				email_utf16.get_data(), email_utf16.length(),
+				ip_utf16.get_data(), ip_utf16.length());
+	}
+}
+
+void remove_user() {
+	if (s_managed_funcs.remove_user) {
+		s_managed_funcs.remove_user();
 	}
 }
 

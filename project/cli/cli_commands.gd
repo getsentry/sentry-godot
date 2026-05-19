@@ -321,11 +321,29 @@ func _cmd_dotnet_cross_layer_capture() -> int:
 	var native_event_id := SentrySDK.capture_message("Cross-layer capture - native side")
 	print("EVENT_CAPTURED: ", native_event_id)
 
+	_add_native_cross_layer_scope_sync_probes()
+
 	var managed_event_id: String = triggers.CaptureMessage("Cross-layer capture - .NET side")
 	print("EVENT_CAPTURED: ", managed_event_id)
 
 	_print_test_result("dotnet-cross-layer-capture", true, "Test complete")
 	return 0
+
+
+## Sets native-only scope items used by the cross-layer capture test to verify
+## that these items propagate to managed events (tags, breadcrumbs, user).
+func _add_native_cross_layer_scope_sync_probes() -> void:
+	SentrySDK.set_tag("native.scope.synced", "from-native")
+	SentrySDK.set_tag("native.scope.removed", "should-not-appear")
+	SentrySDK.remove_tag("native.scope.removed")
+	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("Synced from native"))
+
+	var user := SentryUser.create_default()
+	user.id = "88888"
+	user.username = "NativeSyncedUser"
+	user.email = "native-synced@test.abc"
+	user.ip_address = "5.6.7.8"
+	SentrySDK.set_user(user)
 
 
 ## Runs a .NET exception trigger with the chosen init driver.

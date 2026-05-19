@@ -278,6 +278,11 @@ void SentryOptions::add_event_processor(const Ref<SentryEventProcessor> &p_proce
 	event_processors.push_back(p_processor);
 }
 
+void SentryOptions::add_scope_observer(const Ref<SentryScopeObserver> &p_scope_observer) {
+	ERR_FAIL_COND(p_scope_observer.is_null());
+	scope_observers.push_back(p_scope_observer);
+}
+
 void SentryOptions::remove_event_processor(const Ref<SentryEventProcessor> &p_processor) {
 	ERR_FAIL_COND(p_processor.is_null());
 	event_processors.erase(p_processor);

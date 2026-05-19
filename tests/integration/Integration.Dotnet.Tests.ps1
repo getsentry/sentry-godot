@@ -389,8 +389,8 @@ options/debug_printing=0
             ($nativeEvent.tags | Where-Object { $_.key -eq "dotnet.scope.removed" }) | Should -BeNullOrEmpty
         }
 
-        It "Native event includes breadcrumb added from .NET" {
-            $nativeEvent.breadcrumbs.values | Where-Object { $_.message -eq "Synced from .NET" } | Should -Not -BeNullOrEmpty
+        It "Native event includes breadcrumb added from .NET exactly once" {
+            @($nativeEvent.breadcrumbs.values | Where-Object { $_.message -eq "Synced from .NET" }) | Should -HaveCount 1
         }
 
         It "Native event contains user context set from .NET" {
@@ -416,6 +416,29 @@ options/debug_printing=0
         It "Managed event omits tag set in local scope callback" {
             # Sanity check: upstream CaptureEvent clones the current scope and discards it.
             ($managedEvent.tags | Where-Object { $_.key -eq "dotnet.local_scope.tag" }) | Should -BeNullOrEmpty
+        }
+
+        It "Managed event contains tag set from native" {
+            ($managedEvent.tags | Where-Object { $_.key -eq "native.scope.synced" }).value | Should -Be "from-native"
+        }
+
+        It "Managed event omits tag removed from native" {
+            ($managedEvent.tags | Where-Object { $_.key -eq "native.scope.removed" }) | Should -BeNullOrEmpty
+        }
+
+        It "Managed event includes breadcrumb added from native exactly once" {
+            @($managedEvent.breadcrumbs.values | Where-Object { $_.message -eq "Synced from native" }) | Should -HaveCount 1
+        }
+
+        # TODO: Test breadcrumb.data propagates native => managed once SentryBreadcrumb::get_data() lands;
+        #       currently, add_breadcrumb() forwarder in csharp_interop.cpp omits data field.
+
+        It "Managed event contains user context set from native" {
+            $managedEvent.user | Should -Not -BeNullOrEmpty
+            $managedEvent.user.id | Should -Be "88888"
+            $managedEvent.user.username | Should -Be "NativeSyncedUser"
+            $managedEvent.user.email | Should -Be "native-synced@test.abc"
+            $managedEvent.user.ip_address | Should -Be "5.6.7.8"
         }
 
         It "Native event omits tag set in local scope callback" {

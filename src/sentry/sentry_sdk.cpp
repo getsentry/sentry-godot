@@ -5,6 +5,7 @@
 #include "sentry/contexts.h"
 #include "sentry/disabled/disabled_sdk.h"
 #include "sentry/dotnet/csharp_interop.h"
+#include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/godot_singletons.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/screenshot_processor.h"
@@ -158,6 +159,11 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 		options->add_event_processor(memnew(ViewHierarchyProcessor));
 	}
 
+	// Add built-in scope observers.
+	if (ClassDB::class_exists("CSharpScript")) {
+		options->add_scope_observer(memnew(sentry::dotnet::DotnetScopeObserver));
+	}
+
 	// Add default attachments.
 	for (const Ref<SentryAttachment> &att : _get_default_attachments()) {
 		options->add_default_attachment(att);
@@ -216,6 +222,9 @@ String SentrySDK::capture_message(const String &p_message, Level p_level) {
 void SentrySDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Sentry: Can't add null breadcrumb.");
 	internal_sdk->add_breadcrumb(p_breadcrumb);
+	for (const Ref<SentryScopeObserver> &observer : SENTRY_OPTIONS()->get_scope_observers()) {
+		observer->add_breadcrumb(p_breadcrumb);
+	}
 }
 
 String SentrySDK::get_last_event_id() const {
@@ -260,19 +269,31 @@ void SentrySDK::clear_attachments() {
 void SentrySDK::set_tag(const String &p_key, const String &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set tag with an empty key.");
 	internal_sdk->set_tag(p_key, p_value);
+	for (const Ref<SentryScopeObserver> &observer : SENTRY_OPTIONS()->get_scope_observers()) {
+		observer->set_tag(p_key, p_value);
+	}
 }
 
 void SentrySDK::remove_tag(const String &p_key) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't remove tag with an empty key.");
 	internal_sdk->remove_tag(p_key);
+	for (const Ref<SentryScopeObserver> &observer : SENTRY_OPTIONS()->get_scope_observers()) {
+		observer->remove_tag(p_key);
+	}
 }
 
 void SentrySDK::set_user(const Ref<SentryUser> &p_user) {
 	internal_sdk->set_user(p_user);
+	for (const Ref<SentryScopeObserver> &observer : SENTRY_OPTIONS()->get_scope_observers()) {
+		observer->set_user(p_user);
+	}
 }
 
 void SentrySDK::remove_user() {
 	internal_sdk->remove_user();
+	for (const Ref<SentryScopeObserver> &observer : SENTRY_OPTIONS()->get_scope_observers()) {
+		observer->remove_user();
+	}
 }
 
 void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary &p_value) {

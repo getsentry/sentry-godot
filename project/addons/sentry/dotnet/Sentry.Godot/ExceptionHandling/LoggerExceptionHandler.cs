@@ -30,7 +30,7 @@ internal class LoggerExceptionHandler : IDisposable
     public LoggerExceptionHandler()
     {
         AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
-        NativeBridge.RegisterLoggerErrorHandler(OnLogError);
+        NativeBridge.SetLoggerErrorHandler(OnLogError);
         GodotLog.Debug("Registered Logger-based exception handler.");
     }
 
@@ -80,6 +80,6 @@ internal class LoggerExceptionHandler : IDisposable
     public void Dispose()
     {
         AppDomain.CurrentDomain.FirstChanceException -= OnFirstChanceException;
-        NativeBridge.UnregisterLoggerErrorHandler();
+        NativeBridge.ClearLoggerErrorHandler();
     }
 }

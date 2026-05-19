@@ -194,6 +194,186 @@ internal static partial class NativeBridge
         }
     }
 
+    // Must match ManagedFunctions struct in csharp_interop.cpp
+    [StructLayout(LayoutKind.Sequential)]
+    private unsafe struct ManagedFunctions
+    {
+        public delegate* unmanaged[Cdecl]<void> init;
+        public delegate* unmanaged[Cdecl]<char*, int, char*, int, void> logger_error;
+        public delegate* unmanaged[Cdecl]<char*, int, char*, int, char*, int, int, void> add_breadcrumb;
+        public delegate* unmanaged[Cdecl]<char*, int, char*, int, void> set_tag;
+        public delegate* unmanaged[Cdecl]<char*, int, void> remove_tag;
+        public delegate* unmanaged[Cdecl]<char*, int, char*, int, char*, int, char*, int, void> set_user;
+        public delegate* unmanaged[Cdecl]<void> remove_user;
+    }
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_register_managed_functions(
+        ManagedFunctions functions);
+
+    /// <summary>
+    /// Registers managed functions that are called from native layer.
+    /// </summary>
+    public static unsafe void RegisterManagedFunctions()
+    {
+        csharp_interop_register_managed_functions(new ManagedFunctions
+        {
+            init = &DotnetInitCallback,
+            logger_error = &LoggerErrorCallback,
+            add_breadcrumb = &AddBreadcrumbCallback,
+            set_tag = &SetTagCallback,
+            remove_tag = &RemoveTagCallback,
+            set_user = &SetUserCallback,
+            remove_user = &RemoveUserCallback,
+        });
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static void DotnetInitCallback()
+    {
+        try
+        {
+            SentrySdk.InitFromNative();
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to initialize Sentry .NET layer: {ex}");
+        }
+    }
+
+    private static Action<string, string>? _loggerErrorHandler;
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static unsafe void LoggerErrorCallback(char* code, int codeLen, char* file, int fileLen)
+    {
+        try
+        {
+            _loggerErrorHandler?.Invoke(
+                    new string(file, 0, fileLen),
+                    new string(code, 0, codeLen));
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward Godot logger error to Sentry .NET layer: {ex}");
+        }
+    }
+
+    public static unsafe void SetLoggerErrorHandler(Action<string, string> handler)
+    {
+        _loggerErrorHandler = handler;
+    }
+
+    public static unsafe void ClearLoggerErrorHandler()
+    {
+        _loggerErrorHandler = null;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static unsafe void AddBreadcrumbCallback(
+        char* message, int messageLen,
+        char* category, int categoryLen,
+        char* type, int typeLen,
+        int level
+    )
+    {
+        try
+        {
+            using var _ = new GodotScopeObserver.SyncGuard();
+            Sentry.Godot.SentrySdk.AddBreadcrumb(
+                message: new string(message, 0, messageLen),
+                category: new string(category, 0, categoryLen),
+                level: level switch
+                {
+                    0 => BreadcrumbLevel.Debug,
+                    1 => BreadcrumbLevel.Info,
+                    2 => BreadcrumbLevel.Warning,
+                    3 => BreadcrumbLevel.Error,
+                    4 => BreadcrumbLevel.Fatal,
+                    _ => BreadcrumbLevel.Info,
+                },
+                type: new string(type, 0, typeLen));
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward breadcrumb to Sentry .NET layer: {ex}");
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static unsafe void SetTagCallback(
+        char* key, int keyLen,
+        char* value, int valueLen)
+    {
+        try
+        {
+            using var _ = new GodotScopeObserver.SyncGuard();
+            Sentry.Godot.SentrySdk.SetTag(new string(key, 0, keyLen), new string(value, 0, valueLen));
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward set_tag to Sentry .NET layer: {ex}");
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static unsafe void RemoveTagCallback(
+        char* key, int keyLen)
+    {
+        try
+        {
+            using var _ = new GodotScopeObserver.SyncGuard();
+            Sentry.Godot.SentrySdk.UnsetTag(new string(key, 0, keyLen));
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward remove_tag to Sentry .NET layer: {ex}");
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static unsafe void SetUserCallback(
+        char* id, int idLen,
+        char* username, int usernameLen,
+        char* email, int emailLen,
+        char* ip, int ipLen)
+    {
+        try
+        {
+            using var _ = new GodotScopeObserver.SyncGuard();
+            Sentry.Godot.SentrySdk.ConfigureScope(scope =>
+            {
+                scope.User = new Sentry.SentryUser
+                {
+                    Id = idLen > 0 ? new string(id, 0, idLen) : null,
+                    Username = usernameLen > 0 ? new string(username, 0, usernameLen) : null,
+                    Email = emailLen > 0 ? new string(email, 0, emailLen) : null,
+                    IpAddress = ipLen > 0 ? new string(ip, 0, ipLen) : null,
+                };
+            });
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward set_user to Sentry .NET layer: {ex}");
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static unsafe void RemoveUserCallback()
+    {
+        try
+        {
+            using var _ = new GodotScopeObserver.SyncGuard();
+            Sentry.Godot.SentrySdk.ConfigureScope(scope =>
+            {
+                scope.User = new Sentry.SentryUser();
+            });
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward remove_user to Sentry .NET layer: {ex}");
+        }
+    }
+
     [LibraryImport(Lib)]
     private static unsafe partial NativeOptions csharp_interop_get_options();
 
@@ -243,62 +423,6 @@ internal static partial class NativeBridge
     public static void ApplyNativeOptionsDefaults(SentryGodotOptions opts)
     {
         ApplyNativeOptions(csharp_interop_get_options_defaults(), opts);
-    }
-
-    [LibraryImport(Lib)]
-    private static unsafe partial void csharp_interop_register_dotnet_init(
-            delegate* unmanaged[Cdecl]<void> fn);
-
-    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-    private static void DotnetInitCallback()
-    {
-        try
-        {
-            SentrySdk.InitFromNative();
-        }
-        catch (Exception ex)
-        {
-            GodotLog.Error($"Failed to initialize Sentry .NET layer: {ex}");
-        }
-    }
-
-    public static unsafe void RegisterDotnetInit()
-    {
-        csharp_interop_register_dotnet_init(&DotnetInitCallback);
-        GodotLog.Debug(".NET layer is ready for SDK init.");
-    }
-
-    [LibraryImport(Lib)]
-    private static unsafe partial void csharp_interop_register_logger_error_handler(
-            delegate* unmanaged[Cdecl]<char*, int, char*, int, void> fn);
-
-    private static Action<string, string>? _loggerErrorHandler;
-
-    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-    private static unsafe void LoggerErrorCallback(char* code, int codeLen, char* file, int fileLen)
-    {
-        try
-        {
-            _loggerErrorHandler?.Invoke(
-                    new string(file, 0, fileLen),
-                    new string(code, 0, codeLen));
-        }
-        catch (Exception ex)
-        {
-            GodotLog.Error($"Failed to forward Godot logger error to Sentry .NET layer: {ex}");
-        }
-    }
-
-    public static unsafe void RegisterLoggerErrorHandler(Action<string, string> handler)
-    {
-        _loggerErrorHandler = handler;
-        csharp_interop_register_logger_error_handler(&LoggerErrorCallback);
-    }
-
-    public static unsafe void UnregisterLoggerErrorHandler()
-    {
-        csharp_interop_register_logger_error_handler(null);
-        _loggerErrorHandler = null;
     }
 
     [LibraryImport(Lib)]
@@ -516,7 +640,7 @@ internal static partial class NativeBridge
 
     [LibraryImport(Lib)]
     private static unsafe partial void csharp_interop_sdk_set_user(
-            char* username, int usernameLen, char* email, int emailLen, char* id, int idLen, char* ipAddress, int ipAddressLen);
+            char* id, int idLen, char* username, int usernameLen, char* email, int emailLen, char* ipAddress, int ipAddressLen);
 
     public static unsafe void SetUser(SentryUser? user)
     {
@@ -537,9 +661,9 @@ internal static partial class NativeBridge
             fixed (char* ipAddressPtr = ipAddress)
             {
                 csharp_interop_sdk_set_user(
+                        idPtr, id.Length,
                         usernamePtr, username.Length,
                         emailPtr, email.Length,
-                        idPtr, id.Length,
                         ipAddressPtr, ipAddress.Length);
             }
         }

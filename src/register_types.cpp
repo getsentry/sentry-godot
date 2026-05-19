@@ -1,5 +1,6 @@
 #include "editor/sentry_editor_plugin.h"
 #include "sentry/disabled/disabled_event.h"
+#include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/logging/sentry_godot_logger.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/sentry_event_processor.h"
@@ -14,6 +15,7 @@
 #include "sentry/sentry_metric.h"
 #include "sentry/sentry_metrics.h"
 #include "sentry/sentry_options.h"
+#include "sentry/sentry_scope_observer.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_unit.h"
 #include "sentry/sentry_user.h"
@@ -89,6 +91,8 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
 	GDREGISTER_INTERNAL_CLASS(ViewHierarchyProcessor);
 	GDREGISTER_INTERNAL_CLASS(logging::SentryGodotLogger);
+	GDREGISTER_INTERNAL_CLASS(SentryScopeObserver);
+	GDREGISTER_INTERNAL_CLASS(sentry::dotnet::DotnetScopeObserver);
 
 #ifdef SDK_NATIVE
 	GDREGISTER_INTERNAL_CLASS(native::NativeEvent);

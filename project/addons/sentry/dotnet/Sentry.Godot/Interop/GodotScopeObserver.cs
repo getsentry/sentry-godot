@@ -12,23 +12,24 @@ namespace Sentry.Godot.Interop;
 internal class GodotScopeObserver : IScopeObserver
 {
     // Prevent feedback loops when syncing scope changes across layers.
-    [ThreadStatic] private static bool _syncing;
+    // Incremented here for outbound updates and by native callers in NativeBridge for inbound updates.
+    [ThreadStatic] private static uint _syncDepth;
+    internal static bool IsSyncing => _syncDepth > 0;
+
+    internal readonly struct SyncGuard : IDisposable
+    {
+        public SyncGuard() { ++_syncDepth; }
+        public void Dispose() => --_syncDepth;
+    }
 
     public void AddBreadcrumb(Breadcrumb breadcrumb)
     {
-        if (_syncing || SentrySdk.InLocalScope)
+        if (IsSyncing || SentrySdk.InLocalScope)
         {
             return;
         }
-        _syncing = true;
-        try
-        {
-            NativeBridge.AddBreadcrumb(breadcrumb);
-        }
-        finally
-        {
-            _syncing = false;
-        }
+        using var _ = new SyncGuard();
+        NativeBridge.AddBreadcrumb(breadcrumb);
     }
 
     public void SetExtra(string key, object? value)
@@ -38,53 +39,32 @@ internal class GodotScopeObserver : IScopeObserver
 
     public void SetTag(string key, string value)
     {
-        if (_syncing || SentrySdk.InLocalScope)
+        if (IsSyncing || SentrySdk.InLocalScope)
         {
             return;
         }
-        _syncing = true;
-        try
-        {
-            NativeBridge.SetTag(key, value);
-        }
-        finally
-        {
-            _syncing = false;
-        }
+        using var _ = new SyncGuard();
+        NativeBridge.SetTag(key, value);
     }
 
     public void UnsetTag(string key)
     {
-        if (_syncing || SentrySdk.InLocalScope)
+        if (IsSyncing || SentrySdk.InLocalScope)
         {
             return;
         }
-        _syncing = true;
-        try
-        {
-            NativeBridge.RemoveTag(key);
-        }
-        finally
-        {
-            _syncing = false;
-        }
+        using var _ = new SyncGuard();
+        NativeBridge.RemoveTag(key);
     }
 
     public void SetUser(SentryUser? user)
     {
-        if (_syncing || SentrySdk.InLocalScope)
+        if (IsSyncing || SentrySdk.InLocalScope)
         {
             return;
         }
-        _syncing = true;
-        try
-        {
-            NativeBridge.SetUser(user);
-        }
-        finally
-        {
-            _syncing = false;
-        }
+        using var _ = new SyncGuard();
+        NativeBridge.SetUser(user);
     }
 
     public void SetTrace(SentryId traceId, SpanId parentSpanId)
