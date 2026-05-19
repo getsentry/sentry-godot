@@ -325,6 +325,20 @@ options/debug_printing=0
         It "<Name>" -ForEach $DotnetCommonTestCases {
             & $TestBlock -SentryEvent $runEvent -RunResult $runResult -TestSetup $script:TestSetup
         }
+
+        It "Disables native layer after GDScript-initiated close" {
+            $line = $runResult.Output | Where-Object {
+                $_ -match "AFTER_CLOSE_NATIVE_ENABLED: (true|false)"
+            } | Select-Object -First 1
+            $line | Should -Match "AFTER_CLOSE_NATIVE_ENABLED: false"
+        }
+
+        It "Disables .NET layer after GDScript-initiated close" {
+            $line = $runResult.Output | Where-Object {
+                $_ -match "AFTER_CLOSE_DOTNET_ENABLED: (true|false)"
+            } | Select-Object -First 1
+            $line | Should -Match "AFTER_CLOSE_DOTNET_ENABLED: false"
+        }
     }
 
     Context "Dotnet with native auto-init driving init" -Skip:($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs", "iOSSauceLabs")) {

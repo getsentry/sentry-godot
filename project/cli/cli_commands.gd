@@ -297,7 +297,23 @@ func _cmd_dotnet_exception_capture(p_scenario: String) -> int:
 
 
 func _cmd_dotnet_capture_via_gdscript_init() -> int:
-	return await _run_dotnet_trigger("dotnet-capture-via-gdscript-init", "TriggerException", DotnetInitDriver.GDSCRIPT)
+	var result := await _run_dotnet_trigger("dotnet-capture-via-gdscript-init", "TriggerException", DotnetInitDriver.GDSCRIPT)
+	await _verify_native_initiated_close()
+	return result
+
+
+## Closes the SDK via the native API and prints test markers to verify the native and .NET layers were shut down.
+func _verify_native_initiated_close() -> void:
+	var script: Script = load("res://cli/DotnetCliTriggers.cs")
+	if script == null:
+		printerr("Error: DotnetCliTriggers.cs is not available")
+		return
+	var triggers: Object = script.new()
+
+	SentrySDK.close()
+	await get_tree().create_timer(2.0).timeout
+	print("AFTER_CLOSE_NATIVE_ENABLED: ", SentrySDK.is_enabled())
+	print("AFTER_CLOSE_DOTNET_ENABLED: ", triggers.IsSdkEnabled())
 
 
 func _cmd_dotnet_capture_via_auto_init() -> int:
