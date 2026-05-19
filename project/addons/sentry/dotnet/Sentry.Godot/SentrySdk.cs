@@ -144,7 +144,15 @@ public static partial class SentrySdk
         {
             return;
         }
-        CloseDotnetSdk();
+        _closing = true;
+        try
+        {
+            CloseDotnetSdk();
+        }
+        finally
+        {
+            _closing = false;
+        }
     }
 
     private static void CloseDotnetSdk()
