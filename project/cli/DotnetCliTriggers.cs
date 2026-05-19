@@ -20,6 +20,11 @@ public partial class DotnetCliTriggers : RefCounted
         });
     }
 
+    public void CloseSentryFromDotnet()
+    {
+        Sentry.Godot.SentrySdk.Close();
+    }
+
     public void AddIntegrationTestContext(string testType)
     {
         Sentry.Godot.SentrySdk.AddBreadcrumb("Integration test started");
