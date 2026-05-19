@@ -1,10 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="../Sentry.Godot.Versions.props" />
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GodotProjectDir>$(MSBuildProjectDirectory)</GodotProjectDir>
+    <!-- Ship a separate portable PDB and XML doc file alongside the DLL. -->
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Don't fail on undocumented public members (for now). -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Sentry" Version="$(SentryVersion)" />

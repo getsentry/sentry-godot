@@ -1,23 +1,13 @@
 <!--
-  Sentry SDK for Godot - .NET integration
-
-  Add the following line to your .csproj to enable:
-    <Import Project="addons/sentry/dotnet/Sentry.Godot.props" />
-
-  TODO: Auto-include this file in the user's project.
+  Sentry SDK for Godot - .NET integration.
+  The Sentry addon auto-imports this file into your project's .csproj.
 -->
 <Project>
-  <!-- Use the source project and exclude its files from the main build -->
-  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)Sentry.Godot/Sentry.Godot.csproj')">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)Sentry.Godot/Sentry.Godot.csproj" />
-    <Compile Remove="$(MSBuildThisFileDirectory)Sentry.Godot/**/*.cs" />
-  </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)Sentry.Godot.Versions.props" />
 
-  <!-- Analyzers that guide correct use of the Sentry SDK -->
-  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)Sentry.Godot.Analyzers/Sentry.Godot.Analyzers.csproj')">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)Sentry.Godot.Analyzers/Sentry.Godot.Analyzers.csproj"
-                      OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false" />
-    <Compile Remove="$(MSBuildThisFileDirectory)Sentry.Godot.Analyzers/**/*.cs" />
+  <ItemGroup>
+    <PackageReference Include="Sentry" Version="$(SentryVersion)" />
+    <Reference Include="$(MSBuildThisFileDirectory)lib\Sentry.Godot.dll" />
+    <Analyzer Include="$(MSBuildThisFileDirectory)lib\Sentry.Godot.Analyzers.dll" />
   </ItemGroup>
 </Project>

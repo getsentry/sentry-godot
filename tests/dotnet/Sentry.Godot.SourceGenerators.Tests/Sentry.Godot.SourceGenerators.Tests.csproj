@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\project\addons\sentry\dotnet\Sentry.Godot.Versions.props" />
+  <Import Project="..\..\..\src\sentry\dotnet\managed\Sentry.Godot.Versions.props" />
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <OutputType>Exe</OutputType>
@@ -20,6 +20,6 @@
     <PackageReference Include="xunit.v3" Version="3.2.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\project\addons\sentry\dotnet\Sentry.Godot\Sentry.Godot.SourceGenerators\Sentry.Godot.SourceGenerators.csproj" />
+    <ProjectReference Include="..\..\..\src\sentry\dotnet\managed\Sentry.Godot\Sentry.Godot.SourceGenerators\Sentry.Godot.SourceGenerators.csproj" />
   </ItemGroup>
 </Project>

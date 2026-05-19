@@ -10,6 +10,10 @@ project/reports/
 project/android/
 project/.godot/
 
+# .NET artifacts
+project/addons/sentry/dotnet/lib/
+project/addons/sentry/dotnet/Sentry.Godot.Versions.props
+
 # Export related
 exports/*
 !exports/export_presets.cfg
