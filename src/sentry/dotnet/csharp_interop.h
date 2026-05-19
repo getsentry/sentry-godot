@@ -9,8 +9,11 @@ using namespace godot;
 
 namespace sentry::dotnet {
 
-// Calls the .NET init, if available.
+// Calls the .NET init, if available. No-op in standard non-.NET Godot builds.
 void init();
+
+// Calls the .NET close, if available. No-op in standard non-.NET Godot builds.
+void close();
 
 // Forwards a C# exception error to the .NET layer for capture.
 void handle_logger_error(const String &p_file, const String &p_code);
