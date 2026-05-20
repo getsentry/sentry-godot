@@ -110,4 +110,4 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Build demo project
-        run: dotnet build "project/Sentry demo project.csproj"
+        run: dotnet build Sentry.Godot.slnx
