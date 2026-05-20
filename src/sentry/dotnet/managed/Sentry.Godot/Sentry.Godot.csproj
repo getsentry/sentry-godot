@@ -17,9 +17,8 @@
     <PackageReference Include="Sentry" Version="$(SentryVersion)" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Sentry.Godot.SourceGenerators/Sentry.Godot.SourceGenerators.csproj"
+    <ProjectReference Include="../Sentry.Godot.SourceGenerators/Sentry.Godot.SourceGenerators.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
-    <Compile Remove="Sentry.Godot.SourceGenerators/**/*.cs" />
   </ItemGroup>
 </Project>
