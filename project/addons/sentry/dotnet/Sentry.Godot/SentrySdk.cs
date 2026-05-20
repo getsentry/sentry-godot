@@ -120,9 +120,9 @@ public static partial class SentrySdk
     {
         _exceptionHandler?.Dispose();
         _exceptionHandler = null;
-        CurrentOptions = null;
         Sentry.SentrySdk.Close();
         NativeBridge.CloseNativeSdk();
+        CurrentOptions = null;
     }
 
     private static void InitFirstChanceExceptionHandler()
