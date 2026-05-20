@@ -207,6 +207,9 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 void SentrySDK::close() {
 	if (internal_sdk->is_enabled()) {
 		sentry::logging::print_debug("Shutting down Sentry SDK");
+
+		sentry::dotnet::close();
+
 		if (godot_logger.is_valid()) {
 			OS::get_singleton()->remove_logger(godot_logger);
 			godot_logger.unref();

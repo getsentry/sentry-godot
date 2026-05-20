@@ -44,6 +44,7 @@ func _register_commands() -> void:
 	_parser.add_command("pii-capture", _cmd_pii_capture, "Capture a message with send_default_pii enabled")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
 	_parser.add_command("dotnet-exception-capture", _cmd_dotnet_exception_capture, "Capture a .NET exception (scenario: plain | bare-rethrow | wrapped-rethrow)")
+	_parser.add_command("dotnet-capture-via-dotnet-init", _cmd_dotnet_capture_via_dotnet_init, "Capture a .NET exception with .NET driving init")
 	_parser.add_command("dotnet-capture-via-gdscript-init", _cmd_dotnet_capture_via_gdscript_init, "Capture a .NET exception with GDScript driving init")
 	_parser.add_command("dotnet-capture-via-auto-init", _cmd_dotnet_capture_via_auto_init, "Capture a .NET exception with native auto-init driving init")
 	_parser.add_command("dotnet-cross-layer-capture", _cmd_dotnet_cross_layer_capture, "Capture a native and a .NET event to verify cross-layer synchronization")
@@ -296,8 +297,44 @@ func _cmd_dotnet_exception_capture(p_scenario: String) -> int:
 	return await _run_dotnet_trigger("dotnet-exception-capture-" + p_scenario, trigger_method, DotnetInitDriver.DOTNET)
 
 
+func _cmd_dotnet_capture_via_dotnet_init() -> int:
+	var result := await _run_dotnet_trigger("dotnet-capture-via-dotnet-init", "TriggerException", DotnetInitDriver.DOTNET)
+	await _verify_dotnet_initiated_close()
+	return result
+
+
 func _cmd_dotnet_capture_via_gdscript_init() -> int:
-	return await _run_dotnet_trigger("dotnet-capture-via-gdscript-init", "TriggerException", DotnetInitDriver.GDSCRIPT)
+	var result := await _run_dotnet_trigger("dotnet-capture-via-gdscript-init", "TriggerException", DotnetInitDriver.GDSCRIPT)
+	await _verify_native_initiated_close()
+	return result
+
+
+## Closes the SDK via the native API and prints test markers to verify the native and .NET layers were shut down.
+func _verify_native_initiated_close() -> void:
+	var script: Script = load("res://cli/DotnetCliTriggers.cs")
+	if script == null:
+		printerr("Error: DotnetCliTriggers.cs is not available")
+		return
+	var triggers: Object = script.new()
+
+	SentrySDK.close()
+	await get_tree().create_timer(2.0).timeout
+	print("AFTER_CLOSE_NATIVE_ENABLED: ", SentrySDK.is_enabled())
+	print("AFTER_CLOSE_DOTNET_ENABLED: ", triggers.IsSdkEnabled())
+
+
+## Closes the SDK via the .NET API and prints test markers to verify the native and .NET layers were shut down.
+func _verify_dotnet_initiated_close() -> void:
+	var script: Script = load("res://cli/DotnetCliTriggers.cs")
+	if script == null:
+		printerr("Error: DotnetCliTriggers.cs is not available")
+		return
+	var triggers: Object = script.new()
+
+	triggers.CloseSentryFromDotnet()
+	await get_tree().create_timer(2.0).timeout
+	print("AFTER_CLOSE_NATIVE_ENABLED: ", SentrySDK.is_enabled())
+	print("AFTER_CLOSE_DOTNET_ENABLED: ", triggers.IsSdkEnabled())
 
 
 func _cmd_dotnet_capture_via_auto_init() -> int:

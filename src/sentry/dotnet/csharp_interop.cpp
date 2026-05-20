@@ -73,6 +73,7 @@ static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map)
 // Must match ManagedFunctions struct in NativeBridge.cs.
 struct ManagedFunctions {
 	void (*init)();
+	void (*close)();
 	void (*logger_error)(const char16_t *code, int32_t code_len, const char16_t *file, int32_t file_len);
 	void (*add_breadcrumb)(const char16_t *message, int32_t message_len, const char16_t *category, int32_t category_len, const char16_t *type, int32_t type_len, int32_t level);
 	void (*set_tag)(const char16_t *name, int32_t name_len, const char16_t *value, int32_t value_len);
@@ -429,6 +430,12 @@ namespace sentry::dotnet {
 void init() {
 	if (s_managed_funcs.init) {
 		s_managed_funcs.init();
+	}
+}
+
+void close() {
+	if (s_managed_funcs.close) {
+		s_managed_funcs.close();
 	}
 }
 

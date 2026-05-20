@@ -221,6 +221,7 @@ internal static partial class NativeBridge
     private unsafe struct ManagedFunctions
     {
         public delegate* unmanaged[Cdecl]<void> init;
+        public delegate* unmanaged[Cdecl]<void> close;
         public delegate* unmanaged[Cdecl]<char*, int, char*, int, void> logger_error;
         public delegate* unmanaged[Cdecl]<char*, int, char*, int, char*, int, int, void> add_breadcrumb;
         public delegate* unmanaged[Cdecl]<char*, int, char*, int, void> set_tag;
@@ -240,7 +241,8 @@ internal static partial class NativeBridge
     {
         csharp_interop_register_managed_functions(new ManagedFunctions
         {
-            init = &DotnetInitCallback,
+            init = &InitCallback,
+            close = &CloseCallback,
             logger_error = &LoggerErrorCallback,
             add_breadcrumb = &AddBreadcrumbCallback,
             set_tag = &SetTagCallback,
@@ -251,7 +253,7 @@ internal static partial class NativeBridge
     }
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-    private static void DotnetInitCallback()
+    private static void InitCallback()
     {
         try
         {
@@ -260,6 +262,19 @@ internal static partial class NativeBridge
         catch (Exception ex)
         {
             GodotLog.Error($"Failed to initialize Sentry .NET layer: {ex}");
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static void CloseCallback()
+    {
+        try
+        {
+            SentrySdk.CloseFromNative();
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to close Sentry .NET layer: {ex}");
         }
     }
 
