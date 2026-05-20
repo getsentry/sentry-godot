@@ -43,6 +43,27 @@ internal static partial class NativeBridge
         }
     }
 
+    // Must match layout of NativeArray in csharp_interop.cpp.
+    // Cast Ptr to the concrete element type. Dispose frees the array.
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeArray : IDisposable
+    {
+        public IntPtr Ptr;
+        public int Count;
+
+        public void Dispose()
+        {
+            if (Ptr != IntPtr.Zero)
+            {
+                csharp_interop_free_array(Ptr);
+                Ptr = IntPtr.Zero;
+            }
+        }
+    }
+
+    [LibraryImport(Lib)]
+    private static partial void csharp_interop_free_array(IntPtr array);
+
     // Must match layout of LoggerLimitsData in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
     private struct LoggerLimitsData
@@ -51,6 +72,16 @@ internal static partial class NativeBridge
         public int repeated_error_window_ms;
         public int throttle_events;
         public int throttle_window_ms;
+    }
+
+    // Must match layout of AttachmentMeta in csharp_interop.cpp.
+    [StructLayout(LayoutKind.Sequential)]
+    private struct AttachmentMeta
+    {
+        public GodotStringHandle path;
+        public GodotStringHandle filename;
+        public GodotStringHandle content_type;
+        public GodotStringHandle attachment_type;
     }
 
     // Must match layout of NativeOptions in csharp_interop.cpp.
@@ -441,6 +472,47 @@ internal static partial class NativeBridge
     }
 
     [LibraryImport(Lib)]
+    private static partial NativeArray csharp_interop_get_default_attachments();
+
+    /// <summary>
+    /// Adds default attachments resolved by the native layer after init() to the managed options.
+    /// </summary>
+    public static unsafe void FetchDefaultAttachments(SentryGodotOptions opts)
+    {
+        using var result = csharp_interop_get_default_attachments();
+        if (result.Ptr == IntPtr.Zero)
+        {
+            return;
+        }
+        var p = (AttachmentMeta*)result.Ptr;
+        for (int i = 0; i < result.Count; ++i)
+        {
+            string? path = p[i].path.TakeString();
+            string? filename = p[i].filename.TakeString();
+            string? contentType = p[i].content_type.TakeString();
+            string? attachmentType = p[i].attachment_type.TakeString();
+
+            if (path is null)
+            {
+                // Only file-based default attachments are supported.
+                continue;
+            }
+            opts.AddDefaultAttachment(new SentryAttachment(
+                type: attachmentType switch
+                {
+                    "event.view_hierarchy" => AttachmentType.ViewHierarchy,
+                    _ => AttachmentType.Default,
+                },
+                content: new FileAttachmentContent(path),
+                fileName: String.IsNullOrEmpty(filename)
+                        ? System.IO.Path.GetFileName(path)
+                        : filename,
+                contentType: contentType
+            ));
+        }
+    }
+
+    [LibraryImport(Lib)]
     private static unsafe partial GodotStringHandle csharp_interop_detect_environment();
 
     public static unsafe string? DetectEnvironment()
@@ -563,6 +635,14 @@ internal static partial class NativeBridge
     public static void CloseNativeSdk()
     {
         csharp_interop_sdk_close();
+    }
+
+    [LibraryImport(Lib)]
+    private static partial void csharp_interop_process_default_attachments(int level);
+
+    public static void ProcessDefaultAttachments(SentryLevel level)
+    {
+        csharp_interop_process_default_attachments((int)level);
     }
 
     /// <remarks>

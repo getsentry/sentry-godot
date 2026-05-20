@@ -61,6 +61,8 @@ public static partial class SentrySdk
 
             // Use the same order as in automatic initialization for consistency.
             InitNativeIfNeeded(godotOptions);
+            // Fetch default attachments after native init resolves them.
+            NativeBridge.FetchDefaultAttachments(godotOptions);
             InitDotnet(godotOptions);
         }
         finally
@@ -88,6 +90,7 @@ public static partial class SentrySdk
             var godotOptions = new SentryGodotOptions();
             godotOptions.ApplyNativeOptions();
             godotOptions.ApplyTemplateSubstitutions();
+            NativeBridge.FetchDefaultAttachments(godotOptions);
             InitDotnet(godotOptions);
         }
         finally
@@ -159,8 +162,8 @@ public static partial class SentrySdk
     {
         _exceptionHandler?.Dispose();
         _exceptionHandler = null;
-        CurrentOptions = null;
         Sentry.SentrySdk.Close();
+        CurrentOptions = null;
     }
 
     private static void InitFirstChanceExceptionHandler()

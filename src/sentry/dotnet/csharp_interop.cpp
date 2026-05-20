@@ -1,5 +1,6 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
+#include "sentry/dotnet/process_default_attachments.h"
 #include "sentry/environment.h"
 #include "sentry/logging/print.h"
 #include "sentry/sentry_breadcrumb.h"
@@ -91,6 +92,14 @@ struct LoggerLimitsData {
 	int32_t throttle_window_ms;
 };
 
+// Must match layout of AttachmentMeta in NativeBridge.cs.
+struct AttachmentMeta {
+	GodotStringHandle path;
+	GodotStringHandle filename;
+	GodotStringHandle content_type;
+	GodotStringHandle attachment_type;
+};
+
 // Must match layout of NativeOptions in NativeBridge.cs.
 struct NativeOptions {
 	LoggerLimitsData logger_limits;
@@ -129,6 +138,21 @@ struct NativeOptions {
 	// Experimental
 	uint8_t enable_metrics;
 };
+
+// Generic array handle for returning native-allocated arrays across the interop boundary.
+// C# casts "ptr" to the concrete element type and must free it via csharp_interop_free_array().
+struct NativeArray {
+	void *ptr;
+	int32_t count;
+};
+
+CSHARP_EXPORT void csharp_interop_free_array(void *p_array) {
+	if (p_array) {
+		// Equivalent to memdelete_arr() for trivially-destructible types.
+		// memdelete_arr() can't be used directly here because the call site only has a void*.
+		Memory::free_static(p_array, true);
+	}
+}
 
 // Managed-owned options for passing C# options to native.
 // C# pins strings; native reads synchronously. No free needed.
@@ -264,6 +288,23 @@ CSHARP_EXPORT NativeOptions csharp_interop_get_options_defaults() {
 	return data;
 }
 
+CSHARP_EXPORT NativeArray csharp_interop_get_default_attachments() {
+	NativeArray result = {};
+	const Vector<Ref<SentryAttachment>> &atts = SentrySDK::get_singleton()->get_options()->get_default_attachments();
+	result.count = atts.size();
+	if (result.count > 0) {
+		AttachmentMeta *items = memnew_arr(AttachmentMeta, result.count);
+		for (int32_t i = 0; i < result.count; ++i) {
+			items[i].path = _make_handle(atts[i]->get_globalized_path());
+			items[i].filename = _make_handle(atts[i]->get_filename());
+			items[i].content_type = _make_handle(atts[i]->get_content_type());
+			items[i].attachment_type = _make_handle(atts[i]->get_attachment_type());
+		}
+		result.ptr = items;
+	}
+	return result;
+}
+
 CSHARP_EXPORT NativeTraceContext csharp_interop_get_trace_context() {
 	auto ctx = SentrySDK::get_singleton()->get_trace_context();
 
@@ -316,6 +357,10 @@ CSHARP_EXPORT void csharp_interop_sdk_init(ManagedOptions managed_opts) {
 
 CSHARP_EXPORT void csharp_interop_sdk_close() {
 	SentrySDK::get_singleton()->close();
+}
+
+CSHARP_EXPORT void csharp_interop_process_default_attachments(int32_t level) {
+	sentry::dotnet::process_default_attachments(static_cast<sentry::Level>(level));
 }
 
 CSHARP_EXPORT void csharp_interop_sdk_add_breadcrumb(
