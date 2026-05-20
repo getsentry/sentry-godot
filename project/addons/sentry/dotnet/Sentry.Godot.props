@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Sentry" Version="$(SentryVersion)" />
-    <Reference Include="$(MSBuildThisFileDirectory)lib\Sentry.Godot.dll" />
-    <Analyzer Include="$(MSBuildThisFileDirectory)lib\Sentry.Godot.Analyzers.dll" />
+    <Reference Include="$(MSBuildThisFileDirectory)lib/Sentry.Godot.dll" />
+    <Analyzer Include="$(MSBuildThisFileDirectory)lib/Sentry.Godot.Analyzers.dll" />
   </ItemGroup>
 </Project>
