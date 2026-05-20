@@ -118,20 +118,31 @@ npm test               # Run tests
 
 ### .NET Layer
 
-The .NET layer (`project/addons/sentry/dotnet/Sentry.Godot/`) auto-generates a passthrough delegation from `Sentry.Godot.SentrySdk` to the upstream `Sentry.SentrySdk` via a Roslyn source generator. To inspect the generated file, run from the project directory:
+The .NET layer source lives at `src/sentry/dotnet/managed/`. Building it stages compiled artifacts into `project/addons/sentry/dotnet/lib/`, which is what ships in the addon.
+
+To build everything (.NET libraries + tests + demo project) via the dev solution at the repo root:
 
 ```sh
-dotnet build /p:EmitCompilerGeneratedFiles=true /p:CompilerGeneratedFilesOutputPath=/tmp/gen
+dotnet build
+```
+
+This picks up `Sentry.Godot.slnx` automatically.
+
+The .NET layer auto-generates a passthrough delegation from `Sentry.Godot.SentrySdk` to the upstream `Sentry.SentrySdk` via a Roslyn source generator. To inspect the generated file:
+
+```sh
+dotnet build src/sentry/dotnet/managed/Sentry.Godot/Sentry.Godot.csproj /p:EmitCompilerGeneratedFiles=true /p:CompilerGeneratedFilesOutputPath=/tmp/gen
 ```
 
 ## Project Structure
 
 - `src/` -- Godot extension source code
-- `src/sentry/dotnet/` -- C++ side of the .NET interop
+- `src/sentry/dotnet/` -- C++ side of the .NET layer
+- `src/sentry/dotnet/managed/` -- C# side of the .NET layer
 - `modules/` -- various submodules, such as `godot-cpp` and other SDKs like `sentry-native`
 - `project/` -- example Godot project
 - `project/addons/sentry/` -- where build artifacts are placed
-- `project/addons/sentry/dotnet/` -- the .NET layer with Sentry.Godot library and integration glue
+- `project/addons/sentry/dotnet/` -- shipped .NET addon files (`Sentry.Godot.props`, `lib/`, autoload glue)
 - `project/test/` -- GDScript unit and integration tests for exported APIs, using gdUnit4
 - `scripts/` -- various scripts used mostly for maintenance
 - `assetlib/` -- metadata for Godot Asset Library entries
