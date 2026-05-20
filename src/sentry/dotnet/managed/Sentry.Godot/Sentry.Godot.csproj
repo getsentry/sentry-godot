@@ -4,7 +4,6 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <GodotProjectDir>$(MSBuildProjectDirectory)</GodotProjectDir>
     <!-- Ship a separate portable PDB and XML doc file alongside the DLL. -->
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
