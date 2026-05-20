@@ -79,19 +79,6 @@ internal class GodotScopeObserver : IScopeObserver
 
     public void ClearAttachments()
     {
-        if (IsSyncing || SentrySdk.InLocalScope)
-        {
-            return;
-        }
-        using var _ = new SyncGuard();
-
         // TODO: forward to native attachment API once wired through NativeBridge.
-
-        // Restore default attachments from the current options.
-        // These are maintained by the native layer and include screenshot, view hierarchy, and log file.
-        foreach (SentryAttachment att in Sentry.Godot.SentrySdk.CurrentOptions!.DefaultAttachments)
-        {
-            Sentry.Godot.SentrySdk.ConfigureScope(scope => scope.AddAttachment(att));
-        }
     }
 }
