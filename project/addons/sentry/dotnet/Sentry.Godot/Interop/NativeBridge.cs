@@ -44,12 +44,21 @@ internal static partial class NativeBridge
     }
 
     // Must match layout of NativeArray in csharp_interop.cpp.
-    // Cast Ptr to the concrete element type and free via csharp_interop_free_array().
+    // Cast Ptr to the concrete element type. Dispose frees the array.
     [StructLayout(LayoutKind.Sequential)]
-    private struct NativeArray
+    private struct NativeArray : IDisposable
     {
         public IntPtr Ptr;
         public int Count;
+
+        public void Dispose()
+        {
+            if (Ptr != IntPtr.Zero)
+            {
+                csharp_interop_free_array(Ptr);
+                Ptr = IntPtr.Zero;
+            }
+        }
     }
 
     [LibraryImport(Lib)]
@@ -470,7 +479,7 @@ internal static partial class NativeBridge
     /// </summary>
     public static unsafe void FetchDefaultAttachments(SentryGodotOptions opts)
     {
-        var result = csharp_interop_get_default_attachments();
+        using var result = csharp_interop_get_default_attachments();
         if (result.Ptr == IntPtr.Zero)
         {
             return;
@@ -501,7 +510,6 @@ internal static partial class NativeBridge
                 contentType: contentType
             ));
         }
-        csharp_interop_free_array(result.Ptr);
     }
 
     [LibraryImport(Lib)]
