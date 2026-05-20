@@ -60,14 +60,14 @@ jobs:
             godot-arch: x86_64
             test-executable: ./exports/android.apk
             export-platform: android
-            saucelabs-device: Samsung_Galaxy_S25_16_real_sjc1
+            saucelabs-device: Samsung_Galaxy_S25_*_real_sjc1
 
           - test-platform: iOSSauceLabs
             runner: macos-latest
             godot-arch: universal
             test-executable: ./exports/ios/ios.ipa
             export-platform: ios
-            saucelabs-device: iPhone_17_Pro_real_sjc1
+            saucelabs-device: iPhone_17_*_real_sjc1
 
           - test-platform: Web
             runner: ubuntu-latest
@@ -99,7 +99,7 @@ jobs:
             dotnet: true
             test-executable: ./exports/android.apk
             export-platform: android
-            saucelabs-device: Samsung_Galaxy_S25_16_real_sjc1
+            saucelabs-device: Samsung_Galaxy_S25_*_real_sjc1
             test-script: tests/integration/Integration.Dotnet.Tests.ps1
 
           - test-platform: iOSSauceLabs
@@ -108,7 +108,7 @@ jobs:
             dotnet: true
             test-executable: ./exports/ios/ios.ipa
             export-platform: ios
-            saucelabs-device: iPhone_17_Pro_real_sjc1
+            saucelabs-device: iPhone_17_*_real_sjc1
             test-script: tests/integration/Integration.Dotnet.Tests.ps1
 
     steps:
