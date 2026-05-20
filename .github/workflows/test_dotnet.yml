@@ -94,8 +94,8 @@ jobs:
         working-directory: tests/dotnet/Sentry.Godot.Analyzers.Tests
         run: dotnet test
 
-  demo-compile:
-    name: Demo project compiles
+  dotnet-build:
+    name: .NET build check
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -109,5 +109,5 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Build demo project
+      - name: Build solution
         run: dotnet build Sentry.Godot.slnx
