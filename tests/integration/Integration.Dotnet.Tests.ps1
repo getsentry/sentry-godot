@@ -172,7 +172,7 @@ Describe ".NET Integration Tests" {
             Connect-Device -Platform $script:TestSetup.Platform
             Install-DeviceApp -Path $script:TestSetup.Executable
 
-            $script:dotnetInitRunResult      = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("plain")
+            $script:dotnetInitRunResult      = Invoke-TestAction -Action "dotnet-capture-via-dotnet-init"
             $script:bareRethrowRunResult    = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("bare-rethrow")
             $script:wrappedRethrowRunResult = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("wrapped-rethrow")
             $script:gdscriptInitRunResult   = Invoke-TestAction -Action "dotnet-capture-via-gdscript-init"
@@ -298,11 +298,25 @@ options/debug_printing=0
         }
 
         It "<Name>" -ForEach $CommonTestCases {
-            & $testBlock -SentryEvent $runEvent -TestType "dotnet-exception-capture-plain" -RunResult $runResult -TestSetup $script:TestSetup
+            & $testBlock -SentryEvent $runEvent -TestType "dotnet-capture-via-dotnet-init" -RunResult $runResult -TestSetup $script:TestSetup
         }
 
         It "<Name>" -ForEach $DotnetCommonTestCases {
             & $TestBlock -SentryEvent $runEvent -RunResult $runResult -TestSetup $script:TestSetup
+        }
+
+        It "Disables native layer after .NET-initiated close" {
+            $line = $runResult.Output | Where-Object {
+                $_ -match "AFTER_CLOSE_NATIVE_ENABLED: (true|false)"
+            } | Select-Object -First 1
+            $line | Should -Match "AFTER_CLOSE_NATIVE_ENABLED: false"
+        }
+
+        It "Disables .NET layer after .NET-initiated close" {
+            $line = $runResult.Output | Where-Object {
+                $_ -match "AFTER_CLOSE_DOTNET_ENABLED: (true|false)"
+            } | Select-Object -First 1
+            $line | Should -Match "AFTER_CLOSE_DOTNET_ENABLED: false"
         }
     }
 
@@ -324,6 +338,20 @@ options/debug_printing=0
 
         It "<Name>" -ForEach $DotnetCommonTestCases {
             & $TestBlock -SentryEvent $runEvent -RunResult $runResult -TestSetup $script:TestSetup
+        }
+
+        It "Disables native layer after GDScript-initiated close" {
+            $line = $runResult.Output | Where-Object {
+                $_ -match "AFTER_CLOSE_NATIVE_ENABLED: (true|false)"
+            } | Select-Object -First 1
+            $line | Should -Match "AFTER_CLOSE_NATIVE_ENABLED: false"
+        }
+
+        It "Disables .NET layer after GDScript-initiated close" {
+            $line = $runResult.Output | Where-Object {
+                $_ -match "AFTER_CLOSE_DOTNET_ENABLED: (true|false)"
+            } | Select-Object -First 1
+            $line | Should -Match "AFTER_CLOSE_DOTNET_ENABLED: false"
         }
     }
 

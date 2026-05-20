@@ -18,6 +18,13 @@ public static partial class SentrySdk
     // Doesn't need locking, because the whole call chain runs on the same thread.
     static bool _initializing;
 
+    // Re-entry guard for the Close() -> native close() -> CloseFromNative() chain:
+    // Close() triggers native shutdown, which signals back into the .NET layer
+    // via CloseFromNative() and would otherwise run CloseDotnetSdk() a second
+    // time.
+    // Doesn't need locking, because the whole call chain runs on the same thread.
+    static bool _closing;
+
     [ThreadStatic] private static bool _inLocalScope;
     internal static bool InLocalScope => _inLocalScope;
 
@@ -115,11 +122,45 @@ public static partial class SentrySdk
     /// </summary>
     public static void Close()
     {
+        if (_closing)
+        {
+            return;
+        }
+        _closing = true;
+        try
+        {
+            CloseDotnetSdk();
+            NativeBridge.CloseNativeSdk();
+        }
+        finally
+        {
+            _closing = false;
+        }
+    }
+
+    internal static void CloseFromNative()
+    {
+        if (_closing)
+        {
+            return;
+        }
+        _closing = true;
+        try
+        {
+            CloseDotnetSdk();
+        }
+        finally
+        {
+            _closing = false;
+        }
+    }
+
+    private static void CloseDotnetSdk()
+    {
         _exceptionHandler?.Dispose();
         _exceptionHandler = null;
         CurrentOptions = null;
         Sentry.SentrySdk.Close();
-        NativeBridge.CloseNativeSdk();
     }
 
     private static void InitFirstChanceExceptionHandler()
