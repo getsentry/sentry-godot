@@ -163,7 +163,6 @@ public static partial class SentrySdk
         _exceptionHandler?.Dispose();
         _exceptionHandler = null;
         Sentry.SentrySdk.Close();
-        NativeBridge.CloseNativeSdk();
         CurrentOptions = null;
     }
 
