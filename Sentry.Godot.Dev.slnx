@@ -1,6 +1,9 @@
 <Solution>
   <Folder Name="/project/">
-    <Project Path="project/Sentry demo project.csproj" />
+    <Project Path="project/Sentry demo project.csproj">
+      <BuildDependency Project="src/sentry/dotnet/managed/Sentry.Godot/Sentry.Godot.csproj" />
+      <BuildDependency Project="src/sentry/dotnet/managed/Sentry.Godot.Analyzers/Sentry.Godot.Analyzers.csproj" />
+    </Project>
   </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/sentry/" />

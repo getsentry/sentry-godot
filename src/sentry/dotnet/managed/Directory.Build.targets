@@ -1,0 +1,14 @@
+<Project>
+
+  <!-- Stages built dll/pdb/xml into the addon's lib/ directory.
+       Opt in per-project with <StageToAddon>true</StageToAddon>. -->
+  <Target Name="StageToAddonLib" AfterTargets="Build" Condition="'$(StageToAddon)' == 'true'">
+    <ItemGroup>
+      <_AddonLibFiles Include="$(TargetDir)$(AssemblyName).dll" />
+      <_AddonLibFiles Include="$(TargetDir)$(AssemblyName).pdb" Condition="Exists('$(TargetDir)$(AssemblyName).pdb')" />
+      <_AddonLibFiles Include="$(TargetDir)$(AssemblyName).xml" Condition="Exists('$(TargetDir)$(AssemblyName).xml')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_AddonLibFiles)" DestinationFolder="$(RepoRoot)project/addons/sentry/dotnet/lib/" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

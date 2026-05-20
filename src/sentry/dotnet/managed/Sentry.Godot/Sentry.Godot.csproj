@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="../Sentry.Godot.Versions.props" />
+  <Import Project="$(SentryGodotVersionsProps)" />
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -12,6 +12,7 @@
     <!-- Don't fail on undocumented public members (for now). -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <IsAotCompatible>true</IsAotCompatible>
+    <StageToAddon>true</StageToAddon>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Sentry" Version="$(SentryVersion)" />

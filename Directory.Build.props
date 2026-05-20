@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <!-- Shared versions file for dependency pins such as the Sentry NuGet package.
+         It lives under the addon directory so packaged addon consumers receive the same version definitions.
+         Internal projects import it through this property. -->
+    <SentryGodotVersionsProps>$(RepoRoot)project/addons/sentry/dotnet/Sentry.Godot.Versions.props</SentryGodotVersionsProps>
+  </PropertyGroup>
+</Project>
