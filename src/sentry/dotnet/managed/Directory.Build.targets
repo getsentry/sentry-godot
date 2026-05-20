@@ -11,4 +11,14 @@
     <Copy SourceFiles="@(_AddonLibFiles)" DestinationFolder="$(RepoRoot)project/addons/sentry/dotnet/lib/" SkipUnchangedFiles="true" />
   </Target>
 
+  <!-- Removes this project's staged dll/pdb/xml from the addon's lib/ directory on clean. -->
+  <Target Name="UnstageFromAddonLib" BeforeTargets="Clean" Condition="'$(StageToAddon)' == 'true'">
+    <ItemGroup>
+      <_StagedAddonLibFiles Include="$(RepoRoot)project/addons/sentry/dotnet/lib/$(AssemblyName).dll" />
+      <_StagedAddonLibFiles Include="$(RepoRoot)project/addons/sentry/dotnet/lib/$(AssemblyName).pdb" />
+      <_StagedAddonLibFiles Include="$(RepoRoot)project/addons/sentry/dotnet/lib/$(AssemblyName).xml" />
+    </ItemGroup>
+    <Delete Files="@(_StagedAddonLibFiles)" />
+  </Target>
+
 </Project>
