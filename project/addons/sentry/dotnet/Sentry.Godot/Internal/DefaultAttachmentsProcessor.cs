@@ -2,9 +2,10 @@ using Sentry.Extensibility;
 
 namespace Sentry.Godot.Internal;
 
-// <summary>
-// Adds default attachments (log, screenshot, and view hierarchy) for .NET events.
-// </summary>
+/// <summary>
+/// Adds default attachments managed and created by native integrations (log, screenshot and view hierarchy)
+/// to .NET events.
+/// </summary>
 internal class DefaultAttachmentsProcessor : ISentryEventProcessorWithHint
 {
     public SentryEvent? Process(SentryEvent @event)
