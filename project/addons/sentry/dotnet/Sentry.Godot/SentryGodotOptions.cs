@@ -1,6 +1,7 @@
 using System;
 using Sentry.Godot.Interop;
 using Sentry.Godot.Internal;
+using System.Collections.Generic;
 
 namespace Sentry.Godot;
 
@@ -17,6 +18,8 @@ public sealed class SentryGodotOptions : SentryOptions
 
         AddInAppExclude("Godot");
         AddIntegration(new GodotSdkIntegration());
+
+        AddEventProcessor(new DefaultAttachmentsProcessor());
     }
 
     /// <summary>
@@ -133,6 +136,19 @@ public sealed class SentryGodotOptions : SentryOptions
     /// This setting controls GDScript/engine error reporting, not .NET errors.
     /// </remarks>
     public SentryLoggerLimits LoggerLimits { get; set; } = new SentryLoggerLimits();
+
+    private readonly List<SentryAttachment> _defaultAttachments = [];
+
+    internal IReadOnlyList<SentryAttachment> DefaultAttachments => _defaultAttachments;
+
+    internal void AddDefaultAttachment(SentryAttachment attachment)
+    {
+        if (attachment is null)
+        {
+            return;
+        }
+        _defaultAttachments.Add(attachment);
+    }
 
     /// <summary>
     /// Reads resolved options from the native SentryOptions.
