@@ -244,6 +244,23 @@ internal static partial class NativeBridge
         ManagedFunctions functions);
 
     /// <summary>
+    /// Checks whether the native interop library is loaded and exposes the expected symbol.
+    /// Returns false when running outside the Godot/GDExtension host, so initialization can be skipped.
+    /// </summary>
+    public static bool IsNativeAvailable()
+    {
+        try
+        {
+            return NativeLibrary.TryGetExport(NativeLibResolver.Resolve(),
+                nameof(csharp_interop_register_managed_functions), out _);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Registers managed functions that are called from native layer.
     /// </summary>
     public static unsafe void RegisterManagedFunctions()
