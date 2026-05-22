@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/project/">
+    <Project Path="project/Sentry demo project.csproj">
+      <BuildDependency Project="src/sentry/dotnet/managed/Sentry.Godot/Sentry.Godot.csproj" />
+      <BuildDependency Project="src/sentry/dotnet/managed/Sentry.Godot.Analyzers/Sentry.Godot.Analyzers.csproj" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/sentry/" />
+  <Folder Name="/src/sentry/dotnet/" />
+  <Folder Name="/src/sentry/dotnet/managed/">
+    <Project Path="src/sentry/dotnet/managed/Sentry.Godot.Analyzers/Sentry.Godot.Analyzers.csproj" />
+    <Project Path="src/sentry/dotnet/managed/Sentry.Godot.SourceGenerators/Sentry.Godot.SourceGenerators.csproj" />
+    <Project Path="src/sentry/dotnet/managed/Sentry.Godot/Sentry.Godot.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/dotnet/">
+    <Project Path="tests/dotnet/Sentry.Godot.Analyzers.Tests/Sentry.Godot.Analyzers.Tests.csproj" />
+    <Project Path="tests/dotnet/Sentry.Godot.SourceGenerators.Tests/Sentry.Godot.SourceGenerators.Tests.csproj" />
+  </Folder>
+</Solution>

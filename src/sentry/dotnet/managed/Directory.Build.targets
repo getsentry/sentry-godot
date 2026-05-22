@@ -1,0 +1,24 @@
+<Project>
+
+  <!-- Stages built dll/pdb/xml into the addon's lib/ directory.
+       Opt in per-project with <StageToAddon>true</StageToAddon>. -->
+  <Target Name="StageToAddonLib" AfterTargets="Build" Condition="'$(StageToAddon)' == 'true'">
+    <ItemGroup>
+      <_AddonLibFiles Include="$(TargetDir)$(AssemblyName).dll" />
+      <_AddonLibFiles Include="$(TargetDir)$(AssemblyName).pdb" Condition="Exists('$(TargetDir)$(AssemblyName).pdb')" />
+      <_AddonLibFiles Include="$(TargetDir)$(AssemblyName).xml" Condition="Exists('$(TargetDir)$(AssemblyName).xml')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_AddonLibFiles)" DestinationFolder="$(RepoRoot)project/addons/sentry/dotnet/lib/" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Removes this project's staged dll/pdb/xml from the addon's lib/ directory on clean. -->
+  <Target Name="UnstageFromAddonLib" BeforeTargets="Clean" Condition="'$(StageToAddon)' == 'true'">
+    <ItemGroup>
+      <_StagedAddonLibFiles Include="$(RepoRoot)project/addons/sentry/dotnet/lib/$(AssemblyName).dll" />
+      <_StagedAddonLibFiles Include="$(RepoRoot)project/addons/sentry/dotnet/lib/$(AssemblyName).pdb" />
+      <_StagedAddonLibFiles Include="$(RepoRoot)project/addons/sentry/dotnet/lib/$(AssemblyName).xml" />
+    </ItemGroup>
+    <Delete Files="@(_StagedAddonLibFiles)" />
+  </Target>
+
+</Project>

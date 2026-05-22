@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\project\addons\sentry\dotnet\Sentry.Godot.Versions.props" />
+  <Import Project="$(SentryGodotVersionsProps)" />
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <OutputType>Exe</OutputType>
@@ -18,6 +18,6 @@
     <PackageReference Include="xunit.v3" Version="3.2.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\project\addons\sentry\dotnet\Sentry.Godot.Analyzers\Sentry.Godot.Analyzers.csproj" />
+    <ProjectReference Include="$(RepoRoot)src/sentry/dotnet/managed/Sentry.Godot.Analyzers/Sentry.Godot.Analyzers.csproj" />
   </ItemGroup>
 </Project>

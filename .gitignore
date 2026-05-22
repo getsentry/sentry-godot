@@ -4,6 +4,7 @@ project/addons/sentry/*
 !project/addons/sentry/README.md
 !project/addons/sentry/user_feedback/
 !project/addons/sentry/dotnet/
+project/addons/sentry/dotnet/lib/
 project/export_presets.cfg
 project/.vscode/
 project/reports/

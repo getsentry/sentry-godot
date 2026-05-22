@@ -9,6 +9,7 @@
   - Sync breadcrumbs, tags and user changes between .NET and native layers ([#701](https://github.com/getsentry/sentry-godot/pull/701), [#710](https://github.com/getsentry/sentry-godot/pull/710))
   - Fix .NET layer not closed when request comes from native layer ([#715](https://github.com/getsentry/sentry-godot/pull/715))
   - Propagate default attachments (log, screenshot, and view hierarchy) to the .NET layer so .NET events include the same attachments as native events ([#713](https://github.com/getsentry/sentry-godot/pull/713))
+  - Switch to distributing .NET libs as precompiled DLLs ([#719](https://github.com/getsentry/sentry-godot/pull/719))
 
 ### Fixes
 
