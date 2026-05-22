@@ -572,6 +572,62 @@ internal static partial class NativeBridge
         return csharp_interop_is_android() != 0;
     }
 
+    // Must match layout of AssemblyHandle in csharp_interop.cpp.
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct AssemblyHandle
+    {
+        public IntPtr Handle;
+        public long Length;
+    }
+
+    [LibraryImport(Lib)]
+    private static unsafe partial AssemblyHandle csharp_interop_open_managed_assembly(char* name, int nameLen);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial long csharp_interop_read_managed_assembly(IntPtr handle, long offset, long count, byte* dst);
+
+    [LibraryImport(Lib)]
+    private static partial void csharp_interop_close_managed_assembly(IntPtr handle);
+
+    /// <summary>
+    /// Opens managed assembly by name from Godot's virtual filesystem as a seekable handle.
+    /// Returns null handle with zero length if the assembly was not found.
+    /// </summary>
+    public static unsafe AssemblyHandle OpenManagedAssembly(string assemblyName)
+    {
+        fixed (char* namePtr = assemblyName)
+        {
+            return csharp_interop_open_managed_assembly(namePtr, assemblyName.Length);
+        }
+    }
+
+    /// <summary>
+    /// Reads bytes from an open assembly handle at specified offset into destination.
+    /// Returns the number of bytes read, which may be less than requested at EOF.
+    /// </summary>
+    public static unsafe int ReadManagedAssembly(IntPtr handle, long offset, Span<byte> destination)
+    {
+        if (handle == IntPtr.Zero || destination.IsEmpty)
+        {
+            return 0;
+        }
+        fixed (byte* dstPtr = destination)
+        {
+            return (int)csharp_interop_read_managed_assembly(handle, offset, destination.Length, dstPtr);
+        }
+    }
+
+    /// <summary>
+    /// Closes a managed assembly handle opened by <see cref="OpenManagedAssembly"/>.
+    /// </summary>
+    public static void CloseManagedAssembly(IntPtr handle)
+    {
+        if (handle != IntPtr.Zero)
+        {
+            csharp_interop_close_managed_assembly(handle);
+        }
+    }
+
     [LibraryImport(Lib)]
     private static unsafe partial void csharp_interop_sdk_init(ManagedOptions opts);
 
