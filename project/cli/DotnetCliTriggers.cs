@@ -11,7 +11,7 @@ public partial class DotnetCliTriggers : RefCounted
 {
     public void InitSentryFromDotnet()
     {
-        Sentry.Godot.SentrySdk.Init(options =>
+        SentrySdk.Init(options =>
         {
             options.Debug = false;
             options.Release = "test-app@1.0.0";
@@ -25,14 +25,14 @@ public partial class DotnetCliTriggers : RefCounted
 
     public void CloseSentryFromDotnet()
     {
-        Sentry.Godot.SentrySdk.Close();
+        SentrySdk.Close();
     }
 
     public void AddIntegrationTestContext(string testType)
     {
-        Sentry.Godot.SentrySdk.AddBreadcrumb("Integration test started");
+        SentrySdk.AddBreadcrumb("Integration test started");
 
-        Sentry.Godot.SentrySdk.ConfigureScope(scope =>
+        SentrySdk.ConfigureScope(scope =>
         {
             scope.User = new global::Sentry.SentryUser
             {
@@ -42,10 +42,10 @@ public partial class DotnetCliTriggers : RefCounted
             };
         });
 
-        Sentry.Godot.SentrySdk.SetTag("test.suite", "integration");
-        Sentry.Godot.SentrySdk.SetTag("test.type", testType);
+        SentrySdk.SetTag("test.suite", "integration");
+        SentrySdk.SetTag("test.type", testType);
 
-        Sentry.Godot.SentrySdk.AddBreadcrumb("Context configuration finished");
+        SentrySdk.AddBreadcrumb("Context configuration finished");
     }
 
     /// <summary>
@@ -101,18 +101,18 @@ public partial class DotnetCliTriggers : RefCounted
 
     public string GetLastEventId()
     {
-        return Sentry.Godot.SentrySdk.LastEventId.ToString();
+        return SentrySdk.LastEventId.ToString();
     }
 
     public string CaptureMessage(string message)
     {
         GD.Print("Capturing message in .NET layer: ", message);
-        return Sentry.Godot.SentrySdk.CaptureMessage(message).ToString();
+        return SentrySdk.CaptureMessage(message).ToString();
     }
 
     public bool IsSdkEnabled()
     {
-        return Sentry.Godot.SentrySdk.IsEnabled;
+        return SentrySdk.IsEnabled;
     }
 
     public void TriggerException()
