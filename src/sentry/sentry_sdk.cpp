@@ -437,12 +437,6 @@ void SentrySDK::prepare_and_auto_initialize() {
 	OS::get_singleton()->set_environment("SENTRY_GODOT_LIB_PATH",
 			sentry::util::get_gdextension_library_path());
 
-	// Signal editor vs. game context to the managed [ModuleInitializer] via environment variable.
-	// This is used by the managed code to skip initialization in the Godot editor process.
-	// Always write, even "0", because F5-play child process inherits this from the editor.
-	OS::get_singleton()->set_environment("SENTRY_GODOT_EDITOR_HINT",
-			Engine::get_singleton()->is_editor_hint() ? "1" : "0");
-
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		editor::prepare_csharp_project();

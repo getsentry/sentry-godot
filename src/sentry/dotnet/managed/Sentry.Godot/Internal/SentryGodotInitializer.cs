@@ -11,10 +11,11 @@ public static class SentryGodotInitializer
 {
     public static void AutoInit()
     {
-        if (Environment.GetEnvironmentVariable("SENTRY_GODOT_EDITOR_HINT") == "1")
+        // Module initializers run whenever the user assembly is loaded, including by tooling such as project export
+        // or IDE script analysis, where the Sentry GDExtension may not be loaded.
+        if (!NativeBridge.IsNativeAvailable())
         {
-            // Skip in the Godot editor process.
-            Console.WriteLine("SentryGodotInitializer: Skipping initialization in Godot editor process.");
+            Console.WriteLine("SentryGodotInitializer: Sentry GDExtension not loaded in this process; skipping. If you see this in a running game (not during project export or IDE script analysis), check Godot's log for extension load failures.");
             return;
         }
 
