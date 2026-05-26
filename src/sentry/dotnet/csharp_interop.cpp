@@ -374,45 +374,29 @@ CSHARP_EXPORT AssemblyHandle csharp_interop_open_managed_assembly(const char16_t
 	String arch = Engine::get_singleton()->get_architecture_name();
 	String path = String("res://.godot/mono/publish/").path_join(arch).path_join(name);
 
-	bool exists = FileAccess::file_exists(path);
 	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ);
-	sentry::logging::print_debug("[AssemblyReader/native] open: path=", path, ", file_exists=", exists, ", opened=", file.is_valid());
 	if (file.is_null()) {
 		return result;
 	}
 
 	result.handle = memnew(Ref<FileAccess>(file));
 	result.length = file->get_length();
-	sentry::logging::print_debug("[AssemblyReader/native]   length=", result.length);
 	return result;
 }
 
 CSHARP_EXPORT int64_t csharp_interop_read_managed_assembly(void *p_handle, int64_t p_offset, int64_t p_count, uint8_t *r_dst) {
 	if (p_handle == nullptr || r_dst == nullptr || p_count <= 0) {
-		sentry::logging::print_debug("[AssemblyReader/native] read: bail (handle/dst null or count<=0), p_count=", p_count);
 		return 0;
 	}
 
 	const Ref<FileAccess> &file = *static_cast<Ref<FileAccess> *>(p_handle);
 	if (file.is_null()) {
-		sentry::logging::print_debug("[AssemblyReader/native] read: file Ref is null");
 		return 0;
 	}
 
 	file->seek(p_offset);
 	PackedByteArray data = file->get_buffer(p_count);
 	int64_t num_read = data.size();
-	String first_bytes;
-	if (num_read > 0) {
-		int preview = MIN((int64_t)4, num_read);
-		for (int i = 0; i < preview; i++) {
-			first_bytes += vformat("%02X", data.ptr()[i]);
-		}
-		if (num_read > preview) {
-			first_bytes += "(...)";
-		}
-	}
-	sentry::logging::print_debug("[AssemblyReader/native] read: offset=", p_offset, ", requested=", p_count, ", got=", num_read, ", bytes=", first_bytes);
 	if (num_read > 0) {
 		memcpy(r_dst, data.ptr(), num_read);
 	}
@@ -420,7 +404,6 @@ CSHARP_EXPORT int64_t csharp_interop_read_managed_assembly(void *p_handle, int64
 }
 
 CSHARP_EXPORT void csharp_interop_close_managed_assembly(void *p_handle) {
-	sentry::logging::print_debug("[AssemblyReader/native] close");
 	if (p_handle != nullptr) {
 		memdelete(static_cast<Ref<FileAccess> *>(p_handle));
 	}

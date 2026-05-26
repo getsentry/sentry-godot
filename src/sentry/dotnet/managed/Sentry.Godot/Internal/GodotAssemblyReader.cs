@@ -30,7 +30,6 @@ internal sealed class GodotAssemblyReader
     /// </summary>
     public PEReader? TryReadAssembly(string assemblyName)
     {
-        GodotLog.Debug($"[AssemblyReader] TryReadAssembly: name={assemblyName}");
         AssemblyReadState state;
         IntPtr openHandle = IntPtr.Zero;
         lock (_lock)
@@ -39,21 +38,19 @@ internal sealed class GodotAssemblyReader
             {
                 if (cached is null)
                 {
-                    GodotLog.Debug($"[AssemblyReader]   cache: known miss");
+                    // Known miss: Failed to find this assembly previously.
                     return null;
                 }
-                GodotLog.Debug($"[AssemblyReader]   cache: hit, state.Length={cached.Length}, segments={cached.Segments.Count}");
                 state = cached;
             }
             else
             {
+                // First request: Open assembly and learn its length, and keep the handle for later reads.
                 var opened = NativeBridge.OpenManagedAssembly(assemblyName);
                 openHandle = opened.Handle;
-                GodotLog.Debug($"[AssemblyReader]   open: handle={openHandle.ToInt64():X}, length={opened.Length}");
                 if (openHandle == IntPtr.Zero)
                 {
-                    _cache[assemblyName] = null;
-                    GodotLog.Debug($"[AssemblyReader]   open FAILED, recording miss");
+                    _cache[assemblyName] = null; // record miss
                     return null;
                 }
                 state = new AssemblyReadState(opened.Length);
@@ -64,13 +61,10 @@ internal sealed class GodotAssemblyReader
         var stream = new AssemblyReadStream(assemblyName, state, openHandle);
         try
         {
-            var reader = new PEReader(stream);
-            GodotLog.Debug($"[AssemblyReader]   PEReader constructed OK");
-            return reader;
+            return new PEReader(stream);
         }
-        catch (Exception ex)
+        catch
         {
-            GodotLog.Debug($"[AssemblyReader]   PEReader THREW: {ex.GetType().Name}: {ex.Message}");
             stream.Dispose();
             return null;
         }
@@ -128,11 +122,8 @@ internal sealed class GodotAssemblyReader
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            GodotLog.Debug($"[AssemblyReader] Read {_assemblyName}: position={_position}, count={count}");
-
             if (count <= 0 || _position >= _state.Length)
             {
-                GodotLog.Debug($"[AssemblyReader]   -> 0 (count<=0 or past EOF)");
                 return 0;
             }
 
@@ -149,7 +140,6 @@ internal sealed class GodotAssemblyReader
                         segment.Data.AsSpan(offsetInSegment, count)
                             .CopyTo(buffer.AsSpan(offset));
                         _position += count;
-                        GodotLog.Debug($"[AssemblyReader]   -> {count} (cache hit, segment[{segment.Start}, {segment.End}), bytes={HexPreview(buffer, offset, count)})");
                         return count;
                     }
                 }
@@ -162,14 +152,10 @@ internal sealed class GodotAssemblyReader
             long blockAlignedEnd = (requestedEnd + BlockSize - 1) & ~(BlockSize - 1);
             long segmentEnd = Math.Min(blockAlignedEnd, _state.Length);
 
-            GodotLog.Debug($"[AssemblyReader]   cache MISS, reading [{segmentStart}, {segmentEnd}) = {segmentEnd - segmentStart} bytes");
-
             var segmentData = new byte[segmentEnd - segmentStart];
             int read = ReadFromFile(segmentStart, segmentData);
-            GodotLog.Debug($"[AssemblyReader]   ReadFromFile: read={read}, bytes={HexPreview(segmentData, 0, read)}");
             if (read <= 0)
             {
-                GodotLog.Debug($"[AssemblyReader]   -> 0 (ReadFromFile returned {read})");
                 return 0;
             }
             if (read < segmentData.Length)
@@ -186,7 +172,7 @@ internal sealed class GodotAssemblyReader
             var segmentActualEnd = segmentStart + segmentData.Length;
             if (segmentActualEnd <= _position)
             {
-                GodotLog.Debug($"[AssemblyReader]   -> 0 (severe truncation: segmentActualEnd={segmentActualEnd} <= position={_position})");
+                // Reading truncated at EOF before reaching our position - nothing to return.
                 return 0;
             }
 
@@ -195,7 +181,6 @@ internal sealed class GodotAssemblyReader
             segmentData.AsSpan(offsetInSegmentData, bytesToCopy)
                 .CopyTo(buffer.AsSpan(offset));
             _position += bytesToCopy;
-            GodotLog.Debug($"[AssemblyReader]   -> {bytesToCopy} (miss path served), bytes={HexPreview(buffer, offset, bytesToCopy)}");
             return bytesToCopy;
         }
 
@@ -203,27 +188,17 @@ internal sealed class GodotAssemblyReader
         {
             if (_handle == IntPtr.Zero)
             {
-                GodotLog.Debug($"[AssemblyReader]   ReadFromFile: handle was Zero, reopening {_assemblyName}");
                 _handle = NativeBridge.OpenManagedAssembly(_assemblyName).Handle;
                 if (_handle == IntPtr.Zero)
                 {
-                    GodotLog.Debug($"[AssemblyReader]   ReadFromFile: reopen FAILED");
                     return 0;
                 }
             }
             return NativeBridge.ReadManagedAssembly(_handle, offset, destination);
         }
 
-        private static string HexPreview(byte[] buffer, int offset, int count)
-        {
-            int n = Math.Min(count, 4);
-            if (n <= 0) return "(none)";
-            return Convert.ToHexString(buffer, offset, n) + (count > n ? "(...)" : "");
-        }
-
         public override long Seek(long offset, SeekOrigin origin)
         {
-            long prev = _position;
             _position = origin switch
             {
                 SeekOrigin.Begin => offset,
@@ -231,7 +206,6 @@ internal sealed class GodotAssemblyReader
                 SeekOrigin.End => _state.Length + offset,
                 _ => _position,
             };
-            GodotLog.Debug($"[AssemblyReader] Seek {_assemblyName}: origin={origin}, offset={offset}, {prev} -> {_position}");
             return _position;
         }
 
@@ -243,7 +217,6 @@ internal sealed class GodotAssemblyReader
 
         protected override void Dispose(bool disposing)
         {
-            GodotLog.Debug($"[AssemblyReader] Dispose {_assemblyName}: handle={(_handle == IntPtr.Zero ? "null" : "open")}, position={_position}");
             if (_handle != IntPtr.Zero)
             {
                 NativeBridge.CloseManagedAssembly(_handle);
