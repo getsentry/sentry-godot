@@ -90,6 +90,48 @@ $DotnetCommonTestCases = @(
             $viewHierarchy.size | Should -BeGreaterThan 0
         }
     }
+    @{ Name = "Has pe_dotnet debug images"; TestBlock = {
+            param($SentryEvent)
+            $SentryEvent.debugmeta | Should -Not -BeNullOrEmpty
+            $peImages = @($SentryEvent.debugmeta.images | Where-Object { $_.type -eq "pe_dotnet" })
+            $peImages.Count | Should -BeGreaterThan 0
+        }
+    }
+    @{ Name = "GodotSharp assembly debug image has debug_id and code_id"; TestBlock = {
+            param($SentryEvent)
+            $godotSharpImage = $SentryEvent.debugmeta.images | Where-Object {
+                $_.type -eq "pe_dotnet" -and ($_.code_file -eq "GodotSharp.dll" -or $_.code_file -like "*/GodotSharp.dll")
+            } | Select-Object -First 1
+            $godotSharpImage | Should -Not -BeNullOrEmpty
+            $godotSharpImage.debug_id | Should -Not -BeNullOrEmpty
+            $godotSharpImage.code_id | Should -Not -BeNullOrEmpty
+        }
+    }
+    @{ Name = "Android: Project assembly debug image has debug_id and code_id"; TestBlock = {
+            param($SentryEvent, $TestSetup)
+            if (-not $TestSetup.IsAndroid) {
+                # Android-only: desktop resolves managed frames locally.
+                return
+            }
+            $projectImage = $SentryEvent.debugmeta.images | Where-Object {
+                $_.type -eq "pe_dotnet" -and $_.code_file -eq "Sentry demo project.dll"
+            } | Select-Object -First 1
+            $projectImage | Should -Not -BeNullOrEmpty
+            $projectImage.debug_id | Should -Not -BeNullOrEmpty
+            $projectImage.code_id | Should -Not -BeNullOrEmpty
+        }
+    }
+    @{ Name = "Android: No frames have unknown_image symbolicator status"; TestBlock = {
+            param($SentryEvent, $TestSetup)
+            if (-not $TestSetup.IsAndroid) {
+                # Android-only: desktop resolves managed frames locally.
+                return
+            }
+            $frames = $SentryEvent.exception.values[0].stacktrace.frames
+            $unknown = @($frames | Where-Object { $_.data.symbolicator_status -eq "unknown_image" })
+            $unknown.Count | Should -Be 0
+        }
+    }
 )
 
 BeforeAll {
