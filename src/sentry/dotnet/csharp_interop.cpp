@@ -367,6 +367,7 @@ CSHARP_EXPORT AssemblyHandle csharp_interop_open_managed_assembly(const char16_t
 	AssemblyHandle result = {};
 
 	String name = String::utf16(p_name, p_name_len);
+	name = name.get_file();
 	if (!name.ends_with(".dll")) {
 		name += ".dll";
 	}
