@@ -111,7 +111,11 @@ internal sealed class GodotAssemblyReader
         public override long Position
         {
             get => _position;
-            set => _position = value;
+            set
+            {
+                ArgumentOutOfRangeException.ThrowIfNegative(value);
+                _position = value;
+            }
         }
 
         public override bool CanRead => true;
@@ -198,13 +202,18 @@ internal sealed class GodotAssemblyReader
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            _position = origin switch
+            long newPosition = origin switch
             {
                 SeekOrigin.Begin => offset,
                 SeekOrigin.Current => _position + offset,
                 SeekOrigin.End => _state.Length + offset,
-                _ => _position,
+                _ => throw new ArgumentException("Invalid SeekOrigin value.", nameof(origin)),
             };
+            if (newPosition < 0)
+            {
+                throw new IOException("Cannot seek before the beginning of the stream.");
+            }
+            _position = newPosition;
             return _position;
         }
 
