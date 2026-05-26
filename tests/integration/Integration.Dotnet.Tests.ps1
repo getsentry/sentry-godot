@@ -91,14 +91,22 @@ $DotnetCommonTestCases = @(
         }
     }
     @{ Name = "Has pe_dotnet debug images"; TestBlock = {
-            param($SentryEvent)
+            param($SentryEvent, $TestSetup)
+            if ($TestSetup.Platform -match "iOS") {
+                # iOS uses NativeAOT, no PE assemblies.
+                return
+            }
             $SentryEvent.debugmeta | Should -Not -BeNullOrEmpty
             $peImages = @($SentryEvent.debugmeta.images | Where-Object { $_.type -eq "pe_dotnet" })
             $peImages.Count | Should -BeGreaterThan 0
         }
     }
     @{ Name = "GodotSharp assembly debug image has debug_id and code_id"; TestBlock = {
-            param($SentryEvent)
+            param($SentryEvent, $TestSetup)
+            if ($TestSetup.Platform -match "iOS") {
+                # iOS uses NativeAOT, no PE assemblies.
+                return
+            }
             $godotSharpImage = $SentryEvent.debugmeta.images | Where-Object {
                 $_.type -eq "pe_dotnet" -and $_.code_file -match "(^|[\\/])GodotSharp\.dll$"
             } | Select-Object -First 1
