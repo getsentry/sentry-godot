@@ -100,7 +100,7 @@ $DotnetCommonTestCases = @(
     @{ Name = "GodotSharp assembly debug image has debug_id and code_id"; TestBlock = {
             param($SentryEvent)
             $godotSharpImage = $SentryEvent.debugmeta.images | Where-Object {
-                $_.type -eq "pe_dotnet" -and ($_.code_file -eq "GodotSharp.dll" -or $_.code_file -like "*/GodotSharp.dll")
+                $_.type -eq "pe_dotnet" -and $_.code_file -match "(^|[\\/])GodotSharp\.dll$"
             } | Select-Object -First 1
             $godotSharpImage | Should -Not -BeNullOrEmpty
             $godotSharpImage.debug_id | Should -Not -BeNullOrEmpty
