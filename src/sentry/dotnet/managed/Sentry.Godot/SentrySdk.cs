@@ -13,6 +13,8 @@ public static partial class SentrySdk
 
     static GodotAssemblyReader? _assemblyReader;
 
+    static CocoaDebugImagesProcessor? _cocoaDebugImagesProcessor;
+
     // Re-entry guard for the Init() -> native init() -> InitFromNative() chain:
     // Init() triggers native initialization, which signals back into the .NET
     // layer via InitFromNative() and would otherwise run InitDotnet() a second
@@ -106,6 +108,7 @@ public static partial class SentrySdk
         CurrentOptions = godotOptions;
         GodotLog.Debug("Initializing Sentry in .NET...");
         ConfigureAssemblyReader(godotOptions);
+        ConfigureCocoaDebugImagesOnIOS(godotOptions);
         Sentry.SentrySdk.Init(godotOptions);
         InitFirstChanceExceptionHandler();
     }
@@ -130,6 +133,22 @@ public static partial class SentrySdk
         _assemblyReader = new GodotAssemblyReader();
         godotOptions.AssemblyReader = _assemblyReader.TryReadAssembly;
         GodotLog.Debug("Assembly reader registered for .NET stack symbolication.");
+    }
+
+    /// <summary>
+    /// On iOS, registers a processor that attaches Mach-O debug images from the in-process
+    /// Cocoa SDK so NativeAOT stack frames can be symbolicated server-side.
+    /// </summary>
+    private static void ConfigureCocoaDebugImagesOnIOS(SentryGodotOptions godotOptions)
+    {
+        if (!OperatingSystem.IsIOS())
+        {
+            return;
+        }
+
+        _cocoaDebugImagesProcessor = new CocoaDebugImagesProcessor();
+        godotOptions.AddEventProcessor(_cocoaDebugImagesProcessor);
+        GodotLog.Debug("Cocoa debug images processor registered for NativeAOT stack symbolication.");
     }
 
     /// <summary>
@@ -188,6 +207,7 @@ public static partial class SentrySdk
         _exceptionHandler?.Dispose();
         _exceptionHandler = null;
         _assemblyReader = null;
+        _cocoaDebugImagesProcessor = null;
         Sentry.SentrySdk.Close();
         CurrentOptions = null;
     }

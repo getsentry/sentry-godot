@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Sentry.Godot.Internal;
+using Sentry.Protocol;
 
 namespace Sentry.Godot.Interop;
 
@@ -643,6 +644,73 @@ internal static partial class NativeBridge
         {
             csharp_interop_close_managed_assembly(handle);
         }
+    }
+
+    // Must match layout of CocoaDebugImageEntry in csharp_interop.cpp.
+    [StructLayout(LayoutKind.Sequential)]
+    private struct CocoaDebugImageEntry
+    {
+        public GodotStringHandle code_file;
+        public GodotStringHandle debug_id;
+        public long image_address;
+        public long image_size;
+    }
+
+    [LibraryImport(Lib)]
+    private static unsafe partial int csharp_interop_get_cocoa_debug_images(
+            long* addresses, int addressesCount,
+            CocoaDebugImageEntry* entries, int entriesCapacity);
+
+    /// <summary>
+    /// Resolves Mach-O debug images for the given image base addresses from the
+    /// Cocoa SDK's in-process cache.
+    /// Used to populate debug_meta.images for NativeAOT frames on iOS, which
+    /// sentry-dotnet would otherwise leave empty for our TFM-neutral build.
+    /// </summary>
+    public static unsafe List<DebugImage> GetCocoaDebugImages(IReadOnlyCollection<long> imageAddresses)
+    {
+        var result = new List<DebugImage>();
+        int count = imageAddresses.Count;
+        if (count == 0)
+        {
+            return result;
+        }
+
+        Span<long> addresses = count <= 64
+                ? stackalloc long[count]
+                : new long[count];
+        int i = 0;
+        foreach (var addr in imageAddresses)
+        {
+            addresses[i++] = addr;
+        }
+
+        Span<CocoaDebugImageEntry> entries = count <= 16
+                ? stackalloc CocoaDebugImageEntry[count]
+                : new CocoaDebugImageEntry[count];
+
+        int written;
+        fixed (long* addressesPtr = addresses)
+        fixed (CocoaDebugImageEntry* entriesPtr = entries)
+        {
+            written = csharp_interop_get_cocoa_debug_images(addressesPtr, count, entriesPtr, count);
+        }
+
+        for (int j = 0; j < written; ++j)
+        {
+            ref CocoaDebugImageEntry entry = ref entries[j];
+            string? codeFile = entry.code_file.TakeString();
+            string? debugId = entry.debug_id.TakeString();
+            result.Add(new DebugImage
+            {
+                Type = "macho",
+                ImageAddress = entry.image_address,
+                ImageSize = entry.image_size != 0 ? entry.image_size : null,
+                DebugId = string.IsNullOrEmpty(debugId) ? null : debugId,
+                CodeFile = string.IsNullOrEmpty(codeFile) ? null : codeFile,
+            });
+        }
+        return result;
     }
 
     [LibraryImport(Lib)]
