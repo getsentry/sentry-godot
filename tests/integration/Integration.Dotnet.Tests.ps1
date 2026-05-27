@@ -140,6 +140,18 @@ $DotnetCommonTestCases = @(
             $unknown.Count | Should -Be 0
         }
     }
+    @{ Name = "iOS: Mach-O debug image attached for NativeAOT"; TestBlock = {
+            param($SentryEvent, $TestSetup)
+            if (-not ($TestSetup.Platform -match "iOS")) {
+                # iOS-only: NativeAOT is only used on iOS in Godot.
+                return
+            }
+            $SentryEvent.debugmeta | Should -Not -BeNullOrEmpty
+            $machoImages = @($SentryEvent.debugmeta.images |
+                    Where-Object { $_.type -eq "macho" -and $_.debug_id })
+            $machoImages.Count | Should -BeGreaterThan 0
+        }
+    }
 )
 
 BeforeAll {
