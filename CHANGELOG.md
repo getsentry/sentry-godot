@@ -7,6 +7,10 @@
 - *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
   - Symbolicate managed stack frames on Android server-side ([#724](https://github.com/getsentry/sentry-godot/pull/724))
 
+### Improvements
+
+- Rename separated debug symbol files to the `.debugsymbols` extension on Linux and Web, so they can be excluded with a single `*.debugsymbols` `.gitignore` rule ([#733](https://github.com/getsentry/sentry-godot/pull/733))
+
 ### Dependencies
 
 - Bump Sentry Android from v8.42.0 to v8.43.0 ([#731](https://github.com/getsentry/sentry-godot/pull/731))
