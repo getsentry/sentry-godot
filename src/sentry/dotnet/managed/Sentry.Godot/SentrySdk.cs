@@ -11,6 +11,8 @@ public static partial class SentrySdk
 {
     static IDisposable? _exceptionHandler;
 
+    static GodotAssemblyReader? _assemblyReader;
+
     // Re-entry guard for the Init() -> native init() -> InitFromNative() chain:
     // Init() triggers native initialization, which signals back into the .NET
     // layer via InitFromNative() and would otherwise run InitDotnet() a second
@@ -103,8 +105,31 @@ public static partial class SentrySdk
     {
         CurrentOptions = godotOptions;
         GodotLog.Debug("Initializing Sentry in .NET...");
+        ConfigureAssemblyReader(godotOptions);
         Sentry.SentrySdk.Init(godotOptions);
         InitFirstChanceExceptionHandler();
+    }
+
+    /// <summary>
+    /// On Android, lets the SDK read managed assembly bytes from the packed project data.
+    /// </summary>
+    /// <remarks>
+    /// Godot's Mono runtime on Android loads managed assemblies from the packed
+    /// project data, so they have no on-disk path and the SDK cannot build debug
+    /// images for managed stack frames. The reader resolves the bytes through the
+    /// native layer instead. Desktop builds keep the SDK's default disk reader,
+    /// which finds the assemblies as loose files next to the executable.
+    /// </remarks>
+    private static void ConfigureAssemblyReader(SentryGodotOptions godotOptions)
+    {
+        if (!NativeBridge.IsAndroid() || godotOptions.AssemblyReader is not null)
+        {
+            return;
+        }
+
+        _assemblyReader = new GodotAssemblyReader();
+        godotOptions.AssemblyReader = _assemblyReader.TryReadAssembly;
+        GodotLog.Debug("Assembly reader registered for .NET stack symbolication.");
     }
 
     /// <summary>
@@ -162,6 +187,7 @@ public static partial class SentrySdk
     {
         _exceptionHandler?.Dispose();
         _exceptionHandler = null;
+        _assemblyReader = null;
         Sentry.SentrySdk.Close();
         CurrentOptions = null;
     }

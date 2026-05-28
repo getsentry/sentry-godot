@@ -7,8 +7,12 @@
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_user.h"
 
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/engine_debugger.hpp>
+#include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+
+#include <cstring>
 
 #ifdef _WIN32
 #define CSHARP_EXPORT __declspec(dllexport)
@@ -341,6 +345,69 @@ CSHARP_EXPORT bool csharp_interop_is_android() {
 #else
 	return false;
 #endif
+}
+
+// Remarks:
+// Managed side needs to access assemblies for .NET stack-trace symbolication. On Android, these assemblies live inside
+// the application archive, potentially inside a .pck container, so direct file access is not viable. Routing through
+// FileAccess lets the engine's virtual filesystem handle packing and decompression. The Sentry SDK needs each
+// assembly's PE bytes to build a debug image, but only reads two small segments: the headers at the start and the debug
+// directory near the end. The assembly is exposed as a seekable handle so the managed side reads just those segments,
+// without marshalling the whole file content.
+
+// Opaque handle for an open managed assembly file.
+// Must match layout of AssemblyHandle in NativeBridge.cs.
+// Must be closed with csharp_interop_close_managed_assembly().
+struct AssemblyHandle {
+	void *handle; // Ref<FileAccess>* or nullptr if the assembly was not found
+	int64_t length;
+};
+
+CSHARP_EXPORT AssemblyHandle csharp_interop_open_managed_assembly(const char16_t *p_name, int32_t p_name_len) {
+	AssemblyHandle result = {};
+
+	String name = String::utf16(p_name, p_name_len);
+	name = name.get_file();
+	if (!name.ends_with(".dll")) {
+		name += ".dll";
+	}
+
+	String arch = Engine::get_singleton()->get_architecture_name();
+	String path = String("res://.godot/mono/publish/").path_join(arch).path_join(name);
+
+	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ);
+	if (file.is_null()) {
+		return result;
+	}
+
+	result.handle = memnew(Ref<FileAccess>(file));
+	result.length = file->get_length();
+	return result;
+}
+
+CSHARP_EXPORT int64_t csharp_interop_read_managed_assembly(void *p_handle, int64_t p_offset, int64_t p_count, uint8_t *r_dst) {
+	if (p_handle == nullptr || r_dst == nullptr || p_count <= 0) {
+		return 0;
+	}
+
+	const Ref<FileAccess> &file = *static_cast<Ref<FileAccess> *>(p_handle);
+	if (file.is_null()) {
+		return 0;
+	}
+
+	file->seek(p_offset);
+	PackedByteArray data = file->get_buffer(p_count);
+	int64_t num_read = data.size();
+	if (num_read > 0) {
+		memcpy(r_dst, data.ptr(), num_read);
+	}
+	return num_read;
+}
+
+CSHARP_EXPORT void csharp_interop_close_managed_assembly(void *p_handle) {
+	if (p_handle != nullptr) {
+		memdelete(static_cast<Ref<FileAccess> *>(p_handle));
+	}
 }
 
 static ManagedOptions s_pending_managed_opts;
