@@ -18,6 +18,9 @@
 - Bump Sentry .NET SDK from v6.5.0 to v6.6.0 ([#730](https://github.com/getsentry/sentry-godot/pull/730))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#660)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.5.0...6.6.0)
+- Bump Cocoa SDK from v9.14.0 to v9.15.0 ([#729](https://github.com/getsentry/sentry-godot/pull/729))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9150)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.14.0...9.15.0)
 
 ## 2.0.0-beta.1
 
