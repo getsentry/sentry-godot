@@ -22,7 +22,7 @@ Vector<DebugImage> get_debug_images(const int64_t *p_addresses, int32_t p_addres
 		}
 
 		DebugImage image;
-		image.code_file = info.name ? String::utf8([info.name UTF8String]) : String();
+		image.code_file = String::utf8([info.name UTF8String]);
 		image.debug_id = info.uuid ? String::utf8([info.uuid UTF8String]) : String();
 		image.image_address = static_cast<int64_t>(info.address);
 		image.image_size = static_cast<int64_t>(info.size);
