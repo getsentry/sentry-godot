@@ -1,23 +1,24 @@
 #pragma once
 
+#include <godot_cpp/templates/vector.hpp>
+#include <godot_cpp/variant/string.hpp>
+
 #include <cstdint>
+
+using namespace godot;
 
 namespace sentry::cocoa {
 
-// Mach-O debug image data.
-// Strings are owned by cocoa, UTF-8, and valid only inside the callback.
-struct MachOImage {
-	const char *code_file; // never null
-	const char *debug_id; // never null
-	int64_t image_address; // load address in the process
-	int64_t image_size; // 0 if unknown
+// Mach-O debug image resolved from sentry-cocoa's in-process binary image cache.
+struct DebugImage {
+	String code_file;
+	String debug_id;
+	int64_t image_address = 0; // load address in the process
+	int64_t image_size = 0; // 0 if unknown
 };
 
-typedef void (*VisitImageFunc)(const MachOImage *p_image, void *p_userdata);
-
-// Finds Mach-O images by base address in sentry-cocoa's in-process cache and
-// invokes the callback once per match. Returns the number of emitted images.
-// User data is passed through to the callback.
-int32_t get_debug_images(const int64_t *p_addresses, int32_t p_addresses_count, VisitImageFunc p_callback, void *p_userdata);
+// Finds Mach-O images by base address in sentry-cocoa's in-process cache.
+// Returns one entry per matched address; unmatched addresses are skipped.
+Vector<DebugImage> get_debug_images(const int64_t *p_addresses, int32_t p_addresses_count);
 
 } // namespace sentry::cocoa

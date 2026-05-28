@@ -4,33 +4,31 @@
 
 namespace sentry::cocoa {
 
-int32_t get_debug_images(const int64_t *p_addresses, int32_t p_addresses_count, VisitImageFunc p_callback, void *p_userdata) {
-	if (p_callback == nullptr || p_addresses == nullptr || p_addresses_count <= 0) {
-		return 0;
+Vector<DebugImage> get_debug_images(const int64_t *p_addresses, int32_t p_addresses_count) {
+	Vector<DebugImage> images;
+	if (p_addresses == nullptr || p_addresses_count <= 0) {
+		return images;
 	}
 
 	SentryBinaryImageCache *cache = SentryDependencies.binaryImageCache;
 	if (cache == nil) {
-		return 0;
+		return images;
 	}
 
-	int32_t emitted = 0;
 	for (int32_t i = 0; i < p_addresses_count; ++i) {
 		SentryBinaryImageInfo *info = [cache imageByAddress:(uint64_t)p_addresses[i]];
 		if (info == nil) {
 			continue;
 		}
 
-		MachOImage image = {
-			info.name ? [info.name UTF8String] : "",
-			info.uuid ? [info.uuid UTF8String] : "",
-			static_cast<int64_t>(info.address),
-			static_cast<int64_t>(info.size),
-		};
-		p_callback(&image, p_userdata);
-		++emitted;
+		DebugImage image;
+		image.code_file = info.name ? String::utf8([info.name UTF8String]) : String();
+		image.debug_id = info.uuid ? String::utf8([info.uuid UTF8String]) : String();
+		image.image_address = static_cast<int64_t>(info.address);
+		image.image_size = static_cast<int64_t>(info.size);
+		images.push_back(image);
 	}
-	return emitted;
+	return images;
 }
 
 } // namespace sentry::cocoa

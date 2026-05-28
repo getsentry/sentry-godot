@@ -425,27 +425,6 @@ struct CocoaDebugImageEntry {
 	int64_t image_size;
 };
 
-// Contains Mach-O debug images.
-// Not part of the FFI contract - used only on the native side.
-struct CocoaDebugImageBuffer {
-	CocoaDebugImageEntry *items;
-	int32_t capacity;
-	int32_t written;
-};
-
-static void _append_debug_image(const sentry::cocoa::MachOImage *p_image, void *p_userdata) {
-	auto *buf = static_cast<CocoaDebugImageBuffer *>(p_userdata);
-	if (buf->written >= buf->capacity) {
-		// Should not happen given the upper-bound invariant.
-		return;
-	}
-	CocoaDebugImageEntry &entry = buf->items[buf->written++];
-	entry.code_file = _make_handle(String::utf8(p_image->code_file));
-	entry.debug_id = _make_handle(String::utf8(p_image->debug_id));
-	entry.image_address = p_image->image_address;
-	entry.image_size = p_image->image_size;
-}
-
 CSHARP_EXPORT int32_t csharp_interop_get_cocoa_debug_images(
 		const int64_t *p_addresses, int32_t p_addresses_count,
 		CocoaDebugImageEntry *r_entries, int32_t p_entries_capacity) {
@@ -453,9 +432,17 @@ CSHARP_EXPORT int32_t csharp_interop_get_cocoa_debug_images(
 		return 0;
 	}
 
-	CocoaDebugImageBuffer buf = { r_entries, p_entries_capacity, 0 };
-	sentry::cocoa::get_debug_images(p_addresses, p_addresses_count, &_append_debug_image, &buf);
-	return buf.written;
+	Vector<sentry::cocoa::DebugImage> images = sentry::cocoa::get_debug_images(p_addresses, p_addresses_count);
+	int32_t count = MIN(static_cast<int32_t>(images.size()), p_entries_capacity);
+	for (int32_t i = 0; i < count; ++i) {
+		const sentry::cocoa::DebugImage &image = images[i];
+		CocoaDebugImageEntry &entry = r_entries[i];
+		entry.code_file = _make_handle(image.code_file);
+		entry.debug_id = _make_handle(image.debug_id);
+		entry.image_address = image.image_address;
+		entry.image_size = image.image_size;
+	}
+	return count;
 }
 
 #endif // SDK_COCOA
