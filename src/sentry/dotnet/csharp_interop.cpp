@@ -351,52 +351,6 @@ CSHARP_EXPORT bool csharp_interop_is_android() {
 #endif
 }
 
-#ifdef SDK_COCOA
-
-// Mach-O debug image entry returned to C# for NativeAOT stack symbolication on iOS.
-// Must match layout of CocoaDebugImageEntry in NativeBridge.cs.
-struct CocoaDebugImageEntry {
-	GodotStringHandle code_file;
-	GodotStringHandle debug_id;
-	int64_t image_address;
-	int64_t image_size;
-};
-
-// Contains Mach-O debug images.
-// Not part of the FFI contract - used only on the native side.
-struct CocoaDebugImageBuffer {
-	CocoaDebugImageEntry *items;
-	int32_t capacity;
-	int32_t written;
-};
-
-static void _append_debug_image(const sentry::cocoa::MachOImage *p_image, void *p_userdata) {
-	auto *buf = static_cast<CocoaDebugImageBuffer *>(p_userdata);
-	if (buf->written >= buf->capacity) {
-		// Should not happen given the upper-bound invariant.
-		return;
-	}
-	CocoaDebugImageEntry &entry = buf->items[buf->written++];
-	entry.code_file = _make_handle(String::utf8(p_image->code_file));
-	entry.debug_id = _make_handle(String::utf8(p_image->debug_id));
-	entry.image_address = p_image->image_address;
-	entry.image_size = p_image->image_size;
-}
-
-CSHARP_EXPORT int32_t csharp_interop_get_cocoa_debug_images(
-		const int64_t *p_addresses, int32_t p_addresses_count,
-		CocoaDebugImageEntry *r_entries, int32_t p_entries_capacity) {
-	if (p_addresses == nullptr || p_addresses_count <= 0 || r_entries == nullptr || p_entries_capacity <= 0) {
-		return 0;
-	}
-
-	CocoaDebugImageBuffer buf = { r_entries, p_entries_capacity, 0 };
-	sentry::cocoa::get_debug_images(p_addresses, p_addresses_count, &_append_debug_image, &buf);
-	return buf.written;
-}
-
-#endif // SDK_COCOA
-
 // Remarks:
 // Managed side needs to access assemblies for .NET stack-trace symbolication. On Android, these assemblies live inside
 // the application archive, potentially inside a .pck container, so direct file access is not viable. Routing through
@@ -459,6 +413,52 @@ CSHARP_EXPORT void csharp_interop_close_managed_assembly(void *p_handle) {
 		memdelete(static_cast<Ref<FileAccess> *>(p_handle));
 	}
 }
+
+#ifdef SDK_COCOA
+
+// Mach-O debug image entry returned to C# for NativeAOT stack symbolication on iOS.
+// Must match layout of CocoaDebugImageEntry in NativeBridge.cs.
+struct CocoaDebugImageEntry {
+	GodotStringHandle code_file;
+	GodotStringHandle debug_id;
+	int64_t image_address;
+	int64_t image_size;
+};
+
+// Contains Mach-O debug images.
+// Not part of the FFI contract - used only on the native side.
+struct CocoaDebugImageBuffer {
+	CocoaDebugImageEntry *items;
+	int32_t capacity;
+	int32_t written;
+};
+
+static void _append_debug_image(const sentry::cocoa::MachOImage *p_image, void *p_userdata) {
+	auto *buf = static_cast<CocoaDebugImageBuffer *>(p_userdata);
+	if (buf->written >= buf->capacity) {
+		// Should not happen given the upper-bound invariant.
+		return;
+	}
+	CocoaDebugImageEntry &entry = buf->items[buf->written++];
+	entry.code_file = _make_handle(String::utf8(p_image->code_file));
+	entry.debug_id = _make_handle(String::utf8(p_image->debug_id));
+	entry.image_address = p_image->image_address;
+	entry.image_size = p_image->image_size;
+}
+
+CSHARP_EXPORT int32_t csharp_interop_get_cocoa_debug_images(
+		const int64_t *p_addresses, int32_t p_addresses_count,
+		CocoaDebugImageEntry *r_entries, int32_t p_entries_capacity) {
+	if (p_addresses == nullptr || p_addresses_count <= 0 || r_entries == nullptr || p_entries_capacity <= 0) {
+		return 0;
+	}
+
+	CocoaDebugImageBuffer buf = { r_entries, p_entries_capacity, 0 };
+	sentry::cocoa::get_debug_images(p_addresses, p_addresses_count, &_append_debug_image, &buf);
+	return buf.written;
+}
+
+#endif // SDK_COCOA
 
 static ManagedOptions s_pending_managed_opts;
 
