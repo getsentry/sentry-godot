@@ -6,7 +6,7 @@
 
 - *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
   - Symbolicate managed stack frames on Android server-side ([#724](https://github.com/getsentry/sentry-godot/pull/724))
-	- Symbolicate iOS NativeAOT stack frames server-side ([#727](https://github.com/getsentry/sentry-godot/pull/727))
+  - Symbolicate iOS NativeAOT stack frames server-side ([#727](https://github.com/getsentry/sentry-godot/pull/727))
 
 ### Dependencies
 
