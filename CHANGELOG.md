@@ -7,6 +7,12 @@
 - *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
   - Symbolicate managed stack frames on Android server-side ([#724](https://github.com/getsentry/sentry-godot/pull/724))
 
+### Dependencies
+
+- Bump Sentry Android from v8.42.0 to v8.43.0 ([#731](https://github.com/getsentry/sentry-godot/pull/731))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8430)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.42.0...8.43.0)
+
 ## 2.0.0-beta.1
 
 ### Features
