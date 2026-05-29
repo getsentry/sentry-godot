@@ -1,9 +1,12 @@
+#include "sentry/dotnet/csharp_interop.h"
+
 #include "gen/sdk_version.gen.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/dotnet/process_default_attachments.h"
 #include "sentry/environment.h"
 #include "sentry/logging/print.h"
 #include "sentry/sentry_breadcrumb.h"
+#include "sentry/sentry_event.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_user.h"
 
@@ -88,6 +91,7 @@ struct ManagedFunctions {
 	void (*remove_tag)(const char16_t *name, int32_t name_len);
 	void (*set_user)(const char16_t *id, int32_t id_len, const char16_t *username, int32_t username_len, const char16_t *email, int32_t email_len, const char16_t *ip, int32_t ip_len);
 	void (*remove_user)();
+	uint8_t (*process_native_event)(void *event_handle); // Returns 1 to keep, 0 to discard.
 };
 
 static ManagedFunctions s_managed_funcs = {};
@@ -525,6 +529,96 @@ CSHARP_EXPORT void csharp_interop_log(int32_t level, const char16_t *msg, int32_
 			String::utf16(msg, len));
 }
 
+// *** Event accessors used by the options.Native.SetBeforeSend callback.
+
+// The handle is the SentryEvent* passed to the managed layer; it is valid only for the duration of that call.
+// The managed wrapper SentryNativeEvent reads and writes the event lazily through these functions,
+// so cost is proportional to the fields touched.
+
+static inline SentryEvent *_event_from_handle(void *p_handle) {
+	return static_cast<SentryEvent *>(p_handle);
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_id(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_id());
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_platform(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_platform());
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_message(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_message());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_message(void *p_handle, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_message(String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT int32_t csharp_interop_event_get_level(void *p_handle) {
+	return static_cast<int32_t>(_event_from_handle(p_handle)->get_level());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_level(void *p_handle, int32_t p_level) {
+	_event_from_handle(p_handle)->set_level(static_cast<sentry::Level>(p_level));
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_logger(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_logger());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_logger(void *p_handle, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_logger(String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_release(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_release());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_release(void *p_handle, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_release(String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_dist(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_dist());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_dist(void *p_handle, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_dist(String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_environment(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_environment());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_environment(void *p_handle, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_environment(String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_tag(void *p_handle, const char16_t *p_key, int32_t p_key_len) {
+	return _make_handle(_event_from_handle(p_handle)->get_tag(String::utf16(p_key, p_key_len)));
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_tag(void *p_handle, const char16_t *p_key, int32_t p_key_len, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_tag(String::utf16(p_key, p_key_len), String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT void csharp_interop_event_remove_tag(void *p_handle, const char16_t *p_key, int32_t p_key_len) {
+	_event_from_handle(p_handle)->remove_tag(String::utf16(p_key, p_key_len));
+}
+
+CSHARP_EXPORT int32_t csharp_interop_event_get_exception_count(void *p_handle) {
+	return _event_from_handle(p_handle)->get_exception_count();
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_exception_value(void *p_handle, int32_t p_index) {
+	return _make_handle(_event_from_handle(p_handle)->get_exception_value(p_index));
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_exception_value(void *p_handle, int32_t p_index, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_exception_value(p_index, String::utf16(p_value, p_value_len));
+}
+
 } // extern "C"
 
 // *** Functions called from native
@@ -604,6 +698,26 @@ void remove_user() {
 	if (s_managed_funcs.remove_user) {
 		s_managed_funcs.remove_user();
 	}
+}
+
+bool process_event_in_managed_layer(const Ref<SentryEvent> &p_event) {
+	FAIL_COND_V_PRINT_ERROR(p_event.is_null(), true, "Internal error: options.Native.SetBeforeSend received a null native event.");
+
+	if (s_managed_funcs.process_native_event == nullptr) {
+		// .NET layer not available.
+		return true;
+	}
+
+	static thread_local bool in_before_send = false;
+	if (in_before_send) {
+		return true;
+	}
+	in_before_send = true;
+
+	const bool keep = s_managed_funcs.process_native_event((void *)p_event.ptr()) != 0;
+
+	in_before_send = false;
+	return keep;
 }
 
 } // namespace sentry::dotnet
