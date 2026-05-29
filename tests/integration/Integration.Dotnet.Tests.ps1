@@ -90,6 +90,14 @@ $DotnetCommonTestCases = @(
             $viewHierarchy.size | Should -BeGreaterThan 0
         }
     }
+    @{ Name = "No frames have unknown_image symbolicator status"; TestBlock = {
+            param($SentryEvent)
+            # Without an attached image, the symbolicator can't bind the frame to any image and reports unknown_image.
+            $frames = $SentryEvent.exception.values[0].stacktrace.frames
+            $unknown = @($frames | Where-Object { $_.data.symbolicator_status -eq "unknown_image" })
+            $unknown.Count | Should -Be 0
+        }
+    }
     @{ Name = "Has pe_dotnet debug images"; TestBlock = {
             param($SentryEvent, $TestSetup)
             if ($TestSetup.Platform -match "iOS") {
@@ -129,15 +137,16 @@ $DotnetCommonTestCases = @(
             $projectImage.code_id | Should -Not -BeNullOrEmpty
         }
     }
-    @{ Name = "Android: No frames have unknown_image symbolicator status"; TestBlock = {
+    @{ Name = "iOS: Mach-O debug image attached for NativeAOT"; TestBlock = {
             param($SentryEvent, $TestSetup)
-            if (-not $TestSetup.IsAndroid) {
-                # Android-only: desktop resolves managed frames locally.
+            if (-not ($TestSetup.Platform -match "iOS")) {
+                # iOS-only: NativeAOT is only used on iOS in Godot.
                 return
             }
-            $frames = $SentryEvent.exception.values[0].stacktrace.frames
-            $unknown = @($frames | Where-Object { $_.data.symbolicator_status -eq "unknown_image" })
-            $unknown.Count | Should -Be 0
+            $SentryEvent.debugmeta | Should -Not -BeNullOrEmpty
+            $machoImages = @($SentryEvent.debugmeta.images |
+                    Where-Object { $_.type -eq "macho" -and $_.debug_id })
+            $machoImages.Count | Should -BeGreaterThan 0
         }
     }
 )

@@ -7,6 +7,10 @@
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_user.h"
 
+#ifdef SDK_COCOA
+#include "sentry/cocoa/cocoa_debug_images.h"
+#endif
+
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/engine_debugger.hpp>
 #include <godot_cpp/classes/file_access.hpp>
@@ -409,6 +413,39 @@ CSHARP_EXPORT void csharp_interop_close_managed_assembly(void *p_handle) {
 		memdelete(static_cast<Ref<FileAccess> *>(p_handle));
 	}
 }
+
+#ifdef SDK_COCOA
+
+// Mach-O debug image entry returned to C# for NativeAOT stack symbolication on iOS.
+// Must match layout of CocoaDebugImageEntry in NativeBridge.cs.
+struct CocoaDebugImageEntry {
+	GodotStringHandle code_file;
+	GodotStringHandle debug_id;
+	int64_t image_address;
+	int64_t image_size;
+};
+
+CSHARP_EXPORT int32_t csharp_interop_get_cocoa_debug_images(
+		const int64_t *p_addresses, int32_t p_addresses_count,
+		CocoaDebugImageEntry *r_entries, int32_t p_entries_capacity) {
+	if (p_addresses == nullptr || p_addresses_count <= 0 || r_entries == nullptr || p_entries_capacity <= 0) {
+		return 0;
+	}
+
+	Vector<sentry::cocoa::DebugImage> images = sentry::cocoa::get_debug_images(p_addresses, p_addresses_count);
+	int32_t count = MIN(static_cast<int32_t>(images.size()), p_entries_capacity);
+	for (int32_t i = 0; i < count; ++i) {
+		const sentry::cocoa::DebugImage &image = images[i];
+		CocoaDebugImageEntry &entry = r_entries[i];
+		entry.code_file = _make_handle(image.code_file);
+		entry.debug_id = _make_handle(image.debug_id);
+		entry.image_address = image.image_address;
+		entry.image_size = image.image_size;
+	}
+	return count;
+}
+
+#endif // SDK_COCOA
 
 static ManagedOptions s_pending_managed_opts;
 
