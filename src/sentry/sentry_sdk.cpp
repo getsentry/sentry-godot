@@ -5,6 +5,7 @@
 #include "sentry/contexts.h"
 #include "sentry/disabled/disabled_sdk.h"
 #include "sentry/dotnet/csharp_interop.h"
+#include "sentry/dotnet/dotnet_before_send_processor.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/godot_singletons.h"
 #include "sentry/logging/print.h"
@@ -162,6 +163,10 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	// Add built-in scope observers.
 	if (ClassDB::class_exists("CSharpScript")) {
 		options->add_scope_observer(memnew(sentry::dotnet::DotnetScopeObserver));
+
+		// Enables processing events in managed layer.
+		// Add last so BeforeSendGodot sees the fully-enriched event.
+		options->add_event_processor(memnew(sentry::dotnet::DotnetBeforeSendProcessor));
 	}
 
 	// Add default attachments.

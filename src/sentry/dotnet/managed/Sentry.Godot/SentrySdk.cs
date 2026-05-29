@@ -109,6 +109,7 @@ public static partial class SentrySdk
         GodotLog.Debug("Initializing Sentry in .NET...");
         ConfigureAssemblyReader(godotOptions);
         ConfigureCocoaDebugImagesOnIOS(godotOptions);
+        godotOptions.AddEventProcessor(new GodotBeforeSendProcessor());
         Sentry.SentrySdk.Init(godotOptions);
         InitFirstChanceExceptionHandler();
     }
