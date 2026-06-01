@@ -260,6 +260,7 @@ Describe ".NET Integration Tests" {
             $script:wrappedRethrowRunResult = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("wrapped-rethrow")
             $script:gdscriptInitRunResult   = Invoke-TestAction -Action "dotnet-capture-via-gdscript-init"
             $script:crossLayerRunResult     = Invoke-TestAction -Action "dotnet-cross-layer-capture"
+            $script:beforeSendRunResult = Invoke-TestAction -Action "dotnet-before-send-capture"
 
             # Auto-init reads options from project settings. Use override.cfg to enable it just for this run.
             # Mobile exports are sealed, so override.cfg cannot be applied there.
@@ -593,6 +594,138 @@ experimental/attach_screenshot=false
             $nativeEvent.user.id | Should -Be "99999"
             $nativeEvent.user.username | Should -Be "DotnetSyncedUser"
             $nativeEvent.user.email | Should -Be "dotnet-synced@test.abc"
+        }
+    }
+
+    Context "Native before-send callback" {
+        BeforeAll {
+            $runResult = $script:beforeSendRunResult
+
+            # The DotnetCliTriggers.OnBeforeSendNative handler prints each getter as a "BEFORE_SEND_<NAME>: <value>"
+            $script:reads = @{}
+            foreach ($line in $runResult.Output) {
+                if ($line -match "(BEFORE_SEND_\w+): (.*)$") {
+                    $script:reads[$Matches[1]] = $Matches[2].Trim()
+                }
+            }
+
+            # Two native events are kept (a message and a runtime error);
+            # a third, carrying the drop sentinel, is discarded by the callback.
+            $eventIds = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 2
+            Write-GitHub "::group::Getting event content"
+            $script:messageEvent = Get-SentryTestEvent -EventId $eventIds[0]
+            $script:errorEvent   = Get-SentryTestEvent -EventId $eventIds[1]
+            Write-GitHub "::endgroup::"
+        }
+
+        It "Exits with code zero" {
+            if ($TestSetup.IsAndroid) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
+            $runResult.ExitCode | Should -Be 0
+        }
+
+        # *** Getters: each member read the correct data inside the callback ***
+
+        It "Read a non-empty event id" {
+            $reads["BEFORE_SEND_READ_ID"] | Should -Not -BeNullOrEmpty
+        }
+
+        It "Read the platform" {
+            $platform = $reads["BEFORE_SEND_READ_PLATFORM"]
+            if ($TestSetup.IsCocoa) {
+                $platform | Should -Be "cocoa"
+            } elseif ($TestSetup.IsAndroid) {
+                $platform | Should -Be "java"
+            } else {
+                $platform | Should -Be "native"
+            }
+        }
+
+        It "Read the captured message" {
+            $reads["BEFORE_SEND_READ_MESSAGE"] | Should -Be "Before-send native (should be kept)"
+        }
+
+        It "Read the capture level" {
+            $reads["BEFORE_SEND_READ_LEVEL"] | Should -Be "info"
+        }
+
+        It "Read an empty logger by default" {
+            $reads["BEFORE_SEND_READ_LOGGER"] | Should -BeNullOrEmpty
+        }
+
+        It "Read the release set at init" {
+            $reads["BEFORE_SEND_READ_RELEASE"] | Should -Be "test-app@1.0.0"
+        }
+
+        It "Read the distribution set at init" {
+            $reads["BEFORE_SEND_READ_DIST"] | Should -Be "test-dist"
+        }
+
+        It "Read the environment set at init" {
+            $reads["BEFORE_SEND_READ_ENVIRONMENT"] | Should -Be "integration-test"
+        }
+
+        It "Read a tag set on the native scope" {
+            # Proves the callback can read pre-existing native data, not just values it wrote itself.
+            $reads["BEFORE_SEND_READ_TAG"] | Should -Be "integration"
+        }
+
+        It "Read zero exceptions on the message event" {
+            $reads["BEFORE_SEND_READ_EXCEPTION_COUNT"] | Should -Be "0"
+        }
+
+        It "Read a non-zero exception count on the runtime-error event" {
+            [int]$reads["BEFORE_SEND_ERR_EXCEPTION_COUNT"] | Should -BeGreaterThan 0
+        }
+
+        It "Read the runtime-error exception value" {
+            $reads["BEFORE_SEND_ERR_EXCEPTION_VALUE"] | Should -Be "Before-send runtime error"
+        }
+
+        It "Observed and discarded the drop-sentinel event" {
+            # A value of 1 proves the callback ran for the earlier sentinel event and discarded it.
+            $reads["BEFORE_SEND_DROPPED_COUNT"] | Should -Be "1"
+        }
+
+        # *** Setters: each override landed on the event fetched from Sentry. ***
+
+        It "Overrode the message" {
+            # Exact match (with unicode) confirms the string survived the interop boundary uncorrupted.
+            $messageEvent.message.formatted | Should -Be "Before-send override: 世界 👋"
+        }
+
+        It "Overrode the level" {
+            ($messageEvent.tags | Where-Object { $_.key -eq "level" }).value | Should -Be "warning"
+        }
+
+        It "Overrode the logger" {
+            ($messageEvent.tags | Where-Object { $_.key -eq "logger" }).value | Should -Be "before-send-logger"
+        }
+
+        It "Overrode the release" {
+            $messageEvent.release.version | Should -Be "before-send-release@9.9.9"
+        }
+
+        It "Overrode the distribution" {
+            $messageEvent.dist | Should -Be "before-send-dist"
+        }
+
+        It "Overrode the environment" {
+            ($messageEvent.tags | Where-Object { $_.key -eq "environment" }).value | Should -Be "before-send-env"
+        }
+
+        It "Added a tag" {
+            ($messageEvent.tags | Where-Object { $_.key -eq "before_send.added" }).value | Should -Be "added-by-native-before-send"
+        }
+
+        It "Removed a pre-existing tag" {
+            ($messageEvent.tags | Where-Object { $_.key -eq "before_send.should_be_removed" }) | Should -BeNullOrEmpty
+        }
+
+        It "Overrode the runtime-error exception value" {
+            $errorEvent.exception.values[0].value | Should -Match "mutated by .NET"
         }
     }
 }
