@@ -650,7 +650,7 @@ void close() {
 	if (s_managed_funcs.close) {
 		s_managed_funcs.close();
 	}
-	s_managed_defined_hooks = 0;
+	s_managed_defined_hooks = DEFINED_NONE;
 }
 
 void handle_logger_error(const String &p_file, const String &p_code) {
