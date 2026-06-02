@@ -78,7 +78,7 @@ public partial class DotnetCliTriggers : RefCounted
             GD.Print($"BEFORE_SEND_READ_ID: {ev.Id}");
             GD.Print($"BEFORE_SEND_READ_PLATFORM: {ev.Platform}");
             GD.Print($"BEFORE_SEND_READ_MESSAGE: {ev.Message}");
-            GD.Print($"BEFORE_SEND_READ_LEVEL: {ev.Level?.ToString().ToLowerInvariant()}");
+            GD.Print($"BEFORE_SEND_READ_LEVEL: {ev.Level.ToString().ToLowerInvariant()}");
             GD.Print($"BEFORE_SEND_READ_LOGGER: {ev.Logger}");
             GD.Print($"BEFORE_SEND_READ_RELEASE: {ev.Release}");
             GD.Print($"BEFORE_SEND_READ_DIST: {ev.Distribution}");

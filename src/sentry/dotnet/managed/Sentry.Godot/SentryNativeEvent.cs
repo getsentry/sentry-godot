@@ -43,16 +43,10 @@ public sealed class SentryNativeEvent
     /// <summary>
     /// The severity of the event.
     /// </summary>
-    public SentryLevel? Level
+    public SentryLevel Level
     {
         get => (SentryLevel)NativeBridge.EventGetLevel(_handle);
-        set
-        {
-            if (value.HasValue)
-            {
-                NativeBridge.EventSetLevel(_handle, (int)value.Value);
-            }
-        }
+        set => NativeBridge.EventSetLevel(_handle, (int)value);
     }
 
     /// <summary>
