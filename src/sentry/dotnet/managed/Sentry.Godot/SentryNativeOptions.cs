@@ -3,7 +3,7 @@ using System;
 namespace Sentry.Godot;
 
 /// <summary>
-/// Groups configuration that applies to the native layer, accessed through
+/// Contains options for the native layer, accessed through
 /// <see cref="SentryGodotOptions.Native"/>.
 /// </summary>
 /// <remarks>

@@ -18,6 +18,7 @@
 #include <godot_cpp/classes/engine_debugger.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/core/type_info.hpp>
 
 #include <cstring>
 
@@ -95,6 +96,16 @@ struct ManagedFunctions {
 };
 
 static ManagedFunctions s_managed_funcs = {};
+
+// Bit flags for which native-layer hooks the managed layer has defined.
+// Passed in ManagedOptions.defined_hooks during init to avoid crossing the managed boundary for unset hooks.
+// Must match ManagedDefinedHooks in NativeBridge.cs.
+enum ManagedDefinedHooks {
+	DEFINED_NONE = 0,
+	DEFINED_BEFORE_SEND = 1 << 0, // options.Native.SetBeforeSend
+};
+
+static BitField<ManagedDefinedHooks> s_managed_defined_hooks = DEFINED_NONE;
 
 // Must match layout of LoggerLimitsData in NativeBridge.cs.
 struct LoggerLimitsData {
@@ -204,6 +215,9 @@ struct ManagedOptions {
 	int32_t logger_log_mask;
 
 	uint8_t enable_metrics;
+
+	// Bit flags for which native-layer hooks the managed layer has defined; see ManagedDefinedHooks.
+	uint32_t defined_hooks;
 };
 
 struct NativeTraceContext {
@@ -459,6 +473,7 @@ static void _apply_pending_managed_options(const Ref<SentryOptions> &options) {
 
 CSHARP_EXPORT void csharp_interop_sdk_init(ManagedOptions managed_opts) {
 	s_pending_managed_opts = managed_opts;
+	s_managed_defined_hooks = managed_opts.defined_hooks;
 	SentrySDK::get_singleton()->init(callable_mp_static(_apply_pending_managed_options));
 	s_pending_managed_opts = {};
 }
@@ -635,6 +650,7 @@ void close() {
 	if (s_managed_funcs.close) {
 		s_managed_funcs.close();
 	}
+	s_managed_defined_hooks = 0;
 }
 
 void handle_logger_error(const String &p_file, const String &p_code) {
@@ -703,8 +719,8 @@ void remove_user() {
 bool process_event_in_managed_layer(const Ref<SentryEvent> &p_event) {
 	FAIL_COND_V_PRINT_ERROR(p_event.is_null(), true, "Internal error: options.Native.SetBeforeSend received a null native event.");
 
-	if (s_managed_funcs.process_native_event == nullptr) {
-		// .NET layer not available.
+	if (s_managed_funcs.process_native_event == nullptr || !s_managed_defined_hooks.has_flag(DEFINED_BEFORE_SEND)) {
+		// .NET layer unavailable, or no before-send callback registered.
 		return true;
 	}
 

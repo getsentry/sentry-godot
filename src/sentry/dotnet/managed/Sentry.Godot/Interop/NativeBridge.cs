@@ -65,6 +65,26 @@ internal static partial class NativeBridge
     [LibraryImport(Lib)]
     private static partial void csharp_interop_free_array(IntPtr array);
 
+    // Bit flags for which native-layer hooks the managed layer has defined.
+    // Passed in ManagedOptions.defined_hooks during init to avoid crossing the managed boundary for unset hooks.
+    // Must match ManagedDefinedHooks in csharp_interop.cpp.
+    [Flags]
+    private enum ManagedDefinedHooks : uint
+    {
+        None = 0,
+        BeforeSend = 1 << 0,
+    }
+
+    private static ManagedDefinedHooks GetManagedDefinedHooks(SentryGodotOptions options)
+    {
+        var hooks = ManagedDefinedHooks.None;
+        if (options.Native.BeforeSend is not null)
+        {
+            hooks |= ManagedDefinedHooks.BeforeSend;
+        }
+        return hooks;
+    }
+
     // Must match layout of LoggerLimitsData in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
     private struct LoggerLimitsData
@@ -149,6 +169,7 @@ internal static partial class NativeBridge
         public int logger_breadcrumb_mask;
         public int logger_log_mask;
         public byte enable_metrics;
+        public uint defined_hooks;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -792,6 +813,7 @@ internal static partial class NativeBridge
                 logger_breadcrumb_mask = (int)opts.LoggerBreadcrumbMask,
                 logger_log_mask = (int)opts.LoggerLogMask,
                 enable_metrics = (byte)(opts.EnableMetrics ? 1 : 0),
+                defined_hooks = (uint)GetManagedDefinedHooks(opts),
             };
             csharp_interop_sdk_init(managed);
         }
