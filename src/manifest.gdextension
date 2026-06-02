@@ -39,10 +39,6 @@ web.release.wasm32 = "res://addons/sentry/bin/web/libsentry.web.release.wasm32.n
 web.debug.threads.wasm32 = "res://addons/sentry/bin/web/libsentry.web.debug.wasm32.wasm"
 web.release.threads.wasm32 = "res://addons/sentry/bin/web/libsentry.web.release.wasm32.wasm"
 
-; noop libs for unsupported platforms
-linux.debug.rv64 = "res://addons/sentry/bin/noop/libsentry.linux.debug.rv64.so"
-linux.release.rv64 = "res://addons/sentry/bin/noop/libsentry.linux.release.rv64.so"
-
 [dependencies]
 
 linux.x86_64 = {
