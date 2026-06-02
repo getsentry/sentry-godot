@@ -52,7 +52,7 @@ jobs:
             godot-arch: arm64
 
           - test-platform: macOS
-            runner: macos-latest
+            runner: macos-15
             godot-arch: universal
 
           - test-platform: AndroidSauceLabs
@@ -63,7 +63,7 @@ jobs:
             saucelabs-device: Samsung_Galaxy_S25_*_real_sjc1
 
           - test-platform: iOSSauceLabs
-            runner: macos-latest
+            runner: macos-15
             godot-arch: universal
             test-executable: ./exports/ios/ios.ipa
             export-platform: ios
@@ -88,7 +88,7 @@ jobs:
             test-script: tests/integration/Integration.Dotnet.Tests.ps1
 
           - test-platform: macOS
-            runner: macos-latest
+            runner: macos-15
             godot-arch: universal
             dotnet: true
             test-script: tests/integration/Integration.Dotnet.Tests.ps1
@@ -103,7 +103,7 @@ jobs:
             test-script: tests/integration/Integration.Dotnet.Tests.ps1
 
           - test-platform: iOSSauceLabs
-            runner: macos-latest
+            runner: macos-15
             godot-arch: universal
             dotnet: true
             test-executable: ./exports/ios/ios.ipa
