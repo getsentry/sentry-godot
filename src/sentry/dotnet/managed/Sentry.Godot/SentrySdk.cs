@@ -64,7 +64,7 @@ public static partial class SentrySdk
             godotOptions.ApplyTemplateSubstitutions();
 
             // Use the same order as in automatic initialization for consistency.
-            InitNativeIfNeeded(godotOptions);
+            InitNative(godotOptions);
             // Fetch default attachments after native init resolves them.
             NativeBridge.FetchDefaultAttachments(godotOptions);
             InitDotnet(godotOptions);
@@ -155,12 +155,8 @@ public static partial class SentrySdk
     /// If the native SDK hasn't initialized yet (manual init case),
     /// trigger native initialization via P/Invoke.
     /// </summary>
-    private static void InitNativeIfNeeded(SentryGodotOptions godotOptions)
+    private static void InitNative(SentryGodotOptions godotOptions)
     {
-        if (NativeBridge.IsEnabled())
-        {
-            return;
-        }
         NativeBridge.InitNativeSdk(godotOptions);
     }
 
