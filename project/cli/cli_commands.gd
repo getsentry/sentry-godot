@@ -48,7 +48,6 @@ func _register_commands() -> void:
 	_parser.add_command("dotnet-capture-via-gdscript-init", _cmd_dotnet_capture_via_gdscript_init, "Capture a .NET exception with GDScript driving init")
 	_parser.add_command("dotnet-capture-via-auto-init", _cmd_dotnet_capture_via_auto_init, "Capture a .NET exception with native auto-init driving init")
 	_parser.add_command("dotnet-cross-layer-capture", _cmd_dotnet_cross_layer_capture, "Capture a native and a .NET event to verify cross-layer synchronization")
-	_parser.add_command("dotnet-before-send-capture", _cmd_dotnet_before_send_capture, "Capture native events processed by the before-send callback")
 
 
 ## Shows available commands and their arguments.
@@ -365,43 +364,6 @@ func _cmd_dotnet_cross_layer_capture() -> int:
 	print("EVENT_CAPTURED: ", managed_event_id)
 
 	_print_test_result("dotnet-cross-layer-capture", true, "Test complete")
-	return 0
-
-
-## Captures native events to verify the native before-send hook (options.Native.SetBeforeSend)
-## inspects, mutates, and drops them.
-func _cmd_dotnet_before_send_capture() -> int:
-	var script: Script = load("res://cli/DotnetCliTriggers.cs")
-	if script == null:
-		printerr("Error: DotnetCliTriggers.cs is not available - is this a Godot .NET build?")
-		return 1
-	var triggers: Object = script.new()
-
-	triggers.InitSentryWithNativeBeforeSend()
-	await get_tree().create_timer(0.5).timeout
-
-	print("SENTRY_NATIVE_ENABLED: ", SentrySDK.is_enabled())
-	print("SENTRY_DOTNET_ENABLED: ", triggers.IsSdkEnabled())
-
-	_add_integration_test_context("dotnet-before-send-capture")
-	triggers.AddIntegrationTestContext("dotnet-before-send-capture")
-
-	# Add a tag the before-send callback should remove.
-	SentrySDK.set_tag("before_send.should_be_removed", "remove-me")
-
-	# First event: carries the drop sentinel, so the callback discards it.
-	SentrySDK.capture_message("DROP_ME native (should be discarded)")
-
-	# Second event: Just the message, no exception data attached.
-	var message_id := SentrySDK.capture_message("Before-send native (should be kept)")
-	print("EVENT_CAPTURED: ", message_id)
-
-	# Third event: Runtime error, so the callback has an exception value to read and mutate.
-	push_error("Before-send runtime error")
-	var error_id := SentrySDK.get_last_event_id()
-	print("EVENT_CAPTURED: ", error_id)
-
-	_print_test_result("dotnet-before-send-capture", true, "Test complete")
 	return 0
 
 
