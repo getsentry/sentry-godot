@@ -7,7 +7,7 @@ from enum import Enum
 
 # *** Settings.
 
-VERSION = "2.0.0-beta.1"
+VERSION = "2.0.0-beta.2"
 COMPATIBILITY_MINIMUM = "4.5"
 IOS_MIN_VERSION = "15.0"
 MACOS_DEPLOYMENT_TARGET = "10.14"
