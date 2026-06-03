@@ -54,7 +54,7 @@ TEST_SUITE("[.NET] Test options.Native.SetBeforeSend bridging") {
 			REQUIRE(result.is_valid());
 
 			SUBCASE("Getters observe the values set on the event") {
-				Dictionary seen = fixture.get_harness()->call("GetSeenValues");
+				Dictionary seen = fixture.get_harness()->call("GetSeenEventValues");
 				CHECK(seen["message"] == "Native event (should be kept)");
 				CHECK(seen["level"] == "Error");
 				CHECK(seen["release"] == "read-release@1.2.3");
