@@ -45,6 +45,11 @@ jobs:
       - name: Set up Godot
         run: ./scripts/setup-godot.sh --mono
 
+      - name: Import project
+        shell: bash
+        run: |
+          "${GODOT}" --headless --path project/ --editor --import
+
       - name: Build .NET solution
         shell: bash
         env:
