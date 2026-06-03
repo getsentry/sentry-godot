@@ -56,6 +56,7 @@
 
 #ifdef TESTS_ENABLED
 #include "cpp_test_runner.h"
+#include <godot_cpp/variant/callable_method_pointer.hpp>
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -149,9 +150,10 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		SentryUnit::create_singleton();
 		SentrySDK::create_singleton();
 #ifdef TESTS_ENABLED
-		// If --test-sentry was passed, run the test session and exit before SDK auto-init.
+		// If --test-sentry was passed, run the test session and exit.
 		if (sentry::tests::should_run_cpp_tests()) {
-			sentry::tests::run_cpp_tests_and_exit();
+			// Defer until GodotSharp loads - .NET tests need the managed runtime.
+			callable_mp_static(sentry::tests::run_cpp_tests_and_exit).call_deferred();
 		}
 #endif
 		SentrySDK::get_singleton()->prepare_and_auto_initialize();

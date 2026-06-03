@@ -640,6 +640,11 @@ CSHARP_EXPORT void csharp_interop_event_set_exception_value(void *p_handle, int3
 
 namespace sentry::dotnet {
 
+bool godot_supports_dotnet() {
+	// CSharpScript only exists in a mono (.NET) Godot build.
+	return godot::ClassDB::class_exists("CSharpScript");
+}
+
 void init() {
 	if (s_managed_funcs.init) {
 		s_managed_funcs.init();
@@ -735,5 +740,17 @@ bool process_event_in_managed_layer(const Ref<SentryEvent> &p_event) {
 	in_before_send = false;
 	return keep;
 }
+
+bool is_managed_layer_registered() {
+	return s_managed_funcs.init != nullptr;
+}
+
+#ifdef TESTS_ENABLED
+
+bool is_before_send_defined() {
+	return s_managed_defined_hooks.has_flag(DEFINED_BEFORE_SEND);
+}
+
+#endif // TESTS_ENABLED
 
 } // namespace sentry::dotnet
