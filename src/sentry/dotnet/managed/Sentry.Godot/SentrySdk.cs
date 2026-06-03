@@ -66,7 +66,7 @@ public static partial class SentrySdk
             // Use the same order as in automatic initialization for consistency.
             // Calling this unconditionally does not break auto-init path, because on
             // auto-init the request comes through a separate path that does not call
-            // `InitNativeSdk` (see SentrySdk.InitFromNative).
+            // InitNativeSdk (see SentrySdk.InitFromNative).
             NativeBridge.InitNativeSdk(godotOptions);
             // Fetch default attachments after native init resolves them.
             NativeBridge.FetchDefaultAttachments(godotOptions);
