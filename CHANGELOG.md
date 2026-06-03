@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
+  - Add `options.Native.SetBeforeSend` hook to inspect, modify, or drop native events (engine, GDScript, and GDExtension errors) from the .NET layer ([#737](https://github.com/getsentry/sentry-godot/pull/737))
+
 ## 2.0.0-beta.2
 
 ### Features
