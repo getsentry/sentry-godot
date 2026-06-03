@@ -97,7 +97,7 @@ struct ManagedFunctions {
 
 static ManagedFunctions s_managed_funcs = {};
 
-// Bit flags for which native-layer hooks the managed layer has defined.
+// Flags indicating which native-layer hooks are implemented in managed code.
 // Passed in ManagedOptions.defined_hooks during init to avoid crossing the managed boundary for unset hooks.
 // Must match ManagedDefinedHooks in NativeBridge.cs.
 enum ManagedDefinedHooks {
@@ -216,7 +216,7 @@ struct ManagedOptions {
 
 	uint8_t enable_metrics;
 
-	// Bit flags for which native-layer hooks the managed layer has defined; see ManagedDefinedHooks.
+	// Flags indicating which native-layer hooks are implemented in managed code; see ManagedDefinedHooks.
 	uint32_t defined_hooks;
 };
 

@@ -1,4 +1,5 @@
-// Integration tests for .NET options.Native.SetBeforeSend bridged to the native layer.
+// Integration tests verifying that .NET options.Native.SetBeforeSend callbacks
+// are invoked for native layer events and can mutate or discard them.
 
 #if defined(TESTS_ENABLED)
 

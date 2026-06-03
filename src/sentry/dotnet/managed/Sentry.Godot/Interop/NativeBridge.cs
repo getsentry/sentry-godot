@@ -65,7 +65,7 @@ internal static partial class NativeBridge
     [LibraryImport(Lib)]
     private static partial void csharp_interop_free_array(IntPtr array);
 
-    // Bit flags for which native-layer hooks the managed layer has defined.
+    // Flags indicating which native-layer hooks are implemented in managed code.
     // Passed in ManagedOptions.defined_hooks during init to avoid crossing the managed boundary for unset hooks.
     // Must match ManagedDefinedHooks in csharp_interop.cpp.
     [Flags]

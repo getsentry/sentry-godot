@@ -9,10 +9,7 @@
 #include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
-using godot::Ref;
-using godot::RefCounted;
-using godot::ResourceLoader;
-using godot::Script;
+using namespace godot;
 
 namespace {
 
