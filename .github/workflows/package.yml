@@ -89,7 +89,7 @@ jobs:
         shell: bash
         run: |
           for zip in out/*.zip; do
-            echo "::group::$(basename "$zip")"
+            echo "::group::$(basename "$zip") ($(du -h "$zip" | cut -f1))"
             unzip -l "$zip"
             echo "::endgroup::"
           done
