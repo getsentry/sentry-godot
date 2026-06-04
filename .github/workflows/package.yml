@@ -85,6 +85,15 @@ jobs:
       - name: Assemble packages
         run: scripts/package.sh --source project/ --output out/
 
+      - name: List package contents
+        shell: bash
+        run: |
+          for zip in out/*.zip; do
+            echo "::group::$(basename "$zip")"
+            unzip -l "$zip"
+            echo "::endgroup::"
+          done
+
       - name: Upload artifact
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
