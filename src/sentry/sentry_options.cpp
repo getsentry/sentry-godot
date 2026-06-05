@@ -84,6 +84,15 @@ void SentryExperimental::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::CALLABLE, before_send_log);
 }
 
+// *** SentryAndroidOptions
+
+void SentryAndroidOptions::_bind_methods() {
+	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, enable_anr_tracking);
+	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::INT, anr_timeout_ms);
+	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, report_historical_anrs);
+	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, attach_anr_thread_dump);
+}
+
 // *** SentryOptions
 
 void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options) {
@@ -122,10 +131,15 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_breadcrumb_mask, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/logs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_log_mask, false);
 
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), p_options->logger_limits->events_per_frame, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->logger_limits->repeated_error_window_ms, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), p_options->logger_limits->throttle_events, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->logger_limits->throttle_window_ms, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), p_options->logger_limits->get_events_per_frame(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->logger_limits->get_repeated_error_window_ms(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), p_options->logger_limits->get_throttle_events(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->logger_limits->get_throttle_window_ms(), false);
+
+	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/enable_tracking"), p_options->get_android()->get_enable_anr_tracking(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_ms"), p_options->get_android()->get_anr_timeout_ms(), false);
+	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/report_historical_anrs"), p_options->get_android()->get_report_historical_anrs(), false);
+	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/attach_thread_dump"), p_options->get_android()->get_attach_anr_thread_dump(), false);
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/experimental/screenshot_level"), p_options->screenshot_level, false);
@@ -208,10 +222,27 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->logger_breadcrumb_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/breadcrumbs", p_options->logger_breadcrumb_mask);
 	p_options->logger_log_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/logs", p_options->logger_log_mask);
 
-	p_options->logger_limits->events_per_frame = ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/events_per_frame", p_options->logger_limits->events_per_frame);
-	p_options->logger_limits->repeated_error_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/repeated_error_window_ms", p_options->logger_limits->repeated_error_window_ms);
-	p_options->logger_limits->throttle_events = ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_events", p_options->logger_limits->throttle_events);
-	p_options->logger_limits->throttle_window_ms = ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_window_ms", p_options->logger_limits->throttle_window_ms);
+	p_options->logger_limits->set_events_per_frame(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/events_per_frame", p_options->logger_limits->get_events_per_frame()));
+	p_options->logger_limits->set_repeated_error_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/repeated_error_window_ms", p_options->logger_limits->get_repeated_error_window_ms()));
+	p_options->logger_limits->set_throttle_events(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_events", p_options->logger_limits->get_throttle_events()));
+	p_options->logger_limits->set_throttle_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_window_ms", p_options->logger_limits->get_throttle_window_ms()));
+
+	p_options->android->set_enable_anr_tracking(
+			ProjectSettings::get_singleton()->get_setting(
+					"sentry/android/application_not_responding/enable_tracking",
+					p_options->android->get_enable_anr_tracking()));
+	p_options->android->set_anr_timeout_ms(
+			ProjectSettings::get_singleton()->get_setting(
+					"sentry/android/application_not_responding/timeout_ms",
+					p_options->android->get_anr_timeout_ms()));
+	p_options->android->set_report_historical_anrs(
+			ProjectSettings::get_singleton()->get_setting(
+					"sentry/android/application_not_responding/report_historical_anrs",
+					p_options->android->get_report_historical_anrs()));
+	p_options->android->set_attach_anr_thread_dump(
+			ProjectSettings::get_singleton()->get_setting(
+					"sentry/android/application_not_responding/attach_thread_dump",
+					p_options->android->get_attach_anr_thread_dump()));
 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/experimental/screenshot_level", p_options->screenshot_level);
@@ -329,6 +360,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_capture_screenshot"), set_before_capture_screenshot, get_before_capture_screenshot);
 
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);
+	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "android", PROPERTY_HINT_TYPE_STRING, "SentryAndroidOptions", PROPERTY_USAGE_NONE), get_android);
 
 	{
 		using namespace sentry;
@@ -349,6 +381,7 @@ SentryOptions::SentryOptions() {
 	logger_limits.instantiate();
 	experimental.instantiate();
 	experimental->owner = this;
+	android.instantiate();
 
 	_init_debug_option(DEBUG_DEFAULT);
 }

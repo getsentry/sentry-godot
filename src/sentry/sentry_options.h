@@ -18,7 +18,6 @@ namespace sentry {
 class SentryLoggerLimits : public RefCounted {
 	GDCLASS(SentryLoggerLimits, RefCounted);
 
-public:
 	// Protect frametime budget.
 	SIMPLE_PROPERTY(int, events_per_frame, 5);
 
@@ -58,6 +57,18 @@ public:
 	bool get_enable_logs();
 	void set_before_send_log(Callable p_value);
 	Callable get_before_send_log();
+
+protected:
+	static void _bind_methods();
+};
+
+class SentryAndroidOptions : public RefCounted {
+	GDCLASS(SentryAndroidOptions, RefCounted);
+
+	SIMPLE_PROPERTY(bool, enable_anr_tracking, true);
+	SIMPLE_PROPERTY(int, anr_timeout_ms, 5000);
+	SIMPLE_PROPERTY(bool, report_historical_anrs, false);
+	SIMPLE_PROPERTY(bool, attach_anr_thread_dump, false);
 
 protected:
 	static void _bind_methods();
@@ -112,6 +123,7 @@ private:
 	Ref<SentryLoggerLimits> logger_limits;
 
 	Ref<SentryExperimental> experimental;
+	Ref<SentryAndroidOptions> android;
 
 	Callable before_send;
 	Callable before_capture_screenshot;
@@ -231,6 +243,7 @@ public:
 	_FORCE_INLINE_ void set_before_capture_screenshot(const Callable &p_before_capture_screenshot) { before_capture_screenshot = p_before_capture_screenshot; }
 
 	_FORCE_INLINE_ Ref<SentryExperimental> get_experimental() const { return experimental; }
+	_FORCE_INLINE_ Ref<SentryAndroidOptions> get_android() const { return android; }
 
 	void add_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	void remove_event_processor(const Ref<SentryEventProcessor> &p_processor);
