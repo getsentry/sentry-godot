@@ -50,7 +50,8 @@ public sealed class SentryGodotOptions : SentryOptions
     /// when it becomes unresponsive for longer than <see cref="AppHangTimeout"/>.
     /// </summary>
     /// <remarks>
-    /// Only supported on Android, iOS, and macOS.
+    /// This feature applies to iOS and macOS only. On Android, <see cref="Android"/> configures
+    /// ANR (Application Not Responding) detection instead.
     /// </remarks>
     public bool AppHangTracking { get; set; } = false;
 
