@@ -114,7 +114,7 @@ internal static partial class NativeBridge
         public int logger_breadcrumb_mask;
         public int logger_log_mask;
         public byte enable_metrics;
-        public byte android_enable_anr_tracking;
+        public byte android_enable_anr_detection;
         public int android_anr_timeout_interval_ms;
         public byte android_attach_anr_thread_dump;
     }
@@ -152,7 +152,7 @@ internal static partial class NativeBridge
         public int logger_breadcrumb_mask;
         public int logger_log_mask;
         public byte enable_metrics;
-        public byte android_enable_anr_tracking;
+        public byte android_enable_anr_detection;
         public int android_anr_timeout_interval_ms;
         public byte android_attach_anr_thread_dump;
     }
@@ -483,7 +483,7 @@ internal static partial class NativeBridge
         opts.LoggerBreadcrumbMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_breadcrumb_mask;
         opts.LoggerLogMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_log_mask;
         opts.EnableMetrics = data.enable_metrics != 0;
-        opts.Android.EnableAnrTracking = data.android_enable_anr_tracking != 0;
+        opts.Android.EnableAnrDetection = data.android_enable_anr_detection != 0;
         opts.Android.AnrTimeoutInterval = TimeSpan.FromMilliseconds(data.android_anr_timeout_interval_ms);
         opts.Android.AttachAnrThreadDump = data.android_attach_anr_thread_dump != 0;
     }
@@ -774,7 +774,7 @@ internal static partial class NativeBridge
                 logger_breadcrumb_mask = (int)opts.LoggerBreadcrumbMask,
                 logger_log_mask = (int)opts.LoggerLogMask,
                 enable_metrics = (byte)(opts.EnableMetrics ? 1 : 0),
-                android_enable_anr_tracking = (byte)(opts.Android.EnableAnrTracking ? 1 : 0),
+                android_enable_anr_detection = (byte)(opts.Android.EnableAnrDetection ? 1 : 0),
                 android_anr_timeout_interval_ms = (int)opts.Android.AnrTimeoutInterval.TotalMilliseconds,
                 android_attach_anr_thread_dump = (byte)(opts.Android.AttachAnrThreadDump ? 1 : 0),
             };

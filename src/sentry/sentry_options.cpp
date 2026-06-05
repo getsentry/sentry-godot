@@ -87,7 +87,7 @@ void SentryExperimental::_bind_methods() {
 // *** SentryAndroidOptions
 
 void SentryAndroidOptions::_bind_methods() {
-	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, enable_anr_tracking);
+	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, enable_anr_detection);
 	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::INT, anr_timeout_interval_ms);
 	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, attach_anr_thread_dump);
 }
@@ -135,7 +135,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), p_options->logger_limits->get_throttle_events(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->logger_limits->get_throttle_window_ms(), false);
 
-	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/enable_tracking"), p_options->get_android()->get_enable_anr_tracking(), false);
+	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/enable_detection"), p_options->get_android()->get_enable_anr_detection(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_interval_ms"), p_options->get_android()->get_anr_timeout_interval_ms(), false);
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/attach_thread_dump"), p_options->get_android()->get_attach_anr_thread_dump(), false);
 
@@ -225,10 +225,10 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->logger_limits->set_throttle_events(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_events", p_options->logger_limits->get_throttle_events()));
 	p_options->logger_limits->set_throttle_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_window_ms", p_options->logger_limits->get_throttle_window_ms()));
 
-	p_options->android->set_enable_anr_tracking(
+	p_options->android->set_enable_anr_detection(
 			ProjectSettings::get_singleton()->get_setting(
-					"sentry/android/application_not_responding/enable_tracking",
-					p_options->android->get_enable_anr_tracking()));
+					"sentry/android/application_not_responding/enable_detection",
+					p_options->android->get_enable_anr_detection()));
 	p_options->android->set_anr_timeout_interval_ms(
 			ProjectSettings::get_singleton()->get_setting(
 					"sentry/android/application_not_responding/timeout_interval_ms",

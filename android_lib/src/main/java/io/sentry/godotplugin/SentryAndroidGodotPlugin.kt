@@ -182,7 +182,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val maxBreadcrumbs = optionsData["max_breadcrumbs"].toIntOrThrow()
             val enableLogs = optionsData["enable_logs"] as Boolean
             val enableMetrics = optionsData["enable_metrics"] as Boolean
-            val enableAnrTracking = optionsData["enable_anr_tracking"] as Boolean
+            val enableAnrDetection = optionsData["enable_anr_detection"] as Boolean
             val anrTimeoutIntervalMs = optionsData["anr_timeout_interval_ms"].toLongOrThrow()
             val attachAnrThreadDump = optionsData["attach_anr_thread_dump"] as Boolean
             val shutdownTimeoutMs = optionsData["shutdown_timeout_ms"].toLongOrThrow()
@@ -199,7 +199,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.nativeSdkName = "sentry.native.android.godot"
                 options.logs.isEnabled = enableLogs
                 options.metrics.isEnabled = enableMetrics
-                options.isAnrEnabled = enableAnrTracking
+                options.isAnrEnabled = enableAnrDetection
                 options.anrTimeoutIntervalMillis = anrTimeoutIntervalMs
                 options.isAttachAnrThreadDump = attachAnrThreadDump
                 options.shutdownTimeoutMillis = shutdownTimeoutMs

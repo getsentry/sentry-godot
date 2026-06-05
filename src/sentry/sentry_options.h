@@ -65,7 +65,7 @@ protected:
 class SentryAndroidOptions : public RefCounted {
 	GDCLASS(SentryAndroidOptions, RefCounted);
 
-	SIMPLE_PROPERTY(bool, enable_anr_tracking, true);
+	SIMPLE_PROPERTY(bool, enable_anr_detection, true);
 	SIMPLE_PROPERTY(int, anr_timeout_interval_ms, 5000);
 	SIMPLE_PROPERTY(bool, attach_anr_thread_dump, false);
 

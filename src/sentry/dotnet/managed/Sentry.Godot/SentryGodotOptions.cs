@@ -241,9 +241,9 @@ public sealed class SentryLoggerLimits
 public sealed class SentryAndroidOptions
 {
     /// <summary>
-    /// Enables ANR tracking on Android.
+    /// Enables ANR detection on Android.
     /// </summary>
-    public bool EnableAnrTracking { get; set; } = true;
+    public bool EnableAnrDetection { get; set; } = true;
 
     /// <summary>
     /// Specifies the ANR timeout interval in milliseconds.
