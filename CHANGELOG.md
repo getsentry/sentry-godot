@@ -2,11 +2,12 @@
 
 ## Unreleased
 
-### Improvements
+### Breaking changes
 
-- Add Android-specific ANR (Application Not Responding) detection options, with detection enabled by default ([#749](https://github.com/getsentry/sentry-godot/pull/749))
+- Add Android-specific ANR (Application Not Responding) detection options ([#749](https://github.com/getsentry/sentry-godot/pull/749))
+  - ANR detection is now enabled by default; set `SentryOptions.android.enable_anr_detection` to `false` to opt out
+  - ANR detection is now separate from the App Hang Tracking options (`app_hang_tracking`, `app_hang_timeout_sec`), which now apply to Apple platforms only
   - Configure these through `SentryOptions.android`, or in the **Project Settings** under **Sentry > Android > Application Not Responding**
-  - **Breaking**: Android ANR detection is now separate from the App Hang Tracking options (`app_hang_tracking`, `app_hang_timeout_sec`), which now apply to Apple platforms only
 
 ## 2.0.0-beta.2
 
