@@ -137,6 +137,11 @@ public sealed class SentryGodotOptions : SentryOptions
     /// </remarks>
     public SentryLoggerLimits LoggerLimits { get; set; } = new SentryLoggerLimits();
 
+    /// <summary>
+    /// Options specific to Android platform.
+    /// </summary>
+    public SentryAndroidOptions Android { get; set; } = new SentryAndroidOptions();
+
     private readonly List<SentryAttachment> _defaultAttachments = [];
 
     internal IReadOnlyList<SentryAttachment> DefaultAttachments => _defaultAttachments;
@@ -228,4 +233,25 @@ public sealed class SentryLoggerLimits
     /// Set to zero to disable this limit.
     /// </summary>
     public TimeSpan ThrottleWindow { get; set; } = TimeSpan.FromMilliseconds(10000);
+}
+
+/// <summary>
+/// Options specific to Android platform.
+/// </summary>
+public sealed class SentryAndroidOptions
+{
+    /// <summary>
+    /// Enables ANR tracking on Android.
+    /// </summary>
+    public bool EnableAnrTracking { get; set; } = true;
+
+    /// <summary>
+    /// Specifies the ANR timeout interval in milliseconds.
+    /// </summary>
+    public TimeSpan AnrTimeoutInterval { get; set; } = TimeSpan.FromMilliseconds(5000);
+
+    /// <summary>
+    /// Attaches the ANR thread dump to the crash report.
+    /// </summary>
+    public bool AttachAnrThreadDump { get; set; } = false;
 }
