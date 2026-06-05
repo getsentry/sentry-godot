@@ -147,9 +147,9 @@ struct NativeOptions {
 	uint8_t enable_metrics;
 
 	// Android
-	bool android_enable_anr_detection;
+	uint8_t android_enable_anr_detection;
 	int32_t android_anr_timeout_interval_ms;
-	bool android_attach_anr_thread_dump;
+	uint8_t android_attach_anr_thread_dump;
 };
 
 // Generic array handle for returning native-allocated arrays across the interop boundary.
@@ -206,9 +206,9 @@ struct ManagedOptions {
 
 	uint8_t enable_metrics;
 
-	bool android_enable_anr_detection;
+	uint8_t android_enable_anr_detection;
 	int32_t android_anr_timeout_interval_ms;
-	bool android_attach_anr_thread_dump;
+	uint8_t android_attach_anr_thread_dump;
 };
 
 struct NativeTraceContext {
@@ -236,6 +236,7 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_sample_rate(data.sample_rate);
 	options->set_max_breadcrumbs(data.max_breadcrumbs);
 	options->set_shutdown_timeout_ms(data.shutdown_timeout_ms);
+
 	options->set_send_default_pii(data.send_default_pii);
 	options->set_enable_logs(data.enable_logs);
 	options->set_attach_log(data.attach_log);
