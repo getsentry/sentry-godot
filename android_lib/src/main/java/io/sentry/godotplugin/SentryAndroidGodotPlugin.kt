@@ -183,8 +183,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val enableLogs = optionsData["enable_logs"] as Boolean
             val enableMetrics = optionsData["enable_metrics"] as Boolean
             val enableAnrTracking = optionsData["enable_anr_tracking"] as Boolean
-            val anrTimeoutMs = optionsData["anr_timeout_ms"].toLongOrThrow()
-            val reportHistoricalAnrs = optionsData["report_historical_anrs"] as Boolean
+            val anrTimeoutIntervalMs = optionsData["anr_timeout_interval_ms"].toLongOrThrow()
             val attachAnrThreadDump = optionsData["attach_anr_thread_dump"] as Boolean
             val shutdownTimeoutMs = optionsData["shutdown_timeout_ms"].toLongOrThrow()
 
@@ -201,8 +200,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.logs.isEnabled = enableLogs
                 options.metrics.isEnabled = enableMetrics
                 options.isAnrEnabled = enableAnrTracking
-                options.anrTimeoutIntervalMillis = anrTimeoutMs
-                options.isReportHistoricalAnrs = reportHistoricalAnrs
+                options.anrTimeoutIntervalMillis = anrTimeoutIntervalMs
                 options.isAttachAnrThreadDump = attachAnrThreadDump
                 options.shutdownTimeoutMillis = shutdownTimeoutMs
                 options.isTombstoneEnabled = true

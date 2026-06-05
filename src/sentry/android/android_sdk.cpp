@@ -351,8 +351,7 @@ void AndroidSDK::init() {
 	optionsData["enable_logs"] = SENTRY_OPTIONS()->get_enable_logs();
 	optionsData["enable_metrics"] = SENTRY_OPTIONS()->get_experimental()->get_enable_metrics();
 	optionsData["enable_anr_tracking"] = SENTRY_OPTIONS()->get_android()->get_enable_anr_tracking();
-	optionsData["anr_timeout_ms"] = SENTRY_OPTIONS()->get_android()->get_anr_timeout_ms();
-	optionsData["report_historical_anrs"] = SENTRY_OPTIONS()->get_android()->get_report_historical_anrs();
+	optionsData["anr_timeout_interval_ms"] = SENTRY_OPTIONS()->get_android()->get_anr_timeout_interval_ms();
 	optionsData["attach_anr_thread_dump"] = SENTRY_OPTIONS()->get_android()->get_attach_anr_thread_dump();
 	optionsData["shutdown_timeout_ms"] = SENTRY_OPTIONS()->get_shutdown_timeout_ms();
 

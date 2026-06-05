@@ -88,8 +88,7 @@ void SentryExperimental::_bind_methods() {
 
 void SentryAndroidOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, enable_anr_tracking);
-	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::INT, anr_timeout_ms);
-	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, report_historical_anrs);
+	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::INT, anr_timeout_interval_ms);
 	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, attach_anr_thread_dump);
 }
 
@@ -137,8 +136,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->logger_limits->get_throttle_window_ms(), false);
 
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/enable_tracking"), p_options->get_android()->get_enable_anr_tracking(), false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_ms"), p_options->get_android()->get_anr_timeout_ms(), false);
-	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/report_historical_anrs"), p_options->get_android()->get_report_historical_anrs(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_interval_ms"), p_options->get_android()->get_anr_timeout_interval_ms(), false);
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/attach_thread_dump"), p_options->get_android()->get_attach_anr_thread_dump(), false);
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
@@ -231,14 +229,10 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 			ProjectSettings::get_singleton()->get_setting(
 					"sentry/android/application_not_responding/enable_tracking",
 					p_options->android->get_enable_anr_tracking()));
-	p_options->android->set_anr_timeout_ms(
+	p_options->android->set_anr_timeout_interval_ms(
 			ProjectSettings::get_singleton()->get_setting(
-					"sentry/android/application_not_responding/timeout_ms",
-					p_options->android->get_anr_timeout_ms()));
-	p_options->android->set_report_historical_anrs(
-			ProjectSettings::get_singleton()->get_setting(
-					"sentry/android/application_not_responding/report_historical_anrs",
-					p_options->android->get_report_historical_anrs()));
+					"sentry/android/application_not_responding/timeout_interval_ms",
+					p_options->android->get_anr_timeout_interval_ms()));
 	p_options->android->set_attach_anr_thread_dump(
 			ProjectSettings::get_singleton()->get_setting(
 					"sentry/android/application_not_responding/attach_thread_dump",
