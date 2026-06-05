@@ -182,9 +182,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val maxBreadcrumbs = optionsData["max_breadcrumbs"].toIntOrThrow()
             val enableLogs = optionsData["enable_logs"] as Boolean
             val enableMetrics = optionsData["enable_metrics"] as Boolean
-            val appHangTracking = optionsData["app_hang_tracking"] as Boolean
-            val appHangTimeoutSec = optionsData["app_hang_timeout_sec"] as Double
-            val shutdownTimeoutMs = optionsData["shutdown_timeout_ms"].toIntOrThrow()
+            val enableAnrTracking = optionsData["enable_anr_tracking"] as Boolean
+            val anrTimeoutMs = optionsData["anr_timeout_ms"].toLongOrThrow()
+            val reportHistoricalAnrs = optionsData["report_historical_anrs"] as Boolean
+            val attachAnrThreadDump = optionsData["attach_anr_thread_dump"] as Boolean
+            val shutdownTimeoutMs = optionsData["shutdown_timeout_ms"].toLongOrThrow()
 
             SentryAndroid.init(godot.getActivity()!!.applicationContext) { options ->
                 options.dsn = dsn.ifEmpty { null }
@@ -198,9 +200,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.nativeSdkName = "sentry.native.android.godot"
                 options.logs.isEnabled = enableLogs
                 options.metrics.isEnabled = enableMetrics
-                options.isAnrEnabled = appHangTracking
-                options.anrTimeoutIntervalMillis = (appHangTimeoutSec * 1000.0).toLong()
-                options.shutdownTimeoutMillis = shutdownTimeoutMs.toLong()
+                options.isAnrEnabled = enableAnrTracking
+                options.anrTimeoutIntervalMillis = anrTimeoutMs
+                options.isReportHistoricalAnrs = reportHistoricalAnrs
+                options.isAttachAnrThreadDump = attachAnrThreadDump
+                options.shutdownTimeoutMillis = shutdownTimeoutMs
                 options.isTombstoneEnabled = true
                 options.beforeSend =
                     SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
