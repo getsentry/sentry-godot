@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryAndroidOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Android-specific options for Sentry SDK.
+	</brief_description>
+	<description>
+		Contains configuration options that apply only when the project runs on Android, such as ANR (Application Not Responding) detection. Access this configuration through [member SentryOptions.android].
+		See also [SentryOptions].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="anr_timeout_interval_ms" type="int" setter="set_anr_timeout_interval_ms" getter="get_anr_timeout_interval_ms" default="5000">
+			Specifies how long, in milliseconds, the main thread must stay blocked before the SDK reports an ANR.
+			Applies only when [member enable_anr_detection] is enabled, and only to the V1 implementation used on Android versions before 11. On Android 11 and later, the operating system determines when the application stops responding, so this value has no effect.
+		</member>
+		<member name="attach_anr_thread_dump" type="bool" setter="set_attach_anr_thread_dump" getter="get_attach_anr_thread_dump" default="false">
+			If [code]true[/code], attaches the operating system's thread dump to the ANR event as a plain-text attachment, adding detail for investigating where the application became unresponsive.
+			Applies only when [member enable_anr_detection] is enabled, and only to the V2 implementation used on Android 11 and later.
+		</member>
+		<member name="enable_anr_detection" type="bool" setter="set_enable_anr_detection" getter="get_enable_anr_detection" default="true">
+			If [code]true[/code], detects and reports ANR (Application Not Responding) errors. The SDK monitors the main thread for unresponsiveness and reports an event when an ANR occurs.
+			Android 11 and later use the system-based V2 implementation, while earlier versions use the watchdog-based V1 implementation. See [member anr_timeout_interval_ms] and [member attach_anr_thread_dump] for options specific to each implementation. On Apple platforms, [member SentryOptions.app_hang_tracking] configures the equivalent app hang detection.
+			To learn more, visit [url=https://docs.sentry.io/platforms/android/configuration/app-not-respond/]Application Not Responding documentation[/url].
+		</member>
+	</members>
+</class>
