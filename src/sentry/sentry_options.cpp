@@ -120,7 +120,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/enable_logs", p_options->enable_logs, false);
 
 	_define_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking, false);
-	_define_setting("sentry/options/app_hang/timeout_ms", p_options->app_hang_timeout_ms, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/app_hang/timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), p_options->app_hang_timeout_ms, false);
 
 	_define_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
