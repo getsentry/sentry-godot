@@ -208,6 +208,9 @@ public:
 	_FORCE_INLINE_ int get_app_hang_timeout_ms() const { return app_hang_timeout_ms; }
 	_FORCE_INLINE_ void set_app_hang_timeout_ms(int p_milliseconds) { app_hang_timeout_ms = p_milliseconds; }
 
+	double deprecated_get_app_hang_timeout_sec() const;
+	void deprecated_set_app_hang_timeout_sec(double p_seconds);
+
 	_FORCE_INLINE_ bool is_logger_enabled() const { return logger_enabled; }
 	_FORCE_INLINE_ void set_logger_enabled(bool p_enabled) { logger_enabled = p_enabled; }
 
