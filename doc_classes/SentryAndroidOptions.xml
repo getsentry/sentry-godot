@@ -20,7 +20,7 @@
 		</member>
 		<member name="enable_anr_detection" type="bool" setter="set_enable_anr_detection" getter="get_enable_anr_detection" default="true">
 			If [code]true[/code], detects and reports ANR (Application Not Responding) errors. The SDK monitors the main thread for unresponsiveness and reports an event when an ANR occurs.
-			Android 11 and later use the system-based V2 implementation, while earlier versions use the watchdog-based V1 implementation. See [member anr_timeout_interval_ms] and [member attach_anr_thread_dump] for options specific to each implementation. On Apple platforms, [member SentryOptions.app_hang_tracking] configures the equivalent app hang detection.
+			Android 11 and later use the system-based V2 implementation, while earlier versions use the watchdog-based V1 implementation. See [member anr_timeout_interval_ms] and [member attach_anr_thread_dump] for options specific to each implementation. On Apple platforms, [member SentryOptions.enable_app_hang_tracking] configures the equivalent app hang detection.
 			To learn more, visit [url=https://docs.sentry.io/platforms/android/configuration/app-not-respond/]Application Not Responding documentation[/url].
 		</member>
 	</members>

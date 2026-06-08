@@ -133,7 +133,7 @@ struct NativeOptions {
 	uint8_t attach_screenshot;
 	int32_t screenshot_level;
 	uint8_t enable_app_hang_tracking;
-	double app_hang_timeout_sec;
+	int32_t app_hang_timeout_ms;
 
 	// Logger
 	uint8_t logger_enabled;
@@ -195,7 +195,7 @@ struct ManagedOptions {
 	uint8_t attach_screenshot;
 	int32_t screenshot_level;
 	uint8_t enable_app_hang_tracking;
-	double app_hang_timeout_sec;
+	int32_t app_hang_timeout_ms;
 
 	uint8_t logger_enabled;
 	uint8_t logger_include_source;
@@ -243,7 +243,7 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_attach_screenshot(data.attach_screenshot);
 	options->set_screenshot_level((Level)data.screenshot_level);
 	options->set_app_hang_tracking_enabled(data.enable_app_hang_tracking);
-	options->set_app_hang_timeout_sec(data.app_hang_timeout_sec);
+	options->set_app_hang_timeout_ms(data.app_hang_timeout_ms);
 	options->set_logger_enabled(data.logger_enabled);
 	options->set_logger_include_source(data.logger_include_source);
 	options->set_logger_include_variables(data.logger_include_variables);
@@ -280,7 +280,7 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.attach_screenshot = options->is_attach_screenshot_enabled();
 	r_data.screenshot_level = options->get_screenshot_level();
 	r_data.enable_app_hang_tracking = options->is_app_hang_tracking_enabled();
-	r_data.app_hang_timeout_sec = options->get_app_hang_timeout_sec();
+	r_data.app_hang_timeout_ms = options->get_app_hang_timeout_ms();
 	r_data.logger_enabled = options->is_logger_enabled();
 	r_data.logger_include_source = options->is_logger_include_source_enabled();
 	r_data.logger_include_variables = options->is_logger_include_variables_enabled();
