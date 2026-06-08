@@ -236,7 +236,6 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_sample_rate(data.sample_rate);
 	options->set_max_breadcrumbs(data.max_breadcrumbs);
 	options->set_shutdown_timeout_ms(data.shutdown_timeout_ms);
-
 	options->set_send_default_pii(data.send_default_pii);
 	options->set_enable_logs(data.enable_logs);
 	options->set_attach_log(data.attach_log);
