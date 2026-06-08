@@ -106,7 +106,7 @@ internal static partial class NativeBridge
         public byte attach_screenshot;
         public int screenshot_level;
         public byte enable_app_hang_tracking;
-        public double app_hang_timeout_sec;
+        public int app_hang_timeout_ms;
         public byte logger_enabled;
         public byte logger_include_source;
         public byte logger_include_variables;
@@ -144,7 +144,7 @@ internal static partial class NativeBridge
         public byte attach_screenshot;
         public int screenshot_level;
         public byte enable_app_hang_tracking;
-        public double app_hang_timeout_sec;
+        public int app_hang_timeout_ms;
         public byte logger_enabled;
         public byte logger_include_source;
         public byte logger_include_variables;
@@ -475,7 +475,7 @@ internal static partial class NativeBridge
         opts.AttachScreenshot = data.attach_screenshot != 0;
         opts.ScreenshotLevel = (SentryLevel)data.screenshot_level;
         opts.EnableAppHangTracking = data.enable_app_hang_tracking != 0;
-        opts.AppHangTimeout = TimeSpan.FromSeconds(data.app_hang_timeout_sec);
+        opts.AppHangTimeout = TimeSpan.FromMilliseconds(data.app_hang_timeout_ms);
         opts.LoggerEnabled = data.logger_enabled != 0;
         opts.LoggerIncludeSource = data.logger_include_source != 0;
         opts.LoggerIncludeVariables = data.logger_include_variables != 0;
@@ -766,7 +766,7 @@ internal static partial class NativeBridge
                 attach_screenshot = (byte)(opts.AttachScreenshot ? 1 : 0),
                 screenshot_level = (int)opts.ScreenshotLevel,
                 enable_app_hang_tracking = (byte)(opts.EnableAppHangTracking ? 1 : 0),
-                app_hang_timeout_sec = opts.AppHangTimeout.TotalSeconds,
+                app_hang_timeout_ms = (int)opts.AppHangTimeout.TotalMilliseconds,
                 logger_enabled = (byte)(opts.LoggerEnabled ? 1 : 0),
                 logger_include_source = (byte)(opts.LoggerIncludeSource ? 1 : 0),
                 logger_include_variables = (byte)(opts.LoggerIncludeVariables ? 1 : 0),

@@ -120,7 +120,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/enable_logs", p_options->enable_logs, false);
 
 	_define_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking, false);
-	_define_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec, false);
+	_define_setting("sentry/options/app_hang/timeout_ms", p_options->app_hang_timeout_ms, false);
 
 	_define_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
@@ -211,7 +211,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/options/enable_logs", p_options->enable_logs);
 
 	p_options->enable_app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking);
-	p_options->app_hang_timeout_sec = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec);
+	p_options->app_hang_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_ms", p_options->app_hang_timeout_ms);
 
 	p_options->logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	p_options->logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", p_options->logger_include_source);
@@ -349,7 +349,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_log"), set_before_send_log, get_before_send_log);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_app_hang_tracking"), set_app_hang_tracking_enabled, is_app_hang_tracking_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), set_app_hang_timeout_sec, get_app_hang_timeout_sec);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "app_hang_timeout_ms"), set_app_hang_timeout_ms, get_app_hang_timeout_ms);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, is_logger_include_source_enabled);
