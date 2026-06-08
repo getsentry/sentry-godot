@@ -358,7 +358,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_log"), set_before_send_log, get_before_send_log);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_app_hang_tracking"), set_app_hang_tracking_enabled, is_app_hang_tracking_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "app_hang_timeout_ms"), set_app_hang_timeout_ms, get_app_hang_timeout_ms);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "app_hang_timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), set_app_hang_timeout_ms, get_app_hang_timeout_ms);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, is_logger_include_source_enabled);
