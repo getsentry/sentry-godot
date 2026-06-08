@@ -285,6 +285,15 @@ void SentryOptions::deprecated_set_app_hang_tracking(bool p_enabled) {
 	set_app_hang_tracking_enabled(p_enabled);
 }
 
+double SentryOptions::deprecated_get_app_hang_timeout_sec() const {
+	return static_cast<double>(get_app_hang_timeout_ms()) / 1000.0;
+}
+
+void SentryOptions::deprecated_set_app_hang_timeout_sec(double p_seconds) {
+	WARN_DEPRECATED_MSG("The \"app_hang_timeout_sec\" option is deprecated. Use \"app_hang_timeout_ms\" instead.");
+	set_app_hang_timeout_ms(static_cast<int>(Math::round(p_seconds * 1000.0)));
+}
+
 void SentryOptions::set_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
 	logger_limits = p_limits;
 	// Ensure limits are initialized.
@@ -375,10 +384,11 @@ void SentryOptions::_bind_methods() {
 		BIND_BITFIELD_FLAG(MASK_MESSAGE);
 	}
 
-	// DEPRECATED: This property is deprecated and remains for compatibility reasons.
-	// TODO: Remove it after November 2026 or in version 3.0.
+	// DEPRECATED: These properties are deprecated and remain for compatibility reasons.
+	// TODO: Remove these after November 2026 or in version 3.0.
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_messages_as_breadcrumbs"), set_logger_messages_as_breadcrumbs, is_logger_messages_as_breadcrumbs_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), deprecated_set_app_hang_tracking, deprecated_get_app_hang_tracking);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), deprecated_set_app_hang_timeout_sec, deprecated_get_app_hang_timeout_sec);
 }
 
 SentryOptions::SentryOptions() {
