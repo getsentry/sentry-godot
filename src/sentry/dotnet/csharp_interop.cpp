@@ -132,7 +132,7 @@ struct NativeOptions {
 	uint8_t attach_scene_tree;
 	uint8_t attach_screenshot;
 	int32_t screenshot_level;
-	uint8_t app_hang_tracking;
+	uint8_t enable_app_hang_tracking;
 	double app_hang_timeout_sec;
 
 	// Logger
@@ -194,7 +194,7 @@ struct ManagedOptions {
 	uint8_t attach_scene_tree;
 	uint8_t attach_screenshot;
 	int32_t screenshot_level;
-	uint8_t app_hang_tracking;
+	uint8_t enable_app_hang_tracking;
 	double app_hang_timeout_sec;
 
 	uint8_t logger_enabled;
@@ -242,7 +242,7 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_attach_scene_tree(data.attach_scene_tree);
 	options->set_attach_screenshot(data.attach_screenshot);
 	options->set_screenshot_level((Level)data.screenshot_level);
-	options->set_app_hang_tracking(data.app_hang_tracking);
+	options->set_app_hang_tracking_enabled(data.enable_app_hang_tracking);
 	options->set_app_hang_timeout_sec(data.app_hang_timeout_sec);
 	options->set_logger_enabled(data.logger_enabled);
 	options->set_logger_include_source(data.logger_include_source);
@@ -279,7 +279,7 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.attach_scene_tree = options->is_attach_scene_tree_enabled();
 	r_data.attach_screenshot = options->is_attach_screenshot_enabled();
 	r_data.screenshot_level = options->get_screenshot_level();
-	r_data.app_hang_tracking = options->is_app_hang_tracking_enabled();
+	r_data.enable_app_hang_tracking = options->is_app_hang_tracking_enabled();
 	r_data.app_hang_timeout_sec = options->get_app_hang_timeout_sec();
 	r_data.logger_enabled = options->is_logger_enabled();
 	r_data.logger_include_source = options->is_logger_include_source_enabled();
