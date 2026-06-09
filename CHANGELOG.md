@@ -9,6 +9,12 @@
   - ANR detection is now separate from the App Hang Tracking options (`app_hang_tracking`, `app_hang_timeout_sec`), which now apply to Apple platforms only
   - Configure these through `SentryOptions.android`, or in the **Project Settings** under **Sentry > Android > Application Not Responding**
 
+### Dependencies
+
+- Bump Sentry JavaScript from v10.55.0 to v10.56.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10560)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.55.0...10.56.0)
+
 ## 2.0.0-beta.2
 
 ### Features
