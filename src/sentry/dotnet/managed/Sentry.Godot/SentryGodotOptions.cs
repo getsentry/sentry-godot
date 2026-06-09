@@ -53,7 +53,7 @@ public sealed class SentryGodotOptions : SentryOptions
     /// This feature applies to iOS and macOS only. On Android, <see cref="Android"/> configures
     /// ANR (Application Not Responding) detection instead.
     /// </remarks>
-    public bool AppHangTracking { get; set; } = false;
+    public bool EnableAppHangTracking { get; set; } = false;
 
     /// <summary>
     /// Duration after which the application is considered to have hanged.
@@ -250,7 +250,7 @@ public sealed class SentryAndroidOptions
     /// <remarks>
     /// Android 11 and later use the system-based V2 implementation, while earlier versions use the watchdog-based V1
     /// implementation. See <see cref="AnrTimeoutInterval"/> and <see cref="AttachAnrThreadDump"/> for options specific
-    /// to each implementation. On Apple platforms, <see cref="SentryGodotOptions.AppHangTracking"/> configures the
+    /// to each implementation. On Apple platforms, <see cref="SentryGodotOptions.EnableAppHangTracking"/> configures the
     /// equivalent app hang detection.
     /// To learn more, visit <see href="https://docs.sentry.io/platforms/android/configuration/app-not-respond/">Application Not Responding documentation</see>.
     /// </remarks>
