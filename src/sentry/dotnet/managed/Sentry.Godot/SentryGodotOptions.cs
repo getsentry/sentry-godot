@@ -23,6 +23,27 @@ public sealed class SentryGodotOptions : SentryOptions
     }
 
     /// <summary>
+    /// Called before an event is sent to Sentry, allowing you to inspect, modify, or drop it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This callback is invoked for managed (.NET) events as well as native events, including GDScript and engine events.
+    /// Managed events are represented by <see cref="SentryManagedEvent"/>
+    /// and native events by <see cref="SentryNativeEvent"/>;
+    /// both implement <see cref="ISentryGodotEvent"/>.
+    /// </para>
+    /// <para>
+    /// Return the event to send it, or return <c>null</c> to discard it.
+    /// Native crash events are not passed to this callback.
+    /// </para>
+    /// <para>
+    /// This is the Godot integration's unified alternative to the upstream BeforeSend,
+    /// which only receives managed events.
+    /// </para>
+    /// </remarks>
+    public Func<ISentryGodotEvent, ISentryGodotEvent?>? BeforeSendGodot { get; set; }
+
+    /// <summary>
     /// If enabled, the SDK will attach the Godot log file to the event.
     /// </summary>
     public bool AttachLog { get; set; } = true;
