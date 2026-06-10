@@ -64,7 +64,10 @@ public static partial class SentrySdk
             godotOptions.ApplyTemplateSubstitutions();
 
             // Use the same order as in automatic initialization for consistency.
-            InitNativeIfNeeded(godotOptions);
+            // Calling this unconditionally does not break auto-init path, because on
+            // auto-init the request comes through a separate path that does not call
+            // InitNativeSdk (see SentrySdk.InitFromNative).
+            NativeBridge.InitNativeSdk(godotOptions);
             // Fetch default attachments after native init resolves them.
             NativeBridge.FetchDefaultAttachments(godotOptions);
             InitDotnet(godotOptions);
@@ -149,19 +152,6 @@ public static partial class SentrySdk
         _cocoaDebugImagesProcessor = new CocoaDebugImagesProcessor();
         godotOptions.AddEventProcessor(_cocoaDebugImagesProcessor);
         GodotLog.Debug("Cocoa debug images processor registered for NativeAOT stack symbolication.");
-    }
-
-    /// <summary>
-    /// If the native SDK hasn't initialized yet (manual init case),
-    /// trigger native initialization via P/Invoke.
-    /// </summary>
-    private static void InitNativeIfNeeded(SentryGodotOptions godotOptions)
-    {
-        if (NativeBridge.IsEnabled())
-        {
-            return;
-        }
-        NativeBridge.InitNativeSdk(godotOptions);
     }
 
     /// <summary>

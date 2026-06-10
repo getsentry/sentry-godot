@@ -6,6 +6,12 @@
 
 - Distribute native debug symbols in a separate `sentry-godot-debug-symbols` archive instead of bundling them with the addon, reducing the size of the released addon and demo-project packages ([#747](https://github.com/getsentry/sentry-godot/pull/747))
 
+### Dependencies
+
+- Bump Sentry JavaScript from v10.55.0 to v10.56.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10560)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.55.0...10.56.0)
+
 ## 2.0.0-beta.2
 
 ### Features
