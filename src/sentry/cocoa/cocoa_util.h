@@ -10,31 +10,31 @@ namespace sentry::cocoa {
 _FORCE_INLINE_ objc::SentryLevel sentry_level_to_objc(sentry::Level p_level) {
 	switch (p_level) {
 		case sentry::Level::LEVEL_DEBUG:
-			return kSentryLevelDebug;
+			return SentryObjCLevelDebug;
 		case sentry::Level::LEVEL_INFO:
-			return kSentryLevelInfo;
+			return SentryObjCLevelInfo;
 		case sentry::Level::LEVEL_WARNING:
-			return kSentryLevelWarning;
+			return SentryObjCLevelWarning;
 		case sentry::Level::LEVEL_ERROR:
-			return kSentryLevelError;
+			return SentryObjCLevelError;
 		case sentry::Level::LEVEL_FATAL:
-			return kSentryLevelFatal;
+			return SentryObjCLevelFatal;
 		default:
-			return kSentryLevelError;
+			return SentryObjCLevelError;
 	}
 }
 
 _FORCE_INLINE_ sentry::Level sentry_level_from_objc(objc::SentryLevel p_level) {
 	switch (p_level) {
-		case kSentryLevelDebug:
+		case SentryObjCLevelDebug:
 			return sentry::Level::LEVEL_DEBUG;
-		case kSentryLevelInfo:
+		case SentryObjCLevelInfo:
 			return sentry::Level::LEVEL_INFO;
-		case kSentryLevelWarning:
+		case SentryObjCLevelWarning:
 			return sentry::Level::LEVEL_WARNING;
-		case kSentryLevelError:
+		case SentryObjCLevelError:
 			return sentry::Level::LEVEL_ERROR;
-		case kSentryLevelFatal:
+		case SentryObjCLevelFatal:
 			return sentry::Level::LEVEL_FATAL;
 		default:
 			return sentry::Level::LEVEL_ERROR;
@@ -75,18 +75,33 @@ godot::Variant variant_from_objc(const NSObject *p_object);
 NSDictionary *dictionary_to_objc(const godot::Dictionary &p_dictionary);
 NSArray<NSString *> *string_array_to_objc(const godot::PackedStringArray &p_array);
 
-_FORCE_INLINE_ SentryAttribute *variant_to_attribute(const godot::Variant &p_variant) {
+_FORCE_INLINE_ objc::SentryAttribute *variant_to_attribute(const godot::Variant &p_variant) {
 	switch (p_variant.get_type()) {
 		case godot::Variant::BOOL:
-			return [[SentryAttribute alloc] initWithBoolean:p_variant.operator bool()];
+			return [[objc::SentryAttribute alloc] initWithBoolean:p_variant.operator bool()];
 		case godot::Variant::INT:
-			return [[SentryAttribute alloc] initWithInteger:p_variant.operator int64_t()];
+			return [[objc::SentryAttribute alloc] initWithInteger:p_variant.operator int64_t()];
 		case godot::Variant::FLOAT:
-			return [[SentryAttribute alloc] initWithDouble:p_variant.operator double()];
+			return [[objc::SentryAttribute alloc] initWithDouble:p_variant.operator double()];
 		case godot::Variant::STRING:
-			return [[SentryAttribute alloc] initWithString:string_to_objc(p_variant.operator godot::String())];
+			return [[objc::SentryAttribute alloc] initWithString:string_to_objc(p_variant.operator godot::String())];
 		default:
-			return [[SentryAttribute alloc] initWithString:string_to_objc(p_variant.stringify())];
+			return [[objc::SentryAttribute alloc] initWithString:string_to_objc(p_variant.stringify())];
+	}
+}
+
+_FORCE_INLINE_ objc::SentryAttributeContent *variant_to_attribute_content(const godot::Variant &p_variant) {
+	switch (p_variant.get_type()) {
+		case godot::Variant::BOOL:
+			return [objc::SentryAttributeContent boolean:p_variant.operator bool()];
+		case godot::Variant::INT:
+			return [objc::SentryAttributeContent integer:(NSInteger)p_variant.operator int64_t()];
+		case godot::Variant::FLOAT:
+			return [objc::SentryAttributeContent double:p_variant.operator double()];
+		case godot::Variant::STRING:
+			return [objc::SentryAttributeContent string:string_to_objc(p_variant.operator godot::String())];
+		default:
+			return [objc::SentryAttributeContent string:string_to_objc(p_variant.stringify())];
 	}
 }
 

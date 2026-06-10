@@ -88,8 +88,8 @@ def update_cocoa_framework():
             stored_version = version_file.read_text().strip()
             if stored_version == cocoa_version:
                 # Check if framework actually exists
-                xcframework_path = cocoa_dir / "Sentry-Dynamic.xcframework"
-                headers_path = cocoa_dir / "macos_include" / "Sentry"
+                xcframework_path = cocoa_dir / "SentryObjC-Dynamic.xcframework"
+                headers_path = cocoa_dir / "macos_include" / "SentryObjC"
                 if xcframework_path.exists() and headers_path.exists():
                     should_download = False
                     print(f"Detected Sentry Cocoa SDK v{cocoa_version} – up-to-date!")
@@ -104,8 +104,8 @@ def update_cocoa_framework():
         cocoa_dir.mkdir(parents=True, exist_ok=True)
 
         # Download dynamic framework
-        framework_url = f"{cocoa_repo}/releases/download/{cocoa_version}/Sentry-Dynamic.xcframework.zip"
-        zip_path = cocoa_dir / "Sentry-Dynamic.xcframework.zip"
+        framework_url = f"{cocoa_repo}/releases/download/{cocoa_version}/SentryObjC-Dynamic.xcframework.zip"
+        zip_path = cocoa_dir / "SentryObjC-Dynamic.xcframework.zip"
 
         try:
             print(f"Downloading {framework_url}")
@@ -117,7 +117,7 @@ def update_cocoa_framework():
             zip_path.unlink() # delete file
             version_file.write_text(cocoa_version)
 
-            print(f"Successfully fetched Sentry-Dynamic.xcframework {cocoa_version}.")
+            print(f"Successfully fetched SentryObjC-Dynamic.xcframework {cocoa_version}.")
 
         except Exception as e:
             print(f"ERROR: Failed to download Sentry framework: {e}.")
@@ -125,9 +125,9 @@ def update_cocoa_framework():
 
         # Prepare headers
         print("Preparing headers for macOS...")
-        headers_dest = cocoa_dir / "macos_include" / "Sentry"
+        headers_dest = cocoa_dir / "macos_include" / "SentryObjC"
         headers_dest.mkdir(parents=True, exist_ok=True)
-        macos_framework = cocoa_dir / "Sentry-Dynamic.xcframework" / "macos-arm64_x86_64" / "Sentry.framework"
+        macos_framework = cocoa_dir / "SentryObjC-Dynamic.xcframework" / "macos-arm64_x86_64" / "SentryObjC.framework"
 
         if macos_framework.exists():
             # Copy Headers
@@ -156,10 +156,10 @@ ios_simulator = env.get("ios_simulator", False)
 # Configuring Cocoa framework.
 if platform in ["macos", "ios"]:
     project_root = Path(env.Dir("#").abspath)
-    xcframework_path = project_root / "modules/sentry-cocoa/Sentry-Dynamic.xcframework"
+    xcframework_path = project_root / "modules/sentry-cocoa/SentryObjC-Dynamic.xcframework"
 
     if not xcframework_path.exists():
-        print(f"ERROR: Sentry-Dynamic.xcframework is missing at {xcframework_path}.")
+        print(f"ERROR: SentryObjC-Dynamic.xcframework is missing at {xcframework_path}.")
         Exit(1)
 
     env.Append(
@@ -173,7 +173,7 @@ if platform in ["macos", "ios"]:
     # Add Sentry Cocoa framework to compilation.
 
     if platform == "macos":
-        framework_dir = xcframework_path / "macos-arm64_x86_64/Sentry.framework"
+        framework_dir = xcframework_path / "macos-arm64_x86_64/SentryObjC.framework"
         env.Append(
             CPPPATH=f"{project_root}/modules/sentry-cocoa/macos_include/",
             LIBPATH=f"{project_root}/project/addons/sentry/bin/macos/",
@@ -185,9 +185,9 @@ if platform in ["macos", "ios"]:
         )
     else:
         if ios_simulator:
-            framework_dir = xcframework_path / "ios-arm64_x86_64-simulator/Sentry.framework"
+            framework_dir = xcframework_path / "ios-arm64_x86_64-simulator/SentryObjC.framework"
         else:
-            framework_dir = xcframework_path / "ios-arm64/Sentry.framework"
+            framework_dir = xcframework_path / "ios-arm64/SentryObjC.framework"
 
         if not framework_dir.exists():
             print(f"ERROR: iOS framework slice is missing at {framework_dir}.")
@@ -198,7 +198,7 @@ if platform in ["macos", "ios"]:
         env.Append(
             CPPFLAGS=["-F" + str(framework_container_dir)],
             LINKFLAGS=[
-                "-framework", "Sentry",
+                "-framework", "SentryObjC",
                 "-F" + str(framework_container_dir),
                 # Allow extension to find framework in addons/sentry/ directory.
                 "-Wl,-rpath,@loader_path/..",
@@ -373,7 +373,7 @@ def DeploySentryCocoa(self, target_dir):
 
     platform = env["platform"]
     project_root = Path(env.Dir("#").abspath)
-    source_xcframework = project_root / "modules/sentry-cocoa/Sentry-Dynamic.xcframework"
+    source_xcframework = project_root / "modules/sentry-cocoa/SentryObjC-Dynamic.xcframework"
     target_dir_path = Path(str(target_dir))
 
     commands = []
@@ -393,23 +393,28 @@ def DeploySentryCocoa(self, target_dir):
         )
         Clean(commands, Dir(target_framework))
 
-        # Debug symbols
-        commands.append(
-            env.Copy(
-                Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64.framework.dSYM"),
-                Dir(source_xcframework / "ios-arm64" / "dSYMs" / "Sentry.framework.dSYM"),
-            )
-        )
+        # GAP: Unlike Sentry-Dynamic, the SentryObjC-Dynamic artifact ships without
+        #      dSYM bundles, so no debug symbols are deployed for the Cocoa SDK binary.
+        #      Looks like a packaging gap.
+        # TODO: Raise this issue in the upstream project.
 
-        commands.append(
-            env.Copy(
-                Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64_x86_64-simulator.framework.dSYM"),
-                Dir(source_xcframework / "ios-arm64_x86_64-simulator" / "dSYMs" / "Sentry.framework.dSYM")
-            )
-        )
+        # Debug symbols
+        # commands.append(
+        #     env.Copy(
+        #         Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64.framework.dSYM"),
+        #         Dir(source_xcframework / "ios-arm64" / "dSYMs" / "Sentry.framework.dSYM"),
+        #     )
+        # )
+
+        # commands.append(
+        #     env.Copy(
+        #         Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64_x86_64-simulator.framework.dSYM"),
+        #         Dir(source_xcframework / "ios-arm64_x86_64-simulator" / "dSYMs" / "Sentry.framework.dSYM")
+        #     )
+        # )
 
     elif platform == "macos":
-        source_framework = source_xcframework / "macos-arm64_x86_64/Sentry.framework"
+        source_framework = source_xcframework / "macos-arm64_x86_64/SentryObjC.framework"
 
         def patch_install_name_action(target, source, env):
             """Patch install name after copy"""
@@ -433,7 +438,7 @@ def DeploySentryCocoa(self, target_dir):
         commands.append(
             env.Command(
                 File(lib_path),
-                File(source_framework / "Versions/A/Sentry"),
+                File(source_framework / "Versions/A/SentryObjC"),
                 [
                     Copy("$TARGET", "$SOURCE"),
                     patch_install_name_action
@@ -442,12 +447,12 @@ def DeploySentryCocoa(self, target_dir):
         )
 
         # Debug symbols
-        commands.append(
-            env.Copy(
-                Dir(target_dir_path / "dSYMs" / "libSentry.dylib.dSYM"),
-                Dir(source_xcframework / "macos-arm64_x86_64" / "dSYMs" / "Sentry.framework.dSYM")
-            )
-        )
+        # commands.append(
+        #     env.Copy(
+        #         Dir(target_dir_path / "dSYMs" / "libSentry.dylib.dSYM"),
+        #         Dir(source_xcframework / "macos-arm64_x86_64" / "dSYMs" / "Sentry.framework.dSYM")
+        #     )
+        # )
 
     else:
         print("ERROR: Unexpected platform: ", platform)
