@@ -287,11 +287,10 @@ bool CocoaEvent::is_crash() const {
 String CocoaEvent::to_json() const {
 	ERR_FAIL_NULL_V(cocoa_event, String());
 
-	// GAP: SentryObjCEvent doesn't expose `serialize`, so the event can't be converted
-	//      to JSON with the SentryObjC wrapper SDK.
-	// TODO: Needs upstream exposure.
-	WARN_PRINT_ONCE("Sentry: SentryEvent.to_json() is not supported with the SentryObjC SDK prototype.");
-	return String();
+	objc::SentryEnvelopeItem *item = [[objc::SentryEnvelopeItem alloc] initWithEvent:cocoa_event];
+	ERR_FAIL_NULL_V_MSG(item.data, String(), "Sentry: Failed to serialize event to JSON.");
+
+	return String::utf8((const char *)item.data.bytes, item.data.length);
 }
 
 CocoaEvent::CocoaEvent() :

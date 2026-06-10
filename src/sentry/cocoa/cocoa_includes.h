@@ -40,6 +40,7 @@ using SentryAttributeContent = ::SentryObjCAttributeContent;
 using SentryUnit = ::SentryObjCUnit;
 using SentryMetric = ::SentryObjCMetric;
 using SentryMetricValue = ::SentryObjCMetricValue;
+using SentryEnvelopeItem = ::SentryObjCEnvelopeItem;
 using PrivateSentrySDKOnly = ::SentryObjCPrivateSDKOnly;
 
 } // namespace objc
