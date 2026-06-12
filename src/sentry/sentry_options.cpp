@@ -430,7 +430,7 @@ void SentryOptions::_bind_methods() {
 	}
 
 	// DEPRECATED: These properties are deprecated and remain for compatibility reasons.
-	// TODO: Remove these after December 2026 or in version 3.0.
+	// TODO: Remove these in January 2027 or in version 3.0.
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_messages_as_breadcrumbs"), deprecated_set_logger_messages_as_breadcrumbs, deprecated_is_logger_messages_as_breadcrumbs_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), deprecated_set_app_hang_tracking, deprecated_get_app_hang_tracking);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), deprecated_set_app_hang_timeout_sec, deprecated_get_app_hang_timeout_sec);
