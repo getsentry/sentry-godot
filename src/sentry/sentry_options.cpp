@@ -147,19 +147,19 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/app_hang/timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), p_options->app_hang_timeout_ms, false);
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
-	_define_setting("sentry/logger/logger_enabled", logger_options->get_enabled());
-	_define_setting("sentry/logger/include_source", logger_options->get_include_source_context(), false);
-	_define_setting("sentry/logger/include_variables", logger_options->get_include_variables(), false);
-	_requires_restart("sentry/logger/include_variables");
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING_FOR_EVENTS()), logger_options->get_event_mask(), false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), logger_options->get_breadcrumb_mask(), false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/logs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), logger_options->get_log_mask(), false);
+	_define_setting("sentry/godot_logger/enabled", logger_options->get_enabled());
+	_define_setting("sentry/godot_logger/include_source_context", logger_options->get_include_source_context(), false);
+	_define_setting("sentry/godot_logger/include_variables", logger_options->get_include_variables(), false);
+	_requires_restart("sentry/godot_logger/include_variables");
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING_FOR_EVENTS()), logger_options->get_event_mask(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), logger_options->get_breadcrumb_mask(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/logs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), logger_options->get_log_mask(), false);
 
 	Ref<SentryLoggerLimits> limits = logger_options->get_limits();
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), limits->get_events_per_frame(), false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), limits->get_repeated_error_window_ms(), false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), limits->get_throttle_events(), false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), limits->get_throttle_window_ms(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), limits->get_events_per_frame(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), limits->get_repeated_error_window_ms(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), limits->get_throttle_events(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), limits->get_throttle_window_ms(), false);
 
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/enable_detection"), p_options->get_android()->get_enable_anr_detection(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_interval_ms"), p_options->get_android()->get_anr_timeout_interval_ms(), false);
@@ -240,18 +240,18 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->app_hang_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_ms", p_options->app_hang_timeout_ms);
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
-	logger_options->set_enabled(ProjectSettings::get_singleton()->get_setting("sentry/logger/logger_enabled", logger_options->get_enabled()));
-	logger_options->set_include_source_context(ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", logger_options->get_include_source_context()));
-	logger_options->set_include_variables(ProjectSettings::get_singleton()->get_setting("sentry/logger/include_variables", logger_options->get_include_variables()));
-	logger_options->set_event_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/logger/events", logger_options->get_event_mask()));
-	logger_options->set_breadcrumb_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/logger/breadcrumbs", logger_options->get_breadcrumb_mask()));
-	logger_options->set_log_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/logger/logs", logger_options->get_log_mask()));
+	logger_options->set_enabled(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/enabled", logger_options->get_enabled()));
+	logger_options->set_include_source_context(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/include_source_context", logger_options->get_include_source_context()));
+	logger_options->set_include_variables(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/include_variables", logger_options->get_include_variables()));
+	logger_options->set_event_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/events", logger_options->get_event_mask()));
+	logger_options->set_breadcrumb_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/breadcrumbs", logger_options->get_breadcrumb_mask()));
+	logger_options->set_log_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/logs", logger_options->get_log_mask()));
 
 	Ref<SentryLoggerLimits> limits = logger_options->get_limits();
-	limits->set_events_per_frame(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/events_per_frame", limits->get_events_per_frame()));
-	limits->set_repeated_error_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/repeated_error_window_ms", limits->get_repeated_error_window_ms()));
-	limits->set_throttle_events(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_events", limits->get_throttle_events()));
-	limits->set_throttle_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_window_ms", limits->get_throttle_window_ms()));
+	limits->set_events_per_frame(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/events_per_frame", limits->get_events_per_frame()));
+	limits->set_repeated_error_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/repeated_error_window_ms", limits->get_repeated_error_window_ms()));
+	limits->set_throttle_events(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/throttle_events", limits->get_throttle_events()));
+	limits->set_throttle_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/throttle_window_ms", limits->get_throttle_window_ms()));
 
 	p_options->android->set_enable_anr_detection(
 			ProjectSettings::get_singleton()->get_setting(
