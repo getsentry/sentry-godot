@@ -171,7 +171,7 @@ public sealed class SentryGodotLoggerOptions
     /// <summary>
     /// If enabled, the SDK will capture logged errors as events, breadcrumbs and/or logs, as defined
     /// by <see cref="EventMask"/>, <see cref="BreadcrumbMask"/> and <see cref="LogMask"/>.
-    /// Crashes are always captured. See also <see cref="SentryOptions.EnableLogs"/>.
+    /// Crashes are always captured.
     /// </summary>
     /// <remarks>
     /// This setting controls GDScript/engine error reporting, not .NET errors.

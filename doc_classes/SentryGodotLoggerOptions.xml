@@ -15,7 +15,7 @@
 			Specifies the Godot logger events that are automatically captured as Sentry breadcrumbs. Accepts a single value or a bitwise combination of [enum SentryOptions.GodotLoggerEventMask] masks.
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled" default="true">
-			If [code]true[/code], the SDK will capture logged errors as events, breadcrumbs and/or logs, as defined by [member event_mask], [member breadcrumb_mask] and [member log_mask]. Crashes are always captured. See also [member SentryOptions.enable_logs].
+			If [code]true[/code], the SDK will capture logged errors as events, breadcrumbs and/or logs, as defined by [member event_mask], [member breadcrumb_mask] and [member log_mask]. Crashes are always captured.
 		</member>
 		<member name="event_mask" type="int" setter="set_event_mask" getter="get_event_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="13">
 			Specifies the Godot logger events that are automatically captured as Sentry events. Accepts a single value or a bitwise combination of [enum SentryOptions.GodotLoggerEventMask] masks.
