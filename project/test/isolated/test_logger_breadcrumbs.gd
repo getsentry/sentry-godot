@@ -4,7 +4,7 @@ extends SentryTestSuite
 
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.logger_breadcrumb_mask |= SentryOptions.MASK_MESSAGE
+		options.godot_logger.breadcrumb_mask |= SentryOptions.MASK_MESSAGE
 	)
 
 

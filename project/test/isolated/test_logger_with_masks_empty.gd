@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
-## Events and breadcrumbs should not be logged when both "logger_event_mask"
-## and "logger_breadcrumb_mask" are set to zero.
+## Events and breadcrumbs should not be logged when both "godot_logger.event_mask"
+## and "godot_logger.breadcrumb_mask" are set to zero.
 
 
 signal callback_processed
@@ -10,8 +10,8 @@ var _num_events: int = 0
 
 func before() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.logger_event_mask = 0
-		options.logger_breadcrumb_mask = 0
+		options.godot_logger.event_mask = 0
+		options.godot_logger.breadcrumb_mask = 0
 
 		options.before_send = _before_send
 	)
