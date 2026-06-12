@@ -122,7 +122,7 @@ Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
 			};
 
 			// Provide script source code context for script errors if available.
-			if (SENTRY_OPTIONS()->get_godot_logger()->get_include_source()) {
+			if (SENTRY_OPTIONS()->get_godot_logger()->get_include_source_context()) {
 				String context_line;
 				PackedStringArray pre_context;
 				PackedStringArray post_context;

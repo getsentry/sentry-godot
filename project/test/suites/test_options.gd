@@ -29,7 +29,7 @@ func test_bool_properties(property: String, test_parameters := [
 @warning_ignore("unused_parameter")
 func test_godot_logger_bool_properties(property: String, test_parameters := [
 		["enabled"],
-		["include_source"],
+		["include_source_context"],
 		["include_variables"],
 ]) -> void:
 	options.godot_logger.set(property, true)
@@ -96,7 +96,7 @@ func test_logger_limit_properties(property: String, test_parameters := [
 @warning_ignore("unused_parameter")
 func test_deprecated_logger_properties(property: String, new_property: String, value: Variant, test_parameters := [
 		["logger_enabled", "enabled", false],
-		["logger_include_source", "include_source", false],
+		["logger_include_source", "include_source_context", false],
 		["logger_include_variables", "include_variables", true],
 		["logger_event_mask", "event_mask", SentryOptions.MASK_SCRIPT | SentryOptions.MASK_SHADER],
 		["logger_breadcrumb_mask", "breadcrumb_mask", SentryOptions.MASK_SCRIPT],

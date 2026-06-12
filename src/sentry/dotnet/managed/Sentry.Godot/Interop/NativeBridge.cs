@@ -108,7 +108,7 @@ internal static partial class NativeBridge
         public byte enable_app_hang_tracking;
         public int app_hang_timeout_ms;
         public byte logger_enabled;
-        public byte logger_include_source;
+        public byte logger_include_source_context;
         public byte logger_include_variables;
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
@@ -146,7 +146,7 @@ internal static partial class NativeBridge
         public byte enable_app_hang_tracking;
         public int app_hang_timeout_ms;
         public byte logger_enabled;
-        public byte logger_include_source;
+        public byte logger_include_source_context;
         public byte logger_include_variables;
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
@@ -477,7 +477,7 @@ internal static partial class NativeBridge
         opts.EnableAppHangTracking = data.enable_app_hang_tracking != 0;
         opts.AppHangTimeout = TimeSpan.FromMilliseconds(data.app_hang_timeout_ms);
         opts.GodotLogger.Enabled = data.logger_enabled != 0;
-        opts.GodotLogger.IncludeSource = data.logger_include_source != 0;
+        opts.GodotLogger.IncludeSourceContext = data.logger_include_source_context != 0;
         opts.GodotLogger.IncludeVariables = data.logger_include_variables != 0;
         opts.GodotLogger.EventMask = (GodotLoggerEventMask)data.logger_event_mask;
         opts.GodotLogger.BreadcrumbMask = (GodotLoggerEventMask)data.logger_breadcrumb_mask;
@@ -768,7 +768,7 @@ internal static partial class NativeBridge
                 enable_app_hang_tracking = (byte)(opts.EnableAppHangTracking ? 1 : 0),
                 app_hang_timeout_ms = (int)opts.AppHangTimeout.TotalMilliseconds,
                 logger_enabled = (byte)(opts.GodotLogger.Enabled ? 1 : 0),
-                logger_include_source = (byte)(opts.GodotLogger.IncludeSource ? 1 : 0),
+                logger_include_source_context = (byte)(opts.GodotLogger.IncludeSourceContext ? 1 : 0),
                 logger_include_variables = (byte)(opts.GodotLogger.IncludeVariables ? 1 : 0),
                 logger_event_mask = (int)opts.GodotLogger.EventMask,
                 logger_breadcrumb_mask = (int)opts.GodotLogger.BreadcrumbMask,

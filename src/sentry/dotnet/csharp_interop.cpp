@@ -137,7 +137,7 @@ struct NativeOptions {
 
 	// Logger
 	uint8_t logger_enabled;
-	uint8_t logger_include_source;
+	uint8_t logger_include_source_context;
 	uint8_t logger_include_variables;
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
@@ -198,7 +198,7 @@ struct ManagedOptions {
 	int32_t app_hang_timeout_ms;
 
 	uint8_t logger_enabled;
-	uint8_t logger_include_source;
+	uint8_t logger_include_source_context;
 	uint8_t logger_include_variables;
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
@@ -241,7 +241,7 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_app_hang_tracking_enabled(data.enable_app_hang_tracking);
 	options->set_app_hang_timeout_ms(data.app_hang_timeout_ms);
 	options->get_godot_logger()->set_enabled(data.logger_enabled);
-	options->get_godot_logger()->set_include_source(data.logger_include_source);
+	options->get_godot_logger()->set_include_source_context(data.logger_include_source_context);
 	options->get_godot_logger()->set_include_variables(data.logger_include_variables);
 	options->get_godot_logger()->set_event_mask(data.logger_event_mask);
 	options->get_godot_logger()->set_breadcrumb_mask(data.logger_breadcrumb_mask);
@@ -279,7 +279,7 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.enable_app_hang_tracking = options->is_app_hang_tracking_enabled();
 	r_data.app_hang_timeout_ms = options->get_app_hang_timeout_ms();
 	r_data.logger_enabled = options->get_godot_logger()->get_enabled();
-	r_data.logger_include_source = options->get_godot_logger()->get_include_source();
+	r_data.logger_include_source_context = options->get_godot_logger()->get_include_source_context();
 	r_data.logger_include_variables = options->get_godot_logger()->get_include_variables();
 	r_data.logger_event_mask = options->get_godot_logger()->get_event_mask();
 	r_data.logger_breadcrumb_mask = options->get_godot_logger()->get_breadcrumb_mask();

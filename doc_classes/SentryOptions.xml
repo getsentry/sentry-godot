@@ -115,7 +115,7 @@
 			Specifies the Godot logger events that are automatically captured as Sentry events. Accepts a single value or a bitwise combination of [enum GodotLoggerEventMask] masks.
 			[b]Note:[/b] [code]MASK_MESSAGE[/code] has no effect here. To capture log messages, set it in [member logger_log_mask] and/or [member logger_breadcrumb_mask] instead.
 		</member>
-		<member name="logger_include_source" type="bool" setter="deprecated_set_logger_include_source" getter="deprecated_is_logger_include_source_enabled" default="true" deprecated="Use [member SentryGodotLoggerOptions.include_source] instead.">
+		<member name="logger_include_source" type="bool" setter="deprecated_set_logger_include_source" getter="deprecated_is_logger_include_source_enabled" default="true" deprecated="Use [member SentryGodotLoggerOptions.include_source_context] instead.">
 			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available in the exported project.
 		</member>
 		<member name="logger_include_variables" type="bool" setter="deprecated_set_logger_include_variables" getter="deprecated_is_logger_include_variables_enabled" default="false" deprecated="Use [member SentryGodotLoggerOptions.include_variables] instead.">

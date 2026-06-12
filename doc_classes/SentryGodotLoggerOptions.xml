@@ -21,7 +21,7 @@
 			Specifies the Godot logger events that are automatically captured as Sentry events. Accepts a single value or a bitwise combination of [enum SentryOptions.GodotLoggerEventMask] masks.
 			[b]Note:[/b] [code]MASK_MESSAGE[/code] has no effect here. To capture log messages, set it in [member log_mask] and/or [member breadcrumb_mask] instead.
 		</member>
-		<member name="include_source" type="bool" setter="set_include_source" getter="get_include_source" default="true">
+		<member name="include_source_context" type="bool" setter="set_include_source_context" getter="get_include_source_context" default="true">
 			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available in the exported project.
 		</member>
 		<member name="include_variables" type="bool" setter="set_include_variables" getter="get_include_variables" default="false">
