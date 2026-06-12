@@ -393,25 +393,20 @@ def DeploySentryCocoa(self, target_dir):
         )
         Clean(commands, Dir(target_framework))
 
-        # GAP: Unlike Sentry-Dynamic, the SentryObjC-Dynamic artifact ships without
-        #      dSYM bundles, so no debug symbols are deployed for the Cocoa SDK binary.
-        #      Looks like a packaging gap.
-        # TODO: Raise this issue in the upstream project.
-
         # Debug symbols
-        # commands.append(
-        #     env.Copy(
-        #         Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64.framework.dSYM"),
-        #         Dir(source_xcframework / "ios-arm64" / "dSYMs" / "Sentry.framework.dSYM"),
-        #     )
-        # )
+        commands.append(
+            env.Copy(
+                Dir(target_dir_path / "dSYMs" / "SentryObjC-ios-arm64.framework.dSYM"),
+                Dir(source_xcframework / "ios-arm64" / "dSYMs" / "SentryObjC.framework.dSYM"),
+            )
+        )
 
-        # commands.append(
-        #     env.Copy(
-        #         Dir(target_dir_path / "dSYMs" / "Sentry-ios-arm64_x86_64-simulator.framework.dSYM"),
-        #         Dir(source_xcframework / "ios-arm64_x86_64-simulator" / "dSYMs" / "Sentry.framework.dSYM")
-        #     )
-        # )
+        commands.append(
+            env.Copy(
+                Dir(target_dir_path / "dSYMs" / "SentryObjC-ios-arm64_x86_64-simulator.framework.dSYM"),
+                Dir(source_xcframework / "ios-arm64_x86_64-simulator" / "dSYMs" / "SentryObjC.framework.dSYM")
+            )
+        )
 
     elif platform == "macos":
         source_framework = source_xcframework / "macos-arm64_x86_64/SentryObjC.framework"
@@ -447,12 +442,12 @@ def DeploySentryCocoa(self, target_dir):
         )
 
         # Debug symbols
-        # commands.append(
-        #     env.Copy(
-        #         Dir(target_dir_path / "dSYMs" / "libSentry.dylib.dSYM"),
-        #         Dir(source_xcframework / "macos-arm64_x86_64" / "dSYMs" / "Sentry.framework.dSYM")
-        #     )
-        # )
+        commands.append(
+            env.Copy(
+                Dir(target_dir_path / "dSYMs" / "libSentry.dylib.dSYM"),
+                Dir(source_xcframework / "macos-arm64_x86_64" / "dSYMs" / "SentryObjC.framework.dSYM")
+            )
+        )
 
     else:
         print("ERROR: Unexpected platform: ", platform)
