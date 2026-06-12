@@ -90,8 +90,8 @@
 			[b]Note:[/b] This feature applies to iOS and macOS only. On Android, [member android] configures ANR (Application Not Responding) detection instead.
 		</member>
 		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="true">
-			Enables Sentry's structured logging. If [code]true[/code], log entries can be emitted through [member SentrySDK.logger], and Godot logger events listed in [member logger_log_mask] are automatically captured as Sentry Logs. [member logger_log_mask] is empty by default, so no events are auto-captured.
-			See [member logger_enabled] and the other [code]logger_*[/code] options to capture Godot errors as Sentry events or breadcrumbs.
+			Enables Sentry's structured logging. If [code]true[/code], log entries can be emitted through [member SentrySDK.logger], and Godot logger events listed in [member SentryGodotLoggerOptions.log_mask] are automatically captured as Sentry Logs. [member SentryGodotLoggerOptions.log_mask] is empty by default, so no events are auto-captured.
+			See [member godot_logger] for options to capture Godot errors as Sentry events or breadcrumbs.
 			For more information, see [url=https://docs.sentry.io/platforms/godot/logs/]Sentry Logs[/url] documentation.
 		</member>
 		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;{auto}&quot;">
@@ -102,30 +102,33 @@
 		<member name="experimental" type="SentryExperimental" setter="" getter="get_experimental">
 			Configures experimental features. Use this to enable and configure features that are not yet stable or generally available in Sentry.
 		</member>
-		<member name="logger_breadcrumb_mask" type="int" setter="set_logger_breadcrumb_mask" getter="get_logger_breadcrumb_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="143">
+		<member name="godot_logger" type="SentryGodotLoggerOptions" setter="" getter="get_godot_logger">
+			Configures the capture of Godot errors and log messages as Sentry events, breadcrumbs, and logs. See [SentryGodotLoggerOptions].
+		</member>
+		<member name="logger_breadcrumb_mask" type="int" setter="deprecated_set_logger_breadcrumb_mask" getter="deprecated_get_logger_breadcrumb_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="143" deprecated="Use [member SentryGodotLoggerOptions.breadcrumb_mask] instead.">
 			Specifies the Godot logger events that are automatically captured as Sentry breadcrumbs. Accepts a single value or a bitwise combination of [enum GodotLoggerEventMask] masks.
 		</member>
-		<member name="logger_enabled" type="bool" setter="set_logger_enabled" getter="is_logger_enabled" default="true">
+		<member name="logger_enabled" type="bool" setter="deprecated_set_logger_enabled" getter="deprecated_is_logger_enabled" default="true" deprecated="Use [member SentryGodotLoggerOptions.enabled] instead.">
 			If [code]true[/code], the SDK will capture logged errors as events, logs and/or breadcrumbs, as defined by [member logger_event_mask] and [member logger_breadcrumb_mask]. Crashes are always captured. See also [member enable_logs].
 		</member>
-		<member name="logger_event_mask" type="int" setter="set_logger_event_mask" getter="get_logger_event_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="13">
+		<member name="logger_event_mask" type="int" setter="deprecated_set_logger_event_mask" getter="deprecated_get_logger_event_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="13" deprecated="Use [member SentryGodotLoggerOptions.event_mask] instead.">
 			Specifies the Godot logger events that are automatically captured as Sentry events. Accepts a single value or a bitwise combination of [enum GodotLoggerEventMask] masks.
 			[b]Note:[/b] [code]MASK_MESSAGE[/code] has no effect here. To capture log messages, set it in [member logger_log_mask] and/or [member logger_breadcrumb_mask] instead.
 		</member>
-		<member name="logger_include_source" type="bool" setter="set_logger_include_source" getter="is_logger_include_source_enabled" default="true">
+		<member name="logger_include_source" type="bool" setter="deprecated_set_logger_include_source" getter="deprecated_is_logger_include_source_enabled" default="true" deprecated="Use [member SentryGodotLoggerOptions.include_source_context] instead.">
 			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available in the exported project.
 		</member>
-		<member name="logger_include_variables" type="bool" setter="set_logger_include_variables" getter="is_logger_include_variables_enabled" default="false">
+		<member name="logger_include_variables" type="bool" setter="deprecated_set_logger_include_variables" getter="deprecated_is_logger_include_variables_enabled" default="false" deprecated="Use [member SentryGodotLoggerOptions.include_variables] instead.">
 			If [code]true[/code], the SDK will include local variables from stack traces when capturing script errors. This allows showing the values of variables at each frame in the call stack. Requires enabling [member ProjectSettings.debug/settings/gdscript/always_track_local_variables].
 			[b]Note:[/b] Enabling this option may impact performance, especially for applications with frequent errors or deep call stacks.
 		</member>
-		<member name="logger_limits" type="SentryLoggerLimits" setter="set_logger_limits" getter="get_logger_limits">
+		<member name="logger_limits" type="SentryLoggerLimits" setter="deprecated_set_logger_limits" getter="deprecated_get_logger_limits" deprecated="Use [member SentryGodotLoggerOptions.limits] instead.">
 			Defines throttling limits for the error logger. These limits are used to prevent the SDK from sending too many non-critical and repeating error events. See [SentryLoggerLimits].
 		</member>
-		<member name="logger_log_mask" type="int" setter="set_logger_log_mask" getter="get_logger_log_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="0">
+		<member name="logger_log_mask" type="int" setter="deprecated_set_logger_log_mask" getter="deprecated_get_logger_log_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="0" deprecated="Use [member SentryGodotLoggerOptions.log_mask] instead.">
 			Specifies the Godot logger events that are automatically captured as Sentry logs. Accepts a single value or a bitwise combination of [enum GodotLoggerEventMask] masks.
 		</member>
-		<member name="logger_messages_as_breadcrumbs" type="bool" setter="set_logger_messages_as_breadcrumbs" getter="is_logger_messages_as_breadcrumbs_enabled" default="true" deprecated="Set the [code]MASK_MESSAGE[/code] flag in [member logger_breadcrumb_mask] instead.">
+		<member name="logger_messages_as_breadcrumbs" type="bool" setter="deprecated_set_logger_messages_as_breadcrumbs" getter="deprecated_is_logger_messages_as_breadcrumbs_enabled" default="true" deprecated="Set the [code]MASK_MESSAGE[/code] flag in [member SentryGodotLoggerOptions.breadcrumb_mask] instead.">
 			If [code]true[/code], the SDK will capture log messages (such as [code]print()[/code] statements) as breadcrumbs along with events.
 		</member>
 		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">

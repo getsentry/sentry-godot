@@ -18,13 +18,24 @@ func test_bool_properties(property: String, test_parameters := [
 		["attach_screenshot"],
 		["attach_scene_tree"],
 		["send_default_pii"],
-		["logger_enabled"],
-		["logger_include_source"],
 ]) -> void:
 	options.set(property, true)
 	assert_bool(options.get(property)).is_true()
 	options.set(property, false)
 	assert_bool(options.get(property)).is_false()
+
+
+## Test simple bool properties on godot_logger options.
+@warning_ignore("unused_parameter")
+func test_godot_logger_bool_properties(property: String, test_parameters := [
+		["enabled"],
+		["include_source_context"],
+		["include_variables"],
+]) -> void:
+	options.godot_logger.set(property, true)
+	assert_bool(options.godot_logger.get(property)).is_true()
+	options.godot_logger.set(property, false)
+	assert_bool(options.godot_logger.get(property)).is_false()
 
 
 ## Test simple string properties.
@@ -57,18 +68,16 @@ func test_shutdown_timeout_ms() -> void:
 	assert_int(options.shutdown_timeout_ms).is_equal(5000)
 
 
-## SentryOptions.logger_event_mask should be set to the specified value.
-func test_logger_event_mask() -> void:
+## Test mask properties on godot_logger options.
+@warning_ignore("unused_parameter")
+func test_godot_logger_mask_properties(property: String, test_parameters := [
+		["event_mask"],
+		["breadcrumb_mask"],
+		["log_mask"],
+]) -> void:
 	var mask := SentryOptions.MASK_SCRIPT | SentryOptions.MASK_SHADER
-	options.logger_event_mask = mask
-	assert_int(options.logger_event_mask).is_equal(mask)
-
-
-## SentryOptions.logger_breadcrumb_mask should be set to the specified value.
-func test_logger_breadcrumb_mask() -> void:
-	var mask := SentryOptions.MASK_SCRIPT | SentryOptions.MASK_SHADER
-	options.logger_breadcrumb_mask = mask
-	assert_int(options.logger_breadcrumb_mask).is_equal(mask)
+	options.godot_logger.set(property, mask)
+	assert_int(options.godot_logger.get(property)).is_equal(mask)
 
 
 ## Test integer error logger limit properties.
@@ -79,8 +88,31 @@ func test_logger_limit_properties(property: String, test_parameters := [
 		["throttle_events"],
 		["throttle_window_ms"],
 ]) -> void:
-	options.logger_limits.set(property, 42)
-	assert_int(options.logger_limits.get(property)).is_equal(42)
+	options.godot_logger.limits.set(property, 42)
+	assert_int(options.godot_logger.limits.get(property)).is_equal(42)
+
+
+## Deprecated flat logger_* properties should proxy to godot_logger options.
+@warning_ignore("unused_parameter")
+func test_deprecated_logger_properties(property: String, new_property: String, value: Variant, test_parameters := [
+		["logger_enabled", "enabled", false],
+		["logger_include_source", "include_source_context", false],
+		["logger_include_variables", "include_variables", true],
+		["logger_event_mask", "event_mask", SentryOptions.MASK_SCRIPT | SentryOptions.MASK_SHADER],
+		["logger_breadcrumb_mask", "breadcrumb_mask", SentryOptions.MASK_SCRIPT],
+		["logger_log_mask", "log_mask", SentryOptions.MASK_ERROR],
+]) -> void:
+	options.set(property, value)
+	assert_that(options.godot_logger.get(new_property)).is_equal(value)
+	assert_that(options.get(property)).is_equal(value)
+
+
+## Deprecated logger_messages_as_breadcrumbs should toggle MASK_MESSAGE in godot_logger.breadcrumb_mask.
+func test_deprecated_logger_messages_as_breadcrumbs() -> void:
+	options.logger_messages_as_breadcrumbs = false
+	assert_int(options.godot_logger.breadcrumb_mask & SentryOptions.MASK_MESSAGE).is_equal(0)
+	options.logger_messages_as_breadcrumbs = true
+	assert_int(options.godot_logger.breadcrumb_mask & SentryOptions.MASK_MESSAGE).is_equal(SentryOptions.MASK_MESSAGE)
 
 
 ## Test properties with SentrySDK.Level type.
