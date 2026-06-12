@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryGodotLoggerOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Options for capturing Godot errors and log messages.
+	</brief_description>
+	<description>
+		Contains configuration options that control how the SDK captures Godot errors and log messages as Sentry events, breadcrumbs, and logs. This includes engine errors, GDScript and shader errors, GDExtension errors, [code]push_error()[/code] and [code]push_warning()[/code] statements, as well as log messages from [code]print()[/code] and similar functions.
+		Access this configuration through [member SentryOptions.godot_logger].
+		See also [SentryOptions].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="breadcrumb_mask" type="int" setter="set_breadcrumb_mask" getter="get_breadcrumb_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="143">
+			Specifies the Godot logger events that are automatically captured as Sentry breadcrumbs. Accepts a single value or a bitwise combination of [enum SentryOptions.GodotLoggerEventMask] masks.
+		</member>
+		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled" default="true">
+			If [code]true[/code], the SDK will capture logged errors as events, breadcrumbs and/or logs, as defined by [member event_mask], [member breadcrumb_mask] and [member log_mask]. Crashes are always captured. See also [member SentryOptions.enable_logs].
+		</member>
+		<member name="event_mask" type="int" setter="set_event_mask" getter="get_event_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="13">
+			Specifies the Godot logger events that are automatically captured as Sentry events. Accepts a single value or a bitwise combination of [enum SentryOptions.GodotLoggerEventMask] masks.
+			[b]Note:[/b] [code]MASK_MESSAGE[/code] has no effect here. To capture log messages, set it in [member log_mask] and/or [member breadcrumb_mask] instead.
+		</member>
+		<member name="include_source" type="bool" setter="set_include_source" getter="get_include_source" default="true">
+			If [code]true[/code], the SDK will include the surrounding source code of logged errors, if available in the exported project.
+		</member>
+		<member name="include_variables" type="bool" setter="set_include_variables" getter="get_include_variables" default="false">
+			If [code]true[/code], the SDK will include local variables from stack traces when capturing script errors. This allows showing the values of variables at each frame in the call stack. Requires enabling [member ProjectSettings.debug/settings/gdscript/always_track_local_variables].
+			[b]Note:[/b] Enabling this option may impact performance, especially for applications with frequent errors or deep call stacks.
+		</member>
+		<member name="limits" type="SentryLoggerLimits" setter="" getter="get_limits">
+			Defines throttling limits for the error logger. These limits are used to prevent the SDK from sending too many non-critical and repeating error events. See [SentryLoggerLimits].
+		</member>
+		<member name="log_mask" type="int" setter="set_log_mask" getter="get_log_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="0">
+			Specifies the Godot logger events that are automatically captured as Sentry logs. Accepts a single value or a bitwise combination of [enum SentryOptions.GodotLoggerEventMask] masks. Empty by default, so no events are captured as logs.
+			[b]Note:[/b] Log capture requires [member SentryOptions.enable_logs] to be enabled.
+		</member>
+	</members>
+</class>
