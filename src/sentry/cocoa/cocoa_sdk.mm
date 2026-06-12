@@ -4,19 +4,19 @@
 #include "cocoa_event.h"
 #include "cocoa_includes.h"
 #include "cocoa_log.h"
+#include "cocoa_metric.h"
 #include "cocoa_util.h"
 #include "sentry/common_defs.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
+#include "sentry/processing/process_metric.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_sdk.h"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/mutex_lock.hpp>
-
-#import <Sentry/PrivateSentrySDKOnly.h>
 
 using namespace godot;
 
@@ -39,11 +39,22 @@ NSObject *_as_attribute(const Variant &p_value) {
 	}
 }
 
-SentryAttachmentType _attachment_type_to_objc(const String &p_attachment_type) {
+objc::SentryAttachmentType _attachment_type_to_objc(const String &p_attachment_type) {
 	if (p_attachment_type == "event.view_hierarchy") {
-		return kSentryAttachmentTypeViewHierarchy;
+		return SentryObjCAttachmentTypeViewHierarchy;
 	}
-	return kSentryAttachmentTypeEventAttachment;
+	return SentryObjCAttachmentTypeEventAttachment;
+}
+
+NSDictionary<NSString *, objc::SentryAttributeContent *> *_metric_attributes_to_objc(const Dictionary &p_attributes) {
+	NSMutableDictionary<NSString *, objc::SentryAttributeContent *> *attributes =
+			[NSMutableDictionary dictionaryWithCapacity:p_attributes.size()];
+	const Array &keys = p_attributes.keys();
+	for (int i = 0; i < keys.size(); i++) {
+		const String &key = keys[i];
+		attributes[sentry::cocoa::string_to_objc(key)] = sentry::cocoa::variant_to_attribute_content(p_attributes[key]);
+	}
+	return attributes;
 }
 
 void _add_default_attachments(objc::SentryScope *p_scope) {
@@ -211,13 +222,12 @@ void CocoaSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 		id = [[objc::SentryId alloc] initWithUUIDString:string_to_objc(p_feedback->get_associated_event_id())];
 	}
 
-	objc::SentryFeedback *cocoa_feedback = [[objc::SentryFeedback alloc] initWithMessage:string_to_objc(p_feedback->get_message())
-																					name:string_to_objc_or_nil_if_empty(p_feedback->get_name())
-																				   email:string_to_objc_or_nil_if_empty(p_feedback->get_contact_email())
-																				  source:SentryFeedbackSourceCustom
-																	   associatedEventId:id
-																			 attachments:nil];
-	[objc::SentrySDK captureFeedback:cocoa_feedback];
+	[objc::SentrySDK captureFeedbackWithMessage:string_to_objc(p_feedback->get_message())
+										   name:string_to_objc_or_nil_if_empty(p_feedback->get_name())
+										  email:string_to_objc_or_nil_if_empty(p_feedback->get_contact_email())
+										 source:SentryObjCFeedbackSourceCustom
+							  associatedEventId:id
+									attachments:nil];
 }
 
 void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
@@ -264,20 +274,34 @@ void CocoaSDK::clear_attachments() {
 }
 
 void CocoaSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
-	WARN_PRINT_ONCE("Metrics are currently not supported on Apple platforms.");
+	[[objc::SentrySDK metrics] countWithKey:string_to_objc(p_name)
+									  value:(NSUInteger)MAX(p_value, (int64_t)0)
+								 attributes:_metric_attributes_to_objc(p_attributes)];
 }
 
 void CocoaSDK::metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
-	WARN_PRINT_ONCE("Metrics are currently not supported on Apple platforms.");
+	objc::SentryUnit *unit = p_unit.is_empty()
+			? nil
+			: [[objc::SentryUnit alloc] initWithRawValue:string_to_objc(p_unit)];
+	[[objc::SentrySDK metrics] gaugeWithKey:string_to_objc(p_name)
+									  value:p_value
+									   unit:unit
+								 attributes:_metric_attributes_to_objc(p_attributes)];
 }
 
 void CocoaSDK::metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
-	WARN_PRINT_ONCE("Metrics are currently not supported on Apple platforms.");
+	objc::SentryUnit *unit = p_unit.is_empty()
+			? nil
+			: [[objc::SentryUnit alloc] initWithRawValue:string_to_objc(p_unit)];
+	[[objc::SentrySDK metrics] distributionWithKey:string_to_objc(p_name)
+											 value:p_value
+											  unit:unit
+										attributes:_metric_attributes_to_objc(p_attributes)];
 }
 
 void CocoaSDK::set_attribute(const String &p_name, const Variant &p_value) {
 	[objc::SentrySDK configureScope:^(objc::SentryScope *scope) {
-		[scope setAttributeValue:variant_to_attribute(p_value) forKey:string_to_objc(p_name)];
+		[scope setAttributeValue:_as_attribute(p_value) forKey:string_to_objc(p_name)];
 	}];
 }
 
@@ -295,11 +319,11 @@ void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_i
 			? [[objc::SentrySpanId alloc] init]
 			: [[objc::SentrySpanId alloc] initWithValue:string_to_objc(p_parent_span_id)];
 
-	[PrivateSentrySDKOnly setTrace:trace_id spanId:span_id];
+	[objc::PrivateSentrySDKOnly setTrace:trace_id spanId:span_id];
 }
 
 void CocoaSDK::init() {
-	[PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
+	[objc::PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.godot"];
 
 	[objc::SentrySDK startWithConfigureOptions:^(objc::SentryOptions *options) {
 		options.dsn = string_to_objc(SENTRY_OPTIONS()->get_dsn());
@@ -324,6 +348,7 @@ void CocoaSDK::init() {
 		options.attachStacktrace = false;
 
 		options.enableLogs = SENTRY_OPTIONS()->get_enable_logs();
+		options.enableMetrics = SENTRY_OPTIONS()->get_experimental()->get_enable_metrics();
 
 		options.initialScope = ^(objc::SentryScope *scope) {
 			_add_default_attachments(scope);
@@ -363,6 +388,18 @@ void CocoaSDK::init() {
 					return nil;
 				}
 				return log;
+			};
+		}
+
+		if (SENTRY_OPTIONS()->get_experimental()->get_before_send_metric().is_valid()) {
+			options.beforeSendMetric = ^objc::SentryMetric *(objc::SentryMetric *metric) {
+				Ref<CocoaMetric> metric_obj = memnew(CocoaMetric(metric));
+				Ref<CocoaMetric> processed = sentry::process_metric(metric_obj);
+
+				if (unlikely(processed.is_null())) {
+					return nil;
+				}
+				return metric;
 			};
 		}
 	}];

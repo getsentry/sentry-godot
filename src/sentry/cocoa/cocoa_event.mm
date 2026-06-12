@@ -4,34 +4,6 @@
 
 #include <godot_cpp/classes/os.hpp>
 
-namespace {
-
-inline NSMutableDictionary *as_mutable_dict(NSDictionary *p_dict) {
-	if ([p_dict isKindOfClass:[NSMutableDictionary class]]) {
-		return (NSMutableDictionary *)p_dict;
-	} else {
-		return [p_dict mutableCopy] ?: [NSMutableDictionary dictionary];
-	}
-}
-
-// clang-format off
-
-// Access NSDictionary property of an object as mutable (create a copy if needed).
-#define AS_MUTABLE_DICT(obj, prop) 												\
-    ([obj.prop isKindOfClass:[NSMutableDictionary class]] ? 					\
-    (NSMutableDictionary *)obj.prop : 											\
-    (NSMutableDictionary *)(obj.prop = ([obj.prop mutableCopy] ?: [NSMutableDictionary dictionary])))
-
-// Access NSArray property of an object as mutable (create a copy if needed).
-#define AS_MUTABLE_ARRAY(obj, prop)												\
-	([obj.prop isKindOfClass:[NSMutableArray class]] ? 							\
-	(NSMutableArray *)obj.prop : 												\
-	(NSMutableArray *)(obj.prop = ([obj.prop mutableCopy] ?: [NSMutableArray array])))
-
-// clang-format on
-
-} // unnamed namespace
-
 namespace sentry::cocoa {
 
 String CocoaEvent::get_id() const {
@@ -156,8 +128,9 @@ void CocoaEvent::set_tag(const String &p_key, const String &p_value) {
 	NSString *k = string_to_objc(p_key);
 	NSString *v = string_to_objc(p_value);
 
-	NSMutableDictionary *mut_tags = AS_MUTABLE_DICT(cocoa_event, tags);
+	NSMutableDictionary *mut_tags = [cocoa_event.tags mutableCopy] ?: [NSMutableDictionary dictionary];
 	mut_tags[k] = v;
+	cocoa_event.tags = mut_tags;
 }
 
 void CocoaEvent::remove_tag(const String &p_key) {
@@ -165,8 +138,13 @@ void CocoaEvent::remove_tag(const String &p_key) {
 
 	ERR_FAIL_NULL(cocoa_event);
 
-	NSMutableDictionary *mut_tags = AS_MUTABLE_DICT(cocoa_event, tags);
+	if (cocoa_event.tags == nil) {
+		return;
+	}
+
+	NSMutableDictionary *mut_tags = [cocoa_event.tags mutableCopy];
 	[mut_tags removeObjectForKey:string_to_objc(p_key)];
+	cocoa_event.tags = mut_tags;
 }
 
 String CocoaEvent::get_tag(const String &p_key) {
@@ -190,14 +168,14 @@ void CocoaEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 
 	ERR_FAIL_NULL(cocoa_event);
 
-	NSMutableDictionary *mut_contexts = AS_MUTABLE_DICT(cocoa_event, context);
+	NSMutableDictionary *mut_contexts = [cocoa_event.context mutableCopy] ?: [NSMutableDictionary dictionary];
 
 	NSString *context_name = string_to_objc(p_key);
 
 	NSDictionary *existing_context = [mut_contexts objectForKey:context_name];
 	if (existing_context) {
 		// If context exists, update it with new values.
-		NSMutableDictionary *mut_exisiting_context = as_mutable_dict(existing_context);
+		NSMutableDictionary *mut_exisiting_context = [existing_context mutableCopy] ?: [NSMutableDictionary dictionary];
 		const Array &updated_keys = p_value.keys();
 		for (int i = 0; i < updated_keys.size(); i++) {
 			const String &key = updated_keys[i];
@@ -208,6 +186,8 @@ void CocoaEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 		// If context doesn't exist, just add it.
 		mut_contexts[context_name] = dictionary_to_objc(p_value);
 	}
+
+	cocoa_event.context = mut_contexts;
 }
 
 void CocoaEvent::add_exception(const Exception &p_exception) {
@@ -253,14 +233,16 @@ void CocoaEvent::add_exception(const Exception &p_exception) {
 	cocoa_thread.current = [NSNumber numberWithBool:YES];
 	cocoa_thread.isMain = bool_to_objc(is_main);
 
-	NSMutableArray *mut_threads = AS_MUTABLE_ARRAY(cocoa_event, threads);
+	NSMutableArray *mut_threads = [cocoa_event.threads mutableCopy] ?: [NSMutableArray array];
 	[mut_threads addObject:cocoa_thread];
+	cocoa_event.threads = mut_threads;
 
 	objc::SentryException *cocoa_exception = [[objc::SentryException alloc] initWithValue:string_to_objc(p_exception.value)
 																					 type:string_to_objc(p_exception.type)];
 	cocoa_exception.threadId = uint64_to_objc(thread_id);
-	NSMutableArray *mut_exceptions = AS_MUTABLE_ARRAY(cocoa_event, exceptions);
+	NSMutableArray *mut_exceptions = [cocoa_event.exceptions mutableCopy] ?: [NSMutableArray array];
 	[mut_exceptions addObject:cocoa_exception];
+	cocoa_event.exceptions = mut_exceptions;
 }
 
 int CocoaEvent::get_exception_count() const {
@@ -294,7 +276,7 @@ String CocoaEvent::get_exception_value(int p_index) const {
 bool CocoaEvent::is_crash() const {
 	ERR_FAIL_NULL_V(cocoa_event, false);
 
-	for (SentryException *exception in cocoa_event.exceptions) {
+	for (objc::SentryException *exception in cocoa_event.exceptions) {
 		if (exception.mechanism != nil) {
 			return true;
 		}
@@ -305,15 +287,10 @@ bool CocoaEvent::is_crash() const {
 String CocoaEvent::to_json() const {
 	ERR_FAIL_NULL_V(cocoa_event, String());
 
-	NSDictionary *event_dict = [cocoa_event serialize];
+	objc::SentryEnvelopeItem *item = [[objc::SentryEnvelopeItem alloc] initWithEvent:cocoa_event];
+	ERR_FAIL_NULL_V_MSG(item.data, String(), "Sentry: Failed to serialize event to JSON.");
 
-	NSError *error = nil;
-	NSData *json_data = [NSJSONSerialization dataWithJSONObject:event_dict
-														options:0
-														  error:&error];
-	ERR_FAIL_COND_V(error != nil, "Sentry: Failed to serialize event to JSON: " + string_from_objc(error.localizedDescription));
-
-	return String::utf8((const char *)json_data.bytes, json_data.length);
+	return String::utf8((const char *)item.data.bytes, item.data.length);
 }
 
 CocoaEvent::CocoaEvent() :

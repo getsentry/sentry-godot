@@ -4,41 +4,41 @@
 
 namespace {
 
-sentry::LogLevel _log_level_from_objc(SentryLogLevel p_level) {
+sentry::LogLevel _log_level_from_objc(objc::SentryLogLevel p_level) {
 	switch (p_level) {
-		case SentryLogLevelTrace:
+		case SentryObjCLogLevelTrace:
 			return sentry::LOG_LEVEL_TRACE;
-		case SentryLogLevelDebug:
+		case SentryObjCLogLevelDebug:
 			return sentry::LOG_LEVEL_DEBUG;
-		case SentryLogLevelInfo:
+		case SentryObjCLogLevelInfo:
 			return sentry::LOG_LEVEL_INFO;
-		case SentryLogLevelWarn:
+		case SentryObjCLogLevelWarn:
 			return sentry::LOG_LEVEL_WARN;
-		case SentryLogLevelError:
+		case SentryObjCLogLevelError:
 			return sentry::LOG_LEVEL_ERROR;
-		case SentryLogLevelFatal:
+		case SentryObjCLogLevelFatal:
 			return sentry::LOG_LEVEL_FATAL;
 		default:
 			return sentry::LOG_LEVEL_INFO;
 	}
 }
 
-SentryLogLevel _log_level_to_objc(sentry::LogLevel p_level) {
+objc::SentryLogLevel _log_level_to_objc(sentry::LogLevel p_level) {
 	switch (p_level) {
 		case sentry::LOG_LEVEL_TRACE:
-			return SentryLogLevelTrace;
+			return SentryObjCLogLevelTrace;
 		case sentry::LOG_LEVEL_DEBUG:
-			return SentryLogLevelDebug;
+			return SentryObjCLogLevelDebug;
 		case sentry::LOG_LEVEL_INFO:
-			return SentryLogLevelInfo;
+			return SentryObjCLogLevelInfo;
 		case sentry::LOG_LEVEL_WARN:
-			return SentryLogLevelWarn;
+			return SentryObjCLogLevelWarn;
 		case sentry::LOG_LEVEL_ERROR:
-			return SentryLogLevelError;
+			return SentryObjCLogLevelError;
 		case sentry::LOG_LEVEL_FATAL:
-			return SentryLogLevelFatal;
+			return SentryObjCLogLevelFatal;
 		default:
-			return SentryLogLevelInfo;
+			return SentryObjCLogLevelInfo;
 	}
 }
 
@@ -63,7 +63,7 @@ void CocoaLog::set_body(const String &p_body) {
 }
 
 Variant CocoaLog::get_attribute(const String &p_name) const {
-	SentryAttribute *attribute = cocoa_log.attributes[string_to_objc(p_name)];
+	objc::SentryAttribute *attribute = cocoa_log.attributes[string_to_objc(p_name)];
 	if (!attribute) {
 		return Variant();
 	}
