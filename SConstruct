@@ -150,7 +150,7 @@ if internal_sdk == SDK.NATIVE:
 
     if env["separate_debug_symbols"] and platform == "linux":
         handler_path = str(deploy_crashpad_handler[0])
-        symbols_path = f"{handler_path}.debug"
+        symbols_path = f"{handler_path}.debugsymbols"
         Default(env.SeparateDebugSymbols(File(symbols_path), File(handler_path)))
 
 
@@ -278,12 +278,8 @@ if env["debug_symbols"] and env["separate_debug_symbols"]:
     if platform in ["macos", "ios"]:
         dsym_path = f"{out_dir}/dSYMs/{lib_name}.dSYM"
         env.SeparateDebugSymbols(Dir(dsym_path), library)
-    elif platform in ["linux", "android"]:
-        symbols_path = f"{out_dir}/{lib_name}.debug"
-        env.SeparateDebugSymbols(File(symbols_path), library)
-    elif platform == "web":
-        debug_name = lib_name.removesuffix(".wasm") + ".debug"
-        symbols_path = f"{out_dir}/{debug_name}"
+    elif platform in ["linux", "android", "web"]:
+        symbols_path = f"{out_dir}/{lib_name}.debugsymbols"
         env.SeparateDebugSymbols(File(symbols_path), library)
 
 
