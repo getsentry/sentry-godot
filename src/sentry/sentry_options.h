@@ -37,7 +37,7 @@ class SentryGodotLoggerOptions : public RefCounted {
 	GDCLASS(SentryGodotLoggerOptions, RefCounted);
 
 	SIMPLE_PROPERTY(bool, enabled, true);
-	SIMPLE_PROPERTY(bool, include_source, true);
+	SIMPLE_PROPERTY(bool, include_source_context, true);
 	SIMPLE_PROPERTY(bool, include_variables, false);
 	SIMPLE_PROPERTY(BitField<GodotLoggerEventMask>, event_mask, GodotLoggerEventMask::MASK_ERROR | GodotLoggerEventMask::MASK_SCRIPT | GodotLoggerEventMask::MASK_SHADER);
 	SIMPLE_PROPERTY(BitField<GodotLoggerEventMask>, breadcrumb_mask, GodotLoggerEventMask::MASK_ALL);
@@ -266,7 +266,7 @@ public:
 	bool deprecated_is_logger_enabled() const { return godot_logger->get_enabled(); }
 	void deprecated_set_logger_enabled(bool p_enabled);
 
-	bool deprecated_is_logger_include_source_enabled() const { return godot_logger->get_include_source(); }
+	bool deprecated_is_logger_include_source_enabled() const { return godot_logger->get_include_source_context(); }
 	void deprecated_set_logger_include_source(bool p_enable);
 
 	bool deprecated_is_logger_include_variables_enabled() const { return godot_logger->get_include_variables(); }

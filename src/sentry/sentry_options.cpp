@@ -61,7 +61,7 @@ void SentryGodotLoggerOptions::deprecated_set_limits(const Ref<SentryLoggerLimit
 
 void SentryGodotLoggerOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::BOOL, enabled);
-	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::BOOL, include_source);
+	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::BOOL, include_source_context);
 	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::BOOL, include_variables);
 	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::INT, event_mask);
 	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::INT, breadcrumb_mask);
@@ -148,7 +148,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
 	_define_setting("sentry/logger/logger_enabled", logger_options->get_enabled());
-	_define_setting("sentry/logger/include_source", logger_options->get_include_source(), false);
+	_define_setting("sentry/logger/include_source", logger_options->get_include_source_context(), false);
 	_define_setting("sentry/logger/include_variables", logger_options->get_include_variables(), false);
 	_requires_restart("sentry/logger/include_variables");
 	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING_FOR_EVENTS()), logger_options->get_event_mask(), false);
@@ -241,7 +241,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
 	logger_options->set_enabled(ProjectSettings::get_singleton()->get_setting("sentry/logger/logger_enabled", logger_options->get_enabled()));
-	logger_options->set_include_source(ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", logger_options->get_include_source()));
+	logger_options->set_include_source_context(ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", logger_options->get_include_source_context()));
 	logger_options->set_include_variables(ProjectSettings::get_singleton()->get_setting("sentry/logger/include_variables", logger_options->get_include_variables()));
 	logger_options->set_event_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/logger/events", logger_options->get_event_mask()));
 	logger_options->set_breadcrumb_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/logger/breadcrumbs", logger_options->get_breadcrumb_mask()));
@@ -325,8 +325,8 @@ void SentryOptions::deprecated_set_logger_enabled(bool p_enabled) {
 }
 
 void SentryOptions::deprecated_set_logger_include_source(bool p_enable) {
-	WARN_DEPRECATED_MSG("The \"logger_include_source\" option is deprecated. Use \"godot_logger.include_source\" instead.");
-	godot_logger->set_include_source(p_enable);
+	WARN_DEPRECATED_MSG("The \"logger_include_source\" option is deprecated. Use \"godot_logger.include_source_context\" instead.");
+	godot_logger->set_include_source_context(p_enable);
 }
 
 void SentryOptions::deprecated_set_logger_include_variables(bool p_logger_include_variables) {
