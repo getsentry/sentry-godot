@@ -40,6 +40,9 @@ _FORCE_INLINE_ void bind_property_readonly(const godot::StringName &p_class, con
 // Macro to define a simple property with accessors and a default value.
 // Note: The property will be compatible with BIND_PROPERTY_SIMPLE macro.
 #define SIMPLE_PROPERTY(m_type, m_property, m_default)              \
+private:                                                            \
 	m_type m_property = m_default;                                  \
+                                                                    \
+public:                                                             \
 	void set_##m_property(m_type p_value) { m_property = p_value; } \
 	m_type get_##m_property() { return m_property; }

@@ -50,7 +50,8 @@ public sealed class SentryGodotOptions : SentryOptions
     /// when it becomes unresponsive for longer than <see cref="AppHangTimeout"/>.
     /// </summary>
     /// <remarks>
-    /// Only supported on Android, iOS, and macOS.
+    /// This feature applies to iOS and macOS only. On Android, <see cref="Android"/> configures
+    /// ANR (Application Not Responding) detection instead.
     /// </remarks>
     public bool AppHangTracking { get; set; } = false;
 
@@ -136,6 +137,11 @@ public sealed class SentryGodotOptions : SentryOptions
     /// This setting controls GDScript/engine error reporting, not .NET errors.
     /// </remarks>
     public SentryLoggerLimits LoggerLimits { get; set; } = new SentryLoggerLimits();
+
+    /// <summary>
+    /// Configures Android-specific options, such as ANR (Application Not Responding) detection.
+    /// </summary>
+    public SentryAndroidOptions Android { get; set; } = new SentryAndroidOptions();
 
     private readonly List<SentryAttachment> _defaultAttachments = [];
 
@@ -228,4 +234,45 @@ public sealed class SentryLoggerLimits
     /// Set to zero to disable this limit.
     /// </summary>
     public TimeSpan ThrottleWindow { get; set; } = TimeSpan.FromMilliseconds(10000);
+}
+
+/// <summary>
+/// Contains configuration options that apply only when the project runs on Android, such as ANR (Application Not
+/// Responding) detection. Access this configuration through <see cref="SentryGodotOptions.Android"/>.
+/// </summary>
+/// <seealso cref="SentryGodotOptions"/>
+public sealed class SentryAndroidOptions
+{
+    /// <summary>
+    /// Enables detection and reporting of ANR (Application Not Responding) errors. The SDK monitors the main thread
+    /// for unresponsiveness and reports an event when an ANR occurs.
+    /// </summary>
+    /// <remarks>
+    /// Android 11 and later use the system-based V2 implementation, while earlier versions use the watchdog-based V1
+    /// implementation. See <see cref="AnrTimeoutInterval"/> and <see cref="AttachAnrThreadDump"/> for options specific
+    /// to each implementation. On Apple platforms, <see cref="SentryGodotOptions.AppHangTracking"/> configures the
+    /// equivalent app hang detection.
+    /// To learn more, visit <see href="https://docs.sentry.io/platforms/android/configuration/app-not-respond/">Application Not Responding documentation</see>.
+    /// </remarks>
+    public bool EnableAnrDetection { get; set; } = true;
+
+    /// <summary>
+    /// Specifies how long the main thread must stay blocked before the SDK reports an ANR.
+    /// </summary>
+    /// <remarks>
+    /// Applies only when <see cref="EnableAnrDetection"/> is enabled, and only to the V1 implementation used on Android
+    /// versions before 11. On Android 11 and later, the operating system determines when the application stops responding, so
+    /// this value has no effect.
+    /// </remarks>
+    public TimeSpan AnrTimeoutInterval { get; set; } = TimeSpan.FromMilliseconds(5000);
+
+    /// <summary>
+    /// Attaches the operating system's thread dump to the ANR event as a plain-text attachment, adding detail for
+    /// investigating where the application became unresponsive.
+    /// </summary>
+    /// <remarks>
+    /// Applies only when <see cref="EnableAnrDetection"/> is enabled, and only to the V2 implementation used on Android
+    /// 11 and later.
+    /// </remarks>
+    public bool AttachAnrThreadDump { get; set; } = false;
 }
