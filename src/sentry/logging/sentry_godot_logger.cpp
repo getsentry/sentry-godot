@@ -274,19 +274,19 @@ void SentryGodotLogger::_process_frame() {
 void SentryGodotLogger::_apply_startup_limits() {
 	Ref<SentryLoggerLimits> logger_limits = SENTRY_OPTIONS()->get_logger_limits();
 
-	limits.events_per_frame = MAX(30, logger_limits->events_per_frame);
-	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->repeated_error_window_ms };
-	limits.throttle_events = MAX(30, logger_limits->throttle_events);
+	limits.events_per_frame = MAX(30, logger_limits->get_events_per_frame());
+	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->get_repeated_error_window_ms() };
+	limits.throttle_events = MAX(30, logger_limits->get_throttle_events());
 	limits.throttle_window = std::chrono::milliseconds{ 0 };
 }
 
 void SentryGodotLogger::_apply_normal_limits() {
 	Ref<SentryLoggerLimits> logger_limits = SENTRY_OPTIONS()->get_logger_limits();
 
-	limits.events_per_frame = logger_limits->events_per_frame;
-	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->repeated_error_window_ms };
-	limits.throttle_events = logger_limits->throttle_events;
-	limits.throttle_window = std::chrono::milliseconds{ logger_limits->throttle_window_ms };
+	limits.events_per_frame = logger_limits->get_events_per_frame();
+	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->get_repeated_error_window_ms() };
+	limits.throttle_events = logger_limits->get_throttle_events();
+	limits.throttle_window = std::chrono::milliseconds{ logger_limits->get_throttle_window_ms() };
 }
 
 void SentryGodotLogger::_log_error(const String &p_function, const String &p_file, int32_t p_line,

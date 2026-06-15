@@ -350,8 +350,9 @@ void AndroidSDK::init() {
 	optionsData["max_breadcrumbs"] = SENTRY_OPTIONS()->get_max_breadcrumbs();
 	optionsData["enable_logs"] = SENTRY_OPTIONS()->get_enable_logs();
 	optionsData["enable_metrics"] = SENTRY_OPTIONS()->get_experimental()->get_enable_metrics();
-	optionsData["app_hang_tracking"] = SENTRY_OPTIONS()->is_app_hang_tracking_enabled();
-	optionsData["app_hang_timeout_sec"] = SENTRY_OPTIONS()->get_app_hang_timeout_sec();
+	optionsData["enable_anr_detection"] = SENTRY_OPTIONS()->get_android()->get_enable_anr_detection();
+	optionsData["anr_timeout_interval_ms"] = SENTRY_OPTIONS()->get_android()->get_anr_timeout_interval_ms();
+	optionsData["attach_anr_thread_dump"] = SENTRY_OPTIONS()->get_android()->get_attach_anr_thread_dump();
 	optionsData["shutdown_timeout_ms"] = SENTRY_OPTIONS()->get_shutdown_timeout_ms();
 
 	android_plugin->call(ANDROID_SN(init),
