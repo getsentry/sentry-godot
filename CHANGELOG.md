@@ -9,6 +9,10 @@
   - ANR detection is now separate from the App Hang Tracking options (`app_hang_tracking`, `app_hang_timeout_sec`), which now apply to Apple platforms only
   - Configure these through `SentryOptions.android`, or in the **Project Settings** under **Sentry > Android > Application Not Responding**
 
+### Fixes
+
+- Fix editor crash on Windows when opening a project that uses C#/.NET ([#762](https://github.com/getsentry/sentry-godot/pull/762))
+
 ### Dependencies
 
 - Bump Sentry JavaScript from v10.55.0 to v10.57.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743), [#754](https://github.com/getsentry/sentry-godot/pull/754))
