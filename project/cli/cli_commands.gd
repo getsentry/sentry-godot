@@ -74,7 +74,6 @@ func _cmd_crash_capture() -> int:
 	# NOTE: On Android, NDK scope sync seems to happen with delay.
 	await get_tree().create_timer(0.5).timeout
 
-	# Use the same crash method as the demo
 	SentrySDK.bad_code.crash_with_null_dereference()
 	return 0
 
