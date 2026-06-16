@@ -66,11 +66,26 @@ void _migrate_to_v1() {
 	_migrate_messages_as_breadcrumbs();
 }
 
+void _migrate_app_hang_timeout_to_ms() {
+	const String old_setting = "sentry/options/app_hang/timeout_sec";
+	const String new_setting = "sentry/options/app_hang/timeout_ms";
+
+	if (ProjectSettings::get_singleton()->has_setting(old_setting)) {
+		const double seconds = ProjectSettings::get_singleton()->get_setting(old_setting);
+		ProjectSettings::get_singleton()->set_setting(new_setting, UtilityFunctions::roundi(seconds * 1000.0));
+		ProjectSettings::get_singleton()->set_setting(old_setting, Variant());
+	}
+}
+
+void _migrate_to_v2() {
+	_migrate_app_hang_timeout_to_ms();
+}
+
 } // unnamed namespace
 
 namespace sentry {
 
-constexpr static int SCHEMA_VERSION = 1;
+constexpr static int SCHEMA_VERSION = 2;
 
 void run_project_settings_migrations() {
 	const String schema_version_key = "sentry/schema_version";
@@ -94,6 +109,10 @@ void run_project_settings_migrations() {
 
 	if (from_version < 1) {
 		_migrate_to_v1();
+	}
+
+	if (from_version < 2) {
+		_migrate_to_v2();
 	}
 
 	if (from_version < SCHEMA_VERSION) {

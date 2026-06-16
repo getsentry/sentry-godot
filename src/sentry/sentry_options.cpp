@@ -119,8 +119,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/options/enable_logs", p_options->enable_logs, false);
 
-	_define_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking, false);
-	_define_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec, false);
+	_define_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/app_hang/timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), p_options->app_hang_timeout_ms, false);
 
 	_define_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
@@ -210,8 +210,8 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/options/enable_logs", p_options->enable_logs);
 
-	p_options->app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking);
-	p_options->app_hang_timeout_sec = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec);
+	p_options->enable_app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking);
+	p_options->app_hang_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_ms", p_options->app_hang_timeout_ms);
 
 	p_options->logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
 	p_options->logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", p_options->logger_include_source);
@@ -274,6 +274,24 @@ void SentryOptions::set_logger_messages_as_breadcrumbs(bool p_enabled) {
 	} else {
 		logger_breadcrumb_mask.clear_flag(GodotLoggerEventMask::MASK_MESSAGE);
 	}
+}
+
+bool SentryOptions::deprecated_get_app_hang_tracking() const {
+	return is_app_hang_tracking_enabled();
+}
+
+void SentryOptions::deprecated_set_app_hang_tracking(bool p_enabled) {
+	WARN_DEPRECATED_MSG("The \"app_hang_tracking\" option is deprecated. Use \"enable_app_hang_tracking\" instead.");
+	set_app_hang_tracking_enabled(p_enabled);
+}
+
+double SentryOptions::deprecated_get_app_hang_timeout_sec() const {
+	return static_cast<double>(get_app_hang_timeout_ms()) / 1000.0;
+}
+
+void SentryOptions::deprecated_set_app_hang_timeout_sec(double p_seconds) {
+	WARN_DEPRECATED_MSG("The \"app_hang_timeout_sec\" option is deprecated. Use \"app_hang_timeout_ms\" instead.");
+	set_app_hang_timeout_ms(static_cast<int>(Math::round(p_seconds * 1000.0)));
 }
 
 void SentryOptions::set_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
@@ -339,8 +357,8 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_logs"), set_enable_logs, get_enable_logs);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_log"), set_before_send_log, get_before_send_log);
 
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), set_app_hang_tracking, is_app_hang_tracking_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), set_app_hang_timeout_sec, get_app_hang_timeout_sec);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_app_hang_tracking"), set_app_hang_tracking_enabled, is_app_hang_tracking_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "app_hang_timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), set_app_hang_timeout_ms, get_app_hang_timeout_ms);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, is_logger_include_source_enabled);
@@ -366,9 +384,11 @@ void SentryOptions::_bind_methods() {
 		BIND_BITFIELD_FLAG(MASK_MESSAGE);
 	}
 
-	// DEPRECATED: This property is deprecated and remains for compatibility reasons.
-	// TODO: Remove it after November 2026 or in version 3.0.
+	// DEPRECATED: These properties are deprecated and remain for compatibility reasons.
+	// TODO: Remove these after November 2026 or in version 3.0.
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_messages_as_breadcrumbs"), set_logger_messages_as_breadcrumbs, is_logger_messages_as_breadcrumbs_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), deprecated_set_app_hang_tracking, deprecated_get_app_hang_tracking);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), deprecated_set_app_hang_timeout_sec, deprecated_get_app_hang_timeout_sec);
 }
 
 SentryOptions::SentryOptions() {

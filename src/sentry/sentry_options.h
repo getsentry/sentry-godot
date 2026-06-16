@@ -110,8 +110,8 @@ private:
 	bool enable_logs = true;
 	Callable before_send_log;
 
-	bool app_hang_tracking = false;
-	double app_hang_timeout_sec = 5.0;
+	bool enable_app_hang_tracking = false;
+	int app_hang_timeout_ms = 5000;
 
 	bool logger_enabled = true;
 	bool logger_include_source = true;
@@ -199,11 +199,17 @@ public:
 	_FORCE_INLINE_ Callable get_before_send_log() const { return before_send_log; }
 	_FORCE_INLINE_ void set_before_send_log(const Callable &p_callback) { before_send_log = p_callback; }
 
-	_FORCE_INLINE_ bool is_app_hang_tracking_enabled() const { return app_hang_tracking; }
-	_FORCE_INLINE_ void set_app_hang_tracking(bool p_enabled) { app_hang_tracking = p_enabled; }
+	_FORCE_INLINE_ bool is_app_hang_tracking_enabled() const { return enable_app_hang_tracking; }
+	_FORCE_INLINE_ void set_app_hang_tracking_enabled(bool p_enabled) { enable_app_hang_tracking = p_enabled; }
 
-	_FORCE_INLINE_ double get_app_hang_timeout_sec() const { return app_hang_timeout_sec; }
-	_FORCE_INLINE_ void set_app_hang_timeout_sec(double p_seconds) { app_hang_timeout_sec = p_seconds; }
+	bool deprecated_get_app_hang_tracking() const;
+	void deprecated_set_app_hang_tracking(bool p_enabled);
+
+	_FORCE_INLINE_ int get_app_hang_timeout_ms() const { return app_hang_timeout_ms; }
+	_FORCE_INLINE_ void set_app_hang_timeout_ms(int p_milliseconds) { app_hang_timeout_ms = p_milliseconds; }
+
+	double deprecated_get_app_hang_timeout_sec() const;
+	void deprecated_set_app_hang_timeout_sec(double p_seconds);
 
 	_FORCE_INLINE_ bool is_logger_enabled() const { return logger_enabled; }
 	_FORCE_INLINE_ void set_logger_enabled(bool p_enabled) { logger_enabled = p_enabled; }
