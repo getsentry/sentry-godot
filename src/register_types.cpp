@@ -7,6 +7,7 @@
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/runtime_config.h"
 #include "sentry/sentry_attachment.h"
+#include "sentry/sentry_bad_code.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
 #include "sentry/sentry_feedback.h"
@@ -79,6 +80,7 @@ void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryTimestamp);
 	GDREGISTER_CLASS(SentryLogger);
 	GDREGISTER_CLASS(SentryMetrics);
+	GDREGISTER_CLASS(SentryBadCode);
 	GDREGISTER_CLASS(SentryUnit);
 	GDREGISTER_CLASS(SentryFeedback);
 	GDREGISTER_CLASS(SentrySDK);

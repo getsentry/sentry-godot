@@ -535,6 +535,7 @@ void SentrySDK::_bind_methods() {
 
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "logger", PROPERTY_HINT_TYPE_STRING, "SentryLogger", PROPERTY_USAGE_NONE), get_logger);
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "metrics", PROPERTY_HINT_TYPE_STRING, "SentryMetrics", PROPERTY_USAGE_NONE), get_metrics);
+	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "bad_code", PROPERTY_HINT_TYPE_STRING, "SentryBadCode", PROPERTY_USAGE_NONE), get_bad_code);
 }
 
 SentrySDK::SentrySDK() {
@@ -543,6 +544,7 @@ SentrySDK::SentrySDK() {
 	options = SentryOptions::create_from_project_settings();
 	logger = memnew(SentryLogger);
 	metrics = memnew(SentryMetrics);
+	bad_code = memnew(SentryBadCode);
 	internal_sdk = std::make_unique<DisabledSDK>();
 }
 
@@ -555,6 +557,8 @@ SentrySDK::~SentrySDK() {
 	logger = nullptr;
 	memdelete(metrics);
 	metrics = nullptr;
+	memdelete(bad_code);
+	bad_code = nullptr;
 }
 
 } // namespace sentry
