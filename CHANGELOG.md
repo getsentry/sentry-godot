@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Add Android-specific ANR (Application Not Responding) detection options ([#749](https://github.com/getsentry/sentry-godot/pull/749))
+  - ANR detection is now enabled by default; set `SentryOptions.android.enable_anr_detection` to `false` to opt out
+  - ANR detection is now separate from the App Hang Tracking options (`app_hang_tracking`, `app_hang_timeout_sec`), which now apply to Apple platforms only
+  - Configure these through `SentryOptions.android`, or in the **Project Settings** under **Sentry > Android > Application Not Responding**
+
 ### Features
 
 - *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
@@ -9,12 +16,18 @@
 
 ### Dependencies
 
-- Bump Sentry JavaScript from v10.55.0 to v10.56.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743))
-  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10560)
-  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.55.0...10.56.0)
-- Bump Cocoa SDK from v9.15.0 to v9.16.1 ([#745](https://github.com/getsentry/sentry-godot/pull/745))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9161)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.16.1)
+- Bump Sentry JavaScript from v10.55.0 to v10.58.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743), [#754](https://github.com/getsentry/sentry-godot/pull/754), [#764](https://github.com/getsentry/sentry-godot/pull/764))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10580)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.55.0...10.58.0)
+- Bump Cocoa SDK from v9.15.0 to v9.17.1 ([#745](https://github.com/getsentry/sentry-godot/pull/745), [#756](https://github.com/getsentry/sentry-godot/pull/756))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9171)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.17.1)
+- Bump Sentry Android from v8.43.0 to v8.43.2 ([#746](https://github.com/getsentry/sentry-godot/pull/746))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8432)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.0...8.43.2)
+- Bump Native SDK from v0.14.2 to v0.15.0 ([#757](https://github.com/getsentry/sentry-godot/pull/757))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0150)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.14.2...0.15.0)
 
 ## 2.0.0-beta.2
 

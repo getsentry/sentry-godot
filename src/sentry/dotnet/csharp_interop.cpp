@@ -160,6 +160,11 @@ struct NativeOptions {
 
 	// Experimental
 	uint8_t enable_metrics;
+
+	// Android
+	uint8_t android_enable_anr_detection;
+	int32_t android_anr_timeout_interval_ms;
+	uint8_t android_attach_anr_thread_dump;
 };
 
 // Generic array handle for returning native-allocated arrays across the interop boundary.
@@ -218,6 +223,10 @@ struct ManagedOptions {
 
 	// Flags indicating which native-layer hooks are implemented in managed code; see ManagedDefinedHooks.
 	uint32_t defined_hooks;
+
+	uint8_t android_enable_anr_detection;
+	int32_t android_anr_timeout_interval_ms;
+	uint8_t android_attach_anr_thread_dump;
 };
 
 struct NativeTraceContext {
@@ -260,6 +269,9 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_logger_breadcrumb_mask(data.logger_breadcrumb_mask);
 	options->set_logger_log_mask(data.logger_log_mask);
 	options->get_experimental()->set_enable_metrics(data.enable_metrics);
+	options->get_android()->set_enable_anr_detection(data.android_enable_anr_detection);
+	options->get_android()->set_anr_timeout_interval_ms(data.android_anr_timeout_interval_ms);
+	options->get_android()->set_attach_anr_thread_dump(data.android_attach_anr_thread_dump);
 }
 
 void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &options) {
@@ -294,6 +306,9 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.logger_breadcrumb_mask = options->get_logger_breadcrumb_mask();
 	r_data.logger_log_mask = options->get_logger_log_mask();
 	r_data.enable_metrics = options->get_experimental()->get_enable_metrics();
+	r_data.android_enable_anr_detection = options->get_android()->get_enable_anr_detection();
+	r_data.android_anr_timeout_interval_ms = options->get_android()->get_anr_timeout_interval_ms();
+	r_data.android_attach_anr_thread_dump = options->get_android()->get_attach_anr_thread_dump();
 }
 
 // *** Functions called from C#

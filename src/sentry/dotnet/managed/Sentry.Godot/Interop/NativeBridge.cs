@@ -134,6 +134,9 @@ internal static partial class NativeBridge
         public int logger_breadcrumb_mask;
         public int logger_log_mask;
         public byte enable_metrics;
+        public byte android_enable_anr_detection;
+        public int android_anr_timeout_interval_ms;
+        public byte android_attach_anr_thread_dump;
     }
 
     // Must match layout of ManagedOptions in csharp_interop.cpp.
@@ -170,6 +173,9 @@ internal static partial class NativeBridge
         public int logger_log_mask;
         public byte enable_metrics;
         public uint defined_hooks;
+        public byte android_enable_anr_detection;
+        public int android_anr_timeout_interval_ms;
+        public byte android_attach_anr_thread_dump;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -525,6 +531,9 @@ internal static partial class NativeBridge
         opts.LoggerBreadcrumbMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_breadcrumb_mask;
         opts.LoggerLogMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_log_mask;
         opts.EnableMetrics = data.enable_metrics != 0;
+        opts.Android.EnableAnrDetection = data.android_enable_anr_detection != 0;
+        opts.Android.AnrTimeoutInterval = TimeSpan.FromMilliseconds(data.android_anr_timeout_interval_ms);
+        opts.Android.AttachAnrThreadDump = data.android_attach_anr_thread_dump != 0;
     }
 
     public static void ApplyNativeOptions(SentryGodotOptions opts)
@@ -814,6 +823,9 @@ internal static partial class NativeBridge
                 logger_log_mask = (int)opts.LoggerLogMask,
                 enable_metrics = (byte)(opts.EnableMetrics ? 1 : 0),
                 defined_hooks = (uint)GetManagedDefinedHooks(opts),
+                android_enable_anr_detection = (byte)(opts.Android.EnableAnrDetection ? 1 : 0),
+                android_anr_timeout_interval_ms = (int)opts.Android.AnrTimeoutInterval.TotalMilliseconds,
+                android_attach_anr_thread_dump = (byte)(opts.Android.AttachAnrThreadDump ? 1 : 0),
             };
             csharp_interop_sdk_init(managed);
         }
