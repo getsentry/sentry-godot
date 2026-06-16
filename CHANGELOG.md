@@ -11,9 +11,9 @@
 
 ### Dependencies
 
-- Bump Sentry JavaScript from v10.55.0 to v10.57.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743), [#754](https://github.com/getsentry/sentry-godot/pull/754))
-  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10570)
-  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.55.0...10.57.0)
+- Bump Sentry JavaScript from v10.55.0 to v10.58.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743), [#754](https://github.com/getsentry/sentry-godot/pull/754), [#764](https://github.com/getsentry/sentry-godot/pull/764))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10580)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.55.0...10.58.0)
 - Bump Cocoa SDK from v9.15.0 to v9.17.1 ([#745](https://github.com/getsentry/sentry-godot/pull/745), [#756](https://github.com/getsentry/sentry-godot/pull/756))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9171)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.17.1)
