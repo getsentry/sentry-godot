@@ -75,7 +75,7 @@ func _cmd_crash_capture() -> int:
 	await get_tree().create_timer(0.5).timeout
 
 	# Use the same crash method as the demo
-	SentrySDK._demo_helper_crash_app()
+	SentrySDK.bad_code.crash_with_null_dereference()
 	return 0
 
 

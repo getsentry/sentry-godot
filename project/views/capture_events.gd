@@ -69,7 +69,7 @@ func _on_capture_button_pressed() -> void:
 
 func _on_crash_button_pressed() -> void:
 	DemoOutput.print_info("Crashing app...")
-	SentrySDK._demo_helper_crash_app()
+	SentrySDK.bad_code.crash_with_null_dereference()
 
 
 func _on_set_user_button_pressed() -> void:
