@@ -291,7 +291,7 @@ Ref<SentryOptions> SentryOptions::create_from_project_settings() {
 }
 
 void SentryOptions::deprecated_set_logger_messages_as_breadcrumbs(bool p_enabled) {
-	WARN_DEPRECATED_MSG("The \"logger_messages_as_breadcrumbs\" option is deprecated. Set the MASK_MESSAGE flag in \"logger_breadcrumb_mask\" instead.");
+	WARN_DEPRECATED_MSG("The \"logger_messages_as_breadcrumbs\" option is deprecated. Set the MASK_MESSAGE flag in \"godot_logger.breadcrumb_mask\" instead.");
 	BitField<GodotLoggerEventMask> mask = godot_logger->get_breadcrumb_mask();
 	if (p_enabled) {
 		mask.set_flag(GodotLoggerEventMask::MASK_MESSAGE);
