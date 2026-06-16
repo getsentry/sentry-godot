@@ -185,7 +185,7 @@ public sealed class SentryGodotLoggerOptions
     /// <remarks>
     /// This setting controls GDScript error reporting, not .NET errors.
     /// </remarks>
-    public bool IncludeSourceContext { get; set; } = false;
+    public bool IncludeSourceContext { get; set; } = true;
 
     /// <summary>
     /// If enabled, the SDK will include local variables from stack traces when capturing script errors.
