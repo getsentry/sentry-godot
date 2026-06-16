@@ -435,7 +435,7 @@ void SentrySDK::prepare_and_auto_initialize() {
 	// Set library path env var before .NET runtime starts.
 	// C# reads this to register DllImportResolver for interop.
 	OS::get_singleton()->set_environment("SENTRY_GODOT_LIB_PATH",
-			sentry::util::get_gdextension_library_path());
+			sentry::util::get_loaded_gdextension_library_path());
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {

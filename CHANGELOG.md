@@ -16,6 +16,10 @@
 
 - Distribute native debug symbols in a separate `sentry-godot-debug-symbols` archive instead of bundling them with the addon, reducing the size of the released addon and demo-project packages ([#747](https://github.com/getsentry/sentry-godot/pull/747))
 
+### Fixes
+
+- Fix editor crash on Windows when opening a project that uses C#/.NET ([#762](https://github.com/getsentry/sentry-godot/pull/762))
+
 ### Dependencies
 
 - Bump Sentry JavaScript from v10.55.0 to v10.58.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743), [#754](https://github.com/getsentry/sentry-godot/pull/754), [#764](https://github.com/getsentry/sentry-godot/pull/764))
