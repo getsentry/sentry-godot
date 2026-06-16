@@ -30,7 +30,7 @@ jobs:
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: sentry-godot-gdextension
-          path: artifact/
+          path: project/
 
       - name: Decode Apple signing certificate and API key
         if: env.DO_CODESIGN == '1'
@@ -63,18 +63,18 @@ jobs:
         run: |
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/libsentry.macos.debug.dylib
+            project/addons/sentry/bin/macos/libsentry.macos.debug.dylib
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/libsentry.macos.release.dylib
+            project/addons/sentry/bin/macos/libsentry.macos.release.dylib
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            artifact/addons/sentry/bin/macos/libSentry.dylib
+            project/addons/sentry/bin/macos/libSentry.dylib
 
       - name: Notarize macOS binaries
         if: env.DO_CODESIGN == '1'
         run: |
-          cd artifact/addons/sentry/bin/macos/
+          cd project/addons/sentry/bin/macos/
 
           zip -r sentry-godot-dylibs.zip libsentry.macos.debug.dylib libsentry.macos.release.dylib libSentry.dylib
           rcodesign notary-submit --wait \
@@ -82,34 +82,17 @@ jobs:
             sentry-godot-dylibs.zip
           rm sentry-godot-dylibs.zip
 
-      - name: Prepare artifact
+      - name: Assemble packages
+        run: scripts/package.sh --source project/ --output out/
+
+      - name: List package contents
         shell: bash
         run: |
-          # * Fix crashpad_handler permissions, workaround for https://github.com/actions/upload-artifact/issues/38
-          find artifact/addons/sentry/bin/ -name "crashpad_handler" -exec chmod 755 "{}" \;
-          # * Create release archive
-          version=$(grep '^VERSION =' SConstruct | cut -d '"' -f 2)
-          git_short_sha=$(git rev-parse --short HEAD)
-          mkdir ${GITHUB_WORKSPACE}/out/
-
-          # Addon-only zip
-          addon_archive="sentry-godot-${version}+${git_short_sha}.zip"
-          cd artifact/
-          zip -r ${GITHUB_WORKSPACE}/out/${addon_archive} addons/sentry/
-          cd ${GITHUB_WORKSPACE}
-
-          # Demo project zip
-          cp -r project/ samples_staging/
-          rm -rf samples_staging/test/ samples_staging/.godot/
-          cp -r artifact/addons samples_staging/
-          # Sanitize project.godot: remove [editor_plugins] and [gdunit4] sections, clear DSN
-          awk '/^\[editor_plugins\]/ { skip=1; next } /^\[gdunit4\]/ { skip=1; next } /^\[/ { skip=0 } !skip' \
-            samples_staging/project.godot > samples_staging/project.godot.tmp
-          mv samples_staging/project.godot.tmp samples_staging/project.godot
-          sed -i '/^options\/dsn=/d' samples_staging/project.godot
-          demo_archive="sentry-godot-demo-project-${version}+${git_short_sha}.zip"
-          cd samples_staging/
-          zip -r ${GITHUB_WORKSPACE}/out/${demo_archive} .
+          for zip in out/*.zip; do
+            echo "::group::$(basename "$zip") ($(du -h "$zip" | cut -f1))"
+            unzip -l "$zip"
+            echo "::endgroup::"
+          done
 
       - name: Upload artifact
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7

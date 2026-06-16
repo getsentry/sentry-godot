@@ -12,6 +12,10 @@
   - Renamed `SentryOptions.app_hang_tracking` to `SentryOptions.enable_app_hang_tracking`; the old name remains as a deprecated alias.
   - Renamed `SentryOptions.app_hang_timeout_sec` to `SentryOptions.app_hang_timeout_ms`, now configured in milliseconds; the old name remains as a deprecated alias, and existing Project Settings are migrated automatically.
 
+### Improvements
+
+- Distribute native debug symbols in a separate `sentry-godot-debug-symbols` archive instead of bundling them with the addon, reducing the size of the released addon and demo-project packages ([#747](https://github.com/getsentry/sentry-godot/pull/747))
+
 ### Dependencies
 
 - Bump Sentry JavaScript from v10.55.0 to v10.58.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743), [#754](https://github.com/getsentry/sentry-godot/pull/754), [#764](https://github.com/getsentry/sentry-godot/pull/764))
