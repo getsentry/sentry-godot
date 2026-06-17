@@ -100,7 +100,7 @@ Variant CocoaMetric::get_attribute(const String &p_name) const {
 void CocoaMetric::set_attribute(const String &p_name, const Variant &p_value) {
 	ERR_FAIL_NULL(cocoa_metric);
 
-	NSMutableDictionary *mut_attributes = [cocoa_metric.attributes mutableCopy];
+	NSMutableDictionary *mut_attributes = [cocoa_metric.attributes mutableCopy] ?: [NSMutableDictionary dictionary];
 	[mut_attributes setObject:variant_to_attribute_content(p_value) forKey:string_to_objc(p_name)];
 	cocoa_metric.attributes = mut_attributes;
 }
@@ -108,7 +108,7 @@ void CocoaMetric::set_attribute(const String &p_name, const Variant &p_value) {
 void CocoaMetric::add_attributes(const Dictionary &p_attributes) {
 	ERR_FAIL_NULL(cocoa_metric);
 
-	NSMutableDictionary *mut_attributes = [cocoa_metric.attributes mutableCopy];
+	NSMutableDictionary *mut_attributes = [cocoa_metric.attributes mutableCopy] ?: [NSMutableDictionary dictionary];
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
 		const String &key = keys[i].stringify();
