@@ -76,12 +76,6 @@ public:
 	void set_before_send_metric(const Callable &p_value) { before_send_metric = p_value; }
 	Callable get_before_send_metric() const { return before_send_metric; }
 
-	// DEPRECATED: The following accessors are deprecated and scheduled for removal.
-	void set_enable_logs(bool p_value);
-	bool get_enable_logs();
-	void set_before_send_log(Callable p_value);
-	Callable get_before_send_log();
-
 protected:
 	static void _bind_methods();
 };
