@@ -51,7 +51,7 @@ func before() -> void:
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		# Disable message breadcrumbs to avoid interfering with normal testing.
-		options.logger_breadcrumb_mask &= ~SentryOptions.MASK_MESSAGE
+		options.godot_logger.breadcrumb_mask &= ~SentryOptions.MASK_MESSAGE
 	)
 
 

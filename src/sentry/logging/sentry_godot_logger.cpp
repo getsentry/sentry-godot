@@ -122,7 +122,7 @@ Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
 			};
 
 			// Provide script source code context for script errors if available.
-			if (SENTRY_OPTIONS()->is_logger_include_source_enabled()) {
+			if (SENTRY_OPTIONS()->get_godot_logger()->get_include_source_context()) {
 				String context_line;
 				PackedStringArray pre_context;
 				PackedStringArray post_context;
@@ -272,7 +272,7 @@ void SentryGodotLogger::_process_frame() {
 }
 
 void SentryGodotLogger::_apply_startup_limits() {
-	Ref<SentryLoggerLimits> logger_limits = SENTRY_OPTIONS()->get_logger_limits();
+	Ref<SentryLoggerLimits> logger_limits = SENTRY_OPTIONS()->get_godot_logger()->get_limits();
 
 	limits.events_per_frame = MAX(30, logger_limits->get_events_per_frame());
 	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->get_repeated_error_window_ms() };
@@ -281,7 +281,7 @@ void SentryGodotLogger::_apply_startup_limits() {
 }
 
 void SentryGodotLogger::_apply_normal_limits() {
-	Ref<SentryLoggerLimits> logger_limits = SENTRY_OPTIONS()->get_logger_limits();
+	Ref<SentryLoggerLimits> logger_limits = SENTRY_OPTIONS()->get_godot_logger()->get_limits();
 
 	limits.events_per_frame = logger_limits->get_events_per_frame();
 	limits.repeated_error_window = std::chrono::milliseconds{ logger_limits->get_repeated_error_window_ms() };
@@ -381,8 +381,10 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 	// Capture error as event.
 	if (as_event) {
 		// Backtraces don't include variables by default, so if we need them, we must capture them separately.
-		bool include_variables = SENTRY_OPTIONS()->is_logger_include_variables_enabled();
-		TypedArray<ScriptBacktrace> script_backtraces = include_variables ? Engine::get_singleton()->capture_script_backtraces(true) : p_script_backtraces;
+		bool include_variables = SENTRY_OPTIONS()->get_godot_logger()->get_include_variables();
+		TypedArray<ScriptBacktrace> script_backtraces = include_variables
+				? Engine::get_singleton()->capture_script_backtraces(true)
+				: p_script_backtraces;
 
 		Vector<SentryEvent::StackFrame> frames = _extract_error_stack_frames_from_backtraces(
 				script_backtraces, p_file, p_line, include_variables);

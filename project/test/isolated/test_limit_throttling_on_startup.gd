@@ -11,11 +11,11 @@ var _num_events: int = 0
 
 func before() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.logger_limits.throttle_events = 2
-		options.logger_limits.throttle_window_ms = 100000
+		options.godot_logger.limits.throttle_events = 2
+		options.godot_logger.limits.throttle_window_ms = 100000
 		# Make sure other limits are not interfering.
-		options.logger_limits.events_per_frame = 88
-		options.logger_limits.repeated_error_window_ms = 0
+		options.godot_logger.limits.events_per_frame = 88
+		options.godot_logger.limits.repeated_error_window_ms = 0
 		options.before_send = _before_send
 	)
 

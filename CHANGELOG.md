@@ -8,12 +8,32 @@
   - ANR detection is now enabled by default; set `SentryOptions.android.enable_anr_detection` to `false` to opt out
   - ANR detection is now separate from the App Hang Tracking options (`app_hang_tracking`, `app_hang_timeout_sec`), which now apply to Apple platforms only
   - Configure these through `SentryOptions.android`, or in the **Project Settings** under **Sentry > Android > Application Not Responding**
+- Align App Hang Tracking options with other gaming SDKs ([#753](https://github.com/getsentry/sentry-godot/pull/753))
+  - Renamed `SentryOptions.app_hang_tracking` to `SentryOptions.enable_app_hang_tracking`; the old name remains as a deprecated alias.
+  - Renamed `SentryOptions.app_hang_timeout_sec` to `SentryOptions.app_hang_timeout_ms`, now configured in milliseconds; the old name remains as a deprecated alias, and existing Project Settings are migrated automatically.
+- Group Godot logger options under `SentryOptions.godot_logger` ([#759](https://github.com/getsentry/sentry-godot/pull/759))
+  - Moved the `SentryOptions.logger_*` options under `SentryOptions.godot_logger` (for example, `logger_event_mask` becomes `godot_logger.event_mask`); the old names remain as deprecated aliases.
+  - Renamed `logger_include_source` to `godot_logger.include_source_context` as part of the move.
+  - Existing Project Settings under **Sentry > Logger** are migrated automatically.
+
+### Features
+
+- *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
+  - Add `options.Native.SetBeforeSend` hook to inspect, modify, or drop native events (engine, GDScript, and GDExtension errors) from the .NET layer ([#737](https://github.com/getsentry/sentry-godot/pull/737))
+
+### Improvements
+
+- Distribute native debug symbols in a separate `sentry-godot-debug-symbols` archive instead of bundling them with the addon, reducing the size of the released addon and demo-project packages ([#747](https://github.com/getsentry/sentry-godot/pull/747))
+
+### Fixes
+
+- Fix editor crash on Windows when opening a project that uses C#/.NET ([#762](https://github.com/getsentry/sentry-godot/pull/762))
 
 ### Dependencies
 
-- Bump Sentry JavaScript from v10.55.0 to v10.57.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743), [#754](https://github.com/getsentry/sentry-godot/pull/754))
-  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10570)
-  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.55.0...10.57.0)
+- Bump Sentry JavaScript from v10.55.0 to v10.58.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743), [#754](https://github.com/getsentry/sentry-godot/pull/754), [#764](https://github.com/getsentry/sentry-godot/pull/764))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10580)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.55.0...10.58.0)
 - Bump Cocoa SDK from v9.15.0 to v9.17.1 ([#745](https://github.com/getsentry/sentry-godot/pull/745), [#756](https://github.com/getsentry/sentry-godot/pull/756))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9171)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.17.1)

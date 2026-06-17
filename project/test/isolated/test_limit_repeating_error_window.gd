@@ -10,10 +10,10 @@ var _num_events: int = 0
 func before() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		# Ignore duplicate errors within 1 second window.
-		options.logger_limits.repeated_error_window_ms = 1000
+		options.godot_logger.limits.repeated_error_window_ms = 1000
 		# Make sure other limits are not interfering.
-		options.logger_limits.events_per_frame = 88
-		options.logger_limits.throttle_events = 88
+		options.godot_logger.limits.events_per_frame = 88
+		options.godot_logger.limits.throttle_events = 88
 		options.before_send = _before_send
 	)
 

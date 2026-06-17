@@ -1,9 +1,12 @@
+#include "sentry/dotnet/csharp_interop.h"
+
 #include "gen/sdk_version.gen.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/dotnet/process_default_attachments.h"
 #include "sentry/environment.h"
 #include "sentry/logging/print.h"
 #include "sentry/sentry_breadcrumb.h"
+#include "sentry/sentry_event.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_user.h"
 
@@ -15,6 +18,7 @@
 #include <godot_cpp/classes/engine_debugger.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/core/type_info.hpp>
 
 #include <cstring>
 
@@ -88,9 +92,20 @@ struct ManagedFunctions {
 	void (*remove_tag)(const char16_t *name, int32_t name_len);
 	void (*set_user)(const char16_t *id, int32_t id_len, const char16_t *username, int32_t username_len, const char16_t *email, int32_t email_len, const char16_t *ip, int32_t ip_len);
 	void (*remove_user)();
+	uint8_t (*process_native_event)(void *event_handle); // Returns 1 to keep, 0 to discard.
 };
 
 static ManagedFunctions s_managed_funcs = {};
+
+// Flags indicating which native-layer hooks are implemented in managed code.
+// Passed in ManagedOptions.defined_hooks during init to avoid crossing the managed boundary for unset hooks.
+// Must match ManagedDefinedHooks in NativeBridge.cs.
+enum ManagedDefinedHooks {
+	DEFINED_NONE = 0,
+	DEFINED_BEFORE_SEND = 1 << 0, // options.Native.SetBeforeSend
+};
+
+static BitField<ManagedDefinedHooks> s_managed_defined_hooks = DEFINED_NONE;
 
 // Must match layout of LoggerLimitsData in NativeBridge.cs.
 struct LoggerLimitsData {
@@ -132,12 +147,12 @@ struct NativeOptions {
 	uint8_t attach_scene_tree;
 	uint8_t attach_screenshot;
 	int32_t screenshot_level;
-	uint8_t app_hang_tracking;
-	double app_hang_timeout_sec;
+	uint8_t enable_app_hang_tracking;
+	int32_t app_hang_timeout_ms;
 
 	// Logger
 	uint8_t logger_enabled;
-	uint8_t logger_include_source;
+	uint8_t logger_include_source_context;
 	uint8_t logger_include_variables;
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
@@ -194,17 +209,20 @@ struct ManagedOptions {
 	uint8_t attach_scene_tree;
 	uint8_t attach_screenshot;
 	int32_t screenshot_level;
-	uint8_t app_hang_tracking;
-	double app_hang_timeout_sec;
+	uint8_t enable_app_hang_tracking;
+	int32_t app_hang_timeout_ms;
 
 	uint8_t logger_enabled;
-	uint8_t logger_include_source;
+	uint8_t logger_include_source_context;
 	uint8_t logger_include_variables;
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
 	int32_t logger_log_mask;
 
 	uint8_t enable_metrics;
+
+	// Flags indicating which native-layer hooks are implemented in managed code; see ManagedDefinedHooks.
+	uint32_t defined_hooks;
 
 	uint8_t android_enable_anr_detection;
 	int32_t android_anr_timeout_interval_ms;
@@ -217,11 +235,7 @@ struct NativeTraceContext {
 };
 
 static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions> options) {
-	Ref<SentryLoggerLimits> logger_limits = options->get_logger_limits();
-	if (logger_limits.is_null()) {
-		logger_limits.instantiate();
-		options->set_logger_limits(logger_limits);
-	}
+	Ref<SentryLoggerLimits> logger_limits = options->get_godot_logger()->get_limits();
 	logger_limits->set_events_per_frame(data.logger_limits.events_per_frame);
 	logger_limits->set_repeated_error_window_ms(data.logger_limits.repeated_error_window_ms);
 	logger_limits->set_throttle_events(data.logger_limits.throttle_events);
@@ -242,14 +256,14 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_attach_scene_tree(data.attach_scene_tree);
 	options->set_attach_screenshot(data.attach_screenshot);
 	options->set_screenshot_level((Level)data.screenshot_level);
-	options->set_app_hang_tracking(data.app_hang_tracking);
-	options->set_app_hang_timeout_sec(data.app_hang_timeout_sec);
-	options->set_logger_enabled(data.logger_enabled);
-	options->set_logger_include_source(data.logger_include_source);
-	options->set_logger_include_variables(data.logger_include_variables);
-	options->set_logger_event_mask(data.logger_event_mask);
-	options->set_logger_breadcrumb_mask(data.logger_breadcrumb_mask);
-	options->set_logger_log_mask(data.logger_log_mask);
+	options->set_app_hang_tracking_enabled(data.enable_app_hang_tracking);
+	options->set_app_hang_timeout_ms(data.app_hang_timeout_ms);
+	options->get_godot_logger()->set_enabled(data.logger_enabled);
+	options->get_godot_logger()->set_include_source_context(data.logger_include_source_context);
+	options->get_godot_logger()->set_include_variables(data.logger_include_variables);
+	options->get_godot_logger()->set_event_mask(data.logger_event_mask);
+	options->get_godot_logger()->set_breadcrumb_mask(data.logger_breadcrumb_mask);
+	options->get_godot_logger()->set_log_mask(data.logger_log_mask);
 	options->set_enable_metrics(data.enable_metrics);
 	options->get_android()->set_enable_anr_detection(data.android_enable_anr_detection);
 	options->get_android()->set_anr_timeout_interval_ms(data.android_anr_timeout_interval_ms);
@@ -259,10 +273,11 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &options) {
 	r_data = {};
 
-	r_data.logger_limits.events_per_frame = options->get_logger_limits()->get_events_per_frame();
-	r_data.logger_limits.repeated_error_window_ms = options->get_logger_limits()->get_repeated_error_window_ms();
-	r_data.logger_limits.throttle_events = options->get_logger_limits()->get_throttle_events();
-	r_data.logger_limits.throttle_window_ms = options->get_logger_limits()->get_throttle_window_ms();
+	Ref<SentryLoggerLimits> limits = options->get_godot_logger()->get_limits();
+	r_data.logger_limits.events_per_frame = limits->get_events_per_frame();
+	r_data.logger_limits.repeated_error_window_ms = limits->get_repeated_error_window_ms();
+	r_data.logger_limits.throttle_events = limits->get_throttle_events();
+	r_data.logger_limits.throttle_window_ms = limits->get_throttle_window_ms();
 
 	r_data.dsn = _make_handle(options->get_dsn());
 	r_data.release = _make_handle(options->get_release());
@@ -279,14 +294,14 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.attach_scene_tree = options->is_attach_scene_tree_enabled();
 	r_data.attach_screenshot = options->is_attach_screenshot_enabled();
 	r_data.screenshot_level = options->get_screenshot_level();
-	r_data.app_hang_tracking = options->is_app_hang_tracking_enabled();
-	r_data.app_hang_timeout_sec = options->get_app_hang_timeout_sec();
-	r_data.logger_enabled = options->is_logger_enabled();
-	r_data.logger_include_source = options->is_logger_include_source_enabled();
-	r_data.logger_include_variables = options->is_logger_include_variables_enabled();
-	r_data.logger_event_mask = options->get_logger_event_mask();
-	r_data.logger_breadcrumb_mask = options->get_logger_breadcrumb_mask();
-	r_data.logger_log_mask = options->get_logger_log_mask();
+	r_data.enable_app_hang_tracking = options->is_app_hang_tracking_enabled();
+	r_data.app_hang_timeout_ms = options->get_app_hang_timeout_ms();
+	r_data.logger_enabled = options->get_godot_logger()->get_enabled();
+	r_data.logger_include_source_context = options->get_godot_logger()->get_include_source_context();
+	r_data.logger_include_variables = options->get_godot_logger()->get_include_variables();
+	r_data.logger_event_mask = options->get_godot_logger()->get_event_mask();
+	r_data.logger_breadcrumb_mask = options->get_godot_logger()->get_breadcrumb_mask();
+	r_data.logger_log_mask = options->get_godot_logger()->get_log_mask();
 	r_data.enable_metrics = options->get_enable_metrics();
 	r_data.android_enable_anr_detection = options->get_android()->get_enable_anr_detection();
 	r_data.android_anr_timeout_interval_ms = options->get_android()->get_anr_timeout_interval_ms();
@@ -470,6 +485,7 @@ static void _apply_pending_managed_options(const Ref<SentryOptions> &options) {
 
 CSHARP_EXPORT void csharp_interop_sdk_init(ManagedOptions managed_opts) {
 	s_pending_managed_opts = managed_opts;
+	s_managed_defined_hooks = managed_opts.defined_hooks;
 	SentrySDK::get_singleton()->init(callable_mp_static(_apply_pending_managed_options));
 	s_pending_managed_opts = {};
 }
@@ -540,11 +556,106 @@ CSHARP_EXPORT void csharp_interop_log(int32_t level, const char16_t *msg, int32_
 			String::utf16(msg, len));
 }
 
+// *** Event accessors used by the options.Native.SetBeforeSend callback.
+
+// The handle is the SentryEvent* passed to the managed layer; it is valid only for the duration of that call.
+// The managed wrapper SentryNativeEvent reads and writes the event lazily through these functions,
+// so cost is proportional to the fields touched.
+
+static inline SentryEvent *_event_from_handle(void *p_handle) {
+	return static_cast<SentryEvent *>(p_handle);
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_id(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_id());
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_platform(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_platform());
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_message(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_message());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_message(void *p_handle, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_message(String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT int32_t csharp_interop_event_get_level(void *p_handle) {
+	return static_cast<int32_t>(_event_from_handle(p_handle)->get_level());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_level(void *p_handle, int32_t p_level) {
+	_event_from_handle(p_handle)->set_level(static_cast<sentry::Level>(p_level));
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_logger(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_logger());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_logger(void *p_handle, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_logger(String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_release(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_release());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_release(void *p_handle, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_release(String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_dist(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_dist());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_dist(void *p_handle, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_dist(String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_environment(void *p_handle) {
+	return _make_handle(_event_from_handle(p_handle)->get_environment());
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_environment(void *p_handle, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_environment(String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_tag(void *p_handle, const char16_t *p_key, int32_t p_key_len) {
+	return _make_handle(_event_from_handle(p_handle)->get_tag(String::utf16(p_key, p_key_len)));
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_tag(void *p_handle, const char16_t *p_key, int32_t p_key_len, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_tag(String::utf16(p_key, p_key_len), String::utf16(p_value, p_value_len));
+}
+
+CSHARP_EXPORT void csharp_interop_event_remove_tag(void *p_handle, const char16_t *p_key, int32_t p_key_len) {
+	_event_from_handle(p_handle)->remove_tag(String::utf16(p_key, p_key_len));
+}
+
+CSHARP_EXPORT int32_t csharp_interop_event_get_exception_count(void *p_handle) {
+	return _event_from_handle(p_handle)->get_exception_count();
+}
+
+CSHARP_EXPORT GodotStringHandle csharp_interop_event_get_exception_value(void *p_handle, int32_t p_index) {
+	return _make_handle(_event_from_handle(p_handle)->get_exception_value(p_index));
+}
+
+CSHARP_EXPORT void csharp_interop_event_set_exception_value(void *p_handle, int32_t p_index, const char16_t *p_value, int32_t p_value_len) {
+	_event_from_handle(p_handle)->set_exception_value(p_index, String::utf16(p_value, p_value_len));
+}
+
 } // extern "C"
 
 // *** Functions called from native
 
 namespace sentry::dotnet {
+
+bool godot_supports_dotnet() {
+	// CSharpScript only exists in a mono (.NET) Godot build.
+	return godot::ClassDB::class_exists("CSharpScript");
+}
 
 void init() {
 	if (s_managed_funcs.init) {
@@ -556,6 +667,7 @@ void close() {
 	if (s_managed_funcs.close) {
 		s_managed_funcs.close();
 	}
+	s_managed_defined_hooks = DEFINED_NONE;
 }
 
 void handle_logger_error(const String &p_file, const String &p_code) {
@@ -620,5 +732,37 @@ void remove_user() {
 		s_managed_funcs.remove_user();
 	}
 }
+
+bool process_event_in_managed_layer(const Ref<SentryEvent> &p_event) {
+	FAIL_COND_V_PRINT_ERROR(p_event.is_null(), true, "Internal error: options.Native.SetBeforeSend received a null native event.");
+
+	if (s_managed_funcs.process_native_event == nullptr || !s_managed_defined_hooks.has_flag(DEFINED_BEFORE_SEND)) {
+		// .NET layer unavailable, or no before-send callback registered.
+		return true;
+	}
+
+	static thread_local bool in_before_send = false;
+	if (in_before_send) {
+		return true;
+	}
+	in_before_send = true;
+
+	const bool keep = s_managed_funcs.process_native_event((void *)p_event.ptr()) != 0;
+
+	in_before_send = false;
+	return keep;
+}
+
+bool is_managed_layer_registered() {
+	return s_managed_funcs.init != nullptr;
+}
+
+#ifdef TESTS_ENABLED
+
+bool is_before_send_defined() {
+	return s_managed_defined_hooks.has_flag(DEFINED_BEFORE_SEND);
+}
+
+#endif // TESTS_ENABLED
 
 } // namespace sentry::dotnet

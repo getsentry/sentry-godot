@@ -5,6 +5,7 @@
 #include "sentry/contexts.h"
 #include "sentry/disabled/disabled_sdk.h"
 #include "sentry/dotnet/csharp_interop.h"
+#include "sentry/dotnet/dotnet_before_send_processor.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/godot_singletons.h"
 #include "sentry/logging/print.h"
@@ -60,7 +61,7 @@ void _verify_project_settings() {
 			ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_call_stacks` in your Project Settings. This is required for supporting script stack traces.");
 		}
 	}
-	if (options->is_logger_include_variables_enabled() &&
+	if (options->get_godot_logger()->get_include_variables() &&
 			!ps->get_setting("debug/settings/gdscript/always_track_local_variables")) {
 		if (Engine::get_singleton()->is_editor_hint()) {
 			ps->set_setting("debug/settings/gdscript/always_track_local_variables", true);
@@ -162,6 +163,11 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	// Add built-in scope observers.
 	if (ClassDB::class_exists("CSharpScript")) {
 		options->add_scope_observer(memnew(sentry::dotnet::DotnetScopeObserver));
+
+		// Enables processing events in the managed layer.
+		// Add last so the options.Native.SetBeforeSend callback in the managed layer
+		// sees the fully-enriched event.
+		options->add_event_processor(memnew(sentry::dotnet::DotnetBeforeSendProcessor));
 	}
 
 	// Add default attachments.
@@ -192,7 +198,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 			_init_contexts();
 		}
 
-		if (options->is_logger_enabled()) {
+		if (options->get_godot_logger()->get_enabled()) {
 			if (godot_logger.is_null()) {
 				godot_logger.instantiate();
 			}
@@ -435,7 +441,7 @@ void SentrySDK::prepare_and_auto_initialize() {
 	// Set library path env var before .NET runtime starts.
 	// C# reads this to register DllImportResolver for interop.
 	OS::get_singleton()->set_environment("SENTRY_GODOT_LIB_PATH",
-			sentry::util::get_gdextension_library_path());
+			sentry::util::get_loaded_gdextension_library_path());
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {

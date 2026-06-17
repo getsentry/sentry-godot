@@ -1,5 +1,6 @@
 #include "editor/sentry_editor_plugin.h"
 #include "sentry/disabled/disabled_event.h"
+#include "sentry/dotnet/dotnet_before_send_processor.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/logging/sentry_godot_logger.h"
 #include "sentry/processing/screenshot_processor.h"
@@ -56,6 +57,7 @@
 
 #ifdef TESTS_ENABLED
 #include "cpp_test_runner.h"
+#include <godot_cpp/variant/callable_method_pointer.hpp>
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -74,6 +76,7 @@ void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryLoggerLimits);
 	GDREGISTER_CLASS(SentryExperimental);
 	GDREGISTER_CLASS(SentryAndroidOptions);
+	GDREGISTER_CLASS(SentryGodotLoggerOptions);
 	GDREGISTER_CLASS(SentryOptions);
 	GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
 	GDREGISTER_CLASS(SentryUser);
@@ -95,6 +98,7 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(logging::SentryGodotLogger);
 	GDREGISTER_INTERNAL_CLASS(SentryScopeObserver);
 	GDREGISTER_INTERNAL_CLASS(sentry::dotnet::DotnetScopeObserver);
+	GDREGISTER_INTERNAL_CLASS(sentry::dotnet::DotnetBeforeSendProcessor);
 
 #ifdef SDK_NATIVE
 	GDREGISTER_INTERNAL_CLASS(native::NativeEvent);
@@ -150,9 +154,10 @@ void initialize_module(ModuleInitializationLevel p_level) {
 		SentryUnit::create_singleton();
 		SentrySDK::create_singleton();
 #ifdef TESTS_ENABLED
-		// If --test-sentry was passed, run the test session and exit before SDK auto-init.
+		// If --test-sentry was passed, run the test session and exit.
 		if (sentry::tests::should_run_cpp_tests()) {
-			sentry::tests::run_cpp_tests_and_exit();
+			// Defer until GodotSharp loads - .NET tests need the managed runtime.
+			callable_mp_static(sentry::tests::run_cpp_tests_and_exit).call_deferred();
 		}
 #endif
 		SentrySDK::get_singleton()->prepare_and_auto_initialize();

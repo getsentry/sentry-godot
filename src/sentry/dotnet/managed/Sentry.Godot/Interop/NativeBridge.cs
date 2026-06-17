@@ -65,6 +65,26 @@ internal static partial class NativeBridge
     [LibraryImport(Lib)]
     private static partial void csharp_interop_free_array(IntPtr array);
 
+    // Flags indicating which native-layer hooks are implemented in managed code.
+    // Passed in ManagedOptions.defined_hooks during init to avoid crossing the managed boundary for unset hooks.
+    // Must match ManagedDefinedHooks in csharp_interop.cpp.
+    [Flags]
+    private enum ManagedDefinedHooks : uint
+    {
+        None = 0,
+        BeforeSend = 1 << 0,
+    }
+
+    private static ManagedDefinedHooks GetManagedDefinedHooks(SentryGodotOptions options)
+    {
+        var hooks = ManagedDefinedHooks.None;
+        if (options.Native.BeforeSend is not null)
+        {
+            hooks |= ManagedDefinedHooks.BeforeSend;
+        }
+        return hooks;
+    }
+
     // Must match layout of LoggerLimitsData in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
     private struct LoggerLimitsData
@@ -105,10 +125,10 @@ internal static partial class NativeBridge
         public byte attach_scene_tree;
         public byte attach_screenshot;
         public int screenshot_level;
-        public byte app_hang_tracking;
-        public double app_hang_timeout_sec;
+        public byte enable_app_hang_tracking;
+        public int app_hang_timeout_ms;
         public byte logger_enabled;
-        public byte logger_include_source;
+        public byte logger_include_source_context;
         public byte logger_include_variables;
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
@@ -143,15 +163,16 @@ internal static partial class NativeBridge
         public byte attach_scene_tree;
         public byte attach_screenshot;
         public int screenshot_level;
-        public byte app_hang_tracking;
-        public double app_hang_timeout_sec;
+        public byte enable_app_hang_tracking;
+        public int app_hang_timeout_ms;
         public byte logger_enabled;
-        public byte logger_include_source;
+        public byte logger_include_source_context;
         public byte logger_include_variables;
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
         public int logger_log_mask;
         public byte enable_metrics;
+        public uint defined_hooks;
         public byte android_enable_anr_detection;
         public int android_anr_timeout_interval_ms;
         public byte android_attach_anr_thread_dump;
@@ -244,6 +265,7 @@ internal static partial class NativeBridge
         public delegate* unmanaged[Cdecl]<char*, int, void> remove_tag;
         public delegate* unmanaged[Cdecl]<char*, int, char*, int, char*, int, char*, int, void> set_user;
         public delegate* unmanaged[Cdecl]<void> remove_user;
+        public delegate* unmanaged[Cdecl]<IntPtr, byte> process_native_event;
     }
 
     [LibraryImport(Lib)]
@@ -282,6 +304,7 @@ internal static partial class NativeBridge
             remove_tag = &RemoveTagCallback,
             set_user = &SetUserCallback,
             remove_user = &RemoveUserCallback,
+            process_native_event = &ProcessNativeEventCallback,
         });
     }
 
@@ -444,6 +467,31 @@ internal static partial class NativeBridge
         }
     }
 
+    /// <remarks>
+    /// Called by native for each native/engine event.
+    /// Runs the options.Native.SetBeforeSend callback with a temporary event wrapper.
+    /// Returns 1 to keep the event, 0 to discard.
+    /// </remarks>
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static byte ProcessNativeEventCallback(IntPtr eventHandle)
+    {
+        try
+        {
+            var callback = Sentry.Godot.SentrySdk.CurrentOptions?.Native.BeforeSend;
+            if (callback is null)
+            {
+                return 1;
+            }
+            var result = callback(new SentryNativeEvent(eventHandle));
+            return (byte)(result is null ? 0 : 1);
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Error in options.Native.SetBeforeSend callback: {ex}");
+            return 1;
+        }
+    }
+
     [LibraryImport(Lib)]
     private static unsafe partial NativeOptions csharp_interop_get_options();
 
@@ -452,7 +500,7 @@ internal static partial class NativeBridge
 
     private static void ApplyNativeOptions(NativeOptions data, SentryGodotOptions opts)
     {
-        opts.LoggerLimits = new SentryLoggerLimits
+        opts.GodotLogger.Limits = new SentryLoggerLimits
         {
             EventsPerFrame = data.logger_limits.events_per_frame,
             RepeatedErrorWindow = TimeSpan.FromMilliseconds(data.logger_limits.repeated_error_window_ms),
@@ -474,14 +522,14 @@ internal static partial class NativeBridge
         opts.AttachSceneTree = data.attach_scene_tree != 0;
         opts.AttachScreenshot = data.attach_screenshot != 0;
         opts.ScreenshotLevel = (SentryLevel)data.screenshot_level;
-        opts.AppHangTracking = data.app_hang_tracking != 0;
-        opts.AppHangTimeout = TimeSpan.FromSeconds(data.app_hang_timeout_sec);
-        opts.LoggerEnabled = data.logger_enabled != 0;
-        opts.LoggerIncludeSource = data.logger_include_source != 0;
-        opts.LoggerIncludeVariables = data.logger_include_variables != 0;
-        opts.LoggerEventMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_event_mask;
-        opts.LoggerBreadcrumbMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_breadcrumb_mask;
-        opts.LoggerLogMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_log_mask;
+        opts.EnableAppHangTracking = data.enable_app_hang_tracking != 0;
+        opts.AppHangTimeout = TimeSpan.FromMilliseconds(data.app_hang_timeout_ms);
+        opts.GodotLogger.Enabled = data.logger_enabled != 0;
+        opts.GodotLogger.IncludeSourceContext = data.logger_include_source_context != 0;
+        opts.GodotLogger.IncludeVariables = data.logger_include_variables != 0;
+        opts.GodotLogger.EventMask = (GodotLoggerEventMask)data.logger_event_mask;
+        opts.GodotLogger.BreadcrumbMask = (GodotLoggerEventMask)data.logger_breadcrumb_mask;
+        opts.GodotLogger.LogMask = (GodotLoggerEventMask)data.logger_log_mask;
         opts.EnableMetrics = data.enable_metrics != 0;
         opts.Android.EnableAnrDetection = data.android_enable_anr_detection != 0;
         opts.Android.AnrTimeoutInterval = TimeSpan.FromMilliseconds(data.android_anr_timeout_interval_ms);
@@ -741,10 +789,10 @@ internal static partial class NativeBridge
             {
                 logger_limits = new LoggerLimitsData
                 {
-                    events_per_frame = opts.LoggerLimits.EventsPerFrame,
-                    repeated_error_window_ms = (int)opts.LoggerLimits.RepeatedErrorWindow.TotalMilliseconds,
-                    throttle_events = opts.LoggerLimits.ThrottleEvents,
-                    throttle_window_ms = (int)opts.LoggerLimits.ThrottleWindow.TotalMilliseconds,
+                    events_per_frame = opts.GodotLogger.Limits.EventsPerFrame,
+                    repeated_error_window_ms = (int)opts.GodotLogger.Limits.RepeatedErrorWindow.TotalMilliseconds,
+                    throttle_events = opts.GodotLogger.Limits.ThrottleEvents,
+                    throttle_window_ms = (int)opts.GodotLogger.Limits.ThrottleWindow.TotalMilliseconds,
                 },
                 dsn = dsnPtr,
                 dsn_len = dsn.Length,
@@ -765,15 +813,16 @@ internal static partial class NativeBridge
                 attach_scene_tree = (byte)(opts.AttachSceneTree ? 1 : 0),
                 attach_screenshot = (byte)(opts.AttachScreenshot ? 1 : 0),
                 screenshot_level = (int)opts.ScreenshotLevel,
-                app_hang_tracking = (byte)(opts.AppHangTracking ? 1 : 0),
-                app_hang_timeout_sec = opts.AppHangTimeout.TotalSeconds,
-                logger_enabled = (byte)(opts.LoggerEnabled ? 1 : 0),
-                logger_include_source = (byte)(opts.LoggerIncludeSource ? 1 : 0),
-                logger_include_variables = (byte)(opts.LoggerIncludeVariables ? 1 : 0),
-                logger_event_mask = (int)opts.LoggerEventMask,
-                logger_breadcrumb_mask = (int)opts.LoggerBreadcrumbMask,
-                logger_log_mask = (int)opts.LoggerLogMask,
+                enable_app_hang_tracking = (byte)(opts.EnableAppHangTracking ? 1 : 0),
+                app_hang_timeout_ms = (int)opts.AppHangTimeout.TotalMilliseconds,
+                logger_enabled = (byte)(opts.GodotLogger.Enabled ? 1 : 0),
+                logger_include_source_context = (byte)(opts.GodotLogger.IncludeSourceContext ? 1 : 0),
+                logger_include_variables = (byte)(opts.GodotLogger.IncludeVariables ? 1 : 0),
+                logger_event_mask = (int)opts.GodotLogger.EventMask,
+                logger_breadcrumb_mask = (int)opts.GodotLogger.BreadcrumbMask,
+                logger_log_mask = (int)opts.GodotLogger.LogMask,
                 enable_metrics = (byte)(opts.EnableMetrics ? 1 : 0),
+                defined_hooks = (uint)GetManagedDefinedHooks(opts),
                 android_enable_anr_detection = (byte)(opts.Android.EnableAnrDetection ? 1 : 0),
                 android_anr_timeout_interval_ms = (int)opts.Android.AnrTimeoutInterval.TotalMilliseconds,
                 android_attach_anr_thread_dump = (byte)(opts.Android.AttachAnrThreadDump ? 1 : 0),
@@ -914,6 +963,155 @@ internal static partial class NativeBridge
                         emailPtr, email.Length,
                         ipAddressPtr, ipAddress.Length);
             }
+        }
+    }
+
+    // Native event accessors used by SentryNativeEvent during the options.Native.SetBeforeSend callback.
+    // The handle is a native SentryEvent pointer, valid only for the duration of the callback.
+
+    [LibraryImport(Lib)]
+    private static unsafe partial GodotStringHandle csharp_interop_event_get_id(IntPtr handle);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial GodotStringHandle csharp_interop_event_get_platform(IntPtr handle);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial GodotStringHandle csharp_interop_event_get_message(IntPtr handle);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_event_set_message(IntPtr handle, char* value, int valueLen);
+
+    [LibraryImport(Lib)]
+    private static partial int csharp_interop_event_get_level(IntPtr handle);
+
+    [LibraryImport(Lib)]
+    private static partial void csharp_interop_event_set_level(IntPtr handle, int level);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial GodotStringHandle csharp_interop_event_get_logger(IntPtr handle);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_event_set_logger(IntPtr handle, char* value, int valueLen);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial GodotStringHandle csharp_interop_event_get_release(IntPtr handle);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_event_set_release(IntPtr handle, char* value, int valueLen);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial GodotStringHandle csharp_interop_event_get_dist(IntPtr handle);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_event_set_dist(IntPtr handle, char* value, int valueLen);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial GodotStringHandle csharp_interop_event_get_environment(IntPtr handle);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_event_set_environment(IntPtr handle, char* value, int valueLen);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial GodotStringHandle csharp_interop_event_get_tag(IntPtr handle, char* key, int keyLen);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_event_set_tag(IntPtr handle, char* key, int keyLen, char* value, int valueLen);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_event_remove_tag(IntPtr handle, char* key, int keyLen);
+
+    [LibraryImport(Lib)]
+    private static partial int csharp_interop_event_get_exception_count(IntPtr handle);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial GodotStringHandle csharp_interop_event_get_exception_value(IntPtr handle, int index);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_event_set_exception_value(IntPtr handle, int index, char* value, int valueLen);
+
+    // Helper for setting a native string property by pinning the managed string for the duration of the call.
+    private static unsafe void EventSetStringProperty(IntPtr handle, string value, delegate*<IntPtr, char*, int, void> nativeSetter)
+    {
+        fixed (char* ptr = value)
+        {
+            nativeSetter(handle, ptr, value.Length);
+        }
+    }
+
+    public static string? EventGetId(IntPtr handle) => csharp_interop_event_get_id(handle).TakeString();
+
+    public static string? EventGetPlatform(IntPtr handle) => csharp_interop_event_get_platform(handle).TakeString();
+
+    public static string? EventGetMessage(IntPtr handle) => csharp_interop_event_get_message(handle).TakeString();
+
+    public static unsafe void EventSetMessage(IntPtr handle, string value)
+        => EventSetStringProperty(handle, value, &csharp_interop_event_set_message);
+
+    public static int EventGetLevel(IntPtr handle) => csharp_interop_event_get_level(handle);
+
+    public static void EventSetLevel(IntPtr handle, int level) => csharp_interop_event_set_level(handle, level);
+
+    public static string? EventGetLogger(IntPtr handle) => csharp_interop_event_get_logger(handle).TakeString();
+
+    public static unsafe void EventSetLogger(IntPtr handle, string value)
+        => EventSetStringProperty(handle, value, &csharp_interop_event_set_logger);
+
+    public static string? EventGetRelease(IntPtr handle) => csharp_interop_event_get_release(handle).TakeString();
+
+    public static unsafe void EventSetRelease(IntPtr handle, string value)
+        => EventSetStringProperty(handle, value, &csharp_interop_event_set_release);
+
+    public static string? EventGetDist(IntPtr handle) => csharp_interop_event_get_dist(handle).TakeString();
+
+    public static unsafe void EventSetDist(IntPtr handle, string value)
+        => EventSetStringProperty(handle, value, &csharp_interop_event_set_dist);
+
+    public static string? EventGetEnvironment(IntPtr handle)
+        => csharp_interop_event_get_environment(handle).TakeString();
+
+    public static unsafe void EventSetEnvironment(IntPtr handle, string value)
+        => EventSetStringProperty(handle, value, &csharp_interop_event_set_environment);
+
+    public static unsafe string? EventGetTag(IntPtr handle, string key)
+    {
+        fixed (char* keyPtr = key)
+        {
+            // Native returns an empty string for unset tags.
+            var value = csharp_interop_event_get_tag(handle, keyPtr, key.Length).TakeString();
+            return string.IsNullOrEmpty(value) ? null : value;
+        }
+    }
+
+    public static unsafe void EventSetTag(IntPtr handle, string key, string value)
+    {
+        fixed (char* keyPtr = key)
+        fixed (char* valuePtr = value)
+        {
+            csharp_interop_event_set_tag(handle, keyPtr, key.Length, valuePtr, value.Length);
+        }
+    }
+
+    public static unsafe void EventRemoveTag(IntPtr handle, string key)
+    {
+        fixed (char* keyPtr = key)
+        {
+            csharp_interop_event_remove_tag(handle, keyPtr, key.Length);
+        }
+    }
+
+    public static int EventGetExceptionCount(IntPtr handle) => csharp_interop_event_get_exception_count(handle);
+
+    public static string? EventGetExceptionValue(IntPtr handle, int index)
+    {
+        var value = csharp_interop_event_get_exception_value(handle, index).TakeString();
+        return string.IsNullOrEmpty(value) ? null : value;
+    }
+
+    public static unsafe void EventSetExceptionValue(IntPtr handle, int index, string value)
+    {
+        fixed (char* valuePtr = value)
+        {
+            csharp_interop_event_set_exception_value(handle, index, valuePtr, value.Length);
         }
     }
 }

@@ -10,10 +10,10 @@ var _num_events: int = 0
 func before() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		# Only one error is allowed to be logged as event per processed frame.
-		options.logger_limits.events_per_frame = 1
+		options.godot_logger.limits.events_per_frame = 1
 		# Make sure other limits are not interfering.
-		options.logger_limits.repeated_error_window_ms = 0
-		options.logger_limits.throttle_events = 88
+		options.godot_logger.limits.repeated_error_window_ms = 0
+		options.godot_logger.limits.throttle_events = 88
 		options.before_send = _before_send
 	)
 
