@@ -33,8 +33,8 @@ NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 
 			const Array &keys = dict.keys();
 			for (int i = 0; i < keys.size(); i++) {
-				const String &key = keys[i];
-				const NSString *objc_key = [NSString stringWithUTF8String:key.utf8()];
+				const Variant &key = keys[i];
+				const NSString *objc_key = [NSString stringWithUTF8String:key.stringify().utf8()];
 				const NSObject *objc_value = variant_to_objc(dict[key], p_depth + 1);
 				[objc_dict setObject:objc_value forKey:objc_key];
 			}

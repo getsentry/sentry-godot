@@ -31,8 +31,8 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 			sentry_value_t sentry_dic = sentry_value_new_object();
 			const Array &keys = dic.keys();
 			for (int i = 0; i < keys.size(); i++) {
-				const String &key = keys[i];
-				sentry_value_set_by_key(sentry_dic, key.utf8(), variant_to_sentry_value(dic[key], p_depth + 1));
+				const Variant &key = keys[i];
+				sentry_value_set_by_key(sentry_dic, key.stringify().utf8(), variant_to_sentry_value(dic[key], p_depth + 1));
 			}
 			return sentry_dic;
 		} break;
