@@ -178,8 +178,8 @@ void CocoaEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 		NSMutableDictionary *mut_exisiting_context = [existing_context mutableCopy] ?: [NSMutableDictionary dictionary];
 		const Array &updated_keys = p_value.keys();
 		for (int i = 0; i < updated_keys.size(); i++) {
-			const String &key = updated_keys[i];
-			mut_exisiting_context[string_to_objc(key)] = variant_to_objc(p_value[key]);
+			const Variant &key = updated_keys[i];
+			mut_exisiting_context[string_to_objc(key.stringify())] = variant_to_objc(p_value[key]);
 		}
 		mut_contexts[context_name] = mut_exisiting_context;
 	} else {
