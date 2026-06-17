@@ -225,8 +225,9 @@ void sentry_value_add_attributes(sentry_value_t p_native, const Dictionary &p_at
 	}
 
 	const Array &keys = p_attributes.keys();
-	for (const String &key : keys) {
-		sentry_value_set_by_key(attributes, key.utf8(), variant_to_attribute(p_attributes[key]));
+	for (int i = 0; i < keys.size(); i++) {
+		const Variant &key = keys[i];
+		sentry_value_set_by_key(attributes, key.stringify().utf8(), variant_to_attribute(p_attributes[key]));
 	}
 }
 

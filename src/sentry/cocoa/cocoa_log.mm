@@ -81,9 +81,9 @@ void CocoaLog::add_attributes(const Dictionary &p_attributes) {
 	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy] ?: [NSMutableDictionary dictionary];
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
-		const String &key = keys[i].stringify();
+		const Variant &key = keys[i];
 		const Variant &value = p_attributes[key];
-		[mut_attributes setObject:variant_to_attribute(value) forKey:string_to_objc(key)];
+		[mut_attributes setObject:variant_to_attribute(value) forKey:string_to_objc(key.stringify())];
 	}
 	cocoa_log.attributes = mut_attributes;
 }
