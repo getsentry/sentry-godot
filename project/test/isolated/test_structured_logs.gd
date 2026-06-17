@@ -5,7 +5,7 @@ signal log_processed(entry: SentryLog)
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		options.enable_logs = true
-		options.logger_log_mask = SentryOptions.MASK_MESSAGE
+		options.godot_logger.log_mask = SentryOptions.MASK_MESSAGE
 		options.before_send_log = _before_send_log
 	)
 

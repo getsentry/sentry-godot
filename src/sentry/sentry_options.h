@@ -32,6 +32,30 @@ protected:
 	static void _bind_methods();
 };
 
+// Godot logger integration options.
+class SentryGodotLoggerOptions : public RefCounted {
+	GDCLASS(SentryGodotLoggerOptions, RefCounted);
+
+	SIMPLE_PROPERTY(bool, enabled, true);
+	SIMPLE_PROPERTY(bool, include_source_context, true);
+	SIMPLE_PROPERTY(bool, include_variables, false);
+	SIMPLE_PROPERTY(BitField<GodotLoggerEventMask>, event_mask, GodotLoggerEventMask::MASK_ERROR | GodotLoggerEventMask::MASK_SCRIPT | GodotLoggerEventMask::MASK_SHADER);
+	SIMPLE_PROPERTY(BitField<GodotLoggerEventMask>, breadcrumb_mask, GodotLoggerEventMask::MASK_ALL);
+	SIMPLE_PROPERTY(BitField<GodotLoggerEventMask>, log_mask, GodotLoggerEventMask::MASK_NONE);
+
+private:
+	Ref<SentryLoggerLimits> limits;
+
+protected:
+	static void _bind_methods();
+
+public:
+	_FORCE_INLINE_ Ref<SentryLoggerLimits> get_limits() const { return limits; }
+	void deprecated_set_limits(const Ref<SentryLoggerLimits> &p_limits);
+
+	SentryGodotLoggerOptions();
+};
+
 class SentryOptions;
 
 // Experimental options.
@@ -113,16 +137,9 @@ private:
 	bool enable_app_hang_tracking = false;
 	int app_hang_timeout_ms = 5000;
 
-	bool logger_enabled = true;
-	bool logger_include_source = true;
-	bool logger_include_variables = false;
-	BitField<GodotLoggerEventMask> logger_event_mask = GodotLoggerEventMask::MASK_ERROR | GodotLoggerEventMask::MASK_SCRIPT | GodotLoggerEventMask::MASK_SHADER;
-	BitField<GodotLoggerEventMask> logger_breadcrumb_mask = GodotLoggerEventMask::MASK_ALL;
-	BitField<GodotLoggerEventMask> logger_log_mask = GodotLoggerEventMask::MASK_NONE;
-	Ref<SentryLoggerLimits> logger_limits;
-
 	Ref<SentryExperimental> experimental;
 	Ref<SentryAndroidOptions> android;
+	Ref<SentryGodotLoggerOptions> godot_logger;
 
 	Callable before_send;
 	Callable before_capture_screenshot;
@@ -202,44 +219,8 @@ public:
 	_FORCE_INLINE_ bool is_app_hang_tracking_enabled() const { return enable_app_hang_tracking; }
 	_FORCE_INLINE_ void set_app_hang_tracking_enabled(bool p_enabled) { enable_app_hang_tracking = p_enabled; }
 
-	bool deprecated_get_app_hang_tracking() const;
-	void deprecated_set_app_hang_tracking(bool p_enabled);
-
 	_FORCE_INLINE_ int get_app_hang_timeout_ms() const { return app_hang_timeout_ms; }
 	_FORCE_INLINE_ void set_app_hang_timeout_ms(int p_milliseconds) { app_hang_timeout_ms = p_milliseconds; }
-
-	double deprecated_get_app_hang_timeout_sec() const;
-	void deprecated_set_app_hang_timeout_sec(double p_seconds);
-
-	_FORCE_INLINE_ bool is_logger_enabled() const { return logger_enabled; }
-	_FORCE_INLINE_ void set_logger_enabled(bool p_enabled) { logger_enabled = p_enabled; }
-
-	_FORCE_INLINE_ bool is_logger_include_source_enabled() const { return logger_include_source; }
-	_FORCE_INLINE_ void set_logger_include_source(bool p_enable) { logger_include_source = p_enable; }
-
-	_FORCE_INLINE_ bool is_logger_include_variables_enabled() const { return logger_include_variables; }
-	_FORCE_INLINE_ void set_logger_include_variables(bool p_logger_include_variables) { logger_include_variables = p_logger_include_variables; }
-
-	bool is_logger_messages_as_breadcrumbs_enabled() const;
-	void set_logger_messages_as_breadcrumbs(bool p_enabled);
-
-	_FORCE_INLINE_ BitField<GodotLoggerEventMask> get_logger_event_mask() const { return logger_event_mask; }
-	_FORCE_INLINE_ void set_logger_event_mask(BitField<GodotLoggerEventMask> p_mask) { logger_event_mask = p_mask; }
-
-	_FORCE_INLINE_ BitField<GodotLoggerEventMask> get_logger_breadcrumb_mask() const { return logger_breadcrumb_mask; }
-	_FORCE_INLINE_ void set_logger_breadcrumb_mask(BitField<GodotLoggerEventMask> p_mask) { logger_breadcrumb_mask = p_mask; }
-
-	_FORCE_INLINE_ BitField<GodotLoggerEventMask> get_logger_log_mask() const { return logger_log_mask; }
-	_FORCE_INLINE_ void set_logger_log_mask(BitField<GodotLoggerEventMask> p_mask) { logger_log_mask = p_mask; }
-
-	_FORCE_INLINE_ bool should_capture_event(GodotErrorType p_error_type) { return logger_event_mask.has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
-	_FORCE_INLINE_ bool should_capture_breadcrumb(GodotErrorType p_error_type) { return logger_breadcrumb_mask.has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
-	_FORCE_INLINE_ bool should_capture_log(GodotErrorType p_error_type) { return enable_logs && logger_log_mask.has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
-	_FORCE_INLINE_ bool should_capture_message_breadcrumb() { return logger_breadcrumb_mask.has_flag(MASK_MESSAGE); }
-	_FORCE_INLINE_ bool should_capture_message_log() { return enable_logs && logger_log_mask.has_flag(MASK_MESSAGE); }
-
-	_FORCE_INLINE_ Ref<SentryLoggerLimits> get_logger_limits() const { return logger_limits; }
-	void set_logger_limits(const Ref<SentryLoggerLimits> &p_limits);
 
 	_FORCE_INLINE_ Callable get_before_send() const { return before_send; }
 	_FORCE_INLINE_ void set_before_send(const Callable &p_before_send) { before_send = p_before_send; }
@@ -249,6 +230,13 @@ public:
 
 	_FORCE_INLINE_ Ref<SentryExperimental> get_experimental() const { return experimental; }
 	_FORCE_INLINE_ Ref<SentryAndroidOptions> get_android() const { return android; }
+	_FORCE_INLINE_ Ref<SentryGodotLoggerOptions> get_godot_logger() const { return godot_logger; }
+
+	_FORCE_INLINE_ bool should_capture_event(GodotErrorType p_error_type) { return godot_logger->get_event_mask().has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
+	_FORCE_INLINE_ bool should_capture_breadcrumb(GodotErrorType p_error_type) { return godot_logger->get_breadcrumb_mask().has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
+	_FORCE_INLINE_ bool should_capture_log(GodotErrorType p_error_type) { return enable_logs && godot_logger->get_log_mask().has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
+	_FORCE_INLINE_ bool should_capture_message_breadcrumb() { return godot_logger->get_breadcrumb_mask().has_flag(MASK_MESSAGE); }
+	_FORCE_INLINE_ bool should_capture_message_log() { return enable_logs && godot_logger->get_log_mask().has_flag(MASK_MESSAGE); }
 
 	void add_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	void remove_event_processor(const Ref<SentryEventProcessor> &p_processor);
@@ -266,6 +254,38 @@ public:
 
 	SentryOptions();
 	~SentryOptions();
+
+	// *** Deprecated
+
+	bool deprecated_get_app_hang_tracking() const;
+	void deprecated_set_app_hang_tracking(bool p_enabled);
+
+	double deprecated_get_app_hang_timeout_sec() const;
+	void deprecated_set_app_hang_timeout_sec(double p_seconds);
+
+	bool deprecated_is_logger_enabled() const { return godot_logger->get_enabled(); }
+	void deprecated_set_logger_enabled(bool p_enabled);
+
+	bool deprecated_is_logger_include_source_enabled() const { return godot_logger->get_include_source_context(); }
+	void deprecated_set_logger_include_source(bool p_enable);
+
+	bool deprecated_is_logger_include_variables_enabled() const { return godot_logger->get_include_variables(); }
+	void deprecated_set_logger_include_variables(bool p_logger_include_variables);
+
+	bool deprecated_is_logger_messages_as_breadcrumbs_enabled() const { return godot_logger->get_breadcrumb_mask().has_flag(GodotLoggerEventMask::MASK_MESSAGE); }
+	void deprecated_set_logger_messages_as_breadcrumbs(bool p_enabled);
+
+	BitField<GodotLoggerEventMask> deprecated_get_logger_event_mask() const { return godot_logger->get_event_mask(); }
+	void deprecated_set_logger_event_mask(BitField<GodotLoggerEventMask> p_mask);
+
+	BitField<GodotLoggerEventMask> deprecated_get_logger_breadcrumb_mask() const { return godot_logger->get_breadcrumb_mask(); }
+	void deprecated_set_logger_breadcrumb_mask(BitField<GodotLoggerEventMask> p_mask);
+
+	BitField<GodotLoggerEventMask> deprecated_get_logger_log_mask() const { return godot_logger->get_log_mask(); }
+	void deprecated_set_logger_log_mask(BitField<GodotLoggerEventMask> p_mask);
+
+	Ref<SentryLoggerLimits> deprecated_get_logger_limits() const { return godot_logger->get_limits(); }
+	void deprecated_set_logger_limits(const Ref<SentryLoggerLimits> &p_limits);
 };
 
 } // namespace sentry

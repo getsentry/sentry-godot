@@ -50,6 +50,30 @@ void SentryLoggerLimits::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryLoggerLimits, Variant::INT, throttle_window_ms);
 }
 
+// *** SentryGodotLoggerOptions
+
+void SentryGodotLoggerOptions::deprecated_set_limits(const Ref<SentryLoggerLimits> &p_limits) {
+	limits = p_limits;
+	if (limits.is_null()) {
+		limits.instantiate();
+	}
+}
+
+void SentryGodotLoggerOptions::_bind_methods() {
+	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::BOOL, enabled);
+	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::BOOL, include_source_context);
+	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::BOOL, include_variables);
+	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::INT, event_mask);
+	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::INT, breadcrumb_mask);
+	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::INT, log_mask);
+
+	BIND_PROPERTY_READONLY(SentryGodotLoggerOptions, PropertyInfo(Variant::OBJECT, "limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), get_limits);
+}
+
+SentryGodotLoggerOptions::SentryGodotLoggerOptions() {
+	limits.instantiate();
+}
+
 // *** SentryExperimental
 
 void SentryExperimental::set_enable_logs(bool p_value) {
@@ -122,18 +146,20 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/app_hang/timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), p_options->app_hang_timeout_ms, false);
 
-	_define_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
-	_define_setting("sentry/logger/include_source", p_options->logger_include_source, false);
-	_define_setting("sentry/logger/include_variables", p_options->logger_include_variables, false);
-	_requires_restart("sentry/logger/include_variables");
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING_FOR_EVENTS()), p_options->logger_event_mask, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_breadcrumb_mask, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/logs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), p_options->logger_log_mask, false);
+	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
+	_define_setting("sentry/godot_logger/enabled", logger_options->get_enabled());
+	_define_setting("sentry/godot_logger/include_source_context", logger_options->get_include_source_context(), false);
+	_define_setting("sentry/godot_logger/include_variables", logger_options->get_include_variables(), false);
+	_requires_restart("sentry/godot_logger/include_variables");
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING_FOR_EVENTS()), logger_options->get_event_mask(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), logger_options->get_breadcrumb_mask(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/logs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), logger_options->get_log_mask(), false);
 
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), p_options->logger_limits->get_events_per_frame(), false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->logger_limits->get_repeated_error_window_ms(), false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), p_options->logger_limits->get_throttle_events(), false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), p_options->logger_limits->get_throttle_window_ms(), false);
+	Ref<SentryLoggerLimits> limits = logger_options->get_limits();
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), limits->get_events_per_frame(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), limits->get_repeated_error_window_ms(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), limits->get_throttle_events(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), limits->get_throttle_window_ms(), false);
 
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/enable_detection"), p_options->get_android()->get_enable_anr_detection(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_interval_ms"), p_options->get_android()->get_anr_timeout_interval_ms(), false);
@@ -213,17 +239,19 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->enable_app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking);
 	p_options->app_hang_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_ms", p_options->app_hang_timeout_ms);
 
-	p_options->logger_enabled = ProjectSettings::get_singleton()->get_setting("sentry/logger/logger_enabled", p_options->logger_enabled);
-	p_options->logger_include_source = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_source", p_options->logger_include_source);
-	p_options->logger_include_variables = ProjectSettings::get_singleton()->get_setting("sentry/logger/include_variables", p_options->logger_include_variables);
-	p_options->logger_event_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/events", p_options->logger_event_mask);
-	p_options->logger_breadcrumb_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/breadcrumbs", p_options->logger_breadcrumb_mask);
-	p_options->logger_log_mask = (int)ProjectSettings::get_singleton()->get_setting("sentry/logger/logs", p_options->logger_log_mask);
+	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
+	logger_options->set_enabled(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/enabled", logger_options->get_enabled()));
+	logger_options->set_include_source_context(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/include_source_context", logger_options->get_include_source_context()));
+	logger_options->set_include_variables(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/include_variables", logger_options->get_include_variables()));
+	logger_options->set_event_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/events", logger_options->get_event_mask()));
+	logger_options->set_breadcrumb_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/breadcrumbs", logger_options->get_breadcrumb_mask()));
+	logger_options->set_log_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/logs", logger_options->get_log_mask()));
 
-	p_options->logger_limits->set_events_per_frame(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/events_per_frame", p_options->logger_limits->get_events_per_frame()));
-	p_options->logger_limits->set_repeated_error_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/repeated_error_window_ms", p_options->logger_limits->get_repeated_error_window_ms()));
-	p_options->logger_limits->set_throttle_events(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_events", p_options->logger_limits->get_throttle_events()));
-	p_options->logger_limits->set_throttle_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/logger/limits/throttle_window_ms", p_options->logger_limits->get_throttle_window_ms()));
+	Ref<SentryLoggerLimits> limits = logger_options->get_limits();
+	limits->set_events_per_frame(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/events_per_frame", limits->get_events_per_frame()));
+	limits->set_repeated_error_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/repeated_error_window_ms", limits->get_repeated_error_window_ms()));
+	limits->set_throttle_events(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/throttle_events", limits->get_throttle_events()));
+	limits->set_throttle_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/throttle_window_ms", limits->get_throttle_window_ms()));
 
 	p_options->android->set_enable_anr_detection(
 			ProjectSettings::get_singleton()->get_setting(
@@ -262,18 +290,15 @@ Ref<SentryOptions> SentryOptions::create_from_project_settings() {
 	return options;
 }
 
-bool SentryOptions::is_logger_messages_as_breadcrumbs_enabled() const {
-	// DEPRECATED: Scheduled for removal.
-	return logger_breadcrumb_mask.has_flag(GodotLoggerEventMask::MASK_MESSAGE);
-}
-
-void SentryOptions::set_logger_messages_as_breadcrumbs(bool p_enabled) {
-	WARN_DEPRECATED_MSG("The \"logger_messages_as_breadcrumbs\" option is deprecated. Set the MASK_MESSAGE flag in \"logger_breadcrumb_mask\" instead.");
+void SentryOptions::deprecated_set_logger_messages_as_breadcrumbs(bool p_enabled) {
+	WARN_DEPRECATED_MSG("The \"logger_messages_as_breadcrumbs\" option is deprecated. Set the MASK_MESSAGE flag in \"godot_logger.breadcrumb_mask\" instead.");
+	BitField<GodotLoggerEventMask> mask = godot_logger->get_breadcrumb_mask();
 	if (p_enabled) {
-		logger_breadcrumb_mask.set_flag(GodotLoggerEventMask::MASK_MESSAGE);
+		mask.set_flag(GodotLoggerEventMask::MASK_MESSAGE);
 	} else {
-		logger_breadcrumb_mask.clear_flag(GodotLoggerEventMask::MASK_MESSAGE);
+		mask.clear_flag(GodotLoggerEventMask::MASK_MESSAGE);
 	}
+	godot_logger->set_breadcrumb_mask(mask);
 }
 
 bool SentryOptions::deprecated_get_app_hang_tracking() const {
@@ -294,12 +319,39 @@ void SentryOptions::deprecated_set_app_hang_timeout_sec(double p_seconds) {
 	set_app_hang_timeout_ms(static_cast<int>(Math::round(p_seconds * 1000.0)));
 }
 
-void SentryOptions::set_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
-	logger_limits = p_limits;
-	// Ensure limits are initialized.
-	if (logger_limits.is_null()) {
-		logger_limits.instantiate();
-	}
+void SentryOptions::deprecated_set_logger_enabled(bool p_enabled) {
+	WARN_DEPRECATED_MSG("The \"logger_enabled\" option is deprecated. Use \"godot_logger.enabled\" instead.");
+	godot_logger->set_enabled(p_enabled);
+}
+
+void SentryOptions::deprecated_set_logger_include_source(bool p_enable) {
+	WARN_DEPRECATED_MSG("The \"logger_include_source\" option is deprecated. Use \"godot_logger.include_source_context\" instead.");
+	godot_logger->set_include_source_context(p_enable);
+}
+
+void SentryOptions::deprecated_set_logger_include_variables(bool p_logger_include_variables) {
+	WARN_DEPRECATED_MSG("The \"logger_include_variables\" option is deprecated. Use \"godot_logger.include_variables\" instead.");
+	godot_logger->set_include_variables(p_logger_include_variables);
+}
+
+void SentryOptions::deprecated_set_logger_event_mask(BitField<GodotLoggerEventMask> p_mask) {
+	WARN_DEPRECATED_MSG("The \"logger_event_mask\" option is deprecated. Use \"godot_logger.event_mask\" instead.");
+	godot_logger->set_event_mask(p_mask);
+}
+
+void SentryOptions::deprecated_set_logger_breadcrumb_mask(BitField<GodotLoggerEventMask> p_mask) {
+	WARN_DEPRECATED_MSG("The \"logger_breadcrumb_mask\" option is deprecated. Use \"godot_logger.breadcrumb_mask\" instead.");
+	godot_logger->set_breadcrumb_mask(p_mask);
+}
+
+void SentryOptions::deprecated_set_logger_log_mask(BitField<GodotLoggerEventMask> p_mask) {
+	WARN_DEPRECATED_MSG("The \"logger_log_mask\" option is deprecated. Use \"godot_logger.log_mask\" instead.");
+	godot_logger->set_log_mask(p_mask);
+}
+
+void SentryOptions::deprecated_set_logger_limits(const Ref<SentryLoggerLimits> &p_limits) {
+	WARN_DEPRECATED_MSG("The \"logger_limits\" option is deprecated. Use \"godot_logger.limits\" instead.");
+	godot_logger->deprecated_set_limits(p_limits);
 }
 
 void SentryOptions::set_release(const String &p_release) {
@@ -360,19 +412,12 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_app_hang_tracking"), set_app_hang_tracking_enabled, is_app_hang_tracking_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "app_hang_timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), set_app_hang_timeout_ms, get_app_hang_timeout_ms);
 
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), set_logger_enabled, is_logger_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), set_logger_include_source, is_logger_include_source_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_variables"), set_logger_include_variables, is_logger_include_variables_enabled);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_event_mask"), set_logger_event_mask, get_logger_event_mask);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_breadcrumb_mask"), set_logger_breadcrumb_mask, get_logger_breadcrumb_mask);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_log_mask"), set_logger_log_mask, get_logger_log_mask);
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::OBJECT, "logger_limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), set_logger_limits, get_logger_limits);
-
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send"), set_before_send, get_before_send);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_capture_screenshot"), set_before_capture_screenshot, get_before_capture_screenshot);
 
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "android", PROPERTY_HINT_TYPE_STRING, "SentryAndroidOptions", PROPERTY_USAGE_NONE), get_android);
+	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "godot_logger", PROPERTY_HINT_TYPE_STRING, "SentryGodotLoggerOptions", PROPERTY_USAGE_NONE), get_godot_logger);
 
 	{
 		using namespace sentry;
@@ -385,17 +430,24 @@ void SentryOptions::_bind_methods() {
 	}
 
 	// DEPRECATED: These properties are deprecated and remain for compatibility reasons.
-	// TODO: Remove these after November 2026 or in version 3.0.
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_messages_as_breadcrumbs"), set_logger_messages_as_breadcrumbs, is_logger_messages_as_breadcrumbs_enabled);
+	// TODO: Remove these in January 2027 or in version 3.0.
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_messages_as_breadcrumbs"), deprecated_set_logger_messages_as_breadcrumbs, deprecated_is_logger_messages_as_breadcrumbs_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), deprecated_set_app_hang_tracking, deprecated_get_app_hang_tracking);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), deprecated_set_app_hang_timeout_sec, deprecated_get_app_hang_timeout_sec);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_enabled"), deprecated_set_logger_enabled, deprecated_is_logger_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_source"), deprecated_set_logger_include_source, deprecated_is_logger_include_source_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "logger_include_variables"), deprecated_set_logger_include_variables, deprecated_is_logger_include_variables_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_event_mask"), deprecated_set_logger_event_mask, deprecated_get_logger_event_mask);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_breadcrumb_mask"), deprecated_set_logger_breadcrumb_mask, deprecated_get_logger_breadcrumb_mask);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_log_mask"), deprecated_set_logger_log_mask, deprecated_get_logger_log_mask);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::OBJECT, "logger_limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), deprecated_set_logger_limits, deprecated_get_logger_limits);
 }
 
 SentryOptions::SentryOptions() {
-	logger_limits.instantiate();
 	experimental.instantiate();
 	experimental->owner = this;
 	android.instantiate();
+	godot_logger.instantiate();
 
 	_init_debug_option(DEBUG_DEFAULT);
 }

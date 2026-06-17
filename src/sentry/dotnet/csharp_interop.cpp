@@ -152,7 +152,7 @@ struct NativeOptions {
 
 	// Logger
 	uint8_t logger_enabled;
-	uint8_t logger_include_source;
+	uint8_t logger_include_source_context;
 	uint8_t logger_include_variables;
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
@@ -213,7 +213,7 @@ struct ManagedOptions {
 	int32_t app_hang_timeout_ms;
 
 	uint8_t logger_enabled;
-	uint8_t logger_include_source;
+	uint8_t logger_include_source_context;
 	uint8_t logger_include_variables;
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
@@ -235,11 +235,7 @@ struct NativeTraceContext {
 };
 
 static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions> options) {
-	Ref<SentryLoggerLimits> logger_limits = options->get_logger_limits();
-	if (logger_limits.is_null()) {
-		logger_limits.instantiate();
-		options->set_logger_limits(logger_limits);
-	}
+	Ref<SentryLoggerLimits> logger_limits = options->get_godot_logger()->get_limits();
 	logger_limits->set_events_per_frame(data.logger_limits.events_per_frame);
 	logger_limits->set_repeated_error_window_ms(data.logger_limits.repeated_error_window_ms);
 	logger_limits->set_throttle_events(data.logger_limits.throttle_events);
@@ -262,12 +258,12 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_screenshot_level((Level)data.screenshot_level);
 	options->set_app_hang_tracking_enabled(data.enable_app_hang_tracking);
 	options->set_app_hang_timeout_ms(data.app_hang_timeout_ms);
-	options->set_logger_enabled(data.logger_enabled);
-	options->set_logger_include_source(data.logger_include_source);
-	options->set_logger_include_variables(data.logger_include_variables);
-	options->set_logger_event_mask(data.logger_event_mask);
-	options->set_logger_breadcrumb_mask(data.logger_breadcrumb_mask);
-	options->set_logger_log_mask(data.logger_log_mask);
+	options->get_godot_logger()->set_enabled(data.logger_enabled);
+	options->get_godot_logger()->set_include_source_context(data.logger_include_source_context);
+	options->get_godot_logger()->set_include_variables(data.logger_include_variables);
+	options->get_godot_logger()->set_event_mask(data.logger_event_mask);
+	options->get_godot_logger()->set_breadcrumb_mask(data.logger_breadcrumb_mask);
+	options->get_godot_logger()->set_log_mask(data.logger_log_mask);
 	options->get_experimental()->set_enable_metrics(data.enable_metrics);
 	options->get_android()->set_enable_anr_detection(data.android_enable_anr_detection);
 	options->get_android()->set_anr_timeout_interval_ms(data.android_anr_timeout_interval_ms);
@@ -277,10 +273,11 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &options) {
 	r_data = {};
 
-	r_data.logger_limits.events_per_frame = options->get_logger_limits()->get_events_per_frame();
-	r_data.logger_limits.repeated_error_window_ms = options->get_logger_limits()->get_repeated_error_window_ms();
-	r_data.logger_limits.throttle_events = options->get_logger_limits()->get_throttle_events();
-	r_data.logger_limits.throttle_window_ms = options->get_logger_limits()->get_throttle_window_ms();
+	Ref<SentryLoggerLimits> limits = options->get_godot_logger()->get_limits();
+	r_data.logger_limits.events_per_frame = limits->get_events_per_frame();
+	r_data.logger_limits.repeated_error_window_ms = limits->get_repeated_error_window_ms();
+	r_data.logger_limits.throttle_events = limits->get_throttle_events();
+	r_data.logger_limits.throttle_window_ms = limits->get_throttle_window_ms();
 
 	r_data.dsn = _make_handle(options->get_dsn());
 	r_data.release = _make_handle(options->get_release());
@@ -299,12 +296,12 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.screenshot_level = options->get_screenshot_level();
 	r_data.enable_app_hang_tracking = options->is_app_hang_tracking_enabled();
 	r_data.app_hang_timeout_ms = options->get_app_hang_timeout_ms();
-	r_data.logger_enabled = options->is_logger_enabled();
-	r_data.logger_include_source = options->is_logger_include_source_enabled();
-	r_data.logger_include_variables = options->is_logger_include_variables_enabled();
-	r_data.logger_event_mask = options->get_logger_event_mask();
-	r_data.logger_breadcrumb_mask = options->get_logger_breadcrumb_mask();
-	r_data.logger_log_mask = options->get_logger_log_mask();
+	r_data.logger_enabled = options->get_godot_logger()->get_enabled();
+	r_data.logger_include_source_context = options->get_godot_logger()->get_include_source_context();
+	r_data.logger_include_variables = options->get_godot_logger()->get_include_variables();
+	r_data.logger_event_mask = options->get_godot_logger()->get_event_mask();
+	r_data.logger_breadcrumb_mask = options->get_godot_logger()->get_breadcrumb_mask();
+	r_data.logger_log_mask = options->get_godot_logger()->get_log_mask();
 	r_data.enable_metrics = options->get_experimental()->get_enable_metrics();
 	r_data.android_enable_anr_detection = options->get_android()->get_enable_anr_detection();
 	r_data.android_anr_timeout_interval_ms = options->get_android()->get_anr_timeout_interval_ms();

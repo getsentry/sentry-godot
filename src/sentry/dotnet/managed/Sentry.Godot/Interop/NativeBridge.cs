@@ -128,7 +128,7 @@ internal static partial class NativeBridge
         public byte enable_app_hang_tracking;
         public int app_hang_timeout_ms;
         public byte logger_enabled;
-        public byte logger_include_source;
+        public byte logger_include_source_context;
         public byte logger_include_variables;
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
@@ -166,7 +166,7 @@ internal static partial class NativeBridge
         public byte enable_app_hang_tracking;
         public int app_hang_timeout_ms;
         public byte logger_enabled;
-        public byte logger_include_source;
+        public byte logger_include_source_context;
         public byte logger_include_variables;
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
@@ -500,7 +500,7 @@ internal static partial class NativeBridge
 
     private static void ApplyNativeOptions(NativeOptions data, SentryGodotOptions opts)
     {
-        opts.LoggerLimits = new SentryLoggerLimits
+        opts.GodotLogger.Limits = new SentryLoggerLimits
         {
             EventsPerFrame = data.logger_limits.events_per_frame,
             RepeatedErrorWindow = TimeSpan.FromMilliseconds(data.logger_limits.repeated_error_window_ms),
@@ -524,12 +524,12 @@ internal static partial class NativeBridge
         opts.ScreenshotLevel = (SentryLevel)data.screenshot_level;
         opts.EnableAppHangTracking = data.enable_app_hang_tracking != 0;
         opts.AppHangTimeout = TimeSpan.FromMilliseconds(data.app_hang_timeout_ms);
-        opts.LoggerEnabled = data.logger_enabled != 0;
-        opts.LoggerIncludeSource = data.logger_include_source != 0;
-        opts.LoggerIncludeVariables = data.logger_include_variables != 0;
-        opts.LoggerEventMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_event_mask;
-        opts.LoggerBreadcrumbMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_breadcrumb_mask;
-        opts.LoggerLogMask = (SentryGodotOptions.GodotLoggerEventMask)data.logger_log_mask;
+        opts.GodotLogger.Enabled = data.logger_enabled != 0;
+        opts.GodotLogger.IncludeSourceContext = data.logger_include_source_context != 0;
+        opts.GodotLogger.IncludeVariables = data.logger_include_variables != 0;
+        opts.GodotLogger.EventMask = (GodotLoggerEventMask)data.logger_event_mask;
+        opts.GodotLogger.BreadcrumbMask = (GodotLoggerEventMask)data.logger_breadcrumb_mask;
+        opts.GodotLogger.LogMask = (GodotLoggerEventMask)data.logger_log_mask;
         opts.EnableMetrics = data.enable_metrics != 0;
         opts.Android.EnableAnrDetection = data.android_enable_anr_detection != 0;
         opts.Android.AnrTimeoutInterval = TimeSpan.FromMilliseconds(data.android_anr_timeout_interval_ms);
@@ -789,10 +789,10 @@ internal static partial class NativeBridge
             {
                 logger_limits = new LoggerLimitsData
                 {
-                    events_per_frame = opts.LoggerLimits.EventsPerFrame,
-                    repeated_error_window_ms = (int)opts.LoggerLimits.RepeatedErrorWindow.TotalMilliseconds,
-                    throttle_events = opts.LoggerLimits.ThrottleEvents,
-                    throttle_window_ms = (int)opts.LoggerLimits.ThrottleWindow.TotalMilliseconds,
+                    events_per_frame = opts.GodotLogger.Limits.EventsPerFrame,
+                    repeated_error_window_ms = (int)opts.GodotLogger.Limits.RepeatedErrorWindow.TotalMilliseconds,
+                    throttle_events = opts.GodotLogger.Limits.ThrottleEvents,
+                    throttle_window_ms = (int)opts.GodotLogger.Limits.ThrottleWindow.TotalMilliseconds,
                 },
                 dsn = dsnPtr,
                 dsn_len = dsn.Length,
@@ -815,12 +815,12 @@ internal static partial class NativeBridge
                 screenshot_level = (int)opts.ScreenshotLevel,
                 enable_app_hang_tracking = (byte)(opts.EnableAppHangTracking ? 1 : 0),
                 app_hang_timeout_ms = (int)opts.AppHangTimeout.TotalMilliseconds,
-                logger_enabled = (byte)(opts.LoggerEnabled ? 1 : 0),
-                logger_include_source = (byte)(opts.LoggerIncludeSource ? 1 : 0),
-                logger_include_variables = (byte)(opts.LoggerIncludeVariables ? 1 : 0),
-                logger_event_mask = (int)opts.LoggerEventMask,
-                logger_breadcrumb_mask = (int)opts.LoggerBreadcrumbMask,
-                logger_log_mask = (int)opts.LoggerLogMask,
+                logger_enabled = (byte)(opts.GodotLogger.Enabled ? 1 : 0),
+                logger_include_source_context = (byte)(opts.GodotLogger.IncludeSourceContext ? 1 : 0),
+                logger_include_variables = (byte)(opts.GodotLogger.IncludeVariables ? 1 : 0),
+                logger_event_mask = (int)opts.GodotLogger.EventMask,
+                logger_breadcrumb_mask = (int)opts.GodotLogger.BreadcrumbMask,
+                logger_log_mask = (int)opts.GodotLogger.LogMask,
                 enable_metrics = (byte)(opts.EnableMetrics ? 1 : 0),
                 defined_hooks = (uint)GetManagedDefinedHooks(opts),
                 android_enable_anr_detection = (byte)(opts.Android.EnableAnrDetection ? 1 : 0),

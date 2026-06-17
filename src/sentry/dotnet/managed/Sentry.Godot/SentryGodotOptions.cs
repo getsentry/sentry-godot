@@ -67,82 +67,10 @@ public sealed class SentryGodotOptions : SentryOptions
     public TimeSpan AppHangTimeout { get; set; } = TimeSpan.FromSeconds(5.0);
 
     /// <summary>
-    /// If enabled, the SDK captures logged GDScript and engine runtime errors as events and/or breadcrumbs,
-    /// as defined by <see cref="LoggerEventMask"/> and <see cref="LoggerBreadcrumbMask"/>.
+    /// Configures the capture of Godot errors and log messages as Sentry events, breadcrumbs,
+    /// and logs. See <see cref="SentryGodotLoggerOptions"/>.
     /// </summary>
-    /// <remarks>
-    /// This setting controls GDScript/engine error reporting, not .NET errors.
-    /// </remarks>
-    public bool LoggerEnabled { get; set; } = true;
-
-    /// <summary>
-    /// If enabled, the SDK includes surrounding source code of logged errors, if available.
-    /// </summary>
-    /// <remarks>
-    /// This setting controls GDScript error reporting, not .NET errors.
-    /// </remarks>
-    public bool LoggerIncludeSource { get; set; } = false;
-
-    /// <summary>
-    /// If enabled, the SDK includes local variables from stack traces when capturing script errors.
-    /// </summary>
-    /// <remarks>
-    /// May impact performance, especially for applications with frequent errors or deep call stacks.
-    /// This setting controls GDScript error reporting, not .NET errors.
-    /// </remarks>
-    public bool LoggerIncludeVariables { get; set; } = false;
-
-    /// <summary>
-    /// Bitfield mask for Godot logger events.
-    /// </summary>
-    /// <remarks>
-    /// Used to specify which Godot logger events are captured as Sentry events, breadcrumbs and logs.
-    /// </remarks>
-    [Flags]
-    public enum GodotLoggerEventMask
-    {
-        /// <summary>No logger errors or messages will be captured.</summary>
-        None = 0,
-        /// <summary>Native (C++) and engine errors, which may also originate from a script.</summary>
-        Error = 1 << 0,
-        /// <summary>Warnings.</summary>
-        Warning = 1 << 1,
-        /// <summary>Script errors.</summary>
-        Script = 1 << 2,
-        /// <summary>Shader errors.</summary>
-        Shader = 1 << 3,
-        // NOTE: Bits 4-6 are reserved for any additional Godot error types that may be added in the future.
-        /// <summary>Log messages such as <c>GD.Print()</c> statements.</summary>
-        Message = 1 << 7
-    }
-
-    /// <summary>
-    /// Specifies which Godot logger events are captured as Sentry events.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="GodotLoggerEventMask.Message"/> has no effect here. To capture log messages,
-    /// set it in <see cref="LoggerLogMask"/> or <see cref="LoggerBreadcrumbMask"/> instead.
-    /// </remarks>
-    public GodotLoggerEventMask LoggerEventMask { get; set; } = GodotLoggerEventMask.Error | GodotLoggerEventMask.Script | GodotLoggerEventMask.Shader;
-
-    /// <summary>
-    /// Specifies which Godot logger events are captured as Sentry breadcrumbs.
-    /// </summary>
-    public GodotLoggerEventMask LoggerBreadcrumbMask { get; set; } = GodotLoggerEventMask.Error | GodotLoggerEventMask.Warning | GodotLoggerEventMask.Script | GodotLoggerEventMask.Shader | GodotLoggerEventMask.Message;
-
-    /// <summary>
-    /// Specifies which Godot logger events are captured as Sentry logs.
-    /// </summary>
-    public GodotLoggerEventMask LoggerLogMask { get; set; } = GodotLoggerEventMask.None;
-
-    /// <summary>
-    /// Defines throttling limits for the error logger. These limits are used to prevent the SDK from sending
-    /// too many non-critical and repeating error events. See <see cref="SentryLoggerLimits"/>.
-    /// </summary>
-    /// <remarks>
-    /// This setting controls GDScript/engine error reporting, not .NET errors.
-    /// </remarks>
-    public SentryLoggerLimits LoggerLimits { get; set; } = new SentryLoggerLimits();
+    public SentryGodotLoggerOptions GodotLogger { get; set; } = new SentryGodotLoggerOptions();
 
     /// <summary>
     /// Configures Android-specific options, such as ANR (Application Not Responding) detection.
@@ -206,6 +134,110 @@ public sealed class SentryGodotOptions : SentryOptions
             }
         }
     }
+}
+
+/// <summary>
+/// Bitfield mask for Godot logger events.
+/// </summary>
+/// <remarks>
+/// Used to specify which Godot logger events are captured as Sentry events, breadcrumbs and logs.
+/// </remarks>
+[Flags]
+public enum GodotLoggerEventMask
+{
+    /// <summary>No logger errors or messages will be captured.</summary>
+    None = 0,
+    /// <summary>Native (C++) and engine errors, which may also originate from a script.</summary>
+    Error = 1 << 0,
+    /// <summary>Warnings.</summary>
+    Warning = 1 << 1,
+    /// <summary>Script errors.</summary>
+    Script = 1 << 2,
+    /// <summary>Shader errors.</summary>
+    Shader = 1 << 3,
+    // NOTE: Bits 4-6 are reserved for any additional Godot error types that may be added in the future.
+    /// <summary>Log messages such as <c>GD.Print()</c> statements.</summary>
+    Message = 1 << 7
+}
+
+/// <summary>
+/// Contains configuration options that control how the SDK captures Godot errors and log messages
+/// as Sentry events, breadcrumbs, and logs. Access this configuration through
+/// <see cref="SentryGodotOptions.GodotLogger"/>.
+/// </summary>
+/// <remarks>
+/// This includes engine errors, GDScript and shader errors, GDExtension errors, <c>GD.PushError()</c>
+/// and <c>GD.PushWarning()</c> statements, as well as log messages from <c>GD.Print()</c> and
+/// similar functions.
+/// These options control Godot-side error reporting, not .NET errors.
+/// </remarks>
+/// <seealso cref="SentryGodotOptions"/>
+public sealed class SentryGodotLoggerOptions
+{
+    /// <summary>
+    /// If enabled, the SDK will capture logged errors as events, breadcrumbs and/or logs, as defined
+    /// by <see cref="EventMask"/>, <see cref="BreadcrumbMask"/> and <see cref="LogMask"/>.
+    /// Crashes are always captured.
+    /// </summary>
+    /// <remarks>
+    /// This setting controls GDScript/engine error reporting, not .NET errors.
+    /// </remarks>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// If enabled, the SDK will include the surrounding source code of logged errors, if available
+    /// in the exported project.
+    /// </summary>
+    /// <remarks>
+    /// This setting controls GDScript error reporting, not .NET errors.
+    /// </remarks>
+    public bool IncludeSourceContext { get; set; } = true;
+
+    /// <summary>
+    /// If enabled, the SDK will include local variables from stack traces when capturing script errors.
+    /// This allows showing the values of variables at each frame in the call stack. Requires enabling
+    /// the <c>debug/settings/gdscript/always_track_local_variables</c> project setting.
+    /// </summary>
+    /// <remarks>
+    /// May impact performance, especially for applications with frequent errors or deep call stacks.
+    /// This setting controls GDScript error reporting, not .NET errors.
+    /// </remarks>
+    public bool IncludeVariables { get; set; } = false;
+
+    /// <summary>
+    /// Specifies the Godot logger events that are automatically captured as Sentry events.
+    /// Accepts a single value or a bitwise combination of <see cref="GodotLoggerEventMask"/> masks.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="GodotLoggerEventMask.Message"/> has no effect here. To capture log messages,
+    /// set it in <see cref="LogMask"/> and/or <see cref="BreadcrumbMask"/> instead.
+    /// </remarks>
+    public GodotLoggerEventMask EventMask { get; set; } = GodotLoggerEventMask.Error | GodotLoggerEventMask.Script | GodotLoggerEventMask.Shader;
+
+    /// <summary>
+    /// Specifies the Godot logger events that are automatically captured as Sentry breadcrumbs.
+    /// Accepts a single value or a bitwise combination of <see cref="GodotLoggerEventMask"/> masks.
+    /// </summary>
+    public GodotLoggerEventMask BreadcrumbMask { get; set; } = GodotLoggerEventMask.Error | GodotLoggerEventMask.Warning | GodotLoggerEventMask.Script | GodotLoggerEventMask.Shader | GodotLoggerEventMask.Message;
+
+    /// <summary>
+    /// Specifies the Godot logger events that are automatically captured as Sentry logs.
+    /// Accepts a single value or a bitwise combination of <see cref="GodotLoggerEventMask"/> masks.
+    /// Empty by default, so no events are captured as logs.
+    /// </summary>
+    /// <remarks>
+    /// Log capture requires <see cref="SentryOptions.EnableLogs"/> to be enabled.
+    /// </remarks>
+    public GodotLoggerEventMask LogMask { get; set; } = GodotLoggerEventMask.None;
+
+    /// <summary>
+    /// Defines throttling limits for the error logger. These limits are used to prevent the SDK
+    /// from sending too many non-critical and repeating error events. See <see cref="SentryLoggerLimits"/>.
+    /// </summary>
+    /// <remarks>
+    /// This setting controls GDScript/engine error reporting, not .NET errors.
+    /// </remarks>
+    public SentryLoggerLimits Limits { get; set; } = new SentryLoggerLimits();
 }
 
 /// <summary>

@@ -61,7 +61,7 @@ void _verify_project_settings() {
 			ERR_PRINT("Sentry: Please enable `debug/settings/gdscript/always_track_call_stacks` in your Project Settings. This is required for supporting script stack traces.");
 		}
 	}
-	if (options->is_logger_include_variables_enabled() &&
+	if (options->get_godot_logger()->get_include_variables() &&
 			!ps->get_setting("debug/settings/gdscript/always_track_local_variables")) {
 		if (Engine::get_singleton()->is_editor_hint()) {
 			ps->set_setting("debug/settings/gdscript/always_track_local_variables", true);
@@ -198,7 +198,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 			_init_contexts();
 		}
 
-		if (options->is_logger_enabled()) {
+		if (options->get_godot_logger()->get_enabled()) {
 			if (godot_logger.is_null()) {
 				godot_logger.instantiate();
 			}

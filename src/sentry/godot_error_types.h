@@ -28,7 +28,7 @@ _FORCE_INLINE_ godot::String GODOT_ERROR_MASK_EXPORT_STRING() {
 			int(MASK_ERROR), int(MASK_WARNING), int(MASK_SCRIPT), int(MASK_SHADER), int(MASK_MESSAGE));
 }
 
-// Used for exporting `logger_event_mask` as PropertyInfo.
+// Used for exporting `godot_logger.event_mask` as PropertyInfo.
 // MASK_MESSAGE is omitted because log messages should not be captured as Sentry events.
 _FORCE_INLINE_ godot::String GODOT_ERROR_MASK_EXPORT_STRING_FOR_EVENTS() {
 	return godot::vformat("Error:%d,Warning:%d,Script:%d,Shader:%d",
