@@ -62,8 +62,8 @@ class SentryOptions;
 class SentryExperimental : public RefCounted {
 	GDCLASS(SentryExperimental, RefCounted);
 
+	// Keep owner and the friend wiring for future compatibility forwarders.
 	friend class SentryOptions;
-
 	SentryOptions *owner = nullptr;
 
 	bool enable_metrics = true;
