@@ -51,8 +51,8 @@ NSDictionary<NSString *, objc::SentryAttributeContent *> *_metric_attributes_to_
 			[NSMutableDictionary dictionaryWithCapacity:p_attributes.size()];
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
-		const String &key = keys[i];
-		attributes[sentry::cocoa::string_to_objc(key)] = sentry::cocoa::variant_to_attribute_content(p_attributes[key]);
+		const Variant &key = keys[i];
+		attributes[sentry::cocoa::string_to_objc(key.stringify())] = sentry::cocoa::variant_to_attribute_content(p_attributes[key]);
 	}
 	return attributes;
 }
