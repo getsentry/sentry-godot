@@ -12,6 +12,11 @@
   - Renamed `SentryOptions.app_hang_tracking` to `SentryOptions.enable_app_hang_tracking`; the old name remains as a deprecated alias.
   - Renamed `SentryOptions.app_hang_timeout_sec` to `SentryOptions.app_hang_timeout_ms`, now configured in milliseconds; the old name remains as a deprecated alias, and existing Project Settings are migrated automatically.
 
+### Features
+
+- *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
+  - Add `options.Native.SetBeforeSend` hook to inspect, modify, or drop native events (engine, GDScript, and GDExtension errors) from the .NET layer ([#737](https://github.com/getsentry/sentry-godot/pull/737))
+
 ### Improvements
 
 - Distribute native debug symbols in a separate `sentry-godot-debug-symbols` archive instead of bundling them with the addon, reducing the size of the released addon and demo-project packages ([#747](https://github.com/getsentry/sentry-godot/pull/747))

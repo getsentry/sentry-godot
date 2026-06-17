@@ -46,7 +46,7 @@ bool should_run_cpp_tests() {
 
 	UtilityFunctions::print("Exit code: " + String::num_int64(result));
 
-	// Exit without cleanup -- Godot is still loading at this point.
+	// Exit without cleanup -- there is nothing to tear down before the process ends.
 	std::_Exit(result);
 }
 

@@ -23,6 +23,12 @@ public sealed class SentryGodotOptions : SentryOptions
     }
 
     /// <summary>
+    /// Configuration that applies to the native layer, including the before-send hook
+    /// for native events such as engine, GDExtension and GDScript errors.
+    /// </summary>
+    public SentryNativeOptions Native { get; } = new();
+
+    /// <summary>
     /// If enabled, the SDK will attach the Godot log file to the event.
     /// </summary>
     public bool AttachLog { get; set; } = true;

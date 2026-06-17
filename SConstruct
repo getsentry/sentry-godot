@@ -202,6 +202,7 @@ if env["tests"]:
     ])
     env.Append(CPPPATH=["tests/cpp", "modules/doctest/doctest"])
     sources += [File("tests/cpp/cpp_test_runner.cpp")]
+    sources += [File("tests/cpp/dotnet_test_support.cpp")]
     sources += Glob("tests/cpp/tests/*.cpp")
 
 # Generate documentation data.
