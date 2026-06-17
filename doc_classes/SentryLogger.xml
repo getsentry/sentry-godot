@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A dedicated API for logging messages to Sentry's structured logging system. Access this API through [member SentrySDK.logger]. [SentryLogger] provides methods for different log levels ([method trace], [method debug], [method info], [method warn], [method error], [method fatal]) and enables structured data capture with your log messages.
-		[b]Note:[/b] The [member SentryExperimental.enable_logs] option in [member SentryOptions.experimental] must be enabled for logging functionality to work.
+		[b]Note:[/b] The [member SentryOptions.enable_logs] option must be enabled for logging functionality to work.
 		[codeblock]
 		# Simple messages
 		SentrySDK.logger.info("Game session started")
