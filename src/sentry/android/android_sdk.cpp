@@ -32,8 +32,8 @@ Dictionary _sanitize_attributes(const Dictionary &p_attributes) {
 	if (!p_attributes.is_empty()) {
 		const Array &keys = p_attributes.keys();
 		for (int i = 0; i < keys.size(); i++) {
-			const String &key = keys[i];
-			attributes[key] = _as_attribute(p_attributes[key]);
+			const Variant &key = keys[i];
+			attributes[key.stringify()] = _as_attribute(p_attributes[key]);
 		}
 	}
 	return attributes;

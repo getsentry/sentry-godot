@@ -143,8 +143,8 @@ void CocoaSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_a
 	if (!p_attributes.is_empty()) {
 		const Array &keys = p_attributes.keys();
 		for (int i = 0; i < keys.size(); i++) {
-			const String &key = keys[i];
-			const NSString *objc_key = [NSString stringWithUTF8String:key.utf8()];
+			const Variant &key = keys[i];
+			const NSString *objc_key = [NSString stringWithUTF8String:key.stringify().utf8()];
 			const NSObject *objc_value = _as_attribute(p_attributes[key]);
 			[attributes setObject:objc_value forKey:objc_key];
 		}
