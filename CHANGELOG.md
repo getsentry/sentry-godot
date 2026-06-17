@@ -15,6 +15,7 @@
   - Moved the `SentryOptions.logger_*` options under `SentryOptions.godot_logger` (for example, `logger_event_mask` becomes `godot_logger.event_mask`); the old names remain as deprecated aliases.
   - Renamed `logger_include_source` to `godot_logger.include_source_context` as part of the move.
   - Existing Project Settings under **Sentry > Logger** are migrated automatically.
+- Remove compatibility support for the deprecated `SentryOptions.experimental.enable_logs` and `experimental.before_send_log` properties; use `SentryOptions.enable_logs` and `SentryOptions.before_send_log` instead ([#766](https://github.com/getsentry/sentry-godot/pull/766))
 
 ### Features
 
