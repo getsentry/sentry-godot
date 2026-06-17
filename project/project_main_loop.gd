@@ -13,7 +13,7 @@ var logger: DemoLogger
 
 
 func _initialize() -> void:
-	if _is_running_tests_from_editor() or _is_running_cli_command():
+	if _is_running_tests_from_editor() or _is_running_cli_command() or _is_running_cpp_tests():
 		# Not a normal start -- don't initialize Sentry.
 		return
 
@@ -70,3 +70,7 @@ func _is_running_tests_from_editor() -> bool:
 
 func _is_running_cli_command() -> bool:
 	return CLIParser.should_execute()
+
+
+func _is_running_cpp_tests() -> bool:
+	return "--test-sentry" in OS.get_cmdline_args()

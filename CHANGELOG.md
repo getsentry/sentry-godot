@@ -14,11 +14,17 @@
 
 ### Features
 
+- *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
+  - Add `options.Native.SetBeforeSend` hook to inspect, modify, or drop native events (engine, GDScript, and GDExtension errors) from the .NET layer ([#737](https://github.com/getsentry/sentry-godot/pull/737))
 - Add `SentrySDK.bad_code` API for deliberately crashing the application to test crash reporting and native stack traces ([#765](https://github.com/getsentry/sentry-godot/pull/765))
 
 ### Improvements
 
 - Distribute native debug symbols in a separate `sentry-godot-debug-symbols` archive instead of bundling them with the addon, reducing the size of the released addon and demo-project packages ([#747](https://github.com/getsentry/sentry-godot/pull/747))
+
+### Fixes
+
+- Fix editor crash on Windows when opening a project that uses C#/.NET ([#762](https://github.com/getsentry/sentry-godot/pull/762))
 
 ### Dependencies
 
