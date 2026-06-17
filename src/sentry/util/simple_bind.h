@@ -33,6 +33,10 @@ _FORCE_INLINE_ void bind_property_readonly(const godot::StringName &p_class, con
 #define BIND_PROPERTY_SIMPLE(m_class, m_type, m_property) \
 	sentry::bind::bind_property<&m_class::set_##m_property, &m_class::get_##m_property>(m_class::get_class_static(), PropertyInfo(m_type, #m_property), "set_" #m_property, "get_" #m_property)
 
+// Like BIND_PROPERTY_SIMPLE, but binds "deprecated_"-prefixed C++ accessors while exposing canonical setter/getter names.
+#define BIND_PROPERTY_SIMPLE_DEPRECATED(m_class, m_type, m_property) \
+	sentry::bind::bind_property<&m_class::deprecated_set_##m_property, &m_class::deprecated_get_##m_property>(m_class::get_class_static(), PropertyInfo(m_type, #m_property), "set_" #m_property, "get_" #m_property)
+
 // Macro to bind a read-only property and its getter.
 #define BIND_PROPERTY_READONLY(m_class, m_prop_info, m_getter) \
 	sentry::bind::bind_property_readonly<&m_class::m_getter>(m_class::get_class_static(), m_prop_info, #m_getter)

@@ -70,6 +70,18 @@
 				return log_entry
 			[/codeblock]
 		</member>
+		<member name="before_send_metric" type="Callable" setter="set_before_send_metric" getter="get_before_send_metric" default="Callable()">
+			If assigned, this callback will be called before sending a metric to Sentry. It can be used to modify the metric or prevent it from being sent.
+			[codeblock]
+			func _before_send_metric(metric: SentryMetric) -&gt; SentryMetric:
+				# Drop debug-only metrics in release builds.
+				if not OS.is_debug_build() and metric.name.begins_with("debug."):
+					return null
+				# Enrich with runtime context.
+				metric.set_attribute("current_scene", get_tree().current_scene.name)
+				return metric
+			[/codeblock]
+		</member>
 		<member name="debug" type="bool" setter="set_debug_enabled" getter="is_debug_enabled" default="true">
 			If [code]true[/code], the SDK will print useful debugging information to standard output. These messages do not appear in the Godot console but can be seen when launching Godot from a terminal.
 			You can control the verbosity using the [member diagnostic_level] option.
@@ -87,6 +99,9 @@
 			Enables Sentry's structured logging. If [code]true[/code], log entries can be emitted through [member SentrySDK.logger], and Godot logger events listed in [member logger_log_mask] are automatically captured as Sentry Logs. [member logger_log_mask] is empty by default, so no events are auto-captured.
 			See [member logger_enabled] and the other [code]logger_*[/code] options to capture Godot errors as Sentry events or breadcrumbs.
 			For more information, see [url=https://docs.sentry.io/platforms/godot/logs/]Sentry Logs[/url] documentation.
+		</member>
+		<member name="enable_metrics" type="bool" setter="set_enable_metrics" getter="get_enable_metrics" default="true">
+			Enables Sentry metrics functionality. When enabled, you can emit custom metrics using the [SentryMetrics] API available through [member SentrySDK.metrics].
 		</member>
 		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;{auto}&quot;">
 			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a configuration callback using manual initialization (see [method SentrySDK.init]).

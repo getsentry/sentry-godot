@@ -5,7 +5,7 @@
 namespace sentry {
 
 Ref<SentryMetric> process_metric(const Ref<SentryMetric> &p_metric) {
-	const Callable &before_send_metric = SENTRY_OPTIONS()->get_experimental()->get_before_send_metric();
+	const Callable &before_send_metric = SENTRY_OPTIONS()->get_before_send_metric();
 	if (before_send_metric.is_null()) {
 		return p_metric;
 	}

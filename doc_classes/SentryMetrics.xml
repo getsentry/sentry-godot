@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A dedicated API for emitting metrics to Sentry. Access this API through [member SentrySDK.metrics]. [SentryMetrics] provides methods for emitting different metric types: [method count] for incrementing counters, [method gauge] for tracking point-in-time values, and [method distribution] for recording value distributions.
-		[b]Note:[/b] The [member SentryExperimental.enable_metrics] option in [member SentryOptions.experimental] must be enabled for metrics functionality to work.
+		[b]Note:[/b] The [member SentryOptions.enable_metrics] option must be enabled for metrics functionality to work.
 		[codeblock]
 		# Count occurrences
 		SentrySDK.metrics.count("match_started")
@@ -22,7 +22,6 @@
 		[/codeblock]
 		Structured attributes support [code]bool[/code], [code]int[/code], [code]float[/code], and [code]String[/code] data types. Other types will be converted to strings.
 		You can also set global attributes using [method SentrySDK.set_attribute], which are automatically included in all metric entries.
-		[b]Note:[/b] Metrics are currently not supported on Apple platforms.
 	</description>
 	<tutorials>
 	</tutorials>

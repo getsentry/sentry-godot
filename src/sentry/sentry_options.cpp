@@ -52,6 +52,26 @@ void SentryLoggerLimits::_bind_methods() {
 
 // *** SentryExperimental
 
+void SentryExperimental::deprecated_set_enable_metrics(bool p_value) {
+	WARN_DEPRECATED_MSG("Sentry Metrics are now generally available. This property is deprecated. Use SentryOptions.enable_metrics instead.");
+	ERR_FAIL_NULL(owner);
+	owner->set_enable_metrics(p_value);
+}
+
+bool SentryExperimental::deprecated_get_enable_metrics() {
+	return owner ? owner->get_enable_metrics() : true;
+}
+
+void SentryExperimental::deprecated_set_before_send_metric(Callable p_value) {
+	WARN_DEPRECATED_MSG("Sentry Metrics are now generally available. This property is deprecated. Use SentryOptions.before_send_metric instead.");
+	ERR_FAIL_NULL(owner);
+	owner->set_before_send_metric(p_value);
+}
+
+Callable SentryExperimental::deprecated_get_before_send_metric() {
+	return owner ? owner->get_before_send_metric() : Callable();
+}
+
 void SentryExperimental::set_enable_logs(bool p_value) {
 	WARN_DEPRECATED_MSG("Sentry Logs are now generally available. This property is deprecated. Use SentryOptions.enable_logs instead.");
 	ERR_FAIL_NULL(owner);
@@ -75,13 +95,13 @@ Callable SentryExperimental::get_before_send_log() {
 }
 
 void SentryExperimental::_bind_methods() {
-	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::BOOL, enable_metrics);
-	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::CALLABLE, before_send_metric);
-
 	// DEPRECATED: These properties are deprecated and remain for compatibility reasons.
 	// TODO: Remove these after June 2026 or in version 2.0.
 	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::BOOL, enable_logs);
 	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::CALLABLE, before_send_log);
+	// TODO: Remove these after December 2026 or in version 3.0.
+	BIND_PROPERTY_SIMPLE_DEPRECATED(SentryExperimental, Variant::BOOL, enable_metrics);
+	BIND_PROPERTY_SIMPLE_DEPRECATED(SentryExperimental, Variant::CALLABLE, before_send_metric);
 }
 
 // *** SentryAndroidOptions
@@ -118,6 +138,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
 
 	_define_setting("sentry/options/enable_logs", p_options->enable_logs, false);
+	_define_setting("sentry/options/enable_metrics", p_options->enable_metrics, false);
 
 	_define_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking, false);
 	_define_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec, false);
@@ -141,8 +162,6 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/experimental/screenshot_level"), p_options->screenshot_level, false);
-
-	_define_setting("sentry/experimental/enable_metrics", p_options->get_experimental()->enable_metrics);
 }
 
 void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) {
@@ -209,6 +228,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->attach_scene_tree = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
 
 	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/options/enable_logs", p_options->enable_logs);
+	p_options->enable_metrics = ProjectSettings::get_singleton()->get_setting("sentry/options/enable_metrics", p_options->enable_metrics);
 
 	p_options->app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->app_hang_tracking);
 	p_options->app_hang_timeout_sec = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_sec", p_options->app_hang_timeout_sec);
@@ -240,8 +260,6 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/experimental/screenshot_level", p_options->screenshot_level);
-
-	p_options->get_experimental()->enable_metrics = ProjectSettings::get_singleton()->get_setting("sentry/experimental/enable_metrics", p_options->get_experimental()->enable_metrics);
 }
 
 void SentryOptions::_init_debug_option(DebugMode p_mode) {
@@ -338,6 +356,9 @@ void SentryOptions::_bind_methods() {
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_logs"), set_enable_logs, get_enable_logs);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_log"), set_before_send_log, get_before_send_log);
+
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_metrics"), set_enable_metrics, get_enable_metrics);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_metric"), set_before_send_metric, get_before_send_metric);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "app_hang_tracking"), set_app_hang_tracking, is_app_hang_tracking_enabled);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "app_hang_timeout_sec"), set_app_hang_timeout_sec, get_app_hang_timeout_sec);

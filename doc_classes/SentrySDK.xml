@@ -184,7 +184,7 @@
 			See [SentryLogger] for more details.
 		</member>
 		<member name="metrics" type="SentryMetrics" setter="" getter="get_metrics">
-			Provides access to Sentry's metrics API. Use this to emit custom metrics to Sentry when [member SentryExperimental.enable_metrics] is enabled.
+			Provides access to Sentry's metrics API. Use this to emit custom metrics to Sentry when [member SentryOptions.enable_metrics] is enabled.
 			See [SentryMetrics] for more details.
 		</member>
 	</members>

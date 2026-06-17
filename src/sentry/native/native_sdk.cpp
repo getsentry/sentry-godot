@@ -409,7 +409,7 @@ void NativeSDK::init() {
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
 	sentry_options_set_logger_enabled_when_crashed(options, false);
 	sentry_options_set_enable_logs(options, SENTRY_OPTIONS()->get_enable_logs());
-	sentry_options_set_enable_metrics(options, SENTRY_OPTIONS()->get_experimental()->get_enable_metrics());
+	sentry_options_set_enable_metrics(options, SENTRY_OPTIONS()->get_enable_metrics());
 
 	// Establish handler path.
 	String handler_fn;
@@ -464,7 +464,7 @@ void NativeSDK::init() {
 		sentry_options_set_before_send_log(options, _handle_before_send_log, NULL);
 	}
 
-	const Callable &before_send_metric = SENTRY_OPTIONS()->get_experimental()->get_before_send_metric();
+	const Callable &before_send_metric = SENTRY_OPTIONS()->get_before_send_metric();
 	if (before_send_metric.is_valid()) {
 		sentry_options_set_before_send_metric(options, _handle_before_send_metric, NULL);
 	}

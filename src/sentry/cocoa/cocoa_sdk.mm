@@ -348,7 +348,7 @@ void CocoaSDK::init() {
 		options.attachStacktrace = false;
 
 		options.enableLogs = SENTRY_OPTIONS()->get_enable_logs();
-		options.enableMetrics = SENTRY_OPTIONS()->get_experimental()->get_enable_metrics();
+		options.enableMetrics = SENTRY_OPTIONS()->get_enable_metrics();
 
 		options.initialScope = ^(objc::SentryScope *scope) {
 			_add_default_attachments(scope);
@@ -391,7 +391,7 @@ void CocoaSDK::init() {
 			};
 		}
 
-		if (SENTRY_OPTIONS()->get_experimental()->get_before_send_metric().is_valid()) {
+		if (SENTRY_OPTIONS()->get_before_send_metric().is_valid()) {
 			options.beforeSendMetric = ^objc::SentryMetric *(objc::SentryMetric *metric) {
 				Ref<CocoaMetric> metric_obj = memnew(CocoaMetric(metric));
 				Ref<CocoaMetric> processed = sentry::process_metric(metric_obj);
