@@ -62,8 +62,8 @@ class SentryOptions;
 class SentryExperimental : public RefCounted {
 	GDCLASS(SentryExperimental, RefCounted);
 
+	// Keep owner and the friend wiring for future compatibility forwarders.
 	friend class SentryOptions;
-
 	SentryOptions *owner = nullptr;
 
 public:
@@ -74,12 +74,6 @@ public:
 	bool deprecated_get_enable_metrics();
 	void deprecated_set_before_send_metric(Callable p_value);
 	Callable deprecated_get_before_send_metric();
-
-	// DEPRECATED: The following accessors are deprecated and scheduled for removal.
-	void set_enable_logs(bool p_value);
-	bool get_enable_logs();
-	void set_before_send_log(Callable p_value);
-	Callable get_before_send_log();
 
 protected:
 	static void _bind_methods();

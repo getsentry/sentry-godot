@@ -96,33 +96,8 @@ Callable SentryExperimental::deprecated_get_before_send_metric() {
 	return owner ? owner->get_before_send_metric() : Callable();
 }
 
-void SentryExperimental::set_enable_logs(bool p_value) {
-	WARN_DEPRECATED_MSG("Sentry Logs are now generally available. This property is deprecated. Use SentryOptions.enable_logs instead.");
-	ERR_FAIL_NULL(owner);
-	owner->set_enable_logs(p_value);
-}
-
-bool SentryExperimental::get_enable_logs() {
-	// DEPRECATED: This accessor is deprecated and will be removed in a future version.
-	return owner ? owner->get_enable_logs() : false;
-}
-
-void SentryExperimental::set_before_send_log(Callable p_value) {
-	WARN_DEPRECATED_MSG("Sentry Logs are now generally available. This property is deprecated. Use SentryOptions.before_send_log instead.");
-	ERR_FAIL_NULL(owner);
-	owner->set_before_send_log(p_value);
-}
-
-Callable SentryExperimental::get_before_send_log() {
-	// DEPRECATED: This accessor is deprecated and will be removed in a future version.
-	return owner ? owner->get_before_send_log() : Callable();
-}
-
 void SentryExperimental::_bind_methods() {
 	// DEPRECATED: These properties are deprecated and remain for compatibility reasons.
-	// TODO: Remove these after June 2026 or in version 2.0.
-	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::BOOL, enable_logs);
-	BIND_PROPERTY_SIMPLE(SentryExperimental, Variant::CALLABLE, before_send_log);
 	// TODO: Remove these after December 2026 or in version 3.0.
 	BIND_PROPERTY_SIMPLE_DEPRECATED(SentryExperimental, Variant::BOOL, enable_metrics);
 	BIND_PROPERTY_SIMPLE_DEPRECATED(SentryExperimental, Variant::CALLABLE, before_send_metric);
