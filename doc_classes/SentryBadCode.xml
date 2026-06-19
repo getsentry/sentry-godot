@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryBadCode" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Deliberately crashes the application to test crash reporting.
+	</brief_description>
+	<description>
+		Provides methods that intentionally crash the application in different ways, letting you confirm that crash reporting and native stack traces work as expected. Access this API through [member SentrySDK.bad_code].
+		[b]Warning:[/b] Every method here crashes the running application on purpose. These methods are meant for testing and demonstration only and must never be called in shipped code.
+		[codeblock]
+		# Crash the application with a null pointer dereference.
+		SentrySDK.bad_code.crash_with_null_dereference()
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="crash_with_abort">
+			<return type="void" />
+			<description>
+				Crashes the application by calling the C [code]abort()[/code] function, which raises [code]SIGABRT[/code].
+			</description>
+		</method>
+		<method name="crash_with_division_by_zero">
+			<return type="void" />
+			<description>
+				Crashes the application by performing an integer division by zero, which raises [code]SIGFPE[/code].
+				[b]Note:[/b] On ARM architectures (used by most Android and iOS devices), integer division by zero returns zero instead of raising a hardware exception, so this method does not crash there.
+			</description>
+		</method>
+		<method name="crash_with_null_dereference">
+			<return type="void" />
+			<description>
+				Crashes the application by writing through a null pointer, which raises a segmentation fault ([code]SIGSEGV[/code]).
+			</description>
+		</method>
+		<method name="crash_with_stack_overflow">
+			<return type="void" />
+			<description>
+				Crashes the application by overflowing the call stack through unbounded recursion.
+			</description>
+		</method>
+	</methods>
+</class>

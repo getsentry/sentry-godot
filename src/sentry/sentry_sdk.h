@@ -5,6 +5,7 @@
 #include "sentry/logging/sentry_godot_logger.h"
 #include "sentry/runtime_config.h"
 #include "sentry/sentry_attachment.h"
+#include "sentry/sentry_bad_code.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
 #include "sentry/sentry_logger.h"
@@ -47,15 +48,15 @@ private:
 
 	TraceContext trace_context;
 
-	// Public API for logs and metrics
+	// Public API objects exposed as nested SentrySDK properties.
 	SentryLogger *logger = nullptr;
 	SentryMetrics *metrics = nullptr;
+	SentryBadCode *bad_code = nullptr;
 
 	void _init_contexts();
 	void _init_user();
 	Vector<Ref<SentryAttachment>> _get_default_attachments();
 	void _auto_initialize();
-	void _demo_helper_crash_app();
 
 protected:
 	static void _bind_methods();
@@ -89,6 +90,7 @@ public:
 
 	_FORCE_INLINE_ SentryLogger *get_logger() const { return logger; }
 	_FORCE_INLINE_ SentryMetrics *get_metrics() const { return metrics; }
+	_FORCE_INLINE_ SentryBadCode *get_bad_code() const { return bad_code; }
 
 	String capture_message(const String &p_message, sentry::Level p_level = sentry::LEVEL_INFO);
 	String get_last_event_id() const;

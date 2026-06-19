@@ -179,6 +179,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bad_code" type="SentryBadCode" setter="" getter="get_bad_code">
+			Provides access to methods that deliberately crash the application, letting you test crash reporting and native stack traces. See [SentryBadCode] for more details.
+			[b]Warning:[/b] Every method exposed here crashes the running application on purpose. It is meant for testing and demonstration only and must never be called in shipped code.
+		</member>
 		<member name="logger" type="SentryLogger" setter="" getter="get_logger">
 			Provides access to Sentry's structured logging API. Use this to send log messages to Sentry when [member SentryOptions.enable_logs] is enabled. The dedicated logger API offers methods for different log levels and enables you to capture structured data with your log messages.
 			See [SentryLogger] for more details.

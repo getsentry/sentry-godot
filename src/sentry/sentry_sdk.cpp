@@ -432,11 +432,6 @@ void SentrySDK::_auto_initialize() {
 	is_auto_initializing = false;
 }
 
-void SentrySDK::_demo_helper_crash_app() {
-	char *ptr = (char *)1;
-	sentry::logging::print_fatal("Crash by access violation ", ptr); // this is going to crash the app
-}
-
 void SentrySDK::prepare_and_auto_initialize() {
 	// Set library path env var before .NET runtime starts.
 	// C# reads this to register DllImportResolver for interop.
@@ -537,10 +532,10 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
 	ClassDB::bind_method(D_METHOD("_get_before_send"), &SentrySDK::get_before_send);
-	ClassDB::bind_method(D_METHOD("_demo_helper_crash_app"), &SentrySDK::_demo_helper_crash_app);
 
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "logger", PROPERTY_HINT_TYPE_STRING, "SentryLogger", PROPERTY_USAGE_NONE), get_logger);
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "metrics", PROPERTY_HINT_TYPE_STRING, "SentryMetrics", PROPERTY_USAGE_NONE), get_metrics);
+	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "bad_code", PROPERTY_HINT_TYPE_STRING, "SentryBadCode", PROPERTY_USAGE_NONE), get_bad_code);
 }
 
 SentrySDK::SentrySDK() {
@@ -549,6 +544,7 @@ SentrySDK::SentrySDK() {
 	options = SentryOptions::create_from_project_settings();
 	logger = memnew(SentryLogger);
 	metrics = memnew(SentryMetrics);
+	bad_code = memnew(SentryBadCode);
 	internal_sdk = std::make_unique<DisabledSDK>();
 }
 
@@ -561,6 +557,8 @@ SentrySDK::~SentrySDK() {
 	logger = nullptr;
 	memdelete(metrics);
 	metrics = nullptr;
+	memdelete(bad_code);
+	bad_code = nullptr;
 }
 
 } // namespace sentry

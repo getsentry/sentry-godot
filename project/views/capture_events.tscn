@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://bxi26vu5tlqas"]
+[gd_scene format=3 uid="uid://bxi26vu5tlqas"]
 
 [ext_resource type="Script" uid="uid://kjyxrvgox014" path="res://views/capture_events.gd" id="1_ldmgx"]
 
-[node name="CaptureEvents" type="VBoxContainer"]
+[node name="CaptureEvents" type="VBoxContainer" unique_id=1737353851]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -14,131 +14,148 @@ size_flags_horizontal = 3
 script = ExtResource("1_ldmgx")
 metadata/_tab_index = 0
 
-[node name="Header - User Info" type="Label" parent="."]
+[node name="Header - User Info" type="Label" parent="." unique_id=1714086838]
 custom_minimum_size = Vector2(0, 40.505)
 layout_mode = 2
 text = "USER INFO"
 horizontal_alignment = 1
 vertical_alignment = 2
 
-[node name="User info" type="HBoxContainer" parent="."]
+[node name="User info" type="HBoxContainer" parent="." unique_id=1903641773]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="User info"]
+[node name="Label" type="Label" parent="User info" unique_id=2103305956]
 layout_mode = 2
 text = "User ID: "
 
-[node name="UserID" type="LineEdit" parent="User info"]
+[node name="UserID" type="LineEdit" parent="User info" unique_id=511249781]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "ID"
 
-[node name="InferIP" type="CheckBox" parent="User info"]
+[node name="InferIP" type="CheckBox" parent="User info" unique_id=1549270712]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Infer IP"
 
-[node name="User info (continued)" type="HBoxContainer" parent="."]
+[node name="User info (continued)" type="HBoxContainer" parent="." unique_id=1555838471]
 layout_mode = 2
 
-[node name="Username" type="LineEdit" parent="User info (continued)"]
+[node name="Username" type="LineEdit" parent="User info (continued)" unique_id=810343024]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Username"
 
-[node name="Email" type="LineEdit" parent="User info (continued)"]
+[node name="Email" type="LineEdit" parent="User info (continued)" unique_id=447304647]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Email"
 
-[node name="SetUserButton" type="Button" parent="."]
+[node name="SetUserButton" type="Button" parent="." unique_id=1517860827]
 layout_mode = 2
 text = "Set User"
 
-[node name="Header - Generate Errors" type="Label" parent="."]
+[node name="Header - Generate Errors" type="Label" parent="." unique_id=2024969049]
 custom_minimum_size = Vector2(0, 40.505)
 layout_mode = 2
 text = "GENERATE ERRORS"
 horizontal_alignment = 1
 vertical_alignment = 2
 
-[node name="GenerateErrors" type="HBoxContainer" parent="."]
+[node name="GenerateErrors" type="HBoxContainer" parent="." unique_id=58584500]
 layout_mode = 2
 
-[node name="GenScriptError" type="Button" parent="GenerateErrors"]
+[node name="GenScriptError" type="Button" parent="GenerateErrors" unique_id=1616799821]
 layout_mode = 2
 text = "GDScript error"
 
-[node name="GenScriptErrorFromThread" type="Button" parent="GenerateErrors"]
+[node name="GenScriptErrorFromThread" type="Button" parent="GenerateErrors" unique_id=509246838]
 layout_mode = 2
 text = "GDScript error from thread"
 
-[node name="GenNativeError" type="Button" parent="GenerateErrors"]
+[node name="GenNativeError" type="Button" parent="GenerateErrors" unique_id=1222936885]
 layout_mode = 2
 text = "C++ error"
 
-[node name="Header - Capture" type="Label" parent="."]
+[node name="Header - Generate Crashes" type="Label" parent="." unique_id=1135154084]
+custom_minimum_size = Vector2(0, 40.505)
+layout_mode = 2
+text = "GENERATE CRASHES"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="GenerateCrashes" type="HFlowContainer" parent="." unique_id=1092125422]
+layout_mode = 2
+
+[node name="CrashWithNullDereferenceButton" type="Button" parent="GenerateCrashes" unique_id=346573043]
+layout_mode = 2
+text = "NULL DEREFERENCE"
+
+[node name="CrashWithStackOverflowButton" type="Button" parent="GenerateCrashes" unique_id=255689501]
+layout_mode = 2
+text = "STACK OVERFLOW"
+
+[node name="CrashWithAbortButton" type="Button" parent="GenerateCrashes" unique_id=1379694065]
+layout_mode = 2
+text = "ABORT"
+
+[node name="CrashWithDivByZeroButton" type="Button" parent="GenerateCrashes" unique_id=1429534935]
+layout_mode = 2
+text = "DIV BY ZERO"
+
+[node name="Header - Capture" type="Label" parent="." unique_id=783736141]
 custom_minimum_size = Vector2(0, 40.505)
 layout_mode = 2
 text = "CAPTURE EVENTS"
 horizontal_alignment = 1
 vertical_alignment = 2
 
-[node name="UserFeedback" type="HBoxContainer" parent="."]
+[node name="UserFeedback" type="HBoxContainer" parent="." unique_id=1118227952]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="UserFeedback"]
+[node name="Label" type="Label" parent="UserFeedback" unique_id=1664370003]
 layout_mode = 2
 text = "User feedback:"
 
-[node name="UserFeedbackButton" type="Button" parent="UserFeedback"]
+[node name="UserFeedbackButton" type="Button" parent="UserFeedback" unique_id=1465731614]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Show User Feedback Form"
 
-[node name="MessageEvent" type="HBoxContainer" parent="."]
+[node name="MessageEvent" type="HBoxContainer" parent="." unique_id=1342184205]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="MessageEvent"]
+[node name="Label" type="Label" parent="MessageEvent" unique_id=587830529]
 layout_mode = 2
 text = "Message: "
 
-[node name="MessageEdit" type="LineEdit" parent="MessageEvent"]
+[node name="MessageEdit" type="LineEdit" parent="MessageEvent" unique_id=503159704]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Enter message"
 
-[node name="LevelChoice" type="MenuButton" parent="MessageEvent"]
+[node name="LevelChoice" type="MenuButton" parent="MessageEvent" unique_id=860208883]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 text = "WARNING"
 flat = false
 
-[node name="CaptureButton" type="Button" parent="MessageEvent"]
+[node name="CaptureButton" type="Button" parent="MessageEvent" unique_id=1593586317]
 layout_mode = 2
 text = "Capture Event"
-
-[node name="Crash" type="HBoxContainer" parent="."]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Crash"]
-layout_mode = 2
-text = "Crash program: "
-
-[node name="CrashButton" type="Button" parent="Crash"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "CRASH!"
 
 [connection signal="pressed" from="SetUserButton" to="." method="_on_set_user_button_pressed"]
 [connection signal="pressed" from="GenerateErrors/GenScriptError" to="." method="_on_gen_script_error_pressed"]
 [connection signal="pressed" from="GenerateErrors/GenScriptErrorFromThread" to="." method="_on_gen_script_error_from_thread_pressed"]
 [connection signal="pressed" from="GenerateErrors/GenNativeError" to="." method="_on_gen_native_error_pressed"]
+[connection signal="pressed" from="GenerateCrashes/CrashWithNullDereferenceButton" to="." method="_on_crash_with_null_dereference_button_pressed"]
+[connection signal="pressed" from="GenerateCrashes/CrashWithStackOverflowButton" to="." method="_on_crash_with_stack_overflow_button_pressed"]
+[connection signal="pressed" from="GenerateCrashes/CrashWithAbortButton" to="." method="_on_crash_with_abort_button_pressed"]
+[connection signal="pressed" from="GenerateCrashes/CrashWithDivByZeroButton" to="." method="_on_crash_with_div_by_zero_button_pressed"]
 [connection signal="pressed" from="UserFeedback/UserFeedbackButton" to="." method="_on_user_feedback_button_pressed"]
 [connection signal="pressed" from="MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
-[connection signal="pressed" from="Crash/CrashButton" to="." method="_on_crash_button_pressed"]
