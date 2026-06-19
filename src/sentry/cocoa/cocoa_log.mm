@@ -78,6 +78,10 @@ void CocoaLog::set_attribute(const String &p_name, const Variant &p_value) {
 }
 
 void CocoaLog::add_attributes(const Dictionary &p_attributes) {
+	if (p_attributes.is_empty()) {
+		return;
+	}
+
 	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy] ?: [NSMutableDictionary dictionary];
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
