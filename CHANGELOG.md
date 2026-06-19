@@ -23,6 +23,7 @@
   - Add `options.Native.SetBeforeSend` hook to inspect, modify, or drop native events (engine, GDScript, and GDExtension errors) from the .NET layer ([#737](https://github.com/getsentry/sentry-godot/pull/737))
 - Metrics are now generally available and supported on all platforms ([#755](https://github.com/getsentry/sentry-godot/pull/755))
   - Moved `enable_metrics` and `before_send_metric` from `SentryOptions.experimental` to `SentryOptions`; the experimental properties remain as deprecated aliases, and existing Project Settings are migrated automatically.
+- Add `SentrySDK.bad_code` API for deliberately crashing the application to test crash reporting and native stack traces ([#765](https://github.com/getsentry/sentry-godot/pull/765))
 
 ### Improvements
 
@@ -37,15 +38,15 @@
 - Bump Sentry JavaScript from v10.55.0 to v10.58.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743), [#754](https://github.com/getsentry/sentry-godot/pull/754), [#764](https://github.com/getsentry/sentry-godot/pull/764))
   - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10580)
   - [diff](https://github.com/getsentry/sentry-javascript/compare/10.55.0...10.58.0)
-- Bump Cocoa SDK from v9.15.0 to v9.17.1 ([#745](https://github.com/getsentry/sentry-godot/pull/745), [#756](https://github.com/getsentry/sentry-godot/pull/756))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9171)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.17.1)
-- Bump Sentry Android from v8.43.0 to v8.43.2 ([#746](https://github.com/getsentry/sentry-godot/pull/746))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8432)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.0...8.43.2)
-- Bump Native SDK from v0.14.2 to v0.15.0 ([#757](https://github.com/getsentry/sentry-godot/pull/757))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0150)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.14.2...0.15.0)
+- Bump Cocoa SDK from v9.15.0 to v9.18.0 ([#745](https://github.com/getsentry/sentry-godot/pull/745), [#756](https://github.com/getsentry/sentry-godot/pull/756), [#768](https://github.com/getsentry/sentry-godot/pull/768))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9180)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.18.0)
+- Bump Sentry Android from v8.43.0 to v8.44.0 ([#746](https://github.com/getsentry/sentry-godot/pull/746), [#767](https://github.com/getsentry/sentry-godot/pull/767))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8440)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.0...8.44.0)
+- Bump Native SDK from v0.14.2 to v0.15.1 ([#757](https://github.com/getsentry/sentry-godot/pull/757), [#769](https://github.com/getsentry/sentry-godot/pull/769))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0151)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.14.2...0.15.1)
 
 ## 2.0.0-beta.2
 
