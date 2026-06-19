@@ -144,7 +144,7 @@ void CocoaEvent::remove_tag(const String &p_key) {
 
 	NSMutableDictionary *mut_tags = [cocoa_event.tags mutableCopy];
 	[mut_tags removeObjectForKey:string_to_objc(p_key)];
-	cocoa_event.tags = mut_tags;
+	cocoa_event.tags = mut_tags.count > 0 ? mut_tags : nil;
 }
 
 String CocoaEvent::get_tag(const String &p_key) {

@@ -123,7 +123,7 @@ void CocoaMetric::remove_attribute(const String &p_name) {
 
 	NSMutableDictionary *mut_attributes = [cocoa_metric.attributes mutableCopy];
 	[mut_attributes removeObjectForKey:string_to_objc(p_name)];
-	cocoa_metric.attributes = mut_attributes;
+	cocoa_metric.attributes = mut_attributes.count > 0 ? mut_attributes : nil;
 }
 
 CocoaMetric::CocoaMetric() :
