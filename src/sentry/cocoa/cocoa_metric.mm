@@ -36,13 +36,13 @@ void CocoaMetric::set_type(MetricType p_type) {
 
 	switch (p_type) {
 		case SentryMetric::METRIC_COUNTER: {
-			cocoa_metric.value = [objc::SentryMetricValue counter:(NSUInteger)MAX(value, 0.0)];
+			cocoa_metric.value = [SentryObjCMetricValue counter:(NSUInteger)MAX(value, 0.0)];
 		} break;
 		case SentryMetric::METRIC_GAUGE: {
-			cocoa_metric.value = [objc::SentryMetricValue gauge:value];
+			cocoa_metric.value = [SentryObjCMetricValue gauge:value];
 		} break;
 		case SentryMetric::METRIC_DISTRIBUTION: {
-			cocoa_metric.value = [objc::SentryMetricValue distribution:value];
+			cocoa_metric.value = [SentryObjCMetricValue distribution:value];
 		} break;
 		default: {
 			WARN_PRINT("Sentry: Unexpected metric type");
@@ -66,11 +66,11 @@ void CocoaMetric::set_value(double p_value) {
 	ERR_FAIL_NULL(cocoa_metric);
 
 	if (cocoa_metric.value.isCounter) {
-		cocoa_metric.value = [objc::SentryMetricValue counter:(NSUInteger)MAX(p_value, 0.0)];
+		cocoa_metric.value = [SentryObjCMetricValue counter:(NSUInteger)MAX(p_value, 0.0)];
 	} else if (cocoa_metric.value.isGauge) {
-		cocoa_metric.value = [objc::SentryMetricValue gauge:p_value];
+		cocoa_metric.value = [SentryObjCMetricValue gauge:p_value];
 	} else {
-		cocoa_metric.value = [objc::SentryMetricValue distribution:p_value];
+		cocoa_metric.value = [SentryObjCMetricValue distribution:p_value];
 	}
 }
 
@@ -83,13 +83,13 @@ void CocoaMetric::set_unit(const String &p_unit) {
 	ERR_FAIL_NULL(cocoa_metric);
 	cocoa_metric.unit = p_unit.is_empty()
 			? nil
-			: [[objc::SentryUnit alloc] initWithRawValue:string_to_objc(p_unit)];
+			: [[SentryObjCUnit alloc] initWithRawValue:string_to_objc(p_unit)];
 }
 
 Variant CocoaMetric::get_attribute(const String &p_name) const {
 	ERR_FAIL_NULL_V(cocoa_metric, Variant());
 
-	objc::SentryAttributeContent *content = cocoa_metric.attributes[string_to_objc(p_name)];
+	SentryObjCAttributeContent *content = cocoa_metric.attributes[string_to_objc(p_name)];
 	if (!content) {
 		return Variant();
 	}
@@ -132,7 +132,7 @@ CocoaMetric::CocoaMetric() :
 	ERR_PRINT("This constructor is not intended for runtime use.");
 }
 
-CocoaMetric::CocoaMetric(objc::SentryMetric *p_metric) :
+CocoaMetric::CocoaMetric(SentryObjCMetric *p_metric) :
 		cocoa_metric(p_metric) {
 }
 

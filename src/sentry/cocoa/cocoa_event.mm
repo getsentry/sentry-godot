@@ -17,7 +17,7 @@ void CocoaEvent::set_message(const String &p_message) {
 	if (p_message.is_empty()) {
 		cocoa_event.message = nil;
 	} else {
-		cocoa_event.message = [[objc::SentryMessage alloc] initWithFormatted:string_to_objc(p_message)];
+		cocoa_event.message = [[SentryObjCMessage alloc] initWithFormatted:string_to_objc(p_message)];
 	}
 }
 
@@ -195,7 +195,7 @@ void CocoaEvent::add_exception(const Exception &p_exception) {
 
 	NSMutableArray *mut_frames = [NSMutableArray arrayWithCapacity:p_exception.frames.size()];
 	for (const StackFrame &frame : p_exception.frames) {
-		objc::SentryFrame *cocoa_frame = [[objc::SentryFrame alloc] init];
+		SentryObjCFrame *cocoa_frame = [[SentryObjCFrame alloc] init];
 		cocoa_frame.fileName = string_to_objc(frame.filename);
 		cocoa_frame.function = string_to_objc(frame.function);
 		cocoa_frame.lineNumber = int_to_objc(frame.lineno);
@@ -221,13 +221,13 @@ void CocoaEvent::add_exception(const Exception &p_exception) {
 		[mut_frames addObject:cocoa_frame];
 	}
 
-	objc::SentryStacktrace *stack_trace = [[objc::SentryStacktrace alloc] initWithFrames:mut_frames
-																			   registers:[NSDictionary dictionary]];
+	SentryObjCStacktrace *stack_trace = [[SentryObjCStacktrace alloc] initWithFrames:mut_frames
+																		   registers:[NSDictionary dictionary]];
 
 	uint64_t thread_id = godot::OS::get_singleton()->get_thread_caller_id();
 	bool is_main = godot::OS::get_singleton()->get_main_thread_id() == thread_id;
 
-	objc::SentryThread *cocoa_thread = [[objc::SentryThread alloc] initWithThreadId:uint64_to_objc(thread_id)];
+	SentryObjCThread *cocoa_thread = [[SentryObjCThread alloc] initWithThreadId:uint64_to_objc(thread_id)];
 	cocoa_thread.stacktrace = stack_trace;
 	cocoa_thread.crashed = [NSNumber numberWithBool:YES];
 	cocoa_thread.current = [NSNumber numberWithBool:YES];
@@ -237,8 +237,8 @@ void CocoaEvent::add_exception(const Exception &p_exception) {
 	[mut_threads addObject:cocoa_thread];
 	cocoa_event.threads = mut_threads;
 
-	objc::SentryException *cocoa_exception = [[objc::SentryException alloc] initWithValue:string_to_objc(p_exception.value)
-																					 type:string_to_objc(p_exception.type)];
+	SentryObjCException *cocoa_exception = [[SentryObjCException alloc] initWithValue:string_to_objc(p_exception.value)
+																				 type:string_to_objc(p_exception.type)];
 	cocoa_exception.threadId = uint64_to_objc(thread_id);
 	NSMutableArray *mut_exceptions = [cocoa_event.exceptions mutableCopy] ?: [NSMutableArray array];
 	[mut_exceptions addObject:cocoa_exception];
@@ -276,7 +276,7 @@ String CocoaEvent::get_exception_value(int p_index) const {
 bool CocoaEvent::is_crash() const {
 	ERR_FAIL_NULL_V(cocoa_event, false);
 
-	for (objc::SentryException *exception in cocoa_event.exceptions) {
+	for (SentryObjCException *exception in cocoa_event.exceptions) {
 		if (exception.mechanism != nil) {
 			return true;
 		}
@@ -287,17 +287,17 @@ bool CocoaEvent::is_crash() const {
 String CocoaEvent::to_json() const {
 	ERR_FAIL_NULL_V(cocoa_event, String());
 
-	objc::SentryEnvelopeItem *item = [[objc::SentryEnvelopeItem alloc] initWithEvent:cocoa_event];
+	SentryObjCEnvelopeItem *item = [[SentryObjCEnvelopeItem alloc] initWithEvent:cocoa_event];
 	ERR_FAIL_NULL_V_MSG(item.data, String(), "Sentry: Failed to serialize event to JSON.");
 
 	return String::utf8((const char *)item.data.bytes, item.data.length);
 }
 
 CocoaEvent::CocoaEvent() :
-		cocoa_event([[objc::SentryEvent alloc] init]) {
+		cocoa_event([[SentryObjCEvent alloc] init]) {
 }
 
-CocoaEvent::CocoaEvent(objc::SentryEvent *p_cocoa_event) :
+CocoaEvent::CocoaEvent(SentryObjCEvent *p_cocoa_event) :
 		cocoa_event(p_cocoa_event) {
 }
 

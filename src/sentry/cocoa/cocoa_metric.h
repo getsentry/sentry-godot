@@ -9,13 +9,13 @@ class CocoaMetric : public SentryMetric {
 	GDCLASS(CocoaMetric, SentryMetric);
 
 private:
-	objc::SentryMetric *cocoa_metric = nullptr;
+	SentryObjCMetric *cocoa_metric = nullptr;
 
 protected:
 	static void _bind_methods() {}
 
 public:
-	_FORCE_INLINE_ objc::SentryMetric *get_cocoa_metric() const { return cocoa_metric; }
+	_FORCE_INLINE_ SentryObjCMetric *get_cocoa_metric() const { return cocoa_metric; }
 
 	virtual String get_name() const override;
 	virtual void set_name(const String &p_name) override;
@@ -35,7 +35,7 @@ public:
 	virtual void remove_attribute(const String &p_name) override;
 
 	CocoaMetric();
-	CocoaMetric(objc::SentryMetric *p_metric);
+	CocoaMetric(SentryObjCMetric *p_metric);
 	virtual ~CocoaMetric() override;
 };
 

@@ -9,13 +9,13 @@ class CocoaBreadcrumb : public SentryBreadcrumb {
 	GDCLASS(CocoaBreadcrumb, SentryBreadcrumb);
 
 private:
-	objc::SentryBreadcrumb *cocoa_breadcrumb = nullptr;
+	SentryObjCBreadcrumb *cocoa_breadcrumb = nullptr;
 
 protected:
 	static void _bind_methods() {}
 
 public:
-	_FORCE_INLINE_ objc::SentryBreadcrumb *get_cocoa_breadcrumb() const { return cocoa_breadcrumb; }
+	_FORCE_INLINE_ SentryObjCBreadcrumb *get_cocoa_breadcrumb() const { return cocoa_breadcrumb; }
 
 	virtual void set_message(const String &p_message) override;
 	virtual String get_message() const override;
@@ -34,7 +34,7 @@ public:
 	virtual Ref<SentryTimestamp> get_timestamp() override;
 
 	CocoaBreadcrumb();
-	CocoaBreadcrumb(objc::SentryBreadcrumb *p_cocoa_breadcrumb);
+	CocoaBreadcrumb(SentryObjCBreadcrumb *p_cocoa_breadcrumb);
 };
 
 } //namespace sentry::cocoa

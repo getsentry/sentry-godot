@@ -4,7 +4,7 @@
 
 namespace {
 
-sentry::LogLevel _log_level_from_objc(objc::SentryLogLevel p_level) {
+sentry::LogLevel _log_level_from_objc(SentryObjCLogLevel p_level) {
 	switch (p_level) {
 		case SentryObjCLogLevelTrace:
 			return sentry::LOG_LEVEL_TRACE;
@@ -23,7 +23,7 @@ sentry::LogLevel _log_level_from_objc(objc::SentryLogLevel p_level) {
 	}
 }
 
-objc::SentryLogLevel _log_level_to_objc(sentry::LogLevel p_level) {
+SentryObjCLogLevel _log_level_to_objc(sentry::LogLevel p_level) {
 	switch (p_level) {
 		case sentry::LOG_LEVEL_TRACE:
 			return SentryObjCLogLevelTrace;
@@ -63,7 +63,7 @@ void CocoaLog::set_body(const String &p_body) {
 }
 
 Variant CocoaLog::get_attribute(const String &p_name) const {
-	objc::SentryAttribute *attribute = cocoa_log.attributes[string_to_objc(p_name)];
+	SentryObjCAttribute *attribute = cocoa_log.attributes[string_to_objc(p_name)];
 	if (!attribute) {
 		return Variant();
 	}
@@ -100,7 +100,7 @@ CocoaLog::CocoaLog() :
 	ERR_PRINT("This constructor is not intended for runtime use.");
 }
 
-CocoaLog::CocoaLog(objc::SentryLog *p_log) :
+CocoaLog::CocoaLog(SentryObjCLog *p_log) :
 		cocoa_log(p_log) {
 }
 
