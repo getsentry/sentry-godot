@@ -6,6 +6,7 @@
 #include "cocoa_log.h"
 #include "cocoa_metric.h"
 #include "cocoa_util.h"
+#include "gen/sdk_version.gen.h"
 #include "sentry/common_defs.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
@@ -340,7 +341,8 @@ void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_i
 }
 
 void CocoaSDK::init() {
-	[SentryObjCPrivateSDKOnly setSdkName:@"sentry.cocoa.godot"];
+	[SentryObjCSDK.internal.sdk setName:@"sentry.cocoa.godot"
+								version:[NSString stringWithUTF8String:SENTRY_GODOT_SDK_VERSION]];
 
 	[SentryObjCSDK startWithConfigureOptions:^(SentryObjCOptions *options) {
 		options.dsn = string_to_objc(SENTRY_OPTIONS()->get_dsn());
