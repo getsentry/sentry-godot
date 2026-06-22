@@ -342,7 +342,7 @@ void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_i
 
 void CocoaSDK::init() {
 	[SentryObjCSDK.internal.sdk setName:@"sentry.cocoa.godot"
-								version:[NSString stringWithUTF8String:SENTRY_GODOT_SDK_VERSION]];
+								version:@SENTRY_GODOT_SDK_VERSION];
 
 	[SentryObjCSDK startWithConfigureOptions:^(SentryObjCOptions *options) {
 		options.dsn = string_to_objc(SENTRY_OPTIONS()->get_dsn());
