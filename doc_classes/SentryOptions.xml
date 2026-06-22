@@ -22,7 +22,7 @@
 		<member name="app_hang_timeout_sec" type="float" setter="deprecated_set_app_hang_timeout_sec" getter="deprecated_get_app_hang_timeout_sec" default="5.0" deprecated="Use [member app_hang_timeout_ms] instead.">
 			Specifies the timeout duration in seconds after which the application is considered to have hanged.
 		</member>
-		<member name="app_hang_tracking" type="bool" setter="deprecated_set_app_hang_tracking" getter="deprecated_get_app_hang_tracking" default="false" deprecated="Use [member enable_app_hang_tracking] instead.">
+		<member name="app_hang_tracking" type="bool" setter="deprecated_set_app_hang_tracking" getter="deprecated_get_app_hang_tracking" default="true" deprecated="Use [member enable_app_hang_tracking] instead.">
 			If [code]true[/code], enables automatic detection and reporting of application hangs.
 		</member>
 		<member name="attach_log" type="bool" setter="set_attach_log" getter="is_attach_log_enabled" default="true">
@@ -85,7 +85,7 @@
 		<member name="dsn" type="String" setter="set_dsn" getter="get_dsn" default="&quot;&quot;">
 			Data Source Name (DSN): Specifies where the SDK should send the events. If this value is not provided, the SDK will try to read it from the [code]SENTRY_DSN[/code] environment variable. If that variable also does not exist, the SDK will just not send any events.
 		</member>
-		<member name="enable_app_hang_tracking" type="bool" setter="set_app_hang_tracking_enabled" getter="is_app_hang_tracking_enabled" default="false">
+		<member name="enable_app_hang_tracking" type="bool" setter="set_app_hang_tracking_enabled" getter="is_app_hang_tracking_enabled" default="true">
 			If [code]true[/code], enables automatic detection and reporting of application hangs. The SDK will monitor the main thread and report hang events when it becomes unresponsive for longer than the duration specified in [member app_hang_timeout_ms]. This helps identify performance issues where the application becomes frozen or unresponsive.
 			[b]Note:[/b] This feature applies to iOS and macOS only. On Android, [member android] configures ANR (Application Not Responding) detection instead.
 		</member>

@@ -128,7 +128,7 @@ private:
 	bool enable_logs = true;
 	Callable before_send_log;
 
-	bool enable_app_hang_tracking = false;
+	bool enable_app_hang_tracking = true;
 	int app_hang_timeout_ms = 5000;
 
 	Ref<SentryExperimental> experimental;
