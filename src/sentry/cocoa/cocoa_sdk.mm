@@ -138,10 +138,36 @@ void CocoaSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_a
 		return;
 	}
 
-	String body = p_body;
+	NSString *objc_body = string_to_objc(p_body);
 
-	NSMutableDictionary *attributes = [[NSMutableDictionary alloc] initWithCapacity:p_attributes.size()];
-	if (!p_attributes.is_empty()) {
+	if (p_attributes.is_empty()) {
+		switch (p_level) {
+			case LOG_LEVEL_TRACE: {
+				[SentryObjCSDK.logger trace:objc_body];
+			} break;
+			case LOG_LEVEL_DEBUG: {
+				[SentryObjCSDK.logger debug:objc_body];
+			} break;
+			case LOG_LEVEL_INFO: {
+				[SentryObjCSDK.logger info:objc_body];
+			} break;
+			case LOG_LEVEL_WARN: {
+				[SentryObjCSDK.logger warn:objc_body];
+			} break;
+			case LOG_LEVEL_ERROR: {
+				[SentryObjCSDK.logger error:objc_body];
+			} break;
+			case LOG_LEVEL_FATAL: {
+				[SentryObjCSDK.logger fatal:objc_body];
+			} break;
+			default: {
+				sentry::logging::print_no_logger(LEVEL_WARNING,
+						vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
+				[SentryObjCSDK.logger info:objc_body];
+			} break;
+		}
+	} else {
+		NSMutableDictionary *attributes = [[NSMutableDictionary alloc] initWithCapacity:p_attributes.size()];
 		const Array &keys = p_attributes.keys();
 		for (int i = 0; i < keys.size(); i++) {
 			const Variant &key = keys[i];
@@ -149,39 +175,32 @@ void CocoaSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_a
 			const NSObject *objc_value = _as_attribute(p_attributes[key]);
 			[attributes setObject:objc_value forKey:objc_key];
 		}
-	}
 
-	switch (p_level) {
-		case LOG_LEVEL_TRACE: {
-			[[SentryObjCSDK logger] trace:string_to_objc(body)
-							   attributes:attributes];
-		} break;
-		case LOG_LEVEL_DEBUG: {
-			[[SentryObjCSDK logger] debug:string_to_objc(body)
-							   attributes:attributes];
-		} break;
-		case LOG_LEVEL_INFO: {
-			[[SentryObjCSDK logger] info:string_to_objc(body)
-							  attributes:attributes];
-		} break;
-		case LOG_LEVEL_WARN: {
-			[[SentryObjCSDK logger] warn:string_to_objc(body)
-							  attributes:attributes];
-		} break;
-		case LOG_LEVEL_ERROR: {
-			[[SentryObjCSDK logger] error:string_to_objc(body)
-							   attributes:attributes];
-		} break;
-		case LOG_LEVEL_FATAL: {
-			[[SentryObjCSDK logger] fatal:string_to_objc(body)
-							   attributes:attributes];
-		} break;
-		default: {
-			sentry::logging::print_no_logger(LEVEL_WARNING,
-					vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
-			[[SentryObjCSDK logger] info:string_to_objc(body)
-							  attributes:attributes];
-		} break;
+		switch (p_level) {
+			case LOG_LEVEL_TRACE: {
+				[SentryObjCSDK.logger trace:objc_body attributes:attributes];
+			} break;
+			case LOG_LEVEL_DEBUG: {
+				[SentryObjCSDK.logger debug:objc_body attributes:attributes];
+			} break;
+			case LOG_LEVEL_INFO: {
+				[SentryObjCSDK.logger info:objc_body attributes:attributes];
+			} break;
+			case LOG_LEVEL_WARN: {
+				[SentryObjCSDK.logger warn:objc_body attributes:attributes];
+			} break;
+			case LOG_LEVEL_ERROR: {
+				[SentryObjCSDK.logger error:objc_body attributes:attributes];
+			} break;
+			case LOG_LEVEL_FATAL: {
+				[SentryObjCSDK.logger fatal:objc_body attributes:attributes];
+			} break;
+			default: {
+				sentry::logging::print_no_logger(LEVEL_WARNING,
+						vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
+				[SentryObjCSDK.logger info:objc_body attributes:attributes];
+			} break;
+		}
 	}
 }
 
