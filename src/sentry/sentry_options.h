@@ -67,9 +67,7 @@ class SentryExperimental : public RefCounted {
 	SentryOptions *owner = nullptr;
 
 public:
-	// DEPRECATED: These accessors forward to the corresponding properties on SentryOptions, which is
-	// now their home. The "deprecated_" prefix marks the C++ functions; the exposed script API keeps
-	// the canonical "set_"/"get_" names (see SentryExperimental::_bind_methods).
+	// DEPRECATED: These accessors forward to SentryOptions, which is now their home.
 	void deprecated_set_enable_metrics(bool p_value);
 	bool deprecated_get_enable_metrics();
 	void deprecated_set_before_send_metric(Callable p_value);
