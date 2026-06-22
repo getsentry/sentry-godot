@@ -338,6 +338,7 @@ void CocoaSDK::metrics_add_distribution(const String &p_name, double p_value, co
 
 void CocoaSDK::set_attribute(const String &p_name, const Variant &p_value) {
 	[SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
+		// NOTE: Scope wants raw `id` scalars/arrays, not a wrapped `SentryObjCAttribute` (that's the Log API).
 		[scope setAttributeValue:_as_attribute(p_value) forKey:string_to_objc(p_name)];
 	}];
 }
