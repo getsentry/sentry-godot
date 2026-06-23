@@ -11,6 +11,7 @@
 - Align App Hang Tracking options with other gaming SDKs ([#753](https://github.com/getsentry/sentry-godot/pull/753))
   - Renamed `SentryOptions.app_hang_tracking` to `SentryOptions.enable_app_hang_tracking`; the old name remains as a deprecated alias.
   - Renamed `SentryOptions.app_hang_timeout_sec` to `SentryOptions.app_hang_timeout_ms`, now configured in milliseconds; the old name remains as a deprecated alias, and existing Project Settings are migrated automatically.
+- App Hang Tracking is now enabled by default; set `SentryOptions.enable_app_hang_tracking` to `false` to opt out ([#773](https://github.com/getsentry/sentry-godot/pull/773))
 - Group Godot logger options under `SentryOptions.godot_logger` ([#759](https://github.com/getsentry/sentry-godot/pull/759))
   - Moved the `SentryOptions.logger_*` options under `SentryOptions.godot_logger` (for example, `logger_event_mask` becomes `godot_logger.event_mask`); the old names remain as deprecated aliases.
   - Renamed `logger_include_source` to `godot_logger.include_source_context` as part of the move.
@@ -35,15 +36,15 @@
 
 ### Dependencies
 
-- Bump Sentry JavaScript from v10.55.0 to v10.58.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743), [#754](https://github.com/getsentry/sentry-godot/pull/754), [#764](https://github.com/getsentry/sentry-godot/pull/764))
-  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10580)
-  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.55.0...10.58.0)
+- Bump Sentry JavaScript from v10.55.0 to v10.59.0 ([#743](https://github.com/getsentry/sentry-godot/pull/743), [#754](https://github.com/getsentry/sentry-godot/pull/754), [#764](https://github.com/getsentry/sentry-godot/pull/764), [#772](https://github.com/getsentry/sentry-godot/pull/772))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10590)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.55.0...10.59.0)
 - Bump Cocoa SDK from v9.15.0 to v9.18.0 ([#745](https://github.com/getsentry/sentry-godot/pull/745), [#756](https://github.com/getsentry/sentry-godot/pull/756), [#768](https://github.com/getsentry/sentry-godot/pull/768))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9180)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.18.0)
-- Bump Sentry Android from v8.43.0 to v8.44.0 ([#746](https://github.com/getsentry/sentry-godot/pull/746), [#767](https://github.com/getsentry/sentry-godot/pull/767))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8440)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.0...8.44.0)
+- Bump Sentry Android from v8.43.0 to v8.44.1 ([#746](https://github.com/getsentry/sentry-godot/pull/746), [#767](https://github.com/getsentry/sentry-godot/pull/767), [#771](https://github.com/getsentry/sentry-godot/pull/771))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8441)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.0...8.44.1)
 - Bump Native SDK from v0.14.2 to v0.15.1 ([#757](https://github.com/getsentry/sentry-godot/pull/757), [#769](https://github.com/getsentry/sentry-godot/pull/769))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0151)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.14.2...0.15.1)
