@@ -4,41 +4,41 @@
 
 namespace {
 
-sentry::LogLevel _log_level_from_objc(SentryLogLevel p_level) {
+sentry::LogLevel _log_level_from_objc(SentryObjCLogLevel p_level) {
 	switch (p_level) {
-		case SentryLogLevelTrace:
+		case SentryObjCLogLevelTrace:
 			return sentry::LOG_LEVEL_TRACE;
-		case SentryLogLevelDebug:
+		case SentryObjCLogLevelDebug:
 			return sentry::LOG_LEVEL_DEBUG;
-		case SentryLogLevelInfo:
+		case SentryObjCLogLevelInfo:
 			return sentry::LOG_LEVEL_INFO;
-		case SentryLogLevelWarn:
+		case SentryObjCLogLevelWarn:
 			return sentry::LOG_LEVEL_WARN;
-		case SentryLogLevelError:
+		case SentryObjCLogLevelError:
 			return sentry::LOG_LEVEL_ERROR;
-		case SentryLogLevelFatal:
+		case SentryObjCLogLevelFatal:
 			return sentry::LOG_LEVEL_FATAL;
 		default:
 			return sentry::LOG_LEVEL_INFO;
 	}
 }
 
-SentryLogLevel _log_level_to_objc(sentry::LogLevel p_level) {
+SentryObjCLogLevel _log_level_to_objc(sentry::LogLevel p_level) {
 	switch (p_level) {
 		case sentry::LOG_LEVEL_TRACE:
-			return SentryLogLevelTrace;
+			return SentryObjCLogLevelTrace;
 		case sentry::LOG_LEVEL_DEBUG:
-			return SentryLogLevelDebug;
+			return SentryObjCLogLevelDebug;
 		case sentry::LOG_LEVEL_INFO:
-			return SentryLogLevelInfo;
+			return SentryObjCLogLevelInfo;
 		case sentry::LOG_LEVEL_WARN:
-			return SentryLogLevelWarn;
+			return SentryObjCLogLevelWarn;
 		case sentry::LOG_LEVEL_ERROR:
-			return SentryLogLevelError;
+			return SentryObjCLogLevelError;
 		case sentry::LOG_LEVEL_FATAL:
-			return SentryLogLevelFatal;
+			return SentryObjCLogLevelFatal;
 		default:
-			return SentryLogLevelInfo;
+			return SentryObjCLogLevelInfo;
 	}
 }
 
@@ -63,7 +63,7 @@ void CocoaLog::set_body(const String &p_body) {
 }
 
 Variant CocoaLog::get_attribute(const String &p_name) const {
-	SentryAttribute *attribute = cocoa_log.attributes[string_to_objc(p_name)];
+	SentryObjCAttribute *attribute = cocoa_log.attributes[string_to_objc(p_name)];
 	if (!attribute) {
 		return Variant();
 	}
@@ -72,18 +72,22 @@ Variant CocoaLog::get_attribute(const String &p_name) const {
 }
 
 void CocoaLog::set_attribute(const String &p_name, const Variant &p_value) {
-	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy];
+	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy] ?: [NSMutableDictionary dictionary];
 	[mut_attributes setObject:variant_to_attribute(p_value) forKey:string_to_objc(p_name)];
 	cocoa_log.attributes = mut_attributes;
 }
 
 void CocoaLog::add_attributes(const Dictionary &p_attributes) {
-	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy];
+	if (p_attributes.is_empty()) {
+		return;
+	}
+
+	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy] ?: [NSMutableDictionary dictionary];
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
-		const String &key = keys[i].stringify();
+		const Variant &key = keys[i];
 		const Variant &value = p_attributes[key];
-		[mut_attributes setObject:variant_to_attribute(value) forKey:string_to_objc(key)];
+		[mut_attributes setObject:variant_to_attribute(value) forKey:string_to_objc(key.stringify())];
 	}
 	cocoa_log.attributes = mut_attributes;
 }
@@ -91,7 +95,7 @@ void CocoaLog::add_attributes(const Dictionary &p_attributes) {
 void CocoaLog::remove_attribute(const String &p_name) {
 	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy];
 	[mut_attributes removeObjectForKey:string_to_objc(p_name)];
-	cocoa_log.attributes = mut_attributes;
+	cocoa_log.attributes = mut_attributes.count > 0 ? mut_attributes : nil;
 }
 
 CocoaLog::CocoaLog() :
@@ -100,7 +104,7 @@ CocoaLog::CocoaLog() :
 	ERR_PRINT("This constructor is not intended for runtime use.");
 }
 
-CocoaLog::CocoaLog(objc::SentryLog *p_log) :
+CocoaLog::CocoaLog(SentryObjCLog *p_log) :
 		cocoa_log(p_log) {
 }
 

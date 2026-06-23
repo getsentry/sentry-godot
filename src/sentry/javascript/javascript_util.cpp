@@ -14,10 +14,10 @@ String attributes_to_json(const Dictionary &p_attributes) {
 
 	Array keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
-		String key = keys[i];
+		const Variant &key = keys[i];
 		Variant value = p_attributes[key];
 
-		writer.key(key);
+		writer.key(key.stringify());
 		switch (value.get_type()) {
 			case Variant::BOOL: {
 				writer.value_bool(value.operator bool());

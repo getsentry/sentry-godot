@@ -6,44 +6,14 @@
 #ifdef IOS_ENABLED
 #import <UIKit/UIKit.h>
 #endif
-#import <Sentry/Sentry-Swift.h>
-#import <Sentry/SentryId.h>
-
-namespace objc {
-
-// Type aliases for Cocoa SDK types to avoid naming conflicts
-// with C++ extension types. The objc:: namespace distinguishes original
-// Cocoa types from types defined elsewhere.
-
-using SentryOptions = ::SentryOptions;
-using SentrySDK = ::SentrySDK;
-using SentryEvent = ::SentryEvent;
-using SentryUser = ::SentryUser;
-using SentryLevel = ::SentryLevel;
-using SentryBreadcrumb = ::SentryBreadcrumb;
-using SentryId = ::SentryId;
-using SentryScope = ::SentryScope;
-using SentryAttachment = ::SentryAttachment;
-using SentryMessage = ::SentryMessage;
-using SentryException = ::SentryException;
-using SentryStacktrace = ::SentryStacktrace;
-using SentryFrame = ::SentryFrame;
-using SentryThread = ::SentryThread;
-using SentryFeedback = ::SentryFeedback;
-using SentryLog = ::SentryLog;
-using SentrySpanId = ::SentrySpanId;
-
-} // namespace objc
+#import <SentryObjC/SentryObjC.h>
 
 #else // C++ context
 
-// In C++ context, make objc::SentryEvent an alias to void
-namespace objc {
-
-using SentryEvent = void;
-using SentryBreadcrumb = void;
-using SentryLog = void;
-
-} // namespace objc
+// Allow headers to compile: In C++ context, the ObjC types are not available.
+using SentryObjCEvent = void;
+using SentryObjCBreadcrumb = void;
+using SentryObjCLog = void;
+using SentryObjCMetric = void;
 
 #endif // __OBJC__

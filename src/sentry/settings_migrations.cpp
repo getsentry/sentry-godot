@@ -98,11 +98,15 @@ void _migrate_to_v3() {
 	_migrate_logger_settings_to_godot_logger();
 }
 
+void _migrate_to_v4() {
+	_rename_setting("sentry/experimental/enable_metrics", "sentry/options/enable_metrics");
+}
+
 } // unnamed namespace
 
 namespace sentry {
 
-constexpr static int SCHEMA_VERSION = 3;
+constexpr static int SCHEMA_VERSION = 4;
 
 void run_project_settings_migrations() {
 	const String schema_version_key = "sentry/schema_version";
@@ -134,6 +138,10 @@ void run_project_settings_migrations() {
 
 	if (from_version < 3) {
 		_migrate_to_v3();
+	}
+
+	if (from_version < 4) {
+		_migrate_to_v4();
 	}
 
 	if (from_version < SCHEMA_VERSION) {

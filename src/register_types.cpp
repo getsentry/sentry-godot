@@ -45,6 +45,7 @@
 #include "sentry/cocoa/cocoa_breadcrumb.h"
 #include "sentry/cocoa/cocoa_event.h"
 #include "sentry/cocoa/cocoa_log.h"
+#include "sentry/cocoa/cocoa_metric.h"
 #endif // SDK_COCOA
 
 #ifdef SDK_JAVASCRIPT
@@ -122,6 +123,7 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaEvent);
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaLog);
+	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaMetric);
 #endif
 
 #ifdef SDK_JAVASCRIPT

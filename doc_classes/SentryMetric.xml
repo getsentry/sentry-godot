@@ -4,7 +4,7 @@
 		Metric item in Sentry.
 	</brief_description>
 	<description>
-		[SentryMetric] represents a single metric data point in Sentry Metrics. Metric objects are passed to the [member SentryExperimental.before_send_metric] callback, where they can be inspected, modified, or discarded before being sent to Sentry.
+		[SentryMetric] represents a single metric data point in Sentry Metrics. Metric objects are passed to the [member SentryOptions.before_send_metric] callback, where they can be inspected, modified, or discarded before being sent to Sentry.
 	</description>
 	<tutorials>
 	</tutorials>

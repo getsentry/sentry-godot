@@ -37,8 +37,8 @@ void sentry_event_merge_context(sentry_value_t p_event, const char *p_context_na
 		// If context exists, update it with new values.
 		const Array &updated_keys = p_context.keys();
 		for (int i = 0; i < updated_keys.size(); i++) {
-			const String &key = updated_keys[i];
-			sentry_value_set_by_key(ctx, key.utf8(), sentry::native::variant_to_sentry_value(p_context[key]));
+			const Variant &key = updated_keys[i];
+			sentry_value_set_by_key(ctx, key.stringify().utf8(), sentry::native::variant_to_sentry_value(p_context[key]));
 		}
 	} else {
 		// If context doesn't exist, add it.

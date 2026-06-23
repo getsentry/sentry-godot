@@ -204,8 +204,8 @@ func _before_send_log(entry: SentryLog) -> SentryLog:
 ## Captures counter, distribution, and gauge metrics to Sentry.
 func _cmd_metric_capture() -> int:
 	await _init_sentry(func(options: SentryOptions) -> void:
-		options.experimental.enable_metrics = true
-		options.experimental.before_send_metric = _before_send_metric
+		options.enable_metrics = true
+		options.before_send_metric = _before_send_metric
 	)
 	_add_integration_test_context("metric-capture")
 

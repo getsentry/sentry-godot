@@ -314,7 +314,7 @@ void JavaScriptSDK::init() {
 	}
 
 	JSObjectPtr before_send_metric_callback;
-	if (SENTRY_OPTIONS()->get_experimental()->get_before_send_metric().is_valid()) {
+	if (SENTRY_OPTIONS()->get_before_send_metric().is_valid()) {
 		before_send_metric_callback = JSObject::create_callback(before_send_metric_wasm_callback);
 	}
 
@@ -330,7 +330,7 @@ void JavaScriptSDK::init() {
 			SENTRY_OPTIONS()->get_sample_rate(),
 			SENTRY_OPTIONS()->get_max_breadcrumbs(),
 			SENTRY_OPTIONS()->get_enable_logs(),
-			SENTRY_OPTIONS()->get_experimental()->get_enable_metrics(),
+			SENTRY_OPTIONS()->get_enable_metrics(),
 			SENTRY_OPTIONS()->is_send_default_pii_enabled(),
 			SENTRY_GODOT_SDK_VERSION);
 

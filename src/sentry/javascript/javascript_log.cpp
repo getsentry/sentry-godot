@@ -40,8 +40,8 @@ void JavaScriptLog::add_attributes(const Dictionary &p_attributes) {
 
 	Array keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
-		String key = keys[i];
-		set_attribute(key, p_attributes[key]);
+		const Variant &key = keys[i];
+		set_attribute(key.stringify(), p_attributes[key]);
 	}
 }
 

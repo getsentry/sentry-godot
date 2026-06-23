@@ -51,13 +51,13 @@ Ref<SentryTimestamp> CocoaBreadcrumb::get_timestamp() {
 }
 
 CocoaBreadcrumb::CocoaBreadcrumb() :
-		cocoa_breadcrumb([[objc::SentryBreadcrumb alloc] init]) {
+		cocoa_breadcrumb([[SentryObjCBreadcrumb alloc] init]) {
 }
 
-CocoaBreadcrumb::CocoaBreadcrumb(objc::SentryBreadcrumb *p_cocoa_breadcrumb) :
+CocoaBreadcrumb::CocoaBreadcrumb(SentryObjCBreadcrumb *p_cocoa_breadcrumb) :
 		cocoa_breadcrumb(p_cocoa_breadcrumb) {
 	if (!p_cocoa_breadcrumb) {
-		cocoa_breadcrumb = [[objc::SentryBreadcrumb alloc] init];
+		cocoa_breadcrumb = [[SentryObjCBreadcrumb alloc] init];
 		ERR_PRINT_ONCE("Sentry: Internal error - cocoa breadcrumb instance is null");
 	}
 }

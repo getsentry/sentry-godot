@@ -264,7 +264,7 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->get_godot_logger()->set_event_mask(data.logger_event_mask);
 	options->get_godot_logger()->set_breadcrumb_mask(data.logger_breadcrumb_mask);
 	options->get_godot_logger()->set_log_mask(data.logger_log_mask);
-	options->get_experimental()->set_enable_metrics(data.enable_metrics);
+	options->set_enable_metrics(data.enable_metrics);
 	options->get_android()->set_enable_anr_detection(data.android_enable_anr_detection);
 	options->get_android()->set_anr_timeout_interval_ms(data.android_anr_timeout_interval_ms);
 	options->get_android()->set_attach_anr_thread_dump(data.android_attach_anr_thread_dump);
@@ -302,7 +302,7 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.logger_event_mask = options->get_godot_logger()->get_event_mask();
 	r_data.logger_breadcrumb_mask = options->get_godot_logger()->get_breadcrumb_mask();
 	r_data.logger_log_mask = options->get_godot_logger()->get_log_mask();
-	r_data.enable_metrics = options->get_experimental()->get_enable_metrics();
+	r_data.enable_metrics = options->get_enable_metrics();
 	r_data.android_enable_anr_detection = options->get_android()->get_enable_anr_detection();
 	r_data.android_anr_timeout_interval_ms = options->get_android()->get_anr_timeout_interval_ms();
 	r_data.android_attach_anr_thread_dump = options->get_android()->get_attach_anr_thread_dump();

@@ -32,8 +32,8 @@ Dictionary _sanitize_attributes(const Dictionary &p_attributes) {
 	if (!p_attributes.is_empty()) {
 		const Array &keys = p_attributes.keys();
 		for (int i = 0; i < keys.size(); i++) {
-			const String &key = keys[i];
-			attributes[key] = _as_attribute(p_attributes[key]);
+			const Variant &key = keys[i];
+			attributes[key.stringify()] = _as_attribute(p_attributes[key]);
 		}
 	}
 	return attributes;
@@ -349,7 +349,7 @@ void AndroidSDK::init() {
 	optionsData["sample_rate"] = SENTRY_OPTIONS()->get_sample_rate();
 	optionsData["max_breadcrumbs"] = SENTRY_OPTIONS()->get_max_breadcrumbs();
 	optionsData["enable_logs"] = SENTRY_OPTIONS()->get_enable_logs();
-	optionsData["enable_metrics"] = SENTRY_OPTIONS()->get_experimental()->get_enable_metrics();
+	optionsData["enable_metrics"] = SENTRY_OPTIONS()->get_enable_metrics();
 	optionsData["enable_anr_detection"] = SENTRY_OPTIONS()->get_android()->get_enable_anr_detection();
 	optionsData["anr_timeout_interval_ms"] = SENTRY_OPTIONS()->get_android()->get_anr_timeout_interval_ms();
 	optionsData["attach_anr_thread_dump"] = SENTRY_OPTIONS()->get_android()->get_attach_anr_thread_dump();
@@ -359,7 +359,7 @@ void AndroidSDK::init() {
 			optionsData,
 			before_send_handler->get_instance_id(),
 			SENTRY_OPTIONS()->get_before_send_log().is_valid() ? before_send_log_handler->get_instance_id() : 0,
-			SENTRY_OPTIONS()->get_experimental()->get_before_send_metric().is_valid() ? before_send_metric_handler->get_instance_id() : 0);
+			SENTRY_OPTIONS()->get_before_send_metric().is_valid() ? before_send_metric_handler->get_instance_id() : 0);
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());

@@ -8,7 +8,7 @@ namespace sentry::cocoa {
 class CocoaLog : public sentry::SentryLog {
 	GDCLASS(CocoaLog, SentryLog)
 private:
-	objc::SentryLog *cocoa_log;
+	SentryObjCLog *cocoa_log;
 
 protected:
 	static void _bind_methods() {}
@@ -26,7 +26,7 @@ public:
 	virtual void remove_attribute(const String &p_name) override;
 
 	CocoaLog();
-	CocoaLog(objc::SentryLog *p_log);
+	CocoaLog(SentryObjCLog *p_log);
 	virtual ~CocoaLog() override;
 };
 

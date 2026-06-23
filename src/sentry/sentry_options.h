@@ -66,15 +66,12 @@ class SentryExperimental : public RefCounted {
 	friend class SentryOptions;
 	SentryOptions *owner = nullptr;
 
-	bool enable_metrics = true;
-	Callable before_send_metric;
-
 public:
-	void set_enable_metrics(bool p_value) { enable_metrics = p_value; }
-	bool get_enable_metrics() const { return enable_metrics; }
-
-	void set_before_send_metric(const Callable &p_value) { before_send_metric = p_value; }
-	Callable get_before_send_metric() const { return before_send_metric; }
+	// DEPRECATED: These accessors forward to SentryOptions, which is now their home.
+	void deprecated_set_enable_metrics(bool p_value);
+	bool deprecated_get_enable_metrics();
+	void deprecated_set_before_send_metric(Callable p_value);
+	Callable deprecated_get_before_send_metric();
 
 protected:
 	static void _bind_methods();
@@ -127,6 +124,9 @@ private:
 
 	bool enable_logs = true;
 	Callable before_send_log;
+
+	bool enable_metrics = true;
+	Callable before_send_metric;
 
 	bool enable_app_hang_tracking = true;
 	int app_hang_timeout_ms = 5000;
@@ -209,6 +209,12 @@ public:
 
 	_FORCE_INLINE_ Callable get_before_send_log() const { return before_send_log; }
 	_FORCE_INLINE_ void set_before_send_log(const Callable &p_callback) { before_send_log = p_callback; }
+
+	_FORCE_INLINE_ bool get_enable_metrics() const { return enable_metrics; }
+	_FORCE_INLINE_ void set_enable_metrics(bool p_enabled) { enable_metrics = p_enabled; }
+
+	_FORCE_INLINE_ Callable get_before_send_metric() const { return before_send_metric; }
+	_FORCE_INLINE_ void set_before_send_metric(const Callable &p_callback) { before_send_metric = p_callback; }
 
 	_FORCE_INLINE_ bool is_app_hang_tracking_enabled() const { return enable_app_hang_tracking; }
 	_FORCE_INLINE_ void set_app_hang_tracking_enabled(bool p_enabled) { enable_app_hang_tracking = p_enabled; }

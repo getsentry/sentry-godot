@@ -2,6 +2,30 @@
 
 #include "cocoa_includes.h"
 
+// WORKAROUND: The SentryObjC SDK has no public or internal API to look up binary images by address,
+// which we need to symbolicate .NET exceptions.
+// The types that do this are still inside the framework binary, just not declared in any header.
+// We redeclare the few bits we call here so the code compiles and links against them.
+// Remove once the SDK exposes an official API.
+// Upstream issue: https://github.com/getsentry/sentry-cocoa/issues/8039
+
+@interface SentryBinaryImageInfo : NSObject
+@property(nonatomic, readonly) NSString *name;
+@property(nonatomic, readonly) NSString *uuid;
+@property(nonatomic, readonly) uint64_t address;
+@property(nonatomic, readonly) uint64_t size;
+@end
+
+@interface SentryBinaryImageCache : NSObject
+- (SentryBinaryImageInfo *)imageByAddress:(uint64_t)address;
+@end
+
+@interface SentryDependencies : NSObject
+@property(class, nonatomic, readonly) SentryBinaryImageCache *binaryImageCache;
+@end
+
+// END OF WORKAROUND
+
 namespace sentry::cocoa {
 
 Vector<DebugImage> get_debug_images(const int64_t *p_addresses, int32_t p_addresses_count) {

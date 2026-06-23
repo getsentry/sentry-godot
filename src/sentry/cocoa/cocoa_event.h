@@ -9,13 +9,13 @@ class CocoaEvent : public sentry::SentryEvent {
 	GDCLASS(CocoaEvent, sentry::SentryEvent);
 
 private:
-	objc::SentryEvent *cocoa_event = nullptr;
+	SentryObjCEvent *cocoa_event = nullptr;
 
 protected:
 	static void _bind_methods() {}
 
 public:
-	_FORCE_INLINE_ objc::SentryEvent *get_cocoa_event() const { return cocoa_event; }
+	_FORCE_INLINE_ SentryObjCEvent *get_cocoa_event() const { return cocoa_event; }
 
 	virtual String get_id() const override;
 
@@ -58,7 +58,7 @@ public:
 
 	virtual String to_json() const override;
 
-	CocoaEvent(objc::SentryEvent *p_cocoa_event);
+	CocoaEvent(SentryObjCEvent *p_cocoa_event);
 	CocoaEvent();
 	virtual ~CocoaEvent() override;
 };

@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="before_send_metric" type="Callable" setter="set_before_send_metric" getter="get_before_send_metric" default="Callable()">
+		<member name="before_send_metric" type="Callable" setter="set_before_send_metric" getter="get_before_send_metric" default="Callable()" deprecated="Metrics are now generally available. Use [member SentryOptions.before_send_metric] instead.">
 			If assigned, this callback will be called before sending a metric to Sentry. It can be used to modify the metric or prevent it from being sent.
 			[codeblock]
 			func _before_send_metric(metric: SentryMetric) -&gt; SentryMetric:
@@ -22,7 +22,7 @@
 				return metric
 			[/codeblock]
 		</member>
-		<member name="enable_metrics" type="bool" setter="set_enable_metrics" getter="get_enable_metrics" default="true">
+		<member name="enable_metrics" type="bool" setter="set_enable_metrics" getter="get_enable_metrics" default="true" deprecated="Metrics are now generally available. Use [member SentryOptions.enable_metrics] instead.">
 			Enables Sentry metrics functionality. When enabled, you can emit custom metrics using the [SentryMetrics] API available through [member SentrySDK.metrics].
 		</member>
 	</members>
