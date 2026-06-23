@@ -11,6 +11,7 @@
 - Align App Hang Tracking options with other gaming SDKs ([#753](https://github.com/getsentry/sentry-godot/pull/753))
   - Renamed `SentryOptions.app_hang_tracking` to `SentryOptions.enable_app_hang_tracking`; the old name remains as a deprecated alias.
   - Renamed `SentryOptions.app_hang_timeout_sec` to `SentryOptions.app_hang_timeout_ms`, now configured in milliseconds; the old name remains as a deprecated alias, and existing Project Settings are migrated automatically.
+- App Hang Tracking is now enabled by default; set `SentryOptions.enable_app_hang_tracking` to `false` to opt out ([#773](https://github.com/getsentry/sentry-godot/pull/773))
 - Group Godot logger options under `SentryOptions.godot_logger` ([#759](https://github.com/getsentry/sentry-godot/pull/759))
   - Moved the `SentryOptions.logger_*` options under `SentryOptions.godot_logger` (for example, `logger_event_mask` becomes `godot_logger.event_mask`); the old names remain as deprecated aliases.
   - Renamed `logger_include_source` to `godot_logger.include_source_context` as part of the move.
