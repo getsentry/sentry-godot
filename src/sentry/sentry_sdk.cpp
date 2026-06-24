@@ -186,9 +186,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 		options->clear_custom_attachments();
 
 		// Generate a new trace on init to tie native and managed errors together.
-		trace_context.trace_id = sentry::uuid::make_uuid_no_dashes();
-		trace_context.parent_span_id = sentry::uuid::make_span_id();
-		internal_sdk->set_trace(trace_context.trace_id, trace_context.parent_span_id);
+		set_trace(sentry::uuid::make_uuid_no_dashes(), sentry::uuid::make_span_id());
 
 		if (is_auto_initializing) {
 			// Delay contexts initialization until engine singletons are ready during early initialization.
@@ -303,6 +301,13 @@ void SentrySDK::remove_user() {
 	for (const Ref<SentryScopeObserver> &observer : SENTRY_OPTIONS()->get_scope_observers()) {
 		observer->remove_user();
 	}
+}
+
+void SentrySDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
+	// Cache locally so get_trace_context() stays consistent with the backend.
+	trace_context.trace_id = p_trace_id;
+	trace_context.parent_span_id = p_parent_span_id;
+	internal_sdk->set_trace(p_trace_id, p_parent_span_id);
 }
 
 void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary &p_value) {

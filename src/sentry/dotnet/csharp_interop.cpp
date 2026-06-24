@@ -546,6 +546,13 @@ CSHARP_EXPORT void csharp_interop_sdk_remove_user() {
 	SentrySDK::get_singleton()->remove_user();
 }
 
+CSHARP_EXPORT void csharp_interop_sdk_set_trace(const char16_t *trace_id, int32_t trace_id_len, const char16_t *parent_span_id, int32_t parent_span_id_len) {
+	sentry::dotnet::DotnetScopeObserver::SyncGuard guard;
+	SentrySDK::get_singleton()->set_trace(
+			String::utf16(trace_id, trace_id_len),
+			String::utf16(parent_span_id, parent_span_id_len));
+}
+
 CSHARP_EXPORT const char *csharp_interop_get_sdk_version() {
 	return SENTRY_GODOT_SDK_VERSION;
 }

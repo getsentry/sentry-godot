@@ -966,6 +966,19 @@ internal static partial class NativeBridge
         }
     }
 
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_sdk_set_trace(
+            char* traceId, int traceIdLen, char* parentSpanId, int parentSpanIdLen);
+
+    public static unsafe void SetTrace(string traceId, string parentSpanId)
+    {
+        fixed (char* traceIdPtr = traceId)
+        fixed (char* parentSpanIdPtr = parentSpanId)
+        {
+            csharp_interop_sdk_set_trace(traceIdPtr, traceId.Length, parentSpanIdPtr, parentSpanId.Length);
+        }
+    }
+
     // Native event accessors used by SentryNativeEvent during the options.Native.SetBeforeSend callback.
     // The handle is a native SentryEvent pointer, valid only for the duration of the callback.
 

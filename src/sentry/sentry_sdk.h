@@ -88,6 +88,8 @@ public:
 	void set_user(const Ref<SentryUser> &p_user);
 	void remove_user();
 
+	void set_trace(const String &p_trace_id, const String &p_parent_span_id);
+
 	_FORCE_INLINE_ SentryLogger *get_logger() const { return logger; }
 	_FORCE_INLINE_ SentryMetrics *get_metrics() const { return metrics; }
 	_FORCE_INLINE_ SentryBadCode *get_bad_code() const { return bad_code; }
