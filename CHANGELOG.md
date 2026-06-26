@@ -2,6 +2,9 @@
 
 ## 2.0.0
 
+> [!TIP]
+> Upgrading from `v1.x`? Check out the [Migration Guide](https://docs.sentry.io/platforms/godot/migration/).
+
 ### Breaking changes
 
 - Add Android-specific ANR (Application Not Responding) detection options ([#749](https://github.com/getsentry/sentry-godot/pull/749))
