@@ -11,10 +11,10 @@ Sentry for Godot helps you monitor your game's health during QA and after releas
 
 ## Minimum supported Godot Engine
 
-| SDK Version    | Required Godot Version |
-|----------------|------------------------|
-| `1.x` releases | Godot 4.5 or later     |
-| `0.x` releases | Godot 4.3 or later     |
+| SDK Version              | Required Godot Version |
+|--------------------------|------------------------|
+| `1.x` and `2.x` releases | Godot 4.5 or later     |
+| `0.x` releases           | Godot 4.3 or later     |
 
 For upgrade instructions between major versions, see the [Migration Guide](https://docs.sentry.io/platforms/godot/migration/).
 
@@ -25,11 +25,11 @@ For upgrade instructions between major versions, see the [Migration Guide](https
 - **macOS**: universal (Intel and Apple Silicon)
 - **Android**: arm64, arm32, x86_64, x86_32
 - **iOS**: device and simulator
-- **Web**: supported in 1.4+
+- **Web**: supported in 1.4.0 and later
+- **C#/.NET**: supported in 2.0.0 and later
 - **W4 console forks**: coming in 2026
 
 Support for additional platforms and architectures may be added in future releases.
-C# support is planned, tracked in [#91](https://github.com/getsentry/sentry-godot/issues/91).
 
 ## Getting started
 

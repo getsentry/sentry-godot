@@ -20,7 +20,7 @@
 
 ### Features
 
-- *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
+- C#/.NET support is now generally available ([#775](https://github.com/getsentry/sentry-godot/pull/775))
   - Add `options.Native.SetBeforeSend` hook to inspect, modify, or drop native events (engine, GDScript, and GDExtension errors) from the .NET layer ([#737](https://github.com/getsentry/sentry-godot/pull/737))
   - Sync trace from .NET to native layer ([#779](https://github.com/getsentry/sentry-godot/pull/779))
 - Metrics are now generally available and supported on all platforms ([#755](https://github.com/getsentry/sentry-godot/pull/755))
