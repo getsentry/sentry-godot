@@ -69,7 +69,13 @@ internal class GodotScopeObserver : IScopeObserver
 
     public void SetTrace(SentryId traceId, SpanId parentSpanId)
     {
-        // TODO: forward to native trace API once wired through NativeBridge.
+        if (IsSyncing || SentrySdk.InLocalScope)
+        {
+            return;
+        }
+
+        using var _ = new SyncGuard();
+        NativeBridge.SetTrace(traceId.ToString(), parentSpanId.ToString());
     }
 
     public void AddAttachment(SentryAttachment attachment)

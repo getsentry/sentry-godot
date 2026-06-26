@@ -8,6 +8,15 @@ using Sentry.Godot;
 /// </summary>
 public partial class DotnetTestHarness : RefCounted
 {
+    public void Init()
+    {
+        SentrySdk.Init(options =>
+        {
+            options.Debug = false;
+            options.AttachScreenshot = false; // CI runs headless
+        });
+    }
+
     public void InitWithNativeHooks()
     {
         SentrySdk.Init(options =>
@@ -21,6 +30,27 @@ public partial class DotnetTestHarness : RefCounted
     public void Close()
     {
         SentrySdk.Close();
+    }
+
+    public string GetCurrentTraceId()
+    {
+        return SentrySdk.GetTraceHeader()?.TraceId.ToString() ?? "";
+    }
+
+    private ITransactionTracer _activeTransaction;
+
+    public string StartTransaction(string name, string operation)
+    {
+        _activeTransaction = SentrySdk.StartTransaction(name, operation);
+        SentrySdk.ConfigureScope(scope => scope.Transaction = _activeTransaction);
+        return _activeTransaction.TraceId.ToString();
+    }
+
+    public string FinishTransaction()
+    {
+        _activeTransaction?.Finish();
+        _activeTransaction = null;
+        return GetCurrentTraceId();
     }
 
     private readonly Godot.Collections.Dictionary _seenEventValues = [];

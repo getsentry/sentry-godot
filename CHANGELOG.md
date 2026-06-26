@@ -22,6 +22,7 @@
 
 - *Experimental*: C#/.NET support (started in `2.0.0-beta.0`)
   - Add `options.Native.SetBeforeSend` hook to inspect, modify, or drop native events (engine, GDScript, and GDExtension errors) from the .NET layer ([#737](https://github.com/getsentry/sentry-godot/pull/737))
+  - Sync trace from .NET to native layer ([#779](https://github.com/getsentry/sentry-godot/pull/779))
 - Metrics are now generally available and supported on all platforms ([#755](https://github.com/getsentry/sentry-godot/pull/755))
   - Moved `enable_metrics` and `before_send_metric` from `SentryOptions.experimental` to `SentryOptions`; the experimental properties remain as deprecated aliases, and existing Project Settings are migrated automatically.
 - Add `SentrySDK.bad_code` API for deliberately crashing the application to test crash reporting and native stack traces ([#765](https://github.com/getsentry/sentry-godot/pull/765))
