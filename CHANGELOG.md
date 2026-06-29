@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Other changes
+
+- Include the license file in the released addon and demo-project packages ([#790](https://github.com/getsentry/sentry-godot/pull/790))
+
 ### Dependencies
 
 - Bump Sentry JavaScript from v10.61.0 to v10.62.0 ([#786](https://github.com/getsentry/sentry-godot/pull/786))
