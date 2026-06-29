@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Prevent a crash that could occur when an error is raised while another event is being processed ([#789](https://github.com/getsentry/sentry-godot/pull/789))
+
 ### Dependencies
 
 - Bump Sentry JavaScript from v10.61.0 to v10.62.0 ([#786](https://github.com/getsentry/sentry-godot/pull/786))
