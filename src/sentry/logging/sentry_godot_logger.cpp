@@ -6,6 +6,7 @@
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/util/hash.h"
+#include "sentry/util/recursion_guard.h"
 #include "sentry/util/text.h"
 
 #include <godot_cpp/classes/engine.hpp>
@@ -25,24 +26,6 @@ const char *error_type_as_string[] = {
 	"WARNING",
 	"SCRIPT ERROR",
 	"SHADER ERROR",
-};
-
-// RAII-style recursion guard that prevents entering function recursively more
-// than `max_entries` times.
-class RecursionGuard {
-private:
-	uint32_t *counter_ptr = nullptr;
-	uint32_t max_entries = 0;
-
-public:
-	_FORCE_INLINE_ bool can_enter() const { return *counter_ptr <= max_entries; }
-
-	RecursionGuard(uint32_t *p_counter_ptr, uint32_t p_max_entries) :
-			counter_ptr(p_counter_ptr), max_entries(p_max_entries) {
-		(*counter_ptr)++;
-	}
-
-	~RecursionGuard() { (*counter_ptr)--; }
 };
 
 bool _get_script_context(const String &p_file, int p_line, String &r_context_line, PackedStringArray &r_pre_context, PackedStringArray &r_post_context) {
@@ -311,10 +294,10 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 		}
 	}
 
-	static thread_local uint32_t num_entries = 0;
-	constexpr uint32_t MAX_ENTRIES = 5;
-	RecursionGuard feedback_loop_guard{ &num_entries, MAX_ENTRIES };
-	if (!feedback_loop_guard.can_enter()) {
+	static thread_local uint32_t log_depth = 0;
+	constexpr uint32_t MAX_DEPTH = 5;
+	sentry::util::RecursionGuard feedback_loop_guard{ &log_depth, MAX_DEPTH };
+	if (!feedback_loop_guard.should_proceed()) {
 		ERR_PRINT_ONCE("SentryGodotLogger::_log_error() feedback loop detected.");
 		return;
 	}
@@ -472,10 +455,10 @@ void SentryGodotLogger::_log_message(const String &p_message, bool p_error) {
 		return;
 	}
 
-	static thread_local uint32_t num_entries = 0;
-	constexpr uint32_t MAX_ENTRIES = 5;
-	RecursionGuard feedback_loop_guard{ &num_entries, MAX_ENTRIES };
-	if (!feedback_loop_guard.can_enter()) {
+	static thread_local uint32_t log_depth = 0;
+	constexpr uint32_t MAX_DEPTH = 5;
+	sentry::util::RecursionGuard feedback_loop_guard{ &log_depth, MAX_DEPTH };
+	if (!feedback_loop_guard.should_proceed()) {
 		ERR_PRINT_ONCE("SentryGodotLogger::_log_message() feedback loop detected.");
 		return;
 	}
