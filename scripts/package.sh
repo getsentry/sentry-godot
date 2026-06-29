@@ -58,6 +58,8 @@ abort() {
 }
 
 # Usage: make_zip <zipfile> <items...>
+#   zipfile  archive to create (replacing any existing file)
+#   items    paths and zip flags (e.g. -i/-x globs) passed through to zip
 # Runs from $SOURCE so paths are stored tree-relative. Aborts on zip error.
 make_zip() {
     local zipfile="$1"; shift
