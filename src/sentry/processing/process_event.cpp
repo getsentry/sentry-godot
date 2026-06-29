@@ -4,6 +4,7 @@
 #include "sentry/logging/print.h"
 #include "sentry/processing/sentry_event_processor.h"
 #include "sentry/sentry_sdk.h"
+#include "sentry/util/recursion_guard.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/display_server.hpp>
@@ -15,6 +16,14 @@
 namespace sentry {
 
 Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
+	static thread_local uint32_t processing_depth = 0;
+	sentry::util::RecursionGuard guard{ &processing_depth };
+	if (!guard.should_proceed()) {
+		// Avoid logger in case it's a triggering path for the cascaded error.
+		sentry::logging::print_no_logger(sentry::LEVEL_WARNING, "Skipping event processing for secondary event triggered while processing another event. Event will still be sent.");
+		return p_event;
+	}
+
 	if (p_event.is_null()) {
 		sentry::logging::print_error("Attempted to process a null event");
 		return nullptr;

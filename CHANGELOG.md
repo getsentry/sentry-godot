@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Prevent a crash that could occur when an error is raised while another event is being processed ([#789](https://github.com/getsentry/sentry-godot/pull/789))
+
 ### Other changes
 
 - Include the license file in the released addon and demo-project packages ([#790](https://github.com/getsentry/sentry-godot/pull/790))
