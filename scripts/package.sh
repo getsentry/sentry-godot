@@ -79,10 +79,19 @@ make_zip() {
 stage_file() {
     local zipfile="$1" src="$2" dest="$3"
     local stage; stage="$(mktemp -d)"
-    mkdir -p "$stage/$(dirname "$dest")"
-    cp "$src" "$stage/$dest"
-    ( cd "$stage" && zip -q "$zipfile" "$dest" )
+
+    local rc=0
+    {
+        mkdir -p "$stage/$(dirname "$dest")" &&
+            cp "$src" "$stage/$dest" &&
+            ( cd "$stage" && zip -q "$zipfile" "$dest" )
+    } || rc=$?
+
     rm -rf "$stage"
+
+    if [[ $rc -ne 0 ]]; then
+        abort "failed to stage $dest into $zipfile (code $rc)" "$rc"
+    fi
 }
 
 # --- Parse arguments ---
