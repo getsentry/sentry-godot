@@ -58,6 +58,8 @@ abort() {
 }
 
 # Usage: make_zip <zipfile> <items...>
+#   zipfile  archive to create (replacing any existing file)
+#   items    paths and zip flags (e.g. -i/-x globs) passed through to zip
 # Runs from $SOURCE so paths are stored tree-relative. Aborts on zip error.
 make_zip() {
     local zipfile="$1"; shift
@@ -66,6 +68,29 @@ make_zip() {
     ( cd "$SOURCE" && zip -qr "$zipfile" "$@" ) || rc=$?
     if [[ $rc -ne 0 ]]; then
         abort "zip failed with code $rc ($zipfile)" "$rc"
+    fi
+}
+
+# Usage: stage_file <zipfile> <src-file> <dest-path>
+#   zipfile    archive to append to
+#   src-file   file to add (may live outside $SOURCE)
+#   dest-path  path it is stored under inside the archive
+# Staged via a temp tree so zip records <dest-path> verbatim.
+stage_file() {
+    local zipfile="$1" src="$2" dest="$3"
+    local stage; stage="$(mktemp -d)"
+
+    local rc=0
+    {
+        mkdir -p "$stage/$(dirname "$dest")" &&
+            cp "$src" "$stage/$dest" &&
+            ( cd "$stage" && zip -q "$zipfile" "$dest" )
+    } || rc=$?
+
+    rm -rf "$stage"
+
+    if [[ $rc -ne 0 ]]; then
+        abort "failed to stage $dest into $zipfile (code $rc)" "$rc"
     fi
 }
 
@@ -91,13 +116,16 @@ done
 mkdir -p "$OUTPUT"
 OUT_ABS="$(cd "$OUTPUT" && pwd)"
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 # --- Resolve version ---
 
 # Default version tag is "<SConstruct VERSION>+<git short sha>".
 if [[ -z "$VERSION" ]]; then
+    sconstruct="$REPO_ROOT/SConstruct"
     ver=""
-    [[ -f SConstruct ]] && ver="$(grep '^VERSION =' SConstruct | cut -d '"' -f 2)"
-    sha="$(git rev-parse --short HEAD 2>/dev/null || true)"
+    [[ -f "$sconstruct" ]] && ver="$(grep '^VERSION =' "$sconstruct" | cut -d '"' -f 2)"
+    sha="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || true)"
     if [[ -z "$ver" || -z "$sha" ]]; then
         abort "could not derive version tag; pass --version <version>+<sha>"
     fi
@@ -108,6 +136,12 @@ fi
 
 if [[ ! -d "$SOURCE/addons" ]]; then
     abort "addons not found in source tree: $SOURCE/addons"
+fi
+
+# Bundled into the addon and demo zips.
+LICENSE_ABS="$REPO_ROOT/LICENSE.md"
+if [[ ! -f "$LICENSE_ABS" ]]; then
+    abort "LICENSE not found: $LICENSE_ABS"
 fi
 
 # Fix crashpad_handler permissions;
@@ -126,6 +160,7 @@ echo "Wrote $zipfile"
 
 zipfile="$OUT_ABS/${NAME}-${VERSION}.zip"
 make_zip "$zipfile" addons/sentry -x "${SYMBOL_PATTERNS[@]}"
+stage_file "$zipfile" "$LICENSE_ABS" "addons/sentry/LICENSE.md"
 echo "Wrote $zipfile"
 
 # --- Demo project package ---
@@ -143,4 +178,10 @@ trap 'rm -rf "$tmp"' EXIT
 awk '/^\[editor_plugins\]/ { skip=1; next } /^\[gdunit4\]/ { skip=1; next } /^\[/ { skip=0 } !skip' \
     "$SOURCE/project.godot" | sed '/^options\/dsn=/d' > "$tmp/project.godot"
 ( cd "$tmp" && zip -q "$zipfile" project.godot )
+
+# Include LICENSE.md at the project root for the demo and in addons/sentry/
+# so the addon remains licensed if copied out of the demo project.
+stage_file "$zipfile" "$LICENSE_ABS" "LICENSE.md"
+stage_file "$zipfile" "$LICENSE_ABS" "addons/sentry/LICENSE.md"
+
 echo "Wrote $zipfile"
