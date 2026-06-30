@@ -1,6 +1,6 @@
 #include "cocoa_debug_images.h"
 
-#include "cocoa_includes.h"
+#include "sentry/cocoa/cocoa_includes.h"
 #include "sentry/cocoa/cocoa_util.h"
 
 namespace sentry::cocoa {
