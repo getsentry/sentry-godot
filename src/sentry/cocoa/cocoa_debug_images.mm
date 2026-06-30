@@ -13,7 +13,7 @@ Vector<DebugImage> get_debug_images(const int64_t *p_addresses, int32_t p_addres
 
 	NSMutableArray<NSNumber *> *addresses = [NSMutableArray arrayWithCapacity:p_addresses_count];
 	for (int32_t i = 0; i < p_addresses_count; ++i) {
-		[addresses addObject:@(p_addresses[i])];
+		[addresses addObject:uint64_to_objc(p_addresses[i])];
 	}
 
 	NSArray<SentryObjCDebugMeta *> *objc_images = [SentryObjCSDK.internal.debug imagesForAddresses:addresses];
