@@ -148,3 +148,10 @@ func _on_test_diverse_context_button_pressed() -> void:
 	SentrySDK.set_context("diverse_context", context)
 	DemoOutput.print_info("Added context with diverse values.")
 	SentrySDK.capture_message("Test diverse context")
+
+
+func _on_hang_button_pressed() -> void:
+	DemoOutput.print_info("Will hang the app! The application will become unresponsive to test App Hang feature!")
+
+	while true:
+		pass
