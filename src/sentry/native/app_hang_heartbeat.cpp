@@ -4,7 +4,7 @@
 
 namespace sentry::native {
 
-void sentry::native::AppHangHeartbeat::_process(double p_delta) {
+void AppHangHeartbeat::_process(double p_delta) {
 	sentry_app_hang_heartbeat();
 }
 
