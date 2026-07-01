@@ -153,5 +153,4 @@ func _on_test_diverse_context_button_pressed() -> void:
 func _on_hang_button_pressed() -> void:
 	DemoOutput.print_info("Will hang the app! The application will become unresponsive to test App Hang reporting!")
 
-	while true:
-		pass
+	SentrySDK.bad_code.hang_app()
