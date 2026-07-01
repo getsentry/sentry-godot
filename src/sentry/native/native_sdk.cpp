@@ -22,6 +22,8 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/window.hpp>
 
 namespace {
 
@@ -411,6 +413,20 @@ void NativeSDK::init() {
 	sentry_options_set_enable_logs(options, SENTRY_OPTIONS()->get_enable_logs());
 	sentry_options_set_enable_metrics(options, SENTRY_OPTIONS()->get_enable_metrics());
 
+	if (SENTRY_OPTIONS()->is_app_hang_tracking_enabled()) {
+		SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+		if (tree) {
+			sentry::logging::print_debug("Adding app hang heartbeat sender to scene tree.");
+			heartbeat_node = memnew(AppHangHeartbeat);
+			tree->get_root()->add_child(heartbeat_node);
+
+			sentry_options_set_enable_app_hang_tracking(options, true);
+			sentry_options_set_app_hang_timeout(options, SENTRY_OPTIONS()->get_app_hang_timeout_ms());
+		} else {
+			ERR_PRINT("App hang tracking is enabled, but failed to access the scene tree in order to add the heartbeat sender. App hang tracking will be disabled.");
+		}
+	}
+
 	// Establish handler path.
 	String handler_fn;
 	String platform_dir;
@@ -490,6 +506,11 @@ void NativeSDK::init() {
 }
 
 void NativeSDK::close() {
+	if (heartbeat_node) {
+		heartbeat_node->queue_free();
+		heartbeat_node = nullptr;
+	}
+
 	int err = sentry_close();
 	initialized = false;
 	user_attachments.clear();

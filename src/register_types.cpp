@@ -27,6 +27,7 @@
 #include <godot_cpp/classes/window.hpp>
 
 #ifdef SDK_NATIVE
+#include "sentry/native/app_hang_heartbeat.h"
 #include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_log.h"
@@ -107,6 +108,7 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(native::NativeBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(native::NativeLog);
 	GDREGISTER_INTERNAL_CLASS(native::NativeMetric);
+	GDREGISTER_INTERNAL_CLASS(native::AppHangHeartbeat);
 #endif
 
 #ifdef SDK_ANDROID
