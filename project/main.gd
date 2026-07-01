@@ -6,10 +6,6 @@ extends Node
 func _ready() -> void:
 	SentrySDK.logger.info("Starting UI on %s", [OS.get_name()])
 
-	#print("Gonna hang here for a while...")
-	#while true:
-		#OS.delay_msec(1000)
-
 	if await cli_commands.check_and_execute_cli():
 		# Quit if a CLI command was executed
 		print(">>> App exit with code: ", cli_commands.exit_code)
