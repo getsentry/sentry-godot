@@ -418,6 +418,7 @@ void NativeSDK::init() {
 		if (tree) {
 			sentry::logging::print_debug("Adding app hang heartbeat sender to scene tree.");
 			Node *node = memnew(AppHangHeartbeat);
+			node->set_process_mode(Node::ProcessMode::PROCESS_MODE_ALWAYS);
 			tree->get_root()->add_child(node);
 			// Storing node by instance id so we know if it's freed.
 			heartbeat_node = node->get_instance_id();
