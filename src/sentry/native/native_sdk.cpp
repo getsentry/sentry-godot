@@ -417,8 +417,10 @@ void NativeSDK::init() {
 		SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 		if (tree) {
 			sentry::logging::print_debug("Adding app hang heartbeat sender to scene tree.");
-			heartbeat_node = memnew(AppHangHeartbeat);
-			tree->get_root()->add_child(heartbeat_node);
+			Node *node = memnew(AppHangHeartbeat);
+			tree->get_root()->add_child(node);
+			// Storing node by instance id so we know if it's freed.
+			heartbeat_node = node->get_instance_id();
 
 			sentry_options_set_enable_app_hang_tracking(options, true);
 			sentry_options_set_app_hang_timeout(options, SENTRY_OPTIONS()->get_app_hang_timeout_ms());
@@ -506,9 +508,12 @@ void NativeSDK::init() {
 }
 
 void NativeSDK::close() {
-	if (heartbeat_node) {
-		heartbeat_node->queue_free();
-		heartbeat_node = nullptr;
+	if (heartbeat_node != 0) {
+		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(heartbeat_node));
+		if (node != nullptr) {
+			node->queue_free();
+			heartbeat_node = 0;
+		}
 	}
 
 	int err = sentry_close();

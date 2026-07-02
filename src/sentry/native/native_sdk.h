@@ -16,7 +16,7 @@ private:
 	Ref<Mutex> last_uuid_mutex;
 	bool initialized = false;
 	Vector<sentry_attachment_t *> user_attachments;
-	AppHangHeartbeat *heartbeat_node = nullptr;
+	uint64_t heartbeat_node;
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
