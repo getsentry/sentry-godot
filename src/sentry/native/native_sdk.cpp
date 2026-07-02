@@ -511,7 +511,7 @@ void NativeSDK::init() {
 void NativeSDK::close() {
 	if (heartbeat_node != 0) {
 		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(heartbeat_node));
-		if (node != nullptr) {
+		if (node) {
 			node->queue_free();
 			heartbeat_node = 0;
 		}
