@@ -416,7 +416,7 @@ void NativeSDK::init() {
 	if (SENTRY_OPTIONS()->is_app_hang_tracking_enabled()) {
 		SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 		if (tree) {
-			sentry::logging::print_debug("Adding app hang heartbeat sender to scene tree.");
+			sentry::logging::print_debug("Adding app hang heartbeat emitter to scene tree.");
 			Node *node = memnew(AppHangHeartbeat);
 			node->set_process_mode(Node::ProcessMode::PROCESS_MODE_ALWAYS);
 			tree->get_root()->add_child(node);
