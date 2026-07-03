@@ -2,6 +2,7 @@
 
 #include "godot_cpp/core/defs.hpp"
 #include "sentry/level.h"
+#include "sentry/sentry_user.h"
 
 #include <sentry.h>
 #include <godot_cpp/variant/char_string.hpp>
@@ -17,6 +18,9 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth = 0
 
 // Convert PackedStringArray to sentry_value_t (as a list).
 sentry_value_t strings_to_sentry_list(const PackedStringArray &p_strings);
+
+// Convert SentryUser to sentry_value_t user object, omitting empty fields.
+sentry_value_t user_to_sentry_value(const Ref<SentryUser> &p_user);
 
 sentry_level_t level_to_native(Level p_level);
 Level native_to_level(sentry_level_t p_native_level);

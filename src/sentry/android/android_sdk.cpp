@@ -201,7 +201,7 @@ Ref<SentryEvent> AndroidSDK::create_event() {
 	return event;
 }
 
-String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
+String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL_V(android_plugin, String());
 	ERR_FAIL_COND_V(p_event.is_null(), String());

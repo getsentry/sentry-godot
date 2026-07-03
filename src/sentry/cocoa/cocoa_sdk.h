@@ -33,7 +33,7 @@ public:
 	virtual String get_last_event_id() override;
 
 	virtual Ref<SentryEvent> create_event() override;
-	virtual String capture_event(const Ref<SentryEvent> &p_event) override;
+	virtual String capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) override;
 
 	virtual void capture_feedback(const Ref<SentryFeedback> &p_feedback) override;
 

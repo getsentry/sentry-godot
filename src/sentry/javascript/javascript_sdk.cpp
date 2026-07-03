@@ -206,7 +206,7 @@ Ref<SentryEvent> JavaScriptSDK::create_event() {
 	return memnew(JavaScriptEvent);
 }
 
-String JavaScriptSDK::capture_event(const Ref<SentryEvent> &p_event) {
+String JavaScriptSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) {
 	ERR_FAIL_COND_V(!js_bridge(), String());
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Sentry: Can't capture event - event object is null.");
 	JavaScriptEvent *ev = Object::cast_to<JavaScriptEvent>(p_event.ptr());

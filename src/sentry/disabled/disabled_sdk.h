@@ -2,6 +2,7 @@
 
 #include "disabled_breadcrumb.h"
 #include "disabled_event.h"
+#include "disabled_scope.h"
 #include "sentry/internal_sdk.h"
 
 namespace sentry {
@@ -26,7 +27,7 @@ class DisabledSDK : public InternalSDK {
 	virtual String get_last_event_id() override { return ""; }
 
 	virtual Ref<SentryEvent> create_event() override { return memnew(DisabledEvent); }
-	virtual String capture_event(const Ref<SentryEvent> &p_event) override { return ""; }
+	virtual String capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) override { return ""; }
 
 	virtual void capture_feedback(const Ref<SentryFeedback> &p_feedback) override {}
 
@@ -39,6 +40,8 @@ class DisabledSDK : public InternalSDK {
 
 	virtual void set_attribute(const String &p_name, const Variant &p_value) override {}
 	virtual void remove_attribute(const String &p_name) override {}
+
+	virtual SentryScopeImpl *create_scope() override { return memnew(DisabledScope); }
 
 	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) override {}
 

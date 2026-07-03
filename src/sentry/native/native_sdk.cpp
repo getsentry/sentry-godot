@@ -8,6 +8,7 @@
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_log.h"
 #include "sentry/native/native_metric.h"
+#include "sentry/native/native_scope.h"
 #include "sentry/native/native_util.h"
 #include "sentry/native/platform_detection.h"
 #include "sentry/processing/process_event.h"
@@ -199,25 +200,7 @@ void NativeSDK::remove_tag(const String &p_key) {
 
 void NativeSDK::set_user(const Ref<SentryUser> &p_user) {
 	if (p_user.is_valid()) {
-		sentry_value_t user_data = sentry_value_new_object();
-
-		if (!p_user->get_id().is_empty()) {
-			sentry_value_set_by_key(user_data, "id",
-					sentry_value_new_string(p_user->get_id().utf8()));
-		}
-		if (!p_user->get_username().is_empty()) {
-			sentry_value_set_by_key(user_data, "username",
-					sentry_value_new_string(p_user->get_username().utf8()));
-		}
-		if (!p_user->get_email().is_empty()) {
-			sentry_value_set_by_key(user_data, "email",
-					sentry_value_new_string(p_user->get_email().utf8()));
-		}
-		if (!p_user->get_ip_address().is_empty()) {
-			sentry_value_set_by_key(user_data, "ip_address",
-					sentry_value_new_string(p_user->get_ip_address().utf8()));
-		}
-		sentry_set_user(user_data);
+		sentry_set_user(user_to_sentry_value(p_user));
 	} else {
 		remove_user();
 	}
@@ -276,13 +259,19 @@ Ref<SentryEvent> NativeSDK::create_event() {
 	return event;
 }
 
-String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
+String NativeSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), _uuid_as_string(sentry_uuid_nil()), "Sentry: Can't capture event - event object is null.");
+
 	NativeEvent *native_event = Object::cast_to<NativeEvent>(p_event.ptr());
-	ERR_FAIL_NULL_V(native_event, _uuid_as_string(sentry_uuid_nil())); // Sanity check - this should never happen.
+	ERR_FAIL_NULL_V(native_event, _uuid_as_string(sentry_uuid_nil()));
 	sentry_value_t event = native_event->get_native_value();
 	sentry_value_incref(event); // Keep ownership.
-	sentry_uuid_t uuid = sentry_capture_event(event);
+
+	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
+	ERR_FAIL_NULL_V(native_scope, _uuid_as_string(sentry_uuid_nil()));
+	sentry_scope_t *scope = native_scope->get_native_scope();
+
+	sentry_uuid_t uuid = sentry_capture_event_with_scope(event, scope);
 
 	last_uuid_mutex->lock();
 	last_uuid = uuid;
@@ -380,6 +369,11 @@ void NativeSDK::set_attribute(const String &p_name, const Variant &p_value) {
 
 void NativeSDK::remove_attribute(const String &p_name) {
 	sentry_remove_attribute(p_name.utf8());
+}
+
+SentryScopeImpl *NativeSDK::create_scope() {
+	SentryScopeImpl *scope = memnew(NativeScope);
+	return scope;
 }
 
 void NativeSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

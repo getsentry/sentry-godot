@@ -18,6 +18,7 @@
 #include "sentry/sentry_metric.h"
 #include "sentry/sentry_metrics.h"
 #include "sentry/sentry_options.h"
+#include "sentry/sentry_scope.h"
 #include "sentry/sentry_scope_observer.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_unit.h"
@@ -94,6 +95,7 @@ void register_runtime_classes() {
 	GDREGISTER_ABSTRACT_CLASS(SentryBreadcrumb);
 	GDREGISTER_ABSTRACT_CLASS(SentryLog);
 	GDREGISTER_ABSTRACT_CLASS(SentryMetric);
+	GDREGISTER_ABSTRACT_CLASS(SentryScope);
 	GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
