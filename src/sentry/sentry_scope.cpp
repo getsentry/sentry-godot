@@ -73,8 +73,10 @@ Ref<SentryScope> SentryScope::clone() const {
 	Ref<SentryScope> dup;
 	dup.instantiate();
 
-	dup->contexts = contexts.duplicate(true);
-	dup->tags = tags.duplicate();
+	for (const KeyValue<String, Dictionary> &kv : contexts) {
+		dup->contexts[kv.key] = kv.value.duplicate(true);
+	}
+	dup->tags = tags; // eager copy
 	if (user.is_valid()) {
 		dup->user = user->duplicate();
 	}
@@ -87,6 +89,53 @@ Ref<SentryScope> SentryScope::clone() const {
 	dup->event_processors = event_processors; // CoW
 
 	return dup;
+}
+
+void SentryScope::apply_to_event(const Ref<SentryEvent> &p_event) const {
+	for (KeyValue<String, Dictionary> kv : contexts) {
+		// TODO: implement in event
+		// p_event->set_context(kv.key, kv.value);
+	}
+
+	for (KeyValue<String, String> kv : tags) {
+		p_event->set_tag(kv.key, kv.value);
+	}
+
+	if (user_assigned) {
+		// TODO: implement in event
+		// p_event->set_user(user);
+	}
+
+	if (level != LEVEL_UNASSIGNED) {
+		p_event->set_level(static_cast<sentry::Level>(level));
+	}
+
+	if (!fingerprint.is_empty()) {
+		// TODO: implement in event
+		// p_event->set_fingerprint(fingerprint);
+	}
+
+	for (int i = 0; i < breadcrumbs.size(); i++) {
+		int actual_index = (breadcrumbs_next + i) % breadcrumbs.size();
+		// TODO: implement helper
+		// p_event->add_breadcrumb(breadcrumbs[actual_index]);
+	}
+}
+
+void SentryScope::apply_to_log(const Ref<SentryLog> &p_log) const {
+	if (p_log.is_null()) {
+		return;
+	}
+
+	p_log->add_attributes(attributes);
+}
+
+void SentryScope::apply_to_metric(const Ref<SentryMetric> &p_metric) const {
+	if (p_metric.is_null()) {
+		return;
+	}
+
+	p_metric->add_attributes(attributes);
 }
 
 void SentryScope::_bind_methods() {

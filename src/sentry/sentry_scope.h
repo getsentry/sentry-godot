@@ -8,6 +8,7 @@
 #include "sentry/sentry_user.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
 using namespace godot;
@@ -20,10 +21,10 @@ class SentryScope : public RefCounted {
 private:
 	static constexpr int LEVEL_UNASSIGNED = -1;
 
-	Dictionary contexts; // String => Dictionary (of String => Variant ...)
-	Dictionary tags; // String => String
-	Ref<SentryUser> user;
+	HashMap<String, Dictionary> contexts; // of String => Variant ...
+	HashMap<String, String> tags; // String => String
 	bool user_assigned = false;
+	Ref<SentryUser> user;
 	int level = LEVEL_UNASSIGNED; // sentry::Level + unassigned sentinel
 	PackedStringArray fingerprint;
 	Dictionary attributes; // String => Variant
