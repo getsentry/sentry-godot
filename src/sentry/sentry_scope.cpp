@@ -109,8 +109,7 @@ void SentryScope::apply_to_event(const Ref<SentryEvent> &p_event) const {
 	}
 
 	if (!fingerprint.is_empty()) {
-		// TODO: implement in event
-		// p_event->set_fingerprint(fingerprint);
+		p_event->set_fingerprint(fingerprint);
 	}
 
 	for (int i = 0; i < breadcrumbs.size(); i++) {
