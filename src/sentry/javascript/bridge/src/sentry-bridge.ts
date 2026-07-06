@@ -54,6 +54,25 @@ function safeParseJSON<T = any>(json: string, fallback: T): T {
   }
 }
 
+function makeUser(id: string, username: string, email: string, ip: string): User {
+  const user: User = {};
+
+  if (id !== "") {
+    user.id = id;
+  }
+  if (username !== "") {
+    user.username = username;
+  }
+  if (email !== "") {
+    user.email = email;
+  }
+  if (ip !== "") {
+    user.ip_address = ip;
+  }
+
+  return user;
+}
+
 // *** SentryBridge
 
 class SentryBridge {
@@ -257,26 +276,15 @@ class SentryBridge {
   }
 
   public setUser(id: string, username: string, email: string, ip: string): void {
-    const user: User = {};
-
-    if (id !== "") {
-      user.id = id;
-    }
-    if (username !== "") {
-      user.username = username;
-    }
-    if (email !== "") {
-      user.email = email;
-    }
-    if (ip !== "") {
-      user.ip_address = ip;
-    }
-
-    Sentry.setUser(user);
+    Sentry.setUser(makeUser(id, username, email, ip));
   }
 
   public removeUser(): void {
     Sentry.setUser(null);
+  }
+
+  public eventSetUser(event: Sentry.Event, id: string, username: string, email: string, ip: string): void {
+    event.user = makeUser(id, username, email, ip);
   }
 
   public logTrace(message: string, attributesJson?: string): void {

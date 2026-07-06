@@ -548,6 +548,30 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun eventSetUser(eventHandle: Int, id: String, userName: String, email: String, ipAddress: String) {
+        val event = getEvent(eventHandle) ?: return
+        val user = User()
+        if (id.isNotEmpty()) {
+            user.id = id
+        }
+        if (userName.isNotEmpty()) {
+            user.username = userName
+        }
+        if (email.isNotEmpty()) {
+            user.email = email
+        }
+        if (ipAddress.isNotEmpty()) {
+            user.ipAddress = ipAddress
+        }
+        event.user = user
+    }
+
+    @UsedByGodot
+    fun eventRemoveUser(eventHandle: Int) {
+        getEvent(eventHandle)?.user = null
+    }
+
+    @UsedByGodot
     fun eventSetContext(eventHandle: Int, key: String, value: Dictionary) {
         val event = getEvent(eventHandle) ?: return
         event.contexts[key] = value

@@ -159,6 +159,22 @@ String CocoaEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void CocoaEvent::set_user(const Ref<SentryUser> &p_user) {
+	ERR_FAIL_NULL(cocoa_event);
+
+	if (p_user.is_null()) {
+		cocoa_event.user = nil;
+		return;
+	}
+
+	SentryObjCUser *user = [[SentryObjCUser alloc] init];
+	user.userId = string_to_objc_or_nil_if_empty(p_user->get_id());
+	user.username = string_to_objc_or_nil_if_empty(p_user->get_username());
+	user.email = string_to_objc_or_nil_if_empty(p_user->get_email());
+	user.ipAddress = string_to_objc_or_nil_if_empty(p_user->get_ip_address());
+	cocoa_event.user = user;
+}
+
 void CocoaEvent::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	ERR_FAIL_NULL(cocoa_event);

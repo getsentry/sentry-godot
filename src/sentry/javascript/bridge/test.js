@@ -54,6 +54,7 @@ try {
 			"removeTag",
 			"setUser",
 			"removeUser",
+			"eventSetUser",
 			"logTrace",
 			"logDebug",
 			"logInfo",
@@ -135,6 +136,18 @@ try {
 
 		runTest("removeUser()", () => {
 			bridge.removeUser();
+		});
+
+		runTest("eventSetUser()", () => {
+			const event = {};
+			bridge.eventSetUser(event, "user123", "testuser", "test@example.com", "127.0.0.1");
+			assertEqual(event.user.id, "user123", "eventSetUser should set user id on event");
+			assertEqual(event.user.username, "testuser", "eventSetUser should set username on event");
+			assertEqual(event.user.email, "test@example.com", "eventSetUser should set email on event");
+			assertEqual(event.user.ip_address, "127.0.0.1", "eventSetUser should set ip_address on event");
+			const event2 = {};
+			bridge.eventSetUser(event2, "", "", "", "");
+			assertEqual(Object.keys(event2.user).length, 0, "eventSetUser should skip empty fields");
 		});
 
 		runTest("logTrace()", () => {

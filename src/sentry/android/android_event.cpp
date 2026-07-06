@@ -106,6 +106,20 @@ String AndroidEvent::get_tag(const String &p_key) {
 	return android_plugin->call(ANDROID_SN(eventGetTag), event_handle, p_key);
 }
 
+void AndroidEvent::set_user(const Ref<SentryUser> &p_user) {
+	ERR_FAIL_NULL(android_plugin);
+	if (p_user.is_valid()) {
+		android_plugin->call(ANDROID_SN(eventSetUser),
+				event_handle,
+				p_user->get_id(),
+				p_user->get_username(),
+				p_user->get_email(),
+				p_user->get_ip_address());
+	} else {
+		android_plugin->call(ANDROID_SN(eventRemoveUser), event_handle);
+	}
+}
+
 void AndroidEvent::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	ERR_FAIL_NULL(android_plugin);
