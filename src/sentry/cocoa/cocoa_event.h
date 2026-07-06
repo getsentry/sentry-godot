@@ -46,6 +46,8 @@ public:
 	virtual void remove_tag(const String &p_key) override;
 	virtual String get_tag(const String &p_key) override;
 
+	virtual void set_user(const Ref<SentryUser> &p_user) override;
+
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void merge_context(const String &p_key, const Dictionary &p_value) override;
 

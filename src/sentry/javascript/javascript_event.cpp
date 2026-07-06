@@ -184,6 +184,22 @@ String JavaScriptEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void JavaScriptEvent::set_user(const Ref<SentryUser> &p_user) {
+	ERR_FAIL_COND(!js_obj);
+
+	if (p_user.is_null()) {
+		js_obj->delete_property("user");
+		return;
+	}
+
+	js_bridge()->call("eventSetUser",
+			js_obj,
+			p_user->get_id().utf8(),
+			p_user->get_username().utf8(),
+			p_user->get_email().utf8(),
+			p_user->get_ip_address().utf8());
+}
+
 void JavaScriptEvent::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(!js_obj);
 	JSObjectPtr all_contexts_jso = js_obj->get_or_create_object_property("contexts");

@@ -2,6 +2,7 @@
 
 #include "sentry/level.h"
 #include "sentry/sentry_timestamp.h"
+#include "sentry/sentry_user.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/templates/pair.hpp>
@@ -68,6 +69,8 @@ public:
 	virtual void set_tag(const String &p_key, const String &p_value) = 0;
 	virtual void remove_tag(const String &p_key) = 0;
 	virtual String get_tag(const String &p_key) = 0;
+
+	virtual void set_user(const Ref<SentryUser> &p_user) = 0;
 
 	virtual void set_context(const String &p_key, const Dictionary &p_value) = 0;
 	virtual void merge_context(const String &p_key, const Dictionary &p_value) = 0;

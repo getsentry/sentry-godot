@@ -69,6 +69,8 @@ public:
 	StringName eventSetTag;
 	StringName eventRemoveTag;
 	StringName eventGetTag;
+	StringName eventSetUser;
+	StringName eventRemoveUser;
 	StringName eventSetContext;
 	StringName eventMergeContext;
 	StringName eventIsCrash;
