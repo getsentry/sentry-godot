@@ -101,8 +101,7 @@ void SentryScope::apply_to_event(const Ref<SentryEvent> &p_event) const {
 	}
 
 	if (user_assigned) {
-		// TODO: implement in event
-		// p_event->set_user(user);
+		p_event->set_user(user);
 	}
 
 	if (level != LEVEL_UNASSIGNED) {
