@@ -175,6 +175,16 @@ String NativeEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void NativeEvent::set_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
+	sentry_value_t contexts = sentry_value_get_by_key(native_event, "contexts");
+	if (sentry_value_is_null(contexts)) {
+		contexts = sentry_value_new_object();
+		sentry_value_set_by_key(native_event, "contexts", contexts);
+	}
+	sentry_value_set_by_key(contexts, p_key.utf8(), sentry::native::variant_to_sentry_value(p_value));
+}
+
 void NativeEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
 	sentry_event_merge_context(native_event, p_key.utf8(), p_value);

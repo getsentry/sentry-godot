@@ -106,6 +106,13 @@ String AndroidEvent::get_tag(const String &p_key) {
 	return android_plugin->call(ANDROID_SN(eventGetTag), event_handle, p_key);
 }
 
+void AndroidEvent::set_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
+	ERR_FAIL_NULL(android_plugin);
+	android_plugin->call(ANDROID_SN(eventSetContext),
+			event_handle, p_key, sanitize_variant(p_value));
+}
+
 void AndroidEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
 	android_plugin->call(ANDROID_SN(eventMergeContext),

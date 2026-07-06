@@ -548,6 +548,12 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun eventSetContext(eventHandle: Int, key: String, value: Dictionary) {
+        val event = getEvent(eventHandle) ?: return
+        event.contexts[key] = value
+    }
+
+    @UsedByGodot
     fun eventMergeContext(eventHandle: Int, key: String, value: Dictionary) {
         val event = getEvent(eventHandle) ?: return
 

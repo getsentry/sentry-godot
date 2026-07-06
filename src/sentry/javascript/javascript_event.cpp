@@ -184,6 +184,14 @@ String JavaScriptEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void JavaScriptEvent::set_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND(!js_obj);
+	JSObjectPtr all_contexts_jso = js_obj->get_or_create_object_property("contexts");
+	if (all_contexts_jso) {
+		all_contexts_jso->set_property_from_json(p_key.utf8(), JSON::stringify(p_value).utf8());
+	}
+}
+
 void JavaScriptEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(!js_obj);
 	JSObjectPtr all_contexts_jso = js_obj->get_or_create_object_property("contexts");
