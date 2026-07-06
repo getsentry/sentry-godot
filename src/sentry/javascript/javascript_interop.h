@@ -279,6 +279,9 @@ public:
 	// Parse a JSON string into an object and merge its properties into this JavaScript object.
 	void merge_properties_from_json(const char *p_json);
 
+	// Parse a JSON string and assign the resulting value to the given property, replacing any existing value.
+	void set_property_from_json(const char *p_property, const char *p_json);
+
 	// Parse the provided JSON string, reconstruct it as a JavaScript value, and push it onto this object,
 	// assuming this object represents a JavaScript array.
 	void push_element_from_json(const char *p_json);

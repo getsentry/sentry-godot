@@ -159,6 +159,15 @@ String CocoaEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void CocoaEvent::set_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
+	ERR_FAIL_NULL(cocoa_event);
+
+	NSMutableDictionary *mut_contexts = [cocoa_event.context mutableCopy] ?: [NSMutableDictionary dictionary];
+	mut_contexts[string_to_objc(p_key)] = dictionary_to_objc(p_value);
+	cocoa_event.context = mut_contexts;
+}
+
 void CocoaEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
 
