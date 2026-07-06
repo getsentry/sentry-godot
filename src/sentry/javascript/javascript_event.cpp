@@ -200,6 +200,17 @@ void JavaScriptEvent::set_user(const Ref<SentryUser> &p_user) {
 			p_user->get_ip_address().utf8());
 }
 
+void JavaScriptEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
+	ERR_FAIL_COND(!js_obj);
+
+	if (p_fingerprint.is_empty()) {
+		js_obj->delete_property("fingerprint");
+		return;
+	}
+
+	js_obj->set_property_from_json("fingerprint", JSON::stringify(p_fingerprint).utf8());
+}
+
 void JavaScriptEvent::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(!js_obj);
 	JSObjectPtr all_contexts_jso = js_obj->get_or_create_object_property("contexts");

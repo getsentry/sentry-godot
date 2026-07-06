@@ -60,6 +60,7 @@ AndroidStringNames::AndroidStringNames() {
 	eventGetTag = StringName("eventGetTag");
 	eventSetUser = StringName("eventSetUser");
 	eventRemoveUser = StringName("eventRemoveUser");
+	eventSetFingerprint = StringName("eventSetFingerprint");
 	eventSetContext = StringName("eventSetContext");
 	eventMergeContext = StringName("eventMergeContext");
 	eventIsCrash = StringName("eventIsCrash");

@@ -120,6 +120,11 @@ void AndroidEvent::set_user(const Ref<SentryUser> &p_user) {
 	}
 }
 
+void AndroidEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
+	ERR_FAIL_NULL(android_plugin);
+	android_plugin->call(ANDROID_SN(eventSetFingerprint), event_handle, p_fingerprint);
+}
+
 void AndroidEvent::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	ERR_FAIL_NULL(android_plugin);

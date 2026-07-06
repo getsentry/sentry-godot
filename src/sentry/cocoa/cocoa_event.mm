@@ -175,6 +175,17 @@ void CocoaEvent::set_user(const Ref<SentryUser> &p_user) {
 	cocoa_event.user = user;
 }
 
+void CocoaEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
+	ERR_FAIL_NULL(cocoa_event);
+
+	if (p_fingerprint.is_empty()) {
+		cocoa_event.fingerprint = nil;
+		return;
+	}
+
+	cocoa_event.fingerprint = string_array_to_objc(p_fingerprint);
+}
+
 void CocoaEvent::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	ERR_FAIL_NULL(cocoa_event);
