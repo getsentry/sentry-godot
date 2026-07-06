@@ -93,8 +93,7 @@ Ref<SentryScope> SentryScope::clone() const {
 
 void SentryScope::apply_to_event(const Ref<SentryEvent> &p_event) const {
 	for (KeyValue<String, Dictionary> kv : contexts) {
-		// TODO: implement in event
-		// p_event->set_context(kv.key, kv.value);
+		p_event->set_context(kv.key, kv.value);
 	}
 
 	for (KeyValue<String, String> kv : tags) {
