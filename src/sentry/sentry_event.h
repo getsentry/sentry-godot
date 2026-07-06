@@ -72,6 +72,8 @@ public:
 
 	virtual void set_user(const Ref<SentryUser> &p_user) = 0;
 
+	virtual void set_fingerprint(const PackedStringArray &p_fingerprint) = 0;
+
 	virtual void set_context(const String &p_key, const Dictionary &p_value) = 0;
 	virtual void merge_context(const String &p_key, const Dictionary &p_value) = 0;
 

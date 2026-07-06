@@ -71,6 +71,7 @@ public:
 	StringName eventGetTag;
 	StringName eventSetUser;
 	StringName eventRemoveUser;
+	StringName eventSetFingerprint;
 	StringName eventSetContext;
 	StringName eventMergeContext;
 	StringName eventIsCrash;

@@ -201,6 +201,14 @@ void NativeEvent::set_user(const Ref<SentryUser> &p_user) {
 	sentry_value_set_by_key(native_event, "user", user_data);
 }
 
+void NativeEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
+	if (p_fingerprint.is_empty()) {
+		sentry_value_remove_by_key(native_event, "fingerprint");
+	} else {
+		sentry_value_set_by_key(native_event, "fingerprint", sentry::native::strings_to_sentry_list(p_fingerprint));
+	}
+}
+
 void NativeEvent::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	sentry_value_t contexts = sentry_value_get_by_key(native_event, "contexts");

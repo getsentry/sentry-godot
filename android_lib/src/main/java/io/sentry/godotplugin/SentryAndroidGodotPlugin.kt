@@ -572,6 +572,12 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun eventSetFingerprint(eventHandle: Int, fingerprint: Array<String>) {
+        val event = getEvent(eventHandle) ?: return
+        event.fingerprints = if (fingerprint.isEmpty()) null else fingerprint.toList()
+    }
+
+    @UsedByGodot
     fun eventSetContext(eventHandle: Int, key: String, value: Dictionary) {
         val event = getEvent(eventHandle) ?: return
         event.contexts[key] = value
