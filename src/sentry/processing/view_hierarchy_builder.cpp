@@ -1,6 +1,6 @@
 #include "view_hierarchy_builder.h"
 
-#include "sentry/engine_lifecycle.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/node.hpp>

@@ -1,7 +1,7 @@
 #include "contexts.h"
 
 #include "gen/sdk_version.gen.h"
-#include "sentry/engine_lifecycle.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/environment.h"
 #include "sentry/sentry_sdk.h"
 

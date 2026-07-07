@@ -1,7 +1,7 @@
 #include "screenshot_processor.h"
 
 #include "sentry/common_defs.h"
-#include "sentry/engine_lifecycle.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/logging/print.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/util/screenshot.h" // TODO: incorporate

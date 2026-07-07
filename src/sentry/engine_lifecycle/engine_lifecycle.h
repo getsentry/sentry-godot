@@ -10,4 +10,7 @@ void mark_engine_singletons_as_ready();
 // See detailed explanation in https://github.com/getsentry/sentry-godot/pull/475
 bool are_engine_singletons_ready();
 
+// Checks whether the engine is shutting down, making scripts, and the scene tree unsafe to use.
+bool is_shutting_down();
+
 } // namespace sentry::engine_lifecycle

@@ -7,7 +7,7 @@
 #include "sentry/dotnet/csharp_interop.h"
 #include "sentry/dotnet/dotnet_before_send_processor.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
-#include "sentry/engine_lifecycle.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
