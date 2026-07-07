@@ -27,8 +27,9 @@ void _initialize_scene_tree_watcher() {
 	SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	ERR_FAIL_NULL_MSG(tree, "Sentry: Failed to initialize engine lifecycle tracking - SceneTree is unavailable.");
 	SentrySceneTreeWatcher *watcher = memnew(SentrySceneTreeWatcher);
-	tree->get_root()->add_child(watcher);
-	watcher->set_callback(callable_mp_static(&_scene_tree_shutting_down));
+	// Add at the front so it is torn down after other scene tree nodes.
+	tree->get_root()->add_child(watcher, false, Node::INTERNAL_MODE_FRONT);
+	watcher->set_shutdown_callback(&_scene_tree_shutting_down);
 }
 
 } // unnamed namespace

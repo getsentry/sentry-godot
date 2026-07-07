@@ -9,8 +9,11 @@ namespace sentry::engine_lifecycle {
 class SentrySceneTreeWatcher : public Node {
 	GDCLASS(SentrySceneTreeWatcher, Node);
 
+public:
+	using ShutdownCallback = void (*)();
+
 private:
-	Callable callback;
+	ShutdownCallback _shutdown_callback = nullptr;
 
 protected:
 	static void _bind_methods() {}
@@ -18,7 +21,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void set_callback(const Callable &p_callback) { callback = p_callback; }
+	void set_shutdown_callback(ShutdownCallback p_callback) { _shutdown_callback = p_callback; }
 };
 
 } //namespace sentry::engine_lifecycle

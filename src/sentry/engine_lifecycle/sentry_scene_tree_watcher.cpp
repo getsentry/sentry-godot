@@ -3,8 +3,8 @@
 namespace sentry::engine_lifecycle {
 
 void SentrySceneTreeWatcher::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PREDELETE && callback.is_valid()) {
-		callback.call();
+	if (p_what == NOTIFICATION_PREDELETE && _shutdown_callback) {
+		_shutdown_callback();
 	}
 }
 
