@@ -1,6 +1,6 @@
 #include "view_hierarchy_builder.h"
 
-#include "sentry/godot_singletons.h"
+#include "sentry/engine_lifecycle.h"
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/node.hpp>
@@ -34,7 +34,7 @@ inline void _next_name_value_pair_new(sentry::util::UTF8Buffer &p_builder, const
 namespace sentry {
 
 sentry::util::UTF8Buffer ViewHierarchyBuilder::build_json() {
-	if (!sentry::godot_singletons::are_ready()) {
+	if (!sentry::engine_lifecycle::are_engine_singletons_ready()) {
 		// Too early to access scene tree.
 		return ::sentry::util::UTF8Buffer(0);
 	}

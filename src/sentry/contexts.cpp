@@ -1,8 +1,8 @@
 #include "contexts.h"
 
 #include "gen/sdk_version.gen.h"
+#include "sentry/engine_lifecycle.h"
 #include "sentry/environment.h"
-#include "sentry/godot_singletons.h"
 #include "sentry/sentry_sdk.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
@@ -541,7 +541,7 @@ Dictionary make_performance_context() {
 HashMap<String, Dictionary> make_event_contexts() {
 	HashMap<String, Dictionary> event_contexts;
 
-	if (!sentry::godot_singletons::are_ready()) {
+	if (!sentry::engine_lifecycle::are_engine_singletons_ready()) {
 		// Engine singletons may not be fully initialized yet - skip context enrichment.
 		// This can happen when processing error reports early in the app lifecycle.
 		return event_contexts;

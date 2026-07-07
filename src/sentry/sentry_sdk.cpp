@@ -7,7 +7,7 @@
 #include "sentry/dotnet/csharp_interop.h"
 #include "sentry/dotnet/dotnet_before_send_processor.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
-#include "sentry/godot_singletons.h"
+#include "sentry/engine_lifecycle.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
@@ -329,7 +329,7 @@ void SentrySDK::_init_contexts() {
 	sentry::logging::print_debug("initializing contexts");
 
 	// Mark Godot engine singletons as safe to access.
-	sentry::godot_singletons::mark_as_ready();
+	sentry::engine_lifecycle::mark_engine_singletons_as_ready();
 
 #if defined(SDK_NATIVE) || defined(SDK_JAVASCRIPT)
 	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
