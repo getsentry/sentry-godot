@@ -201,9 +201,10 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 				godot_logger.instantiate();
 			}
 			OS::get_singleton()->add_logger(godot_logger);
-			sentry::engine_lifecycle::add_shutdown_callback(
-					sentry::util::Callback<>::bind<&SentrySDK::_on_engine_shutdown>(this));
 		}
+
+		sentry::engine_lifecycle::add_shutdown_callback(
+				sentry::util::Callback<>::bind<&SentrySDK::_on_engine_shutdown>(this));
 
 		// Signal .NET layer to initialize.
 		sentry::dotnet::init();
