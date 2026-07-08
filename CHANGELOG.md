@@ -6,6 +6,7 @@
 
 - Harden event processing during application shutdown ([#803](https://github.com/getsentry/sentry-godot/pull/803))
   - Events raised during shutdown are now captured through a reduced path that skips enrichment and the `before_send` callback, so processing no longer touches the scene tree or scripting runtime while they are being torn down
+  - The .NET layer is now closed while the managed runtime is still alive, allowing pending .NET events to flush and defensively preventing calls into the runtime after shutdown begins
   - Added `godot_logger.enable_capture_during_shutdown` (enabled by default); set it to `false` to silence the Godot logger once shutdown begins
   - Resolves a crash on exit that could occur when a `SentryOptions` callback such as `before_send` is set to a GDScript lambda
 
