@@ -241,8 +241,8 @@ public sealed class SentryGodotLoggerOptions
     /// At this stage the user callbacks (before_send, before_send_log, before_send_metric) have already
     /// been released, so anything the logger reports here bypasses them and cannot be scrubbed or
     /// filtered by your code. Set this to false to stop the logger completely once shutdown begins, so
-    /// it produces no events, breadcrumbs, or logs during teardown. This governs only the Godot logger's
-    /// own output; explicit capture calls and hard crashes are always captured.
+    /// it produces no events, breadcrumbs, or logs during teardown. This governs only the Godot logger;
+    /// crashes during shutdown are still captured.
     /// This setting controls the GDScript/engine logger, not .NET errors.
     /// </remarks>
     public bool EnableCaptureDuringShutdown { get; set; } = true;
