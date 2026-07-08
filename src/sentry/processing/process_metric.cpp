@@ -6,13 +6,13 @@
 namespace sentry {
 
 Ref<SentryMetric> process_metric(const Ref<SentryMetric> &p_metric) {
+	// Track processing before touching Godot machinery so shutdown waits for it to complete.
+	sentry::engine_lifecycle::ProcessingSection processing_section;
+
 	if (sentry::engine_lifecycle::is_shutting_down()) {
 		// Shouldn't touch Godot machinery during shutdown.
 		return p_metric;
 	}
-
-	// Track processing before touching Godot machinery so shutdown waits for it to complete.
-	sentry::engine_lifecycle::ProcessingSection processing_section;
 
 	const Callable &before_send_metric = SENTRY_OPTIONS()->get_before_send_metric();
 	if (before_send_metric.is_null()) {
