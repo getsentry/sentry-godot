@@ -7,6 +7,7 @@ namespace sentry {
 
 Ref<SentryMetric> process_metric(const Ref<SentryMetric> &p_metric) {
 	if (sentry::engine_lifecycle::is_shutting_down()) {
+		// Shouldn't touch Godot machinery during shutdown.
 		return p_metric;
 	}
 

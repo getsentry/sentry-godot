@@ -7,6 +7,7 @@ namespace sentry {
 
 Ref<SentryLog> process_log(const Ref<SentryLog> &p_log) {
 	if (sentry::engine_lifecycle::is_shutting_down()) {
+		// Shouldn't touch Godot machinery during shutdown.
 		return p_log;
 	}
 
