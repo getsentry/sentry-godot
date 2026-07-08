@@ -63,7 +63,8 @@ void _initialize_scene_tree_watcher() {
 	SentrySceneTreeWatcher *watcher = memnew(SentrySceneTreeWatcher);
 	watcher->set_shutdown_callback(sentry::util::Callback<>::bind<&_scene_tree_shutting_down>());
 	// Add at the front so it is torn down after other scene tree nodes.
-	// TODO: figure out how to avoid deferring, in case engine is started for one frame (CLI commands etc)
+	// Deferred because adding directly can fail while the root is busy
+	// (e.g, when init() is called from a node's _ready()).
 	tree->get_root()->call_deferred("add_child", watcher, false, Node::INTERNAL_MODE_FRONT);
 }
 
