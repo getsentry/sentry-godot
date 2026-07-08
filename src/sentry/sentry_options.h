@@ -44,6 +44,7 @@ class SentryGodotLoggerOptions : public RefCounted {
 	SIMPLE_PROPERTY(BitField<GodotLoggerEventMask>, event_mask, GodotLoggerEventMask::MASK_ERROR | GodotLoggerEventMask::MASK_SCRIPT | GodotLoggerEventMask::MASK_SHADER);
 	SIMPLE_PROPERTY(BitField<GodotLoggerEventMask>, breadcrumb_mask, GodotLoggerEventMask::MASK_ALL);
 	SIMPLE_PROPERTY(BitField<GodotLoggerEventMask>, log_mask, GodotLoggerEventMask::MASK_NONE);
+	SIMPLE_PROPERTY(bool, enable_capture_during_shutdown, true);
 
 private:
 	Ref<SentryLoggerLimits> limits;

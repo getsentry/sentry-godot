@@ -14,6 +14,11 @@
 		<member name="breadcrumb_mask" type="int" setter="set_breadcrumb_mask" getter="get_breadcrumb_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="143">
 			Specifies the Godot logger events that are automatically captured as Sentry breadcrumbs. Accepts a single value or a bitwise combination of [enum SentryOptions.GodotLoggerEventMask] masks.
 		</member>
+		<member name="enable_capture_during_shutdown" type="bool" setter="set_enable_capture_during_shutdown" getter="get_enable_capture_during_shutdown" default="true">
+			If [code]true[/code], the Godot logger keeps reporting during the final stage of application shutdown, once the scene tree and its nodes have been torn down and the scripting runtime is shutting down. Whatever the engine still logs then is captured as usual (as events, breadcrumbs, and logs, following the mask options), typically engine-level errors raised late in teardown rather than anything from game code, so late failures are not lost.
+			At this stage the user callbacks ([code]before_send[/code], [code]before_send_log[/code], [code]before_send_metric[/code]) have already been released, so anything the logger reports here bypasses them and cannot be scrubbed or filtered by your code. Set this to [code]false[/code] to stop the logger completely once shutdown begins, so it produces no events, breadcrumbs, or logs during teardown.
+			[b]Note:[/b] This governs only the Godot logger's own output. Explicit [code]SentrySDK.capture_message()[/code] and [code]SentrySDK.capture_event()[/code] calls, as well as hard crashes, are always captured.
+		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled" default="true">
 			If [code]true[/code], the SDK will capture logged errors as events, breadcrumbs and/or logs, as defined by [member event_mask], [member breadcrumb_mask] and [member log_mask]. Crashes are always captured.
 		</member>

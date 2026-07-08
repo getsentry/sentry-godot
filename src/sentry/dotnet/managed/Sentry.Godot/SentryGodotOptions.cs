@@ -231,6 +231,23 @@ public sealed class SentryGodotLoggerOptions
     public GodotLoggerEventMask LogMask { get; set; } = GodotLoggerEventMask.None;
 
     /// <summary>
+    /// If enabled, the Godot logger keeps reporting during the final stage of application shutdown,
+    /// once the scene tree and its nodes have been torn down and the scripting runtime is shutting
+    /// down. Whatever the engine still logs then is captured as usual (as events, breadcrumbs, and
+    /// logs, following the mask options), typically engine-level errors raised late in teardown rather
+    /// than anything from game code, so late failures are not lost.
+    /// </summary>
+    /// <remarks>
+    /// At this stage the user callbacks (before_send, before_send_log, before_send_metric) have already
+    /// been released, so anything the logger reports here bypasses them and cannot be scrubbed or
+    /// filtered by your code. Set this to false to stop the logger completely once shutdown begins, so
+    /// it produces no events, breadcrumbs, or logs during teardown. This governs only the Godot logger's
+    /// own output; explicit capture calls and hard crashes are always captured.
+    /// This setting controls the GDScript/engine logger, not .NET errors.
+    /// </remarks>
+    public bool EnableCaptureDuringShutdown { get; set; } = true;
+
+    /// <summary>
     /// Defines throttling limits for the error logger. These limits are used to prevent the SDK
     /// from sending too many non-critical and repeating error events. See <see cref="SentryLoggerLimits"/>.
     /// </summary>

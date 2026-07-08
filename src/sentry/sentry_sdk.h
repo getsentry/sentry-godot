@@ -57,6 +57,8 @@ private:
 	void _init_user();
 	Vector<Ref<SentryAttachment>> _get_default_attachments();
 	void _auto_initialize();
+	void _remove_godot_logger();
+	void _on_engine_shutdown();
 
 protected:
 	static void _bind_methods();

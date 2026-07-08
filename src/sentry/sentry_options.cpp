@@ -66,6 +66,7 @@ void SentryGodotLoggerOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::INT, event_mask);
 	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::INT, breadcrumb_mask);
 	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::INT, log_mask);
+	BIND_PROPERTY_SIMPLE(SentryGodotLoggerOptions, Variant::BOOL, enable_capture_during_shutdown);
 
 	BIND_PROPERTY_READONLY(SentryGodotLoggerOptions, PropertyInfo(Variant::OBJECT, "limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), get_limits);
 }
@@ -150,6 +151,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/events", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING_FOR_EVENTS()), logger_options->get_event_mask(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/breadcrumbs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), logger_options->get_breadcrumb_mask(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/logs", PROPERTY_HINT_FLAGS, sentry::GODOT_ERROR_MASK_EXPORT_STRING()), logger_options->get_log_mask(), false);
+	_define_setting("sentry/godot_logger/enable_capture_during_shutdown", logger_options->get_enable_capture_during_shutdown(), false);
 
 	Ref<SentryLoggerLimits> limits = logger_options->get_limits();
 	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/events_per_frame", PROPERTY_HINT_RANGE, "0,20"), limits->get_events_per_frame(), false);
@@ -241,6 +243,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	logger_options->set_event_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/events", logger_options->get_event_mask()));
 	logger_options->set_breadcrumb_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/breadcrumbs", logger_options->get_breadcrumb_mask()));
 	logger_options->set_log_mask((int)ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/logs", logger_options->get_log_mask()));
+	logger_options->set_enable_capture_during_shutdown(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/enable_capture_during_shutdown", logger_options->get_enable_capture_during_shutdown()));
 
 	Ref<SentryLoggerLimits> limits = logger_options->get_limits();
 	limits->set_events_per_frame(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/events_per_frame", limits->get_events_per_frame()));

@@ -133,6 +133,7 @@ internal static partial class NativeBridge
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
         public int logger_log_mask;
+        public byte logger_enable_capture_during_shutdown;
         public byte enable_metrics;
         public byte android_enable_anr_detection;
         public int android_anr_timeout_interval_ms;
@@ -171,6 +172,7 @@ internal static partial class NativeBridge
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
         public int logger_log_mask;
+        public byte logger_enable_capture_during_shutdown;
         public byte enable_metrics;
         public uint defined_hooks;
         public byte android_enable_anr_detection;
@@ -530,6 +532,7 @@ internal static partial class NativeBridge
         opts.GodotLogger.EventMask = (GodotLoggerEventMask)data.logger_event_mask;
         opts.GodotLogger.BreadcrumbMask = (GodotLoggerEventMask)data.logger_breadcrumb_mask;
         opts.GodotLogger.LogMask = (GodotLoggerEventMask)data.logger_log_mask;
+        opts.GodotLogger.EnableCaptureDuringShutdown = data.logger_enable_capture_during_shutdown != 0;
         opts.EnableMetrics = data.enable_metrics != 0;
         opts.Android.EnableAnrDetection = data.android_enable_anr_detection != 0;
         opts.Android.AnrTimeoutInterval = TimeSpan.FromMilliseconds(data.android_anr_timeout_interval_ms);
@@ -821,6 +824,7 @@ internal static partial class NativeBridge
                 logger_event_mask = (int)opts.GodotLogger.EventMask,
                 logger_breadcrumb_mask = (int)opts.GodotLogger.BreadcrumbMask,
                 logger_log_mask = (int)opts.GodotLogger.LogMask,
+                logger_enable_capture_during_shutdown = (byte)(opts.GodotLogger.EnableCaptureDuringShutdown ? 1 : 0),
                 enable_metrics = (byte)(opts.EnableMetrics ? 1 : 0),
                 defined_hooks = (uint)GetManagedDefinedHooks(opts),
                 android_enable_anr_detection = (byte)(opts.Android.EnableAnrDetection ? 1 : 0),

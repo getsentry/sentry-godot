@@ -157,6 +157,7 @@ struct NativeOptions {
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
 	int32_t logger_log_mask;
+	uint8_t logger_enable_capture_during_shutdown;
 
 	// Experimental
 	uint8_t enable_metrics;
@@ -218,6 +219,7 @@ struct ManagedOptions {
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
 	int32_t logger_log_mask;
+	uint8_t logger_enable_capture_during_shutdown;
 
 	uint8_t enable_metrics;
 
@@ -264,6 +266,7 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->get_godot_logger()->set_event_mask(data.logger_event_mask);
 	options->get_godot_logger()->set_breadcrumb_mask(data.logger_breadcrumb_mask);
 	options->get_godot_logger()->set_log_mask(data.logger_log_mask);
+	options->get_godot_logger()->set_enable_capture_during_shutdown(data.logger_enable_capture_during_shutdown);
 	options->set_enable_metrics(data.enable_metrics);
 	options->get_android()->set_enable_anr_detection(data.android_enable_anr_detection);
 	options->get_android()->set_anr_timeout_interval_ms(data.android_anr_timeout_interval_ms);
@@ -302,6 +305,7 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.logger_event_mask = options->get_godot_logger()->get_event_mask();
 	r_data.logger_breadcrumb_mask = options->get_godot_logger()->get_breadcrumb_mask();
 	r_data.logger_log_mask = options->get_godot_logger()->get_log_mask();
+	r_data.logger_enable_capture_during_shutdown = options->get_godot_logger()->get_enable_capture_during_shutdown();
 	r_data.enable_metrics = options->get_enable_metrics();
 	r_data.android_enable_anr_detection = options->get_android()->get_enable_anr_detection();
 	r_data.android_anr_timeout_interval_ms = options->get_android()->get_anr_timeout_interval_ms();

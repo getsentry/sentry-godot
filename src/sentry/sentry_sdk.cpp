@@ -201,6 +201,8 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 				godot_logger.instantiate();
 			}
 			OS::get_singleton()->add_logger(godot_logger);
+			sentry::engine_lifecycle::add_shutdown_callback(
+					sentry::util::Callback<>::bind<&SentrySDK::_on_engine_shutdown>(this));
 		}
 
 		// Signal .NET layer to initialize.
@@ -214,10 +216,9 @@ void SentrySDK::close() {
 
 		sentry::dotnet::close();
 
-		if (godot_logger.is_valid()) {
-			OS::get_singleton()->remove_logger(godot_logger);
-			godot_logger.unref();
-		}
+		sentry::engine_lifecycle::remove_shutdown_callback(
+				sentry::util::Callback<>::bind<&SentrySDK::_on_engine_shutdown>(this));
+		_remove_godot_logger();
 		internal_sdk->close();
 	}
 }
@@ -499,11 +500,23 @@ void SentrySDK::prepare_and_auto_initialize() {
 void SentrySDK::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PREDELETE: {
-			if (godot_logger.is_valid()) {
-				OS::get_singleton()->remove_logger(godot_logger);
-				godot_logger.unref();
-			}
+			sentry::engine_lifecycle::remove_shutdown_callback(
+					sentry::util::Callback<>::bind<&SentrySDK::_on_engine_shutdown>(this));
+			_remove_godot_logger();
 		} break;
+	}
+}
+
+void SentrySDK::_remove_godot_logger() {
+	if (godot_logger.is_valid()) {
+		OS::get_singleton()->remove_logger(godot_logger);
+		godot_logger.unref();
+	}
+}
+
+void SentrySDK::_on_engine_shutdown() {
+	if (!SENTRY_OPTIONS()->get_godot_logger()->get_enable_capture_during_shutdown()) {
+		_remove_godot_logger();
 	}
 }
 
