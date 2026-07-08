@@ -1,5 +1,7 @@
 #pragma once
 
+#include "sentry/util/callback.h"
+
 namespace sentry::engine_lifecycle {
 
 // Mark Godot engine singletons as safe to access.
@@ -12,5 +14,12 @@ bool are_engine_singletons_ready();
 
 // Checks whether the engine is shutting down, making scripts, and the scene tree unsafe to use.
 bool is_shutting_down();
+
+// Registers a callback to be invoked once when the engine begins shutting down,
+// shortly before the script runtime is torn down.
+void add_shutdown_callback(util::Callback<> p_callback);
+
+// Unregisters shutdown callback.
+void remove_shutdown_callback(util::Callback<> p_callback);
 
 } // namespace sentry::engine_lifecycle

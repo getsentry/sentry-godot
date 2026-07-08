@@ -5,12 +5,14 @@
 #include "sentry/processing/sentry_event_processor.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_scope_observer.h"
+#include "sentry/util/safe_callable.h"
 #include "sentry/util/simple_bind.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
 using namespace godot;
+using sentry::util::SafeCallable;
 
 namespace sentry {
 
@@ -123,10 +125,10 @@ private:
 	bool attach_scene_tree = false;
 
 	bool enable_logs = true;
-	Callable before_send_log;
+	SafeCallable before_send_log;
 
 	bool enable_metrics = true;
-	Callable before_send_metric;
+	SafeCallable before_send_metric;
 
 	bool enable_app_hang_tracking = true;
 	int app_hang_timeout_ms = 5000;
@@ -135,8 +137,8 @@ private:
 	Ref<SentryAndroidOptions> android;
 	Ref<SentryGodotLoggerOptions> godot_logger;
 
-	Callable before_send;
-	Callable before_capture_screenshot;
+	SafeCallable before_send;
+	SafeCallable before_capture_screenshot;
 
 	Vector<Ref<SentryEventProcessor>> event_processors;
 	Vector<Ref<SentryScopeObserver>> scope_observers;
@@ -207,14 +209,14 @@ public:
 	_FORCE_INLINE_ bool get_enable_logs() const { return enable_logs; }
 	_FORCE_INLINE_ void set_enable_logs(bool p_enabled) { enable_logs = p_enabled; }
 
-	_FORCE_INLINE_ Callable get_before_send_log() const { return before_send_log; }
-	_FORCE_INLINE_ void set_before_send_log(const Callable &p_callback) { before_send_log = p_callback; }
+	_FORCE_INLINE_ Callable get_before_send_log() const { return before_send_log.get(); }
+	_FORCE_INLINE_ void set_before_send_log(const Callable &p_callback) { before_send_log.set(p_callback); }
 
 	_FORCE_INLINE_ bool get_enable_metrics() const { return enable_metrics; }
 	_FORCE_INLINE_ void set_enable_metrics(bool p_enabled) { enable_metrics = p_enabled; }
 
-	_FORCE_INLINE_ Callable get_before_send_metric() const { return before_send_metric; }
-	_FORCE_INLINE_ void set_before_send_metric(const Callable &p_callback) { before_send_metric = p_callback; }
+	_FORCE_INLINE_ Callable get_before_send_metric() const { return before_send_metric.get(); }
+	_FORCE_INLINE_ void set_before_send_metric(const Callable &p_callback) { before_send_metric.set(p_callback); }
 
 	_FORCE_INLINE_ bool is_app_hang_tracking_enabled() const { return enable_app_hang_tracking; }
 	_FORCE_INLINE_ void set_app_hang_tracking_enabled(bool p_enabled) { enable_app_hang_tracking = p_enabled; }
@@ -222,11 +224,11 @@ public:
 	_FORCE_INLINE_ int get_app_hang_timeout_ms() const { return app_hang_timeout_ms; }
 	_FORCE_INLINE_ void set_app_hang_timeout_ms(int p_milliseconds) { app_hang_timeout_ms = p_milliseconds; }
 
-	_FORCE_INLINE_ Callable get_before_send() const { return before_send; }
-	_FORCE_INLINE_ void set_before_send(const Callable &p_before_send) { before_send = p_before_send; }
+	_FORCE_INLINE_ Callable get_before_send() const { return before_send.get(); }
+	_FORCE_INLINE_ void set_before_send(const Callable &p_before_send) { before_send.set(p_before_send); }
 
-	_FORCE_INLINE_ Callable get_before_capture_screenshot() const { return before_capture_screenshot; }
-	_FORCE_INLINE_ void set_before_capture_screenshot(const Callable &p_before_capture_screenshot) { before_capture_screenshot = p_before_capture_screenshot; }
+	_FORCE_INLINE_ Callable get_before_capture_screenshot() const { return before_capture_screenshot.get(); }
+	_FORCE_INLINE_ void set_before_capture_screenshot(const Callable &p_before_capture_screenshot) { before_capture_screenshot.set(p_before_capture_screenshot); }
 
 	_FORCE_INLINE_ Ref<SentryExperimental> get_experimental() const { return experimental; }
 	_FORCE_INLINE_ Ref<SentryAndroidOptions> get_android() const { return android; }

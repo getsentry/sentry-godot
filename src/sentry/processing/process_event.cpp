@@ -13,6 +13,17 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/time.hpp>
 
+using namespace sentry;
+
+namespace {
+
+Ref<SentryEvent> _process_during_shutdown(const Ref<SentryEvent> &p_event) {
+	// TODO: drop potential PII like user context; needs support in SentryEvent
+	return p_event;
+}
+
+} // unnamed namespace
+
 namespace sentry {
 
 Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
@@ -27,6 +38,11 @@ Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 	if (p_event.is_null()) {
 		sentry::logging::print_error("Attempted to process a null event");
 		return nullptr;
+	}
+
+	if (sentry::engine_lifecycle::is_shutting_down()) {
+		// Better not touch Godot machinery during shutdown. Skip processing.
+		return _process_during_shutdown(p_event);
 	}
 
 	sentry::logging::print_debug("Processing event ", p_event->get_id());
