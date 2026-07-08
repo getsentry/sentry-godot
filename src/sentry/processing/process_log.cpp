@@ -6,6 +6,10 @@
 namespace sentry {
 
 Ref<SentryLog> process_log(const Ref<SentryLog> &p_log) {
+	if (sentry::engine_lifecycle::is_shutting_down()) {
+		return p_log;
+	}
+
 	// Track processing before invoking the user Callable so shutdown waits for it to complete.
 	sentry::engine_lifecycle::ProcessingSection processing_section;
 
