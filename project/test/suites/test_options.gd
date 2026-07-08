@@ -31,6 +31,7 @@ func test_godot_logger_bool_properties(property: String, test_parameters := [
 		["enabled"],
 		["include_source_context"],
 		["include_variables"],
+		["enable_capture_during_shutdown"],
 ]) -> void:
 	options.godot_logger.set(property, true)
 	assert_bool(options.godot_logger.get(property)).is_true()
