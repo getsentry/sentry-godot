@@ -1,6 +1,7 @@
 #include "sentry_godot_logger.h"
 
 #include "sentry/dotnet/csharp_interop.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/logging/print.h"
 #include "sentry/logging/state.h"
 #include "sentry/sentry_options.h"
@@ -69,7 +70,8 @@ Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
 		const TypedArray<ScriptBacktrace> &p_backtraces,
 		const String &p_file,
 		int p_line,
-		bool p_include_variables) {
+		bool p_include_variables,
+		bool p_include_source_context) {
 	Vector<SentryEvent::StackFrame> frames;
 
 	// Prioritize backtrace with the top frame matching the error's file and linenumber.
@@ -105,7 +107,7 @@ Vector<SentryEvent::StackFrame> _extract_error_stack_frames_from_backtraces(
 			};
 
 			// Provide script source code context for script errors if available.
-			if (SENTRY_OPTIONS()->get_godot_logger()->get_include_source_context()) {
+			if (p_include_source_context) {
 				String context_line;
 				PackedStringArray pre_context;
 				PackedStringArray post_context;
@@ -364,13 +366,15 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 	// Capture error as event.
 	if (as_event) {
 		// Backtraces don't include variables by default, so if we need them, we must capture them separately.
-		bool include_variables = SENTRY_OPTIONS()->get_godot_logger()->get_include_variables();
+		const bool shutting_down = sentry::engine_lifecycle::is_shutting_down(); // avoid risky calls during shutdown
+		const bool include_variables = !shutting_down && SENTRY_OPTIONS()->get_godot_logger()->get_include_variables();
+		const bool include_source_context = !shutting_down && SENTRY_OPTIONS()->get_godot_logger()->get_include_source_context();
 		TypedArray<ScriptBacktrace> script_backtraces = include_variables
 				? Engine::get_singleton()->capture_script_backtraces(true)
 				: p_script_backtraces;
 
 		Vector<SentryEvent::StackFrame> frames = _extract_error_stack_frames_from_backtraces(
-				script_backtraces, p_file, p_line, include_variables);
+				script_backtraces, p_file, p_line, include_variables, include_source_context);
 
 		if (p_error_type == ErrorType::ERROR_TYPE_ERROR) {
 			// Add native frame to the top so it is preserved as the source of error.
