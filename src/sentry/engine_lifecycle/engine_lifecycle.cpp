@@ -33,6 +33,9 @@ constexpr uint64_t DRAIN_TIMEOUT_MS = 2000;
 // Shutdown subscribers, notified while script runtime is still alive.
 LocalVector<sentry::util::Callback<>> _shutdown_callbacks;
 
+// Whether the scene tree watcher has already been created.
+bool _watcher_added = false;
+
 // Block the main thread until no processing section is in flight (bounded by a timeout).
 void _drain_in_flight_processing() {
 	if (_in_flight_processing.load(std::memory_order_seq_cst) == 0) {
@@ -58,6 +61,9 @@ void _scene_tree_shutting_down() {
 }
 
 void _initialize_scene_tree_watcher() {
+	if (_watcher_added) {
+		return;
+	}
 	SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	ERR_FAIL_NULL_MSG(tree, "Sentry: Failed to initialize engine lifecycle tracking - SceneTree is unavailable.");
 	SentrySceneTreeWatcher *watcher = memnew(SentrySceneTreeWatcher);
@@ -66,6 +72,7 @@ void _initialize_scene_tree_watcher() {
 	// Deferred because adding directly can fail while the root is busy
 	// (e.g, when init() is called from a node's _ready()).
 	tree->get_root()->call_deferred("add_child", watcher, false, Node::INTERNAL_MODE_FRONT);
+	_watcher_added = true;
 }
 
 } // unnamed namespace
