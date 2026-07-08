@@ -515,6 +515,9 @@ void SentrySDK::_remove_godot_logger() {
 }
 
 void SentrySDK::_on_engine_shutdown() {
+	sentry::dotnet::close();
+	sentry::dotnet::release_bindings();
+
 	if (!SENTRY_OPTIONS()->get_godot_logger()->get_enable_capture_during_shutdown()) {
 		_remove_godot_logger();
 	}

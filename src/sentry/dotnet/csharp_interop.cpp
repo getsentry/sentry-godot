@@ -681,6 +681,10 @@ void close() {
 	s_managed_defined_hooks = DEFINED_NONE;
 }
 
+void release_bindings() {
+	s_managed_funcs = {};
+}
+
 void handle_logger_error(const String &p_file, const String &p_code) {
 	if (s_managed_funcs.logger_error) {
 		Char16String code_utf16 = p_code.utf16();
