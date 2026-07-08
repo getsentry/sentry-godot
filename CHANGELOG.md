@@ -9,6 +9,7 @@
   - The .NET layer is now closed while the managed runtime is still alive, allowing pending .NET events to flush and defensively preventing calls into the runtime after shutdown begins
   - Added `godot_logger.enable_capture_during_shutdown` (enabled by default); set it to `false` to silence the Godot logger once shutdown begins
   - Resolves a crash on exit that could occur when a `SentryOptions` callback such as `before_send` is set to a GDScript lambda
+  - `init()` and `close()` now report an error if called from a thread other than the main thread, matching the SDK's long-standing main-thread lifecycle requirement (enforced in both the GDScript and C# APIs)
 
 ### Dependencies
 
