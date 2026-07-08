@@ -1,6 +1,7 @@
 #include "process_event.h"
 
 #include "sentry/contexts.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/sentry_event_processor.h"
 #include "sentry/sentry_sdk.h"
@@ -18,7 +19,12 @@ using namespace sentry;
 namespace {
 
 Ref<SentryEvent> _process_during_shutdown(const Ref<SentryEvent> &p_event) {
-	// TODO: drop potential PII like user context; needs support in SentryEvent
+	// During shutdown, the scene tree, GDScript runtime, and user Callables
+	// are being released. Skip contexts, event processors, and before_send.
+	sentry::logging::print_no_logger(
+			sentry::LEVEL_DEBUG,
+			"Capturing event during shutdown (reduced processing) ",
+			p_event->get_id());
 	return p_event;
 }
 
@@ -27,6 +33,9 @@ Ref<SentryEvent> _process_during_shutdown(const Ref<SentryEvent> &p_event) {
 namespace sentry {
 
 Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
+	// Track processing before touching Godot machinery so shutdown waits for it to complete.
+	sentry::engine_lifecycle::ProcessingSection processing_section;
+
 	static thread_local uint32_t processing_depth = 0;
 	sentry::util::RecursionGuard guard{ &processing_depth };
 	if (!guard.should_proceed()) {

@@ -22,4 +22,21 @@ void add_shutdown_callback(util::Callback<> p_callback);
 // Unregisters shutdown callback.
 void remove_shutdown_callback(util::Callback<> p_callback);
 
+// RAII marker for a processing code section that may invoke a user Callable
+// (before_send and friends) or otherwise touch the GDScript or C# runtime.
+// It tracks in-flight processing so shutdown can wait for each section to
+// finish before unblocking the main thread and letting Godot release the
+// scripting runtime. This ensures no worker thread is mid-call when the runtime
+// is torn down.
+class ProcessingSection {
+public:
+	ProcessingSection();
+	~ProcessingSection();
+
+	ProcessingSection(const ProcessingSection &) = delete;
+	ProcessingSection &operator=(const ProcessingSection &) = delete;
+	ProcessingSection(ProcessingSection &&) = delete;
+	ProcessingSection &operator=(ProcessingSection &&) = delete;
+};
+
 } // namespace sentry::engine_lifecycle
