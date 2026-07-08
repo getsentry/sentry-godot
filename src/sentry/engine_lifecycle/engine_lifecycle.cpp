@@ -61,7 +61,7 @@ void _initialize_scene_tree_watcher() {
 	SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	ERR_FAIL_NULL_MSG(tree, "Sentry: Failed to initialize engine lifecycle tracking - SceneTree is unavailable.");
 	SentrySceneTreeWatcher *watcher = memnew(SentrySceneTreeWatcher);
-	watcher->set_shutdown_callback(&_scene_tree_shutting_down);
+	watcher->set_shutdown_callback(sentry::util::Callback<>::bind<&_scene_tree_shutting_down>());
 	// Add at the front so it is torn down after other scene tree nodes.
 	// TODO: figure out how to avoid deferring, in case engine is started for one frame (CLI commands etc)
 	tree->get_root()->call_deferred("add_child", watcher, false, Node::INTERNAL_MODE_FRONT);
