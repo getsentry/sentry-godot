@@ -17,6 +17,7 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/engine_debugger.hpp>
 #include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/type_info.hpp>
 
@@ -371,6 +372,10 @@ CSHARP_EXPORT GodotStringHandle csharp_interop_get_app_version() {
 
 CSHARP_EXPORT bool csharp_interop_sdk_is_enabled() {
 	return SentrySDK::get_singleton()->is_enabled();
+}
+
+CSHARP_EXPORT bool csharp_interop_is_main_thread() {
+	return OS::get_singleton()->get_thread_caller_id() == OS::get_singleton()->get_main_thread_id();
 }
 
 CSHARP_EXPORT bool csharp_interop_is_debugger_active() {

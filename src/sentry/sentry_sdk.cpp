@@ -133,6 +133,8 @@ void SentrySDK::destroy_singleton() {
 }
 
 void SentrySDK::init(const Callable &p_configuration_callback) {
+	ERR_FAIL_COND_MSG(OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id(),
+			"Sentry: init() must be called from the main thread.");
 	ERR_FAIL_COND_MSG(internal_sdk->is_enabled(), "Attempted to initialize SentrySDK that is already initialized");
 
 #if SDK_ANDROID
@@ -212,6 +214,9 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 }
 
 void SentrySDK::close() {
+	ERR_FAIL_COND_MSG(OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id(),
+			"Sentry: close() must be called from the main thread.");
+
 	if (internal_sdk->is_enabled()) {
 		sentry::logging::print_debug("Shutting down Sentry SDK");
 

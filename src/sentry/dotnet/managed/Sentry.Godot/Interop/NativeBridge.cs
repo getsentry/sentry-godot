@@ -632,6 +632,14 @@ internal static partial class NativeBridge
     }
 
     [LibraryImport(Lib)]
+    private static partial byte csharp_interop_is_main_thread();
+
+    public static bool IsMainThread()
+    {
+        return csharp_interop_is_main_thread() != 0;
+    }
+
+    [LibraryImport(Lib)]
     private static unsafe partial byte csharp_interop_is_debugger_active();
 
     public static bool IsDebuggerActive()
