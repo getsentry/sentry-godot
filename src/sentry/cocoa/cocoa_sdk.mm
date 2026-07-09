@@ -5,6 +5,7 @@
 #include "cocoa_includes.h"
 #include "cocoa_log.h"
 #include "cocoa_metric.h"
+#include "cocoa_scope.h"
 #include "cocoa_util.h"
 #include "gen/sdk_version.gen.h"
 #include "sentry/common_defs.h"
@@ -347,6 +348,10 @@ void CocoaSDK::remove_attribute(const String &p_name) {
 	[SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
 		[scope removeAttributeForKey:string_to_objc(p_name)];
 	}];
+}
+
+SentryScopeImpl *CocoaSDK::create_scope() {
+	return memnew(CocoaScope);
 }
 
 void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

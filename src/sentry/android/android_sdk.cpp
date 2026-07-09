@@ -4,6 +4,7 @@
 #include "android_event.h"
 #include "android_log.h"
 #include "android_metric.h"
+#include "android_scope.h"
 #include "android_string_names.h"
 #include "android_util.h"
 #include "sentry/common_defs.h"
@@ -302,6 +303,10 @@ void AndroidSDK::remove_attribute(const String &p_name) {
 	ERR_FAIL_NULL(android_plugin);
 
 	android_plugin->call(ANDROID_SN(removeAttribute), p_name);
+}
+
+SentryScopeImpl *AndroidSDK::create_scope() {
+	return memnew(AndroidScope);
 }
 
 void AndroidSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

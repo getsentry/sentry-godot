@@ -5,6 +5,7 @@
 #include "sentry/javascript/javascript_interop.h"
 #include "sentry/javascript/javascript_log.h"
 #include "sentry/javascript/javascript_metric.h"
+#include "sentry/javascript/javascript_scope.h"
 #include "sentry/javascript/javascript_util.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
@@ -294,6 +295,10 @@ void JavaScriptSDK::set_attribute(const String &p_name, const Variant &p_value) 
 void JavaScriptSDK::remove_attribute(const String &p_name) {
 	ERR_FAIL_COND(!js_bridge());
 	js_bridge()->call("removeAttribute", p_name.utf8());
+}
+
+SentryScopeImpl *JavaScriptSDK::create_scope() {
+	return memnew(JavaScriptScope);
 }
 
 void JavaScriptSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
