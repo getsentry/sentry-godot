@@ -478,7 +478,9 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             // to the global scope during init.
             val scopes = Sentry.getCurrentScopes()
             val combined = CombinedScopeView(scopes.globalScope, scopes.isolationScope, local)
-            combined.client.captureEvent(event, combined)
+            val eventId = combined.client.captureEvent(event, combined)
+            combined.lastEventId = eventId
+            eventId
         }
         return id.toString()
     }
