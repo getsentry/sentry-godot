@@ -5,12 +5,12 @@
 namespace sentry {
 
 void SentryScope::set_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Contexts cannot have an empty key.");
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	_impl->set_context(p_key, p_value);
 }
 
 void SentryScope::set_tag(const String &p_key, const String &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Tags cannot have an empty key.");
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set tag with an empty key.");
 	_impl->set_tag(p_key, p_value);
 }
 
@@ -19,22 +19,20 @@ void SentryScope::set_user(const Ref<SentryUser> &p_user) {
 }
 
 void SentryScope::set_level(sentry::Level p_level) {
-	ERR_FAIL_COND_MSG(p_level < LEVEL_DEBUG || p_level > LEVEL_FATAL, "Invalid level.");
 	_impl->set_level(p_level);
 }
 
 void SentryScope::set_fingerprint(PackedStringArray p_fingerprint) {
-	ERR_FAIL_COND_MSG(p_fingerprint.is_empty(), "Fingerprint cannot be empty.");
 	_impl->set_fingerprint(p_fingerprint);
 }
 
 void SentryScope::set_attribute(const String &p_name, const Variant &p_value) {
-	ERR_FAIL_COND_MSG(p_name.is_empty(), "Attribute name cannot be empty.");
+	ERR_FAIL_COND_MSG(p_name.is_empty(), "Sentry: Can't set attribute with an empty name.");
 	_impl->set_attribute(p_name, p_value);
 }
 
 void SentryScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
-	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Breadcrumb cannot be null.");
+	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Sentry: Can't add a null breadcrumb.");
 	_impl->add_breadcrumb(p_breadcrumb);
 }
 
@@ -48,7 +46,7 @@ Ref<SentryScope> SentryScope::clone() const {
 }
 
 void SentryScope::add_event_processor(const Callable &p_callable) {
-	ERR_FAIL_COND_MSG(p_callable.is_null(), "Event processor cannot be null.");
+	ERR_FAIL_COND_MSG(p_callable.is_null(), "Sentry: Event processor cannot be null.");
 	_processors.push_back(p_callable);
 }
 
