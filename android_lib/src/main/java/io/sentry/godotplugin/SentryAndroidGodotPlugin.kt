@@ -3,9 +3,13 @@ package io.sentry.godotplugin
 import android.util.Log
 import io.sentry.Attachment
 import io.sentry.Breadcrumb
+import io.sentry.CombinedScopeView
 import io.sentry.Hint
+import io.sentry.IScope
 import io.sentry.ISerializer
 import io.sentry.JsonUnknown
+import io.sentry.Scope
+import io.sentry.ScopeType
 import io.sentry.Sentry
 import io.sentry.SentryAttributes
 import io.sentry.SentryEvent
@@ -67,6 +71,12 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
+    private val scopesByHandle = object : ThreadLocal<MutableMap<Int, IScope>>() {
+        override fun initialValue(): MutableMap<Int, IScope> {
+            return mutableMapOf()
+        }
+    }
+
     private fun getEvent(eventHandle: Int): SentryEvent? {
         val event: SentryEvent? = eventsByHandle.get()?.get(eventHandle)
         if (event == null) {
@@ -97,6 +107,14 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             Log.e(TAG, "Internal Error -- SentryMetricsEvent not found: $metricHandle")
         }
         return metricEvent
+    }
+
+    private fun getScope(scopeHandle: Int): IScope? {
+        val scope: IScope? = scopesByHandle.get()?.get(scopeHandle)
+        if (scope == null) {
+            Log.e(TAG, "Internal Error -- Scope not found: $scopeHandle")
+        }
+        return scope
     }
 
     private fun registerEvent(event: SentryEvent): Int {
@@ -159,6 +177,21 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         return handle
     }
 
+    private fun registerScope(scope: IScope): Int {
+        val scopesMap = scopesByHandle.get() ?: run {
+            Log.e(TAG, "Internal Error -- scopesByHandle is null")
+            return 0
+        }
+
+        var handle = Random.nextInt()
+        while (handle == 0 || scopesMap.containsKey(handle)) {
+            handle = Random.nextInt()
+        }
+
+        scopesMap[handle] = scope
+        return handle
+    }
+
     override fun getPluginName(): String {
         return "SentryAndroidGodotPlugin"
     }
@@ -204,6 +237,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.isAttachAnrThreadDump = attachAnrThreadDump
                 options.shutdownTimeoutMillis = shutdownTimeoutMs
                 options.isTombstoneEnabled = true
+                // Android top-level API writes to current scope by default.
+                // Re-route it to global scope so Sentry.setTag/setUser/addBreadcrumb and the automatic integration
+                // breadcrumbs land on the process-wide, native-synced global scope. Our layer owns the current slot for
+                // local (with_scope) data, and captures merge global + local.
+                options.defaultScopeType = ScopeType.GLOBAL
                 options.beforeSend =
                     SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
                         Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
@@ -426,12 +464,22 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun captureEvent(eventHandle: Int): String {
+    fun captureEvent(eventHandle: Int, scopeHandle: Int): String {
         val event: SentryEvent = getEvent(eventHandle) ?: run {
             Log.e(TAG, "Failed to capture event: $eventHandle")
             return ""
         }
-        val id = Sentry.captureEvent(event)
+        val local: IScope? = scopesByHandle.get()?.get(scopeHandle)
+        val id = if (local == null) {
+            Sentry.captureEvent(event)
+        } else {
+            // Combine our own current scope with the global and isolation scopes.
+            // The SDK current scope is intentionally skipped because we route top-level writes
+            // to the global scope during init.
+            val scopes = Sentry.getCurrentScopes()
+            val combined = CombinedScopeView(scopes.globalScope, scopes.isolationScope, local)
+            combined.client.captureEvent(event, combined)
+        }
         return id.toString()
     }
 
@@ -776,6 +824,78 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun breadcrumbGetTimestamp(handle: Int): Long {
         val crumb = getBreadcrumb(handle) ?: return 0
         return crumb.timestamp.toMicros()
+    }
+
+    @UsedByGodot
+    fun createScope(): Int {
+        return registerScope(Scope(Sentry.getCurrentScopes().options))
+    }
+
+    @UsedByGodot
+    fun cloneScope(handle: Int): Int {
+        val scope = getScope(handle) ?: return 0
+        return registerScope(scope.clone())
+    }
+
+    @UsedByGodot
+    fun releaseScope(handle: Int) {
+        scopesByHandle.get()?.remove(handle)
+    }
+
+    @UsedByGodot
+    fun scopeSetContext(handle: Int, key: String, value: Dictionary) {
+        getScope(handle)?.setContexts(key, value)
+    }
+
+    @UsedByGodot
+    fun scopeSetTag(handle: Int, key: String, value: String) {
+        getScope(handle)?.setTag(key, value)
+    }
+
+    @UsedByGodot
+    fun scopeSetUser(handle: Int, id: String, userName: String, email: String, ipAddress: String) {
+        val scope = getScope(handle) ?: return
+        val user = User()
+        if (id.isNotEmpty()) {
+            user.id = id
+        }
+        if (userName.isNotEmpty()) {
+            user.username = userName
+        }
+        if (email.isNotEmpty()) {
+            user.email = email
+        }
+        if (ipAddress.isNotEmpty()) {
+            user.ipAddress = ipAddress
+        }
+        scope.user = user
+    }
+
+    @UsedByGodot
+    fun scopeRemoveUser(handle: Int) {
+        getScope(handle)?.user = null
+    }
+
+    @UsedByGodot
+    fun scopeSetLevel(handle: Int, level: Int) {
+        getScope(handle)?.level = level.toSentryLevel()
+    }
+
+    @UsedByGodot
+    fun scopeSetFingerprint(handle: Int, fingerprint: Array<String>) {
+        getScope(handle)?.fingerprint = fingerprint.toList()
+    }
+
+    @UsedByGodot
+    fun scopeAddBreadcrumb(scopeHandle: Int, crumbHandle: Int) {
+        val scope = getScope(scopeHandle) ?: return
+        val crumb = getBreadcrumb(crumbHandle) ?: return
+        scope.addBreadcrumb(crumb)
+    }
+
+    @UsedByGodot
+    fun scopeClear(handle: Int) {
+        getScope(handle)?.clear()
     }
 
     @UsedByGodot

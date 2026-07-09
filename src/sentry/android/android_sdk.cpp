@@ -208,8 +208,10 @@ String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<Sent
 	ERR_FAIL_COND_V(p_event.is_null(), String());
 	Ref<AndroidEvent> android_event = p_event;
 	ERR_FAIL_COND_V(android_event.is_null(), String());
-	int32_t handle = android_event->get_handle();
-	android_plugin->call(ANDROID_SN(captureEvent), handle);
+	AndroidScope *android_scope = p_scope.is_valid() ? static_cast<AndroidScope *>(p_scope->get_implementation()) : nullptr;
+	android_plugin->call(ANDROID_SN(captureEvent),
+			android_event->get_handle(),
+			android_scope ? android_scope->get_handle() : 0);
 	return android_event->get_id();
 }
 
@@ -306,7 +308,10 @@ void AndroidSDK::remove_attribute(const String &p_name) {
 }
 
 SentryScopeImpl *AndroidSDK::create_scope() {
-	return memnew(AndroidScope);
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL_V(android_plugin, memnew(AndroidScope()));
+	int32_t handle = android_plugin->call(ANDROID_SN(createScope));
+	return memnew(AndroidScope(android_plugin, handle));
 }
 
 void AndroidSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

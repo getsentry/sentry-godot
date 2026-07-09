@@ -595,9 +595,10 @@ SentrySDK::SentrySDK() :
 }
 
 SentrySDK::~SentrySDK() {
-	internal_sdk.reset();
-
+	// Release scopes before the internal SDK, as scopes may depend on SDK-owned resources.
 	current_scopes.clear();
+
+	internal_sdk.reset();
 
 	singleton = nullptr;
 

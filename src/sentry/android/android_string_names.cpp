@@ -87,6 +87,19 @@ AndroidStringNames::AndroidStringNames() {
 	breadcrumbSetData = StringName("breadcrumbSetData");
 	breadcrumbGetTimestamp = StringName("breadcrumbGetTimestamp");
 
+	// Scopes.
+	createScope = StringName("createScope");
+	releaseScope = StringName("releaseScope");
+	cloneScope = StringName("cloneScope");
+	scopeSetContext = StringName("scopeSetContext");
+	scopeSetTag = StringName("scopeSetTag");
+	scopeSetUser = StringName("scopeSetUser");
+	scopeRemoveUser = StringName("scopeRemoveUser");
+	scopeSetLevel = StringName("scopeSetLevel");
+	scopeSetFingerprint = StringName("scopeSetFingerprint");
+	scopeAddBreadcrumb = StringName("scopeAddBreadcrumb");
+	scopeClear = StringName("scopeClear");
+
 	// Logs.
 	releaseLog = StringName("releaseLog");
 	logSetLevel = StringName("logSetLevel");
