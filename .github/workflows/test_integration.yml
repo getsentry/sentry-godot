@@ -207,5 +207,6 @@ jobs:
           SAUCE_REGION: us-west-1
           SAUCE_DEVICE_NAME: ${{ matrix.saucelabs-device }}
           SAUCE_SESSION_NAME: Godot ${{matrix.test-platform}} E2E Tests
+          SAUCE_LOGCAT_FILTER: godot:V Godot:V sentry-godot:V sentry-native:V Sentry:V *:S
           TEST_SCRIPT: ${{ matrix.test-script || 'tests/integration/Integration.Tests.ps1' }}
         run: Invoke-Pester -Script "$env:TEST_SCRIPT"
