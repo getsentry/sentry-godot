@@ -95,7 +95,7 @@ void register_runtime_classes() {
 	GDREGISTER_ABSTRACT_CLASS(SentryBreadcrumb);
 	GDREGISTER_ABSTRACT_CLASS(SentryLog);
 	GDREGISTER_ABSTRACT_CLASS(SentryMetric);
-	GDREGISTER_ABSTRACT_CLASS(SentryScope);
+	GDREGISTER_CLASS(SentryScope);
 	GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
