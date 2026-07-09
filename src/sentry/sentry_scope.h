@@ -20,7 +20,7 @@ class SentryScope : public RefCounted {
 private:
 	SentryScopeImpl *_impl;
 
-	// NOTE: Event processors should survive clear().
+	// NOTE: Event processors MUST persist across clear().
 	Vector<Callable> _processors;
 
 protected:

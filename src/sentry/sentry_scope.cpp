@@ -39,7 +39,7 @@ void SentryScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 }
 
 void SentryScope::clear() {
-	// Event processors should persist across clear().
+	// Event processors MUST persist across clear().
 	_impl->clear();
 }
 
