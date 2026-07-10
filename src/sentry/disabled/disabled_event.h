@@ -16,8 +16,6 @@ private:
 	String release;
 	String dist;
 	String environment;
-	Ref<SentryUser> user;
-	PackedStringArray fingerprint;
 
 protected:
 	static void _bind_methods() {}
@@ -52,9 +50,9 @@ public:
 	virtual void remove_tag(const String &p_key) override {}
 	virtual String get_tag(const String &p_key) override { return ""; }
 
-	virtual void set_user(const Ref<SentryUser> &p_user) override { user = p_user; }
+	virtual void set_user(const Ref<SentryUser> &p_user) override {}
 
-	virtual void set_fingerprint(const PackedStringArray &p_fingerprint) override { fingerprint = p_fingerprint; }
+	virtual void set_fingerprint(const PackedStringArray &p_fingerprint) override {}
 
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override {}
 	virtual void merge_context(const String &p_key, const Dictionary &p_value) override {}
