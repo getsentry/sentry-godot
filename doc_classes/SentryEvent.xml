@@ -43,6 +43,15 @@
 				Removes the tag with the specified [param key].
 			</description>
 		</method>
+		<method name="set_context">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<param index="1" name="value" type="Dictionary" />
+			<description>
+				Sets a context with the specified [param key] and [param value]. The [param value] should be a dictionary with string keys and can have multiple levels of nesting.
+				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/context/]Context documentation[/url].
+			</description>
+		</method>
 		<method name="set_exception_value">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -51,12 +60,27 @@
 				Sets the value of the exception at the specified [param index].
 			</description>
 		</method>
+		<method name="set_fingerprint">
+			<return type="void" />
+			<param index="0" name="fingerprint" type="PackedStringArray" />
+			<description>
+				Overrides the grouping fingerprint for this event. Sentry uses the fingerprint to group similar events into a single issue. Pass an empty array to clear the fingerprint and restore the default grouping.
+				To learn more, visit [url=https://docs.sentry.io/concepts/data-management/event-grouping/]Issue Grouping documentation[/url].
+			</description>
+		</method>
 		<method name="set_tag">
 			<return type="void" />
 			<param index="0" name="key" type="String" />
 			<param index="1" name="value" type="String" />
 			<description>
 				Sets a tag with the specified [param key] to the given [param value].
+			</description>
+		</method>
+		<method name="set_user">
+			<return type="void" />
+			<param index="0" name="user" type="SentryUser" />
+			<description>
+				Assigns user data. See [SentryUser].
 			</description>
 		</method>
 		<method name="to_json" qualifiers="const">
