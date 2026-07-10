@@ -179,7 +179,6 @@ func test_event_json_with_event_context() -> void:
 		},
 	})
 
-	# Inspect the event object directly; on capture, scope processing merges extra contexts into it.
 	var json := event.to_json()
 
 	assert_json(json).describe("Event contains the context set via set_context()") \
@@ -238,7 +237,6 @@ func test_event_json_with_event_user() -> void:
 	var event := SentrySDK.create_event()
 	event.set_user(user)
 
-	# Inspect the event object directly; on capture, the active scope's user would override this one.
 	var json := event.to_json()
 
 	assert_json(json).describe("Event contains the user data set via set_user()") \

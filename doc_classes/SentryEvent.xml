@@ -80,7 +80,7 @@
 			<return type="void" />
 			<param index="0" name="user" type="SentryUser" />
 			<description>
-				Assigns user data. See [SentryUser].
+				Assigns user data. See [SentryUser]. Pass [code]null[/code] to remove user data from the event.
 			</description>
 		</method>
 		<method name="to_json" qualifiers="const">
