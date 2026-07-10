@@ -49,17 +49,19 @@ void NativeScope::clear() {
 }
 
 SentryScopeImpl *NativeScope::clone() const {
-	// TODO: return sentry_scope_clone(_scope);
-	return memnew(NativeScope);
+	return memnew(NativeScope(sentry_scope_clone(_scope)));
 }
 
 NativeScope::NativeScope() {
-	// TODO: _scope = sentry_scope_new();
-	_scope = sentry_local_scope_new();
+	_scope = sentry_scope_new();
+}
+
+NativeScope::NativeScope(sentry_scope_t *_scope) :
+		_scope(_scope) {
 }
 
 NativeScope::~NativeScope() {
-	// TODO: sentry_scope_free(_scope);
+	sentry_scope_free(_scope);
 }
 
 } // namespace sentry::native
