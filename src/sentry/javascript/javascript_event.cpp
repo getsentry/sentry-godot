@@ -212,6 +212,7 @@ void JavaScriptEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
 }
 
 void JavaScriptEvent::set_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	ERR_FAIL_COND(!js_obj);
 	JSObjectPtr all_contexts_jso = js_obj->get_or_create_object_property("contexts");
 	if (all_contexts_jso) {
