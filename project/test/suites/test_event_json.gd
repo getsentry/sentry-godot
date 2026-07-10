@@ -167,6 +167,105 @@ func test_event_json_with_global_tags() -> void:
 		.verify()
 
 
+## SentryEvent.set_context() should attach the context to the event object.
+func test_event_json_with_event_context() -> void:
+	var event := SentrySDK.create_event()
+	event.set_context("character", {
+		"name": "Mighty Fighter",
+		"age": 19,
+		"resistances": {
+			"fire": true,
+			"cold": false,
+		},
+	})
+
+	var json := event.to_json()
+
+	assert_json(json).describe("Event contains the context set via set_context()") \
+		.at("/contexts/character") \
+		.is_object() \
+		.must_contain("name", "Mighty Fighter") \
+		.must_contain("age", 19) \
+		.verify()
+
+	assert_json(json).describe("Nested context values are preserved") \
+		.at("/contexts/character/resistances") \
+		.is_object() \
+		.must_contain("fire", true) \
+		.must_contain("cold", false) \
+		.verify()
+
+
+## SentryEvent.set_fingerprint() should set the grouping fingerprint on the event.
+func test_event_json_with_event_fingerprint() -> void:
+	var event := SentrySDK.create_event()
+	event.set_fingerprint(PackedStringArray(["my-grouping", "custom-key"]))
+
+	var json := event.to_json()
+
+	assert_json(json).describe("Fingerprint is stored as an ordered array") \
+		.at("/fingerprint") \
+		.is_array() \
+		.has_size(2) \
+		.must_contain("/0", "my-grouping") \
+		.must_contain("/1", "custom-key") \
+		.verify()
+
+
+## SentryEvent.set_fingerprint() with an empty array should clear the fingerprint.
+func test_event_fingerprint_cleared_with_empty_array() -> void:
+	var event := SentrySDK.create_event()
+	event.set_fingerprint(PackedStringArray(["temporary"]))
+	event.set_fingerprint(PackedStringArray())
+
+	var json := event.to_json()
+
+	assert_json(json).describe("Fingerprint is removed when cleared") \
+		.at("/") \
+		.must_not_contain("fingerprint") \
+		.verify()
+
+
+## SentryEvent.set_user() should attach user data to the event object.
+func test_event_json_with_event_user() -> void:
+	var user := SentryUser.new()
+	user.id = "player_12345"
+	user.username = "TestPlayer"
+	user.email = "testplayer@game.com"
+	user.ip_address = "{{auto}}"
+
+	var event := SentrySDK.create_event()
+	event.set_user(user)
+
+	var json := event.to_json()
+
+	assert_json(json).describe("Event contains the user data set via set_user()") \
+		.at("/user") \
+		.is_object() \
+		.must_contain("id", "player_12345") \
+		.must_contain("username", "TestPlayer") \
+		.must_contain("email", "testplayer@game.com") \
+		.must_contain("ip_address", "{{auto}}") \
+		.verify()
+
+
+## SentryEvent.set_user() with null should remove user data from the event.
+func test_event_user_removed_with_null() -> void:
+	var user := SentryUser.new()
+	user.id = "player_12345"
+
+	var event := SentrySDK.create_event()
+	event.set_user(user)
+	event.set_user(null)
+
+	var json := event.to_json()
+
+	assert_json(json).describe("User data is removed when set to null") \
+		.at("/") \
+		.must_not_contain("user") \
+		.verify()
+
+
 func test_event_json_attributes_with_utf8_encoding() -> void:
 	var event := SentrySDK.create_event()
 	event.message = "Hello 世界! 👋"

@@ -281,6 +281,26 @@ int32_t object_merge_properties_from_json(int32_t p_object_id, const char *p_jso
 	}, p_object_id, p_json);
 }
 
+// Parses a value from a JSON string and assigns it to an object property, returning 0 on success or negative number on error.
+int32_t object_set_property_from_json(int32_t p_object_id, const char *p_property, const char *p_json) {
+	return MAIN_THREAD_EM_ASM_INT({
+		try {
+			const bridge = window.SentryBridge;
+			const obj = bridge.getObject($0);
+			if (obj === null || obj === undefined) {
+				return -1;
+			}
+			const prop = UTF8ToString($1);
+			const json = UTF8ToString($2);
+			obj[prop] = JSON.parse(json);
+		} catch (e) {
+			console.error("Sentry JS interop: object_set_property_from_json() failed:", e);
+			return -2;
+		}
+		return 0;
+	}, p_object_id, p_property, p_json);
+}
+
 // Parses object from JSON string and adds it to an array, returning 0 on success or negative number on error.
 int32_t object_push_element_from_json(int32_t p_object_id, const char *p_json) {
 	return MAIN_THREAD_EM_ASM_INT({
@@ -573,6 +593,13 @@ void JSObject::merge_properties_from_json(const char *p_json) {
 	int32_t result = em_js::object_merge_properties_from_json(id, p_json);
 	if (result < 0) {
 		sentry::logging::print_error("JS interop: Failed merging properties from JSON.");
+	}
+}
+
+void JSObject::set_property_from_json(const char *p_property, const char *p_json) {
+	int32_t result = em_js::object_set_property_from_json(id, p_property, p_json);
+	if (result < 0) {
+		sentry::logging::print_error("JS interop: Failed setting \"", p_property, "\" property from JSON.");
 	}
 }
 

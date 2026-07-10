@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add `set_context()`, `set_user()`, and `set_fingerprint()` to the `SentryEvent` API ([#808](https://github.com/getsentry/sentry-godot/pull/808))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.19.0 to v9.21.0 ([#795](https://github.com/getsentry/sentry-godot/pull/795), [#801](https://github.com/getsentry/sentry-godot/pull/801), [#806](https://github.com/getsentry/sentry-godot/pull/806))

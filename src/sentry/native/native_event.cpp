@@ -175,6 +175,50 @@ String NativeEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void NativeEvent::set_user(const Ref<SentryUser> &p_user) {
+	if (p_user.is_null()) {
+		sentry_value_remove_by_key(native_event, "user");
+		return;
+	}
+
+	sentry_value_t user_data = sentry_value_new_object();
+	if (!p_user->get_id().is_empty()) {
+		sentry_value_set_by_key(user_data, "id",
+				sentry_value_new_string(p_user->get_id().utf8()));
+	}
+	if (!p_user->get_username().is_empty()) {
+		sentry_value_set_by_key(user_data, "username",
+				sentry_value_new_string(p_user->get_username().utf8()));
+	}
+	if (!p_user->get_email().is_empty()) {
+		sentry_value_set_by_key(user_data, "email",
+				sentry_value_new_string(p_user->get_email().utf8()));
+	}
+	if (!p_user->get_ip_address().is_empty()) {
+		sentry_value_set_by_key(user_data, "ip_address",
+				sentry_value_new_string(p_user->get_ip_address().utf8()));
+	}
+	sentry_value_set_by_key(native_event, "user", user_data);
+}
+
+void NativeEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
+	if (p_fingerprint.is_empty()) {
+		sentry_value_remove_by_key(native_event, "fingerprint");
+	} else {
+		sentry_value_set_by_key(native_event, "fingerprint", sentry::native::strings_to_sentry_list(p_fingerprint));
+	}
+}
+
+void NativeEvent::set_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
+	sentry_value_t contexts = sentry_value_get_by_key(native_event, "contexts");
+	if (sentry_value_is_null(contexts)) {
+		contexts = sentry_value_new_object();
+		sentry_value_set_by_key(native_event, "contexts", contexts);
+	}
+	sentry_value_set_by_key(contexts, p_key.utf8(), sentry::native::variant_to_sentry_value(p_value));
+}
+
 void NativeEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
 	sentry_event_merge_context(native_event, p_key.utf8(), p_value);

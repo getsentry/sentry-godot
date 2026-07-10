@@ -159,6 +159,42 @@ String CocoaEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void CocoaEvent::set_user(const Ref<SentryUser> &p_user) {
+	ERR_FAIL_NULL(cocoa_event);
+
+	if (p_user.is_null()) {
+		cocoa_event.user = nil;
+		return;
+	}
+
+	SentryObjCUser *user = [[SentryObjCUser alloc] init];
+	user.userId = string_to_objc_or_nil_if_empty(p_user->get_id());
+	user.username = string_to_objc_or_nil_if_empty(p_user->get_username());
+	user.email = string_to_objc_or_nil_if_empty(p_user->get_email());
+	user.ipAddress = string_to_objc_or_nil_if_empty(p_user->get_ip_address());
+	cocoa_event.user = user;
+}
+
+void CocoaEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
+	ERR_FAIL_NULL(cocoa_event);
+
+	if (p_fingerprint.is_empty()) {
+		cocoa_event.fingerprint = nil;
+		return;
+	}
+
+	cocoa_event.fingerprint = string_array_to_objc(p_fingerprint);
+}
+
+void CocoaEvent::set_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
+	ERR_FAIL_NULL(cocoa_event);
+
+	NSMutableDictionary *mut_contexts = [cocoa_event.context mutableCopy] ?: [NSMutableDictionary dictionary];
+	mut_contexts[string_to_objc(p_key)] = dictionary_to_objc(p_value);
+	cocoa_event.context = mut_contexts;
+}
+
 void CocoaEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
 
