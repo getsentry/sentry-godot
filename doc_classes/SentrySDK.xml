@@ -157,7 +157,7 @@
 			<param index="0" name="key" type="String" />
 			<param index="1" name="value" type="Dictionary" />
 			<description>
-				Adds a custom context with the specified [param key] and [param value]. The [param value] should be a dictionary with string keys and can have multiple levels of nesting.
+				Sets a context with the specified [param key] and [param value]. The [param value] should be a dictionary with string keys and can have multiple levels of nesting.
 				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/context/]Context documentation[/url].
 			</description>
 		</method>

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add `set_context()`, `set_user()`, and `set_fingerprint()` to the `SentryEvent` API ([#808](https://github.com/getsentry/sentry-godot/pull/808))
+
 ### Improvements
 
 - Harden event processing during application shutdown ([#803](https://github.com/getsentry/sentry-godot/pull/803))
@@ -13,15 +17,18 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v9.19.0 to v9.20.0 ([#795](https://github.com/getsentry/sentry-godot/pull/795), [#801](https://github.com/getsentry/sentry-godot/pull/801))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9200)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.19.0...9.20.0)
-- Bump Sentry Android from v8.46.0 to v8.47.0 ([#798](https://github.com/getsentry/sentry-godot/pull/798))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8470)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.46.0...8.47.0)
-- Bump Sentry JavaScript from v10.62.0 to v10.63.0 ([#794](https://github.com/getsentry/sentry-godot/pull/794))
-  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10630)
-  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.62.0...10.63.0)
+- Bump Cocoa SDK from v9.19.0 to v9.21.0 ([#795](https://github.com/getsentry/sentry-godot/pull/795), [#801](https://github.com/getsentry/sentry-godot/pull/801), [#806](https://github.com/getsentry/sentry-godot/pull/806))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9210)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.19.0...9.21.0)
+- Bump Sentry Android from v8.46.0 to v8.48.0 ([#798](https://github.com/getsentry/sentry-godot/pull/798), [#805](https://github.com/getsentry/sentry-godot/pull/805))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8480)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.46.0...8.48.0)
+- Bump Sentry JavaScript from v10.62.0 to v10.64.0 ([#794](https://github.com/getsentry/sentry-godot/pull/794), [#802](https://github.com/getsentry/sentry-godot/pull/802))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10640)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.62.0...10.64.0)
+- Bump Native SDK from v0.15.2 to v0.15.3 ([#800](https://github.com/getsentry/sentry-godot/pull/800))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0153)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.15.2...0.15.3)
 
 ## 2.0.1
 

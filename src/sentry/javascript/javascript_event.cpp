@@ -184,6 +184,42 @@ String JavaScriptEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void JavaScriptEvent::set_user(const Ref<SentryUser> &p_user) {
+	ERR_FAIL_COND(!js_obj);
+
+	if (p_user.is_null()) {
+		js_obj->delete_property("user");
+		return;
+	}
+
+	js_bridge()->call("eventSetUser",
+			js_obj,
+			p_user->get_id().utf8(),
+			p_user->get_username().utf8(),
+			p_user->get_email().utf8(),
+			p_user->get_ip_address().utf8());
+}
+
+void JavaScriptEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
+	ERR_FAIL_COND(!js_obj);
+
+	if (p_fingerprint.is_empty()) {
+		js_obj->delete_property("fingerprint");
+		return;
+	}
+
+	js_obj->set_property_from_json("fingerprint", JSON::stringify(p_fingerprint).utf8());
+}
+
+void JavaScriptEvent::set_context(const String &p_key, const Dictionary &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
+	ERR_FAIL_COND(!js_obj);
+	JSObjectPtr all_contexts_jso = js_obj->get_or_create_object_property("contexts");
+	if (all_contexts_jso) {
+		all_contexts_jso->set_property_from_json(p_key.utf8(), JSON::stringify(p_value).utf8());
+	}
+}
+
 void JavaScriptEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(!js_obj);
 	JSObjectPtr all_contexts_jso = js_obj->get_or_create_object_property("contexts");

@@ -26,6 +26,9 @@ void SentryEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &SentryEvent::set_tag);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &SentryEvent::remove_tag);
 	ClassDB::bind_method(D_METHOD("get_tag", "key"), &SentryEvent::get_tag);
+	ClassDB::bind_method(D_METHOD("set_user", "user"), &SentryEvent::set_user);
+	ClassDB::bind_method(D_METHOD("set_fingerprint", "fingerprint"), &SentryEvent::set_fingerprint);
+	ClassDB::bind_method(D_METHOD("set_context", "key", "value"), &SentryEvent::set_context);
 	ClassDB::bind_method(D_METHOD("is_crash"), &SentryEvent::is_crash);
 	ClassDB::bind_method(D_METHOD("to_json"), &SentryEvent::to_json);
 
