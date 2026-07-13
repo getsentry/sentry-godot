@@ -28,7 +28,7 @@ public:
 	virtual Ref<SentryBreadcrumb> create_breadcrumb() override;
 	virtual void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) override;
 
-	virtual void log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes = Dictionary()) override;
+	virtual void capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, const String &p_body, const Dictionary &p_attributes = Dictionary()) override;
 
 	virtual String capture_message(const String &p_message, Level p_level = sentry::LEVEL_INFO) override;
 	virtual String get_last_event_id() override;

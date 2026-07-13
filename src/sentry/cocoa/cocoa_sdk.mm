@@ -134,7 +134,7 @@ void CocoaSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	[SentryObjCSDK addBreadcrumb:crumb->get_cocoa_breadcrumb()];
 }
 
-void CocoaSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
+void CocoaSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
 	if (p_body.is_empty()) {
 		return;
 	}

@@ -165,7 +165,7 @@ void JavaScriptSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	js_bridge()->call("addBreadcrumb", crumb->get_js_object());
 }
 
-void JavaScriptSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
+void JavaScriptSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(!js_bridge());
 
 	String attr_value = attributes_to_json(p_attributes);
