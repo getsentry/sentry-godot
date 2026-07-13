@@ -227,7 +227,13 @@ void NativeSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, c
 	if (p_body.is_empty()) {
 		return;
 	}
-	sentry_log(_log_level_to_native(p_level), p_body.utf8(), dictionary_to_attributes(p_attributes));
+
+	ERR_FAIL_COND(p_scope.is_null());
+	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
+	ERR_FAIL_NULL(native_scope);
+
+	sentry_scope_capture_log(native_scope->get_native_scope(), _log_level_to_native(p_level),
+			p_body.utf8(), dictionary_to_attributes(p_attributes));
 }
 
 String NativeSDK::capture_message(const String &p_message, Level p_level) {

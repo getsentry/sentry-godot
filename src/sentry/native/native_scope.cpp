@@ -32,7 +32,7 @@ void NativeScope::set_fingerprint(const PackedStringArray &p_fingerprint) {
 }
 
 void NativeScope::set_attribute(const String &p_name, const Variant &p_value) {
-	// TODO: sentry_scope_set_attribute()
+	sentry_scope_set_attribute(_scope, p_name.utf8(), variant_to_attribute(p_value));
 }
 
 void NativeScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
