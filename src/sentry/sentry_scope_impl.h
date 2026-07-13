@@ -12,6 +12,8 @@ using namespace godot;
 namespace sentry {
 
 // Base class for Sentry scope implementations; see Godot-facing SentryScope.
+// Splitting the implementation from SentryScope avoids a factory method
+// (i.e. SentryScope.create() or SentrySDK.create_scope()).
 // Kept as a pure C++ class instead of a Godot class to avoid ClassDB
 // registration and reduce overhead.
 // Lifetime governed by SentryScope.
