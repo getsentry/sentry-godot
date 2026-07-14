@@ -37,6 +37,34 @@ void _define_setting(const godot::PropertyInfo &p_info, const godot::Variant &p_
 	ProjectSettings::get_singleton()->add_property_info(info);
 }
 
+void _release_callables_recursive(Object *p_object, uint32_t p_depth = 0) {
+	constexpr uint32_t MAX_DEPTH = 4;
+	if (p_object == nullptr || p_depth > MAX_DEPTH) {
+		return;
+	}
+
+	TypedArray<Dictionary> properties = p_object->get_property_list();
+
+	// Clear callables on this object before recursing. Some nested properties can proxy back to their owner.
+	// Clearing the owner's callables first makes those proxy properties read back as invalid/unset,
+	// so we avoid setting them and emitting deprecation warnings.
+	for (int i = 0; i < properties.size(); i++) {
+		Dictionary property = properties[i];
+		StringName name = property["name"];
+		if (int(property["type"]) == Variant::CALLABLE && Callable(p_object->get(name)).is_valid()) {
+			p_object->set(name, Callable());
+		}
+	}
+
+	for (int i = 0; i < properties.size(); i++) {
+		Dictionary property = properties[i];
+		if (int(property["type"]) == Variant::OBJECT) {
+			// Release callables in nested objects such as `experimental` options.
+			_release_callables_recursive(p_object->get(property["name"]), p_depth + 1);
+		}
+	}
+}
+
 } // unnamed namespace
 
 namespace sentry {
@@ -380,6 +408,10 @@ void SentryOptions::add_default_attachment(const Ref<SentryAttachment> &p_attach
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Internal Error: Can't add null default attachment.");
 	ERR_FAIL_COND_MSG(p_attachment->get_path().is_empty(), "Sentry: Internal Error: Default attachments must be file-based (bytes attachments are not allowed).");
 	default_attachments.append(p_attachment);
+}
+
+void SentryOptions::release_callables() {
+	_release_callables_recursive(this);
 }
 
 void SentryOptions::_bind_methods() {

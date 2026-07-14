@@ -445,7 +445,8 @@ void SentrySDK::_auto_initialize() {
 void SentrySDK::_on_engine_shutdown() {
 	close();
 	sentry::dotnet::release_bindings();
-	options.unref();
+	// Workaround for https://github.com/getsentry/sentry-godot/issues/797
+	options->release_callables();
 }
 
 void SentrySDK::prepare_and_auto_initialize() {
