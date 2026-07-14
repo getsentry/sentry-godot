@@ -4,6 +4,9 @@
 
 namespace sentry::engine_lifecycle {
 
+// Starts watching the engine lifecycle. Safe to call early.
+void start_lifecycle_watch();
+
 // Mark Godot engine singletons as safe to access.
 void mark_engine_singletons_as_ready();
 

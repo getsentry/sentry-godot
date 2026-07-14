@@ -21,8 +21,8 @@ std::atomic<bool> _singletons_ready{ false };
 // Shutdown subscribers, notified while script runtime is still alive.
 LocalVector<sentry::util::Callback<>> _shutdown_callbacks;
 
-// Whether the scene tree watcher has already been created.
-bool _watcher_added = false;
+// Whether the lifecycle watch has already been started.
+bool _watch_started = false;
 
 void _scene_tree_shutting_down() {
 	for (const sentry::util::Callback<> &callback : _shutdown_callbacks) {
@@ -30,28 +30,31 @@ void _scene_tree_shutting_down() {
 	}
 }
 
-void _initialize_scene_tree_watcher() {
-	if (_watcher_added) {
-		return;
-	}
+void _add_scene_tree_watcher() {
 	SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
 	ERR_FAIL_NULL_MSG(tree, "Sentry: Failed to initialize engine lifecycle tracking - SceneTree is unavailable.");
 	SentrySceneTreeWatcher *watcher = memnew(SentrySceneTreeWatcher);
 	watcher->set_shutdown_callback(sentry::util::Callback<>::bind<&_scene_tree_shutting_down>());
 	// Add at the front so it is torn down after other scene tree nodes.
-	// Deferred because adding directly can fail while the root is busy
-	// (e.g, when init() is called from a node's _ready()).
-	tree->get_root()->call_deferred("add_child", watcher, false, Node::INTERNAL_MODE_FRONT);
-	_watcher_added = true;
+	tree->get_root()->add_child(watcher, false, Node::INTERNAL_MODE_FRONT);
+}
+
+void _engine_ready() {
+	_singletons_ready.store(true, std::memory_order_release);
+	_add_scene_tree_watcher();
 }
 
 } // unnamed namespace
 
 namespace sentry::engine_lifecycle {
 
-void mark_engine_singletons_as_ready() {
-	_singletons_ready.store(true, std::memory_order_release);
-	_initialize_scene_tree_watcher();
+void start_lifecycle_watch() {
+	if (_watch_started) {
+		return;
+	}
+	// Deferred: the engine isn't fully up yet.
+	callable_mp_static(&_engine_ready).call_deferred();
+	_watch_started = true;
 }
 
 bool are_engine_singletons_ready() {
