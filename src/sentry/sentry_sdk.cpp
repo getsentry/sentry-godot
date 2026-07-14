@@ -7,7 +7,7 @@
 #include "sentry/dotnet/csharp_interop.h"
 #include "sentry/dotnet/dotnet_before_send_processor.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
-#include "sentry/godot_singletons.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
@@ -133,6 +133,8 @@ void SentrySDK::destroy_singleton() {
 }
 
 void SentrySDK::init(const Callable &p_configuration_callback) {
+	ERR_FAIL_COND_MSG(OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id(),
+			"Sentry: init() must be called from the main thread.");
 	ERR_FAIL_COND_MSG(internal_sdk->is_enabled(), "Attempted to initialize SentrySDK that is already initialized");
 
 #if SDK_ANDROID
@@ -209,6 +211,9 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 }
 
 void SentrySDK::close() {
+	ERR_FAIL_COND_MSG(OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id(),
+			"Sentry: close() must be called from the main thread.");
+
 	if (internal_sdk->is_enabled()) {
 		sentry::logging::print_debug("Shutting down Sentry SDK");
 
@@ -329,7 +334,7 @@ void SentrySDK::_init_contexts() {
 	sentry::logging::print_debug("initializing contexts");
 
 	// Mark Godot engine singletons as safe to access.
-	sentry::godot_singletons::mark_as_ready();
+	sentry::engine_lifecycle::mark_engine_singletons_as_ready();
 
 #if defined(SDK_NATIVE) || defined(SDK_JAVASCRIPT)
 	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
@@ -437,6 +442,12 @@ void SentrySDK::_auto_initialize() {
 	is_auto_initializing = false;
 }
 
+void SentrySDK::_on_engine_shutdown() {
+	close();
+	sentry::dotnet::release_bindings();
+	options.unref();
+}
+
 void SentrySDK::prepare_and_auto_initialize() {
 	// Set library path env var before .NET runtime starts.
 	// C# reads this to register DllImportResolver for interop.
@@ -499,10 +510,8 @@ void SentrySDK::prepare_and_auto_initialize() {
 void SentrySDK::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PREDELETE: {
-			if (godot_logger.is_valid()) {
-				OS::get_singleton()->remove_logger(godot_logger);
-				godot_logger.unref();
-			}
+			sentry::engine_lifecycle::remove_shutdown_callback(
+					sentry::util::Callback<>::bind<&SentrySDK::_on_engine_shutdown>(this));
 		} break;
 	}
 }
@@ -551,6 +560,9 @@ SentrySDK::SentrySDK() {
 	metrics = memnew(SentryMetrics);
 	bad_code = memnew(SentryBadCode);
 	internal_sdk = std::make_unique<DisabledSDK>();
+
+	sentry::engine_lifecycle::add_shutdown_callback(
+			sentry::util::Callback<>::bind<&SentrySDK::_on_engine_shutdown>(this));
 }
 
 SentrySDK::~SentrySDK() {

@@ -1,7 +1,7 @@
 #include "screenshot_processor.h"
 
 #include "sentry/common_defs.h"
-#include "sentry/godot_singletons.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/logging/print.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/util/screenshot.h" // TODO: incorporate
@@ -39,7 +39,7 @@ Ref<SentryEvent> ScreenshotProcessor::process_event(const Ref<SentryEvent> &p_ev
 		return p_event;
 	}
 
-	if (!sentry::godot_singletons::are_ready()) {
+	if (!sentry::engine_lifecycle::are_engine_singletons_ready()) {
 		sentry::logging::print_debug("Skipping screenshot - too early in the app lifecycle");
 		return p_event;
 	}

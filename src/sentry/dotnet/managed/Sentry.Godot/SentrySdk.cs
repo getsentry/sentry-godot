@@ -46,6 +46,11 @@ public static partial class SentrySdk
     /// </summary>
     public static void Init(Action<SentryGodotOptions>? configureOptions = null)
     {
+        if (!NativeBridge.IsMainThread())
+        {
+            GodotLog.Error("Sentry: Init() must be called from the main thread.");
+            return;
+        }
         if (_initializing)
         {
             return;
@@ -159,6 +164,11 @@ public static partial class SentrySdk
     /// </summary>
     public static void Close()
     {
+        if (!NativeBridge.IsMainThread())
+        {
+            GodotLog.Error("Sentry: Close() must be called from the main thread.");
+            return;
+        }
         if (_closing)
         {
             return;
