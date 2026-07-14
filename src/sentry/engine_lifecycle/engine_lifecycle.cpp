@@ -42,11 +42,6 @@ void _add_scene_tree_watcher() {
 	root->add_child(watcher, false, Node::INTERNAL_MODE_FRONT);
 }
 
-void _engine_ready() {
-	_singletons_ready.store(true, std::memory_order_release);
-	_add_scene_tree_watcher();
-}
-
 } // unnamed namespace
 
 namespace sentry::engine_lifecycle {
@@ -56,8 +51,12 @@ void start_lifecycle_watch() {
 		return;
 	}
 	// Deferred: the engine isn't fully up yet.
-	callable_mp_static(&_engine_ready).call_deferred();
+	callable_mp_static(&_add_scene_tree_watcher).call_deferred();
 	_watch_started = true;
+}
+
+void mark_engine_singletons_as_ready() {
+	_singletons_ready.store(true, std::memory_order_release);
 }
 
 bool are_engine_singletons_ready() {
