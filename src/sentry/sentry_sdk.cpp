@@ -511,7 +511,7 @@ void SentrySDK::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PREDELETE: {
 			sentry::engine_lifecycle::remove_shutdown_callback(
-					sentry::util::Callback<>::bind<&SentrySDK::_on_engine_shutdown>(this));
+					callable_mp(this, &SentrySDK::_on_engine_shutdown));
 		} break;
 	}
 }
@@ -562,7 +562,7 @@ SentrySDK::SentrySDK() {
 	internal_sdk = std::make_unique<DisabledSDK>();
 
 	sentry::engine_lifecycle::add_shutdown_callback(
-			sentry::util::Callback<>::bind<&SentrySDK::_on_engine_shutdown>(this));
+			callable_mp(this, &SentrySDK::_on_engine_shutdown));
 }
 
 SentrySDK::~SentrySDK() {
