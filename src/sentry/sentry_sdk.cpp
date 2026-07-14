@@ -574,10 +574,9 @@ SentrySDK::SentrySDK() {
 }
 
 SentrySDK::~SentrySDK() {
-	// Cleared first: callers guard on the singleton, and the SDK is unusable from here on.
-	singleton = nullptr;
-
 	internal_sdk.reset();
+
+	singleton = nullptr;
 
 	memdelete(logger);
 	logger = nullptr;
