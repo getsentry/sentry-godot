@@ -512,6 +512,11 @@ void SentrySDK::_notification(int p_what) {
 		case NOTIFICATION_PREDELETE: {
 			sentry::engine_lifecycle::remove_shutdown_callback(
 					callable_mp(this, &SentrySDK::_on_engine_shutdown));
+			// Defensive fallback for when close() never ran: the logger must not outlive the SDK.
+			if (godot_logger.is_valid()) {
+				OS::get_singleton()->remove_logger(godot_logger);
+				godot_logger.unref();
+			}
 		} break;
 	}
 }
@@ -566,9 +571,10 @@ SentrySDK::SentrySDK() {
 }
 
 SentrySDK::~SentrySDK() {
-	internal_sdk.reset();
-
+	// Cleared first: callers guard on the singleton, and the SDK is unusable from here on.
 	singleton = nullptr;
+
+	internal_sdk.reset();
 
 	memdelete(logger);
 	logger = nullptr;
