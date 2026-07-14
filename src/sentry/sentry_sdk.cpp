@@ -493,6 +493,9 @@ void SentrySDK::prepare_and_auto_initialize() {
 	// Verify project settings and notify user via errors if there are any issues (deferred).
 	callable_mp_static(_verify_project_settings).call_deferred();
 
+	sentry::engine_lifecycle::add_shutdown_callback(
+			callable_mp(this, &SentrySDK::_on_engine_shutdown));
+
 	sentry::engine_lifecycle::start_lifecycle_watch();
 
 #if defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
@@ -568,9 +571,6 @@ SentrySDK::SentrySDK() {
 	metrics = memnew(SentryMetrics);
 	bad_code = memnew(SentryBadCode);
 	internal_sdk = std::make_unique<DisabledSDK>();
-
-	sentry::engine_lifecycle::add_shutdown_callback(
-			callable_mp(this, &SentrySDK::_on_engine_shutdown));
 }
 
 SentrySDK::~SentrySDK() {
