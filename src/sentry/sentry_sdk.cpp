@@ -512,11 +512,8 @@ void SentrySDK::_notification(int p_what) {
 		case NOTIFICATION_PREDELETE: {
 			sentry::engine_lifecycle::remove_shutdown_callback(
 					callable_mp(this, &SentrySDK::_on_engine_shutdown));
-			// Defensive fallback for when close() never ran: the logger must not outlive the SDK.
-			if (godot_logger.is_valid()) {
-				OS::get_singleton()->remove_logger(godot_logger);
-				godot_logger.unref();
-			}
+			// Fallback in case _on_engine_shutdown() did not run.
+			close();
 		} break;
 	}
 }
