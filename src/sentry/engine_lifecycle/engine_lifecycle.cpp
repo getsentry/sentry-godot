@@ -4,9 +4,7 @@
 #include "sentry/util/callback.h"
 
 #include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/window.hpp>
 #include <godot_cpp/templates/local_vector.hpp>
 
