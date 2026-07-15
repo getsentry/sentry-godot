@@ -24,7 +24,7 @@ func _assign_lambdas_recursive(object: Object, depth: int = 0) -> void:
 
 func test_lambda_callback_does_not_crash_on_exit() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.godot_logger.enabled = false
+		options.godot_logger.enabled = false  # mute logging
 		_assign_lambdas_recursive(options)
 	)
 	assert_bool(SentrySDK.is_enabled()).is_true()
