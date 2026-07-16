@@ -256,24 +256,33 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 void AndroidSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
+	ERR_FAIL_COND(p_scope.is_null());
 
+	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 	android_plugin->call(ANDROID_SN(metricsAddCount),
+			android_scope->get_handle(),
 			p_name, p_value, _sanitize_attributes(p_attributes));
 }
 
 void AndroidSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
+	ERR_FAIL_COND(p_scope.is_null());
 
+	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 	android_plugin->call(ANDROID_SN(metricsAddGauge),
+			android_scope->get_handle(),
 			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
 }
 
 void AndroidSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
+	ERR_FAIL_COND(p_scope.is_null());
 
+	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 	android_plugin->call(ANDROID_SN(metricsAddDistribution),
+			android_scope->get_handle(),
 			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
 }
 
