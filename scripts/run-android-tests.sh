@@ -186,6 +186,7 @@ run_tests() {
             error "Launch attempt failed with code: $launch_err"
         elif [[ "$launch_output" != *"LaunchState: COLD"* ]]; then
             error "Expected COLD launch but got different launch state from output"
+        # `am -W` reports the target activity (GodotApp), not the launcher alias we started.
         elif [[ "$launch_output" != *"Activity: $PACKAGE/$ACTIVITY"* ]]; then
             error "Expected activity '$PACKAGE/$ACTIVITY' but got different activity from launch output"
         else
