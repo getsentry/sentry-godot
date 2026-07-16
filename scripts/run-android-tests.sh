@@ -187,8 +187,8 @@ run_tests() {
             error "Launch attempt failed with code: $launch_err"
         elif [[ "$launch_output" != *"LaunchState: COLD"* ]]; then
             error "Expected COLD launch but got different launch state from output"
-        elif [[ "$launch_output" != *"Activity: $PACKAGE/$MAIN_ACTIVITY"* ]]; then
-            error "Expected activity '$PACKAGE/$MAIN_ACTIVITY' but got different activity from launch output"
+        elif [[ "$launch_output" != *"Activity: $launcher"* && "$launch_output" != *"Activity: $PACKAGE/$MAIN_ACTIVITY"* ]]; then
+            error "Expected activity '$launcher' or '$PACKAGE/$MAIN_ACTIVITY' but got different activity from launch output"
         else
             # Success
             break
