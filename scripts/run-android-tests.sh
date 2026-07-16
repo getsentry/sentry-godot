@@ -13,7 +13,6 @@ EXPORT_PRESET="Android Tests"
 # Launch configuration
 PACKAGE="io.sentry.godot.project"
 ACTIVITY="com.godot.game.GodotApp"
-COMPONENT="$PACKAGE/$ACTIVITY"
 
 # Special exit codes
 EXIT_PROCESS_STILL_RUNNING_AFTER_TESTS=88
@@ -97,7 +96,12 @@ done
 highlight "Exporting project..."
 
 # Export project to "exports/android.apk".
-godot=$(command -v godot || echo "$GODOT")
+# Prefer the GODOT env var over `godot` in PATH.
+if [ -n "$GODOT" ] && [ -x "$GODOT" ]; then
+    godot="$GODOT"
+else
+    godot=$(command -v godot)
+fi
 if [ -z "$godot" ] || [ ! -x "$godot" ]; then
     abort "Godot executable not found. Please ensure 'godot' is in PATH or set GODOT environment variable."
 fi
@@ -139,6 +143,17 @@ if [ "$verbose" = true ]; then
       LOGCAT_FILTERS="$LOGCAT_FILTERS,Sentry"
 fi
 
+# Ask the device which activity to start instead of hardcoding it. Godot 4.5 and 4.6+ have different activities.
+resolve_launch_component() {
+    local resolved
+    resolved=$(adb shell cmd package resolve-activity --brief "$PACKAGE" 2>/dev/null | tail -n 1 | tr -d '\r')
+    if [[ "$resolved" == "$PACKAGE/"* ]]; then
+        echo "$resolved"
+    else
+        echo "$PACKAGE/$ACTIVITY"
+    fi
+}
+
 # Run tests on device
 run_tests() {
     local tests=$1
@@ -158,9 +173,12 @@ run_tests() {
     done
 
     highlight "Launching APK..."
+    local launch_component
+    launch_component=$(resolve_launch_component)
+    msg "Launcher activity: $launch_component"
     for i in $(seq 1 $LAUNCH_RETRIES); do
         # -W: wait to complete, -S: force stop the app before starting activity
-        launch_output=$(adb shell am start -W -S -n $COMPONENT --es arg0 run-tests --es arg1 "$tests" 2>&1)
+        launch_output=$(adb shell am start -W -S -n $launch_component --es arg0 run-tests --es arg1 "$tests" 2>&1)
         launch_err=$?
         printf "%s\n" "$launch_output"
 
@@ -168,8 +186,8 @@ run_tests() {
             error "Launch attempt failed with code: $launch_err"
         elif [[ "$launch_output" != *"LaunchState: COLD"* ]]; then
             error "Expected COLD launch but got different launch state from output"
-        elif [[ "$launch_output" != *"Activity: $COMPONENT"* ]]; then
-            error "Expected activity '$COMPONENT' but got different activity from launch output"
+        elif [[ "$launch_output" != *"Activity: $PACKAGE/$ACTIVITY"* ]]; then
+            error "Expected activity '$PACKAGE/$ACTIVITY' but got different activity from launch output"
         else
             # Success
             break
