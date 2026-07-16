@@ -382,6 +382,13 @@ void SentryOptions::add_default_attachment(const Ref<SentryAttachment> &p_attach
 	default_attachments.append(p_attachment);
 }
 
+void SentryOptions::release_callables() {
+	before_send = Callable();
+	before_send_log = Callable();
+	before_send_metric = Callable();
+	before_capture_screenshot = Callable();
+}
+
 void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "dsn"), set_dsn, get_dsn);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "release"), set_release, get_release);

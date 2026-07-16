@@ -238,6 +238,10 @@ public:
 	_FORCE_INLINE_ bool should_capture_message_breadcrumb() { return godot_logger->get_breadcrumb_mask().has_flag(MASK_MESSAGE); }
 	_FORCE_INLINE_ bool should_capture_message_log() { return enable_logs && godot_logger->get_log_mask().has_flag(MASK_MESSAGE); }
 
+	// Clears every Callable property, dropping user callbacks such as before_send.
+	// Workaround for https://github.com/getsentry/sentry-godot/issues/797
+	void release_callables();
+
 	void add_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	void remove_event_processor(const Ref<SentryEventProcessor> &p_processor);
 	_FORCE_INLINE_ Vector<Ref<SentryEventProcessor>> get_event_processors() { return event_processors; }

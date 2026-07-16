@@ -19,6 +19,10 @@ void init();
 // Calls the .NET close, if available. No-op in standard non-.NET Godot builds.
 void close();
 
+// Drops the native-to-managed function-pointer table.
+// Prevents any native-to-managed calls after this is called.
+void release_bindings();
+
 // Forwards a C# exception error to the .NET layer for capture.
 void handle_logger_error(const String &p_file, const String &p_code);
 

@@ -7,7 +7,7 @@
 #include "sentry/dotnet/csharp_interop.h"
 #include "sentry/dotnet/dotnet_before_send_processor.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
-#include "sentry/godot_singletons.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
@@ -133,6 +133,8 @@ void SentrySDK::destroy_singleton() {
 }
 
 void SentrySDK::init(const Callable &p_configuration_callback) {
+	ERR_FAIL_COND_MSG(OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id(),
+			"Sentry: init() must be called from the main thread.");
 	ERR_FAIL_COND_MSG(internal_sdk->is_enabled(), "Attempted to initialize SentrySDK that is already initialized");
 
 #if SDK_ANDROID
@@ -209,6 +211,9 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 }
 
 void SentrySDK::close() {
+	ERR_FAIL_COND_MSG(OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id(),
+			"Sentry: close() must be called from the main thread.");
+
 	if (internal_sdk->is_enabled()) {
 		sentry::logging::print_debug("Shutting down Sentry SDK");
 
@@ -329,7 +334,7 @@ void SentrySDK::_init_contexts() {
 	sentry::logging::print_debug("initializing contexts");
 
 	// Mark Godot engine singletons as safe to access.
-	sentry::godot_singletons::mark_as_ready();
+	sentry::engine_lifecycle::mark_engine_singletons_as_ready();
 
 #if defined(SDK_NATIVE) || defined(SDK_JAVASCRIPT)
 	internal_sdk->set_context("device", sentry::contexts::make_device_context(runtime_config));
@@ -437,6 +442,13 @@ void SentrySDK::_auto_initialize() {
 	is_auto_initializing = false;
 }
 
+void SentrySDK::_on_engine_shutdown() {
+	close();
+	sentry::dotnet::release_bindings();
+	// Workaround for https://github.com/getsentry/sentry-godot/issues/797
+	options->release_callables();
+}
+
 void SentrySDK::prepare_and_auto_initialize() {
 	// Set library path env var before .NET runtime starts.
 	// C# reads this to register DllImportResolver for interop.
@@ -481,6 +493,11 @@ void SentrySDK::prepare_and_auto_initialize() {
 	// Verify project settings and notify user via errors if there are any issues (deferred).
 	callable_mp_static(_verify_project_settings).call_deferred();
 
+	sentry::engine_lifecycle::add_shutdown_callback(
+			callable_mp(this, &SentrySDK::_on_engine_shutdown));
+
+	sentry::engine_lifecycle::start_lifecycle_watch();
+
 #if defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
 	// Fix crashpad handler executable bit permissions on Unix platforms if the
 	// user extracts the distribution archive without preserving such permissions.
@@ -499,6 +516,9 @@ void SentrySDK::prepare_and_auto_initialize() {
 void SentrySDK::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PREDELETE: {
+			sentry::engine_lifecycle::remove_shutdown_callback(
+					callable_mp(this, &SentrySDK::_on_engine_shutdown));
+			// Fallback in case _on_engine_shutdown() did not run.
 			if (godot_logger.is_valid()) {
 				OS::get_singleton()->remove_logger(godot_logger);
 				godot_logger.unref();

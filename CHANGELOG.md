@@ -6,6 +6,14 @@
 
 - Add `set_context()`, `set_user()`, and `set_fingerprint()` to the `SentryEvent` API ([#808](https://github.com/getsentry/sentry-godot/pull/808))
 
+### Improvements
+
+- Harden shutdown handling to avoid touching Godot state while the engine is tearing down ([#811](https://github.com/getsentry/sentry-godot/pull/811))
+  - The SDK now closes as soon as the engine begins shutting down, before Godot tears down the systems it depends on
+  - Fixed a crash on exit when a `SentryOptions` callback, such as `before_send`, is set to a GDScript lambda
+  - The .NET layer now closes shortly before the .NET scripting runtime is torn down, letting pending .NET events flush and preventing calls into the runtime after shutdown begins
+  - `init()` and `close()` now report an error when called off the main thread, matching the SDK's lifecycle requirement
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.19.0 to v9.22.0 ([#795](https://github.com/getsentry/sentry-godot/pull/795), [#801](https://github.com/getsentry/sentry-godot/pull/801), [#806](https://github.com/getsentry/sentry-godot/pull/806), [#812](https://github.com/getsentry/sentry-godot/pull/812))
