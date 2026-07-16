@@ -89,9 +89,9 @@ public:
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
 	virtual void clear_attachments() override;
 
-	virtual void metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) override;
-	virtual void metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override;
-	virtual void metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override;
+	virtual void metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) override;
+	virtual void metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override;
+	virtual void metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) override;
 
 	virtual void set_attribute(const String &p_name, const Variant &p_value) override;
 	virtual void remove_attribute(const String &p_name) override;

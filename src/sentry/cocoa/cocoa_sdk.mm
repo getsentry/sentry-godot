@@ -294,7 +294,7 @@ void CocoaSDK::clear_attachments() {
 	}];
 }
 
-void CocoaSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
+void CocoaSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
 	NSUInteger value = (NSUInteger)MAX(p_value, (int64_t)0);
 	if (p_attributes.is_empty()) {
 		[[SentryObjCSDK metrics] countWithKey:string_to_objc(p_name) value:value];
@@ -305,7 +305,7 @@ void CocoaSDK::metrics_add_count(const String &p_name, int64_t p_value, const Di
 	}
 }
 
-void CocoaSDK::metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+void CocoaSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	SentryObjCUnit *unit = p_unit.is_empty()
 			? nil
 			: [[SentryObjCUnit alloc] initWithRawValue:string_to_objc(p_unit)];
@@ -321,7 +321,7 @@ void CocoaSDK::metrics_add_gauge(const String &p_name, double p_value, const Str
 	}
 }
 
-void CocoaSDK::metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+void CocoaSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	SentryObjCUnit *unit = p_unit.is_empty()
 			? nil
 			: [[SentryObjCUnit alloc] initWithRawValue:string_to_objc(p_unit)];
