@@ -43,7 +43,27 @@ void AndroidScope::set_fingerprint(const PackedStringArray &p_fingerprint) {
 }
 
 void AndroidScope::set_attribute(const String &p_name, const Variant &p_value) {
-	WARN_PRINT_ONCE("Sentry: SentryScope.set_attribute() is not yet supported on Android.");
+	ERR_FAIL_NULL(android_plugin);
+
+	// Use a type-specific call path because Godot bindings don't natively support
+	// passing arbitrary object/any values.
+	switch (p_value.get_type()) {
+		case Variant::Type::BOOL: {
+			android_plugin->call(ANDROID_SN(scopeSetAttributeBool), handle, p_name, p_value);
+		} break;
+		case Variant::Type::INT: {
+			android_plugin->call(ANDROID_SN(scopeSetAttributeLong), handle, p_name, p_value);
+		} break;
+		case Variant::Type::FLOAT: {
+			android_plugin->call(ANDROID_SN(scopeSetAttributeDouble), handle, p_name, p_value);
+		} break;
+		case Variant::Type::STRING: {
+			android_plugin->call(ANDROID_SN(scopeSetAttributeString), handle, p_name, p_value);
+		} break;
+		default: {
+			android_plugin->call(ANDROID_SN(scopeSetAttributeString), handle, p_name, p_value.stringify());
+		} break;
+	}
 }
 
 void AndroidScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {

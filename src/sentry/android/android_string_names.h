@@ -108,6 +108,10 @@ public:
 	StringName scopeRemoveUser;
 	StringName scopeSetLevel;
 	StringName scopeSetFingerprint;
+	StringName scopeSetAttributeBool;
+	StringName scopeSetAttributeLong;
+	StringName scopeSetAttributeDouble;
+	StringName scopeSetAttributeString;
 	StringName scopeAddBreadcrumb;
 	StringName scopeClear;
 

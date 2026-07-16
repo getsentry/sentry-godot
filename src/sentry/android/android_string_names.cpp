@@ -97,6 +97,10 @@ AndroidStringNames::AndroidStringNames() {
 	scopeRemoveUser = StringName("scopeRemoveUser");
 	scopeSetLevel = StringName("scopeSetLevel");
 	scopeSetFingerprint = StringName("scopeSetFingerprint");
+	scopeSetAttributeBool = StringName("scopeSetAttributeBool");
+	scopeSetAttributeLong = StringName("scopeSetAttributeLong");
+	scopeSetAttributeDouble = StringName("scopeSetAttributeDouble");
+	scopeSetAttributeString = StringName("scopeSetAttributeString");
 	scopeAddBreadcrumb = StringName("scopeAddBreadcrumb");
 	scopeClear = StringName("scopeClear");
 

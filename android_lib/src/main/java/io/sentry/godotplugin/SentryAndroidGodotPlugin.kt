@@ -922,6 +922,26 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun scopeSetAttributeBool(handle: Int, name: String, value: Boolean) {
+        getScope(handle)?.setAttribute(name, value)
+    }
+
+    @UsedByGodot
+    fun scopeSetAttributeLong(handle: Int, name: String, value: Long) {
+        getScope(handle)?.setAttribute(name, value)
+    }
+
+    @UsedByGodot
+    fun scopeSetAttributeDouble(handle: Int, name: String, value: Double) {
+        getScope(handle)?.setAttribute(name, value)
+    }
+
+    @UsedByGodot
+    fun scopeSetAttributeString(handle: Int, name: String, value: String) {
+        getScope(handle)?.setAttribute(name, value)
+    }
+
+    @UsedByGodot
     fun scopeAddBreadcrumb(scopeHandle: Int, crumbHandle: Int) {
         val scope = getScope(scopeHandle) ?: return
         val crumb = getBreadcrumb(crumbHandle) ?: return
