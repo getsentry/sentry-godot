@@ -52,8 +52,7 @@ static func _get_android_intent_extras() -> Dictionary:
 	var rv: Dictionary = {}
 	for i in range(keys.size()):
 		var key: String = keys[i].toString()
-		var raw_value = extras.get(key)
-		var value: String = raw_value.toString() if raw_value != null else ""
-		rv[key] = value
+		var value = extras.getString(key)
+		rv[key] = value if value != null else ""
 
 	return rv
