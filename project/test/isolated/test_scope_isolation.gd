@@ -6,34 +6,146 @@ extends SentryTestSuite
 ## still reach the global scope even when made from inside the block.
 
 
-func test_with_scope_write_isolation() -> void:
-	SentrySDK.set_tag("global_before", "before")
-
+func test_with_scope_set_context() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
-		scope.set_tag("scoped", "in_scope")
-		SentrySDK.set_tag("global_inside", "inside")
+		scope.set_context("scene", {"name": "Dungeon", "depth": 3})
 		SentrySDK.capture_event(SentrySDK.create_event())
 		)
 	var json_in_scope: String = await wait_for_captured_event_json()
 
 	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
 
-	assert_json(json_in_scope).describe("in-scope event carries local and global tags") \
-		.at("/tags") \
-		.must_contain("scoped", "in_scope") \
-		.must_contain("global_before", "before") \
-		.must_contain("global_inside", "inside") \
+	assert_json(json_in_scope).describe("set_context() reaches the in-scope event") \
+		.at("/contexts/scene") \
+		.is_object() \
+		.must_contain("name", "Dungeon") \
+		.must_contain("depth", 3) \
 		.verify()
 
-	assert_json(json_after).describe("local write must not leak past with_scope") \
+	assert_json(json_after).describe("set_context() does not leak past with_scope") \
+		.at("/") \
+		.must_not_contain("/contexts/scene") \
+		.verify()
+
+
+func test_with_scope_set_tag() -> void:
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_tag("scoped", "in_scope")
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+	var json_in_scope: String = await wait_for_captured_event_json()
+
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_in_scope).describe("set_tag() reaches the in-scope event") \
+		.at("/tags") \
+		.must_contain("scoped", "in_scope") \
+		.verify()
+
+	assert_json(json_after).describe("set_tag() does not leak past with_scope") \
 		.at("/tags") \
 		.must_not_contain("scoped") \
 		.verify()
 
-	assert_json(json_after).describe("top-level writes reach the global scope") \
-		.at("/tags") \
-		.must_contain("global_before", "before") \
-		.must_contain("global_inside", "inside") \
+
+func test_with_scope_set_user() -> void:
+	var scoped_user := SentryUser.new()
+	scoped_user.id = "player_scope"
+	scoped_user.username = "ScopedPlayer"
+
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_user(scoped_user)
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+	var json_in_scope: String = await wait_for_captured_event_json()
+
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_in_scope).describe("set_user() reaches the in-scope event") \
+		.at("/user") \
+		.is_object() \
+		.must_contain("id", "player_scope") \
+		.must_contain("username", "ScopedPlayer") \
+		.verify()
+
+	assert_json(json_after).describe("set_user() does not leak past with_scope") \
+		.at("/") \
+		.must_not_contain("/user/id", "player_scope") \
+		.verify()
+
+
+func test_with_scope_set_level() -> void:
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_level(SentrySDK.LEVEL_WARNING)
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+	var json_in_scope: String = await wait_for_captured_event_json()
+
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_in_scope).describe("set_level() reaches the in-scope event") \
+		.at("/") \
+		.must_contain("level", "warning") \
+		.verify()
+
+	assert_json(json_after).describe("set_level() does not leak past with_scope") \
+		.at("/") \
+		.must_not_contain("/level", "warning") \
+		.verify()
+
+
+func test_with_scope_set_fingerprint() -> void:
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_fingerprint(PackedStringArray(["scope-group", "scope-key"]))
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+	var json_in_scope: String = await wait_for_captured_event_json()
+
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_in_scope).describe("set_fingerprint() reaches the in-scope event") \
+		.at("/fingerprint") \
+		.is_array() \
+		.has_size(2) \
+		.must_contain("/0", "scope-group") \
+		.must_contain("/1", "scope-key") \
+		.verify()
+
+	assert_json(json_after).describe("set_fingerprint() does not leak past with_scope") \
+		.at("/") \
+		.must_not_contain("/fingerprint/0", "scope-group") \
+		.verify()
+
+
+func test_with_scope_add_breadcrumb() -> void:
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.add_breadcrumb(SentryBreadcrumb.create("scoped crumb"))
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+	var json_in_scope: String = await wait_for_captured_event_json()
+
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_in_scope).describe("add_breadcrumb() reaches the in-scope event") \
+		.at("/breadcrumbs/") \
+		.is_array() \
+		.with_objects() \
+		.containing("message", "scoped crumb") \
+		.exactly(1)
+
+	assert_json(json_after).describe("add_breadcrumb() does not leak past with_scope") \
+		.either() \
+			.at("/") \
+			.must_not_contain("/breadcrumbs") \
+		.or_else() \
+			.at("/breadcrumbs") \
+			.is_null() \
+		.or_else() \
+			.at("/breadcrumbs/") \
+			.with_objects() \
+			.containing("message", "scoped crumb") \
+			.must_selected(0) \
+		.end() \
 		.verify()
 
 
@@ -61,6 +173,19 @@ func test_scope_clear() -> void:
 	assert_json(json).describe("clear() leaves the global scope intact") \
 		.at("/tags") \
 		.must_contain("global_tag", "global") \
+		.verify()
+
+
+func test_with_scope_top_level_write() -> void:
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		SentrySDK.set_tag("global_inside", "inside")
+		)
+
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_after).describe("top-level write from inside with_scope reaches the global scope") \
+		.at("/tags") \
+		.must_contain("global_inside", "inside") \
 		.verify()
 
 
