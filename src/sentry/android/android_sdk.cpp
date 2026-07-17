@@ -179,7 +179,11 @@ void AndroidSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, 
 		return;
 	}
 
-	android_plugin->call(ANDROID_SN(log), p_level, p_body, _sanitize_attributes(p_attributes));
+	ERR_FAIL_COND(p_scope.is_null());
+	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
+	android_plugin->call(ANDROID_SN(log),
+			android_scope->get_handle(),
+			p_level, p_body, _sanitize_attributes(p_attributes));
 }
 
 String AndroidSDK::capture_message(const String &p_message, Level p_level) {

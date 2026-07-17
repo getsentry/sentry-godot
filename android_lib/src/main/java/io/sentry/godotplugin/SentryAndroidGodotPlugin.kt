@@ -23,6 +23,7 @@ import io.sentry.SentryMetricsEvent
 import io.sentry.SentryOptions
 import io.sentry.android.core.InternalSentrySdk
 import io.sentry.android.core.SentryAndroid
+import io.sentry.logger.ILoggerApi
 import io.sentry.logger.SentryLogParameters
 import io.sentry.metrics.IMetricsApi
 import io.sentry.metrics.SentryMetricsParameters
@@ -145,6 +146,10 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     private fun scopedMetrics(scopeHandle: Int): IMetricsApi {
         return combinedScopes(scopeHandle)?.metrics() ?: Sentry.metrics()
+    }
+
+    private fun scopedLogger(scopeHandle: Int): ILoggerApi {
+        return combinedScopes(scopeHandle)?.logger() ?: Sentry.logger()
     }
 
     private fun registerEvent(event: SentryEvent): Int {
@@ -391,12 +396,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun log(level: Int, body: String, attributes: Dictionary) {
+    fun log(scopeHandle: Int, level: Int, body: String, attributes: Dictionary) {
+        val logger = scopedLogger(scopeHandle)
         if (attributes.isEmpty()) {
-            Sentry.logger().log(level.toSentryLogLevel(), body)
+            logger.log(level.toSentryLogLevel(), body)
         } else {
             val sentryAttributes = SentryAttributes.fromMap(attributes)
-            Sentry.logger().log(
+            logger.log(
                 level.toSentryLogLevel(),
                 SentryLogParameters.create(sentryAttributes),
                 body
