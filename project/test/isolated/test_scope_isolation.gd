@@ -99,3 +99,27 @@ func test_nested_with_scope() -> void:
 		.at("/tags") \
 		.must_contain("outer_tag", "outer") \
 		.verify()
+
+
+func test_get_current_scope_not_null() -> void:
+	assert_object(SentrySDK.get_current_scope()) \
+		.override_failure_message("get_current_scope() returns a non-null current scope outside any with_scope block") \
+		.is_not_null()
+
+
+func test_get_current_scope_with_nesting() -> void:
+	var initial: SentryScope = SentrySDK.get_current_scope()
+
+	SentrySDK.with_scope(func(outer: SentryScope) -> void:
+		assert_object(SentrySDK.get_current_scope()).is_same(outer)
+		assert_object(SentrySDK.get_current_scope()).is_not_same(initial)
+
+		SentrySDK.with_scope(func(inner: SentryScope) -> void:
+			assert_object(SentrySDK.get_current_scope()).is_same(inner)
+			assert_object(SentrySDK.get_current_scope()).is_not_same(outer)
+			)
+
+		assert_object(SentrySDK.get_current_scope()).is_same(outer)
+		)
+
+	assert_object(SentrySDK.get_current_scope()).is_same(initial)
