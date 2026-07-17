@@ -35,3 +35,30 @@ func test_with_scope_write_isolation() -> void:
 		.must_contain("global_before", "before") \
 		.must_contain("global_inside", "inside") \
 		.verify()
+
+
+func test_scope_clear() -> void:
+	SentrySDK.set_tag("global_tag", "global")
+
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_tag("before_clear", "value")
+		scope.clear()
+		scope.set_tag("after_clear", "value")
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+	var json: String = await wait_for_captured_event_json()
+
+	assert_json(json).describe("clear() drops local scope data written before it") \
+		.at("/tags") \
+		.must_not_contain("before_clear") \
+		.verify()
+
+	assert_json(json).describe("scope stays usable after clear()") \
+		.at("/tags") \
+		.must_contain("after_clear", "value") \
+		.verify()
+
+	assert_json(json).describe("clear() leaves the global scope intact") \
+		.at("/tags") \
+		.must_contain("global_tag", "global") \
+		.verify()
