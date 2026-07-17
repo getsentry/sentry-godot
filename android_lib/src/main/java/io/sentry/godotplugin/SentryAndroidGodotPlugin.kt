@@ -3,7 +3,6 @@ package io.sentry.godotplugin
 import android.util.Log
 import io.sentry.Attachment
 import io.sentry.Breadcrumb
-import io.sentry.CombinedScopeView
 import io.sentry.Hint
 import io.sentry.IScope
 import io.sentry.IScopes
@@ -507,19 +506,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             Log.e(TAG, "Failed to capture event: $eventHandle")
             return ""
         }
-        val local: IScope? = scopesByHandle.get()?.get(scopeHandle)
-        val id = if (local == null) {
-            Sentry.captureEvent(event)
-        } else {
-            // Combine our own current scope with the global and isolation scopes.
-            // The SDK current scope is intentionally skipped because we route top-level writes
-            // to the global scope during init.
-            val scopes = Sentry.getCurrentScopes()
-            val combined = CombinedScopeView(scopes.globalScope, scopes.isolationScope, local)
-            val eventId = combined.client.captureEvent(event, combined)
-            combined.lastEventId = eventId
-            eventId
-        }
+        val scopes = combinedScopes(scopeHandle)
+        val id = scopes?.captureEvent(event) ?: Sentry.captureEvent(event)
         return id.toString()
     }
 
