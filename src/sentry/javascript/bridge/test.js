@@ -61,7 +61,6 @@ try {
 			"logWarn",
 			"logError",
 			"logFatal",
-			"captureMessage",
 			"captureEvent",
 			"captureFeedback",
 			"lastEventId",
@@ -172,11 +171,6 @@ try {
 
 		runTest("logFatal()", () => {
 			bridge.logFatal("Test fatal message", '{"key": "value"}');
-		});
-
-		runTest("captureMessage()", () => {
-			const result = bridge.captureMessage("Test message", "info");
-			assertEqual(typeof result, "string", "captureMessage should return a string");
 		});
 
 		runTest("captureEvent()", () => {

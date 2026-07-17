@@ -245,7 +245,10 @@ void SentrySDK::close() {
 }
 
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
-	return internal_sdk->capture_message(p_message, p_level);
+	Ref<SentryEvent> event = internal_sdk->create_event();
+	event->set_message(p_message);
+	event->set_level(p_level);
+	return internal_sdk->capture_event(event, get_current_scope());
 }
 
 void SentrySDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {

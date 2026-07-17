@@ -236,21 +236,6 @@ void NativeSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, c
 			p_body.utf8(), dictionary_to_attributes(p_attributes));
 }
 
-String NativeSDK::capture_message(const String &p_message, Level p_level) {
-	sentry_value_t event = sentry_value_new_message_event(
-			native::level_to_native(p_level),
-			"", // logger
-			p_message.utf8().get_data());
-
-	sentry_uuid_t uuid = sentry_capture_event(event);
-
-	last_uuid_mutex->lock();
-	last_uuid = uuid;
-	last_uuid_mutex->unlock();
-
-	return _uuid_as_string(uuid);
-}
-
 String NativeSDK::get_last_event_id() {
 	last_uuid_mutex->lock();
 	String uuid_str = _uuid_as_string(last_uuid);

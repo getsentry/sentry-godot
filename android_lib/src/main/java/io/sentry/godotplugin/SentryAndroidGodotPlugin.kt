@@ -468,12 +468,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun captureMessage(message: String, level: Int): String {
-        val id = Sentry.captureMessage(message, level.toSentryLevel())
-        return id.toString()
-    }
-
-    @UsedByGodot
     fun getLastEventId(): String {
         return Sentry.getLastEventId().toString()
     }

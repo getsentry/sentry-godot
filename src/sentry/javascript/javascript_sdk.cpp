@@ -192,12 +192,6 @@ void JavaScriptSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_leve
 	}
 }
 
-String JavaScriptSDK::capture_message(const String &p_message, Level p_level) {
-	ERR_FAIL_COND_V(!js_bridge(), String());
-	String uuid = js_bridge()->call("captureMessage", p_message.utf8(), level_as_string(p_level).utf8()).as_string();
-	return uuid;
-}
-
 String JavaScriptSDK::get_last_event_id() {
 	ERR_FAIL_COND_V(!js_bridge(), String());
 	return js_bridge()->call("lastEventId").as_string();

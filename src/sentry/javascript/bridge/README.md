@@ -29,7 +29,6 @@ The bridge exposes `window.SentryBridge`. Example usage:
 SentryBridge.init(beforeSendCallback, beforeSendLogCallback, dsn, debug, release, dist, environment, sampleRate, maxBreadcrumbs, enableLogs)
 SentryBridge.setTag(key, value)
 SentryBridge.setUser(id, username, email, ip)
-SentryBridge.captureMessage(message, level)
 SentryBridge.captureEvent(event)
 ```
 

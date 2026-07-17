@@ -33,7 +33,6 @@ public:
 
 	virtual void capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, const String &p_body, const Dictionary &p_attributes = Dictionary()) = 0;
 
-	virtual String capture_message(const String &p_message, Level p_level) = 0;
 	virtual String get_last_event_id() = 0;
 
 	virtual Ref<SentryEvent> create_event() = 0;

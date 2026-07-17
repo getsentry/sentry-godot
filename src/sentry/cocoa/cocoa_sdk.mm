@@ -205,15 +205,6 @@ void CocoaSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, co
 	}
 }
 
-String CocoaSDK::capture_message(const String &p_message, Level p_level) {
-	SentryObjCId *event_id = [SentryObjCSDK captureMessage:string_to_objc(p_message)
-											withScopeBlock:^(SentryObjCScope *scope) {
-												scope.level = sentry_level_to_objc(p_level);
-											}];
-
-	return event_id ? string_from_objc(event_id.sentryIdString) : String();
-}
-
 String CocoaSDK::get_last_event_id() {
 	MutexLock lock(*last_event_id_mutex.ptr());
 	return last_event_id;

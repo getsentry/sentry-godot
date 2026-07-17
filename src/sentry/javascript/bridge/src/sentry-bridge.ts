@@ -340,10 +340,6 @@ class SentryBridge {
     Sentry.getGlobalScope().removeAttribute(name);
   }
 
-  public captureMessage(message: string, level: string): string {
-    return Sentry.captureMessage(message, level as Sentry.SeverityLevel);
-  }
-
   public captureEvent(event: Sentry.Event): string {
     return Sentry.captureEvent(event);
   }

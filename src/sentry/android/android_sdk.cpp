@@ -186,12 +186,6 @@ void AndroidSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, 
 			p_level, p_body, _sanitize_attributes(p_attributes));
 }
 
-String AndroidSDK::capture_message(const String &p_message, Level p_level) {
-	Object *android_plugin = _get_android_plugin();
-	ERR_FAIL_NULL_V(android_plugin, String());
-	return android_plugin->call(ANDROID_SN(captureMessage), p_message, p_level);
-}
-
 String AndroidSDK::get_last_event_id() {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL_V(android_plugin, String());
