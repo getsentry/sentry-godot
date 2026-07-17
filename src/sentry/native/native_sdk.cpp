@@ -271,7 +271,7 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<Sentr
 	return _uuid_as_string(uuid);
 }
 
-void NativeSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
+void NativeSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) {
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
 

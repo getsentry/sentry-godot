@@ -39,7 +39,7 @@ public:
 
 	virtual String capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) = 0;
 
-	virtual void capture_feedback(const Ref<SentryFeedback> &p_feedback) = 0;
+	virtual void capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) = 0;
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) = 0;
 	virtual void clear_attachments() = 0;

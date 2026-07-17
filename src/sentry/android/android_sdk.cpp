@@ -213,7 +213,7 @@ String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<Sent
 	return android_event->get_id();
 }
 
-void AndroidSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
+void AndroidSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");

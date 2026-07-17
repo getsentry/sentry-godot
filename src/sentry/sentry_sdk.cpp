@@ -278,7 +278,7 @@ void SentrySDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 	if (p_feedback->get_message().length() > 4096) {
 		WARN_PRINT("Sentry: Feedback message is too long (max 4096 characters).");
 	}
-	return internal_sdk->capture_feedback(p_feedback);
+	return internal_sdk->capture_feedback(get_current_scope(), p_feedback);
 }
 
 void SentrySDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
