@@ -6,7 +6,7 @@ extends SentryTestSuite
 ## still reach the global scope even when made from inside the block.
 
 
-func test_with_scope_set_context() -> void:
+func test_scoped_set_context() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_context("scene", {"name": "Dungeon", "depth": 3})
 		SentrySDK.capture_event(SentrySDK.create_event())
@@ -28,7 +28,7 @@ func test_with_scope_set_context() -> void:
 		.verify()
 
 
-func test_with_scope_set_tag() -> void:
+func test_scoped_set_tag() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_tag("scoped", "in_scope")
 		SentrySDK.capture_event(SentrySDK.create_event())
@@ -48,7 +48,7 @@ func test_with_scope_set_tag() -> void:
 		.verify()
 
 
-func test_with_scope_set_user() -> void:
+func test_scoped_set_user() -> void:
 	var scoped_user := SentryUser.new()
 	scoped_user.id = "player_scope"
 	scoped_user.username = "ScopedPlayer"
@@ -74,7 +74,7 @@ func test_with_scope_set_user() -> void:
 		.verify()
 
 
-func test_with_scope_set_level() -> void:
+func test_scoped_set_level() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_level(SentrySDK.LEVEL_WARNING)
 		SentrySDK.capture_event(SentrySDK.create_event())
@@ -94,7 +94,7 @@ func test_with_scope_set_level() -> void:
 		.verify()
 
 
-func test_with_scope_set_fingerprint() -> void:
+func test_scoped_set_fingerprint() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_fingerprint(PackedStringArray(["scope-group", "scope-key"]))
 		SentrySDK.capture_event(SentrySDK.create_event())
@@ -117,7 +117,7 @@ func test_with_scope_set_fingerprint() -> void:
 		.verify()
 
 
-func test_with_scope_add_breadcrumb() -> void:
+func test_scoped_add_breadcrumb() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.add_breadcrumb(SentryBreadcrumb.create("scoped crumb"))
 		SentrySDK.capture_event(SentrySDK.create_event())
@@ -176,6 +176,27 @@ func test_scope_clear() -> void:
 		.verify()
 
 
+func test_scoped_capture_message() -> void:
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_tag("scoped", "in_scope")
+		SentrySDK.capture_message("scoped message", SentrySDK.LEVEL_WARNING)
+		)
+	var json_in_scope: String = await wait_for_captured_event_json()
+
+	SentrySDK.capture_message("global message", SentrySDK.LEVEL_WARNING)
+	var json_after: String = await wait_for_captured_event_json()
+
+	assert_json(json_in_scope).describe("Top-level capture_message() goes through current scope") \
+		.at("/tags") \
+		.must_contain("scoped", "in_scope") \
+		.verify()
+
+	assert_json(json_after).describe("capture_message() does not carry the popped scope") \
+		.at("/tags") \
+		.must_not_contain("scoped") \
+		.verify()
+
+
 func test_with_scope_top_level_write() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		SentrySDK.set_tag("global_inside", "inside")
@@ -223,27 +244,6 @@ func test_nested_with_scope() -> void:
 	assert_json(json_outer).describe("outer scope keeps its own data") \
 		.at("/tags") \
 		.must_contain("outer_tag", "outer") \
-		.verify()
-
-
-func test_with_scope_capture_message() -> void:
-	SentrySDK.with_scope(func(scope: SentryScope) -> void:
-		scope.set_tag("scoped", "in_scope")
-		SentrySDK.capture_message("scoped message", SentrySDK.LEVEL_WARNING)
-		)
-	var json_in_scope: String = await wait_for_captured_event_json()
-
-	SentrySDK.capture_message("global message", SentrySDK.LEVEL_WARNING)
-	var json_after: String = await wait_for_captured_event_json()
-
-	assert_json(json_in_scope).describe("Top-level capture_message() goes through current scope") \
-		.at("/tags") \
-		.must_contain("scoped", "in_scope") \
-		.verify()
-
-	assert_json(json_after).describe("capture_message() does not carry the popped scope") \
-		.at("/tags") \
-		.must_not_contain("scoped") \
 		.verify()
 
 
