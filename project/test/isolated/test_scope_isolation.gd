@@ -226,6 +226,27 @@ func test_nested_with_scope() -> void:
 		.verify()
 
 
+func test_with_scope_capture_message() -> void:
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_tag("scoped", "in_scope")
+		SentrySDK.capture_message("scoped message", SentrySDK.LEVEL_WARNING)
+		)
+	var json_in_scope: String = await wait_for_captured_event_json()
+
+	SentrySDK.capture_message("global message", SentrySDK.LEVEL_WARNING)
+	var json_after: String = await wait_for_captured_event_json()
+
+	assert_json(json_in_scope).describe("Top-level capture_message() goes through current scope") \
+		.at("/tags") \
+		.must_contain("scoped", "in_scope") \
+		.verify()
+
+	assert_json(json_after).describe("capture_message() does not carry the popped scope") \
+		.at("/tags") \
+		.must_not_contain("scoped") \
+		.verify()
+
+
 func test_get_current_scope_not_null() -> void:
 	assert_object(SentrySDK.get_current_scope()) \
 		.override_failure_message("get_current_scope() returns a non-null current scope outside any with_scope block") \
