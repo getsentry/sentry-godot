@@ -262,7 +262,7 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<Sentr
 	ERR_FAIL_NULL_V(native_scope, _uuid_as_string(sentry_uuid_nil()));
 	sentry_scope_t *scope = native_scope->get_native_scope();
 
-	sentry_uuid_t uuid = sentry_capture_event_with_scope(event, scope);
+	sentry_uuid_t uuid = sentry_scope_capture_event(scope, event);
 
 	last_uuid_mutex->lock();
 	last_uuid = uuid;
