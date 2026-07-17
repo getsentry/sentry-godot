@@ -88,4 +88,16 @@ public partial class DotnetActions : VBoxContainer
         }
         catch { throw; }
     }
+
+    public void TriggerAppHang()
+    {
+        ActuallyTrigger();
+    }
+
+    private void ActuallyTrigger()
+    {
+        GD.Print("Triggering app hang from .NET layer...");
+        while (true) { }
+
+    }
 }

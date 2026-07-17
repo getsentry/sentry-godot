@@ -2,6 +2,8 @@
 
 #include "sentry/internal_sdk.h"
 
+#include "sentry/native/app_hang_heartbeat.h"
+
 #include <sentry.h>
 #include <godot_cpp/classes/mutex.hpp>
 
@@ -14,6 +16,7 @@ private:
 	Ref<Mutex> last_uuid_mutex;
 	bool initialized = false;
 	Vector<sentry_attachment_t *> user_attachments;
+	uint64_t heartbeat_node;
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
