@@ -62,3 +62,40 @@ func test_scope_clear() -> void:
 		.at("/tags") \
 		.must_contain("global_tag", "global") \
 		.verify()
+
+
+func test_nested_with_scope() -> void:
+	SentrySDK.with_scope(func(outer: SentryScope) -> void:
+		outer.set_tag("outer_tag", "outer")
+
+		SentrySDK.with_scope(func(inner: SentryScope) -> void:
+			inner.set_tag("inner_tag", "inner")
+			SentrySDK.capture_event(SentrySDK.create_event())
+			)
+
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+
+	await wait_for_captured_event_json()
+	var json_inner: String = captured_events[0]
+	var json_outer: String = captured_events[1]
+
+	assert_json(json_inner).describe("nested scope inherits the outer scope's data") \
+		.at("/tags") \
+		.must_contain("outer_tag", "outer") \
+		.verify()
+
+	assert_json(json_inner).describe("nested scope carries its own writes") \
+		.at("/tags") \
+		.must_contain("inner_tag", "inner") \
+		.verify()
+
+	assert_json(json_outer).describe("nested writes don't leak back to the outer scope") \
+		.at("/tags") \
+		.must_not_contain("inner_tag") \
+		.verify()
+
+	assert_json(json_outer).describe("outer scope keeps its own data") \
+		.at("/tags") \
+		.must_contain("outer_tag", "outer") \
+		.verify()
