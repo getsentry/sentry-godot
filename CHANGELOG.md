@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Sentry JavaScript from v10.65.0 to v10.66.0 ([#816](https://github.com/getsentry/sentry-godot/pull/816))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10660)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.65.0...10.66.0)
+
 ## 2.1.0
 
 ### Features
