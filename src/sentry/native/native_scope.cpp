@@ -45,7 +45,7 @@ void NativeScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 }
 
 void NativeScope::clear() {
-	// TODO: sentry_scope_clear(_scope);
+	sentry_scope_clear(_scope);
 }
 
 SentryScopeImpl *NativeScope::clone() const {
