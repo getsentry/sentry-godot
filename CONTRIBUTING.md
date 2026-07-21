@@ -272,26 +272,53 @@ The script regenerates the `*.received.txt` file, promotes it over the existing 
 
 Web tests run the same GDScript suite and isolated tests in a headless Chromium browser using Playwright. They require a Godot web export.
 
-#### Prerequisites
+#### First-time setup
 
-1. Build the GDExtension library and JS bundle:
+1. Install the JavaScript bridge dependencies, if you have not already (see [Web](#web) above):
     ```bash
-    scons target=template_release platform=web generate_js_bundle=yes
+    cd src/sentry/javascript/bridge
+    npm install
     ```
-2. Export the project using the "Web Tests" preset:
+2. Copy the export preset into the project. Godot reads `project/export_presets.cfg`, but that path is gitignored and the preset is versioned under `exports/`:
     ```bash
-    godot --headless --path project --export-debug "Web Tests" ../exports/web/index.html
+    cp exports/export_presets.cfg project/export_presets.cfg
     ```
-3. Install test dependencies (first time only):
+3. Place the `dlink` web export templates for your Godot version in `exports/templates/`, where the preset expects them:
+    ```bash
+    mkdir -p exports/templates
+    cp <godot-export-templates>/web_dlink_debug.zip <godot-export-templates>/web_dlink_release.zip exports/templates/
+    ```
+4. Install the test dependencies:
     ```bash
     cd tests/web
     npm install
     npx playwright install chromium
     ```
 
+#### Building the libraries
+
+Web tests need two GDExtension builds: the web library that runs in the browser, and an editor library for your own platform, which provides export plugins. Repeat these only when the C++ or JavaScript bridge sources change.
+
+The generated godot-cpp bindings are specific to one architecture and are not regenerated automatically when you switch, so each build is preceded by a clean.
+
+1. Build the web library and the JavaScript bundle. The "Web Tests" preset exports in debug mode with thread support, so build the debug, threaded variant:
+    ```bash
+    scons platform=web target=editor arch=wasm32 threads=yes generate_js_bundle=yes --clean
+    scons platform=web target=editor arch=wasm32 threads=yes generate_js_bundle=yes
+    ```
+2. Build the editor library for your own platform:
+    ```bash
+    scons target=editor debug_symbols=yes --clean
+    scons target=editor debug_symbols=yes
+    ```
+
 #### Running Tests
 
+Re-export the project after any change to the libraries or to anything under `project/`, then run the tests:
+
 ```bash
+mkdir -p exports/web
+godot --headless --path project --export-debug "Web Tests" ../exports/web/index.html
 cd tests/web
 npx playwright test
 ```
