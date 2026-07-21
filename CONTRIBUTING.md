@@ -274,15 +274,25 @@ Web tests run the same GDScript suite and isolated tests in a headless Chromium 
 
 #### Prerequisites
 
-1. Build the GDExtension library and JS bundle:
+1. Build the GDExtension library and JS bundle. The "Web Tests" preset exports in debug mode with thread support, so build the debug, threaded variant:
     ```bash
-    scons target=template_release platform=web generate_js_bundle=yes
+    scons platform=web target=editor arch=wasm32 threads=yes generate_js_bundle=yes
     ```
-2. Export the project using the "Web Tests" preset:
+2. Copy the export preset into the project. Godot reads `project/export_presets.cfg`, but that path is gitignored and the preset is versioned under `exports/`:
     ```bash
+    cp exports/export_presets.cfg project/export_presets.cfg
+    ```
+3. Place the `dlink` web export templates for your Godot version in `exports/templates/`, where the preset expects them:
+    ```bash
+    mkdir -p exports/templates
+    cp <godot-export-templates>/web_dlink_debug.zip <godot-export-templates>/web_dlink_release.zip exports/templates/
+    ```
+4. Export the project using the "Web Tests" preset:
+    ```bash
+    mkdir -p exports/web
     godot --headless --path project --export-debug "Web Tests" ../exports/web/index.html
     ```
-3. Install test dependencies (first time only):
+5. Install test dependencies (first time only):
     ```bash
     cd tests/web
     npm install
