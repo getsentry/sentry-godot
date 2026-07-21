@@ -3,22 +3,21 @@ import fs from "node:fs";
 import path from "node:path";
 
 const COMPLETION_MARKER = ">>> Test run complete with code: ";
-const PROJECT_DIR = path.resolve(import.meta.dirname, "../project");
+const PROJECT_DIR = path.resolve(import.meta.dirname, "../../project");
 
 // Discover test paths: suite tests first, then each isolated test file.
 // Mirrors the pattern in scripts/run-android-tests.sh.
 function discoverTestPaths(): string[] {
-  const paths = ["res://test/suites/"];
   const isolatedDir = path.join(PROJECT_DIR, "test/isolated");
-  if (fs.existsSync(isolatedDir)) {
-    const files = fs
-      .readdirSync(isolatedDir)
-      .filter((f) => f.startsWith("test_") && f.endsWith(".gd"))
-      .sort()
-      .map((f) => `res://test/isolated/${f}`);
-    paths.push(...files);
+  const isolatedPaths = fs
+    .readdirSync(isolatedDir)
+    .filter((f) => f.startsWith("test_") && f.endsWith(".gd"))
+    .sort()
+    .map((f) => `res://test/isolated/${f}`);
+  if (isolatedPaths.length === 0) {
+    throw new Error(`No isolated test files found in ${isolatedDir}`);
   }
-  return paths;
+  return ["res://test/suites/", ...isolatedPaths];
 }
 
 // Start the Godot engine with the given test path and wait for completion.
