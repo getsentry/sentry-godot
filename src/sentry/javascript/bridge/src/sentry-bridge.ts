@@ -367,7 +367,7 @@ class SentryBridge {
   }
 
   public addBytesAttachment(filename: string, bytes: Uint8Array, contentType: string): void {
-    Sentry.getCurrentScope().addAttachment({
+    Sentry.getIsolationScope().addAttachment({
       filename,
       data: bytes,
       contentType,
@@ -375,7 +375,7 @@ class SentryBridge {
   }
 
   public clearAttachments(): void {
-    Sentry.getCurrentScope().clearAttachments();
+    Sentry.getIsolationScope().clearAttachments();
   }
 }
 
