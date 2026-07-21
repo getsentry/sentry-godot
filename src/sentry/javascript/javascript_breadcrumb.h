@@ -6,11 +6,13 @@
 namespace sentry::javascript {
 
 class JavaScriptSDK;
+class JavaScriptScope;
 
 class JavaScriptBreadcrumb : public SentryBreadcrumb {
 	GDCLASS(JavaScriptBreadcrumb, SentryBreadcrumb);
 
 	friend class JavaScriptSDK;
+	friend class JavaScriptScope;
 
 private:
 	JSObjectPtr js_obj;

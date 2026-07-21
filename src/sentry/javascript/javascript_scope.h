@@ -1,11 +1,17 @@
 #pragma once
 
+#include "sentry/javascript/javascript_interop.h"
 #include "sentry/sentry_scope_impl.h"
 
 namespace sentry::javascript {
 
 class JavaScriptScope : public SentryScopeImpl {
+private:
+	JSObjectPtr js_obj;
+
 public:
+	_FORCE_INLINE_ JSObjectPtr get_js_object() const { return js_obj; }
+
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void set_tag(const String &p_key, const String &p_value) override;
 	virtual void set_user(const Ref<SentryUser> &p_user) override;
@@ -16,8 +22,8 @@ public:
 	virtual void clear() override;
 	virtual SentryScopeImpl *clone() const override;
 
+	explicit JavaScriptScope(const JSObjectPtr &p_js_scope_object);
 	JavaScriptScope();
-	virtual ~JavaScriptScope() override;
 };
 
 } //namespace sentry::javascript
