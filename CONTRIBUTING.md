@@ -297,7 +297,7 @@ Web tests run the same GDScript suite and isolated tests in a headless Chromium 
 
 #### Building the libraries
 
-Web tests need two GDExtension builds: the web library that runs in the browser, and an editor library for your own platform, which provides the export plugin that copies the JavaScript bundle into the export. Repeat these only when the C++ or JavaScript bridge sources change.
+Web tests need two GDExtension builds: the web library that runs in the browser, and an editor library for your own platform, which provides export plugins. Repeat these only when the C++ or JavaScript bridge sources change.
 
 The generated godot-cpp bindings are specific to one architecture and are not regenerated automatically when you switch, so each build is preceded by a clean.
 
