@@ -55,6 +55,11 @@ try {
 			"setUser",
 			"removeUser",
 			"eventSetUser",
+			"createScope",
+			"scopeSetContext",
+			"scopeSetFingerprint",
+			"scopeSetUser",
+			"scopeClear",
 			"logTrace",
 			"logDebug",
 			"logInfo",
@@ -149,6 +154,32 @@ try {
 			assertEqual(Object.keys(event2.user).length, 0, "eventSetUser should skip empty fields");
 		});
 
+		runTest("createScope()", () => {
+			const scope = bridge.createScope();
+			assert(scope.getClient() !== undefined, "createScope should bind the current client");
+		});
+
+		runTest("scopeSetContext() / scopeSetFingerprint() / scopeSetUser()", () => {
+			const scope = bridge.createScope();
+			bridge.scopeSetContext(scope, "test-context", '{"key": "value"}');
+			bridge.scopeSetFingerprint(scope, '["a","b"]');
+			bridge.scopeSetUser(scope, "user123", "testuser", "test@example.com", "127.0.0.1");
+			const data = scope.getScopeData();
+			assertEqual(data.contexts["test-context"].key, "value", "scopeSetContext should set the context");
+			assertEqual(data.fingerprint.join(","), "a,b", "scopeSetFingerprint should set the fingerprint");
+			assertEqual(data.user.id, "user123", "scopeSetUser should set the user");
+		});
+
+		runTest("scopeClear()", () => {
+			const scope = bridge.createScope();
+			bridge.scopeSetContext(scope, "test-context", '{"key": "value"}');
+			const traceId = scope.getPropagationContext().traceId;
+			bridge.scopeClear(scope);
+			assertEqual(scope.getScopeData().contexts["test-context"], undefined, "scopeClear should clear scope data");
+			assertEqual(scope.getPropagationContext().traceId, traceId,
+					"scopeClear should preserve the propagation context");
+		});
+
 		runTest("logTrace()", () => {
 			bridge.logTrace("Test trace message", '{"key": "value"}');
 		});
@@ -176,6 +207,8 @@ try {
 		runTest("captureEvent()", () => {
 			const result = bridge.captureEvent({ message : "Test event" });
 			assertEqual(typeof result, "string", "captureEvent should return a string");
+			const scoped = bridge.captureEvent({ message : "Test event" }, bridge.createScope());
+			assertEqual(typeof scoped, "string", "Scoped captureEvent should return a string");
 		});
 
 		runTest("lastEventId()", () => {
@@ -190,6 +223,8 @@ try {
 		runTest("captureFeedback()", () => {
 			const result = bridge.captureFeedback("Test feedback", "Test User", "test@example.com", "");
 			assertEqual(typeof result, "string", "captureFeedback should return a string");
+			const scoped = bridge.captureFeedback("Test feedback", "", "", "", bridge.createScope());
+			assertEqual(typeof scoped, "string", "Scoped captureFeedback should return a string");
 		});
 
 		runTest("storeBytes() / takeBytes()", () => {

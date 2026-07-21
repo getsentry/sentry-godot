@@ -32,6 +32,14 @@ SentryBridge.setUser(id, username, email, ip)
 SentryBridge.captureEvent(event)
 ```
 
+Scopes are created through the bridge and passed back as a trailing argument to the capture methods:
+
+```typescript
+const scope = SentryBridge.createScope()
+SentryBridge.scopeSetUser(scope, id, username, email, ip)
+SentryBridge.captureEvent(event, scope)
+```
+
 See `src/sentry-bridge.ts` for all available methods.
 
 ## Build Output
