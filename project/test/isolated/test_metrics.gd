@@ -170,6 +170,7 @@ func test_before_send_metric_discard() -> void:
 
 
 # TODO: remove skip when implemented on other platforms
+# Skipped: JS merges scope attributes at serialization time, after the callback has already run.
 func test_metric_with_scope_attributes(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"]) -> void:
 	SentrySDK.set_attribute("from_global", "global")
 	SentrySDK.set_attribute("scope_over_global", "global")
