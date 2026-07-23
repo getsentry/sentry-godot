@@ -8,6 +8,7 @@
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_log.h"
 #include "sentry/native/native_metric.h"
+#include "sentry/native/native_scope.h"
 #include "sentry/native/native_util.h"
 #include "sentry/native/platform_detection.h"
 #include "sentry/processing/process_event.h"
@@ -199,25 +200,7 @@ void NativeSDK::remove_tag(const String &p_key) {
 
 void NativeSDK::set_user(const Ref<SentryUser> &p_user) {
 	if (p_user.is_valid()) {
-		sentry_value_t user_data = sentry_value_new_object();
-
-		if (!p_user->get_id().is_empty()) {
-			sentry_value_set_by_key(user_data, "id",
-					sentry_value_new_string(p_user->get_id().utf8()));
-		}
-		if (!p_user->get_username().is_empty()) {
-			sentry_value_set_by_key(user_data, "username",
-					sentry_value_new_string(p_user->get_username().utf8()));
-		}
-		if (!p_user->get_email().is_empty()) {
-			sentry_value_set_by_key(user_data, "email",
-					sentry_value_new_string(p_user->get_email().utf8()));
-		}
-		if (!p_user->get_ip_address().is_empty()) {
-			sentry_value_set_by_key(user_data, "ip_address",
-					sentry_value_new_string(p_user->get_ip_address().utf8()));
-		}
-		sentry_set_user(user_data);
+		sentry_set_user(user_to_sentry_value(p_user));
 	} else {
 		remove_user();
 	}
@@ -240,26 +223,17 @@ void NativeSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	sentry_add_breadcrumb(native_crumb);
 }
 
-void NativeSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
+void NativeSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
 	if (p_body.is_empty()) {
 		return;
 	}
-	sentry_log(_log_level_to_native(p_level), p_body.utf8(), dictionary_to_attributes(p_attributes));
-}
 
-String NativeSDK::capture_message(const String &p_message, Level p_level) {
-	sentry_value_t event = sentry_value_new_message_event(
-			native::level_to_native(p_level),
-			"", // logger
-			p_message.utf8().get_data());
+	ERR_FAIL_COND(p_scope.is_null());
+	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
+	ERR_FAIL_NULL(native_scope);
 
-	sentry_uuid_t uuid = sentry_capture_event(event);
-
-	last_uuid_mutex->lock();
-	last_uuid = uuid;
-	last_uuid_mutex->unlock();
-
-	return _uuid_as_string(uuid);
+	sentry_scope_capture_log(native_scope->get_native_scope(), _log_level_to_native(p_level),
+			p_body.utf8(), dictionary_to_attributes(p_attributes));
 }
 
 String NativeSDK::get_last_event_id() {
@@ -276,13 +250,19 @@ Ref<SentryEvent> NativeSDK::create_event() {
 	return event;
 }
 
-String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
+String NativeSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), _uuid_as_string(sentry_uuid_nil()), "Sentry: Can't capture event - event object is null.");
+
 	NativeEvent *native_event = Object::cast_to<NativeEvent>(p_event.ptr());
-	ERR_FAIL_NULL_V(native_event, _uuid_as_string(sentry_uuid_nil())); // Sanity check - this should never happen.
+	ERR_FAIL_NULL_V(native_event, _uuid_as_string(sentry_uuid_nil()));
 	sentry_value_t event = native_event->get_native_value();
 	sentry_value_incref(event); // Keep ownership.
-	sentry_uuid_t uuid = sentry_capture_event(event);
+
+	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
+	ERR_FAIL_NULL_V(native_scope, _uuid_as_string(sentry_uuid_nil()));
+	sentry_scope_t *scope = native_scope->get_native_scope();
+
+	sentry_uuid_t uuid = sentry_scope_capture_event(scope, event);
 
 	last_uuid_mutex->lock();
 	last_uuid = uuid;
@@ -291,7 +271,7 @@ String NativeSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	return _uuid_as_string(uuid);
 }
 
-void NativeSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
+void NativeSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) {
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
 
@@ -362,16 +342,31 @@ void NativeSDK::clear_attachments() {
 	user_attachments.clear();
 }
 
-void NativeSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
-	sentry_metrics_count(p_name.utf8(), p_value, dictionary_to_attributes(p_attributes));
+void NativeSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
+	ERR_FAIL_COND(p_scope.is_null());
+	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
+	ERR_FAIL_NULL(native_scope);
+
+	sentry_scope_capture_metric(native_scope->get_native_scope(), SENTRY_METRIC_COUNT,
+			p_name.utf8(), sentry_value_new_int64(p_value), nullptr, dictionary_to_attributes(p_attributes));
 }
 
-void NativeSDK::metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
-	sentry_metrics_gauge(p_name.utf8(), p_value, p_unit.utf8(), dictionary_to_attributes(p_attributes));
+void NativeSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	ERR_FAIL_COND(p_scope.is_null());
+	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
+	ERR_FAIL_NULL(native_scope);
+
+	sentry_scope_capture_metric(native_scope->get_native_scope(), SENTRY_METRIC_GAUGE,
+			p_name.utf8(), sentry_value_new_double(p_value), p_unit.utf8(), dictionary_to_attributes(p_attributes));
 }
 
-void NativeSDK::metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
-	sentry_metrics_distribution(p_name.utf8(), p_value, p_unit.utf8(), dictionary_to_attributes(p_attributes));
+void NativeSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+	ERR_FAIL_COND(p_scope.is_null());
+	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
+	ERR_FAIL_NULL(native_scope);
+
+	sentry_scope_capture_metric(native_scope->get_native_scope(), SENTRY_METRIC_DISTRIBUTION,
+			p_name.utf8(), sentry_value_new_double(p_value), p_unit.utf8(), dictionary_to_attributes(p_attributes));
 }
 
 void NativeSDK::set_attribute(const String &p_name, const Variant &p_value) {
@@ -380,6 +375,11 @@ void NativeSDK::set_attribute(const String &p_name, const Variant &p_value) {
 
 void NativeSDK::remove_attribute(const String &p_name) {
 	sentry_remove_attribute(p_name.utf8());
+}
+
+SentryScopeImpl *NativeSDK::create_scope() {
+	SentryScopeImpl *scope = memnew(NativeScope);
+	return scope;
 }
 
 void NativeSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

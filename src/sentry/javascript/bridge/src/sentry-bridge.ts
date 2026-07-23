@@ -287,47 +287,88 @@ class SentryBridge {
     event.user = makeUser(id, username, email, ip);
   }
 
-  public logTrace(message: string, attributesJson?: string): void {
-    Sentry.logger.trace(message, safeParseJSON(attributesJson || "", {}));
+  public createScope(): Sentry.Scope {
+    const scope = new Sentry.Scope();
+    scope.setClient(Sentry.getClient());
+    scope.setPropagationContext(Sentry.getCurrentScope().getPropagationContext());
+    return scope;
   }
 
-  public logDebug(message: string, attributesJson?: string): void {
-    Sentry.logger.debug(message, safeParseJSON(attributesJson || "", {}));
+  public scopeSetContext(scope: Sentry.Scope, key: string, valueJson: string): void {
+    scope.setContext(key, safeParseJSON(valueJson, {}));
   }
 
-  public logInfo(message: string, attributesJson?: string): void {
-    Sentry.logger.info(message, safeParseJSON(attributesJson || "", {}));
+  public scopeSetFingerprint(scope: Sentry.Scope, fingerprintJson: string): void {
+    scope.setFingerprint(safeParseJSON<string[]>(fingerprintJson, []));
   }
 
-  public logWarn(message: string, attributesJson?: string): void {
-    Sentry.logger.warn(message, safeParseJSON(attributesJson || "", {}));
+  public scopeSetUser(scope: Sentry.Scope, id: string, username: string, email: string, ip: string): void {
+    scope.setUser(makeUser(id, username, email, ip));
   }
 
-  public logError(message: string, attributesJson?: string): void {
-    Sentry.logger.error(message, safeParseJSON(attributesJson || "", {}));
+  public scopeClear(scope: Sentry.Scope): void {
+    // Preserve the propagation context across clear() because Scope.clear() rotates the trace in JS.
+    const propagationContext = scope.getPropagationContext();
+    scope.clear();
+    scope.setPropagationContext(propagationContext);
   }
 
-  public logFatal(message: string, attributesJson?: string): void {
-    Sentry.logger.fatal(message, safeParseJSON(attributesJson || "", {}));
+  public logTrace(message: string, attributesJson?: string, scope?: Sentry.Scope): void {
+    Sentry.logger.trace(message, safeParseJSON(attributesJson || "", {}), { scope: scope ?? undefined });
   }
 
-  public metricsAddCount(name: string, value: number, attributesJson?: string): void {
+  public logDebug(message: string, attributesJson?: string, scope?: Sentry.Scope): void {
+    Sentry.logger.debug(message, safeParseJSON(attributesJson || "", {}), { scope: scope ?? undefined });
+  }
+
+  public logInfo(message: string, attributesJson?: string, scope?: Sentry.Scope): void {
+    Sentry.logger.info(message, safeParseJSON(attributesJson || "", {}), { scope: scope ?? undefined });
+  }
+
+  public logWarn(message: string, attributesJson?: string, scope?: Sentry.Scope): void {
+    Sentry.logger.warn(message, safeParseJSON(attributesJson || "", {}), { scope: scope ?? undefined });
+  }
+
+  public logError(message: string, attributesJson?: string, scope?: Sentry.Scope): void {
+    Sentry.logger.error(message, safeParseJSON(attributesJson || "", {}), { scope: scope ?? undefined });
+  }
+
+  public logFatal(message: string, attributesJson?: string, scope?: Sentry.Scope): void {
+    Sentry.logger.fatal(message, safeParseJSON(attributesJson || "", {}), { scope: scope ?? undefined });
+  }
+
+  public metricsAddCount(name: string, value: number, attributesJson?: string, scope?: Sentry.Scope): void {
     Sentry.metrics.count(name, value, {
       attributes: safeParseJSON(attributesJson || "", {}),
+      scope: scope ?? undefined,
     });
   }
 
-  public metricsAddGauge(name: string, value: number, unit: string, attributesJson?: string): void {
+  public metricsAddGauge(
+    name: string,
+    value: number,
+    unit: string,
+    attributesJson?: string,
+    scope?: Sentry.Scope,
+  ): void {
     Sentry.metrics.gauge(name, value, {
       ...(unit !== "" && { unit }),
       attributes: safeParseJSON(attributesJson || "", {}),
+      scope: scope ?? undefined,
     });
   }
 
-  public metricsAddDistribution(name: string, value: number, unit: string, attributesJson?: string): void {
+  public metricsAddDistribution(
+    name: string,
+    value: number,
+    unit: string,
+    attributesJson?: string,
+    scope?: Sentry.Scope,
+  ): void {
     Sentry.metrics.distribution(name, value, {
       ...(unit !== "" && { unit }),
       attributes: safeParseJSON(attributesJson || "", {}),
+      scope: scope ?? undefined,
     });
   }
 
@@ -340,15 +381,23 @@ class SentryBridge {
     Sentry.getGlobalScope().removeAttribute(name);
   }
 
-  public captureMessage(message: string, level: string): string {
-    return Sentry.captureMessage(message, level as Sentry.SeverityLevel);
+  public captureEvent(event: Sentry.Event, scope?: Sentry.Scope): string {
+    if (!scope) {
+      return Sentry.captureEvent(event);
+    }
+    // Ensure scoped captures use the active client. Scopes created before init
+    // have no client and would otherwise drop events silently.
+    scope.setClient(Sentry.getClient());
+    return scope.captureEvent(event);
   }
 
-  public captureEvent(event: Sentry.Event): string {
-    return Sentry.captureEvent(event);
-  }
-
-  public captureFeedback(message: string, name: string, email: string, associatedEventId: string): string {
+  public captureFeedback(
+    message: string,
+    name: string,
+    email: string,
+    associatedEventId: string,
+    scope?: Sentry.Scope,
+  ): string {
     const feedback: any = { message };
     if (name !== "") {
       feedback.name = name;
@@ -359,7 +408,10 @@ class SentryBridge {
     if (associatedEventId !== "") {
       feedback.associatedEventId = associatedEventId;
     }
-    return Sentry.captureFeedback(feedback);
+    // Ensure scoped captures use the active client. Scopes created before init
+    // have no client and would otherwise drop events silently.
+    scope?.setClient(Sentry.getClient());
+    return Sentry.captureFeedback(feedback, undefined, scope ?? undefined);
   }
 
   public lastEventId(): string {
@@ -371,7 +423,7 @@ class SentryBridge {
   }
 
   public addBytesAttachment(filename: string, bytes: Uint8Array, contentType: string): void {
-    Sentry.getCurrentScope().addAttachment({
+    Sentry.getIsolationScope().addAttachment({
       filename,
       data: bytes,
       contentType,
@@ -379,7 +431,7 @@ class SentryBridge {
   }
 
   public clearAttachments(): void {
-    Sentry.getCurrentScope().clearAttachments();
+    Sentry.getIsolationScope().clearAttachments();
   }
 }
 

@@ -37,7 +37,6 @@ public:
 	StringName removeUser;
 	StringName addBreadcrumb;
 	StringName log;
-	StringName captureMessage;
 	StringName getLastEventId;
 	StringName captureError;
 	StringName createEvent;
@@ -97,6 +96,23 @@ public:
 	StringName breadcrumbGetLevel;
 	StringName breadcrumbSetData;
 	StringName breadcrumbGetTimestamp;
+
+	// Scopes.
+	StringName createScope;
+	StringName releaseScope;
+	StringName cloneScope;
+	StringName scopeSetContext;
+	StringName scopeSetTag;
+	StringName scopeSetUser;
+	StringName scopeRemoveUser;
+	StringName scopeSetLevel;
+	StringName scopeSetFingerprint;
+	StringName scopeSetAttributeBool;
+	StringName scopeSetAttributeLong;
+	StringName scopeSetAttributeDouble;
+	StringName scopeSetAttributeString;
+	StringName scopeAddBreadcrumb;
+	StringName scopeClear;
 
 	// Logs.
 	StringName releaseLog;

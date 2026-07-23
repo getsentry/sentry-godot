@@ -4,8 +4,13 @@ import android.util.Log
 import io.sentry.Attachment
 import io.sentry.Breadcrumb
 import io.sentry.Hint
+import io.sentry.IScope
+import io.sentry.IScopes
 import io.sentry.ISerializer
 import io.sentry.JsonUnknown
+import io.sentry.Scope
+import io.sentry.ScopeType
+import io.sentry.Scopes
 import io.sentry.Sentry
 import io.sentry.SentryAttributes
 import io.sentry.SentryEvent
@@ -17,7 +22,9 @@ import io.sentry.SentryMetricsEvent
 import io.sentry.SentryOptions
 import io.sentry.android.core.InternalSentrySdk
 import io.sentry.android.core.SentryAndroid
+import io.sentry.logger.ILoggerApi
 import io.sentry.logger.SentryLogParameters
+import io.sentry.metrics.IMetricsApi
 import io.sentry.metrics.SentryMetricsParameters
 import io.sentry.protocol.Feedback
 import io.sentry.protocol.Message
@@ -67,6 +74,18 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
+    private val scopesByHandle = object : ThreadLocal<MutableMap<Int, IScope>>() {
+        override fun initialValue(): MutableMap<Int, IScope> {
+            return mutableMapOf()
+        }
+    }
+
+    private val combinedScopesByHandle = object : ThreadLocal<MutableMap<Int, IScopes>>() {
+        override fun initialValue(): MutableMap<Int, IScopes> {
+            return mutableMapOf()
+        }
+    }
+
     private fun getEvent(eventHandle: Int): SentryEvent? {
         val event: SentryEvent? = eventsByHandle.get()?.get(eventHandle)
         if (event == null) {
@@ -97,6 +116,39 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             Log.e(TAG, "Internal Error -- SentryMetricsEvent not found: $metricHandle")
         }
         return metricEvent
+    }
+
+    private fun getScope(scopeHandle: Int): IScope? {
+        val scope: IScope? = scopesByHandle.get()?.get(scopeHandle)
+        if (scope == null) {
+            Log.e(TAG, "Internal Error -- Scope not found: $scopeHandle")
+        }
+        return scope
+    }
+
+    // Returns combined scopes by the given scope handle (scope is owned by C++ layer).
+    // This layers the current scope over the global and isolation scopes,
+    // so scope attributes and trace changes are reflected per capture.
+    private fun combinedScopes(scopeHandle: Int): IScopes? {
+        if (!Sentry.isEnabled()) {
+            return null
+        }
+        val local = getScope(scopeHandle) ?: return null
+        val cache = combinedScopesByHandle.get()
+        cache?.get(scopeHandle)?.let { return it }
+        val scopes = Sentry.getCurrentScopes()
+        val combined =
+            Scopes(local, scopes.isolationScope, scopes.globalScope, "SentryAndroidGodotPlugin.combinedScopes")
+        cache?.put(scopeHandle, combined)
+        return combined
+    }
+
+    private fun scopedMetrics(scopeHandle: Int): IMetricsApi {
+        return combinedScopes(scopeHandle)?.metrics() ?: Sentry.metrics()
+    }
+
+    private fun scopedLogger(scopeHandle: Int): ILoggerApi {
+        return combinedScopes(scopeHandle)?.logger() ?: Sentry.logger()
     }
 
     private fun registerEvent(event: SentryEvent): Int {
@@ -159,6 +211,21 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         return handle
     }
 
+    private fun registerScope(scope: IScope): Int {
+        val scopesMap = scopesByHandle.get() ?: run {
+            Log.e(TAG, "Internal Error -- scopesByHandle is null")
+            return 0
+        }
+
+        var handle = Random.nextInt()
+        while (handle == 0 || scopesMap.containsKey(handle)) {
+            handle = Random.nextInt()
+        }
+
+        scopesMap[handle] = scope
+        return handle
+    }
+
     override fun getPluginName(): String {
         return "SentryAndroidGodotPlugin"
     }
@@ -204,6 +271,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.isAttachAnrThreadDump = attachAnrThreadDump
                 options.shutdownTimeoutMillis = shutdownTimeoutMs
                 options.isTombstoneEnabled = true
+                // Android top-level API writes to current scope by default.
+                // Re-route it to global scope so Sentry.setTag/setUser/addBreadcrumb and the automatic integration
+                // breadcrumbs land on the process-wide, native-synced global scope. Our layer owns the current slot for
+                // local (with_scope) data, and captures merge global + local.
+                options.defaultScopeType = ScopeType.GLOBAL
                 options.beforeSend =
                     SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
                         Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
@@ -323,12 +395,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun log(level: Int, body: String, attributes: Dictionary) {
+    fun log(scopeHandle: Int, level: Int, body: String, attributes: Dictionary) {
+        val logger = scopedLogger(scopeHandle)
         if (attributes.isEmpty()) {
-            Sentry.logger().log(level.toSentryLogLevel(), body)
+            logger.log(level.toSentryLogLevel(), body)
         } else {
             val sentryAttributes = SentryAttributes.fromMap(attributes)
-            Sentry.logger().log(
+            logger.log(
                 level.toSentryLogLevel(),
                 SentryLogParameters.create(sentryAttributes),
                 body
@@ -337,33 +410,35 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun metricsAddCount(name: String, value: Long, attributes: Dictionary) {
+    fun metricsAddCount(scopeHandle: Int, name: String, value: Long, attributes: Dictionary) {
+        val metrics = scopedMetrics(scopeHandle)
         if (attributes.isEmpty()) {
-            Sentry.metrics().count(name, value.toDouble())
+            metrics.count(name, value.toDouble())
         } else {
             val sentryAttributes = SentryAttributes.fromMap(attributes)
-            Sentry.metrics().count(name, value.toDouble(), null, SentryMetricsParameters.create(sentryAttributes))
+            metrics.count(name, value.toDouble(), null, SentryMetricsParameters.create(sentryAttributes))
         }
     }
 
     @UsedByGodot
-    fun metricsAddGauge(name: String, value: Double, unit: String, attributes: Dictionary) {
+    fun metricsAddGauge(scopeHandle: Int, name: String, value: Double, unit: String, attributes: Dictionary) {
+        val metrics = scopedMetrics(scopeHandle)
         if (attributes.isEmpty()) {
-            Sentry.metrics().gauge(name, value, unit.ifEmpty { null })
+            metrics.gauge(name, value, unit.ifEmpty { null })
         } else {
             val sentryAttributes = SentryAttributes.fromMap(attributes)
-            Sentry.metrics().gauge(name, value, unit.ifEmpty { null }, SentryMetricsParameters.create(sentryAttributes))
+            metrics.gauge(name, value, unit.ifEmpty { null }, SentryMetricsParameters.create(sentryAttributes))
         }
     }
 
     @UsedByGodot
-    fun metricsAddDistribution(name: String, value: Double, unit: String, attributes: Dictionary) {
+    fun metricsAddDistribution(scopeHandle: Int, name: String, value: Double, unit: String, attributes: Dictionary) {
+        val metrics = scopedMetrics(scopeHandle)
         if (attributes.isEmpty()) {
-            Sentry.metrics().distribution(name, value, unit.ifEmpty { null })
+            metrics.distribution(name, value, unit.ifEmpty { null })
         } else {
             val sentryAttributes = SentryAttributes.fromMap(attributes)
-            Sentry.metrics()
-                .distribution(name, value, unit.ifEmpty { null }, SentryMetricsParameters.create(sentryAttributes))
+            metrics.distribution(name, value, unit.ifEmpty { null }, SentryMetricsParameters.create(sentryAttributes))
         }
     }
 
@@ -390,12 +465,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun removeAttribute(name: String) {
         Sentry.removeAttribute(name)
-    }
-
-    @UsedByGodot
-    fun captureMessage(message: String, level: Int): String {
-        val id = Sentry.captureMessage(message, level.toSentryLevel())
-        return id.toString()
     }
 
     @UsedByGodot
@@ -426,12 +495,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun captureEvent(eventHandle: Int): String {
+    fun captureEvent(eventHandle: Int, scopeHandle: Int): String {
         val event: SentryEvent = getEvent(eventHandle) ?: run {
             Log.e(TAG, "Failed to capture event: $eventHandle")
             return ""
         }
-        val id = Sentry.captureEvent(event)
+        val scopes = combinedScopes(scopeHandle)
+        val id = scopes?.captureEvent(event) ?: Sentry.captureEvent(event)
         return id.toString()
     }
 
@@ -776,6 +846,99 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun breadcrumbGetTimestamp(handle: Int): Long {
         val crumb = getBreadcrumb(handle) ?: return 0
         return crumb.timestamp.toMicros()
+    }
+
+    @UsedByGodot
+    fun createScope(): Int {
+        return registerScope(Scope(Sentry.getCurrentScopes().options))
+    }
+
+    @UsedByGodot
+    fun cloneScope(handle: Int): Int {
+        val scope = getScope(handle) ?: return 0
+        return registerScope(scope.clone())
+    }
+
+    @UsedByGodot
+    fun releaseScope(handle: Int) {
+        scopesByHandle.get()?.remove(handle)
+        combinedScopesByHandle.get()?.remove(handle)
+    }
+
+    @UsedByGodot
+    fun scopeSetContext(handle: Int, key: String, value: Dictionary) {
+        getScope(handle)?.setContexts(key, value)
+    }
+
+    @UsedByGodot
+    fun scopeSetTag(handle: Int, key: String, value: String) {
+        getScope(handle)?.setTag(key, value)
+    }
+
+    @UsedByGodot
+    fun scopeSetUser(handle: Int, id: String, userName: String, email: String, ipAddress: String) {
+        val scope = getScope(handle) ?: return
+        val user = User()
+        if (id.isNotEmpty()) {
+            user.id = id
+        }
+        if (userName.isNotEmpty()) {
+            user.username = userName
+        }
+        if (email.isNotEmpty()) {
+            user.email = email
+        }
+        if (ipAddress.isNotEmpty()) {
+            user.ipAddress = ipAddress
+        }
+        scope.user = user
+    }
+
+    @UsedByGodot
+    fun scopeRemoveUser(handle: Int) {
+        getScope(handle)?.user = null
+    }
+
+    @UsedByGodot
+    fun scopeSetLevel(handle: Int, level: Int) {
+        getScope(handle)?.level = level.toSentryLevel()
+    }
+
+    @UsedByGodot
+    fun scopeSetFingerprint(handle: Int, fingerprint: Array<String>) {
+        getScope(handle)?.fingerprint = fingerprint.toList()
+    }
+
+    @UsedByGodot
+    fun scopeSetAttributeBool(handle: Int, name: String, value: Boolean) {
+        getScope(handle)?.setAttribute(name, value)
+    }
+
+    @UsedByGodot
+    fun scopeSetAttributeLong(handle: Int, name: String, value: Long) {
+        getScope(handle)?.setAttribute(name, value)
+    }
+
+    @UsedByGodot
+    fun scopeSetAttributeDouble(handle: Int, name: String, value: Double) {
+        getScope(handle)?.setAttribute(name, value)
+    }
+
+    @UsedByGodot
+    fun scopeSetAttributeString(handle: Int, name: String, value: String) {
+        getScope(handle)?.setAttribute(name, value)
+    }
+
+    @UsedByGodot
+    fun scopeAddBreadcrumb(scopeHandle: Int, crumbHandle: Int) {
+        val scope = getScope(scopeHandle) ?: return
+        val crumb = getBreadcrumb(crumbHandle) ?: return
+        scope.addBreadcrumb(crumb)
+    }
+
+    @UsedByGodot
+    fun scopeClear(handle: Int) {
+        getScope(handle)?.clear()
     }
 
     @UsedByGodot

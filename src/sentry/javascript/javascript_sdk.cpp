@@ -5,6 +5,7 @@
 #include "sentry/javascript/javascript_interop.h"
 #include "sentry/javascript/javascript_log.h"
 #include "sentry/javascript/javascript_metric.h"
+#include "sentry/javascript/javascript_scope.h"
 #include "sentry/javascript/javascript_util.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
@@ -110,6 +111,19 @@ static void before_send_metric_wasm_callback(int32_t *p_ids, int32_t p_len) {
 
 } // extern "C"
 
+namespace {
+
+inline JSObjectPtr _get_scope_object(const Ref<SentryScope> &p_scope) {
+	if (p_scope.is_null()) {
+		return nullptr;
+	}
+	JavaScriptScope *js_scope = static_cast<JavaScriptScope *>(p_scope->get_implementation());
+	ERR_FAIL_NULL_V(js_scope, nullptr);
+	return js_scope->get_js_object();
+}
+
+} // unnamed namespace
+
 // *** JavaScriptSDK
 
 void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) {
@@ -164,37 +178,32 @@ void JavaScriptSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	js_bridge()->call("addBreadcrumb", crumb->get_js_object());
 }
 
-void JavaScriptSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
+void JavaScriptSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(!js_bridge());
 
 	String attr_value = attributes_to_json(p_attributes);
+	JSObjectPtr scope_obj = _get_scope_object(p_scope);
 
 	switch (p_level) {
 		case LOG_LEVEL_TRACE: {
-			js_bridge()->call("logTrace", p_body.utf8(), attr_value.utf8());
+			js_bridge()->call("logTrace", p_body.utf8(), attr_value.utf8(), scope_obj);
 		} break;
 		case LOG_LEVEL_DEBUG: {
-			js_bridge()->call("logDebug", p_body.utf8(), attr_value.utf8());
+			js_bridge()->call("logDebug", p_body.utf8(), attr_value.utf8(), scope_obj);
 		} break;
 		case LOG_LEVEL_INFO: {
-			js_bridge()->call("logInfo", p_body.utf8(), attr_value.utf8());
+			js_bridge()->call("logInfo", p_body.utf8(), attr_value.utf8(), scope_obj);
 		} break;
 		case LOG_LEVEL_WARN: {
-			js_bridge()->call("logWarn", p_body.utf8(), attr_value.utf8());
+			js_bridge()->call("logWarn", p_body.utf8(), attr_value.utf8(), scope_obj);
 		} break;
 		case LOG_LEVEL_ERROR: {
-			js_bridge()->call("logError", p_body.utf8(), attr_value.utf8());
+			js_bridge()->call("logError", p_body.utf8(), attr_value.utf8(), scope_obj);
 		} break;
 		case LOG_LEVEL_FATAL: {
-			js_bridge()->call("logFatal", p_body.utf8(), attr_value.utf8());
+			js_bridge()->call("logFatal", p_body.utf8(), attr_value.utf8(), scope_obj);
 		} break;
 	}
-}
-
-String JavaScriptSDK::capture_message(const String &p_message, Level p_level) {
-	ERR_FAIL_COND_V(!js_bridge(), String());
-	String uuid = js_bridge()->call("captureMessage", p_message.utf8(), level_as_string(p_level).utf8()).as_string();
-	return uuid;
 }
 
 String JavaScriptSDK::get_last_event_id() {
@@ -206,15 +215,15 @@ Ref<SentryEvent> JavaScriptSDK::create_event() {
 	return memnew(JavaScriptEvent);
 }
 
-String JavaScriptSDK::capture_event(const Ref<SentryEvent> &p_event) {
+String JavaScriptSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) {
 	ERR_FAIL_COND_V(!js_bridge(), String());
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Sentry: Can't capture event - event object is null.");
 	JavaScriptEvent *ev = Object::cast_to<JavaScriptEvent>(p_event.ptr());
 	ERR_FAIL_NULL_V(ev, String());
-	return js_bridge()->call("captureEvent", ev->get_js_object()).as_string();
+	return js_bridge()->call("captureEvent", ev->get_js_object(), _get_scope_object(p_scope)).as_string();
 }
 
-void JavaScriptSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
+void JavaScriptSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) {
 	ERR_FAIL_COND(!js_bridge());
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
@@ -223,7 +232,8 @@ void JavaScriptSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 			p_feedback->get_message().utf8(),
 			p_feedback->get_name().utf8(),
 			p_feedback->get_contact_email().utf8(),
-			p_feedback->get_associated_event_id().ascii());
+			p_feedback->get_associated_event_id().ascii(),
+			_get_scope_object(p_scope));
 }
 
 void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
@@ -252,22 +262,22 @@ void JavaScriptSDK::clear_attachments() {
 	js_bridge()->call("clearAttachments");
 }
 
-void JavaScriptSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
+void JavaScriptSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(!js_bridge());
 	String attr_value = attributes_to_json(p_attributes);
-	js_bridge()->call("metricsAddCount", p_name.utf8(), p_value, attr_value.utf8());
+	js_bridge()->call("metricsAddCount", p_name.utf8(), p_value, attr_value.utf8(), _get_scope_object(p_scope));
 }
 
-void JavaScriptSDK::metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+void JavaScriptSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(!js_bridge());
 	String attr_value = attributes_to_json(p_attributes);
-	js_bridge()->call("metricsAddGauge", p_name.utf8(), p_value, p_unit.utf8(), attr_value.utf8());
+	js_bridge()->call("metricsAddGauge", p_name.utf8(), p_value, p_unit.utf8(), attr_value.utf8(), _get_scope_object(p_scope));
 }
 
-void JavaScriptSDK::metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+void JavaScriptSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(!js_bridge());
 	String attr_value = attributes_to_json(p_attributes);
-	js_bridge()->call("metricsAddDistribution", p_name.utf8(), p_value, p_unit.utf8(), attr_value.utf8());
+	js_bridge()->call("metricsAddDistribution", p_name.utf8(), p_value, p_unit.utf8(), attr_value.utf8(), _get_scope_object(p_scope));
 }
 
 void JavaScriptSDK::set_attribute(const String &p_name, const Variant &p_value) {
@@ -294,6 +304,10 @@ void JavaScriptSDK::set_attribute(const String &p_name, const Variant &p_value) 
 void JavaScriptSDK::remove_attribute(const String &p_name) {
 	ERR_FAIL_COND(!js_bridge());
 	js_bridge()->call("removeAttribute", p_name.utf8());
+}
+
+SentryScopeImpl *JavaScriptSDK::create_scope() {
+	return memnew(JavaScriptScope);
 }
 
 void JavaScriptSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

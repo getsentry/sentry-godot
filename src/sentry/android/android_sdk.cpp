@@ -4,6 +4,7 @@
 #include "android_event.h"
 #include "android_log.h"
 #include "android_metric.h"
+#include "android_scope.h"
 #include "android_string_names.h"
 #include "android_util.h"
 #include "sentry/common_defs.h"
@@ -170,7 +171,7 @@ void AndroidSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	android_plugin->call(ANDROID_SN(addBreadcrumb), crumb->get_handle());
 }
 
-void AndroidSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
+void AndroidSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 
@@ -178,13 +179,11 @@ void AndroidSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p
 		return;
 	}
 
-	android_plugin->call(ANDROID_SN(log), p_level, p_body, _sanitize_attributes(p_attributes));
-}
-
-String AndroidSDK::capture_message(const String &p_message, Level p_level) {
-	Object *android_plugin = _get_android_plugin();
-	ERR_FAIL_NULL_V(android_plugin, String());
-	return android_plugin->call(ANDROID_SN(captureMessage), p_message, p_level);
+	ERR_FAIL_COND(p_scope.is_null());
+	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
+	android_plugin->call(ANDROID_SN(log),
+			android_scope->get_handle(),
+			p_level, p_body, _sanitize_attributes(p_attributes));
 }
 
 String AndroidSDK::get_last_event_id() {
@@ -201,18 +200,20 @@ Ref<SentryEvent> AndroidSDK::create_event() {
 	return event;
 }
 
-String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
+String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL_V(android_plugin, String());
 	ERR_FAIL_COND_V(p_event.is_null(), String());
 	Ref<AndroidEvent> android_event = p_event;
 	ERR_FAIL_COND_V(android_event.is_null(), String());
-	int32_t handle = android_event->get_handle();
-	android_plugin->call(ANDROID_SN(captureEvent), handle);
+	AndroidScope *android_scope = p_scope.is_valid() ? static_cast<AndroidScope *>(p_scope->get_implementation()) : nullptr;
+	android_plugin->call(ANDROID_SN(captureEvent),
+			android_event->get_handle(),
+			android_scope ? android_scope->get_handle() : 0);
 	return android_event->get_id();
 }
 
-void AndroidSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
+void AndroidSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
@@ -250,27 +251,36 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	}
 }
 
-void AndroidSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
+void AndroidSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
+	ERR_FAIL_COND(p_scope.is_null());
 
+	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 	android_plugin->call(ANDROID_SN(metricsAddCount),
+			android_scope->get_handle(),
 			p_name, p_value, _sanitize_attributes(p_attributes));
 }
 
-void AndroidSDK::metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+void AndroidSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
+	ERR_FAIL_COND(p_scope.is_null());
 
+	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 	android_plugin->call(ANDROID_SN(metricsAddGauge),
+			android_scope->get_handle(),
 			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
 }
 
-void AndroidSDK::metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+void AndroidSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
+	ERR_FAIL_COND(p_scope.is_null());
 
+	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 	android_plugin->call(ANDROID_SN(metricsAddDistribution),
+			android_scope->get_handle(),
 			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
 }
 
@@ -302,6 +312,13 @@ void AndroidSDK::remove_attribute(const String &p_name) {
 	ERR_FAIL_NULL(android_plugin);
 
 	android_plugin->call(ANDROID_SN(removeAttribute), p_name);
+}
+
+SentryScopeImpl *AndroidSDK::create_scope() {
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL_V(android_plugin, memnew(AndroidScope()));
+	int32_t handle = android_plugin->call(ANDROID_SN(createScope));
+	return memnew(AndroidScope(android_plugin, handle));
 }
 
 void AndroidSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

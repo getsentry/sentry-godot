@@ -6,6 +6,7 @@
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
 #include "sentry/sentry_feedback.h"
+#include "sentry/sentry_scope.h"
 #include "sentry/sentry_user.h"
 
 #include <godot_cpp/variant/dictionary.hpp>
@@ -30,25 +31,27 @@ public:
 	virtual Ref<SentryBreadcrumb> create_breadcrumb() = 0;
 	virtual void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) = 0;
 
-	virtual void log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes = Dictionary()) = 0;
+	virtual void capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, const String &p_body, const Dictionary &p_attributes = Dictionary()) = 0;
 
-	virtual String capture_message(const String &p_message, Level p_level) = 0;
 	virtual String get_last_event_id() = 0;
 
 	virtual Ref<SentryEvent> create_event() = 0;
-	virtual String capture_event(const Ref<SentryEvent> &p_event) = 0;
 
-	virtual void capture_feedback(const Ref<SentryFeedback> &p_feedback) = 0;
+	virtual String capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) = 0;
+
+	virtual void capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) = 0;
 
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) = 0;
 	virtual void clear_attachments() = 0;
 
-	virtual void metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) = 0;
-	virtual void metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) = 0;
-	virtual void metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) = 0;
+	virtual void metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) = 0;
+	virtual void metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) = 0;
+	virtual void metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) = 0;
 
 	virtual void set_attribute(const String &p_name, const Variant &p_value) = 0;
 	virtual void remove_attribute(const String &p_name) = 0;
+
+	virtual SentryScopeImpl *create_scope() = 0;
 
 	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) = 0;
 

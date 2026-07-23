@@ -116,6 +116,8 @@ namespace sentry {
 
 SentrySDK *SentrySDK::singleton = nullptr;
 
+thread_local List<Ref<SentryScope>> SentrySDK::current_scopes;
+
 void SentrySDK::create_singleton() {
 	ERR_FAIL_NULL(Engine::get_singleton());
 	singleton = memnew(SentrySDK);
@@ -130,6 +132,18 @@ void SentrySDK::destroy_singleton() {
 	Engine::get_singleton()->unregister_singleton("SentrySDK");
 	memdelete(singleton);
 	singleton = nullptr;
+}
+
+Variant SentrySDK::with_scope(Callable p_callable) {
+	Ref<SentryScope> scope = _push_scope();
+	Variant result = p_callable.call(scope);
+	if (Object *obj = result.get_validated_object();
+			unlikely(obj != nullptr && obj->get_class() == "GDScriptFunctionState")) {
+		obj->connect(SN_COMPLETED, callable_mp(this, &SentrySDK::_pop_scope).bind(scope).unbind(1));
+	} else {
+		_pop_scope(scope);
+	}
+	return result;
 }
 
 void SentrySDK::init(const Callable &p_configuration_callback) {
@@ -176,6 +190,8 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	for (const Ref<SentryAttachment> &att : _get_default_attachments()) {
 		options->add_default_attachment(att);
 	}
+
+	current_scopes.clear();
 
 	sentry::logging::print_debug("Initializing Sentry SDK");
 	internal_sdk->init();
@@ -224,11 +240,15 @@ void SentrySDK::close() {
 			godot_logger.unref();
 		}
 		internal_sdk->close();
+		current_scopes.clear();
 	}
 }
 
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
-	return internal_sdk->capture_message(p_message, p_level);
+	Ref<SentryEvent> event = internal_sdk->create_event();
+	event->set_message(p_message);
+	event->set_level(p_level);
+	return internal_sdk->capture_event(event, get_current_scope());
 }
 
 void SentrySDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
@@ -249,7 +269,7 @@ Ref<SentryEvent> SentrySDK::create_event() const {
 
 String SentrySDK::capture_event(const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), "", "Sentry: Can't capture event - event object is null.");
-	return internal_sdk->capture_event(p_event);
+	return internal_sdk->capture_event(p_event, get_current_scope());
 }
 
 void SentrySDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
@@ -258,7 +278,7 @@ void SentrySDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 	if (p_feedback->get_message().length() > 4096) {
 		WARN_PRINT("Sentry: Feedback message is too long (max 4096 characters).");
 	}
-	return internal_sdk->capture_feedback(p_feedback);
+	return internal_sdk->capture_feedback(get_current_scope(), p_feedback);
 }
 
 void SentrySDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
@@ -553,6 +573,9 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attribute", "name", "value"), &SentrySDK::set_attribute);
 	ClassDB::bind_method(D_METHOD("remove_attribute", "name"), &SentrySDK::remove_attribute);
 
+	ClassDB::bind_method(D_METHOD("get_current_scope"), &SentrySDK::get_current_scope);
+	ClassDB::bind_method(D_METHOD("with_scope", "callable"), &SentrySDK::with_scope);
+
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
@@ -563,7 +586,8 @@ void SentrySDK::_bind_methods() {
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "bad_code", PROPERTY_HINT_TYPE_STRING, "SentryBadCode", PROPERTY_USAGE_NONE), get_bad_code);
 }
 
-SentrySDK::SentrySDK() {
+SentrySDK::SentrySDK() :
+		SN_COMPLETED(StringName("completed")) {
 	ERR_FAIL_NULL(OS::get_singleton());
 
 	options = SentryOptions::create_from_project_settings();
@@ -574,6 +598,9 @@ SentrySDK::SentrySDK() {
 }
 
 SentrySDK::~SentrySDK() {
+	// Release scopes before the internal SDK, as scopes may depend on SDK-owned resources.
+	current_scopes.clear();
+
 	internal_sdk.reset();
 
 	singleton = nullptr;

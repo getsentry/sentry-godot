@@ -29,8 +29,15 @@ The bridge exposes `window.SentryBridge`. Example usage:
 SentryBridge.init(beforeSendCallback, beforeSendLogCallback, dsn, debug, release, dist, environment, sampleRate, maxBreadcrumbs, enableLogs)
 SentryBridge.setTag(key, value)
 SentryBridge.setUser(id, username, email, ip)
-SentryBridge.captureMessage(message, level)
 SentryBridge.captureEvent(event)
+```
+
+Scopes are created through the bridge and passed back as a trailing argument to the capture methods:
+
+```typescript
+const scope = SentryBridge.createScope()
+SentryBridge.scopeSetUser(scope, id, username, email, ip)
+SentryBridge.captureEvent(event, scope)
 ```
 
 See `src/sentry-bridge.ts` for all available methods.

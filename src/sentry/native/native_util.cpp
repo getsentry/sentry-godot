@@ -78,6 +78,18 @@ sentry_value_t strings_to_sentry_list(const PackedStringArray &p_strings) {
 	return sentry_list;
 }
 
+sentry_value_t user_to_sentry_value(const Ref<SentryUser> &p_user) {
+	sentry_value_t user_data = sentry_value_new_object();
+	if (p_user.is_null()) {
+		return user_data;
+	}
+	sentry_value_set_or_remove_string_by_key(user_data, "id", p_user->get_id());
+	sentry_value_set_or_remove_string_by_key(user_data, "username", p_user->get_username());
+	sentry_value_set_or_remove_string_by_key(user_data, "email", p_user->get_email());
+	sentry_value_set_or_remove_string_by_key(user_data, "ip_address", p_user->get_ip_address());
+	return user_data;
+}
+
 sentry_level_t level_to_native(sentry::Level p_level) {
 	switch (p_level) {
 		case sentry::Level::LEVEL_DEBUG:

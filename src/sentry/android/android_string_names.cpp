@@ -26,7 +26,6 @@ AndroidStringNames::AndroidStringNames() {
 	removeUser = StringName("removeUser");
 	addBreadcrumb = StringName("addBreadcrumb");
 	log = StringName("log");
-	captureMessage = StringName("captureMessage");
 	getLastEventId = StringName("getLastEventId");
 	captureError = StringName("captureError");
 	createEvent = StringName("createEvent");
@@ -86,6 +85,23 @@ AndroidStringNames::AndroidStringNames() {
 	breadcrumbGetLevel = StringName("breadcrumbGetLevel");
 	breadcrumbSetData = StringName("breadcrumbSetData");
 	breadcrumbGetTimestamp = StringName("breadcrumbGetTimestamp");
+
+	// Scopes.
+	createScope = StringName("createScope");
+	releaseScope = StringName("releaseScope");
+	cloneScope = StringName("cloneScope");
+	scopeSetContext = StringName("scopeSetContext");
+	scopeSetTag = StringName("scopeSetTag");
+	scopeSetUser = StringName("scopeSetUser");
+	scopeRemoveUser = StringName("scopeRemoveUser");
+	scopeSetLevel = StringName("scopeSetLevel");
+	scopeSetFingerprint = StringName("scopeSetFingerprint");
+	scopeSetAttributeBool = StringName("scopeSetAttributeBool");
+	scopeSetAttributeLong = StringName("scopeSetAttributeLong");
+	scopeSetAttributeDouble = StringName("scopeSetAttributeDouble");
+	scopeSetAttributeString = StringName("scopeSetAttributeString");
+	scopeAddBreadcrumb = StringName("scopeAddBreadcrumb");
+	scopeClear = StringName("scopeClear");
 
 	// Logs.
 	releaseLog = StringName("releaseLog");

@@ -196,3 +196,39 @@ func test_structured_logs_with_global_attributes(_do_skip = OS.get_name() == "We
 	SentrySDK.set_attribute("deleted_attribute", "SHOULD NOT BE PRESENT")
 	SentrySDK.remove_attribute("deleted_attribute")
 	SentrySDK.logger.info("Test with global attributes")
+
+
+# TODO: remove skip when implemented on other platforms
+# Skipped: JS merges scope attributes at serialization time, after the callback has already run.
+func test_structured_logs_with_scope_attributes(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"]) -> void:
+	SentrySDK.set_attribute("from_global", "global")
+	SentrySDK.set_attribute("scope_over_global", "global")
+	SentrySDK.set_attribute("log_over_all", "global")
+
+	SentrySDK.with_scope(func(scope: SentryScope):
+		scope.set_attribute("from_scope", "scope")
+		scope.set_attribute("scope_over_global", "scope")
+		scope.set_attribute("log_over_all", "scope")
+
+		log_processed.connect(func(entry: SentryLog):
+			# Each source contributes the attributes only it has...
+			assert_str(entry.get_attribute("from_global")).is_equal("global")
+			assert_str(entry.get_attribute("from_scope")).is_equal("scope")
+			assert_str(entry.get_attribute("from_log")).is_equal("log")
+			# ...and the most specific source wins the ones they share.
+			assert_str(entry.get_attribute("scope_over_global")).is_equal("scope")
+			assert_str(entry.get_attribute("log_over_all")).is_equal("log")
+		, CONNECT_ONE_SHOT)
+
+		SentrySDK.logger.info("Test with scope attributes", [], {
+			"from_log": "log",
+			"log_over_all": "log",
+		})
+	)
+
+	# Scope attributes are gone once the scope is popped.
+	log_processed.connect(func(entry: SentryLog):
+		assert_that(entry.get_attribute("from_scope")).is_null()
+		assert_str(entry.get_attribute("scope_over_global")).is_equal("global")
+	, CONNECT_ONE_SHOT)
+	SentrySDK.logger.info("Test after scope is popped")

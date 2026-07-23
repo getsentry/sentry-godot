@@ -5,6 +5,7 @@
 #include "cocoa_includes.h"
 #include "cocoa_log.h"
 #include "cocoa_metric.h"
+#include "cocoa_scope.h"
 #include "cocoa_util.h"
 #include "gen/sdk_version.gen.h"
 #include "sentry/common_defs.h"
@@ -133,7 +134,7 @@ void CocoaSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	[SentryObjCSDK addBreadcrumb:crumb->get_cocoa_breadcrumb()];
 }
 
-void CocoaSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
+void CocoaSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
 	if (p_body.is_empty()) {
 		return;
 	}
@@ -204,15 +205,6 @@ void CocoaSDK::log(LogLevel p_level, const String &p_body, const Dictionary &p_a
 	}
 }
 
-String CocoaSDK::capture_message(const String &p_message, Level p_level) {
-	SentryObjCId *event_id = [SentryObjCSDK captureMessage:string_to_objc(p_message)
-											withScopeBlock:^(SentryObjCScope *scope) {
-												scope.level = sentry_level_to_objc(p_level);
-											}];
-
-	return event_id ? string_from_objc(event_id.sentryIdString) : String();
-}
-
 String CocoaSDK::get_last_event_id() {
 	MutexLock lock(*last_event_id_mutex.ptr());
 	return last_event_id;
@@ -223,7 +215,7 @@ Ref<SentryEvent> CocoaSDK::create_event() {
 	return memnew(CocoaEvent(cocoa_event));
 }
 
-String CocoaSDK::capture_event(const Ref<SentryEvent> &p_event) {
+String CocoaSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Sentry: Can't capture event - event object is null.");
 	CocoaEvent *typed_event = Object::cast_to<CocoaEvent>(p_event.ptr());
 	ERR_FAIL_NULL_V(typed_event, String());
@@ -232,7 +224,7 @@ String CocoaSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	return event_id ? string_from_objc(event_id.sentryIdString) : String();
 }
 
-void CocoaSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
+void CocoaSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) {
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
 
@@ -293,7 +285,7 @@ void CocoaSDK::clear_attachments() {
 	}];
 }
 
-void CocoaSDK::metrics_add_count(const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
+void CocoaSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
 	NSUInteger value = (NSUInteger)MAX(p_value, (int64_t)0);
 	if (p_attributes.is_empty()) {
 		[[SentryObjCSDK metrics] countWithKey:string_to_objc(p_name) value:value];
@@ -304,7 +296,7 @@ void CocoaSDK::metrics_add_count(const String &p_name, int64_t p_value, const Di
 	}
 }
 
-void CocoaSDK::metrics_add_gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+void CocoaSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	SentryObjCUnit *unit = p_unit.is_empty()
 			? nil
 			: [[SentryObjCUnit alloc] initWithRawValue:string_to_objc(p_unit)];
@@ -320,7 +312,7 @@ void CocoaSDK::metrics_add_gauge(const String &p_name, double p_value, const Str
 	}
 }
 
-void CocoaSDK::metrics_add_distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
+void CocoaSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	SentryObjCUnit *unit = p_unit.is_empty()
 			? nil
 			: [[SentryObjCUnit alloc] initWithRawValue:string_to_objc(p_unit)];
@@ -347,6 +339,10 @@ void CocoaSDK::remove_attribute(const String &p_name) {
 	[SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
 		[scope removeAttributeForKey:string_to_objc(p_name)];
 	}];
+}
+
+SentryScopeImpl *CocoaSDK::create_scope() {
+	return memnew(CocoaScope);
 }
 
 void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
