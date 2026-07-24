@@ -85,7 +85,9 @@ foreach ($testPath in $testPaths) {
     } else {
         # A hung run would otherwise block until the CI step timeout kills the whole job.
         Write-Err "Test run exceeded $TestTimeout seconds. Terminating process $($process.Id)."
-        $process.Kill()
+        if (-not $process.HasExited) {
+            $process.Kill()
+        }
         $process.WaitForExit()
         $testExitCode = $ExitTestRunTimedOut
     }
