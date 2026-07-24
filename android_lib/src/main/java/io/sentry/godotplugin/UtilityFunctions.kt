@@ -4,6 +4,8 @@ import io.sentry.SentryLevel
 import io.sentry.SentryLogLevel
 import java.util.Date
 import java.time.Instant
+import kotlin.text.toIntOrNull as parseIntOrNull
+import kotlin.text.toLongOrNull as parseLongOrNull
 
 fun Int.toSentryLevel(): SentryLevel =
     when (this) {
@@ -88,7 +90,7 @@ fun Any?.toIntOrNull(): Int? =
         is Short -> this.toInt()
         is Byte -> this.toInt()
         is Number -> this.toInt()
-        is String -> this.toIntOrNull()
+        is String -> this.parseIntOrNull()
         else -> null
 }
 
@@ -99,6 +101,6 @@ fun Any?.toLongOrNull(): Long? =
         is Short -> this.toLong()
         is Byte -> this.toLong()
         is Number -> this.toLong()
-        is String -> this.toLongOrNull()
+        is String -> this.parseLongOrNull()
         else -> null
 }
