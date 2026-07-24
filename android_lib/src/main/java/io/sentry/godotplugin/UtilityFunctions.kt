@@ -55,6 +55,9 @@ fun Date.toMicros(): Long {
     return date.time * 1000
 }
 
+// NOTE: Godot 4.6+ boxes Variant ints as java.lang.Long, older versions as java.lang.Integer.
+//       Use these conversion helpers to normalize.
+
 fun Any?.toIntOrThrow(): Int =
     when (this) {
         is Int -> this
@@ -68,6 +71,17 @@ fun Any?.toLongOrThrow(): Long =
         is Long -> this
         else -> throw IllegalArgumentException("Expected Int or Long, got ${this?.let { it::class } ?: "null"}")
     }
+
+fun Any?.toIntOrNull(): Int? =
+    when (this) {
+        is Int -> this
+        is Long -> this.toInt()
+        is Short -> this.toInt()
+        is Byte -> this.toInt()
+        is Number -> this.toInt()
+        is String -> this.toIntOrNull()
+        else -> null
+}
 
 fun Any?.toLongOrNull(): Long? =
     when (this) {
