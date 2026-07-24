@@ -8,8 +8,15 @@ permissions:
 
 jobs:
   test-android:
-    name: Test Android
+    name: Test Android (Godot ${{ matrix.godot-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        godot-version:
+          - 4.5.1-stable
+          - 4.6.3-stable
+          - 4.7.1-stable
     steps:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -21,6 +28,7 @@ jobs:
         timeout-minutes: 15
         with:
           arch: x86_64
+          godot-version: ${{ matrix.godot-version }}
           export-platform: "android"
 
       # Needed for Android emulator
