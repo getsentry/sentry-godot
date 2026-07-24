@@ -35,7 +35,7 @@ android {
 
 dependencies {
     // Godot is provided by the Android export template at runtime.
-    // Keep this pinned to the minimum supported engine version so newer Godot APIs don't slip in.
+    // NOTE: Must match COMPATIBILITY_MINIMUM in SConstruct, so that newer Godot APIs don't slip in.
     compileOnly("org.godotengine:godot:4.5.0.stable")
     testImplementation("junit:junit:4.13.2")
 
