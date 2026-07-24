@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed missing line numbers in GDScript frames on Android with Godot 4.6 and later ([#826](https://github.com/getsentry/sentry-godot/pull/826))
+
 ### Dependencies
 
 - Bump Sentry JavaScript from v10.65.0 to v10.67.0 ([#816](https://github.com/getsentry/sentry-godot/pull/816), [#819](https://github.com/getsentry/sentry-godot/pull/819))
