@@ -178,7 +178,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val release = optionsData["release"] as String
             val dist = optionsData["dist"] as String
             val environment = optionsData["environment"] as String
-            val sampleRate = optionsData["sample_rate"] as Double
+            val sampleRate = optionsData["sample_rate"].toDoubleOrThrow()
             val maxBreadcrumbs = optionsData["max_breadcrumbs"].toIntOrThrow()
             val enableLogs = optionsData["enable_logs"] as Boolean
             val enableMetrics = optionsData["enable_metrics"] as Boolean
@@ -643,7 +643,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val frame = SentryStackFrame().apply {
                 filename = frameData["filename"] as? String
                 function = frameData["function"] as? String
-                lineno = frameData["lineno"] as? Int
+                lineno = frameData["lineno"].toIntOrNull()
                 isInApp = frameData["in_app"] as? Boolean
                 platform = frameData["platform"] as? String
 

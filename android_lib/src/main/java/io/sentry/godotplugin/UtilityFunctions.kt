@@ -4,6 +4,8 @@ import io.sentry.SentryLevel
 import io.sentry.SentryLogLevel
 import java.util.Date
 import java.time.Instant
+import kotlin.text.toIntOrNull as parseIntOrNull
+import kotlin.text.toLongOrNull as parseLongOrNull
 
 fun Int.toSentryLevel(): SentryLevel =
     when (this) {
@@ -55,6 +57,9 @@ fun Date.toMicros(): Long {
     return date.time * 1000
 }
 
+// NOTE: Godot 4.6+ boxes Variant ints as java.lang.Long, older versions as java.lang.Integer.
+//       Use these conversion helpers to normalize.
+
 fun Any?.toIntOrThrow(): Int =
     when (this) {
         is Int -> this
@@ -69,6 +74,26 @@ fun Any?.toLongOrThrow(): Long =
         else -> throw IllegalArgumentException("Expected Int or Long, got ${this?.let { it::class } ?: "null"}")
     }
 
+fun Any?.toDoubleOrThrow(): Double =
+    when (this) {
+        is Double -> this
+        is Float -> this.toDouble()
+        is Int -> this.toDouble()
+        is Long -> this.toDouble()
+        else -> throw IllegalArgumentException("Expected a number, got ${this?.let { it::class } ?: "null"}")
+    }
+
+fun Any?.toIntOrNull(): Int? =
+    when (this) {
+        is Int -> this
+        is Long -> this.toInt()
+        is Short -> this.toInt()
+        is Byte -> this.toInt()
+        is Number -> this.toInt()
+        is String -> this.parseIntOrNull()
+        else -> null
+}
+
 fun Any?.toLongOrNull(): Long? =
     when (this) {
         is Long -> this
@@ -76,6 +101,6 @@ fun Any?.toLongOrNull(): Long? =
         is Short -> this.toLong()
         is Byte -> this.toLong()
         is Number -> this.toLong()
-        is String -> this.toLongOrNull()
+        is String -> this.parseLongOrNull()
         else -> null
 }
