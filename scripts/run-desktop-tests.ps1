@@ -56,7 +56,7 @@ $isolatedDir = Join-Path $projectDir "test/isolated"
 
 # Discover isolated test suites and add normal suites as first item
 Write-Highlight "Looking for isolated test suites..."
-$isolatedTests = @(Get-ChildItem -Path $isolatedDir -Filter "test_*.gd" | Sort-Object Name)
+$isolatedTests = @(Get-ChildItem -Path $isolatedDir -Filter "test_*.gd" -ErrorAction SilentlyContinue | Sort-Object Name)
 
 if ($isolatedTests.Count -eq 0) {
     Write-Err "No isolated test files found in $isolatedDir. Aborting."
