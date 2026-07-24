@@ -5,6 +5,10 @@ inputs:
   arch:
     description: Architecture to use for testing.
     required: true
+  godot-version:
+    description: Godot version tag to test (e.g. "4.6.3-stable").
+    required: false
+    default: ""
   export-platform:
     description: Which export template will be used, lowercase (e.g., android, ios).
     required: false
@@ -63,7 +67,8 @@ runs:
       env:
         ARCH: ${{ inputs.arch }}
         MONO_FLAG: ${{ inputs.dotnet == 'true' && '--mono' || '' }}
-      run: ./scripts/setup-godot.sh --arch "$ARCH" $MONO_FLAG
+        VERSION_FLAG: ${{ inputs.godot-version != '' && format('--version {0}', inputs.godot-version) || '' }}
+      run: ./scripts/setup-godot.sh --arch "$ARCH" $MONO_FLAG $VERSION_FLAG
 
     - name: Set up .NET
       if: inputs.dotnet == 'true'
