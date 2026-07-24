@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   test-android:
-    name: Test Android (Godot ${{ matrix.godot-version }})
+    name: Test Godot ${{ matrix.godot-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
