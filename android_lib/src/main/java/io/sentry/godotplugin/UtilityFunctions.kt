@@ -72,6 +72,15 @@ fun Any?.toLongOrThrow(): Long =
         else -> throw IllegalArgumentException("Expected Int or Long, got ${this?.let { it::class } ?: "null"}")
     }
 
+fun Any?.toDoubleOrThrow(): Double =
+    when (this) {
+        is Double -> this
+        is Float -> this.toDouble()
+        is Int -> this.toDouble()
+        is Long -> this.toDouble()
+        else -> throw IllegalArgumentException("Expected a number, got ${this?.let { it::class } ?: "null"}")
+    }
+
 fun Any?.toIntOrNull(): Int? =
     when (this) {
         is Int -> this

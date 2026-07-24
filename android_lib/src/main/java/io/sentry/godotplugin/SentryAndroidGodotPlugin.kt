@@ -178,7 +178,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val release = optionsData["release"] as String
             val dist = optionsData["dist"] as String
             val environment = optionsData["environment"] as String
-            val sampleRate = optionsData["sample_rate"] as Double
+            val sampleRate = optionsData["sample_rate"].toDoubleOrThrow()
             val maxBreadcrumbs = optionsData["max_breadcrumbs"].toIntOrThrow()
             val enableLogs = optionsData["enable_logs"] as Boolean
             val enableMetrics = optionsData["enable_metrics"] as Boolean
