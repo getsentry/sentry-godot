@@ -234,7 +234,14 @@ Available presets:
 
 Testing is performed using the **gdUnit4** testing framework in GDScript. Unit tests (and other types of tests) are located in the `project/test/` directory. These tests can be executed from the Godot editor, except for isolated tests (see below).
 
-Some tests require isolation, meaning they need specific options to be set and must be executed in a separate process. These tests are located in the `project/test/isolated/` directory. We have a PowerShell script for running such tests in bulk: `scripts/run-isolated-tests.ps1`.
+Some tests require isolation, meaning they need specific options to be set and must be executed in a separate process. These tests are located in the `project/test/isolated/` directory.
+
+To run the full desktop test set, use the following script:
+```bash
+pwsh scripts/run-desktop-tests.ps1
+```
+
+It runs the suites from `project/test/suites/` followed by each isolated test, giving every test path its own Godot process. This is the same set of tests and the same `run-tests` entry point that the Android and Web runners use. Set the `GODOT` environment variable if the engine is not in `PATH`.
 
 For the Android platform, you can also run supporting Android library tests:
 ```bash
