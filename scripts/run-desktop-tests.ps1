@@ -77,8 +77,12 @@ foreach ($testPath in $testPaths) {
     Write-Highlight "Running tests: $testPath"
     Write-GitHub "::group::Test log $testPath"
 
-    $godotArgs = @("--headless", "--path", $projectDir, "--", "run-tests", $testPath)
-    $process = Start-Process $godot -ArgumentList $godotArgs -PassThru -NoNewWindow
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new($godot)
+    $startInfo.UseShellExecute = $false
+    foreach ($godotArg in @("--headless", "--path", $projectDir, "--", "run-tests", $testPath)) {
+        $startInfo.ArgumentList.Add($godotArg)
+    }
+    $process = [System.Diagnostics.Process]::Start($startInfo)
 
     if ($process.WaitForExit($TestTimeout * 1000)) {
         $testExitCode = $process.ExitCode
