@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   unit-tests:
-    name: Test ${{matrix.platform.runner}} ${{matrix.platform.arch}} Godot ${{matrix.godot-version}}
+    name: Test ${{matrix.platform.runner}} ${{matrix.platform.arch}} ${{matrix.godot-version}}
     runs-on: ${{matrix.platform.runner}}
     strategy:
       fail-fast: false
