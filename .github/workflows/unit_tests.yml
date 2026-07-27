@@ -8,26 +8,41 @@ permissions:
 
 jobs:
   unit-tests:
-    name: Test ${{matrix.runner}} ${{matrix.arch}}
-    runs-on: ${{matrix.runner}}
+    name: Test ${{matrix.platform.runner}} ${{matrix.platform.arch}} ${{matrix.godot-version}}
+    runs-on: ${{matrix.platform.runner}}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - runner: windows-latest
-            arch: x86_64
-          - runner: windows-latest
-            arch: x86_32
-          - runner: windows-11-arm
-            arch: arm64
+        godot-version:
+          - 4.5.1-stable
+          - 4.6.3-stable
+          - 4.7.1-stable
+        platform:
           - runner: ubuntu-latest
             arch: x86_64
-          - runner: ubuntu-latest
-            arch: x86_32
-          - runner: ubuntu-22.04-arm
-            arch: arm64
+          - runner: windows-latest
+            arch: x86_64
           - runner: macos-15
             arch: universal
+
+        # Remaining architectures run on the baseline engine only.
+        include:
+          - godot-version: 4.5.1-stable
+            platform:
+              runner: windows-latest
+              arch: x86_32
+          - godot-version: 4.5.1-stable
+            platform:
+              runner: windows-11-arm
+              arch: arm64
+          - godot-version: 4.5.1-stable
+            platform:
+              runner: ubuntu-latest
+              arch: x86_32
+          - godot-version: 4.5.1-stable
+            platform:
+              runner: ubuntu-22.04-arm
+              arch: arm64
     steps:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -37,7 +52,8 @@ jobs:
       - name: Prepare testing
         uses: ./.github/actions/prepare-testing
         with:
-          arch: ${{ matrix.arch }}
+          arch: ${{ matrix.platform.arch }}
+          godot-version: ${{ matrix.godot-version }}
 
       - name: Run tests
         shell: bash
