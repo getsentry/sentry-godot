@@ -121,6 +121,13 @@ void CocoaSDK::remove_user() {
 	[SentryObjCSDK setUser:nil];
 }
 
+void CocoaSDK::set_environment(const String &p_environment) {
+	ERR_FAIL_COND(p_environment.is_empty());
+	[SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
+		[scope setEnvironment:string_to_objc(p_environment)];
+	}];
+}
+
 Ref<SentryBreadcrumb> CocoaSDK::create_breadcrumb() {
 	return memnew(CocoaBreadcrumb);
 }

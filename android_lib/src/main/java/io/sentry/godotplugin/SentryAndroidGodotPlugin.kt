@@ -294,6 +294,11 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun setEnvironment(environment: String) {
+        Sentry.getCurrentScopes().options.environment = environment
+    }
+
+    @UsedByGodot
     fun setUser(id: String, userName: String, email: String, ipAddress: String) {
         val user = User()
         if (id.isNotEmpty()) {

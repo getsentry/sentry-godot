@@ -308,6 +308,16 @@ void SentrySDK::remove_user() {
 	}
 }
 
+void SentrySDK::set_environment(const String &p_environment) {
+	ERR_FAIL_COND_MSG(p_environment.is_empty(), "Sentry: Can't set an empty environment.");
+	// Write to options so get_environment() stays current and "{auto}" is resolved.
+	options->set_environment(p_environment);
+	if (is_configuring) {
+		return;
+	}
+	internal_sdk->set_environment(options->get_environment());
+}
+
 void SentrySDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
 	// Cache locally so get_trace_context() stays consistent with the backend.
 	trace_context.trace_id = p_trace_id;
@@ -545,6 +555,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &SentrySDK::remove_tag);
 	ClassDB::bind_method(D_METHOD("set_user", "user"), &SentrySDK::set_user);
 	ClassDB::bind_method(D_METHOD("remove_user"), &SentrySDK::remove_user);
+	ClassDB::bind_method(D_METHOD("set_environment", "environment"), &SentrySDK::set_environment);
 	ClassDB::bind_method(D_METHOD("create_event"), &SentrySDK::create_event);
 	ClassDB::bind_method(D_METHOD("capture_event", "event"), &SentrySDK::capture_event);
 	ClassDB::bind_method(D_METHOD("capture_feedback", "feedback"), &SentrySDK::capture_feedback);

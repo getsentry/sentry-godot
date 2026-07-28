@@ -275,6 +275,13 @@ class SentryBridge {
     Sentry.setTag(key, undefined);
   }
 
+  public setEnvironment(environment: string): void {
+    const client = Sentry.getClient();
+    if (client) {
+      client.getOptions().environment = environment;
+    }
+  }
+
   public setUser(id: string, username: string, email: string, ip: string): void {
     Sentry.setUser(makeUser(id, username, email, ip));
   }

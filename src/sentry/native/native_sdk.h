@@ -25,6 +25,8 @@ public:
 	virtual void set_user(const Ref<SentryUser> &p_user) override;
 	virtual void remove_user() override;
 
+	virtual void set_environment(const String &p_environment) override;
+
 	virtual Ref<SentryBreadcrumb> create_breadcrumb() override;
 	virtual void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) override;
 
