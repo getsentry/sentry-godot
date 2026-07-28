@@ -34,11 +34,13 @@ android {
 }
 
 dependencies {
-    implementation("org.godotengine:godot:4.4.0.stable")
+    // Godot is provided by the Android export template at runtime.
+    // NOTE: Must match COMPATIBILITY_MINIMUM in SConstruct, so that newer Godot APIs don't slip in.
+    compileOnly("org.godotengine:godot:4.5.0.stable")
     testImplementation("junit:junit:4.13.2")
 
     // NOTE: All dependencies below must be also updated in sentry_editor_export_plugin.cpp.
-    implementation("io.sentry:sentry-android:8.48.0")
+    implementation("io.sentry:sentry-android:8.50.1")
 }
 
 val copyDebugAarToProject by tasks.registering(Copy::class) {

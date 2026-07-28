@@ -2,14 +2,24 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed missing line numbers in GDScript frames on Android with Godot 4.6 and later ([#826](https://github.com/getsentry/sentry-godot/pull/826))
+
 ### Dependencies
 
-- Bump Sentry JavaScript from v10.65.0 to v10.66.0 ([#816](https://github.com/getsentry/sentry-godot/pull/816))
-  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10660)
-  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.65.0...10.66.0)
-- Bump Native SDK from v0.15.3 to v0.15.4 ([#818](https://github.com/getsentry/sentry-godot/pull/818))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0154)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.15.3...0.15.4)
+- Bump Sentry JavaScript from v10.65.0 to v10.68.0 ([#816](https://github.com/getsentry/sentry-godot/pull/816), [#819](https://github.com/getsentry/sentry-godot/pull/819), [#831](https://github.com/getsentry/sentry-godot/pull/831))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10680)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.65.0...10.68.0)
+- Bump Native SDK from v0.15.3 to v0.16.0 ([#818](https://github.com/getsentry/sentry-godot/pull/818), [#833](https://github.com/getsentry/sentry-godot/pull/833))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0160)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.15.3...0.16.0)
+- Bump Sentry Android from v8.48.0 to v8.50.1 ([#815](https://github.com/getsentry/sentry-godot/pull/815), [#822](https://github.com/getsentry/sentry-godot/pull/822))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8501)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.48.0...8.50.1)
+- Bump Cocoa SDK from v9.22.0 to v9.23.0 ([#821](https://github.com/getsentry/sentry-godot/pull/821))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9230)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.22.0...9.23.0)
 
 ## 2.1.0
 
