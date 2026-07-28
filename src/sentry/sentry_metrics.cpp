@@ -9,7 +9,7 @@ void SentryMetrics::count(const String &p_name, int64_t p_value, const Dictionar
 	if (!SENTRY_OPTIONS()->get_enable_metrics()) {
 		return;
 	}
-	INTERNAL_SDK()->metrics_add_count(p_name, p_value, p_attributes);
+	INTERNAL_SDK()->metrics_add_count(SentrySDK::get_singleton()->get_current_scope(), p_name, p_value, p_attributes);
 }
 
 void SentryMetrics::gauge(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
@@ -17,7 +17,7 @@ void SentryMetrics::gauge(const String &p_name, double p_value, const String &p_
 	if (!SENTRY_OPTIONS()->get_enable_metrics()) {
 		return;
 	}
-	INTERNAL_SDK()->metrics_add_gauge(p_name, p_value, p_unit, p_attributes);
+	INTERNAL_SDK()->metrics_add_gauge(SentrySDK::get_singleton()->get_current_scope(), p_name, p_value, p_unit, p_attributes);
 }
 
 void SentryMetrics::distribution(const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
@@ -25,7 +25,7 @@ void SentryMetrics::distribution(const String &p_name, double p_value, const Str
 	if (!SENTRY_OPTIONS()->get_enable_metrics()) {
 		return;
 	}
-	INTERNAL_SDK()->metrics_add_distribution(p_name, p_value, p_unit, p_attributes);
+	INTERNAL_SDK()->metrics_add_distribution(SentrySDK::get_singleton()->get_current_scope(), p_name, p_value, p_unit, p_attributes);
 }
 
 void SentryMetrics::_bind_methods() {

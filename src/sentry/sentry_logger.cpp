@@ -17,7 +17,7 @@ void SentryLogger::log(LogLevel p_level, const String &p_body, const Array &p_pa
 		}
 		body = p_body % p_params;
 	}
-	INTERNAL_SDK()->log(p_level, body, attributes);
+	INTERNAL_SDK()->capture_log(SentrySDK::get_singleton()->get_current_scope(), p_level, body, attributes);
 }
 
 void SentryLogger::trace(const String &p_body, const Array &p_params, const Dictionary &p_attributes) {

@@ -11,6 +11,7 @@
 #include "sentry/sentry_logger.h"
 #include "sentry/sentry_metrics.h"
 #include "sentry/sentry_options.h"
+#include "sentry/sentry_scope.h"
 
 #include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/core/object.hpp>
@@ -39,6 +40,10 @@ public:
 private:
 	static SentrySDK *singleton;
 
+	static thread_local List<Ref<SentryScope>> current_scopes;
+
+	const StringName SN_COMPLETED;
+
 	Ref<SentryOptions> options;
 	std::unique_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
@@ -58,6 +63,9 @@ private:
 	Vector<Ref<SentryAttachment>> _get_default_attachments();
 	void _auto_initialize();
 	void _on_engine_shutdown();
+
+	_FORCE_INLINE_ Ref<SentryScope> _push_scope() { return current_scopes.push_back(Ref<SentryScope>(get_current_scope()->clone()))->get(); }
+	_FORCE_INLINE_ void _pop_scope(const Ref<SentryScope> &p_scope) { current_scopes.erase(p_scope); }
 
 protected:
 	static void _bind_methods();
@@ -108,6 +116,17 @@ public:
 
 	void set_attribute(const String &p_name, const Variant &p_value);
 	void remove_attribute(const String &p_name);
+
+	// * Scopes
+
+	_FORCE_INLINE_ Ref<SentryScope> get_current_scope() const {
+		if (current_scopes.is_empty()) {
+			current_scopes.push_back(Ref<SentryScope>(memnew(SentryScope)));
+		}
+		return current_scopes.back()->get();
+	}
+
+	Variant with_scope(Callable p_callable);
 
 	// * Hidden API methods -- used in testing
 

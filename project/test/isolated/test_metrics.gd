@@ -167,3 +167,38 @@ func test_before_send_metric_discard() -> void:
 	SentrySDK.metrics.count("discarded_metric")
 	await assert_signal(monitor).is_not_emitted("metric_processed")
 	_discard_metric = false
+
+
+# TODO: remove skip when implemented on other platforms
+func test_metric_with_scope_attributes(_do_skip = OS.get_name() not in ["Windows", "Linux"]) -> void:
+	SentrySDK.set_attribute("from_global", "global")
+	SentrySDK.set_attribute("scope_over_global", "global")
+	SentrySDK.set_attribute("metric_over_all", "global")
+
+	SentrySDK.with_scope(func(scope: SentryScope):
+		scope.set_attribute("from_scope", "scope")
+		scope.set_attribute("scope_over_global", "scope")
+		scope.set_attribute("metric_over_all", "scope")
+
+		metric_processed.connect(func(metric: SentryMetric):
+			# Each source contributes the attributes only it has...
+			assert_str(metric.get_attribute("from_global")).is_equal("global")
+			assert_str(metric.get_attribute("from_scope")).is_equal("scope")
+			assert_str(metric.get_attribute("from_metric")).is_equal("metric")
+			# ...and the most specific source wins the ones they share.
+			assert_str(metric.get_attribute("scope_over_global")).is_equal("scope")
+			assert_str(metric.get_attribute("metric_over_all")).is_equal("metric")
+		, CONNECT_ONE_SHOT)
+
+		SentrySDK.metrics.count("scoped_metric", 1, {
+			"from_metric": "metric",
+			"metric_over_all": "metric",
+		})
+	)
+
+	# Scope attributes are gone once the scope is popped.
+	metric_processed.connect(func(metric: SentryMetric):
+		assert_that(metric.get_attribute("from_scope")).is_null()
+		assert_str(metric.get_attribute("scope_over_global")).is_equal("global")
+	, CONNECT_ONE_SHOT)
+	SentrySDK.metrics.count("metric_after_scope")
