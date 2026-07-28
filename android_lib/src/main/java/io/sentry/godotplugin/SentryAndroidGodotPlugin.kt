@@ -506,14 +506,15 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun captureFeedback(message: String, contactEmail: String, name: String, associatedEventId: String) {
+    fun captureFeedback(message: String, contactEmail: String, name: String, associatedEventId: String, scopeHandle: Int) {
         val feedback = Feedback(message)
         feedback.contactEmail = contactEmail.ifEmpty { null }
         feedback.name = name.ifEmpty { null }
         if (associatedEventId.isNotEmpty()) {
             feedback.setAssociatedEventId(SentryId(associatedEventId))
         }
-        Sentry.feedback().capture(feedback)
+        val feedbackApi = combinedScopes(scopeHandle)?.feedback() ?: Sentry.feedback()
+        feedbackApi.capture(feedback)
     }
 
     @UsedByGodot

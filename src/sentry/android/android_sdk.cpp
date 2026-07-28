@@ -218,11 +218,13 @@ void AndroidSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<Sen
 	ERR_FAIL_NULL(android_plugin);
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
+	AndroidScope *android_scope = p_scope.is_valid() ? static_cast<AndroidScope *>(p_scope->get_implementation()) : nullptr;
 	android_plugin->call(ANDROID_SN(captureFeedback),
 			p_feedback->get_message(),
 			p_feedback->get_contact_email(),
 			p_feedback->get_name(),
-			p_feedback->get_associated_event_id());
+			p_feedback->get_associated_event_id(),
+			android_scope ? android_scope->get_handle() : 0);
 }
 
 void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
