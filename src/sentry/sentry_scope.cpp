@@ -37,17 +37,11 @@ void SentryScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 }
 
 void SentryScope::clear() {
-	// Event processors MUST persist across clear().
 	_impl->clear();
 }
 
 Ref<SentryScope> SentryScope::clone() const {
 	return Ref<SentryScope>(memnew(SentryScope(_impl->clone())));
-}
-
-void SentryScope::add_event_processor(const Callable &p_callable) {
-	ERR_FAIL_COND_MSG(p_callable.is_null(), "Sentry: Event processor cannot be null.");
-	_processors.push_back(p_callable);
 }
 
 void SentryScope::_bind_methods() {
@@ -58,7 +52,6 @@ void SentryScope::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fingerprint", "fingerprint"), &SentryScope::set_fingerprint);
 	ClassDB::bind_method(D_METHOD("set_attribute", "name", "value"), &SentryScope::set_attribute);
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "breadcrumb"), &SentryScope::add_breadcrumb);
-	ClassDB::bind_method(D_METHOD("add_event_processor", "callable"), &SentryScope::add_event_processor);
 	ClassDB::bind_method(D_METHOD("clear"), &SentryScope::clear);
 }
 

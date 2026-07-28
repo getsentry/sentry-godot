@@ -20,9 +20,6 @@ class SentryScope : public RefCounted {
 private:
 	SentryScopeImpl *_impl;
 
-	// NOTE: Event processors MUST persist across clear().
-	Vector<Callable> _processors;
-
 protected:
 	static void _bind_methods();
 
@@ -35,8 +32,6 @@ public:
 	void set_attribute(const String &p_name, const Variant &p_value);
 	void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb);
 	void clear();
-
-	void add_event_processor(const Callable &p_callable);
 
 	Ref<SentryScope> clone() const;
 
