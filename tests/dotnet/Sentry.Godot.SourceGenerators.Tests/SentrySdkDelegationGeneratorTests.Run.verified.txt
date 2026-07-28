@@ -194,6 +194,11 @@ public static partial class SentrySdk
     public static global::System.IDisposable PushScope()
         => global::Sentry.SentrySdk.PushScope();
 
+    /// <inheritdoc cref="M:Sentry.SentrySdk.RecordTransaction(System.String,System.String,System.DateTimeOffset,System.TimeSpan,System.Nullable{Sentry.SentryId},System.Nullable{Sentry.SpanId},System.Nullable{Sentry.SpanId},System.Action{Sentry.ITransactionRecorder})"/>
+    [DebuggerStepThrough]
+    public static global::Sentry.SentryId RecordTransaction(string name, string operation, global::System.DateTimeOffset startTimestamp, global::System.TimeSpan duration, global::Sentry.SentryId? traceId = null, global::Sentry.SpanId? spanId = null, global::Sentry.SpanId? parentSpanId = null, global::System.Action<global::Sentry.ITransactionRecorder>? configure = null)
+        => global::Sentry.SentrySdk.RecordTransaction(name, operation, startTimestamp, duration, traceId, spanId, parentSpanId, configure);
+
     /// <inheritdoc cref="M:Sentry.SentrySdk.ResumeSession"/>
     [DebuggerStepThrough]
     public static void ResumeSession()
