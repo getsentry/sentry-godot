@@ -253,16 +253,16 @@ Ref<SentryEvent> NativeSDK::create_event() {
 String NativeSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), _uuid_as_string(sentry_uuid_nil()), "Sentry: Can't capture event - event object is null.");
 
+	ERR_FAIL_COND_V(p_scope.is_null(), _uuid_as_string(sentry_uuid_nil()));
+	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
+	ERR_FAIL_NULL_V(native_scope, _uuid_as_string(sentry_uuid_nil()));
+
 	NativeEvent *native_event = Object::cast_to<NativeEvent>(p_event.ptr());
 	ERR_FAIL_NULL_V(native_event, _uuid_as_string(sentry_uuid_nil()));
 	sentry_value_t event = native_event->get_native_value();
 	sentry_value_incref(event); // Keep ownership.
 
-	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
-	ERR_FAIL_NULL_V(native_scope, _uuid_as_string(sentry_uuid_nil()));
-	sentry_scope_t *scope = native_scope->get_native_scope();
-
-	sentry_uuid_t uuid = sentry_scope_capture_event(scope, event);
+	sentry_uuid_t uuid = sentry_scope_capture_event(native_scope->get_native_scope(), event);
 
 	last_uuid_mutex->lock();
 	last_uuid = uuid;
@@ -274,6 +274,10 @@ String NativeSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<Sentr
 void NativeSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) {
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
+
+	ERR_FAIL_COND(p_scope.is_null());
+	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
+	ERR_FAIL_NULL(native_scope);
 
 	sentry_value_t feedback = sentry_value_new_object();
 
@@ -293,11 +297,7 @@ void NativeSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<Sent
 				sentry_value_new_string(p_feedback->get_associated_event_id().ascii()));
 	}
 
-	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
-	ERR_FAIL_NULL(native_scope);
-	sentry_scope_t *scope = native_scope->get_native_scope();
-
-	sentry_scope_capture_feedback(scope, feedback, nullptr);
+	sentry_scope_capture_feedback(native_scope->get_native_scope(), feedback, nullptr);
 }
 
 void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
