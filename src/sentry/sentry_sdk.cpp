@@ -136,7 +136,7 @@ void SentrySDK::destroy_singleton() {
 
 Variant SentrySDK::with_scope(Callable p_callable) {
 	if (unlikely(!internal_sdk->supports_scopes())) {
-		SENTRY_PRINT_ONCE(sentry::LEVEL_WARNING, "Scopes are not supported on this platform yet - writes to the local scope will be discarded.");
+		WARN_PRINT_ONCE("Sentry: Scopes are not supported on this platform yet - writes to the local scope will be discarded.");
 	}
 
 	Ref<SentryScope> scope = _push_scope();
