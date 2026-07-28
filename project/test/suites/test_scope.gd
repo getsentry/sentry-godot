@@ -1,9 +1,5 @@
 extends SentryTestSuite
 ## Verifies scope isolation for `SentrySDK.with_scope()`.
-##
-## A write to the local scope must only affect events captured inside the block,
-## must not leak back into the global scope afterwards, and top-level writes must
-## still reach the global scope even when made from inside the block.
 
 
 # TODO: widen the platform list as scopes are implemented on other backends.
