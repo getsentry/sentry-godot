@@ -28,7 +28,7 @@ public:
 	void set_tag(const String &p_key, const String &p_value);
 	void set_user(const Ref<SentryUser> &p_user);
 	void set_level(sentry::Level p_level);
-	void set_fingerprint(PackedStringArray p_fingerprint);
+	void set_fingerprint(const PackedStringArray &p_fingerprint);
 	void set_attribute(const String &p_name, const Variant &p_value);
 	void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb);
 	void clear();

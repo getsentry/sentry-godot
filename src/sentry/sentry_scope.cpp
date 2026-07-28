@@ -22,7 +22,7 @@ void SentryScope::set_level(sentry::Level p_level) {
 	_impl->set_level(p_level);
 }
 
-void SentryScope::set_fingerprint(PackedStringArray p_fingerprint) {
+void SentryScope::set_fingerprint(const PackedStringArray &p_fingerprint) {
 	_impl->set_fingerprint(p_fingerprint);
 }
 
