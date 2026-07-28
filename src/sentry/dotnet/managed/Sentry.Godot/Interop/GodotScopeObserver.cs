@@ -78,6 +78,11 @@ internal class GodotScopeObserver : IScopeObserver
         NativeBridge.SetTrace(traceId.ToString(), parentSpanId.ToString());
     }
 
+    public void SetEnvironment(string? environment)
+    {
+        // TODO: forward to native scope once an environment setter is wired through NativeBridge.
+    }
+
     public void AddAttachment(SentryAttachment attachment)
     {
         // TODO: forward to native attachment API once wired through NativeBridge.
