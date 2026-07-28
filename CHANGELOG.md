@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add `SentrySDK.set_environment()` to update the environment reported with subsequent events after initialization ([#839](https://github.com/getsentry/sentry-godot/pull/839))
+
 ### Fixes
 
 - Fixed missing line numbers in GDScript frames on Android with Godot 4.6 and later ([#826](https://github.com/getsentry/sentry-godot/pull/826))
