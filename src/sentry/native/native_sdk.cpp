@@ -293,7 +293,11 @@ void NativeSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<Sent
 				sentry_value_new_string(p_feedback->get_associated_event_id().ascii()));
 	}
 
-	sentry_capture_feedback(feedback);
+	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
+	ERR_FAIL_NULL(native_scope);
+	sentry_scope_t *scope = native_scope->get_native_scope();
+
+	sentry_scope_capture_feedback(scope, feedback, nullptr);
 }
 
 void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
