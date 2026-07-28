@@ -161,6 +161,16 @@
 				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/context/]Context documentation[/url].
 			</description>
 		</method>
+		<method name="set_environment">
+			<return type="void" />
+			<param index="0" name="environment" type="String" />
+			<description>
+				Changes the environment reported with subsequent events, overriding [member SentryOptions.environment] for the rest of the run.
+				Use [code]{auto}[/code] to resolve the environment from the current runtime context, as with [member SentryOptions.environment].
+				[b]Note:[/b] A release health session keeps the environment it started with.
+				To learn more, visit the [url=https://docs.sentry.io/platforms/godot/configuration/environments/]Environments documentation[/url].
+			</description>
+		</method>
 		<method name="set_tag">
 			<return type="void" />
 			<param index="0" name="key" type="String" />
