@@ -252,7 +252,7 @@ String SentrySDK::capture_message(const String &p_message, Level p_level) {
 	Ref<SentryEvent> event = internal_sdk->create_event();
 	event->set_message(p_message);
 	event->set_level(p_level);
-	return internal_sdk->capture_event(event, get_current_scope());
+	return internal_sdk->capture_event(get_current_scope(), event);
 }
 
 void SentrySDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
@@ -273,7 +273,7 @@ Ref<SentryEvent> SentrySDK::create_event() const {
 
 String SentrySDK::capture_event(const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), "", "Sentry: Can't capture event - event object is null.");
-	return internal_sdk->capture_event(p_event, get_current_scope());
+	return internal_sdk->capture_event(get_current_scope(), p_event);
 }
 
 void SentrySDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {

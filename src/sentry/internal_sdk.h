@@ -37,7 +37,7 @@ public:
 
 	virtual Ref<SentryEvent> create_event() = 0;
 
-	virtual String capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) = 0;
+	virtual String capture_event(const Ref<SentryScope> &p_scope, const Ref<SentryEvent> &p_event) = 0;
 
 	virtual void capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) = 0;
 

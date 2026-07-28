@@ -250,7 +250,7 @@ Ref<SentryEvent> NativeSDK::create_event() {
 	return event;
 }
 
-String NativeSDK::capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) {
+String NativeSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), _uuid_as_string(sentry_uuid_nil()), "Sentry: Can't capture event - event object is null.");
 
 	NativeEvent *native_event = Object::cast_to<NativeEvent>(p_event.ptr());

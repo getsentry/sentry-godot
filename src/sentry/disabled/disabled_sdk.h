@@ -26,7 +26,7 @@ class DisabledSDK : public InternalSDK {
 	virtual String get_last_event_id() override { return ""; }
 
 	virtual Ref<SentryEvent> create_event() override { return memnew(DisabledEvent); }
-	virtual String capture_event(const Ref<SentryEvent> &p_event, const Ref<SentryScope> &p_scope) override { return ""; }
+	virtual String capture_event(const Ref<SentryScope> &p_scope, const Ref<SentryEvent> &p_event) override { return ""; }
 
 	virtual void capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) override {}
 
