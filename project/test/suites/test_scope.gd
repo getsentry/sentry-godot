@@ -271,3 +271,80 @@ func test_get_current_scope_with_nesting() -> void:
 		)
 
 	assert_object(SentrySDK.get_current_scope()).is_same(initial)
+
+
+func test_get_current_scope_is_thread_local() -> void:
+	var main_scope: SentryScope = SentrySDK.get_current_scope()
+
+	var thread := Thread.new()
+	thread.start(func() -> SentryScope:
+		return SentrySDK.get_current_scope()
+		)
+	var worker_scope: SentryScope = thread.wait_to_finish()
+
+	assert_object(worker_scope) \
+		.override_failure_message("worker thread gets a current scope of its own") \
+		.is_not_null()
+
+	assert_object(worker_scope) \
+		.override_failure_message("worker thread doesn't share the main thread's current scope") \
+		.is_not_same(main_scope)
+
+
+func test_with_scope_does_not_cross_threads() -> void:
+	var worker_may_capture := Semaphore.new()
+	var worker_captured := Semaphore.new()
+
+	var thread := Thread.new()
+	thread.start(func() -> void:
+		worker_may_capture.wait()
+		SentrySDK.with_scope(func(scope: SentryScope) -> void:
+			scope.set_tag("worker_tag", "worker")
+			SentrySDK.capture_event(SentrySDK.create_event())
+			)
+		worker_captured.post()
+		)
+
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_tag("main_tag", "main")
+		worker_may_capture.post()
+		worker_captured.wait()
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+
+	thread.wait_to_finish()
+
+	var json_main: String = await wait_for_captured_event_json()
+	var json_worker: String = await wait_for_captured_event_json()
+
+	assert_json(json_worker).describe("worker event carries the worker scope, not the main thread's") \
+		.at("/tags") \
+		.must_contain("worker_tag", "worker") \
+		.must_not_contain("main_tag") \
+		.verify()
+
+	assert_json(json_main).describe("main event carries the main scope, not the worker thread's") \
+		.at("/tags") \
+		.must_contain("main_tag", "main") \
+		.must_not_contain("worker_tag") \
+		.verify()
+
+
+func test_with_scope_on_thread_inherits_global() -> void:
+	SentrySDK.set_tag("global_for_worker", "global")
+
+	var thread := Thread.new()
+	thread.start(func() -> void:
+		SentrySDK.with_scope(func(scope: SentryScope) -> void:
+			scope.set_tag("worker_tag", "worker")
+			SentrySDK.capture_event(SentrySDK.create_event())
+			)
+		)
+	thread.wait_to_finish()
+	var json: String = await wait_for_captured_event_json()
+
+	assert_json(json).describe("worker thread scope layers over the global scope") \
+		.at("/tags") \
+		.must_contain("global_for_worker", "global") \
+		.must_contain("worker_tag", "worker") \
+		.verify()
