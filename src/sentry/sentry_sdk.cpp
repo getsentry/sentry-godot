@@ -136,17 +136,20 @@ void SentrySDK::destroy_singleton() {
 
 Variant SentrySDK::with_scope(Callable p_callable) {
 	if (unlikely(!internal_sdk->supports_scopes())) {
-		WARN_PRINT_ONCE("Sentry: Scopes are not supported on this platform yet - writes to the local scope will be discarded.");
+		WARN_PRINT_ONCE("Sentry: Scopes are not supported on this platform yet - writes to the scope will be discarded.");
 	}
 
 	Ref<SentryScope> scope = _push_scope();
 	Variant result = p_callable.call(scope);
-	if (Object *obj = result.get_validated_object();
-			unlikely(obj != nullptr && obj->get_class() == "GDScriptFunctionState")) {
-		obj->connect(SN_COMPLETED, callable_mp(this, &SentrySDK::_pop_scope).bind(scope).unbind(1));
-	} else {
-		_pop_scope(scope);
+	static bool first_warning = true;
+	if (first_warning) {
+		if (Object *obj = result.get_validated_object();
+				unlikely(obj != nullptr && obj->get_class() == "GDScriptFunctionState")) {
+			first_warning = false;
+			WARN_PRINT("Sentry: with_scope() does not support await - the scope is only active until the first await.");
+		}
 	}
+	_pop_scope(scope);
 	return result;
 }
 
@@ -590,8 +593,7 @@ void SentrySDK::_bind_methods() {
 	BIND_PROPERTY_READONLY(SentrySDK, PropertyInfo(Variant::OBJECT, "bad_code", PROPERTY_HINT_TYPE_STRING, "SentryBadCode", PROPERTY_USAGE_NONE), get_bad_code);
 }
 
-SentrySDK::SentrySDK() :
-		SN_COMPLETED(StringName("completed")) {
+SentrySDK::SentrySDK() {
 	ERR_FAIL_NULL(OS::get_singleton());
 
 	options = SentryOptions::create_from_project_settings();

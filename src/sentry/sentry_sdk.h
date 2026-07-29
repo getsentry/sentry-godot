@@ -42,8 +42,6 @@ private:
 
 	static thread_local List<Ref<SentryScope>> current_scopes;
 
-	const StringName SN_COMPLETED;
-
 	Ref<SentryOptions> options;
 	std::unique_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
