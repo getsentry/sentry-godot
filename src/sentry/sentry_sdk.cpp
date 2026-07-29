@@ -572,6 +572,7 @@ void SentrySDK::_notification(int p_what) {
 				OS::get_singleton()->remove_logger(godot_logger);
 				godot_logger.unref();
 			}
+			_invalidate_scopes();
 		} break;
 	}
 }
@@ -626,7 +627,8 @@ SentrySDK::SentrySDK() {
 }
 
 SentrySDK::~SentrySDK() {
-	_invalidate_scopes();
+	// At extension unload, the script runtime is gone and _on_engine_shutdown() has already called close() and detached
+	// the logger. Any calls into the SDK from other threads at this point are out of contract and indicate a bug.
 
 	internal_sdk.reset();
 
