@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryScope" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Holds contextual data that enriches the telemetry captured while it is in effect.
+	</brief_description>
+	<description>
+		A scope carries the same kinds of data as the global context set through [SentrySDK] methods such as [method SentrySDK.set_tag], but applies it only to the telemetry captured while the scope is in effect. Scope data is layered on top of the global data, so captured events keep everything set globally and add whatever the scope defines.
+		Everything captured while a scope is in effect picks up its data: [method SentrySDK.capture_event], [method SentrySDK.capture_message] and [method SentrySDK.capture_feedback], the structured logs and metrics, and the errors and warnings that Sentry captures automatically from Godot's logging. An error captured automatically is enriched by the scope in effect on the thread that raised it.
+		Use [method SentrySDK.get_current_scope] to reach the current scope in effect, or [method SentrySDK.with_scope] to run a callable with a forked scope that is discarded afterwards:
+		[codeblock]
+		SentrySDK.with_scope(func(scope: SentryScope) -&gt; void:
+			scope.set_tag("subsystem", "savegame")
+			save_game()
+		)
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_breadcrumb">
+			<return type="void" />
+			<param index="0" name="breadcrumb" type="SentryBreadcrumb" />
+			<description>
+				Adds a breadcrumb to the events captured within this scope. You can create a [SentryBreadcrumb] object using the static [method SentryBreadcrumb.create] method.
+				See [method SentrySDK.add_breadcrumb] for adding a breadcrumb globally to all future events.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Removes all data previously written to this scope. Data set globally through [SentrySDK] is not affected, and the scope stays usable afterwards.
+			</description>
+		</method>
+		<method name="set_attribute">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets an attribute with the specified [param name] and [param value] on the structured logs and metrics captured within this scope. Supported value types are [bool], [int], [float], and [String]. Other types will be stringified.
+				Scope attributes take precedence over the global attributes set with [method SentrySDK.set_attribute], and an attribute set on an individual log or metric takes precedence over both.
+			</description>
+		</method>
+		<method name="set_context">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<param index="1" name="value" type="Dictionary" />
+			<description>
+				Sets a context with the specified [param key] and [param value] on the events captured within this scope. The [param value] should be a dictionary with string keys and can have multiple levels of nesting.
+				See [method SentrySDK.set_context] for setting a context globally.
+			</description>
+		</method>
+		<method name="set_fingerprint">
+			<return type="void" />
+			<param index="0" name="fingerprint" type="PackedStringArray" />
+			<description>
+				Overrides the grouping fingerprint for the events captured within this scope. Sentry uses the fingerprint to group similar events into a single issue. Pass an empty array to clear the fingerprint and restore the default grouping.
+				To learn more, visit [url=https://docs.sentry.io/concepts/data-management/event-grouping/]Issue Grouping documentation[/url].
+			</description>
+		</method>
+		<method name="set_level">
+			<return type="void" />
+			<param index="0" name="level" type="int" enum="SentrySDK.Level" />
+			<description>
+				Sets the severity level of the events captured within this scope.
+			</description>
+		</method>
+		<method name="set_tag">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<param index="1" name="value" type="String" />
+			<description>
+				Assigns a tag with the specified [param key] and [param value] to the events captured within this scope.
+				See [method SentrySDK.set_tag] for assigning a tag globally.
+			</description>
+		</method>
+		<method name="set_user">
+			<return type="void" />
+			<param index="0" name="user" type="SentryUser" />
+			<description>
+				Assigns user data to the events captured within this scope. See [SentryUser].
+				See [method SentrySDK.set_user] for assigning user data globally.
+			</description>
+		</method>
+	</methods>
+</class>

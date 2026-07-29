@@ -72,6 +72,13 @@
 				Creates a new [SentryEvent] object. You can capture the event with [method SentrySDK.capture_event].
 			</description>
 		</method>
+		<method name="get_current_scope" qualifiers="const">
+			<return type="SentryScope" />
+			<description>
+				Returns the current scope on the calling thread. Inside a [method SentrySDK.with_scope] callable, this is the scope forked for that callable. The fork is discarded when the callable returns, and the parent scope it was forked from becomes current again. Outside of any [method SentrySDK.with_scope], the returned scope stays current for the telemetry captured later on that thread.
+				Current scope is never shared between threads, so data written to the returned scope enriches only the telemetry captured on the calling thread. To enrich telemetry captured on every thread, use the [SentrySDK] methods such as [method SentrySDK.set_tag] instead.
+			</description>
+		</method>
 		<method name="get_last_event_id" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -175,6 +182,33 @@
 			<param index="0" name="user" type="SentryUser" />
 			<description>
 				Assigns user data. See [SentryUser].
+			</description>
+		</method>
+		<method name="with_scope">
+			<return type="Variant" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Forks the current scope, calls [param callable] with the forked scope, and returns the value that [param callable] returned. Data written to the forked scope enriches only the telemetry captured inside the callable. The fork is discarded once the callable returns, and the parent scope becomes current again.
+				[codeblock]
+				SentrySDK.with_scope(func(scope: SentryScope) -&gt; void:
+					# Errors raised during generation carry what is needed to reproduce them.
+					scope.set_context("chunk", {
+						"x": chunk_x,
+						"y": chunk_y,
+						"seed": world_seed
+					})
+					var crumb := SentryBreadcrumb.create("Generating chunk")
+					crumb.category = "worldgen"
+					scope.add_breadcrumb(crumb)
+
+					generate_chunk(chunk_x, chunk_y)
+				)
+				[/codeblock]
+				The fork inherits everything the parent scope holds at the moment [method SentrySDK.with_scope] is called. The two are independent from then on: writes to the fork never reach the parent, and writes made to the parent afterwards never reach the fork. Nesting [method SentrySDK.with_scope] forks the enclosing scope the same way, so an inner scope starts with the data of the outer one and its own writes stay inside.
+				Writes made through [SentrySDK] methods such as [method SentrySDK.set_tag] still apply globally, even when called inside the callable.
+				For more information, see [SentryScope] class.
+				[b]Note:[/b] The fork covers the synchronous part of [param callable] only. If the callable awaits, the fork is discarded at the first [code]await[/code] and a warning is printed.
+				[b]Note:[/b] Scopes are not supported on every platform yet. Where support is missing, telemetry is still captured but the current scope data is discarded, and a warning is printed.
 			</description>
 		</method>
 	</methods>
