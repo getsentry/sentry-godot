@@ -348,3 +348,24 @@ func test_with_scope_on_thread_inherits_global() -> void:
 		.must_contain("global_for_worker", "global") \
 		.must_contain("worker_tag", "worker") \
 		.verify()
+
+
+## Resumes the coroutine parked by test_with_scope_does_not_leak_while_parked().
+signal resume_parked_coroutine
+
+
+func test_with_scope_does_not_leak_while_parked() -> void:
+
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_tag("parked_tag", "in_parked_scope")
+		await resume_parked_coroutine
+		)
+
+	var json_while_parked: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	resume_parked_coroutine.emit()
+
+	assert_json(json_while_parked).describe("event captured while a with_scope() coroutine is parked does not carry the parked scope's tag") \
+		.at("/tags") \
+		.must_not_contain("parked_tag") \
+		.verify()
