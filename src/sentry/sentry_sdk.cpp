@@ -118,6 +118,9 @@ SentrySDK *SentrySDK::singleton = nullptr;
 
 thread_local List<Ref<SentryScope>> SentrySDK::current_scopes;
 
+SafeNumeric<uint32_t> SentrySDK::scopes_epoch;
+thread_local uint32_t SentrySDK::local_scopes_epoch = 0;
+
 void SentrySDK::create_singleton() {
 	ERR_FAIL_NULL(Engine::get_singleton());
 	singleton = memnew(SentrySDK);
@@ -132,6 +135,10 @@ void SentrySDK::destroy_singleton() {
 	Engine::get_singleton()->unregister_singleton("SentrySDK");
 	memdelete(singleton);
 	singleton = nullptr;
+}
+
+void SentrySDK::_invalidate_scopes() {
+	scopes_epoch.increment();
 }
 
 Variant SentrySDK::with_scope(Callable p_callable) {
@@ -198,7 +205,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 		options->add_default_attachment(att);
 	}
 
-	current_scopes.clear();
+	_invalidate_scopes();
 
 	sentry::logging::print_debug("Initializing Sentry SDK");
 	internal_sdk->init();
@@ -247,7 +254,7 @@ void SentrySDK::close() {
 			godot_logger.unref();
 		}
 		internal_sdk->close();
-		current_scopes.clear();
+		_invalidate_scopes();
 	}
 }
 
@@ -604,8 +611,8 @@ SentrySDK::SentrySDK() {
 }
 
 SentrySDK::~SentrySDK() {
-	// Release scopes before the internal SDK, as scopes may depend on SDK-owned resources.
 	current_scopes.clear();
+	_invalidate_scopes();
 
 	internal_sdk.reset();
 

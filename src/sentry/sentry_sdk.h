@@ -15,6 +15,7 @@
 
 #include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/core/object.hpp>
+#include <godot_cpp/templates/safe_refcount.hpp>
 #include <memory>
 
 using namespace godot;
@@ -40,7 +41,13 @@ public:
 private:
 	static SentrySDK *singleton;
 
+	// Scopes are thread-local. _push_scope() scopes are removed by _pop_scope(),
+	// but each thread's lazily-created root scope lives until the thread exits or
+	// the SDK is reinitialized/closed. init() and close() bump a global epoch so
+	// threads can detect and discard stale scope stacks on next access.
 	static thread_local List<Ref<SentryScope>> current_scopes;
+	static SafeNumeric<uint32_t> scopes_epoch;
+	static thread_local uint32_t local_scopes_epoch;
 
 	Ref<SentryOptions> options;
 	std::unique_ptr<sentry::InternalSDK> internal_sdk;
@@ -61,6 +68,9 @@ private:
 	Vector<Ref<SentryAttachment>> _get_default_attachments();
 	void _auto_initialize();
 	void _on_engine_shutdown();
+
+	// Marks every thread's scope stack as stale.
+	void _invalidate_scopes();
 
 	_FORCE_INLINE_ Ref<SentryScope> _push_scope() { return current_scopes.push_back(Ref<SentryScope>(get_current_scope()->clone()))->get(); }
 	_FORCE_INLINE_ void _pop_scope(const Ref<SentryScope> &p_scope) { current_scopes.erase(p_scope); }
@@ -118,9 +128,16 @@ public:
 	// * Scopes
 
 	_FORCE_INLINE_ Ref<SentryScope> get_current_scope() const {
+		uint32_t epoch = scopes_epoch.get();
+		if (unlikely(local_scopes_epoch != epoch)) {
+			current_scopes.clear();
+			local_scopes_epoch = epoch;
+		}
+
 		if (current_scopes.is_empty()) {
 			current_scopes.push_back(Ref<SentryScope>(memnew(SentryScope)));
 		}
+
 		return current_scopes.back()->get();
 	}
 
