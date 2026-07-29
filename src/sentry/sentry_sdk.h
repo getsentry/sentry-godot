@@ -127,19 +127,7 @@ public:
 
 	// * Scopes
 
-	_FORCE_INLINE_ Ref<SentryScope> get_current_scope() const {
-		uint32_t epoch = scopes_epoch.get();
-		if (unlikely(local_scopes_epoch != epoch)) {
-			current_scopes.clear();
-			local_scopes_epoch = epoch;
-		}
-
-		if (current_scopes.is_empty()) {
-			current_scopes.push_back(Ref<SentryScope>(memnew(SentryScope)));
-		}
-
-		return current_scopes.back()->get();
-	}
+	Ref<SentryScope> get_current_scope() const;
 
 	Variant with_scope(Callable p_callable);
 
