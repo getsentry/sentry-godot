@@ -13,7 +13,7 @@
 			save_game()
 		)
 		[/codeblock]
-		[b]Note:[/b] Scopes are not supported on every platform yet. Where support is missing, telemetry is still captured but the data written to the scope is discarded.
+		[b]Note:[/b] The SDK supports scopes on Windows and Linux only for now. On the other platforms it still captures telemetry, but discards the data written to the scope.
 	</description>
 	<tutorials>
 	</tutorials>
