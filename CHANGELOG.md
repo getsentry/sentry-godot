@@ -8,9 +8,9 @@
 
 ### Dependencies
 
-- Bump Sentry JavaScript from v10.65.0 to v10.68.0 ([#816](https://github.com/getsentry/sentry-godot/pull/816), [#819](https://github.com/getsentry/sentry-godot/pull/819), [#831](https://github.com/getsentry/sentry-godot/pull/831))
-  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10680)
-  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.65.0...10.68.0)
+- Bump Sentry JavaScript from v10.65.0 to v10.69.0 ([#816](https://github.com/getsentry/sentry-godot/pull/816), [#819](https://github.com/getsentry/sentry-godot/pull/819), [#831](https://github.com/getsentry/sentry-godot/pull/831), [#843](https://github.com/getsentry/sentry-godot/pull/843))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#10690)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/10.65.0...10.69.0)
 - Bump Native SDK from v0.15.3 to v0.16.0 ([#818](https://github.com/getsentry/sentry-godot/pull/818), [#833](https://github.com/getsentry/sentry-godot/pull/833))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0160)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.15.3...0.16.0)
