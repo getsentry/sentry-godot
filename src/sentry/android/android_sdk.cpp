@@ -208,8 +208,7 @@ String AndroidSDK::capture_event(const Ref<SentryEvent> &p_event) {
 	Ref<AndroidEvent> android_event = p_event;
 	ERR_FAIL_COND_V(android_event.is_null(), String());
 	int32_t handle = android_event->get_handle();
-	android_plugin->call(ANDROID_SN(captureEvent), handle);
-	return android_event->get_id();
+	return android_plugin->call(ANDROID_SN(captureEvent), handle);
 }
 
 void AndroidSDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
