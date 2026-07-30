@@ -19,6 +19,9 @@ signal event_captured
 
 var captured_events: Array[String]
 
+## Position of the next event to be returned by wait_for_captured_event_json().
+var _next_captured_event := 0
+
 
 ## Perform queries and assertions on JSON content.
 func assert_json(json: Variant) -> JSONAssert:
@@ -28,14 +31,19 @@ func assert_json(json: Variant) -> JSONAssert:
 ## Capture event, expect it to be processed and return its JSON content.
 func capture_event_and_get_json(event: SentryEvent) -> String:
 	SentrySDK.capture_event(event)
-	await assert_signal(self).is_emitted("event_captured")
-	return captured_events[-1] if captured_events.size() > 0 else ""
+	return await wait_for_captured_event_json()
 
 
 ## Expect an event to be processed and return its serialized JSON content.
+## Consecutive calls hand out captured events in capture order.
 func wait_for_captured_event_json() -> String:
-	await assert_signal(self).is_emitted("event_captured")
-	return captured_events[-1] if captured_events.size() > 0 else ""
+	if _next_captured_event >= captured_events.size():
+		await await_signal_on(self, "event_captured")
+	if _next_captured_event >= captured_events.size():
+		return ""
+	var json: String = captured_events[_next_captured_event]
+	_next_captured_event += 1
+	return json
 
 
 func before() -> void:
@@ -63,6 +71,7 @@ func after() -> void:
 func before_test() -> void:
 	# NOTE: Make sure to call super() if overriding.
 	captured_events.clear()
+	_next_captured_event = 0
 	SentrySDK._set_before_send(_before_send)
 	monitor_signals(self, false)
 
@@ -76,6 +85,15 @@ func _before_send(event: SentryEvent) -> SentryEvent:
 	if event.is_crash():
 		# Likely processing previous crash.
 		return event
-	captured_events.append(event.to_json())
-	event_captured.emit()
+	var json := event.to_json()
+	if OS.get_thread_caller_id() == OS.get_main_thread_id():
+		_record_captured_event(json)
+	else:
+		# Defer: Node signals can only be emitted on the owning (i.e. main) thread.
+		_record_captured_event.call_deferred(json)
 	return null
+
+
+func _record_captured_event(json: String) -> void:
+	captured_events.append(json)
+	event_captured.emit()
