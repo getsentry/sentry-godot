@@ -10,6 +10,12 @@
 
 ## 2.1.1
 
+### Features
+
+- Add local scopes to enrich the telemetry captured within a specific part of the code ([#834](https://github.com/getsentry/sentry-godot/pull/834))
+  - `SentrySDK.with_scope()` runs a callable with a forked scope, `SentrySDK.get_current_scope()` returns the scope active on the calling thread, and the new `SentryScope` class carries tags, contexts, user, level, fingerprint, breadcrumbs, and attributes on top of the data set globally
+  - Only supported on Windows and Linux for now, with the remaining platforms still capturing telemetry but discarding the scope data and printing a warning
+
 ### Fixes
 
 - Fixed missing line numbers in GDScript frames on Android with Godot 4.6 and later ([#826](https://github.com/getsentry/sentry-godot/pull/826))
