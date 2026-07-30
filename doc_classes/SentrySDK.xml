@@ -77,6 +77,7 @@
 			<description>
 				Returns the current scope on the calling thread. Inside a [method SentrySDK.with_scope] callable, this is the scope forked for that callable. The fork is discarded when the callable returns, and the parent scope it was forked from becomes current again. Outside of any [method SentrySDK.with_scope], the returned scope stays current for the telemetry captured later on that thread.
 				Current scope is never shared between threads, so data written to the returned scope enriches only the telemetry captured on the calling thread. To enrich telemetry captured on every thread, use the [SentrySDK] methods such as [method SentrySDK.set_tag] instead.
+				[b]Note:[/b] Scopes are not supported on every platform yet. Where support is missing, telemetry is still captured but the data written to the returned scope is discarded.
 			</description>
 		</method>
 		<method name="get_last_event_id" qualifiers="const">

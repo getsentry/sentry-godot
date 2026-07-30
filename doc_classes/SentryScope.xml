@@ -13,6 +13,7 @@
 			save_game()
 		)
 		[/codeblock]
+		[b]Note:[/b] Scopes are not supported on every platform yet. Where support is missing, telemetry is still captured but the data written to the scope is discarded.
 	</description>
 	<tutorials>
 	</tutorials>
