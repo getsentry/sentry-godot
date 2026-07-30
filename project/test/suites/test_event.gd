@@ -89,3 +89,17 @@ func test_capture_event() -> void:
 	assert_str(event_id).is_equal(event.id)
 	assert_str(SentrySDK.get_last_event_id()).is_not_empty()
 	assert_str(event_id).is_equal(SentrySDK.get_last_event_id())
+
+
+## SentrySDK.capture_event() should return a nil event ID if the event is discarded in before_send.
+func test_capture_event_discarded(
+		_do_skip = OS.get_name() == "Web",
+		_skip_reason = "JS SDK returns a freshly generated ID before before_send runs") -> void:
+	SentrySDK._set_before_send(func(_ev): return null)
+
+	var event := SentrySDK.create_event()
+	var event_id := SentrySDK.capture_event(event)
+
+	# The nil ID is dashed in the native layer and undashed on Android and Apple platforms.
+	assert_str(event_id.replace("-", "")).is_equal("00000000000000000000000000000000")
+	assert_str(event_id).is_not_equal(event.id)
