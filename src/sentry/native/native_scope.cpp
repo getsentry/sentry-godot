@@ -37,11 +37,10 @@ void NativeScope::set_attribute(const String &p_name, const Variant &p_value) {
 
 void NativeScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	NativeBreadcrumb *native_crumb = Object::cast_to<NativeBreadcrumb>(p_breadcrumb.ptr());
-	if (native_crumb) {
-		sentry_value_t crumb_value = native_crumb->get_native_breadcrumb();
-		sentry_value_incref(crumb_value); // Scope takes ownership.
-		sentry_scope_add_breadcrumb(_scope, crumb_value);
-	}
+	ERR_FAIL_NULL(native_crumb);
+	sentry_value_t crumb_value = native_crumb->get_native_breadcrumb();
+	sentry_value_incref(crumb_value); // Scope takes ownership.
+	sentry_scope_add_breadcrumb(_scope, crumb_value);
 }
 
 void NativeScope::clear() {
