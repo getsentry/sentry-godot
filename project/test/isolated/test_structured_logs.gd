@@ -250,3 +250,17 @@ func test_structured_logs_with_scope_attribute_types(_do_skip = OS.get_name() no
 
 		SentrySDK.logger.info("Test with scope attribute types")
 	)
+
+
+# TODO: remove skip when implemented on other platforms
+func test_structured_logs_scope_clear_drops_attributes(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"]) -> void:
+	SentrySDK.with_scope(func(scope: SentryScope):
+		scope.set_attribute("before_clear", "value")
+		scope.clear()
+
+		log_processed.connect(func(entry: SentryLog):
+			assert_that(entry.get_attribute("before_clear")).is_null()
+		, CONNECT_ONE_SHOT)
+
+		SentrySDK.logger.info("Test after scope clear")
+	)

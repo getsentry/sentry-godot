@@ -154,17 +154,60 @@ func test_scoped_add_breadcrumb() -> void:
 func test_scope_clear() -> void:
 	SentrySDK.set_tag("global_tag", "global")
 
+	var cleared_user := SentryUser.new()
+	cleared_user.id = "player_cleared"
+
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_context("cleared_scene", {"name": "Dungeon"})
 		scope.set_tag("before_clear", "value")
+		scope.set_user(cleared_user)
+		scope.set_level(SentrySDK.LEVEL_WARNING)
+		scope.set_fingerprint(PackedStringArray(["cleared-group"]))
+		scope.add_breadcrumb(SentryBreadcrumb.create("cleared crumb"))
 		scope.clear()
 		scope.set_tag("after_clear", "value")
 		SentrySDK.capture_event(SentrySDK.create_event())
 		)
 	var json: String = await wait_for_captured_event_json()
 
-	assert_json(json).describe("clear() drops local scope data written before it") \
+	assert_json(json).describe("clear() drops the context written before it") \
+		.at("/") \
+		.must_not_contain("/contexts/cleared_scene") \
+		.verify()
+
+	assert_json(json).describe("clear() drops the tag written before it") \
 		.at("/tags") \
 		.must_not_contain("before_clear") \
+		.verify()
+
+	assert_json(json).describe("clear() drops the user written before it") \
+		.at("/") \
+		.must_not_contain("/user/id", "player_cleared") \
+		.verify()
+
+	assert_json(json).describe("clear() drops the level written before it") \
+		.at("/") \
+		.must_not_contain("/level", "warning") \
+		.verify()
+
+	assert_json(json).describe("clear() drops the fingerprint written before it") \
+		.at("/") \
+		.must_not_contain("/fingerprint/0", "cleared-group") \
+		.verify()
+
+	assert_json(json).describe("clear() drops the breadcrumb added before it") \
+		.either() \
+			.at("/") \
+			.must_not_contain("/breadcrumbs") \
+		.or_else() \
+			.at("/breadcrumbs") \
+			.is_null() \
+		.or_else() \
+			.at("/breadcrumbs/") \
+			.with_objects() \
+			.containing("message", "cleared crumb") \
+			.must_selected(0) \
+		.end() \
 		.verify()
 
 	assert_json(json).describe("scope stays usable after clear()") \
