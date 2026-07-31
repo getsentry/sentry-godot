@@ -227,7 +227,7 @@ void AndroidSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<Sen
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
 
 	ERR_FAIL_COND(p_scope.is_null());
-	AndroidScope *android_scope = p_scope.is_valid() ? static_cast<AndroidScope *>(p_scope->get_implementation()) : nullptr;
+	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 
 	android_plugin->call(ANDROID_SN(captureFeedback),
 			p_feedback->get_message(),
