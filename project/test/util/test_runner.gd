@@ -7,8 +7,6 @@ extends "res://addons/gdUnit4/src/core/runners/GdUnitTestSessionRunner.gd"
 #	add_child(runner)
 #	runner.include_tests("res://tests/")
 
-const GdUnitTools := preload("res://addons/gdUnit4/src/core/GdUnitTools.gd")
-
 signal finished(result_code)
 
 enum Result {

@@ -60,6 +60,12 @@ func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		# Disable message breadcrumbs to avoid interfering with normal testing.
 		options.godot_logger.breadcrumb_mask &= ~SentryOptions.MASK_MESSAGE
+
+		# Make sure error limits are not interfering. gdUnit4 can run many test
+		# cases within a single engine frame, so they would otherwise share one
+		# per-frame budget. Limits themselves are covered by isolated test suites.
+		options.godot_logger.limits.events_per_frame = 88
+		options.godot_logger.limits.throttle_events = 88
 	)
 
 
