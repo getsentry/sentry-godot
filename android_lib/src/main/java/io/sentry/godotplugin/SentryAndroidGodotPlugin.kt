@@ -127,8 +127,9 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     // Returns combined scopes by the given scope handle (scope is owned by C++ layer).
-    // This layers the current scope over the global and isolation scopes,
-    // so scope attributes and trace changes are reflected per capture.
+    // This layers the current scope over the global and isolation scopes, so scope data applies per capture.
+    // The trace is not layered: sentry-java resolves the propagation context through defaultScopeType, which we pin
+    // to GLOBAL, so captures stay on the trace setTrace wrote there and a blank local scope never forks it.
     private fun combinedScopes(scopeHandle: Int): IScopes? {
         if (!Sentry.isEnabled()) {
             return null
