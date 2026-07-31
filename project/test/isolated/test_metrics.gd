@@ -202,3 +202,22 @@ func test_metric_with_scope_attributes(_do_skip = OS.get_name() not in ["Windows
 		assert_str(metric.get_attribute("scope_over_global")).is_equal("global")
 	, CONNECT_ONE_SHOT)
 	SentrySDK.metrics.count("metric_after_scope")
+
+
+# TODO: remove skip when implemented on other platforms
+func test_metric_with_scope_attribute_types(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"]) -> void:
+	SentrySDK.with_scope(func(scope: SentryScope):
+		scope.set_attribute("level", "forest")
+		scope.set_attribute("enemy_id", 42)
+		scope.set_attribute("health", 10.5)
+		scope.set_attribute("elite", false)
+
+		metric_processed.connect(func(metric: SentryMetric):
+			assert_str(metric.get_attribute("level")).is_equal("forest")
+			assert_int(metric.get_attribute("enemy_id")).is_equal(42)
+			assert_float(metric.get_attribute("health")).is_equal_approx(10.5, 0.001)
+			assert_bool(metric.get_attribute("elite")).is_equal(false)
+		, CONNECT_ONE_SHOT)
+
+		SentrySDK.metrics.count("scoped_metric_types")
+	)
