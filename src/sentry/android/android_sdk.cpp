@@ -181,6 +181,7 @@ void AndroidSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, 
 
 	ERR_FAIL_COND(p_scope.is_null());
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
+
 	android_plugin->call(ANDROID_SN(log),
 			android_scope->get_handle(),
 			p_level, p_body, _sanitize_attributes(p_attributes));
@@ -203,10 +204,13 @@ Ref<SentryEvent> AndroidSDK::create_event() {
 String AndroidSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<SentryEvent> &p_event) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL_V(android_plugin, String());
-	ERR_FAIL_COND_V(p_event.is_null(), String());
+
 	Ref<AndroidEvent> android_event = p_event;
 	ERR_FAIL_COND_V(android_event.is_null(), String());
-	AndroidScope *android_scope = p_scope.is_valid() ? static_cast<AndroidScope *>(p_scope->get_implementation()) : nullptr;
+
+	ERR_FAIL_COND_V(p_scope.is_null(), String());
+	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
+
 	return android_plugin->call(ANDROID_SN(captureEvent),
 			android_event->get_handle(),
 			android_scope ? android_scope->get_handle() : 0);
@@ -215,9 +219,13 @@ String AndroidSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<Sent
 void AndroidSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
+
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
+
+	ERR_FAIL_COND(p_scope.is_null());
 	AndroidScope *android_scope = p_scope.is_valid() ? static_cast<AndroidScope *>(p_scope->get_implementation()) : nullptr;
+
 	android_plugin->call(ANDROID_SN(captureFeedback),
 			p_feedback->get_message(),
 			p_feedback->get_contact_email(),
@@ -255,9 +263,10 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 void AndroidSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
-	ERR_FAIL_COND(p_scope.is_null());
 
+	ERR_FAIL_COND(p_scope.is_null());
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
+
 	android_plugin->call(ANDROID_SN(metricsAddCount),
 			android_scope->get_handle(),
 			p_name, p_value, _sanitize_attributes(p_attributes));
@@ -266,9 +275,10 @@ void AndroidSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String
 void AndroidSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
-	ERR_FAIL_COND(p_scope.is_null());
 
+	ERR_FAIL_COND(p_scope.is_null());
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
+
 	android_plugin->call(ANDROID_SN(metricsAddGauge),
 			android_scope->get_handle(),
 			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
@@ -277,9 +287,10 @@ void AndroidSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String
 void AndroidSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL(android_plugin);
-	ERR_FAIL_COND(p_scope.is_null());
 
+	ERR_FAIL_COND(p_scope.is_null());
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
+
 	android_plugin->call(ANDROID_SN(metricsAddDistribution),
 			android_scope->get_handle(),
 			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
