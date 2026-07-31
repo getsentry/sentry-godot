@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fixed missing line numbers in GDScript frames on Android with Godot 4.6 and later ([#826](https://github.com/getsentry/sentry-godot/pull/826))
+- Fixed `SentrySDK.capture_event()` on Android returning a valid-looking event ID for events that were discarded, such as by `before_send` ([#845](https://github.com/getsentry/sentry-godot/pull/845))
 
 ### Dependencies
 
