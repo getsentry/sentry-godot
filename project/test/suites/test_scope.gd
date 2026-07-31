@@ -291,13 +291,13 @@ func test_get_current_scope_is_thread_local() -> void:
 		.is_not_same(main_scope)
 
 
-func test_with_scope_does_not_cross_threads() -> void:
-	var worker_may_capture := Semaphore.new()
+func test_with_scope_on_thread_excludes_main_scope() -> void:
+	var main_in_scope := Semaphore.new()
 	var worker_captured := Semaphore.new()
 
 	var thread := Thread.new()
 	thread.start(func() -> void:
-		worker_may_capture.wait()
+		main_in_scope.wait()
 		SentrySDK.with_scope(func(scope: SentryScope) -> void:
 			scope.set_tag("worker_tag", "worker")
 			SentrySDK.capture_event(SentrySDK.create_event())
@@ -307,14 +307,11 @@ func test_with_scope_does_not_cross_threads() -> void:
 
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_tag("main_tag", "main")
-		worker_may_capture.post()
+		main_in_scope.post()
 		worker_captured.wait()
-		SentrySDK.capture_event(SentrySDK.create_event())
 		)
-
 	thread.wait_to_finish()
 
-	var json_main: String = await wait_for_captured_event_json()
 	var json_worker: String = await wait_for_captured_event_json()
 
 	assert_json(json_worker).describe("worker event carries the worker scope, not the main thread's") \
@@ -322,6 +319,30 @@ func test_with_scope_does_not_cross_threads() -> void:
 		.must_contain("worker_tag", "worker") \
 		.must_not_contain("main_tag") \
 		.verify()
+
+
+func test_with_scope_on_main_excludes_thread_scope() -> void:
+	var worker_in_scope := Semaphore.new()
+	var main_captured := Semaphore.new()
+
+	var thread := Thread.new()
+	thread.start(func() -> void:
+		SentrySDK.with_scope(func(scope: SentryScope) -> void:
+			scope.set_tag("worker_tag", "worker")
+			worker_in_scope.post()
+			main_captured.wait()
+			)
+		)
+
+	worker_in_scope.wait()
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_tag("main_tag", "main")
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+	main_captured.post()
+	thread.wait_to_finish()
+
+	var json_main: String = await wait_for_captured_event_json()
 
 	assert_json(json_main).describe("main event carries the main scope, not the worker thread's") \
 		.at("/tags") \
