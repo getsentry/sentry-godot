@@ -23,6 +23,9 @@ using namespace godot;
 
 namespace {
 
+// Sentinel passed in place of a scope handle: the plugin captures with no local scope layered on top.
+constexpr int32_t NO_LOCAL_SCOPE = 0;
+
 inline Variant _as_attribute(const Variant &p_value) {
 	Variant::Type type = p_value.get_type();
 	return (type < Variant::BOOL || type > Variant::STRING) ? (Variant)p_value.stringify() : p_value;
@@ -183,7 +186,7 @@ void AndroidSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, 
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 
 	android_plugin->call(ANDROID_SN(log),
-			android_scope->get_handle(),
+			android_scope ? android_scope->get_handle() : NO_LOCAL_SCOPE,
 			p_level, p_body, _sanitize_attributes(p_attributes));
 }
 
@@ -213,7 +216,7 @@ String AndroidSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<Sent
 
 	return android_plugin->call(ANDROID_SN(captureEvent),
 			android_event->get_handle(),
-			android_scope ? android_scope->get_handle() : 0);
+			android_scope ? android_scope->get_handle() : NO_LOCAL_SCOPE);
 }
 
 void AndroidSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) {
@@ -231,7 +234,7 @@ void AndroidSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<Sen
 			p_feedback->get_contact_email(),
 			p_feedback->get_name(),
 			p_feedback->get_associated_event_id(),
-			android_scope ? android_scope->get_handle() : 0);
+			android_scope ? android_scope->get_handle() : NO_LOCAL_SCOPE);
 }
 
 void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
@@ -268,7 +271,7 @@ void AndroidSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 
 	android_plugin->call(ANDROID_SN(metricsAddCount),
-			android_scope->get_handle(),
+			android_scope ? android_scope->get_handle() : NO_LOCAL_SCOPE,
 			p_name, p_value, _sanitize_attributes(p_attributes));
 }
 
@@ -280,7 +283,7 @@ void AndroidSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 
 	android_plugin->call(ANDROID_SN(metricsAddGauge),
-			android_scope->get_handle(),
+			android_scope ? android_scope->get_handle() : NO_LOCAL_SCOPE,
 			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
 }
 
@@ -292,7 +295,7 @@ void AndroidSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 
 	android_plugin->call(ANDROID_SN(metricsAddDistribution),
-			android_scope->get_handle(),
+			android_scope ? android_scope->get_handle() : NO_LOCAL_SCOPE,
 			p_name, p_value, p_unit, _sanitize_attributes(p_attributes));
 }
 
