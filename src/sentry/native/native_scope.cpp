@@ -55,8 +55,8 @@ NativeScope::NativeScope() {
 	_scope = sentry_scope_new();
 }
 
-NativeScope::NativeScope(sentry_scope_t *_scope) :
-		_scope(_scope) {
+NativeScope::NativeScope(sentry_scope_t *p_scope) :
+		_scope(p_scope) {
 }
 
 NativeScope::~NativeScope() {

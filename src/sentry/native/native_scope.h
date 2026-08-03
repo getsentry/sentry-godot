@@ -25,7 +25,7 @@ public:
 	virtual SentryScopeImpl *clone() const override;
 
 	NativeScope();
-	NativeScope(sentry_scope_t *_scope);
+	NativeScope(sentry_scope_t *p_scope);
 	virtual ~NativeScope() override;
 };
 

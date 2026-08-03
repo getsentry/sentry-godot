@@ -376,8 +376,7 @@ void NativeSDK::remove_attribute(const String &p_name) {
 }
 
 SentryScopeImpl *NativeSDK::create_scope() {
-	SentryScopeImpl *scope = memnew(NativeScope);
-	return scope;
+	return memnew(NativeScope);
 }
 
 void NativeSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
