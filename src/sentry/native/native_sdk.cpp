@@ -199,11 +199,7 @@ void NativeSDK::remove_tag(const String &p_key) {
 }
 
 void NativeSDK::set_user(const Ref<SentryUser> &p_user) {
-	if (p_user.is_valid()) {
-		sentry_set_user(user_to_sentry_value(p_user));
-	} else {
-		remove_user();
-	}
+	sentry_set_user(user_to_sentry_value(p_user));
 }
 
 void NativeSDK::remove_user() {

@@ -79,10 +79,10 @@ sentry_value_t strings_to_sentry_list(const PackedStringArray &p_strings) {
 }
 
 sentry_value_t user_to_sentry_value(const Ref<SentryUser> &p_user) {
-	sentry_value_t user_data = sentry_value_new_object();
 	if (p_user.is_null()) {
-		return user_data;
+		return sentry_value_new_null();
 	}
+	sentry_value_t user_data = sentry_value_new_object();
 	sentry_value_set_or_remove_string_by_key(user_data, "id", p_user->get_id());
 	sentry_value_set_or_remove_string_by_key(user_data, "username", p_user->get_username());
 	sentry_value_set_or_remove_string_by_key(user_data, "email", p_user->get_email());

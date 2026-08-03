@@ -16,11 +16,7 @@ void NativeScope::set_tag(const String &p_key, const String &p_value) {
 }
 
 void NativeScope::set_user(const Ref<SentryUser> &p_user) {
-	if (p_user.is_valid()) {
-		sentry_scope_set_user(_scope, user_to_sentry_value(p_user));
-	} else {
-		sentry_scope_set_user(_scope, sentry_value_new_null());
-	}
+	sentry_scope_set_user(_scope, user_to_sentry_value(p_user));
 }
 
 void NativeScope::set_level(sentry::Level p_level) {

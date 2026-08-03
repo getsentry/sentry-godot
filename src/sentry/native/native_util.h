@@ -20,6 +20,7 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth = 0
 sentry_value_t strings_to_sentry_list(const PackedStringArray &p_strings);
 
 // Convert SentryUser to sentry_value_t user object, omitting empty fields.
+// A null user converts to a null value, removing the user where it is applied.
 sentry_value_t user_to_sentry_value(const Ref<SentryUser> &p_user);
 
 sentry_level_t level_to_native(Level p_level);
