@@ -212,6 +212,16 @@ func test_with_scope_top_level_write() -> void:
 		.verify()
 
 
+func test_with_scope_returns_callable_result() -> void:
+	var result: Variant = SentrySDK.with_scope(func(_scope: SentryScope) -> String:
+		return "callable result"
+		)
+
+	assert_str(result) \
+		.override_failure_message("with_scope() hands back what the callable returned") \
+		.is_equal("callable result")
+
+
 func test_nested_with_scope() -> void:
 	SentrySDK.with_scope(func(outer: SentryScope) -> void:
 		outer.set_tag("outer_tag", "outer")
