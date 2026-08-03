@@ -385,9 +385,6 @@ class SentryBridge {
     if (!scope) {
       return Sentry.captureEvent(event);
     }
-    // Ensure scoped captures use the active client. Scopes created before init
-    // have no client and would otherwise drop events silently.
-    scope.setClient(Sentry.getClient());
     return scope.captureEvent(event);
   }
 
@@ -408,9 +405,6 @@ class SentryBridge {
     if (associatedEventId !== "") {
       feedback.associatedEventId = associatedEventId;
     }
-    // Ensure scoped captures use the active client. Scopes created before init
-    // have no client and would otherwise drop events silently.
-    scope?.setClient(Sentry.getClient());
     return Sentry.captureFeedback(feedback, undefined, scope ?? undefined);
   }
 
