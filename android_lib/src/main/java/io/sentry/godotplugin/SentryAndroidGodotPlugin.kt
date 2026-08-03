@@ -496,7 +496,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun captureEvent(eventHandle: Int, scopeHandle: Int): String {
+    fun captureEvent(scopeHandle: Int, eventHandle: Int): String {
         val event: SentryEvent = getEvent(eventHandle) ?: run {
             Log.e(TAG, "Failed to capture event: $eventHandle")
             return ""
@@ -507,7 +507,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun captureFeedback(message: String, contactEmail: String, name: String, associatedEventId: String, scopeHandle: Int) {
+    fun captureFeedback(scopeHandle: Int, message: String, contactEmail: String, name: String, associatedEventId: String) {
         val feedback = Feedback(message)
         feedback.contactEmail = contactEmail.ifEmpty { null }
         feedback.name = name.ifEmpty { null }

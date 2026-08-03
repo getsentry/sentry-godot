@@ -212,8 +212,8 @@ String AndroidSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<Sent
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 
 	return android_plugin->call(ANDROID_SN(captureEvent),
-			android_event->get_handle(),
-			android_scope->get_handle());
+			android_scope->get_handle(),
+			android_event->get_handle());
 }
 
 void AndroidSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) {
@@ -227,11 +227,11 @@ void AndroidSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<Sen
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
 
 	android_plugin->call(ANDROID_SN(captureFeedback),
+			android_scope->get_handle(),
 			p_feedback->get_message(),
 			p_feedback->get_contact_email(),
 			p_feedback->get_name(),
-			p_feedback->get_associated_event_id(),
-			android_scope->get_handle());
+			p_feedback->get_associated_event_id());
 }
 
 void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
