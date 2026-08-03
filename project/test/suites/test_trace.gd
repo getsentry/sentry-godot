@@ -36,9 +36,8 @@ func test_nested_with_scope_keeps_trace() -> void:
 			)
 		)
 
-	await wait_for_captured_event_json()
-	var json_outer: String = captured_events[0]
-	var json_inner: String = captured_events[1]
+	var json_outer: String = await wait_for_captured_event_json()
+	var json_inner: String = await wait_for_captured_event_json()
 
 	assert_json(json_inner).describe("nested with_scope stays on the outer scope's trace") \
 		.at("/contexts/trace/trace_id") \

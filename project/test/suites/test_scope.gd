@@ -224,9 +224,8 @@ func test_nested_with_scope() -> void:
 		SentrySDK.capture_event(SentrySDK.create_event())
 		)
 
-	await wait_for_captured_event_json()
-	var json_inner: String = captured_events[0]
-	var json_outer: String = captured_events[1]
+	var json_inner: String = await wait_for_captured_event_json()
+	var json_outer: String = await wait_for_captured_event_json()
 
 	assert_json(json_inner).describe("nested scope inherits the outer scope's data") \
 		.at("/tags") \
