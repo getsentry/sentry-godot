@@ -254,31 +254,32 @@ func _cmd_pii_capture() -> int:
 
 
 func _cmd_run_tests(tests: String = "res://test/suites/") -> int:
-	if FileAccess.file_exists("res://test/util/test_runner.gd"):
-		print(">>> Initializing testing")
-		await get_tree().process_frame
+	print(">>> Initializing testing")
+	await get_tree().process_frame
 
-		var included_paths: PackedStringArray = tests.split(";", false)
-		if included_paths.is_empty():
-			printerr("No test path provided.")
-			return 1
-		print(" -- Tests included: ", included_paths)
-
-		# Add test runner node.
-		print(" -- Adding test runner...")
-		var test_runner: Node = load("res://test/util/test_runner.gd").new()
-		get_tree().root.add_child(test_runner)
-		for path in included_paths:
-			test_runner.include_tests(path)
-
-		# Wait for completion.
-		await test_runner.finished
-		print(">>> Test run complete with code: ", str(test_runner.result_code))
-
-		return test_runner.result_code
-	else:
-		printerr("Error: Test runner not found")
+	var included_paths: PackedStringArray = tests.split(";", false)
+	if included_paths.is_empty():
+		printerr("No test path provided.")
 		return 1
+	print(" -- Tests included: ", included_paths)
+
+	# Add test runner node.
+	print(" -- Adding test runner...")
+	# NOTE: A script that fails to parse still loads, only as an invalid resource.
+	var runner_script: Script = load("res://test/util/test_runner.gd")
+	if runner_script == null or not runner_script.can_instantiate():
+		printerr("Error: Test runner could not be loaded.")
+		return 1
+	var test_runner: Node = runner_script.new()
+	get_tree().root.add_child(test_runner)
+	for path in included_paths:
+		test_runner.include_tests(path)
+
+	# Wait for completion.
+	await test_runner.finished
+	print(">>> Test run complete with code: ", str(test_runner.result_code))
+
+	return test_runner.result_code
 
 
 func _cmd_dotnet_exception_capture(p_scenario: String) -> int:
