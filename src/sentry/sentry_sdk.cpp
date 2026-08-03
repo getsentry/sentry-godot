@@ -156,7 +156,7 @@ Ref<SentryScope> SentrySDK::get_current_scope() const {
 	return current_scopes.back()->get();
 }
 
-Variant SentrySDK::with_scope(Callable p_callable) {
+Variant SentrySDK::with_scope(const Callable &p_callable) {
 	if (unlikely(!internal_sdk->supports_scopes())) {
 		WARN_PRINT_ONCE("Sentry: Scopes are not supported on this platform yet - writes to the scope will be discarded.");
 	}

@@ -129,7 +129,7 @@ public:
 
 	Ref<SentryScope> get_current_scope() const;
 
-	Variant with_scope(Callable p_callable);
+	Variant with_scope(const Callable &p_callable);
 
 	// * Hidden API methods -- used in testing
 
