@@ -4,6 +4,7 @@
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_scope_impl.h"
 #include "sentry/sentry_user.h"
+#include "sentry/util/thread_guard.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -19,6 +20,8 @@ class SentryScope : public RefCounted {
 
 private:
 	SentryScopeImpl *_impl;
+
+	SENTRY_THREAD_OWNER;
 
 protected:
 	static void _bind_methods();

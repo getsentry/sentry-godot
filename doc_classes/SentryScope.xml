@@ -13,6 +13,7 @@
 			save_game()
 		)
 		[/codeblock]
+		[b]Note:[/b] A scope is thread-local. Modify a scope only from the thread that created it. If a scope is modified from another thread, the SDK rejects the call with an error and discards the data. To enrich telemetry captured on another thread, get that thread's current scope with [method SentrySDK.get_current_scope], or use [SentrySDK] methods such as [method SentrySDK.set_tag] to enrich telemetry captured on all threads.
 		[b]Note:[/b] The SDK supports scopes on Windows and Linux only for now. On the other platforms it still captures telemetry, but discards the data written to the scope.
 	</description>
 	<tutorials>
