@@ -230,7 +230,6 @@ void NativeSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, c
 
 	ERR_FAIL_COND(p_scope.is_null());
 	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
-	ERR_FAIL_NULL(native_scope);
 
 	sentry_scope_capture_log(native_scope->get_native_scope(), _log_level_to_native(p_level),
 			p_body.utf8(), dictionary_to_attributes(p_attributes));
@@ -255,7 +254,6 @@ String NativeSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<Sentr
 
 	ERR_FAIL_COND_V(p_scope.is_null(), _uuid_as_string(sentry_uuid_nil()));
 	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
-	ERR_FAIL_NULL_V(native_scope, _uuid_as_string(sentry_uuid_nil()));
 
 	NativeEvent *native_event = Object::cast_to<NativeEvent>(p_event.ptr());
 	ERR_FAIL_NULL_V(native_event, _uuid_as_string(sentry_uuid_nil()));
@@ -277,7 +275,6 @@ void NativeSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<Sent
 
 	ERR_FAIL_COND(p_scope.is_null());
 	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
-	ERR_FAIL_NULL(native_scope);
 
 	sentry_value_t feedback = sentry_value_new_object();
 
@@ -349,7 +346,6 @@ void NativeSDK::clear_attachments() {
 void NativeSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(p_scope.is_null());
 	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
-	ERR_FAIL_NULL(native_scope);
 
 	sentry_scope_capture_metric(native_scope->get_native_scope(), SENTRY_METRIC_COUNT,
 			p_name.utf8(), sentry_value_new_int64(p_value), nullptr, dictionary_to_attributes(p_attributes));
@@ -358,7 +354,6 @@ void NativeSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String 
 void NativeSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(p_scope.is_null());
 	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
-	ERR_FAIL_NULL(native_scope);
 
 	sentry_scope_capture_metric(native_scope->get_native_scope(), SENTRY_METRIC_GAUGE,
 			p_name.utf8(), sentry_value_new_double(p_value), p_unit.utf8(), dictionary_to_attributes(p_attributes));
@@ -367,7 +362,6 @@ void NativeSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String 
 void NativeSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(p_scope.is_null());
 	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
-	ERR_FAIL_NULL(native_scope);
 
 	sentry_scope_capture_metric(native_scope->get_native_scope(), SENTRY_METRIC_DISTRIBUTION,
 			p_name.utf8(), sentry_value_new_double(p_value), p_unit.utf8(), dictionary_to_attributes(p_attributes));
