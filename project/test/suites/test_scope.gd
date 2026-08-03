@@ -300,6 +300,26 @@ func test_get_current_scope_is_thread_local() -> void:
 		.is_not_same(main_scope)
 
 
+func test_get_current_scope_enriches_later_events() -> void:
+	SentrySDK.get_current_scope().set_tag("current_tag", "current")
+
+	var json_first: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_second: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	# The current scope outlives the test, so leave it as it was found.
+	SentrySDK.get_current_scope().clear()
+
+	assert_json(json_first).describe("current scope enriches an event captured after the write") \
+		.at("/tags") \
+		.must_contain("current_tag", "current") \
+		.verify()
+
+	assert_json(json_second).describe("current scope stays in effect for later events on the same thread") \
+		.at("/tags") \
+		.must_contain("current_tag", "current") \
+		.verify()
+
+
 func test_with_scope_on_thread_excludes_main_scope() -> void:
 	var main_in_scope := Semaphore.new()
 	var worker_captured := Semaphore.new()
