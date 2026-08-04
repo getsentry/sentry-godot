@@ -5,6 +5,9 @@
 
 namespace sentry::javascript {
 
+// Backed by a JS Scope object, which is guaranteed to be valid: creation failures
+// yield a DisabledScope instead.
+// See JavaScriptSDK::create_scope().
 class JavaScriptScope : public SentryScopeImpl {
 private:
 	JSObjectPtr js_obj;
@@ -23,7 +26,7 @@ public:
 	virtual SentryScopeImpl *clone() const override;
 
 	explicit JavaScriptScope(const JSObjectPtr &p_js_scope_object);
-	JavaScriptScope();
+	JavaScriptScope() = delete;
 };
 
 } //namespace sentry::javascript
