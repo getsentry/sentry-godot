@@ -162,31 +162,60 @@ try {
 					"createScope should inherit the current trace");
 		});
 
-		runTest("scopeSetContext() / scopeSetFingerprint() / scopeSetUser()", () => {
+		runTest("scope setters", () => {
 			const scope = bridge.createScope();
 			bridge.scopeSetContext(scope, "test-context", '{"key": "value"}');
 			bridge.scopeSetFingerprint(scope, '["a","b"]');
 			bridge.scopeSetUser(scope, "user123", "testuser", "test@example.com", "127.0.0.1");
+			scope.setTag("subsystem", "savegame");
+			scope.setLevel("warning");
 			const data = scope.getScopeData();
 			assertEqual(data.contexts["test-context"].key, "value", "scopeSetContext should set the context");
 			assertEqual(data.fingerprint.join(","), "a,b", "scopeSetFingerprint should set the fingerprint");
 			assertEqual(data.user.id, "user123", "scopeSetUser should set the user");
+			assertEqual(data.tags.subsystem, "savegame", "setTag should set a tag");
+			assertEqual(data.level, "warning", "setLevel should set the level");
+			scope.setUser(null);
+			assertEqual(scope.getScopeData().user.id, undefined, "setUser(null) should clear the user");
 		});
 
-		runTest("scope.setAttribute() / scope.setUser(null)", () => {
+		runTest("scope.addBreadcrumb()", () => {
+			const scope = bridge.createScope();
+			// Second argument is the breadcrumb cap the C++ layer reads from SentryOptions.
+			scope.addBreadcrumb({ message : "first" }, 2);
+			scope.addBreadcrumb({ message : "second" }, 2);
+			scope.addBreadcrumb({ message : "third" }, 2);
+			const data = scope.getScopeData();
+			assertEqual(data.breadcrumbs.length, 2, "addBreadcrumb should honor the max breadcrumbs argument");
+			assertEqual(data.breadcrumbs[0].message, "second", "addBreadcrumb should drop the oldest past the cap");
+			assertEqual(data.breadcrumbs[1].message, "third", "addBreadcrumb should keep the newest breadcrumb");
+		});
+
+		runTest("scope.setAttribute()", () => {
 			const scope = bridge.createScope();
 			scope.setAttribute("level", "forest");
 			scope.setAttribute("enemy_id", 42);
 			scope.setAttribute("health", 10.5);
 			scope.setAttribute("elite", false);
-			bridge.scopeSetUser(scope, "user123", "testuser", "test@example.com", "127.0.0.1");
-			scope.setUser(null);
 			const data = scope.getScopeData();
 			assertEqual(data.attributes.level, "forest", "setAttribute should set a string attribute");
 			assertEqual(data.attributes.enemy_id, 42, "setAttribute should set an int attribute");
 			assertEqual(data.attributes.health, 10.5, "setAttribute should set a float attribute");
 			assertEqual(data.attributes.elite, false, "setAttribute should set a bool attribute");
-			assertEqual(data.user.id, undefined, "setUser(null) should clear the user");
+		});
+
+		runTest("scope.clone()", () => {
+			const scope = bridge.createScope();
+			scope.setTag("subsystem", "savegame");
+			const fork = scope.clone();
+			assert(fork.getClient() !== undefined, "clone should carry the client over");
+			assertEqual(fork.getPropagationContext().traceId, scope.getPropagationContext().traceId,
+					"clone should stay on the parent's trace");
+			assertEqual(fork.getScopeData().tags.subsystem, "savegame",
+					"clone should inherit the parent's data");
+			fork.setTag("subsystem", "worldgen");
+			assertEqual(scope.getScopeData().tags.subsystem, "savegame",
+					"writes to the clone should not reach the parent");
 		});
 
 		runTest("scopeClear()", () => {
