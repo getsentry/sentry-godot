@@ -157,6 +157,9 @@ try {
 		runTest("createScope()", () => {
 			const scope = bridge.createScope();
 			assert(scope.getClient() !== undefined, "createScope should bind the current client");
+			assertEqual(bridge.createScope().getPropagationContext().traceId,
+					scope.getPropagationContext().traceId,
+					"createScope should inherit the current trace");
 		});
 
 		runTest("scopeSetContext() / scopeSetFingerprint() / scopeSetUser()", () => {
@@ -168,6 +171,22 @@ try {
 			assertEqual(data.contexts["test-context"].key, "value", "scopeSetContext should set the context");
 			assertEqual(data.fingerprint.join(","), "a,b", "scopeSetFingerprint should set the fingerprint");
 			assertEqual(data.user.id, "user123", "scopeSetUser should set the user");
+		});
+
+		runTest("scope.setAttribute() / scope.setUser(null)", () => {
+			const scope = bridge.createScope();
+			scope.setAttribute("level", "forest");
+			scope.setAttribute("enemy_id", 42);
+			scope.setAttribute("health", 10.5);
+			scope.setAttribute("elite", false);
+			bridge.scopeSetUser(scope, "user123", "testuser", "test@example.com", "127.0.0.1");
+			scope.setUser(null);
+			const data = scope.getScopeData();
+			assertEqual(data.attributes.level, "forest", "setAttribute should set a string attribute");
+			assertEqual(data.attributes.enemy_id, 42, "setAttribute should set an int attribute");
+			assertEqual(data.attributes.health, 10.5, "setAttribute should set a float attribute");
+			assertEqual(data.attributes.elite, false, "setAttribute should set a bool attribute");
+			assertEqual(data.user.id, undefined, "setUser(null) should clear the user");
 		});
 
 		runTest("scopeClear()", () => {
