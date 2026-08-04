@@ -14,7 +14,8 @@ enum Result {
 	FAILURE = 100,
 	WARNINGS = 101,
 	TESTS_NOT_FOUND = 104,
-	DIDNT_RUN = 105
+	DIDNT_RUN = 105,
+	SCRIPT_ERRORS = 106
 }
 
 
@@ -40,15 +41,21 @@ var suite_stats := Stats.new()
 var result_code: int = Result.DIDNT_RUN
 
 var _included_tests := PackedStringArray()
+var _broken_scripts := PackedStringArray()
 
 
 ## Initialize test execution
 func init_runner() -> void:
 	print_rich(Fmt.step(), Fmt.prominent("Initializing test runner..."))
 	_discover_tests()
+
 	if _test_cases.is_empty():
-		print_rich(Fmt.error("No test cases found!"))
-		_finish(Result.TESTS_NOT_FOUND)
+		if _broken_scripts.is_empty():
+			print_rich(Fmt.error("No test cases found!"))
+			_finish(Result.TESTS_NOT_FOUND)
+		else:
+			_print_broken_scripts()
+			_finish(Result.SCRIPT_ERRORS)
 		return
 	_state = RUN
 
@@ -56,7 +63,9 @@ func init_runner() -> void:
 ## Returns the exit code based on test results.[br]
 ## Maps test report status to process exit codes.
 func get_exit_code() -> int:
-	if stats.num_total == 0:
+	if not _broken_scripts.is_empty():
+		return Result.SCRIPT_ERRORS
+	elif stats.num_total == 0:
 		return Result.DIDNT_RUN
 	elif stats.num_failed > 0 or stats.num_errors > 0:
 		return Result.FAILURE
@@ -75,14 +84,20 @@ func include_tests(path: String) -> void:
 	_included_tests.append(path)
 
 
-## Discover tests added with include_tests()
-func _discover_tests() -> Array[GdUnitTestCase]:
+## Discover tests added with include_tests(), collecting scripts that fail to load.
+func _discover_tests() -> void:
 	var gdunit_test_discover_added := GdUnitSignals.instance().gdunit_test_discover_added
 
 	var scanner := GdUnitTestSuiteScanner.new()
 	for path in _included_tests:
-		var scripts := scanner.scan(path)
-		for script in scripts:
+		# The scanner drops scripts it fails to load, so check them separately.
+		for script_path in _find_scripts(path):
+			# NOTE: A script that fails to parse still loads, only as an invalid resource.
+			var script := load(script_path) as Script
+			if script == null or not script.can_instantiate():
+				_broken_scripts.append(script_path)
+
+		for script in scanner.scan(path):
 			print_rich(Fmt.step(), "Scanning: ", Fmt.suite(script.resource_path))
 			GdUnitTestDiscoverer.discover_tests(script, func(test: GdUnitTestCase) -> void:
 				print_rich(Fmt.substep(), "Discovered %s" % Fmt.case(test.display_name))
@@ -90,7 +105,27 @@ func _discover_tests() -> Array[GdUnitTestCase]:
 				gdunit_test_discover_added.emit(test)
 			)
 
-	return _test_cases
+
+## Returns the GDScript paths at the given path, which is either a script or a directory.[br]
+## Returns nothing if the path doesn't exist or isn't a GDScript.
+static func _find_scripts(path: String) -> PackedStringArray:
+	var dir := DirAccess.open(path)
+	if dir == null:
+		if path.get_extension() == "gd" and FileAccess.file_exists(path):
+			return PackedStringArray([path])
+		return PackedStringArray()
+
+	# Directories excluded from the Godot project are excluded from testing too.
+	if dir.file_exists(".gdignore"):
+		return PackedStringArray()
+
+	var scripts := PackedStringArray()
+	for file_name in DirAccess.get_files_at(path):
+		if file_name.get_extension() == "gd":
+			scripts.append(path.path_join(file_name))
+	for dir_name in DirAccess.get_directories_at(path):
+		scripts.append_array(_find_scripts(path.path_join(dir_name)))
+	return scripts
 
 
 func _finish(code: int) -> void:
@@ -114,6 +149,7 @@ func _on_gdunit_event(event: GdUnitEvent) -> void:
 		GdUnitEvent.STOP:
 			print_rich(Fmt.step(), Fmt.prominent("Finished all tests."))
 			_print_stats(stats, "Overall Summary")
+			_print_broken_scripts()
 
 		GdUnitEvent.TESTSUITE_BEFORE:
 			print_rich(Fmt.step(), Fmt.prominent("Loading: "), Fmt.suite(event.resource_path()))
@@ -157,6 +193,16 @@ func _on_gdunit_event(event: GdUnitEvent) -> void:
 
 
 # *** CONSOLE OUTPUT
+
+## Reports test scripts that failed to load. Such scripts are absent from the test
+## results above, so they are listed separately to explain the failed run.
+func _print_broken_scripts() -> void:
+	if _broken_scripts.is_empty():
+		return
+	print_rich(Fmt.substep(), Fmt.bold(Fmt.error("Scripts failed to load:")))
+	for script_path in _broken_scripts:
+		print_rich("    ", Fmt.error(script_path))
+
 
 static func _print_result(status: String, test_suite: String, test_case: String) -> void:
 	print_rich(Fmt.substep(), status, ": ",
