@@ -9,6 +9,8 @@
 
 namespace sentry::javascript {
 
+// NOTE: Bridge and js_obj are guaranteed to be valid: creation failures yield a DisabledScope instead.
+
 void JavaScriptScope::set_context(const String &p_key, const Dictionary &p_value) {
 	js_bridge()->call("scopeSetContext", js_obj, p_key.utf8(), JSON::stringify(p_value).utf8());
 }
