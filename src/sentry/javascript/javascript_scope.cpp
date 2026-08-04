@@ -60,8 +60,8 @@ void JavaScriptScope::set_attribute(const String &p_name, const Variant &p_value
 }
 
 void JavaScriptScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
-	Ref<JavaScriptBreadcrumb> crumb = p_breadcrumb;
-	ERR_FAIL_COND(crumb.is_null());
+	JavaScriptBreadcrumb *crumb = Object::cast_to<JavaScriptBreadcrumb>(p_breadcrumb.ptr());
+	ERR_FAIL_NULL(crumb);
 
 	js_obj->call("addBreadcrumb", crumb->get_js_object(), SENTRY_OPTIONS()->get_max_breadcrumbs());
 }
