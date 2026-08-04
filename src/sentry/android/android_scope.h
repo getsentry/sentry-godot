@@ -5,6 +5,8 @@
 namespace sentry::android {
 
 class AndroidScope : public SentryScopeImpl {
+	SENTRY_CASTABLE(AndroidScope, SentryScopeImpl);
+
 private:
 	Object *android_plugin = nullptr;
 	int32_t handle = 0;

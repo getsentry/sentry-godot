@@ -9,6 +9,8 @@ namespace sentry::javascript {
 // yield a DisabledScope instead.
 // See JavaScriptSDK::create_scope().
 class JavaScriptScope : public SentryScopeImpl {
+	SENTRY_CASTABLE(JavaScriptScope, SentryScopeImpl);
+
 private:
 	JSObjectPtr js_obj;
 

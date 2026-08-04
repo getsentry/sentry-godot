@@ -118,7 +118,7 @@ namespace {
 // Scope creation can fall back to DisabledScope, and null falls back to capture without passed scope.
 inline JSObjectPtr _get_scope_object(const Ref<SentryScope> &p_scope) {
 	ERR_FAIL_COND_V(p_scope.is_null(), nullptr);
-	JavaScriptScope *js_scope = dynamic_cast<JavaScriptScope *>(p_scope->get_implementation());
+	JavaScriptScope *js_scope = Castable::cast_to<JavaScriptScope>(p_scope->get_implementation());
 	return js_scope ? js_scope->get_js_object() : nullptr;
 }
 
