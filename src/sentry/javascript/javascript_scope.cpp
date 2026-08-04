@@ -9,13 +9,11 @@
 namespace sentry::javascript {
 
 void JavaScriptScope::set_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	ERR_FAIL_COND(!js_obj);
 	js_bridge()->call("scopeSetContext", js_obj, p_key.utf8(), JSON::stringify(p_value).utf8());
 }
 
 void JavaScriptScope::set_tag(const String &p_key, const String &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set tag with an empty key.");
 	ERR_FAIL_COND(!js_obj);
 	js_obj->call("setTag", p_key.utf8(), p_value.utf8());
 }
