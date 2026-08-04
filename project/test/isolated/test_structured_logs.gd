@@ -235,6 +235,7 @@ func test_structured_logs_with_scope_attributes(_do_skip = OS.get_name() not in 
 
 
 # TODO: remove skip when implemented on other platforms
+# Skipped: JS merges scope attributes at serialization time, after the callback has already run.
 func test_structured_logs_with_scope_attribute_types(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"]) -> void:
 	SentrySDK.with_scope(func(scope: SentryScope):
 		scope.set_attribute("level", "forest")
