@@ -52,6 +52,7 @@ try {
 			"removeContext",
 			"setTag",
 			"removeTag",
+			"setEnvironment",
 			"setUser",
 			"removeUser",
 			"eventSetUser",
@@ -120,6 +121,10 @@ try {
 
 		runTest("removeTag()", () => {
 			bridge.removeTag("test-tag");
+		});
+
+		runTest("setEnvironment()", () => {
+			bridge.setEnvironment("test-environment");
 		});
 
 		runTest("setContext()", () => {

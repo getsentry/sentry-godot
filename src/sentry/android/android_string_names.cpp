@@ -22,6 +22,7 @@ AndroidStringNames::AndroidStringNames() {
 	removeContext = StringName("removeContext");
 	setTag = StringName("setTag");
 	removeTag = StringName("removeTag");
+	setEnvironment = StringName("setEnvironment");
 	setUser = StringName("setUser");
 	removeUser = StringName("removeUser");
 	addBreadcrumb = StringName("addBreadcrumb");

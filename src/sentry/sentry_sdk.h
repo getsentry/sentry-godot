@@ -89,6 +89,8 @@ public:
 	void set_user(const Ref<SentryUser> &p_user);
 	void remove_user();
 
+	void set_environment(const String &p_environment);
+
 	void set_trace(const String &p_trace_id, const String &p_parent_span_id);
 
 	_FORCE_INLINE_ SentryLogger *get_logger() const { return logger; }

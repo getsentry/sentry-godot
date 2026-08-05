@@ -150,6 +150,12 @@ void JavaScriptSDK::remove_user() {
 	js_bridge()->call("removeUser");
 }
 
+void JavaScriptSDK::set_environment(const String &p_environment) {
+	ERR_FAIL_COND(p_environment.is_empty());
+	ERR_FAIL_COND(!js_bridge());
+	js_bridge()->call("setEnvironment", p_environment.utf8());
+}
+
 Ref<SentryBreadcrumb> JavaScriptSDK::create_breadcrumb() {
 	return memnew(JavaScriptBreadcrumb);
 }

@@ -227,6 +227,11 @@ void NativeSDK::remove_user() {
 	sentry_remove_user();
 }
 
+void NativeSDK::set_environment(const String &p_environment) {
+	ERR_FAIL_COND(p_environment.is_empty());
+	sentry_set_environment(p_environment.utf8());
+}
+
 Ref<SentryBreadcrumb> NativeSDK::create_breadcrumb() {
 	return memnew(NativeBreadcrumb);
 }

@@ -27,6 +27,8 @@ public:
 	virtual void set_user(const Ref<SentryUser> &p_user) = 0;
 	virtual void remove_user() = 0;
 
+	virtual void set_environment(const String &p_environment) = 0;
+
 	virtual Ref<SentryBreadcrumb> create_breadcrumb() = 0;
 	virtual void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) = 0;
 

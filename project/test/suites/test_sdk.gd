@@ -50,6 +50,21 @@ func test_remove_tag() -> void:
 	await assert_signal(monitor).is_emitted("callback_processed")
 
 
+## SentrySDK.set_environment() should change the environment assigned to the event object.
+func test_set_environment() -> void:
+	SentrySDK._set_before_send(
+		func(ev: SentryEvent):
+			assert_str(ev.environment).is_equal("custom-environment")
+			callback_processed.emit()
+			return null)
+
+	SentrySDK.set_environment("custom-environment")
+
+	var monitor := monitor_signals(self, false)
+	SentrySDK.capture_message("test-environment")
+	await assert_signal(monitor).is_emitted("callback_processed")
+
+
 ## SentrySDK Variant conversion should not cause stack overflow.
 func test_variant_conversion_against_stack_overflow() -> void:
 	var dict: Dictionary = { "some_key": "some_value"}

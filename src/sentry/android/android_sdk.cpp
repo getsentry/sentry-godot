@@ -154,6 +154,13 @@ void AndroidSDK::remove_user() {
 	android_plugin->call(ANDROID_SN(removeUser));
 }
 
+void AndroidSDK::set_environment(const String &p_environment) {
+	ERR_FAIL_COND(p_environment.is_empty());
+	Object *android_plugin = _get_android_plugin();
+	ERR_FAIL_NULL(android_plugin);
+	android_plugin->call(ANDROID_SN(setEnvironment), p_environment);
+}
+
 Ref<SentryBreadcrumb> AndroidSDK::create_breadcrumb() {
 	Object *android_plugin = _get_android_plugin();
 	ERR_FAIL_NULL_V(android_plugin, nullptr);

@@ -33,6 +33,7 @@ public:
 	StringName removeContext;
 	StringName setTag;
 	StringName removeTag;
+	StringName setEnvironment;
 	StringName setUser;
 	StringName removeUser;
 	StringName addBreadcrumb;
