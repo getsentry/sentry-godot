@@ -3,7 +3,7 @@ extends SentryTestSuite
 
 
 # TODO: widen the platform list as scopes are implemented on other backends.
-func before(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"],
+func before(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android", "Web"],
 		_skip_reason = "Scopes are not implemented on this platform yet.") -> void:
 	super()
 

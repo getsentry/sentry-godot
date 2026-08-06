@@ -5,6 +5,8 @@
 namespace sentry {
 
 class DisabledScope : public SentryScopeImpl {
+	SENTRY_CASTABLE(DisabledScope, SentryScopeImpl);
+
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override {}
 	virtual void set_tag(const String &p_key, const String &p_value) override {}

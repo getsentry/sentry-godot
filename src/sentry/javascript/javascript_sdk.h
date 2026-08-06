@@ -46,6 +46,8 @@ public:
 
 	virtual SentryScopeImpl *create_scope() override;
 
+	virtual bool supports_scopes() const override { return true; }
+
 	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) override;
 
 	virtual void init() override;

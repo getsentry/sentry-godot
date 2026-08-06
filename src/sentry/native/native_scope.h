@@ -8,6 +8,8 @@ namespace sentry::native {
 
 // Thin wrapper around sentry-native scope used for SentryScope implementation on Windows and Linux.
 class NativeScope : public SentryScopeImpl {
+	SENTRY_CASTABLE(NativeScope, SentryScopeImpl);
+
 private:
 	sentry_scope_t *_scope;
 

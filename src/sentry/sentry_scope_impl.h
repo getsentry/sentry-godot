@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sentry/castable.h"
 #include "sentry/level.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_user.h"
@@ -17,7 +18,9 @@ namespace sentry {
 // Kept as a pure C++ class instead of a Godot class to avoid ClassDB
 // registration and reduce overhead.
 // Lifetime governed by SentryScope.
-class SentryScopeImpl {
+class SentryScopeImpl : public Castable {
+	SENTRY_CASTABLE(SentryScopeImpl, Castable);
+
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) = 0;
 	virtual void set_tag(const String &p_key, const String &p_value) = 0;

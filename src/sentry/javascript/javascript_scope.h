@@ -1,18 +1,21 @@
 #pragma once
 
+#include "sentry/javascript/javascript_interop.h"
 #include "sentry/sentry_scope_impl.h"
 
-namespace sentry::android {
+namespace sentry::javascript {
 
-class AndroidScope : public SentryScopeImpl {
-	SENTRY_CASTABLE(AndroidScope, SentryScopeImpl);
+// Backed by a JS Scope object, which is guaranteed to be valid: creation failures
+// yield a DisabledScope instead.
+// See JavaScriptSDK::create_scope().
+class JavaScriptScope : public SentryScopeImpl {
+	SENTRY_CASTABLE(JavaScriptScope, SentryScopeImpl);
 
 private:
-	Object *android_plugin = nullptr;
-	int32_t handle = 0;
+	JSObjectPtr js_obj;
 
 public:
-	int32_t get_handle() const { return handle; }
+	_FORCE_INLINE_ JSObjectPtr get_js_object() const { return js_obj; }
 
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void set_tag(const String &p_key, const String &p_value) override;
@@ -24,9 +27,8 @@ public:
 	virtual void clear() override;
 	virtual SentryScopeImpl *clone() const override;
 
-	AndroidScope() = default;
-	AndroidScope(Object *p_android_plugin, int32_t p_handle);
-	virtual ~AndroidScope() override;
+	explicit JavaScriptScope(const JSObjectPtr &p_js_scope_object);
+	JavaScriptScope() = delete;
 };
 
-} //namespace sentry::android
+} //namespace sentry::javascript
