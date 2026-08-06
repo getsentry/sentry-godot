@@ -199,7 +199,7 @@ func test_structured_logs_with_global_attributes(_do_skip = OS.get_name() == "We
 
 
 # TODO: remove skip when implemented on other platforms
-func test_structured_logs_with_scope_attributes(_do_skip = OS.get_name() not in ["Windows", "Linux"]) -> void:
+func test_structured_logs_with_scope_attributes(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"]) -> void:
 	SentrySDK.set_attribute("from_global", "global")
 	SentrySDK.set_attribute("scope_over_global", "global")
 	SentrySDK.set_attribute("log_over_all", "global")
@@ -231,3 +231,36 @@ func test_structured_logs_with_scope_attributes(_do_skip = OS.get_name() not in 
 		assert_str(entry.get_attribute("scope_over_global")).is_equal("global")
 	, CONNECT_ONE_SHOT)
 	SentrySDK.logger.info("Test after scope is popped")
+
+
+# TODO: remove skip when implemented on other platforms
+func test_structured_logs_with_scope_attribute_types(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"]) -> void:
+	SentrySDK.with_scope(func(scope: SentryScope):
+		scope.set_attribute("level", "forest")
+		scope.set_attribute("enemy_id", 42)
+		scope.set_attribute("health", 10.5)
+		scope.set_attribute("elite", false)
+
+		log_processed.connect(func(entry: SentryLog):
+			assert_str(entry.get_attribute("level")).is_equal("forest")
+			assert_int(entry.get_attribute("enemy_id")).is_equal(42)
+			assert_float(entry.get_attribute("health")).is_equal_approx(10.5, 0.001)
+			assert_bool(entry.get_attribute("elite")).is_equal(false)
+		, CONNECT_ONE_SHOT)
+
+		SentrySDK.logger.info("Test with scope attribute types")
+	)
+
+
+# TODO: remove skip when implemented on other platforms
+func test_structured_logs_scope_clear_drops_attributes(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"]) -> void:
+	SentrySDK.with_scope(func(scope: SentryScope):
+		scope.set_attribute("before_clear", "value")
+		scope.clear()
+
+		log_processed.connect(func(entry: SentryLog):
+			assert_that(entry.get_attribute("before_clear")).is_null()
+		, CONNECT_ONE_SHOT)
+
+		SentrySDK.logger.info("Test after scope clear")
+	)

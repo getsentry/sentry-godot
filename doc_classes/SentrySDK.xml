@@ -77,7 +77,7 @@
 			<description>
 				Returns the current scope on the calling thread. Inside a [method SentrySDK.with_scope] callable, this is the scope forked for that callable. The fork is discarded when the callable returns, and the parent scope it was forked from becomes current again. Outside of any [method SentrySDK.with_scope], the returned scope stays current for the telemetry captured later on that thread.
 				The returned scope belongs to the calling thread. Data written to it enriches only the telemetry captured on that thread, and modifying it from another thread is not supported. See [SentryScope] for details. To enrich telemetry captured on every thread, use the [SentrySDK] methods such as [method SentrySDK.set_tag] instead.
-				[b]Note:[/b] The SDK supports scopes on Windows and Linux only for now. On the other platforms it still captures telemetry, but discards the data written to the returned scope.
+				[b]Note:[/b] The SDK supports scopes on Windows, Linux, and Android only for now. On the other platforms it still captures telemetry, but discards the data written to the returned scope.
 			</description>
 		</method>
 		<method name="get_last_event_id" qualifiers="const">
@@ -209,7 +209,7 @@
 				Writes made through [SentrySDK] methods such as [method SentrySDK.set_tag] still apply globally, even when called inside the callable.
 				For more information, see [SentryScope] class.
 				[b]Note:[/b] The fork covers the synchronous part of [param callable] only. If the callable awaits, the fork is discarded at the first [code]await[/code] and a warning is printed.
-				[b]Note:[/b] The SDK supports scopes on Windows and Linux only for now. On the other platforms it still captures telemetry, but discards the data written to the forked scope and prints a warning.
+				[b]Note:[/b] The SDK supports scopes on Windows, Linux, and Android only for now. On the other platforms it still captures telemetry, but discards the data written to the forked scope and prints a warning.
 			</description>
 		</method>
 	</methods>
