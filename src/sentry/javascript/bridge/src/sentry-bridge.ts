@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
-import type { Metric } from "@sentry/core";
+import type { Attachment, Metric } from "@sentry/core";
 import { wasmIntegration } from "@sentry/wasm";
 
 // ID-based store for WASM/JS interop. Assigns auto-incrementing uint32 IDs (0 is reserved).
@@ -37,6 +37,18 @@ interface AttachmentData {
   filename: string;
   contentType?: string;
   attachmentType?: string;
+}
+
+// The JS SDK has no notion of file attachments - it only takes bytes. A file is therefore added as an
+// attachment object marked with this property, which holds the path, and the C++ layer fills in the
+// bytes when an event is captured. Sentry copies only its own known fields into the envelope, so the
+// marker is never sent.
+const PENDING_PATH_KEY = "__godotPath";
+
+// Handed to the C++ layer to have it read one file; it leaves the bytes unset if the read fails.
+interface AttachmentRequest {
+  path: string;
+  data?: Uint8Array;
 }
 
 // *** Utility Functions
@@ -126,6 +138,7 @@ class SentryBridge {
     beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void,
     beforeSendLogCallback: ((log: Sentry.Log) => void) | null,
     beforeSendMetricCallback: ((metric: Metric) => void) | null,
+    readAttachmentCallback: (request: AttachmentRequest) => void,
     dsn: string,
     debug: boolean,
     release: string,
@@ -249,6 +262,42 @@ class SentryBridge {
     }
 
     Sentry.init(options);
+
+    if (readAttachmentCallback) {
+      // Runs for every event type right before the attachments become envelope items, whereas
+      // beforeSend only sees error events and would leave feedback captures with empty bytes.
+      Sentry.getClient()?.on("beforeSendEvent", (_event: Sentry.Event, hint?: Sentry.EventHint) => {
+        if (!hint?.attachments?.some((attachment: any) => attachment[PENDING_PATH_KEY])) {
+          return;
+        }
+
+        const outgoing: Array<any> = [];
+        for (const attachment of hint.attachments as Array<any>) {
+          const path = attachment[PENDING_PATH_KEY];
+          if (!path) {
+            outgoing.push(attachment);
+            continue;
+          }
+
+          // The C++ layer fills in the bytes, and leaves the request untouched if it cannot read the file.
+          const request: AttachmentRequest = { path };
+          readAttachmentCallback(request);
+          if (!request.data) {
+            // Not a warning: some attachments are expected to be missing.
+            console.debug(`Sentry: dropping attachment - file could not be read: ${path}`);
+            continue;
+          }
+
+          // Copy before adding bytes so scoped attachments don't retain them for future captures.
+          const resolved = { ...attachment, data: request.data };
+          delete resolved[PENDING_PATH_KEY];
+          outgoing.push(resolved);
+        }
+        hint.attachments = outgoing;
+      });
+    } else {
+      console.error("Sentry: Internal error: attachment read callback is missing. File attachments added to a scope will be empty.");
+    }
   }
 
   public close(timeout: number): void {
@@ -312,6 +361,15 @@ class SentryBridge {
       data: bytes,
       contentType,
     });
+  }
+
+  public scopeAddFileAttachment(scope: Sentry.Scope, path: string, filename: string, contentType: string): void {
+    scope.addAttachment({
+      filename,
+      data: new Uint8Array(0),
+      ...(contentType && { contentType }),
+      [PENDING_PATH_KEY]: path,
+    } as Attachment);
   }
 
   public scopeClear(scope: Sentry.Scope): void {

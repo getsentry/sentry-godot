@@ -4,7 +4,6 @@
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/sentry_sdk.h"
 
-#include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 
@@ -70,20 +69,19 @@ void JavaScriptScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) 
 }
 
 void JavaScriptScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
-	PackedByteArray bytes = p_attachment->get_bytes();
-
 	if (!p_attachment->get_path().is_empty()) {
-		// JS attachments carry bytes only, so the file is read here rather than when an event is captured.
-		Ref<FileAccess> file = FileAccess::open(p_attachment->get_path(), FileAccess::READ);
-		ERR_FAIL_COND_MSG(file.is_null(), vformat("Sentry: Failed to read attachment file: %s", p_attachment->get_path()));
-		bytes = file->get_buffer(file->get_length());
+		js_bridge()->call("scopeAddFileAttachment",
+				js_obj,
+				p_attachment->get_path().utf8(),
+				p_attachment->get_effective_filename().utf8(),
+				p_attachment->get_content_type().utf8());
+	} else {
+		js_bridge()->call("scopeAddBytesAttachment",
+				js_obj,
+				p_attachment->get_effective_filename().utf8(),
+				p_attachment->get_bytes(),
+				p_attachment->get_content_type_or_default().utf8());
 	}
-
-	js_bridge()->call("scopeAddBytesAttachment",
-			js_obj,
-			p_attachment->get_effective_filename().utf8(),
-			bytes,
-			p_attachment->get_content_type_or_default().utf8());
 }
 
 void JavaScriptScope::clear() {

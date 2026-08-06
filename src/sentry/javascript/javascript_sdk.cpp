@@ -82,6 +82,33 @@ static void before_send_wasm_callback(int32_t *p_ids, int32_t p_len) {
 	}
 }
 
+// Reads the file a scope attachment refers to, leaving the bytes unset if it cannot be read.
+static void read_attachment_wasm_callback(int32_t *p_ids, int32_t p_len) {
+	ERR_FAIL_COND(p_len != 1);
+
+	JSObjectPtr request = JSObject::from_id(p_ids[0]);
+	ERR_FAIL_COND(!request);
+
+	String path = request->get("path").as_string();
+
+	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ);
+	if (file.is_null()) {
+		// NOTE: Some attachments may legitimately be missing (e.g. screenshots not created on non-main threads).
+		sentry::logging::print_debug("Skipping attachment - file not found: " + path);
+		return;
+	}
+
+	PackedByteArray bytes = file->get_buffer(file->get_length());
+	if (bytes.is_empty()) {
+		sentry::logging::print_debug("Skipping attachment - empty file: " + path);
+		return;
+	}
+
+	sentry::logging::print_debug("Adding attachment: " + path);
+
+	request->set("data", bytes);
+}
+
 static void before_send_log_wasm_callback(int32_t *p_ids, int32_t p_len) {
 	ERR_FAIL_COND(p_len != 1);
 
@@ -324,6 +351,7 @@ void JavaScriptSDK::init() {
 	file_attachments = SENTRY_OPTIONS()->get_default_attachments();
 
 	JSObjectPtr before_send_callback = JSObject::create_callback(before_send_wasm_callback);
+	JSObjectPtr read_attachment_callback = JSObject::create_callback(read_attachment_wasm_callback);
 
 	// Only create the before_send_log callback if user has set a callback
 	JSObjectPtr before_send_log_callback;
@@ -340,6 +368,7 @@ void JavaScriptSDK::init() {
 			before_send_callback,
 			before_send_log_callback,
 			before_send_metric_callback,
+			read_attachment_callback,
 			SENTRY_OPTIONS()->get_dsn().utf8(),
 			SENTRY_OPTIONS()->is_debug_enabled(),
 			SENTRY_OPTIONS()->get_release().utf8(),
