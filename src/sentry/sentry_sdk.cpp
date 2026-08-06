@@ -116,6 +116,11 @@ namespace sentry {
 
 SentrySDK *SentrySDK::singleton = nullptr;
 
+thread_local List<Ref<SentryScope>> SentrySDK::current_scopes;
+
+SafeNumeric<uint32_t> SentrySDK::scopes_epoch;
+thread_local uint32_t SentrySDK::local_scopes_epoch = 0;
+
 void SentrySDK::create_singleton() {
 	ERR_FAIL_NULL(Engine::get_singleton());
 	singleton = memnew(SentrySDK);
@@ -130,6 +135,44 @@ void SentrySDK::destroy_singleton() {
 	Engine::get_singleton()->unregister_singleton("SentrySDK");
 	memdelete(singleton);
 	singleton = nullptr;
+}
+
+void SentrySDK::_invalidate_scopes() {
+	scopes_epoch.increment();
+	current_scopes.clear();
+}
+
+Ref<SentryScope> SentrySDK::get_current_scope() const {
+	uint32_t epoch = scopes_epoch.get();
+	if (unlikely(local_scopes_epoch != epoch)) {
+		current_scopes.clear();
+		local_scopes_epoch = epoch;
+	}
+
+	if (current_scopes.is_empty()) {
+		current_scopes.push_back(Ref<SentryScope>(memnew(SentryScope)));
+	}
+
+	return current_scopes.back()->get();
+}
+
+Variant SentrySDK::with_scope(const Callable &p_callable) {
+	if (unlikely(!internal_sdk->supports_scopes())) {
+		WARN_PRINT_ONCE("Sentry: Scopes are not supported on this platform yet - writes to the scope will be discarded.");
+	}
+
+	Ref<SentryScope> scope = _push_scope();
+	Variant result = p_callable.call(scope);
+	static bool first_warning = true;
+	if (first_warning) {
+		if (Object *obj = result.get_validated_object();
+				unlikely(obj != nullptr && obj->get_class() == "GDScriptFunctionState")) {
+			first_warning = false;
+			WARN_PRINT("Sentry: with_scope() does not support await - the scope is only active until the first await.");
+		}
+	}
+	_pop_scope(scope);
+	return result;
 }
 
 void SentrySDK::init(const Callable &p_configuration_callback) {
@@ -176,6 +219,8 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	for (const Ref<SentryAttachment> &att : _get_default_attachments()) {
 		options->add_default_attachment(att);
 	}
+
+	_invalidate_scopes();
 
 	sentry::logging::print_debug("Initializing Sentry SDK");
 	internal_sdk->init();
@@ -224,11 +269,15 @@ void SentrySDK::close() {
 			godot_logger.unref();
 		}
 		internal_sdk->close();
+		_invalidate_scopes();
 	}
 }
 
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
-	return internal_sdk->capture_message(p_message, p_level);
+	Ref<SentryEvent> event = internal_sdk->create_event();
+	event->set_message(p_message);
+	event->set_level(p_level);
+	return internal_sdk->capture_event(get_current_scope(), event);
 }
 
 void SentrySDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
@@ -249,7 +298,7 @@ Ref<SentryEvent> SentrySDK::create_event() const {
 
 String SentrySDK::capture_event(const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), "", "Sentry: Can't capture event - event object is null.");
-	return internal_sdk->capture_event(p_event);
+	return internal_sdk->capture_event(get_current_scope(), p_event);
 }
 
 void SentrySDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
@@ -258,7 +307,7 @@ void SentrySDK::capture_feedback(const Ref<SentryFeedback> &p_feedback) {
 	if (p_feedback->get_message().length() > 4096) {
 		WARN_PRINT("Sentry: Feedback message is too long (max 4096 characters).");
 	}
-	return internal_sdk->capture_feedback(p_feedback);
+	return internal_sdk->capture_feedback(get_current_scope(), p_feedback);
 }
 
 void SentrySDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
@@ -523,6 +572,7 @@ void SentrySDK::_notification(int p_what) {
 				OS::get_singleton()->remove_logger(godot_logger);
 				godot_logger.unref();
 			}
+			_invalidate_scopes();
 		} break;
 	}
 }
@@ -553,6 +603,9 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attribute", "name", "value"), &SentrySDK::set_attribute);
 	ClassDB::bind_method(D_METHOD("remove_attribute", "name"), &SentrySDK::remove_attribute);
 
+	ClassDB::bind_method(D_METHOD("get_current_scope"), &SentrySDK::get_current_scope);
+	ClassDB::bind_method(D_METHOD("with_scope", "callable"), &SentrySDK::with_scope);
+
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
 	ClassDB::bind_method(D_METHOD("_unset_before_send"), &SentrySDK::unset_before_send);
@@ -574,6 +627,9 @@ SentrySDK::SentrySDK() {
 }
 
 SentrySDK::~SentrySDK() {
+	// At extension unload, the script runtime is gone and _on_engine_shutdown() has already called close() and detached
+	// the logger. Any calls into the SDK from other threads at this point are out of contract and indicate a bug.
+
 	internal_sdk.reset();
 
 	singleton = nullptr;

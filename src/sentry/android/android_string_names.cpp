@@ -26,7 +26,6 @@ AndroidStringNames::AndroidStringNames() {
 	removeUser = StringName("removeUser");
 	addBreadcrumb = StringName("addBreadcrumb");
 	log = StringName("log");
-	captureMessage = StringName("captureMessage");
 	getLastEventId = StringName("getLastEventId");
 	captureError = StringName("captureError");
 	createEvent = StringName("createEvent");
