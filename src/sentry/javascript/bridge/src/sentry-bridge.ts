@@ -306,6 +306,14 @@ class SentryBridge {
     scope.setUser(makeUser(id, username, email, ip));
   }
 
+  public scopeAddBytesAttachment(scope: Sentry.Scope, filename: string, bytes: Uint8Array, contentType: string): void {
+    scope.addAttachment({
+      filename,
+      data: bytes,
+      contentType,
+    });
+  }
+
   public scopeClear(scope: Sentry.Scope): void {
     // Preserve the propagation context across clear() because Scope.clear() rotates the trace in JS.
     const propagationContext = scope.getPropagationContext();
