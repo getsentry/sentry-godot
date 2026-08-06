@@ -2,6 +2,7 @@
 
 #include "sentry/castable.h"
 #include "sentry/level.h"
+#include "sentry/sentry_attachment.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_user.h"
 
@@ -29,6 +30,7 @@ public:
 	virtual void set_fingerprint(const PackedStringArray &p_fingerprint) = 0;
 	virtual void set_attribute(const String &p_name, const Variant &p_value) = 0;
 	virtual void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) = 0;
+	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) = 0;
 	virtual void clear() = 0;
 	virtual SentryScopeImpl *clone() const = 0;
 
