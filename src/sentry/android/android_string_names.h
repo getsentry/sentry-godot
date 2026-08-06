@@ -112,6 +112,8 @@ public:
 	StringName scopeSetAttributeDouble;
 	StringName scopeSetAttributeString;
 	StringName scopeAddBreadcrumb;
+	StringName scopeAddFileAttachment;
+	StringName scopeAddBytesAttachment;
 	StringName scopeClear;
 
 	// Logs.

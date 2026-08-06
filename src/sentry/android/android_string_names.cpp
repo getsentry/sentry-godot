@@ -101,6 +101,8 @@ AndroidStringNames::AndroidStringNames() {
 	scopeSetAttributeDouble = StringName("scopeSetAttributeDouble");
 	scopeSetAttributeString = StringName("scopeSetAttributeString");
 	scopeAddBreadcrumb = StringName("scopeAddBreadcrumb");
+	scopeAddFileAttachment = StringName("scopeAddFileAttachment");
+	scopeAddBytesAttachment = StringName("scopeAddBytesAttachment");
 	scopeClear = StringName("scopeClear");
 
 	// Logs.
