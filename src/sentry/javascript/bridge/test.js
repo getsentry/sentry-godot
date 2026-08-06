@@ -59,6 +59,7 @@ try {
 			"scopeSetContext",
 			"scopeSetFingerprint",
 			"scopeSetUser",
+			"scopeAddBytesAttachment",
 			"scopeClear",
 			"logTrace",
 			"logDebug",
@@ -216,6 +217,16 @@ try {
 			fork.setTag("subsystem", "worldgen");
 			assertEqual(scope.getScopeData().tags.subsystem, "savegame",
 					"writes to the clone should not reach the parent");
+		});
+
+		runTest("scopeAddBytesAttachment()", () => {
+			const scope = bridge.createScope();
+			bridge.scopeAddBytesAttachment(scope, "save.txt", new Uint8Array([ 1, 2, 3 ]), "text/plain");
+			const attachments = scope.getScopeData().attachments;
+			assertEqual(attachments.length, 1, "scopeAddBytesAttachment should add the attachment to the scope");
+			assertEqual(attachments[0].filename, "save.txt", "scopeAddBytesAttachment should set the filename");
+			assertEqual(attachments[0].contentType, "text/plain", "scopeAddBytesAttachment should set the content type");
+			assertEqual(attachments[0].data.length, 3, "scopeAddBytesAttachment should carry the bytes");
 		});
 
 		runTest("scopeClear()", () => {
