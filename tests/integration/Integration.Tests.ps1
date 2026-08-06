@@ -357,7 +357,9 @@ Describe "Platform Integration Tests" {
         BeforeAll {
             $runResult = $script:attachmentRunResult
 
-            $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
+            $eventIds = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 2
+            $scopedEventId = $eventIds[0]
+            $eventId = $eventIds[1]
             if ($eventId) {
                 Write-GitHub "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
@@ -368,6 +370,13 @@ Describe "Platform Integration Tests" {
                 $expectedCount = 6
                 $script:attachments = Get-SentryTestEventAttachments -EventId "$eventId" -ExpectedCount $expectedCount
                 $script:attachmentNames = ($script:attachments | ForEach-Object { "'$($_.name)'" }) -join ", "
+                Write-GitHub "::endgroup::"
+
+                Write-GitHub "::group::Getting scoped event attachments"
+                # The 6 above plus the 2 added to the scope (scopes not implemented on Apple).
+                $expectedScopedCount = if ($script:IsCocoa) { 6 } else { 8 }
+                $script:scopedAttachments = Get-SentryTestEventAttachments -EventId "$scopedEventId" -ExpectedCount $expectedScopedCount
+                $script:scopedAttachmentNames = ($script:scopedAttachments | ForEach-Object { "'$($_.name)'" }) -join ", "
                 Write-GitHub "::endgroup::"
             }
         }
@@ -440,6 +449,35 @@ Describe "Platform Integration Tests" {
             $viewHierarchy | Should -Not -BeNullOrEmpty -Because "'view-hierarchy.json' should be among received attachments: $attachmentNames"
             $viewHierarchy.type | Should -Be "event.view_hierarchy"
             $viewHierarchy.size | Should -BeGreaterThan 0
+        }
+
+        It "Has file attachment added from current scope" -Skip:$script:IsCocoa {
+            $scopedFile = $scopedAttachments | Where-Object { $_.name -eq "scoped_attachment.txt" }
+            $scopedFile | Should -Not -BeNullOrEmpty -Because "'scoped_attachment.txt' should be among received attachments: $scopedAttachmentNames"
+            $scopedFile.type | Should -Be "event.attachment"
+            # "Scoped file attachment for integration testing.\n" is 48 bytes in UTF-8
+            $scopedFile.size | Should -Be 48
+        }
+
+        It "Has bytes attachment added from current scope" -Skip:$script:IsCocoa {
+            $scopedBytes = $scopedAttachments | Where-Object { $_.name -eq "scoped_bytes.txt" }
+            $scopedBytes | Should -Not -BeNullOrEmpty -Because "'scoped_bytes.txt' should be among received attachments: $scopedAttachmentNames"
+            $scopedBytes.type | Should -Be "event.attachment"
+            $scopedBytes.headers.'Content-Type' | Should -Be "text/plain"
+            # "Scoped bytes" is 12 bytes in UTF-8
+            $scopedBytes.size | Should -Be 12
+        }
+
+        It "Keeps the global attachments on the scoped event" {
+            $scopedNames = $scopedAttachments | ForEach-Object { $_.name }
+            $scopedNames | Should -Contain "config_attachment.txt" -Because "received attachments: $scopedAttachmentNames"
+            $scopedNames | Should -Contain "runtime_bytes.txt" -Because "received attachments: $scopedAttachmentNames"
+        }
+
+        It "Does not include scope-only attachments on the event captured outside the scope" {
+            $names = $attachments | ForEach-Object { $_.name }
+            $names | Should -Not -Contain "scoped_attachment.txt" -Because "received attachments: $attachmentNames"
+            $names | Should -Not -Contain "scoped_bytes.txt" -Because "received attachments: $attachmentNames"
         }
     }
 
