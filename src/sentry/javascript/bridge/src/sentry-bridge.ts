@@ -31,14 +31,6 @@ class IdStore<T> {
   }
 }
 
-// Stores info about attachments loaded from C++ layer during event processing.
-interface AttachmentData {
-  bytes: Uint8Array;
-  filename: string;
-  contentType?: string;
-  attachmentType?: string;
-}
-
 // The JS SDK has no notion of file attachments - it only takes bytes. A file is therefore added as an
 // attachment object marked with this property, which holds the path, and the C++ layer fills in the
 // bytes when an event is captured. Sentry copies only its own known fields into the envelope, so the
@@ -64,6 +56,17 @@ function safeParseJSON<T = any>(json: string, fallback: T): T {
     console.error("Failed to parse JSON:", error);
     return fallback;
   }
+}
+
+// Builds an attachment whose bytes the C++ layer reads from the path when an event is captured.
+function makePendingAttachment(path: string, filename: string, contentType: string, attachmentType: string): Attachment {
+  return {
+    filename,
+    data: new Uint8Array(0),
+    ...(contentType && { contentType }),
+    ...(attachmentType && { attachmentType }),
+    [PENDING_PATH_KEY]: path,
+  } as Attachment;
 }
 
 function makeUser(id: string, username: string, email: string, ip: string): User {
@@ -119,23 +122,8 @@ class SentryBridge {
     this._objectStore.release(id);
   }
 
-  public pushAttachmentData(
-    attachmentData: Array<AttachmentData>,
-    bytes: Uint8Array,
-    filename: string,
-    contentType?: string,
-    attachmentType?: string,
-  ): void {
-    attachmentData.push({
-      bytes,
-      filename,
-      contentType,
-      attachmentType,
-    });
-  }
-
   public init(
-    beforeSendCallback: (event: Sentry.Event, outAttachments: Array<AttachmentData>) => void,
+    beforeSendCallback: (event: Sentry.Event) => void,
     beforeSendLogCallback: ((log: Sentry.Log) => void) | null,
     beforeSendMetricCallback: ((metric: Metric) => void) | null,
     readAttachmentCallback: (request: AttachmentRequest) => void,
@@ -197,31 +185,13 @@ class SentryBridge {
     };
 
     if (beforeSendCallback) {
-      options.beforeSend = (event: Sentry.Event, hint: Sentry.EventHint) => {
+      options.beforeSend = (event: Sentry.Event) => {
         if (!this.isEnabled()) {
           // SDK is disabled, skip processing.
           return null;
         }
 
-        // NOTE: Populated during processing in C++ layer
-        const outAttachments: Array<AttachmentData> = [];
-
-        beforeSendCallback(event, outAttachments);
-
-        // Add attachments loaded from the C++ layer during event processing
-        if (!hint.attachments) {
-          hint.attachments = [];
-        }
-        for (const attachmentData of outAttachments) {
-          if (attachmentData.bytes) {
-            hint.attachments.push({
-              data: attachmentData.bytes,
-              filename: attachmentData.filename,
-              ...(attachmentData.contentType && { contentType: attachmentData.contentType }),
-              ...(attachmentData.attachmentType && { attachmentType: attachmentData.attachmentType }),
-            } as any);
-          }
-        }
+        beforeSendCallback(event);
 
         const shouldDiscard: boolean = (event as any).shouldDiscard;
         delete (event as any).shouldDiscard;
@@ -363,13 +333,14 @@ class SentryBridge {
     });
   }
 
-  public scopeAddFileAttachment(scope: Sentry.Scope, path: string, filename: string, contentType: string): void {
-    scope.addAttachment({
-      filename,
-      data: new Uint8Array(0),
-      ...(contentType && { contentType }),
-      [PENDING_PATH_KEY]: path,
-    } as Attachment);
+  public scopeAddFileAttachment(
+    scope: Sentry.Scope,
+    path: string,
+    filename: string,
+    contentType: string,
+    attachmentType: string,
+  ): void {
+    scope.addAttachment(makePendingAttachment(path, filename, contentType, attachmentType));
   }
 
   public scopeClear(scope: Sentry.Scope): void {
@@ -488,6 +459,10 @@ class SentryBridge {
       data: bytes,
       contentType,
     });
+  }
+
+  public addFileAttachment(path: string, filename: string, contentType: string, attachmentType: string): void {
+    Sentry.getIsolationScope().addAttachment(makePendingAttachment(path, filename, contentType, attachmentType));
   }
 
   public clearAttachments(): void {

@@ -74,7 +74,8 @@ void JavaScriptScope::add_attachment(const Ref<SentryAttachment> &p_attachment) 
 				js_obj,
 				p_attachment->get_path().utf8(),
 				p_attachment->get_effective_filename().utf8(),
-				p_attachment->get_content_type().utf8());
+				p_attachment->get_content_type().utf8(),
+				p_attachment->get_attachment_type().utf8());
 	} else {
 		js_bridge()->call("scopeAddBytesAttachment",
 				js_obj,

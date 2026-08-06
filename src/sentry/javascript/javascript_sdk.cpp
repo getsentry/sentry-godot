@@ -30,56 +30,17 @@ static JavaScriptSDK *js_sdk = nullptr;
 extern "C" {
 
 static void before_send_wasm_callback(int32_t *p_ids, int32_t p_len) {
-	ERR_FAIL_COND(p_len != 2);
-	ERR_FAIL_NULL(js_sdk);
+	ERR_FAIL_COND(p_len != 1);
 
 	JSObjectPtr event_obj = JSObject::from_id(p_ids[0]);
-	JSObjectPtr out_attachments = JSObject::from_id(p_ids[1]);
 	ERR_FAIL_COND(!event_obj);
-	ERR_FAIL_COND(!out_attachments);
 
 	Ref<JavaScriptEvent> event = memnew(JavaScriptEvent(event_obj));
 	Ref<JavaScriptEvent> processed = sentry::process_event(event);
 
 	// NOTE: We cannot return a value from a callback, so we use the same
 	//       event object to communicate the result back.
-	if (unlikely(processed.is_null())) {
-		// Discard event.
-		event_obj->set("shouldDiscard", true);
-	} else {
-		event_obj->set("shouldDiscard", false);
-
-		// Read file-based attachments and include them with the event.
-		for (const Ref<SentryAttachment> &att : js_sdk->get_file_attachments()) {
-			if (att->get_path().is_empty()) {
-				// Skip attachments with empty path.
-				// NOTE: Byte attachments are not processed here - they are added immediately.
-				continue;
-			}
-
-			Ref<FileAccess> file = FileAccess::open(att->get_path(), FileAccess::READ);
-			if (file.is_null()) {
-				// NOTE: Some attachments may legitimately be missing (e.g. screenshots not created on non-main threads).
-				sentry::logging::print_debug("Skipping attachment - file not found: " + att->get_path());
-				continue;
-			}
-
-			PackedByteArray bytes = file->get_buffer(file->get_length());
-			if (bytes.is_empty()) {
-				sentry::logging::print_debug("Skipping attachment - empty file: " + att->get_path());
-				continue;
-			}
-
-			sentry::logging::print_debug("Adding attachment: " + att->get_path());
-
-			js_bridge()->call("pushAttachmentData",
-					out_attachments,
-					bytes,
-					att->get_effective_filename().utf8(),
-					att->get_content_type().utf8(),
-					att->get_attachment_type().utf8());
-		}
-	}
+	event_obj->set("shouldDiscard", processed.is_null());
 }
 
 // Reads the file a scope attachment refers to, leaving the bytes unset if it cannot be read.
@@ -269,10 +230,13 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
 
 	if (!p_attachment->get_path().is_empty()) {
-		// File attachment - add to list for on-demand loading during event processing.
-		file_attachments.push_back(p_attachment);
+		// The file is read when an event is captured, so it doesn't have to exist yet.
+		js_bridge()->call("addFileAttachment",
+				p_attachment->get_path().utf8(),
+				p_attachment->get_effective_filename().utf8(),
+				p_attachment->get_content_type().utf8(),
+				p_attachment->get_attachment_type().utf8());
 	} else {
-		// Bytes attachment - added immediately
 		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add bytes attachment without filename.");
 
 		js_bridge()->call("addBytesAttachment",
@@ -285,9 +249,14 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 void JavaScriptSDK::clear_attachments() {
 	ERR_FAIL_COND(!js_bridge());
 
-	// Reset file attachments from options (Vector uses copy-on-write).
-	file_attachments = SENTRY_OPTIONS()->get_default_attachments();
 	js_bridge()->call("clearAttachments");
+	_add_default_attachments();
+}
+
+void JavaScriptSDK::_add_default_attachments() {
+	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
+		add_attachment(att);
+	}
 }
 
 void JavaScriptSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
@@ -348,8 +317,6 @@ void JavaScriptSDK::set_trace(const String &p_trace_id, const String &p_parent_s
 void JavaScriptSDK::init() {
 	ERR_FAIL_COND(!js_bridge());
 
-	file_attachments = SENTRY_OPTIONS()->get_default_attachments();
-
 	JSObjectPtr before_send_callback = JSObject::create_callback(before_send_wasm_callback);
 	JSObjectPtr read_attachment_callback = JSObject::create_callback(read_attachment_wasm_callback);
 
@@ -383,6 +350,7 @@ void JavaScriptSDK::init() {
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());
+		_add_default_attachments();
 	} else {
 		ERR_PRINT("Sentry: Failed to initialize JavaScript SDK.");
 	}
@@ -392,7 +360,6 @@ void JavaScriptSDK::close() {
 	ERR_FAIL_COND(!js_bridge());
 
 	js_bridge()->call("close", SENTRY_OPTIONS()->get_shutdown_timeout_ms());
-	file_attachments.clear();
 }
 
 bool JavaScriptSDK::is_enabled() const {
