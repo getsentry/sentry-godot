@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Sentry Android from v8.51.0 to v8.52.0 ([#855](https://github.com/getsentry/sentry-godot/pull/855))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8520)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.51.0...8.52.0)
+
 ## 2.1.1
 
 ### Fixes
