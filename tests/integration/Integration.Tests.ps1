@@ -357,9 +357,13 @@ Describe "Platform Integration Tests" {
         BeforeAll {
             $runResult = $script:attachmentRunResult
 
-            $eventIds = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 2
-            $scopedEventId = $eventIds[0]
-            $eventId = $eventIds[1]
+            $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
+            # The app captures a second event within a scope that adds two extra attachments.
+            # Comparing both events verifies that scoped attachments are sent only with the scoped event
+            # and do not leak into events captured outside the scope.
+            # The scoped event uses SCOPED_EVENT_ID so shared test cases still see a single EVENT_CAPTURED line.
+            $scopedEventId = ($runResult.Output | Select-String -Pattern 'SCOPED_EVENT_ID: (\S+)' |
+                Select-Object -First 1).Matches.Groups[1].Value
             if ($eventId) {
                 Write-GitHub "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"

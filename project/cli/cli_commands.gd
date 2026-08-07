@@ -170,7 +170,8 @@ func _cmd_attachment_capture() -> int:
 		scope.add_attachment(scoped_bytes)
 		# Write the file after attaching it; this verifies file contents are loaded at event capture time.
 		_write_text_file("user://scoped_attachment.txt", "Scoped file attachment for integration testing.\n")
-		print("EVENT_CAPTURED: ", SentrySDK.capture_message("Scoped attachment test message"))
+		# Marked separately from EVENT_CAPTURED so the shared test cases still see a single capture.
+		print("SCOPED_EVENT_ID: ", SentrySDK.capture_message("Scoped attachment test message"))
 		)
 
 	var event_id := SentrySDK.capture_message("Attachment test message")
