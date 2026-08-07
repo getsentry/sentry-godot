@@ -23,8 +23,6 @@
 
 namespace sentry::javascript {
 
-static JavaScriptSDK *js_sdk = nullptr;
-
 // *** WASM callbacks
 
 extern "C" {
@@ -366,14 +364,6 @@ void JavaScriptSDK::close() {
 bool JavaScriptSDK::is_enabled() const {
 	ERR_FAIL_COND_V(!js_bridge(), false);
 	return js_bridge()->call("isEnabled").as_bool();
-}
-
-JavaScriptSDK::JavaScriptSDK() {
-	js_sdk = this;
-}
-
-JavaScriptSDK::~JavaScriptSDK() {
-	js_sdk = nullptr;
 }
 
 } //namespace sentry::javascript

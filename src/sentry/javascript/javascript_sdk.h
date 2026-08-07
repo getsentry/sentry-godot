@@ -52,9 +52,6 @@ public:
 	virtual void init() override;
 	virtual void close() override;
 	virtual bool is_enabled() const override;
-
-	JavaScriptSDK();
-	virtual ~JavaScriptSDK() override;
 };
 
 } //namespace sentry::javascript
