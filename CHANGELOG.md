@@ -12,6 +12,7 @@
 ### Fixes
 
 - Web: Fixed tags, breadcrumbs and other globally set data carrying over into the next session when the SDK is closed and initialized again ([#857](https://github.com/getsentry/sentry-godot/pull/857))
+- Web: Fixed events being attached to the trace the browser SDK generates at page load instead of the one the SDK generates when it initializes ([#858](https://github.com/getsentry/sentry-godot/pull/858))
 
 ### Dependencies
 
