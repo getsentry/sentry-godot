@@ -378,7 +378,7 @@ Describe "Platform Integration Tests" {
 
                 Write-GitHub "::group::Getting scoped event attachments"
                 # The 6 above plus the 2 added to the scope (scopes not implemented on Apple).
-                $expectedScopedCount = if ($script:IsCocoa) { 6 } else { 8 }
+                $expectedScopedCount = if ($script:TestSetup.IsCocoa) { 6 } else { 8 }
                 $script:scopedAttachments = Get-SentryTestEventAttachments -EventId "$scopedEventId" -ExpectedCount $expectedScopedCount
                 $script:scopedAttachmentNames = ($script:scopedAttachments | ForEach-Object { "'$($_.name)'" }) -join ", "
                 Write-GitHub "::endgroup::"
