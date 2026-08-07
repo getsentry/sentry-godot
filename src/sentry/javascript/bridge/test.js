@@ -55,6 +55,7 @@ try {
 			"setUser",
 			"removeUser",
 			"eventSetUser",
+			"setTrace",
 			"createScope",
 			"scopeSetContext",
 			"scopeSetFingerprint",
@@ -126,8 +127,10 @@ try {
 
 		// Observes what actually goes out with an event. The bridge registers its own handler during
 		// init() and handlers run in registration order, so this one sees the resolved and filtered list.
+		const sentEvents = [];
 		const sentAttachments = [];
-		bridge.createScope().getClient().on("beforeSendEvent", (_event, hint) => {
+		bridge.createScope().getClient().on("beforeSendEvent", (event, hint) => {
+			sentEvents.push(event);
 			sentAttachments.push(hint?.attachments ?? []);
 		});
 
@@ -170,6 +173,15 @@ try {
 			const event2 = {};
 			bridge.eventSetUser(event2, "", "", "", "");
 			assertEqual(Object.keys(event2.user).length, 0, "eventSetUser should skip empty fields");
+		});
+
+		runTest("setTrace()", () => {
+			bridge.setTrace("0123456789abcdef0123456789abcdef", "fedcba9876543210");
+			bridge.captureEvent({ message : "Event on the trace set by setTrace" });
+			const trace = sentEvents[sentEvents.length - 1].contexts.trace;
+			assertEqual(trace.trace_id, "0123456789abcdef0123456789abcdef", "the event should carry the trace id");
+			assertEqual(trace.parent_span_id, "fedcba9876543210", "the event should carry the parent span id");
+			assert(trace.span_id !== "fedcba9876543210", "the event should get a span id of its own");
 		});
 
 		runTest("createScope()", () => {
