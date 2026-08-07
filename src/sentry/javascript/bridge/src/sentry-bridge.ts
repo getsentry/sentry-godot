@@ -237,6 +237,10 @@ class SentryBridge {
       console.debug("Sentry: beforeSendMetric callback not provided.");
     }
 
+    // Global data is kept on the isolation scope, which outlives Sentry.close(), so without this a
+    // previous session's tags, breadcrumbs and attachments would leak into this one.
+    Sentry.getIsolationScope().clear();
+
     Sentry.init(options);
 
     if (readAttachmentCallback) {
