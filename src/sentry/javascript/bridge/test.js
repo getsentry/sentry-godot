@@ -238,11 +238,12 @@ try {
 
 		runTest("scopeAddBytesAttachment()", () => {
 			const scope = bridge.createScope();
-			bridge.scopeAddBytesAttachment(scope, "save.txt", new Uint8Array([ 1, 2, 3 ]), "text/plain");
+			bridge.scopeAddBytesAttachment(scope, "save.txt", new Uint8Array([ 1, 2, 3 ]), "text/plain", "event.attachment");
 			const attachments = scope.getScopeData().attachments;
 			assertEqual(attachments.length, 1, "scopeAddBytesAttachment should add the attachment to the scope");
 			assertEqual(attachments[0].filename, "save.txt", "scopeAddBytesAttachment should set the filename");
 			assertEqual(attachments[0].contentType, "text/plain", "scopeAddBytesAttachment should set the content type");
+			assertEqual(attachments[0].attachmentType, "event.attachment", "scopeAddBytesAttachment should set the attachment type");
 			assertEqual(attachments[0].data.length, 3, "scopeAddBytesAttachment should carry the bytes");
 		});
 
@@ -378,7 +379,7 @@ try {
 		});
 
 		runTest("addBytesAttachment()", () => {
-			bridge.addBytesAttachment("test.txt", new Uint8Array([ 104, 101, 108, 108, 111 ]), "text/plain");
+			bridge.addBytesAttachment("test.txt", new Uint8Array([ 104, 101, 108, 108, 111 ]), "text/plain", "");
 		});
 
 		runTest("clearAttachments()", () => {

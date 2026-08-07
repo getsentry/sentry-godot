@@ -58,13 +58,19 @@ function safeParseJSON<T = any>(json: string, fallback: T): T {
   }
 }
 
+function makeAttachment(filename: string, bytes: Uint8Array, contentType: string, attachmentType: string): Attachment {
+  return {
+    filename,
+    data: bytes,
+    ...(contentType && { contentType }),
+    ...(attachmentType && { attachmentType }),
+  } as Attachment;
+}
+
 // Builds an attachment whose bytes the C++ layer reads from the path when an event is captured.
 function makePendingAttachment(path: string, filename: string, contentType: string, attachmentType: string): Attachment {
   return {
-    filename,
-    data: new Uint8Array(0),
-    ...(contentType && { contentType }),
-    ...(attachmentType && { attachmentType }),
+    ...makeAttachment(filename, new Uint8Array(0), contentType, attachmentType),
     [PENDING_PATH_KEY]: path,
   } as Attachment;
 }
@@ -325,12 +331,14 @@ class SentryBridge {
     scope.setUser(makeUser(id, username, email, ip));
   }
 
-  public scopeAddBytesAttachment(scope: Sentry.Scope, filename: string, bytes: Uint8Array, contentType: string): void {
-    scope.addAttachment({
-      filename,
-      data: bytes,
-      contentType,
-    });
+  public scopeAddBytesAttachment(
+    scope: Sentry.Scope,
+    filename: string,
+    bytes: Uint8Array,
+    contentType: string,
+    attachmentType: string,
+  ): void {
+    scope.addAttachment(makeAttachment(filename, bytes, contentType, attachmentType));
   }
 
   public scopeAddFileAttachment(
@@ -453,12 +461,8 @@ class SentryBridge {
     Sentry.addBreadcrumb(crumb);
   }
 
-  public addBytesAttachment(filename: string, bytes: Uint8Array, contentType: string): void {
-    Sentry.getIsolationScope().addAttachment({
-      filename,
-      data: bytes,
-      contentType,
-    });
+  public addBytesAttachment(filename: string, bytes: Uint8Array, contentType: string, attachmentType: string): void {
+    Sentry.getIsolationScope().addAttachment(makeAttachment(filename, bytes, contentType, attachmentType));
   }
 
   public addFileAttachment(path: string, filename: string, contentType: string, attachmentType: string): void {

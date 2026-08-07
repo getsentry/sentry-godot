@@ -242,7 +242,8 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		js_bridge()->call("addBytesAttachment",
 				p_attachment->get_filename().utf8(),
 				p_attachment->get_bytes(),
-				p_attachment->get_content_type_or_default().utf8());
+				p_attachment->get_content_type_or_default().utf8(),
+				p_attachment->get_attachment_type().utf8());
 	}
 }
 
