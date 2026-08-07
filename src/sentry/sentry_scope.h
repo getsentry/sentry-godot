@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sentry/level.h"
+#include "sentry/sentry_attachment.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_scope_impl.h"
 #include "sentry/sentry_user.h"
@@ -34,6 +35,7 @@ public:
 	void set_fingerprint(const PackedStringArray &p_fingerprint);
 	void set_attribute(const String &p_name, const Variant &p_value);
 	void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb);
+	void add_attachment(const Ref<SentryAttachment> &p_attachment);
 	void clear();
 
 	Ref<SentryScope> clone() const;

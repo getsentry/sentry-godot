@@ -939,6 +939,46 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun scopeAddFileAttachment(
+        handle: Int,
+        path: String,
+        filename: String,
+        contentType: String,
+        attachmentType: String
+    ) {
+        val scope = getScope(handle) ?: return
+        scope.addAttachment(
+            Attachment(
+                path,
+                filename.ifEmpty { File(path).name },
+                contentType.ifEmpty { null },
+                attachmentType.ifEmpty { null },
+                false
+            )
+        )
+    }
+
+    @UsedByGodot
+    fun scopeAddBytesAttachment(
+        handle: Int,
+        bytes: ByteArray,
+        filename: String,
+        contentType: String,
+        attachmentType: String
+    ) {
+        val scope = getScope(handle) ?: return
+        scope.addAttachment(
+            Attachment(
+                bytes,
+                filename,
+                contentType.ifEmpty { null },
+                attachmentType.ifEmpty { null },
+                false
+            )
+        )
+    }
+
+    @UsedByGodot
     fun scopeClear(handle: Int) {
         val scope = getScope(handle) ?: return
         scope.clear()

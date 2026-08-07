@@ -24,6 +24,7 @@ public:
 	virtual void set_fingerprint(const PackedStringArray &p_fingerprint) override;
 	virtual void set_attribute(const String &p_name, const Variant &p_value) override;
 	virtual void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) override;
+	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
 	virtual void clear() override;
 	virtual SentryScopeImpl *clone() const override;
 

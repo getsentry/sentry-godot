@@ -49,6 +49,14 @@ void SentryScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	_impl->add_breadcrumb(p_breadcrumb);
 }
 
+void SentryScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
+	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add a null attachment.");
+	ERR_FAIL_COND_MSG(p_attachment->get_path().is_empty() && p_attachment->get_filename().is_empty(),
+			"Sentry: Can't add bytes attachment without filename.");
+	_impl->add_attachment(p_attachment);
+}
+
 void SentryScope::clear() {
 	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
 	_impl->clear();
@@ -67,6 +75,7 @@ void SentryScope::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fingerprint", "fingerprint"), &SentryScope::set_fingerprint);
 	ClassDB::bind_method(D_METHOD("set_attribute", "name", "value"), &SentryScope::set_attribute);
 	ClassDB::bind_method(D_METHOD("add_breadcrumb", "breadcrumb"), &SentryScope::add_breadcrumb);
+	ClassDB::bind_method(D_METHOD("add_attachment", "attachment"), &SentryScope::add_attachment);
 	ClassDB::bind_method(D_METHOD("clear"), &SentryScope::clear);
 }
 

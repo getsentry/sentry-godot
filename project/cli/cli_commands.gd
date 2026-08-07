@@ -161,6 +161,19 @@ func _cmd_attachment_capture() -> int:
 	runtime_bytes.content_type = "text/plain"
 	SentrySDK.add_attachment(runtime_bytes)
 
+	# Captured before the unscoped event below, so that event can prove the scope attachments didn't leak.
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.add_attachment(SentryAttachment.create_with_path("user://scoped_attachment.txt"))
+		var scoped_bytes := SentryAttachment.create_with_bytes(
+			"Scoped bytes".to_utf8_buffer(), "scoped_bytes.txt")
+		scoped_bytes.content_type = "text/plain"
+		scope.add_attachment(scoped_bytes)
+		# Write the file after attaching it; this verifies file contents are loaded at event capture time.
+		_write_text_file("user://scoped_attachment.txt", "Scoped file attachment for integration testing.\n")
+		# Marked separately from EVENT_CAPTURED so the shared test cases still see a single capture.
+		print("SCOPED_EVENT_ID: ", SentrySDK.capture_message("Scoped attachment test message"))
+		)
+
 	var event_id := SentrySDK.capture_message("Attachment test message")
 	print("EVENT_CAPTURED: ", event_id)
 	_print_test_result("attachment-capture", true, "Test complete")

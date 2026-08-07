@@ -68,6 +68,24 @@ void JavaScriptScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) 
 	js_obj->call("addBreadcrumb", crumb->get_js_object(), SENTRY_OPTIONS()->get_max_breadcrumbs());
 }
 
+void JavaScriptScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
+	if (!p_attachment->get_path().is_empty()) {
+		js_bridge()->call("scopeAddFileAttachment",
+				js_obj,
+				p_attachment->get_path().utf8(),
+				p_attachment->get_effective_filename().utf8(),
+				p_attachment->get_content_type().utf8(),
+				p_attachment->get_attachment_type().utf8());
+	} else {
+		js_bridge()->call("scopeAddBytesAttachment",
+				js_obj,
+				p_attachment->get_effective_filename().utf8(),
+				p_attachment->get_bytes(),
+				p_attachment->get_content_type_or_default().utf8(),
+				p_attachment->get_attachment_type().utf8());
+	}
+}
+
 void JavaScriptScope::clear() {
 	js_bridge()->call("scopeClear", js_obj);
 }

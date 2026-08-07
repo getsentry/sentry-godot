@@ -7,6 +7,7 @@
 - Add current scope support to the GDScript API to enrich the telemetry captured within a specific part of the code ([#834](https://github.com/getsentry/sentry-godot/pull/834), [#835](https://github.com/getsentry/sentry-godot/pull/835), [#836](https://github.com/getsentry/sentry-godot/pull/836))
   - `SentrySDK.with_scope()` runs a callable with a forked scope, `SentrySDK.get_current_scope()` returns the scope active on the calling thread, and the new `SentryScope` class carries tags, contexts, user, level, fingerprint, breadcrumbs, and attributes on top of the data set globally
   - Not supported on macOS and iOS yet, where telemetry is still captured but the scope data is discarded with a warning
+  - Add `SentryScope.add_attachment()` to send a file or a block of bytes with the events captured within a scope instead of with every event ([#856](https://github.com/getsentry/sentry-godot/pull/856))
 
 ### Dependencies
 

@@ -59,6 +59,8 @@ try {
 			"scopeSetContext",
 			"scopeSetFingerprint",
 			"scopeSetUser",
+			"scopeAddBytesAttachment",
+			"scopeAddFileAttachment",
 			"scopeClear",
 			"logTrace",
 			"logDebug",
@@ -71,8 +73,8 @@ try {
 			"lastEventId",
 			"addBreadcrumb",
 			"addBytesAttachment",
+			"addFileAttachment",
 			"clearAttachments",
-			"pushAttachmentData",
 			"storeBytes",
 			"takeBytes",
 			"releaseBytes",
@@ -109,8 +111,24 @@ try {
 
 		console.log("\n🧪 Functional tests:");
 
+		// Stands in for the C++ layer: hands back fixed bytes, leaving "user://missing.txt" unread like a missing file.
+		const readAttachmentPaths = [];
+		const readAttachment = (request) => {
+			readAttachmentPaths.push(request.path);
+			if (request.path !== "user://missing.txt") {
+				request.data = new Uint8Array([ 1, 2, 3, 4 ]);
+			}
+		};
+
 		runTest("init()", () => {
-			bridge.init(() => {}, null, null, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 100, false, false, false, "0.1.0");
+			bridge.init(() => {}, null, null, readAttachment, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 100, false, false, false, "0.1.0");
+		});
+
+		// Observes what actually goes out with an event. The bridge registers its own handler during
+		// init() and handlers run in registration order, so this one sees the resolved and filtered list.
+		const sentAttachments = [];
+		bridge.createScope().getClient().on("beforeSendEvent", (_event, hint) => {
+			sentAttachments.push(hint?.attachments ?? []);
 		});
 
 		runTest("isEnabled()", () => {
@@ -218,6 +236,58 @@ try {
 					"writes to the clone should not reach the parent");
 		});
 
+		runTest("scopeAddBytesAttachment()", () => {
+			const scope = bridge.createScope();
+			bridge.scopeAddBytesAttachment(scope, "save.txt", new Uint8Array([ 1, 2, 3 ]), "text/plain", "event.attachment");
+			const attachments = scope.getScopeData().attachments;
+			assertEqual(attachments.length, 1, "scopeAddBytesAttachment should add the attachment to the scope");
+			assertEqual(attachments[0].filename, "save.txt", "scopeAddBytesAttachment should set the filename");
+			assertEqual(attachments[0].contentType, "text/plain", "scopeAddBytesAttachment should set the content type");
+			assertEqual(attachments[0].attachmentType, "event.attachment", "scopeAddBytesAttachment should set the attachment type");
+			assertEqual(attachments[0].data.length, 3, "scopeAddBytesAttachment should carry the bytes");
+		});
+
+		runTest("scopeAddFileAttachment()", () => {
+			const scope = bridge.createScope();
+			bridge.scopeAddFileAttachment(scope, "user://save.dat", "save.dat", "application/octet-stream", "");
+			const attachments = scope.getScopeData().attachments;
+			assertEqual(attachments.length, 1, "scopeAddFileAttachment should add the attachment to the scope");
+			assertEqual(attachments[0].filename, "save.dat", "scopeAddFileAttachment should set the filename");
+			assertEqual(attachments[0].data.length, 0, "scopeAddFileAttachment should leave the bytes for capture time");
+			assertEqual(attachments[0].__godotPath, "user://save.dat",
+					"scopeAddFileAttachment should mark the attachment with the path to read at capture time");
+		});
+
+		runTest("file attachments resolve on capture", () => {
+			const scope = bridge.createScope();
+			bridge.scopeAddFileAttachment(scope, "user://save.dat", "save.dat", "application/octet-stream", "");
+
+			const readCountBefore = readAttachmentPaths.length;
+			bridge.captureEvent({ message : "Event with a file attachment" }, scope);
+			assertEqual(readAttachmentPaths.length, readCountBefore + 1, "captureEvent should read the file once");
+			assertEqual(readAttachmentPaths[readAttachmentPaths.length - 1], "user://save.dat", "captureEvent should read the attachment path");
+
+			const sent = sentAttachments[sentAttachments.length - 1];
+			assertEqual(sent.length, 1, "captureEvent should send the resolved attachment");
+			assertEqual(sent[0].data.length, 4, "the sent attachment should carry the bytes that were read");
+			assertEqual(sent[0].filename, "save.dat", "resolving should keep the filename");
+			assertEqual(sent[0].__godotPath, undefined, "the path marker should not be sent with the event");
+
+			const kept = scope.getScopeData().attachments[0];
+			assertEqual(kept.data.length, 0, "the scope's own attachment should not keep the bytes");
+			assertEqual(kept.__godotPath, "user://save.dat",
+					"the scope should keep the path so the next capture reads the file again");
+		});
+
+		runTest("unreadable file attachments are dropped", () => {
+			const scope = bridge.createScope();
+			bridge.scopeAddFileAttachment(scope, "user://missing.txt", "missing.txt", "", "");
+			bridge.captureEvent({ message : "Event with a missing file attachment" }, scope);
+
+			const sent = sentAttachments[sentAttachments.length - 1];
+			assertEqual(sent.length, 0, "an attachment the C++ layer could not read should not be sent");
+		});
+
 		runTest("scopeClear()", () => {
 			const scope = bridge.createScope();
 			bridge.scopeSetContext(scope, "test-context", '{"key": "value"}');
@@ -295,23 +365,21 @@ try {
 			assertEqual(bridge.takeBytes(id), undefined, "releaseBytes should discard bytes");
 		});
 
-		runTest("pushAttachmentData()", () => {
-			const attachments = [];
-			bridge.pushAttachmentData(attachments, new Uint8Array([ 1, 2, 3 ]), "test.bin", "application/octet-stream", "event.attachment");
-			assertEqual(attachments.length, 1, "should push one attachment");
-			assertEqual(attachments[0].filename, "test.bin", "filename should match");
-			assertEqual(attachments[0].bytes.length, 3, "bytes length should match");
-			assertEqual(attachments[0].contentType, "application/octet-stream", "contentType should match");
-			assertEqual(attachments[0].attachmentType, "event.attachment", "attachmentType should match");
+		// Globally added file attachments go through the same resolution as the scoped ones above.
+		runTest("addFileAttachment()", () => {
+			bridge.addFileAttachment("user://global.dat", "global.dat", "application/json", "event.view_hierarchy");
+			bridge.captureEvent({ message : "Event with a global file attachment" }, bridge.createScope());
 
-			bridge.pushAttachmentData(attachments, new Uint8Array([ 4, 5 ]), "test2.bin");
-			assertEqual(attachments.length, 2, "should push second attachment");
-			assertEqual(attachments[1].contentType, undefined, "optional contentType should be undefined");
-			assertEqual(attachments[1].attachmentType, undefined, "optional attachmentType should be undefined");
+			const sent = sentAttachments[sentAttachments.length - 1];
+			const globalAttachment = sent.find((attachment) => attachment.filename === "global.dat");
+			assert(globalAttachment, "addFileAttachment should send the attachment with the event");
+			assertEqual(globalAttachment.data.length, 4, "the global attachment should carry the bytes that were read");
+			assertEqual(globalAttachment.contentType, "application/json", "addFileAttachment should set the content type");
+			assertEqual(globalAttachment.attachmentType, "event.view_hierarchy", "addFileAttachment should set the attachment type");
 		});
 
 		runTest("addBytesAttachment()", () => {
-			bridge.addBytesAttachment("test.txt", new Uint8Array([ 104, 101, 108, 108, 111 ]), "text/plain");
+			bridge.addBytesAttachment("test.txt", new Uint8Array([ 104, 101, 108, 108, 111 ]), "text/plain", "");
 		});
 
 		runTest("clearAttachments()", () => {

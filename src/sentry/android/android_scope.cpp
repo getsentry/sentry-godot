@@ -73,6 +73,25 @@ void AndroidScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	android_plugin->call(ANDROID_SN(scopeAddBreadcrumb), handle, crumb->get_handle());
 }
 
+void AndroidScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_NULL(android_plugin);
+
+	if (!p_attachment->get_path().is_empty()) {
+		String absolute_path = p_attachment->get_globalized_path();
+		android_plugin->call(ANDROID_SN(scopeAddFileAttachment), handle,
+				absolute_path,
+				p_attachment->get_effective_filename(),
+				p_attachment->get_content_type(),
+				p_attachment->get_attachment_type());
+	} else {
+		android_plugin->call(ANDROID_SN(scopeAddBytesAttachment), handle,
+				p_attachment->get_bytes(),
+				p_attachment->get_filename(),
+				p_attachment->get_content_type(),
+				p_attachment->get_attachment_type());
+	}
+}
+
 void AndroidScope::clear() {
 	ERR_FAIL_NULL(android_plugin);
 	android_plugin->call(ANDROID_SN(scopeClear), handle);
