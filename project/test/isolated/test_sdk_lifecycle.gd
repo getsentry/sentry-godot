@@ -7,6 +7,11 @@ func before() -> void:
 	pass
 
 
+func _trace_id(json: String) -> Variant:
+	var data: Variant = JSON.parse_string(json)
+	return data.get("contexts", {}).get("trace", {}).get("trace_id")
+
+
 ## Test manual initialization and shutdown of SDK.
 func test_sdk_lifecycle() -> void:
 	# SDK should be disabled at start.
@@ -88,6 +93,13 @@ func test_reinit_clears_global_data() -> void:
 		.containing("message", "first session breadcrumb") \
 		.exactly(1)
 
+	assert_json(first_json).describe("First session event is on a trace") \
+		.at("/contexts/trace/trace_id") \
+		.is_not_empty() \
+		.verify()
+
+	var first_trace_id: Variant = _trace_id(first_json)
+
 	SentrySDK.close()
 
 	# NOTE: On Web, Sentry.close() is async - need to wait for it to complete.
@@ -107,5 +119,10 @@ func test_reinit_clears_global_data() -> void:
 		.verify()
 
 	assert_str(second_json).not_contains("first session breadcrumb")
+
+	assert_json(second_json).describe("Second session starts a new trace") \
+		.at("/contexts/trace/trace_id") \
+		.is_not_equal(first_trace_id) \
+		.verify()
 
 	SentrySDK.close()

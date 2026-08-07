@@ -321,6 +321,14 @@ class SentryBridge {
     event.user = makeUser(id, username, email, ip);
   }
 
+  public setTrace(traceId: string, parentSpanId: string): void {
+    Sentry.getCurrentScope().setPropagationContext({
+      traceId,
+      sampleRand: Math.random(),
+      ...(parentSpanId && { parentSpanId }),
+    });
+  }
+
   public createScope(): Sentry.Scope {
     const scope = new Sentry.Scope();
     scope.setClient(Sentry.getClient());
