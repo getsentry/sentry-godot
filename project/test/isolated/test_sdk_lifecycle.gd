@@ -1,32 +1,19 @@
-extends GdUnitTestSuite
+extends SentryTestSuite
 ## Test lifecycle methods.
 
 
-signal callback_processed
-
-var _captured_session_tag: String
-var _captured_event_json: String
-
-
-func _before_send(ev: SentryEvent) -> SentryEvent:
-	if ev.is_crash():
-		# Likely processing previous crash.
-		return ev
-	_captured_session_tag = ev.get_tag("session")
-	_captured_event_json = ev.to_json()
-	callback_processed.emit()
-	return null
+func before() -> void:
+	# NOTE: Not calling super() on purpose - this suite initializes the SDK itself.
+	pass
 
 
 ## Test manual initialization and shutdown of SDK.
 func test_sdk_lifecycle() -> void:
-	monitor_signals(self, false)
-
 	# SDK should be disabled at start.
 	assert_bool(SentrySDK.is_enabled()).is_false()
 
 	SentrySDK.capture_message("message not captured before SDK is initialized")
-	await assert_signal(self).is_not_emitted("callback_processed")
+	await assert_signal(self).is_not_emitted("event_captured")
 
 	SentrySDK.init(func (options: SentryOptions) -> void:
 		options.before_send = _before_send
@@ -35,7 +22,7 @@ func test_sdk_lifecycle() -> void:
 	assert_bool(SentrySDK.is_enabled()).is_true()
 
 	SentrySDK.capture_message("message captured when SDK is initialiazed")
-	await assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(self).is_emitted("event_captured")
 
 	SentrySDK.close()
 
@@ -45,13 +32,11 @@ func test_sdk_lifecycle() -> void:
 	assert_bool(SentrySDK.is_enabled()).is_false()
 
 	SentrySDK.capture_message("message not captured when SDK is closed")
-	await assert_signal(self).is_not_emitted("callback_processed")
+	await assert_signal(self).is_not_emitted("event_captured")
 
 
 ## Test that re-init creates fresh options (old before_send should not leak).
 func test_reinit_clears_options() -> void:
-	monitor_signals(self, false)
-
 	# First init with before_send callback.
 	SentrySDK.init(func (options: SentryOptions) -> void:
 		options.before_send = _before_send
@@ -60,7 +45,7 @@ func test_reinit_clears_options() -> void:
 	assert_bool(SentrySDK.is_enabled()).is_true()
 
 	SentrySDK.capture_message("message triggers before_send")
-	await assert_signal(self).is_emitted("callback_processed")
+	await assert_signal(self).is_emitted("event_captured")
 
 	SentrySDK.close()
 
@@ -73,7 +58,7 @@ func test_reinit_clears_options() -> void:
 	assert_bool(SentrySDK.is_enabled()).is_true()
 
 	SentrySDK.capture_message("message should not trigger old before_send")
-	await assert_signal(self).is_not_emitted("callback_processed")
+	await assert_signal(self).is_not_emitted("event_captured")
 
 	SentrySDK.close()
 
@@ -83,8 +68,6 @@ func test_reinit_clears_options() -> void:
 
 ## Test that re-init clears globally set data (old tags and breadcrumbs should not leak).
 func test_reinit_clears_global_data() -> void:
-	monitor_signals(self, false)
-
 	SentrySDK.init(func (options: SentryOptions) -> void:
 		options.before_send = _before_send
 		options.shutdown_timeout_ms = 2000
@@ -93,9 +76,17 @@ func test_reinit_clears_global_data() -> void:
 	SentrySDK.set_tag("session", "first")
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("first session breadcrumb"))
 	SentrySDK.capture_message("message from the first session")
-	await assert_signal(self).is_emitted("callback_processed")
-	assert_str(_captured_session_tag).is_equal("first")
-	assert_str(_captured_event_json).contains("first session breadcrumb")
+	var first_json: String = await wait_for_captured_event_json()
+
+	assert_json(first_json).describe("First session event carries its tag") \
+		.must_contain("/tags/session", "first") \
+		.verify()
+
+	assert_json(first_json).describe("First session event carries its breadcrumb") \
+		.at("/breadcrumbs/") \
+		.with_objects() \
+		.containing("message", "first session breadcrumb") \
+		.exactly(1)
 
 	SentrySDK.close()
 
@@ -109,8 +100,12 @@ func test_reinit_clears_global_data() -> void:
 	)
 
 	SentrySDK.capture_message("message from the second session")
-	await assert_signal(self).is_emitted("callback_processed")
-	assert_str(_captured_session_tag).is_empty()
-	assert_str(_captured_event_json).not_contains("first session breadcrumb")
+	var second_json: String = await wait_for_captured_event_json()
+
+	assert_json(second_json).describe("Second session drops the first session's tag") \
+		.must_not_contain("/tags/session") \
+		.verify()
+
+	assert_str(second_json).not_contains("first session breadcrumb")
 
 	SentrySDK.close()
