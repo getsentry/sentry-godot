@@ -4,14 +4,16 @@ extends GdUnitTestSuite
 
 signal callback_processed
 
-var _captured_event: SentryEvent
+var _captured_session_tag: String
+var _captured_event_json: String
 
 
 func _before_send(ev: SentryEvent) -> SentryEvent:
 	if ev.is_crash():
 		# Likely processing previous crash.
 		return ev
-	_captured_event = ev
+	_captured_session_tag = ev.get_tag("session")
+	_captured_event_json = ev.to_json()
 	callback_processed.emit()
 	return null
 
@@ -92,8 +94,8 @@ func test_reinit_clears_global_data() -> void:
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("first session breadcrumb"))
 	SentrySDK.capture_message("message from the first session")
 	await assert_signal(self).is_emitted("callback_processed")
-	assert_str(_captured_event.get_tag("session")).is_equal("first")
-	assert_str(_captured_event.to_json()).contains("first session breadcrumb")
+	assert_str(_captured_session_tag).is_equal("first")
+	assert_str(_captured_event_json).contains("first session breadcrumb")
 
 	SentrySDK.close()
 
@@ -108,7 +110,7 @@ func test_reinit_clears_global_data() -> void:
 
 	SentrySDK.capture_message("message from the second session")
 	await assert_signal(self).is_emitted("callback_processed")
-	assert_str(_captured_event.get_tag("session")).is_empty()
-	assert_str(_captured_event.to_json()).not_contains("first session breadcrumb")
+	assert_str(_captured_session_tag).is_empty()
+	assert_str(_captured_event_json).not_contains("first session breadcrumb")
 
 	SentrySDK.close()
