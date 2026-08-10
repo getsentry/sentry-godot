@@ -26,7 +26,7 @@ void NativeSpan::set_status(SpanStatus p_status) {
 
 SpanStatus NativeSpan::get_status() const {
 	WARN_PRINT_ONCE("Sentry: Not implemented");
-	return SPAN_UNSET;
+	return SPAN_STATUS_UNSET;
 }
 
 void NativeSpan::set_name(const String &p_name) {
