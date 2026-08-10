@@ -42,7 +42,7 @@ class DisabledSDK : public InternalSDK {
 	virtual void remove_attribute(const String &p_name) override {}
 
 	virtual SentryScopeImpl *create_scope() override { return memnew(DisabledScope); }
-	virtual SentrySpanImpl *create_span() override { return memnew(DisabledSpan); }
+	virtual SentrySpanImpl *create_span(const String &p_name, const Dictionary &p_attributes) override { return memnew(DisabledSpan); }
 
 	// Nothing is captured, so nothing is lost by discarding scope writes.
 	virtual bool supports_scopes() const override { return true; }

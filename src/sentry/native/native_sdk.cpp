@@ -376,7 +376,7 @@ SentryScopeImpl *NativeSDK::create_scope() {
 	return memnew(NativeScope);
 }
 
-SentrySpanImpl *NativeSDK::create_span() {
+SentrySpanImpl *NativeSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
 	return memnew(NativeSpan);
 }
 

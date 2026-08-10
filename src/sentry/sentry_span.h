@@ -48,11 +48,12 @@ public:
 
 	// *** Not exposed in the public API
 
-	Ref<SentrySpan> start_child(const String &p_name);
+	Ref<SentrySpan> start_child(const String &p_name, const Dictionary &p_attributes);
 
 	SentrySpanImpl *get_implementation() const { return _impl; }
 
 	SentrySpan();
+	SentrySpan(const String &p_name, const Dictionary &p_attributes);
 	SentrySpan(SentrySpanImpl *p_impl);
 	~SentrySpan();
 };

@@ -310,7 +310,7 @@ SentryScopeImpl *JavaScriptSDK::create_scope() {
 	return memnew(JavaScriptScope(scope_obj));
 }
 
-SentrySpanImpl *JavaScriptSDK::create_span() {
+SentrySpanImpl *JavaScriptSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
 	return memnew(DisabledSpan);
 }
 

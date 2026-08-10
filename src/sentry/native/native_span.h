@@ -31,7 +31,7 @@ public:
 
 	virtual void end() override;
 
-	virtual SentrySpanImpl *start_child(const String &p_name) override;
+	virtual SentrySpanImpl *start_child(const String &p_name, const Dictionary &p_attributes) override;
 
 	NativeSpan();
 	virtual ~NativeSpan() override;

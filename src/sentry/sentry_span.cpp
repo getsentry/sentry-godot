@@ -68,13 +68,19 @@ void SentrySpan::end() {
 	_impl->end();
 }
 
-Ref<SentrySpan> SentrySpan::start_child(const String &p_name) {
+Ref<SentrySpan> SentrySpan::start_child(const String &p_name, const Dictionary &p_attributes) {
 	ERR_FAIL_COND_V_MSG(p_name.is_empty(), Ref<SentrySpan>(), "Sentry: Can't start a child span with an empty name.");
-	return memnew(SentrySpan(_impl->start_child(p_name)));
+	return memnew(SentrySpan(_impl->start_child(p_name, p_attributes)));
 }
 
 SentrySpan::SentrySpan() {
-	_impl = INTERNAL_SDK()->create_span();
+	// Inert by default: the only paths here are unassigned() and a accidental
+	// instantiation by the engine or user, neither of which should start a live span.
+	_impl = memnew(DisabledSpan);
+}
+
+SentrySpan::SentrySpan(const String &p_name, const Dictionary &p_attributes) {
+	_impl = INTERNAL_SDK()->create_span(p_name, p_attributes);
 }
 
 SentrySpan::SentrySpan(SentrySpanImpl *p_impl) :
