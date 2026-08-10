@@ -1,5 +1,7 @@
 #include "native_span.h"
 
+#include "sentry/disabled/disabled_span.h"
+
 #include <godot_cpp/core/error_macros.hpp>
 
 namespace sentry::native {
@@ -38,6 +40,11 @@ String NativeSpan::get_name() const {
 
 void NativeSpan::end() {
 	WARN_PRINT_ONCE("Sentry: Not implemented");
+}
+
+SentrySpanImpl *NativeSpan::start_child(const String &p_name) {
+	WARN_PRINT_ONCE("Sentry: Not implemented");
+	return memnew(DisabledSpan);
 }
 
 NativeSpan::NativeSpan() {
