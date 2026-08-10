@@ -237,6 +237,15 @@ class SentryBridge {
       console.debug("Sentry: beforeSendMetric callback not provided.");
     }
 
+    // The scopes outlive Sentry.close(), so without this a previous session's data would leak into
+    // this one: tags, breadcrumbs and attachments from the isolation scope, attributes from the
+    // global one, and the trace that captures and forked scopes inherit from the current one.
+    // Clearing here is safe even if a close() flush is still in flight: scope data and attachments are
+    // merged into the event synchronously at capture time, so nothing already captured reads a scope again.
+    Sentry.getIsolationScope().clear();
+    Sentry.getGlobalScope().clear();
+    Sentry.getCurrentScope().clear();
+
     Sentry.init(options);
 
     if (readAttachmentCallback) {

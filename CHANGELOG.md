@@ -9,6 +9,10 @@
   - Not supported on macOS and iOS yet, where telemetry is still captured but the scope data is discarded with a warning
   - Add `SentryScope.add_attachment()` to send a file or a block of bytes with the events captured within a scope instead of with every event ([#856](https://github.com/getsentry/sentry-godot/pull/856))
 
+### Fixes
+
+- Web: Fixed tags, breadcrumbs and other globally set data carrying over into the next session when the SDK is closed and initialized again ([#857](https://github.com/getsentry/sentry-godot/pull/857))
+
 ### Dependencies
 
 - Bump Sentry Android from v8.51.0 to v8.52.0 ([#855](https://github.com/getsentry/sentry-godot/pull/855))
