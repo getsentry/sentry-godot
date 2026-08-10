@@ -175,6 +175,21 @@ Variant SentrySDK::with_scope(const Callable &p_callable) {
 	return result;
 }
 
+Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Ref<SentrySpan> &p_parent_span, const Dictionary &p_attributes, bool p_active) {
+	WARN_PRINT_ONCE("Sentry: Not implemented");
+	return Ref<SentrySpan>();
+}
+
+Variant SentrySDK::with_span(const String &p_name, const Callable &p_callable) {
+	WARN_PRINT_ONCE("Sentry: Not implemented");
+	return Variant();
+}
+
+Ref<SentrySpan> SentrySDK::get_active_span() const {
+	WARN_PRINT_ONCE("Sentry: Not implemented");
+	return Ref<SentrySpan>();
+}
+
 void SentrySDK::init(const Callable &p_configuration_callback) {
 	ERR_FAIL_COND_MSG(OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id(),
 			"Sentry: init() must be called from the main thread.");
@@ -605,6 +620,10 @@ void SentrySDK::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_current_scope"), &SentrySDK::get_current_scope);
 	ClassDB::bind_method(D_METHOD("with_scope", "callable"), &SentrySDK::with_scope);
+
+	ClassDB::bind_method(D_METHOD("start_span", "name", "parent_span", "attributes", "active"), &SentrySDK::start_span, DEFVAL(SentrySpan::unassigned()), DEFVAL(Dictionary()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("with_span", "name", "callable"), &SentrySDK::with_span);
+	ClassDB::bind_method(D_METHOD("get_active_span"), &SentrySDK::get_active_span);
 
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);

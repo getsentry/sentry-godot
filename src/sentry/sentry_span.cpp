@@ -1,5 +1,6 @@
 #include "sentry_span.h"
 
+#include "sentry/disabled/disabled_span.h"
 #include "sentry_sdk.h" // Needed for VariantCaster<SentrySDK::Level>
 
 #define WRONG_THREAD_MSG \
@@ -8,10 +9,8 @@
 namespace sentry {
 
 Ref<SentrySpan> SentrySpan::unassigned() {
-	static Ref<SentrySpan> sentinel;
-	if (sentinel.is_null()) {
-		sentinel.instantiate();
-	}
+	// FYI: Internal SDK is not initialized yet when this static is created.
+	static Ref<SentrySpan> sentinel = Ref<SentrySpan>(memnew(SentrySpan(memnew(DisabledSpan))));
 	return sentinel;
 }
 
