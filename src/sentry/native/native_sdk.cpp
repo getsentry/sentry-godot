@@ -9,6 +9,7 @@
 #include "sentry/native/native_log.h"
 #include "sentry/native/native_metric.h"
 #include "sentry/native/native_scope.h"
+#include "sentry/native/native_span.h"
 #include "sentry/native/native_util.h"
 #include "sentry/native/platform_detection.h"
 #include "sentry/processing/process_event.h"
@@ -373,6 +374,10 @@ void NativeSDK::remove_attribute(const String &p_name) {
 
 SentryScopeImpl *NativeSDK::create_scope() {
 	return memnew(NativeScope);
+}
+
+SentrySpanImpl *NativeSDK::create_span() {
+	return memnew(NativeSpan);
 }
 
 void NativeSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

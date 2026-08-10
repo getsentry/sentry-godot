@@ -8,6 +8,7 @@
 #include "android_string_names.h"
 #include "android_util.h"
 #include "sentry/common_defs.h"
+#include "sentry/disabled/disabled_span.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
@@ -333,6 +334,10 @@ SentryScopeImpl *AndroidSDK::create_scope() {
 	ERR_FAIL_NULL_V(android_plugin, memnew(AndroidScope()));
 	int32_t handle = android_plugin->call(ANDROID_SN(createScope));
 	return memnew(AndroidScope(android_plugin, handle));
+}
+
+SentrySpanImpl *AndroidSDK::create_span() {
+	return memnew(DisabledSpan);
 }
 
 void AndroidSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
