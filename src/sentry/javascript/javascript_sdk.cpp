@@ -1,6 +1,7 @@
 #include "javascript_sdk.h"
 
 #include "sentry/disabled/disabled_scope.h"
+#include "sentry/disabled/disabled_span.h"
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/javascript/javascript_event.h"
 #include "sentry/javascript/javascript_interop.h"
@@ -322,6 +323,10 @@ SentryScopeImpl *JavaScriptSDK::create_scope() {
 	JSObjectPtr scope_obj = js_bridge()->call("createScope").as_object();
 	ERR_FAIL_COND_V_MSG(!scope_obj, memnew(DisabledScope), "Sentry: Failed to create scope object.");
 	return memnew(JavaScriptScope(scope_obj));
+}
+
+SentrySpanImpl *JavaScriptSDK::create_span() {
+	return memnew(DisabledSpan);
 }
 
 void JavaScriptSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

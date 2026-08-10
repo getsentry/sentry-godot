@@ -9,6 +9,7 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/common_defs.h"
 #include "sentry/disabled/disabled_scope.h"
+#include "sentry/disabled/disabled_span.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
@@ -347,6 +348,10 @@ void CocoaSDK::remove_attribute(const String &p_name) {
 
 SentryScopeImpl *CocoaSDK::create_scope() {
 	return memnew(DisabledScope);
+}
+
+SentrySpanImpl *CocoaSDK::create_span() {
+	return memnew(DisabledSpan);
 }
 
 void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
