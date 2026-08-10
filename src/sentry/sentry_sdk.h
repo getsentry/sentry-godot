@@ -12,6 +12,7 @@
 #include "sentry/sentry_metrics.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_scope.h"
+#include "sentry/sentry_span.h"
 
 #include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/core/object.hpp>
@@ -128,8 +129,14 @@ public:
 	// * Scopes
 
 	Ref<SentryScope> get_current_scope() const;
-
 	Variant with_scope(const Callable &p_callable);
+
+	// * Spans
+
+	Ref<SentrySpan> start_span(const String &p_name, const Ref<SentrySpan> &p_parent_span = SentrySpan::unassigned(),
+			const Dictionary &p_attributes = {}, bool p_active = true);
+	Variant with_span(const String &p_name, const Callable &p_callable);
+	Ref<SentrySpan> get_active_span() const;
 
 	// * Hidden API methods -- used in testing
 
