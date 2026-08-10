@@ -11,7 +11,7 @@ class DisabledSpan : public SentrySpanImpl {
 
 private:
 	Dictionary attributes;
-	SpanStatus status = SPAN_UNSET;
+	SpanStatus status = SPAN_STATUS_UNSET;
 	String name;
 
 public:

@@ -48,7 +48,7 @@ void SentrySpan::set_status(SpanStatus p_status) {
 }
 
 SentrySpan::SpanStatus SentrySpan::get_status() const {
-	ERR_SENTRY_THREAD_GUARD_V(SPAN_UNSET, WRONG_THREAD_MSG);
+	ERR_SENTRY_THREAD_GUARD_V(SPAN_STATUS_UNSET, WRONG_THREAD_MSG);
 	return _impl->get_status();
 }
 
@@ -96,9 +96,9 @@ void SentrySpan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &SentrySpan::get_name);
 	ClassDB::bind_method(D_METHOD("end"), &SentrySpan::end);
 
-	BIND_ENUM_CONSTANT(SPAN_UNSET);
-	BIND_ENUM_CONSTANT(SPAN_OK);
-	BIND_ENUM_CONSTANT(SPAN_ERROR);
+	BIND_ENUM_CONSTANT(SPAN_STATUS_UNSET);
+	BIND_ENUM_CONSTANT(SPAN_STATUS_OK);
+	BIND_ENUM_CONSTANT(SPAN_STATUS_ERROR);
 }
 
 } // namespace sentry
