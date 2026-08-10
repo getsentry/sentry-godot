@@ -95,6 +95,10 @@ void SentrySpan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &SentrySpan::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &SentrySpan::get_name);
 	ClassDB::bind_method(D_METHOD("end"), &SentrySpan::end);
+
+	BIND_ENUM_CONSTANT(SPAN_UNSET);
+	BIND_ENUM_CONSTANT(SPAN_OK);
+	BIND_ENUM_CONSTANT(SPAN_ERROR);
 }
 
 } // namespace sentry
