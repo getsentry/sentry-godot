@@ -68,6 +68,11 @@ void SentrySpan::end() {
 	_impl->end();
 }
 
+Ref<SentrySpan> SentrySpan::start_child(const String &p_name) {
+	ERR_FAIL_COND_V_MSG(p_name.is_empty(), Ref<SentrySpan>(), "Sentry: Can't start a child span with an empty name.");
+	return memnew(SentrySpan(_impl->start_child(p_name)));
+}
+
 SentrySpan::SentrySpan() {
 	_impl = INTERNAL_SDK()->create_span();
 }

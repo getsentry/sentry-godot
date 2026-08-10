@@ -46,6 +46,10 @@ public:
 
 	void end();
 
+	// *** Not exposed in the public API
+
+	Ref<SentrySpan> start_child(const String &p_name);
+
 	SentrySpanImpl *get_implementation() const { return _impl; }
 
 	SentrySpan();
