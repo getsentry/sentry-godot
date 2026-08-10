@@ -1,5 +1,7 @@
 #pragma once
 
+#include "sentry/sentry_span_impl.h"
+#include "sentry/span_status.h"
 #include "sentry/util/thread_guard.h"
 
 #include <godot_cpp/classes/ref_counted.hpp>
@@ -8,18 +10,19 @@ using namespace godot;
 
 namespace sentry {
 
+// Godot-exported representation of a Sentry span.
+// Platform-specific behavior is provided by SentrySpanImpl subclasses.
 class SentrySpan : public RefCounted {
 	GDCLASS(SentrySpan, RefCounted);
 
 public:
-	enum SpanStatus {
-		SPAN_UNSET = -1,
-		SPAN_OK = 0,
-		SPAN_ERROR = 1,
-	};
+	// SentrySpan.SpanStatus is defined in sentry/span_status.h.
+	// Godot extensions can't expose global enums; they must belong to a class.
+	// This alias avoids circular dependencies with headers that use SpanStatus.
+	using SpanStatus = sentry::SpanStatus;
 
 private:
-	// SentrySpanImpl *_impl;
+	SentrySpanImpl *_impl;
 
 	SENTRY_THREAD_OWNER;
 
@@ -42,6 +45,14 @@ public:
 	String get_name() const;
 
 	void end();
+
+	SentrySpanImpl *get_implementation() const { return _impl; }
+
+	SentrySpan();
+	SentrySpan(SentrySpanImpl *p_impl);
+	~SentrySpan();
 };
 
 } // namespace sentry
+
+VARIANT_ENUM_CAST(sentry::SentrySpan::SpanStatus);
