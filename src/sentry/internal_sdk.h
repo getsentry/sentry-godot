@@ -53,7 +53,7 @@ public:
 	virtual void remove_attribute(const String &p_name) = 0;
 
 	virtual SentryScopeImpl *create_scope() = 0;
-	virtual SentrySpanImpl *create_span() = 0;
+	virtual SentrySpanImpl *create_span(const String &p_name, const Dictionary &p_attributes) = 0;
 
 	// Whether local scopes are as capable as the rest of this backend.
 	// False means the backend captures events but silently discards scope

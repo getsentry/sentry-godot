@@ -42,7 +42,7 @@ void NativeSpan::end() {
 	WARN_PRINT_ONCE("Sentry: Not implemented");
 }
 
-SentrySpanImpl *NativeSpan::start_child(const String &p_name) {
+SentrySpanImpl *NativeSpan::start_child(const String &p_name, const Dictionary &p_attributes) {
 	WARN_PRINT_ONCE("Sentry: Not implemented");
 	return memnew(DisabledSpan);
 }

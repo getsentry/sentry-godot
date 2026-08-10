@@ -26,7 +26,7 @@ public:
 	virtual String get_name() const = 0;
 	virtual void end() = 0;
 
-	virtual SentrySpanImpl *start_child(const String &p_name) = 0;
+	virtual SentrySpanImpl *start_child(const String &p_name, const Dictionary &p_attributes) = 0;
 
 	virtual ~SentrySpanImpl() = default;
 };

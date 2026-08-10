@@ -355,7 +355,7 @@ SentryScopeImpl *AndroidSDK::create_scope() {
 	return memnew(AndroidScope(android_plugin, handle));
 }
 
-SentrySpanImpl *AndroidSDK::create_span() {
+SentrySpanImpl *AndroidSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
 	return memnew(DisabledSpan);
 }
 

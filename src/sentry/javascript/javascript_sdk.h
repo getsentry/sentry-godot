@@ -44,7 +44,7 @@ public:
 	virtual void remove_attribute(const String &p_name) override;
 
 	virtual SentryScopeImpl *create_scope() override;
-	virtual SentrySpanImpl *create_span() override;
+	virtual SentrySpanImpl *create_span(const String &p_name, const Dictionary &p_attributes) override;
 
 	virtual bool supports_scopes() const override { return true; }
 	virtual bool supports_before_send_feedback() const override { return true; }

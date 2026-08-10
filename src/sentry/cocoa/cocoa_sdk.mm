@@ -350,7 +350,7 @@ SentryScopeImpl *CocoaSDK::create_scope() {
 	return memnew(DisabledScope);
 }
 
-SentrySpanImpl *CocoaSDK::create_span() {
+SentrySpanImpl *CocoaSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
 	return memnew(DisabledSpan);
 }
 
