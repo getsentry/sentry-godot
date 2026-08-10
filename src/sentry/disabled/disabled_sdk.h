@@ -3,6 +3,7 @@
 #include "disabled_breadcrumb.h"
 #include "disabled_event.h"
 #include "disabled_scope.h"
+#include "disabled_span.h"
 #include "sentry/internal_sdk.h"
 
 namespace sentry {
@@ -41,6 +42,7 @@ class DisabledSDK : public InternalSDK {
 	virtual void remove_attribute(const String &p_name) override {}
 
 	virtual SentryScopeImpl *create_scope() override { return memnew(DisabledScope); }
+	virtual SentrySpanImpl *create_span() override { return memnew(DisabledSpan); }
 
 	// Nothing is captured, so nothing is lost by discarding scope writes.
 	virtual bool supports_scopes() const override { return true; }

@@ -7,6 +7,7 @@
 #include "sentry/sentry_event.h"
 #include "sentry/sentry_feedback.h"
 #include "sentry/sentry_scope.h"
+#include "sentry/sentry_span.h"
 #include "sentry/sentry_user.h"
 
 #include <godot_cpp/variant/dictionary.hpp>
@@ -52,6 +53,7 @@ public:
 	virtual void remove_attribute(const String &p_name) = 0;
 
 	virtual SentryScopeImpl *create_scope() = 0;
+	virtual SentrySpanImpl *create_span() = 0;
 
 	// Whether local scopes are as capable as the rest of this backend.
 	// False means the backend captures events but silently discards scope
