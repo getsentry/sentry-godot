@@ -90,6 +90,7 @@ void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryBadCode);
 	GDREGISTER_CLASS(SentryUnit);
 	GDREGISTER_CLASS(SentryFeedback);
+	GDREGISTER_ABSTRACT_CLASS(SentrySpan);
 	GDREGISTER_CLASS(SentrySDK);
 	GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
 	GDREGISTER_ABSTRACT_CLASS(SentryEvent);
@@ -97,7 +98,6 @@ void register_runtime_classes() {
 	GDREGISTER_ABSTRACT_CLASS(SentryLog);
 	GDREGISTER_ABSTRACT_CLASS(SentryMetric);
 	GDREGISTER_ABSTRACT_CLASS(SentryScope);
-	GDREGISTER_ABSTRACT_CLASS(SentrySpan);
 	GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
 	GDREGISTER_INTERNAL_CLASS(EnrichmentProcessor);
