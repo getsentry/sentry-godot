@@ -24,6 +24,12 @@ public:
 private:
 	SentrySpanImpl *_impl;
 
+	// The span this one displaced when it was bound to a scope, assigned by SentrySDK.
+	// Scopes resolve their slot through this chain, so it must outlive this span's end().
+	Ref<SentrySpan> _previous;
+
+	bool _ended = false;
+
 	SENTRY_THREAD_OWNER;
 
 protected:
@@ -49,6 +55,10 @@ public:
 	// *** Not exposed in the public API
 
 	Ref<SentrySpan> start_child(const String &p_name, const Dictionary &p_attributes);
+
+	_FORCE_INLINE_ bool is_ended() const { return _ended; }
+	_FORCE_INLINE_ void set_previous(const Ref<SentrySpan> &p_span) { _previous = p_span; }
+	_FORCE_INLINE_ Ref<SentrySpan> get_previous() const { return _previous; }
 
 	SentrySpanImpl *get_implementation() const { return _impl; }
 

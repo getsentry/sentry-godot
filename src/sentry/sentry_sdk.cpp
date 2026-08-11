@@ -176,8 +176,25 @@ Variant SentrySDK::with_scope(const Callable &p_callable) {
 }
 
 Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Ref<SentrySpan> &p_parent_span, const Dictionary &p_attributes, bool p_active) {
-	WARN_PRINT_ONCE("Sentry: Not implemented");
-	return Ref<SentrySpan>();
+	ERR_FAIL_COND_V_MSG(p_name.is_empty(), Ref<SentrySpan>(), "Sentry: Can't start a span with an empty name.");
+
+	// The unassigned sentinel means "inherit the active span", while an explicit null forces a segment (new root-level span).
+	Ref<SentrySpan> parent = p_parent_span;
+	if (parent == SentrySpan::unassigned()) {
+		parent = get_active_span();
+	}
+
+	Ref<SentrySpan> span;
+	if (parent.is_valid()) {
+		span = parent->start_child(p_name, p_attributes);
+	} else {
+		span = Ref<SentrySpan>(memnew(SentrySpan(p_name, p_attributes)));
+	}
+
+	if (p_active) {
+		get_current_scope()->set_span(span);
+	}
+	return span;
 }
 
 Variant SentrySDK::with_span(const String &p_name, const Callable &p_callable) {
@@ -186,8 +203,7 @@ Variant SentrySDK::with_span(const String &p_name, const Callable &p_callable) {
 }
 
 Ref<SentrySpan> SentrySDK::get_active_span() const {
-	WARN_PRINT_ONCE("Sentry: Not implemented");
-	return Ref<SentrySpan>();
+	return get_current_scope()->get_span();
 }
 
 void SentrySDK::init(const Callable &p_configuration_callback) {
