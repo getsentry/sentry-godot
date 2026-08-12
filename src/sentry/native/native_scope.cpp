@@ -1,6 +1,7 @@
 #include "native_scope.h"
 
 #include "sentry/native/native_breadcrumb.h"
+#include "sentry/native/native_span.h"
 #include "sentry/native/native_util.h"
 
 namespace sentry::native {
@@ -72,6 +73,14 @@ void NativeScope::clear() {
 
 SentryScopeImpl *NativeScope::clone() const {
 	return memnew(NativeScope(sentry_scope_clone(_scope)));
+}
+
+void NativeScope::set_span(SentrySpanImpl *p_span) {
+	if (NativeSpan *native_span = Castable::cast_to<NativeSpan>(p_span)) {
+		native_span->bind_to_scope(_scope);
+	} else {
+		sentry_scope_set_span(_scope, nullptr);
+	}
 }
 
 NativeScope::NativeScope() {

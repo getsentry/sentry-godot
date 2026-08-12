@@ -66,6 +66,14 @@ SentrySpanImpl *NativeSpan::start_child(const String &p_name, const Dictionary &
 	return memnew(NativeSpan(child, p_attributes));
 }
 
+void NativeSpan::bind_to_scope(sentry_scope_t *p_scope) {
+	if (_transaction) {
+		sentry_scope_set_transaction_object(p_scope, _transaction);
+	} else {
+		sentry_scope_set_span(p_scope, _span);
+	}
+}
+
 void NativeSpan::_apply_attributes(const Dictionary &p_attributes) {
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {

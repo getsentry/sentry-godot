@@ -26,6 +26,7 @@ public:
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) override;
 	virtual void clear() override;
 	virtual SentryScopeImpl *clone() const override;
+	virtual void set_span(SentrySpanImpl *p_span) override;
 
 	NativeScope();
 	NativeScope(sentry_scope_t *p_scope);

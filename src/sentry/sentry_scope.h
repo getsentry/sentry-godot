@@ -29,6 +29,9 @@ private:
 
 	SENTRY_THREAD_OWNER;
 
+	// Unwinds finished active spans to the nearest live ancestor and syncs with the backing scope.
+	void _sync_active_span() const;
+
 protected:
 	static void _bind_methods();
 
@@ -50,7 +53,7 @@ public:
 	void set_span(const Ref<SentrySpan> &p_span);
 	Ref<SentrySpan> get_span() const;
 
-	SentryScopeImpl *get_implementation() const { return _impl; }
+	SentryScopeImpl *get_implementation() const;
 
 	SentryScope();
 	SentryScope(SentryScopeImpl *p_impl);

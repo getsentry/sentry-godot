@@ -27,6 +27,8 @@ public:
 
 	virtual SentrySpanImpl *start_child(const String &p_name, const Dictionary &p_attributes) override;
 
+	void bind_to_scope(sentry_scope_t *p_scope);
+
 	NativeSpan() = delete;
 	NativeSpan(const String &p_name, const Dictionary &p_attributes);
 	NativeSpan(sentry_span_t *p_span, const Dictionary &p_attributes);
