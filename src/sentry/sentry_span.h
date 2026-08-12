@@ -36,6 +36,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	// Returns a no-op span that does nothing.
+	static Ref<SentrySpan> noop();
+
 	// Returns a sentinel value that indicates an unassigned span.
 	static Ref<SentrySpan> unassigned();
 

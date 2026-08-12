@@ -377,7 +377,7 @@ SentryScopeImpl *NativeSDK::create_scope() {
 }
 
 SentrySpanImpl *NativeSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
-	return memnew(NativeSpan);
+	return memnew(NativeSpan(p_name, p_attributes));
 }
 
 void NativeSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
@@ -402,6 +402,8 @@ void NativeSDK::init() {
 	sentry_options_set_dist(options, SENTRY_OPTIONS()->get_dist().utf8());
 	sentry_options_set_environment(options, SENTRY_OPTIONS()->get_environment().utf8());
 	sentry_options_set_sample_rate(options, SENTRY_OPTIONS()->get_sample_rate());
+	// TODO: Replace with SENTRY_OPTIONS() value once exposed.
+	sentry_options_set_traces_sample_rate(options, 1.0);
 	sentry_options_set_max_breadcrumbs(options, SENTRY_OPTIONS()->get_max_breadcrumbs());
 	sentry_options_set_shutdown_timeout(options, SENTRY_OPTIONS()->get_shutdown_timeout_ms());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
