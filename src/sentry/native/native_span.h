@@ -20,14 +20,8 @@ private:
 
 public:
 	virtual void set_attribute(const String &p_key, const Variant &p_value) override;
-	virtual Variant get_attribute(const String &p_key) const override;
-	virtual Dictionary get_attributes() const override;
-
 	virtual void set_status(SpanStatus p_status) override;
-	virtual SpanStatus get_status() const override;
-
 	virtual void set_name(const String &p_name) override;
-	virtual String get_name() const override;
 
 	virtual void end() override;
 

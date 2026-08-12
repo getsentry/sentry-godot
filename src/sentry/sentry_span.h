@@ -41,14 +41,10 @@ public:
 
 	void set_attribute(const String &p_key, const Variant &p_value);
 	void set_attributes(const Dictionary &p_attributes);
-	Variant get_attribute(const String &p_key) const;
-	Dictionary get_attributes() const;
 
 	void set_status(SpanStatus p_status);
-	SpanStatus get_status() const;
 
 	void set_name(const String &p_name);
-	String get_name() const;
 
 	void end();
 

@@ -18,12 +18,8 @@ class SentrySpanImpl : public Castable {
 
 public:
 	virtual void set_attribute(const String &p_key, const Variant &p_value) = 0;
-	virtual Variant get_attribute(const String &p_key) const = 0;
-	virtual Dictionary get_attributes() const = 0;
 	virtual void set_status(SpanStatus p_status) = 0;
-	virtual SpanStatus get_status() const = 0;
 	virtual void set_name(const String &p_name) = 0;
-	virtual String get_name() const = 0;
 	virtual void end() = 0;
 
 	virtual SentrySpanImpl *start_child(const String &p_name, const Dictionary &p_attributes) = 0;

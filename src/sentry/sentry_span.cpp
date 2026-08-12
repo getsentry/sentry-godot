@@ -31,36 +31,15 @@ void SentrySpan::set_attributes(const Dictionary &p_attributes) {
 	}
 }
 
-Variant SentrySpan::get_attribute(const String &p_key) const {
-	ERR_SENTRY_THREAD_GUARD_V(Variant(), WRONG_THREAD_MSG);
-	ERR_FAIL_COND_V_MSG(p_key.is_empty(), Variant(), "Sentry: Can't get attribute with an empty key.");
-	return _impl->get_attribute(p_key);
-}
-
-Dictionary SentrySpan::get_attributes() const {
-	ERR_SENTRY_THREAD_GUARD_V(Dictionary(), WRONG_THREAD_MSG);
-	return _impl->get_attributes();
-}
-
 void SentrySpan::set_status(SpanStatus p_status) {
 	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
 	_impl->set_status(p_status);
-}
-
-SentrySpan::SpanStatus SentrySpan::get_status() const {
-	ERR_SENTRY_THREAD_GUARD_V(SPAN_STATUS_UNSET, WRONG_THREAD_MSG);
-	return _impl->get_status();
 }
 
 void SentrySpan::set_name(const String &p_name) {
 	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
 	ERR_FAIL_COND_MSG(p_name.is_empty(), "Sentry: Can't set an empty span name.");
 	_impl->set_name(p_name);
-}
-
-String SentrySpan::get_name() const {
-	ERR_SENTRY_THREAD_GUARD_V(String(), WRONG_THREAD_MSG);
-	return _impl->get_name();
 }
 
 void SentrySpan::end() {
@@ -99,12 +78,8 @@ SentrySpan::~SentrySpan() {
 void SentrySpan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attribute", "key", "value"), &SentrySpan::set_attribute);
 	ClassDB::bind_method(D_METHOD("set_attributes", "attributes"), &SentrySpan::set_attributes);
-	ClassDB::bind_method(D_METHOD("get_attribute", "key"), &SentrySpan::get_attribute);
-	ClassDB::bind_method(D_METHOD("get_attributes"), &SentrySpan::get_attributes);
 	ClassDB::bind_method(D_METHOD("set_status", "status"), &SentrySpan::set_status);
-	ClassDB::bind_method(D_METHOD("get_status"), &SentrySpan::get_status);
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &SentrySpan::set_name);
-	ClassDB::bind_method(D_METHOD("get_name"), &SentrySpan::get_name);
 	ClassDB::bind_method(D_METHOD("end"), &SentrySpan::end);
 
 	BIND_ENUM_CONSTANT(SPAN_STATUS_UNSET);
