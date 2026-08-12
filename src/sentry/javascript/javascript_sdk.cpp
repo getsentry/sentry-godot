@@ -1,7 +1,6 @@
 #include "javascript_sdk.h"
 
 #include "sentry/disabled/disabled_scope.h"
-#include "sentry/disabled/disabled_span.h"
 #include "sentry/javascript/javascript_breadcrumb.h"
 #include "sentry/javascript/javascript_event.h"
 #include "sentry/javascript/javascript_interop.h"
@@ -312,7 +311,7 @@ SentryScopeImpl *JavaScriptSDK::create_scope() {
 
 SentrySpanImpl *JavaScriptSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
 	WARN_PRINT_ONCE("Sentry: Spans are not implemented on this platform yet - nothing will be recorded.");
-	return memnew(DisabledSpan);
+	return SentrySpanImpl::noop();
 }
 
 void JavaScriptSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

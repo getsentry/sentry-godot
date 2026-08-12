@@ -9,7 +9,6 @@
 #include "gen/sdk_version.gen.h"
 #include "sentry/common_defs.h"
 #include "sentry/disabled/disabled_scope.h"
-#include "sentry/disabled/disabled_span.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
@@ -352,7 +351,7 @@ SentryScopeImpl *CocoaSDK::create_scope() {
 
 SentrySpanImpl *CocoaSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
 	WARN_PRINT_ONCE("Sentry: Spans are not implemented on this platform yet - nothing will be recorded.");
-	return memnew(DisabledSpan);
+	return SentrySpanImpl::noop();
 }
 
 void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

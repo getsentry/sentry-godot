@@ -8,7 +8,6 @@
 #include "android_string_names.h"
 #include "android_util.h"
 #include "sentry/common_defs.h"
-#include "sentry/disabled/disabled_span.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
@@ -338,7 +337,7 @@ SentryScopeImpl *AndroidSDK::create_scope() {
 
 SentrySpanImpl *AndroidSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
 	WARN_PRINT_ONCE("Sentry: Spans are not implemented on this platform yet - nothing will be recorded.");
-	return memnew(DisabledSpan);
+	return SentrySpanImpl::noop();
 }
 
 void AndroidSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
