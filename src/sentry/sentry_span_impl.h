@@ -17,6 +17,8 @@ class SentrySpanImpl : public Castable {
 	SENTRY_CASTABLE(SentrySpanImpl, Castable);
 
 public:
+	static SentrySpanImpl *noop();
+
 	virtual void set_attribute(const String &p_key, const Variant &p_value) = 0;
 	virtual void set_status(SpanStatus p_status) = 0;
 	virtual void set_name(const String &p_name) = 0;

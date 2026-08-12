@@ -8,9 +8,13 @@
 
 namespace sentry {
 
+Ref<SentrySpan> SentrySpan::noop() {
+	return Ref<SentrySpan>(memnew(SentrySpan(memnew(DisabledSpan))));
+}
+
 Ref<SentrySpan> SentrySpan::unassigned() {
 	// FYI: Internal SDK is not initialized yet when this static is created.
-	static Ref<SentrySpan> sentinel = Ref<SentrySpan>(memnew(SentrySpan(memnew(DisabledSpan))));
+	static Ref<SentrySpan> sentinel = noop();
 	return sentinel;
 }
 
