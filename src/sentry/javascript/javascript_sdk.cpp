@@ -311,6 +311,7 @@ SentryScopeImpl *JavaScriptSDK::create_scope() {
 }
 
 SentrySpanImpl *JavaScriptSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
+	WARN_PRINT_ONCE("Sentry: Spans are not implemented on this platform yet - nothing will be recorded.");
 	return memnew(DisabledSpan);
 }
 
