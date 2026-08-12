@@ -13,6 +13,8 @@ using namespace godot;
 
 namespace sentry {
 
+class SentrySpanImpl;
+
 // Base class for Sentry scope implementations; see Godot-facing SentryScope.
 // Splitting the implementation from SentryScope avoids a factory method
 // (i.e. SentryScope.create() or SentrySDK.create_scope()).
@@ -33,6 +35,10 @@ public:
 	virtual void add_attachment(const Ref<SentryAttachment> &p_attachment) = 0;
 	virtual void clear() = 0;
 	virtual SentryScopeImpl *clone() const = 0;
+
+	// Binds the span that stamps everything captured through this scope; null clears the binding.
+	// Backends without span support leave it unimplemented.
+	virtual void set_span(SentrySpanImpl *p_span) {}
 
 	virtual ~SentryScopeImpl() = default;
 };
