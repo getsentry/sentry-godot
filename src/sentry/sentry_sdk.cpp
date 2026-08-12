@@ -192,6 +192,8 @@ Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Ref<SentrySpan
 	}
 
 	if (p_active) {
+		// PONDERING: I'm not sure if the current scope should be forked here.
+		// If the caller forgets to call end(), the scope would stick around until the current thread dies.
 		get_current_scope()->set_span(span);
 	}
 	return span;

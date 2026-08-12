@@ -4,7 +4,7 @@
 
 namespace sentry {
 
-SentrySpanImpl *SentrySpanImpl::noop() {
+SentrySpanImpl *SentrySpanImpl::create_noop() {
 	return memnew(DisabledSpan);
 }
 

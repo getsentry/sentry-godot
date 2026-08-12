@@ -58,7 +58,7 @@ void NativeSpan::end() {
 
 SentrySpanImpl *NativeSpan::start_child(const String &p_name, const Dictionary &p_attributes) {
 	if (!_is_live()) {
-		return SentrySpanImpl::noop();
+		return SentrySpanImpl::create_noop();
 	}
 	sentry_span_t *child = _transaction
 			? sentry_transaction_start_child(_transaction, _get_op(p_attributes), p_name.utf8())
