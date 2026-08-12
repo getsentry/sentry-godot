@@ -22,7 +22,6 @@ private:
 public:
 	virtual void set_attribute(const String &p_key, const Variant &p_value) override;
 	virtual void set_status(SpanStatus p_status) override;
-	virtual void set_name(const String &p_name) override;
 
 	virtual void end() override;
 

@@ -43,17 +43,6 @@ void NativeSpan::set_status(SpanStatus p_status) {
 	}
 }
 
-void NativeSpan::set_name(const String &p_name) {
-	if (!_is_live()) {
-		return;
-	}
-	if (_transaction) {
-		sentry_transaction_set_name(_transaction, p_name.utf8());
-	} else {
-		WARN_PRINT_ONCE("Sentry: Renaming a child span is not supported on this platform - the name is fixed at creation.");
-	}
-}
-
 void NativeSpan::end() {
 	if (!_is_live()) {
 		return;
