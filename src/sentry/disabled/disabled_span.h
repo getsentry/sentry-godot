@@ -11,7 +11,6 @@ class DisabledSpan : public SentrySpanImpl {
 public:
 	virtual void set_attribute(const String &p_key, const Variant &p_value) override {}
 	virtual void set_status(SpanStatus p_status) override {}
-	virtual void set_name(const String &p_name) override {}
 	virtual void end() override {}
 
 	virtual SentrySpanImpl *start_child(const String &p_name, const Dictionary &p_attributes) override { return memnew(DisabledSpan); }

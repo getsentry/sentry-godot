@@ -47,8 +47,6 @@ public:
 
 	void set_status(SpanStatus p_status);
 
-	void set_name(const String &p_name);
-
 	void end();
 
 	// *** Not exposed in the public API

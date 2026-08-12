@@ -40,12 +40,6 @@ void SentrySpan::set_status(SpanStatus p_status) {
 	_impl->set_status(p_status);
 }
 
-void SentrySpan::set_name(const String &p_name) {
-	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
-	ERR_FAIL_COND_MSG(p_name.is_empty(), "Sentry: Can't set an empty span name.");
-	_impl->set_name(p_name);
-}
-
 void SentrySpan::end() {
 	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
 	if (_ended) {
@@ -83,7 +77,6 @@ void SentrySpan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attribute", "key", "value"), &SentrySpan::set_attribute);
 	ClassDB::bind_method(D_METHOD("set_attributes", "attributes"), &SentrySpan::set_attributes);
 	ClassDB::bind_method(D_METHOD("set_status", "status"), &SentrySpan::set_status);
-	ClassDB::bind_method(D_METHOD("set_name", "name"), &SentrySpan::set_name);
 	ClassDB::bind_method(D_METHOD("end"), &SentrySpan::end);
 
 	BIND_ENUM_CONSTANT(SPAN_STATUS_UNSET);
