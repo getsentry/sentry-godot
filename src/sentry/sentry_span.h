@@ -37,7 +37,7 @@ protected:
 
 public:
 	// Returns a no-op span that does nothing.
-	static Ref<SentrySpan> noop();
+	static Ref<SentrySpan> create_noop();
 
 	// Returns a sentinel value that indicates an unassigned span.
 	static Ref<SentrySpan> unassigned();
