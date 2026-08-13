@@ -200,8 +200,22 @@ Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Ref<SentrySpan
 }
 
 Variant SentrySDK::with_span(const String &p_name, const Callable &p_callable) {
-	WARN_PRINT_ONCE("Sentry: Not implemented");
-	return Variant();
+	ERR_FAIL_COND_V_MSG(p_name.is_empty(), Variant(), "Sentry: Can't start a span with an empty name.");
+
+	Ref<SentryScope> forked_scope = _push_scope();
+	Ref<SentrySpan> active_span = start_span(p_name);
+	Variant result = p_callable.call(active_span);
+	static bool first_warning = true;
+	if (first_warning) {
+		if (Object *obj = result.get_validated_object();
+				unlikely(obj != nullptr && obj->get_class() == "GDScriptFunctionState")) {
+			first_warning = false;
+			WARN_PRINT("Sentry: with_span() does not support await - the span is only active until the first await.");
+		}
+	}
+	active_span->end();
+	_pop_scope(forked_scope);
+	return result;
 }
 
 Ref<SentrySpan> SentrySDK::get_active_span() const {
