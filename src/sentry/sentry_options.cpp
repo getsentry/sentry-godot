@@ -231,6 +231,14 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/options/enable_logs", p_options->enable_logs);
 	p_options->enable_metrics = ProjectSettings::get_singleton()->get_setting("sentry/options/enable_metrics", p_options->enable_metrics);
 
+	// Only a disabled setting is worth warning about: the enabled default carries no user intent.
+	if (!p_options->enable_logs) {
+		WARN_PRINT_ONCE("Sentry: The \"Enable Logs\" project setting is deprecated and will be removed in version 3.0. Logs are only sent if you use SentrySDK.logger or set \"sentry/godot_logger/logs\".");
+	}
+	if (!p_options->enable_metrics) {
+		WARN_PRINT_ONCE("Sentry: The \"Enable Metrics\" project setting is deprecated and will be removed in version 3.0. Metrics are only sent if you use SentrySDK.metrics.");
+	}
+
 	p_options->enable_app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking);
 	p_options->app_hang_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_ms", p_options->app_hang_timeout_ms);
 
@@ -347,6 +355,16 @@ void SentryOptions::deprecated_set_logger_limits(const Ref<SentryLoggerLimits> &
 	godot_logger->deprecated_set_limits(p_limits);
 }
 
+void SentryOptions::deprecated_set_enable_logs(bool p_enabled) {
+	WARN_DEPRECATED_MSG("The \"enable_logs\" option is deprecated and will be removed in version 3.0. Logs are only sent if you use SentrySDK.logger or set \"godot_logger.log_mask\".");
+	set_enable_logs(p_enabled);
+}
+
+void SentryOptions::deprecated_set_enable_metrics(bool p_enabled) {
+	WARN_DEPRECATED_MSG("The \"enable_metrics\" option is deprecated and will be removed in version 3.0. Metrics are only sent if you use SentrySDK.metrics.");
+	set_enable_metrics(p_enabled);
+}
+
 void SentryOptions::set_release(const String &p_release) {
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 	String app_name = ProjectSettings::get_singleton()->get_setting("application/config/name", "Unknown Godot project");
@@ -406,10 +424,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("screenshot_level"), set_screenshot_level, get_screenshot_level);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_scene_tree"), set_attach_scene_tree, is_attach_scene_tree_enabled);
 
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_logs"), set_enable_logs, get_enable_logs);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_log"), set_before_send_log, get_before_send_log);
-
-	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_metrics"), set_enable_metrics, get_enable_metrics);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_metric"), set_before_send_metric, get_before_send_metric);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "enable_app_hang_tracking"), set_app_hang_tracking_enabled, is_app_hang_tracking_enabled);
@@ -444,6 +459,11 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_breadcrumb_mask"), deprecated_set_logger_breadcrumb_mask, deprecated_get_logger_breadcrumb_mask);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "logger_log_mask"), deprecated_set_logger_log_mask, deprecated_get_logger_log_mask);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::OBJECT, "logger_limits", PROPERTY_HINT_TYPE_STRING, "SentryLoggerLimits", PROPERTY_USAGE_NONE), deprecated_set_logger_limits, deprecated_get_logger_limits);
+
+	// DEPRECATED: Logs and metrics are only sent when their APIs are used, so these toggles are redundant.
+	// TODO: Remove these in version 3.0.
+	BIND_PROPERTY_SIMPLE_DEPRECATED(SentryOptions, Variant::BOOL, enable_logs);
+	BIND_PROPERTY_SIMPLE_DEPRECATED(SentryOptions, Variant::BOOL, enable_metrics);
 }
 
 SentryOptions::SentryOptions() {
