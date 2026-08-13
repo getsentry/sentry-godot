@@ -24,4 +24,12 @@ void add_shutdown_callback(const Callable &p_callback);
 // Unregisters shutdown callback.
 void remove_shutdown_callback(const Callable &p_callback);
 
+// Registers a callback to be invoked once when this extension is deinitialized.
+// Useful for releasing statics.
+void add_module_termination_callback(const Callable &p_callback);
+
+// Called from register_types.cpp when the module is deinitialized.
+// Runs all registered module termination callbacks and then releases all callbacks.
+void notify_module_terminating();
+
 } // namespace sentry::engine_lifecycle
