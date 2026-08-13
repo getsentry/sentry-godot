@@ -8,6 +8,11 @@ func before(_do_skip = OS.get_name() not in ["Windows", "Linux"],
 	super()
 
 
+func after_test() -> void:
+	super()
+	SentrySDK.get_current_scope().clear()
+
+
 func _span_id(json: String) -> Variant:
 	var data: Variant = JSON.parse_string(json)
 	return data.get("contexts", {}).get("trace", {}).get("span_id")
@@ -131,6 +136,81 @@ func test_scope_forked_after_span_ended_is_not_stamped() -> void:
 		.verify()
 
 
+func test_span_inherits_the_scope_it_started_from() -> void:
+	SentrySDK.get_current_scope().set_tag("before_span", "current")
+
+	var span := SentrySDK.start_span("test.inherits_scope")
+	var json_in_span: String = await capture_event_and_get_json(SentrySDK.create_event())
+	span.end()
+
+	assert_json(json_in_span).describe("a span carries scope data written before it started") \
+		.at("/tags") \
+		.must_contain("before_span", "current") \
+		.verify()
+
+
+func test_scope_write_inside_a_span_does_not_outlive_it() -> void:
+	var span := SentrySDK.start_span("test.scope_write")
+	SentrySDK.get_current_scope().set_tag("spanned", "in_span")
+	SentrySDK.capture_event(SentrySDK.create_event())
+	span.end()
+
+	var json_in_span: String = await wait_for_captured_event_json()
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_in_span).describe("set_tag() on the current scope reaches the event captured inside the span") \
+		.at("/tags") \
+		.must_contain("spanned", "in_span") \
+		.verify()
+
+	assert_json(json_after).describe("scope writes made while a span was active do not outlive it") \
+		.at("/tags") \
+		.must_not_contain("spanned") \
+		.verify()
+
+
+func test_ending_spans_leaves_the_scope_stack_where_it_started() -> void:
+	SentrySDK.get_current_scope().set_tag("root", "root_scope")
+
+	for i in 4:
+		var span := SentrySDK.start_span("test.balanced_" + str(i))
+		SentrySDK.get_current_scope().set_tag("span_" + str(i), "fork")
+		span.end()
+
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_after).describe("the scope in effect after a batch of spans is the one they started from") \
+		.at("/tags") \
+		.must_contain("root", "root_scope") \
+		.must_not_contain("span_0") \
+		.must_not_contain("span_1") \
+		.must_not_contain("span_2") \
+		.must_not_contain("span_3") \
+		.verify()
+
+
+func test_explicit_parent_inherits_the_parents_scope() -> void:
+	var parent := SentrySDK.start_span("test.explicit_parent")
+	SentrySDK.get_current_scope().set_tag("parent_tag", "parent")
+
+	var unrelated := SentrySDK.start_span("test.unrelated")
+	SentrySDK.get_current_scope().set_tag("unrelated_tag", "unrelated")
+
+	var child := SentrySDK.start_span("test.explicit_child", {}, parent)
+	SentrySDK.capture_event(SentrySDK.create_event())
+	child.end()
+	unrelated.end()
+	parent.end()
+
+	var json_in_child: String = await wait_for_captured_event_json()
+
+	assert_json(json_in_child).describe("an explicitly parented span forks the parent's scope rather than the caller's") \
+		.at("/tags") \
+		.must_contain("parent_tag", "parent") \
+		.must_not_contain("unrelated_tag") \
+		.verify()
+
+
 func test_scope_clear_drops_the_span() -> void:
 	var span := SentrySDK.start_span("test.cleared")
 	SentrySDK.capture_event(SentrySDK.create_event())
@@ -173,26 +253,6 @@ func test_span_stays_on_the_current_trace() -> void:
 		.verify()
 
 
-func test_with_span_forks_the_current_scope() -> void:
-	SentrySDK.with_span("test.with_span_fork", func(_span: SentrySpan) -> void:
-		SentrySDK.get_current_scope().set_tag("scoped", "in_span")
-		SentrySDK.capture_event(SentrySDK.create_event())
-		)
-	var json_in_span: String = await wait_for_captured_event_json()
-
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
-
-	assert_json(json_in_span).describe("set_tag() reaches the event captured inside with_span") \
-		.at("/tags") \
-		.must_contain("scoped", "in_span") \
-		.verify()
-
-	assert_json(json_after).describe("scope writes inside with_span do not outlive it") \
-		.at("/tags") \
-		.must_not_contain("scoped") \
-		.verify()
-
-
 func test_with_span_stamps_events_and_clears_the_slot() -> void:
 	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
 
@@ -213,6 +273,26 @@ func test_with_span_stamps_events_and_clears_the_slot() -> void:
 	assert_json(json_after).describe("events captured after with_span returns carry the same id as before it started") \
 		.at("/contexts/trace/span_id") \
 		.is_equal(_span_id(json_before)) \
+		.verify()
+
+
+func test_with_span_tolerates_the_callable_ending_the_span() -> void:
+	SentrySDK.with_scope(func(scope: SentryScope) -> void:
+		scope.set_tag("enclosing", "scope")
+
+		SentrySDK.with_span("test.with_span_early_end", func(span: SentrySpan) -> void:
+			span.end()
+			assert_object(SentrySDK.get_active_span()).is_null()
+			)
+
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+
+	var json_after: String = await wait_for_captured_event_json()
+
+	assert_json(json_after).describe("a callable that ends its own span leaves the enclosing scope intact") \
+		.at("/tags") \
+		.must_contain("enclosing", "scope") \
 		.verify()
 
 
