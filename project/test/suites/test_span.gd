@@ -35,7 +35,7 @@ func test_active_span_stamps_event() -> void:
 		.is_not_equal(_span_id(json_before)) \
 		.verify()
 
-	assert_json(json_after).describe("ending the span stops it stamping later events") \
+	assert_json(json_after).describe("events captured after the span ends carry the same id as before it started") \
 		.at("/contexts/trace/span_id") \
 		.is_equal(_span_id(json_before)) \
 		.verify()
@@ -138,7 +138,7 @@ func test_scope_clear_drops_the_span() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.clear()
 		assert_object(SentrySDK.get_active_span()) \
-			.override_failure_message("clear() must drop the active span, or the scope and the backend disagree about it") \
+			.override_failure_message("clear() must drop the active span") \
 			.is_null()
 		SentrySDK.capture_event(SentrySDK.create_event())
 		)
@@ -147,7 +147,7 @@ func test_scope_clear_drops_the_span() -> void:
 	var json_in_span: String = await wait_for_captured_event_json()
 	var json_after_clear: String = await wait_for_captured_event_json()
 
-	assert_json(json_after_clear).describe("clear() unbinds the span, so later events are not stamped with it") \
+	assert_json(json_after_clear).describe("later events are not stamped with previously cleared span") \
 		.at("/contexts/trace/span_id") \
 		.is_not_equal(_span_id(json_in_span)) \
 		.verify()
