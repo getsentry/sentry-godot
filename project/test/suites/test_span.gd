@@ -171,3 +171,99 @@ func test_span_stays_on_the_current_trace() -> void:
 		.at("/contexts/trace/trace_id") \
 		.is_equal(_trace_id(json_before)) \
 		.verify()
+
+
+func test_with_span_forks_the_current_scope() -> void:
+	SentrySDK.with_span("test.with_span_fork", func(_span: SentrySpan) -> void:
+		SentrySDK.get_current_scope().set_tag("scoped", "in_span")
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+	var json_in_span: String = await wait_for_captured_event_json()
+
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_in_span).describe("set_tag() reaches the event captured inside with_span") \
+		.at("/tags") \
+		.must_contain("scoped", "in_span") \
+		.verify()
+
+	assert_json(json_after).describe("scope writes inside with_span do not outlive it") \
+		.at("/tags") \
+		.must_not_contain("scoped") \
+		.verify()
+
+
+func test_with_span_stamps_events_and_clears_the_slot() -> void:
+	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	SentrySDK.with_span("test.with_span", func(span: SentrySpan) -> void:
+		assert_object(SentrySDK.get_active_span()).is_same(span)
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+	assert_object(SentrySDK.get_active_span()).is_null()
+
+	var json_inside: String = await wait_for_captured_event_json()
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_inside).describe("events captured inside with_span carry its span") \
+		.at("/contexts/trace/span_id") \
+		.is_not_equal(_span_id(json_before)) \
+		.verify()
+
+	assert_json(json_after).describe("events captured after with_span returns carry the same id as before it started") \
+		.at("/contexts/trace/span_id") \
+		.is_equal(_span_id(json_before)) \
+		.verify()
+
+
+func test_with_span_returns_the_callable_result() -> void:
+	var result: Variant = SentrySDK.with_span("test.with_span_result", func(_span: SentrySpan) -> int:
+		return 42
+		)
+
+	assert_int(result).is_equal(42)
+
+
+func test_nested_with_span_stamps_with_the_inner_span() -> void:
+	SentrySDK.with_span("test.with_span_outer", func(outer: SentrySpan) -> void:
+		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.with_span("test.with_span_inner", func(_inner: SentrySpan) -> void:
+			SentrySDK.capture_event(SentrySDK.create_event())
+			)
+		assert_object(SentrySDK.get_active_span()).is_same(outer)
+		)
+
+	var json_outer: String = await wait_for_captured_event_json()
+	var json_inner: String = await wait_for_captured_event_json()
+
+	assert_json(json_inner).describe("a nested with_span stamps events with the inner span") \
+		.at("/contexts/trace/span_id") \
+		.is_not_equal(_span_id(json_outer)) \
+		.verify()
+
+
+func test_with_span_inside_a_started_span_nests_under_it() -> void:
+	var span := SentrySDK.start_span("test.manual_parent")
+	SentrySDK.capture_event(SentrySDK.create_event())
+
+	SentrySDK.with_span("test.with_span_child", func(_child: SentrySpan) -> void:
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+	assert_object(SentrySDK.get_active_span()).is_same(span)
+
+	SentrySDK.capture_event(SentrySDK.create_event())
+	span.end()
+
+	var json_in_parent: String = await wait_for_captured_event_json()
+	var json_in_child: String = await wait_for_captured_event_json()
+	var json_after_child: String = await wait_for_captured_event_json()
+
+	assert_json(json_in_child).describe("with_span inside an active span stamps with its own span") \
+		.at("/contexts/trace/span_id") \
+		.is_not_equal(_span_id(json_in_parent)) \
+		.verify()
+
+	assert_json(json_after_child).describe("the enclosing span stamps again once with_span returns") \
+		.at("/contexts/trace/span_id") \
+		.is_equal(_span_id(json_in_parent)) \
+		.verify()
