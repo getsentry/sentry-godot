@@ -10,6 +10,8 @@ using namespace godot;
 
 namespace sentry {
 
+class SentryScope;
+
 // Godot-exported representation of a Sentry span.
 // Platform-specific behavior is provided by SentrySpanImpl subclasses.
 class SentrySpan : public RefCounted {
@@ -27,6 +29,8 @@ private:
 	// The span this one displaced when it was bound to a scope, assigned by SentrySDK.
 	// Scopes resolve their slot through this chain, so it must outlive this span's end().
 	Ref<SentrySpan> _previous;
+
+	uint64_t _scope_id = 0;
 
 	bool _ended = false;
 
@@ -56,6 +60,13 @@ public:
 	_FORCE_INLINE_ bool is_ended() const { return _ended; }
 	_FORCE_INLINE_ void set_previous(const Ref<SentrySpan> &p_span) { _previous = p_span; }
 	_FORCE_INLINE_ Ref<SentrySpan> get_previous() const { return _previous; }
+
+	// Stores the ID of the scope fork created when this span becomes active.
+	// The forked scope is stored as a weak reference, because the scope holds this span strongly.
+	void set_associated_scope(const Ref<SentryScope> &p_scope);
+
+	// Returns null if this span was never active, or if its fork is already gone (unlikely).
+	Ref<SentryScope> get_associated_scope() const;
 
 	SentrySpanImpl *get_implementation() const { return _impl; }
 
