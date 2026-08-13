@@ -15,9 +15,9 @@
 
 ### Dependencies
 
-- Bump Sentry Android from v8.51.0 to v8.52.0 ([#855](https://github.com/getsentry/sentry-godot/pull/855))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8520)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.51.0...8.52.0)
+- Bump Sentry Android from v8.51.0 to v8.53.0 ([#855](https://github.com/getsentry/sentry-godot/pull/855), [#866](https://github.com/getsentry/sentry-godot/pull/866))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8530)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.51.0...8.53.0)
 - Bump Native SDK from v0.16.1 to v0.16.2 ([#859](https://github.com/getsentry/sentry-godot/pull/859))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0162)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.16.1...0.16.2)
