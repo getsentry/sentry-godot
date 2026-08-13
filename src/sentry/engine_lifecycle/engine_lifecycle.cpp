@@ -21,6 +21,9 @@ std::atomic<bool> _singletons_ready{ false };
 // Shutdown subscribers, notified while script runtime is still alive.
 LocalVector<Callable> _shutdown_callbacks;
 
+// Termination subscribers, notified as the extension is torn down.
+LocalVector<Callable> _module_termination_callbacks;
+
 // Whether the lifecycle watch has already been started.
 bool _watch_started = false;
 
@@ -69,6 +72,19 @@ void add_shutdown_callback(const Callable &p_callback) {
 
 void remove_shutdown_callback(const Callable &p_callback) {
 	_shutdown_callbacks.erase(p_callback);
+}
+
+void add_module_termination_callback(const Callable &p_callback) {
+	_module_termination_callbacks.push_back(p_callback);
+}
+
+void notify_module_terminating() {
+	for (const Callable &callback : _module_termination_callbacks) {
+		callback.call();
+	}
+
+	_module_termination_callbacks.clear();
+	_shutdown_callbacks.clear();
 }
 
 } // namespace sentry::engine_lifecycle

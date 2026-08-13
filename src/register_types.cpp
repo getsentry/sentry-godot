@@ -1,6 +1,7 @@
 #include "editor/sentry_editor_plugin.h"
 #include "sentry/disabled/disabled_event.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/engine_lifecycle/sentry_scene_tree_watcher.h"
 #include "sentry/logging/sentry_godot_logger.h"
 #include "sentry/processing/enrichment_processor.h"
@@ -182,6 +183,7 @@ void uninitialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		SentrySDK::destroy_singleton();
 		SentryUnit::destroy_singleton();
+		engine_lifecycle::notify_module_terminating();
 	}
 }
 
