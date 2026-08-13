@@ -64,7 +64,16 @@ void SentrySpan::end() {
 		return;
 	}
 	_ended = true;
+	SentrySDK::get_singleton()->notify_span_ended(this);
 	_impl->end();
+}
+
+void SentrySpan::set_associated_scope(const Ref<SentryScope> &p_scope) {
+	_scope_id = p_scope.is_valid() ? p_scope->get_instance_id() : 0;
+}
+
+Ref<SentryScope> SentrySpan::get_associated_scope() const {
+	return Ref<SentryScope>(Object::cast_to<SentryScope>(ObjectDB::get_instance(_scope_id)));
 }
 
 Ref<SentrySpan> SentrySpan::start_child(const String &p_name, const Dictionary &p_attributes) {

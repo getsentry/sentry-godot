@@ -156,12 +156,20 @@ Ref<SentryScope> SentrySDK::get_current_scope() const {
 	return current_scopes.back()->get();
 }
 
+Ref<SentryScope> SentrySDK::_push_scope(const Ref<SentryScope> &p_source) {
+	constexpr int SCOPE_DEPTH_WARNING_THRESHOLD = 64;
+	if (unlikely(current_scopes.size() >= SCOPE_DEPTH_WARNING_THRESHOLD)) {
+		WARN_PRINT_ONCE("Sentry: Scope stack is growing unusually deep. This may indicate that spans are not being ended.");
+	}
+	return current_scopes.push_back(p_source->clone())->get();
+}
+
 Variant SentrySDK::with_scope(const Callable &p_callable) {
 	if (unlikely(!internal_sdk->supports_scopes())) {
 		WARN_PRINT_ONCE("Sentry: Scopes are not supported on this platform yet - writes to the scope will be discarded.");
 	}
 
-	Ref<SentryScope> scope = _push_scope();
+	Ref<SentryScope> scope = _push_scope(get_current_scope());
 	Variant result = p_callable.call(scope);
 	static bool first_warning = true;
 	if (first_warning) {
@@ -179,10 +187,8 @@ Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Dictionary &p_
 	ERR_FAIL_COND_V_MSG(p_name.is_empty(), Ref<SentrySpan>(), "Sentry: Can't start a span with an empty name.");
 
 	// The unassigned sentinel means "inherit the active span", while an explicit null forces a segment (new root-level span).
-	Ref<SentrySpan> parent = p_parent_span;
-	if (parent == SentrySpan::unassigned()) {
-		parent = get_active_span();
-	}
+	const bool parent_given = p_parent_span != SentrySpan::unassigned();
+	Ref<SentrySpan> parent = parent_given ? p_parent_span : get_active_span();
 
 	Ref<SentrySpan> span;
 	if (parent.is_valid()) {
@@ -196,17 +202,31 @@ Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Dictionary &p_
 	}
 
 	if (p_active) {
-		// PONDERING: I'm not sure if the current scope should be forked here.
-		// If the caller forgets to call end(), the scope would stick around until the current thread dies.
-		get_current_scope()->set_span(span);
+		// When a new span is started, the current scope of the parent span MUST be forked.
+		Ref<SentryScope> source;
+		if (parent_given && parent.is_valid()) {
+			source = parent->get_associated_scope();
+		}
+		if (source.is_null()) {
+			// The parent was never active, or is no longer.
+			source = get_current_scope();
+		}
+		Ref<SentryScope> forked_scope = _push_scope(source);
+		forked_scope->set_span(span);
+		span->set_associated_scope(forked_scope);
 	}
 	return span;
+}
+
+void SentrySDK::notify_span_ended(const SentrySpan *p_span) {
+	if (Ref<SentryScope> scope = p_span->get_associated_scope(); scope.is_valid()) {
+		_pop_scope(scope);
+	}
 }
 
 Variant SentrySDK::with_span(const String &p_name, const Callable &p_callable) {
 	ERR_FAIL_COND_V_MSG(p_name.is_empty(), Variant(), "Sentry: Can't start a span with an empty name.");
 
-	Ref<SentryScope> forked_scope = _push_scope();
 	Ref<SentrySpan> active_span = start_span(p_name);
 	Variant result = p_callable.call(active_span);
 	static bool first_warning = true;
@@ -218,7 +238,6 @@ Variant SentrySDK::with_span(const String &p_name, const Callable &p_callable) {
 		}
 	}
 	active_span->end();
-	_pop_scope(forked_scope);
 	return result;
 }
 
