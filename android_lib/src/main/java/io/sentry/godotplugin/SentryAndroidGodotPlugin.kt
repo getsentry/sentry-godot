@@ -980,12 +980,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun scopeClear(handle: Int) {
-        val scope = getScope(handle) ?: return
-        scope.clear()
-        // WORKAROUND: Scope.clear() leaves contexts in place, so drop them here to match the other platforms.
-        for (key in scope.contexts.entrySet().map { it.key }) {
-            scope.removeContexts(key)
-        }
+        getScope(handle)?.clear()
     }
 
     @UsedByGodot
