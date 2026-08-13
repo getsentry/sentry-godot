@@ -59,6 +59,7 @@ void SentryScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 void SentryScope::clear() {
 	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
+	_span.unref();
 	_impl->clear();
 }
 
