@@ -175,7 +175,7 @@ Variant SentrySDK::with_scope(const Callable &p_callable) {
 	return result;
 }
 
-Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Ref<SentrySpan> &p_parent_span, const Dictionary &p_attributes, bool p_active) {
+Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Dictionary &p_attributes, const Ref<SentrySpan> &p_parent_span, bool p_active) {
 	ERR_FAIL_COND_V_MSG(p_name.is_empty(), Ref<SentrySpan>(), "Sentry: Can't start a span with an empty name.");
 
 	// The unassigned sentinel means "inherit the active span", while an explicit null forces a segment (new root-level span).
@@ -652,7 +652,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_scope"), &SentrySDK::get_current_scope);
 	ClassDB::bind_method(D_METHOD("with_scope", "callable"), &SentrySDK::with_scope);
 
-	ClassDB::bind_method(D_METHOD("start_span", "name", "parent_span", "attributes", "active"), &SentrySDK::start_span, DEFVAL(SentrySpan::unassigned()), DEFVAL(Dictionary()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("start_span", "name", "attributes", "parent_span", "active"), &SentrySDK::start_span, DEFVAL(Dictionary()), DEFVAL(SentrySpan::unassigned()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("with_span", "name", "callable"), &SentrySDK::with_span);
 	ClassDB::bind_method(D_METHOD("get_active_span"), &SentrySDK::get_active_span);
 

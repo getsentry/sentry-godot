@@ -133,8 +133,8 @@ public:
 
 	// * Spans
 
-	Ref<SentrySpan> start_span(const String &p_name, const Ref<SentrySpan> &p_parent_span = SentrySpan::unassigned(),
-			const Dictionary &p_attributes = {}, bool p_active = true);
+	Ref<SentrySpan> start_span(const String &p_name, const Dictionary &p_attributes = {},
+			const Ref<SentrySpan> &p_parent_span = SentrySpan::unassigned(), bool p_active = true);
 	Variant with_span(const String &p_name, const Callable &p_callable);
 	Ref<SentrySpan> get_active_span() const;
 

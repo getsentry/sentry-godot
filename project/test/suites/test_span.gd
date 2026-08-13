@@ -82,7 +82,7 @@ func test_nested_span_stamps_and_restores_its_parent() -> void:
 func test_inactive_span_does_not_stamp() -> void:
 	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
 
-	var span := SentrySDK.start_span("test.inactive", null, {}, false)
+	var span := SentrySDK.start_span("test.inactive", {}, null, false)
 	assert_object(SentrySDK.get_active_span()).is_not_same(span)
 	var json_alongside: String = await capture_event_and_get_json(SentrySDK.create_event())
 	span.end()
