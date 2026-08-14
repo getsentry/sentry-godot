@@ -183,7 +183,6 @@ func _cmd_attachment_capture() -> int:
 ## Captures a structured log to Sentry.
 func _cmd_log_capture() -> int:
 	await _init_sentry(func(options: SentryOptions) -> void:
-		options.enable_logs = true
 		options.before_send_log = _before_send_log
 	)
 	_add_integration_test_context("log-capture")
@@ -217,7 +216,6 @@ func _before_send_log(entry: SentryLog) -> SentryLog:
 ## Captures counter, distribution, and gauge metrics to Sentry.
 func _cmd_metric_capture() -> int:
 	await _init_sentry(func(options: SentryOptions) -> void:
-		options.enable_metrics = true
 		options.before_send_metric = _before_send_metric
 	)
 	_add_integration_test_context("metric-capture")

@@ -101,12 +101,12 @@
 			If [code]true[/code], enables automatic detection and reporting of application hangs. The SDK will monitor the main thread and report hang events when it becomes unresponsive for longer than the duration specified in [member app_hang_timeout_ms]. This helps identify performance issues where the application becomes frozen or unresponsive.
 			[b]Note:[/b] This feature applies to iOS and macOS only. On Android, [member android] configures ANR (Application Not Responding) detection instead.
 		</member>
-		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="true">
+		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="true" deprecated="Will be removed in v3. Logs are only sent if you use [member SentrySDK.logger] or set [member SentryGodotLoggerOptions.log_mask].">
 			Enables Sentry's structured logging. If [code]true[/code], log entries can be emitted through [member SentrySDK.logger], and Godot logger events listed in [member SentryGodotLoggerOptions.log_mask] are automatically captured as Sentry Logs. [member SentryGodotLoggerOptions.log_mask] is empty by default, so no events are auto-captured.
 			See [member godot_logger] for options to capture Godot errors as Sentry events or breadcrumbs.
 			For more information, see [url=https://docs.sentry.io/platforms/godot/logs/]Sentry Logs[/url] documentation.
 		</member>
-		<member name="enable_metrics" type="bool" setter="set_enable_metrics" getter="get_enable_metrics" default="true">
+		<member name="enable_metrics" type="bool" setter="set_enable_metrics" getter="get_enable_metrics" default="true" deprecated="Will be removed in v3. Metrics are only sent if you use [member SentrySDK.metrics].">
 			Enables Sentry metrics functionality. When enabled, you can emit custom metrics using the [SentryMetrics] API available through [member SentrySDK.metrics].
 		</member>
 		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;{auto}&quot;">
@@ -124,7 +124,7 @@
 			Specifies the Godot logger events that are automatically captured as Sentry breadcrumbs. Accepts a single value or a bitwise combination of [enum GodotLoggerEventMask] masks.
 		</member>
 		<member name="logger_enabled" type="bool" setter="deprecated_set_logger_enabled" getter="deprecated_is_logger_enabled" default="true" deprecated="Use [member SentryGodotLoggerOptions.enabled] instead.">
-			If [code]true[/code], the SDK will capture logged errors as events, logs and/or breadcrumbs, as defined by [member logger_event_mask] and [member logger_breadcrumb_mask]. Crashes are always captured. See also [member enable_logs].
+			If [code]true[/code], the SDK will capture logged errors as events, logs and/or breadcrumbs, as defined by [member logger_event_mask] and [member logger_breadcrumb_mask]. Crashes are always captured.
 		</member>
 		<member name="logger_event_mask" type="int" setter="deprecated_set_logger_event_mask" getter="deprecated_get_logger_event_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="13" deprecated="Use [member SentryGodotLoggerOptions.event_mask] instead.">
 			Specifies the Godot logger events that are automatically captured as Sentry events. Accepts a single value or a bitwise combination of [enum GodotLoggerEventMask] masks.

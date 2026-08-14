@@ -8,7 +8,6 @@ var _captured: Array[Dictionary] = []
 
 func before() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.enable_logs = true
 		options.godot_logger.log_mask = SentryOptions.MASK_ERROR
 		options.before_send_log = _before_send_log
 

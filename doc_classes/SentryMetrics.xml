@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		A dedicated API for emitting metrics to Sentry. Access this API through [member SentrySDK.metrics]. [SentryMetrics] provides methods for emitting different metric types: [method count] for incrementing counters, [method gauge] for tracking point-in-time values, and [method distribution] for recording value distributions.
-		[b]Note:[/b] The [member SentryOptions.enable_metrics] option must be enabled for metrics functionality to work.
 		[codeblock]
 		# Count occurrences
 		SentrySDK.metrics.count("match_started")

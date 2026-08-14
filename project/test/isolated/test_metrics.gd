@@ -16,7 +16,6 @@ func after() -> void:
 
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.enable_metrics = true
 		options.before_send_metric = _before_send_metric
 	)
 
