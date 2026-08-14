@@ -138,6 +138,7 @@ struct NativeOptions {
 	uint8_t debug;
 	int32_t diagnostic_level;
 	double sample_rate;
+	double traces_sample_rate;
 	int32_t max_breadcrumbs;
 	double shutdown_timeout_ms;
 	uint8_t send_default_pii;
@@ -201,6 +202,7 @@ struct ManagedOptions {
 	uint8_t debug;
 	int32_t diagnostic_level;
 	double sample_rate;
+	double traces_sample_rate;
 	int32_t max_breadcrumbs;
 	double shutdown_timeout_ms;
 	uint8_t send_default_pii;
@@ -249,6 +251,7 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_debug_enabled(data.debug);
 	options->set_diagnostic_level((Level)data.diagnostic_level);
 	options->set_sample_rate(data.sample_rate);
+	options->set_traces_sample_rate(data.traces_sample_rate);
 	options->set_max_breadcrumbs(data.max_breadcrumbs);
 	options->set_shutdown_timeout_ms(data.shutdown_timeout_ms);
 	options->set_send_default_pii(data.send_default_pii);
@@ -287,6 +290,7 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.debug = options->is_debug_enabled();
 	r_data.diagnostic_level = options->get_diagnostic_level();
 	r_data.sample_rate = options->get_sample_rate();
+	r_data.traces_sample_rate = options->get_traces_sample_rate();
 	r_data.max_breadcrumbs = options->get_max_breadcrumbs();
 	r_data.shutdown_timeout_ms = options->get_shutdown_timeout_ms();
 	r_data.send_default_pii = options->is_send_default_pii_enabled();

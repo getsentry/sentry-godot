@@ -117,6 +117,7 @@ internal static partial class NativeBridge
         public byte debug;
         public int diagnostic_level;
         public double sample_rate;
+        public double traces_sample_rate;
         public int max_breadcrumbs;
         public double shutdown_timeout_ms;
         public byte send_default_pii;
@@ -155,6 +156,7 @@ internal static partial class NativeBridge
         public byte debug;
         public int diagnostic_level;
         public double sample_rate;
+        public double traces_sample_rate;
         public int max_breadcrumbs;
         public double shutdown_timeout_ms;
         public byte send_default_pii;
@@ -514,6 +516,7 @@ internal static partial class NativeBridge
         opts.Debug = data.debug != 0;
         opts.DiagnosticLevel = (SentryLevel)data.diagnostic_level;
         opts.SampleRate = (float)data.sample_rate;
+        opts.TracesSampleRate = data.traces_sample_rate;
         opts.MaxBreadcrumbs = data.max_breadcrumbs;
         opts.ShutdownTimeout = TimeSpan.FromMilliseconds(data.shutdown_timeout_ms);
         opts.SendDefaultPii = data.send_default_pii != 0;
@@ -813,6 +816,7 @@ internal static partial class NativeBridge
                 debug = (byte)(opts.Debug ? 1 : 0),
                 diagnostic_level = (int)opts.DiagnosticLevel,
                 sample_rate = opts.SampleRate ?? 1.0,
+                traces_sample_rate = opts.TracesSampleRate ?? 0.0,
                 max_breadcrumbs = opts.MaxBreadcrumbs,
                 shutdown_timeout_ms = opts.ShutdownTimeout.TotalMilliseconds,
                 send_default_pii = (byte)(opts.SendDefaultPii ? 1 : 0),
