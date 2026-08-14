@@ -8,6 +8,11 @@
   - `SentrySDK.with_scope()` runs a callable with a forked scope, `SentrySDK.get_current_scope()` returns the scope active on the calling thread, and the new `SentryScope` class carries tags, contexts, user, level, fingerprint, breadcrumbs, and attributes on top of the data set globally
   - Not supported on macOS and iOS yet, where telemetry is still captured but the scope data is discarded with a warning
   - Add `SentryScope.add_attachment()` to send a file or a block of bytes with the events captured within a scope instead of with every event ([#856](https://github.com/getsentry/sentry-godot/pull/856))
+- Add Spans support to the GDScript API for measuring operations and grouping telemetry captured while they run ([#863](https://github.com/getsentry/sentry-godot/pull/863))
+  - `SentrySDK.start_span()` starts a span and makes it active, `SentrySDK.with_span()` runs a callable with an active span and ends it on return, and `SentrySDK.get_active_span()` returns the active span for the calling thread
+  - The new `SentrySpan` class carries attributes and status; call `SentrySpan.end()` to finish the operation
+  - Events captured during an active span are associated with that operation
+  - Not supported on macOS, iOS, Android, or Web yet, where the SDK returns a no-op span with a warning
 
 ### Improvements
 
