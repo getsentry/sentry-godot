@@ -46,6 +46,8 @@ public partial class DotnetTestHarness : RefCounted
         SentrySdk.Init(options =>
         {
             // These arrive from the native layer, so they show what NativeOptions carried over.
+            // Keyed by option name, and durations report as whole milliseconds, both so the CPP
+            // side can look them up straight from its option table.
             _receivedOptions["dsn"] = options.Dsn;
             _receivedOptions["release"] = options.Release;
             _receivedOptions["dist"] = options.Distribution;
@@ -55,7 +57,7 @@ public partial class DotnetTestHarness : RefCounted
             _receivedOptions["sample_rate"] = options.SampleRate ?? -1.0f;
             _receivedOptions["traces_sample_rate"] = options.TracesSampleRate ?? -1.0;
             _receivedOptions["max_breadcrumbs"] = options.MaxBreadcrumbs;
-            _receivedOptions["shutdown_timeout_ms"] = options.ShutdownTimeout.TotalMilliseconds;
+            _receivedOptions["shutdown_timeout_ms"] = (int)options.ShutdownTimeout.TotalMilliseconds;
             _receivedOptions["send_default_pii"] = options.SendDefaultPii;
             _receivedOptions["enable_logs"] = options.EnableLogs;
             _receivedOptions["attach_log"] = options.AttachLog;
@@ -63,20 +65,20 @@ public partial class DotnetTestHarness : RefCounted
             _receivedOptions["attach_screenshot"] = options.AttachScreenshot;
             _receivedOptions["screenshot_level"] = (int)options.ScreenshotLevel;
             _receivedOptions["enable_app_hang_tracking"] = options.EnableAppHangTracking;
-            _receivedOptions["app_hang_timeout_ms"] = options.AppHangTimeout.TotalMilliseconds;
+            _receivedOptions["app_hang_timeout_ms"] = (int)options.AppHangTimeout.TotalMilliseconds;
             _receivedOptions["enable_metrics"] = options.EnableMetrics;
-            _receivedOptions["logger_enabled"] = options.GodotLogger.Enabled;
-            _receivedOptions["logger_include_source_context"] = options.GodotLogger.IncludeSourceContext;
-            _receivedOptions["logger_include_variables"] = options.GodotLogger.IncludeVariables;
-            _receivedOptions["logger_event_mask"] = (int)options.GodotLogger.EventMask;
-            _receivedOptions["logger_breadcrumb_mask"] = (int)options.GodotLogger.BreadcrumbMask;
-            _receivedOptions["logger_log_mask"] = (int)options.GodotLogger.LogMask;
+            _receivedOptions["enabled"] = options.GodotLogger.Enabled;
+            _receivedOptions["include_source_context"] = options.GodotLogger.IncludeSourceContext;
+            _receivedOptions["include_variables"] = options.GodotLogger.IncludeVariables;
+            _receivedOptions["event_mask"] = (int)options.GodotLogger.EventMask;
+            _receivedOptions["breadcrumb_mask"] = (int)options.GodotLogger.BreadcrumbMask;
+            _receivedOptions["log_mask"] = (int)options.GodotLogger.LogMask;
             _receivedOptions["events_per_frame"] = options.GodotLogger.Limits.EventsPerFrame;
-            _receivedOptions["repeated_error_window_ms"] = options.GodotLogger.Limits.RepeatedErrorWindow.TotalMilliseconds;
+            _receivedOptions["repeated_error_window_ms"] = (int)options.GodotLogger.Limits.RepeatedErrorWindow.TotalMilliseconds;
             _receivedOptions["throttle_events"] = options.GodotLogger.Limits.ThrottleEvents;
-            _receivedOptions["throttle_window_ms"] = options.GodotLogger.Limits.ThrottleWindow.TotalMilliseconds;
+            _receivedOptions["throttle_window_ms"] = (int)options.GodotLogger.Limits.ThrottleWindow.TotalMilliseconds;
             _receivedOptions["enable_anr_detection"] = options.Android.EnableAnrDetection;
-            _receivedOptions["anr_timeout_interval_ms"] = options.Android.AnrTimeoutInterval.TotalMilliseconds;
+            _receivedOptions["anr_timeout_interval_ms"] = (int)options.Android.AnrTimeoutInterval.TotalMilliseconds;
             _receivedOptions["attach_anr_thread_dump"] = options.Android.AttachAnrThreadDump;
 
             // Init sends these back through ManagedOptions. Every value differs from the one above,
@@ -85,7 +87,7 @@ public partial class DotnetTestHarness : RefCounted
             options.Release = "interop-managed-release@2.2.2";
             options.Distribution = "interop-managed-dist";
             options.Environment = "interop-managed-env";
-            options.Debug = false;
+            options.Debug = true; // differs from the forced-off project setting; DiagnosticLevel below keeps it quiet
             options.DiagnosticLevel = SentryLevel.Error;
             options.SampleRate = 0.75f;
             options.TracesSampleRate = 0.8;
