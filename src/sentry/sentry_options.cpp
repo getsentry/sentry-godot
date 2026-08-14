@@ -77,7 +77,7 @@ SentryGodotLoggerOptions::SentryGodotLoggerOptions() {
 // *** SentryExperimental
 
 void SentryExperimental::deprecated_set_enable_metrics(bool p_value) {
-	WARN_DEPRECATED_MSG("Sentry Metrics are now generally available. This property is deprecated. Use SentryOptions.enable_metrics instead.");
+	WARN_DEPRECATED_MSG("The \"enable_metrics\" option is deprecated and will be removed in version 3.0. Metrics are only sent if you use SentrySDK.metrics.");
 	ERR_FAIL_NULL(owner);
 	owner->set_enable_metrics(p_value);
 }
