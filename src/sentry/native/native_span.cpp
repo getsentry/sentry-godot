@@ -21,9 +21,9 @@ void NativeSpan::set_attribute(const String &p_key, const Variant &p_value) {
 		return;
 	}
 	if (_transaction) {
-		sentry_transaction_set_data(_transaction, p_key.utf8(), variant_to_sentry_value(p_value));
+		sentry_transaction_set_data(_transaction, p_key.utf8(), variant_to_attribute_value(p_value));
 	} else {
-		sentry_span_set_data(_span, p_key.utf8(), variant_to_sentry_value(p_value));
+		sentry_span_set_data(_span, p_key.utf8(), variant_to_attribute_value(p_value));
 	}
 }
 
