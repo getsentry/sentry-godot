@@ -402,8 +402,7 @@ void NativeSDK::init() {
 	sentry_options_set_dist(options, SENTRY_OPTIONS()->get_dist().utf8());
 	sentry_options_set_environment(options, SENTRY_OPTIONS()->get_environment().utf8());
 	sentry_options_set_sample_rate(options, SENTRY_OPTIONS()->get_sample_rate());
-	// TODO: Replace with SENTRY_OPTIONS() value once exposed.
-	sentry_options_set_traces_sample_rate(options, 1.0);
+	sentry_options_set_traces_sample_rate(options, SENTRY_OPTIONS()->get_traces_sample_rate());
 	sentry_options_set_max_breadcrumbs(options, SENTRY_OPTIONS()->get_max_breadcrumbs());
 	sentry_options_set_shutdown_timeout(options, SENTRY_OPTIONS()->get_shutdown_timeout_ms());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");

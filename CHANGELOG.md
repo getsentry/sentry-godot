@@ -12,6 +12,7 @@
   - `SentrySDK.start_span()` starts a span and makes it active, `SentrySDK.with_span()` runs a callable with an active span and ends it on return, and `SentrySDK.get_active_span()` returns the active span for the calling thread
   - The new `SentrySpan` class carries attributes and status; call `SentrySpan.end()` to finish the operation
   - Events captured during an active span are associated with that operation
+  - `SentryOptions.traces_sample_rate` controls the share of traces sent to Sentry. It defaults to `0.0`; set it above `0.0` to enable performance tracing and send spans
   - Not supported on macOS, iOS, Android, or Web yet, where the SDK returns a no-op span with a warning
 
 ### Improvements
