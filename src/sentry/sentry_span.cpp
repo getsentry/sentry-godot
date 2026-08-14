@@ -64,7 +64,9 @@ void SentrySpan::end() {
 		return;
 	}
 	_ended = true;
-	SentrySDK::get_singleton()->notify_span_ended(this);
+	if (SentrySDK *sdk = SentrySDK::get_singleton()) {
+		sdk->notify_span_ended(this);
+	}
 	_impl->end();
 }
 
