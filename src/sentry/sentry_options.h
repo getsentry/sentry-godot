@@ -290,6 +290,12 @@ public:
 
 	Ref<SentryLoggerLimits> deprecated_get_logger_limits() const { return godot_logger->get_limits(); }
 	void deprecated_set_logger_limits(const Ref<SentryLoggerLimits> &p_limits);
+
+	bool deprecated_get_enable_logs() const { return enable_logs; }
+	void deprecated_set_enable_logs(bool p_enabled);
+
+	bool deprecated_get_enable_metrics() const { return enable_metrics; }
+	void deprecated_set_enable_metrics(bool p_enabled);
 };
 
 } // namespace sentry

@@ -9,6 +9,10 @@
   - Not supported on macOS and iOS yet, where telemetry is still captured but the scope data is discarded with a warning
   - Add `SentryScope.add_attachment()` to send a file or a block of bytes with the events captured within a scope instead of with every event ([#856](https://github.com/getsentry/sentry-godot/pull/856))
 
+### Improvements
+
+- Deprecate the `SentryOptions.enable_logs` and `SentryOptions.enable_metrics` options and their Project Settings counterparts, to be removed in v3; logs and metrics are only sent when you use `SentrySDK.logger` or `SentrySDK.metrics`, or enable automatic log capture with `godot_logger.log_mask` ([#869](https://github.com/getsentry/sentry-godot/pull/869))
+
 ### Fixes
 
 - Web: Fixed tags, breadcrumbs and other globally set data carrying over into the next session when the SDK is closed and initialized again ([#857](https://github.com/getsentry/sentry-godot/pull/857))

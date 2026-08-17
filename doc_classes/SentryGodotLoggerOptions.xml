@@ -33,7 +33,6 @@
 		</member>
 		<member name="log_mask" type="int" setter="set_log_mask" getter="get_log_mask" enum="SentryOptions.GodotLoggerEventMask" is_bitfield="true" default="0">
 			Specifies the Godot logger events that are automatically captured as Sentry logs. Accepts a single value or a bitwise combination of [enum SentryOptions.GodotLoggerEventMask] masks. Empty by default, so no events are captured as logs.
-			[b]Note:[/b] Log capture requires [member SentryOptions.enable_logs] to be enabled.
 		</member>
 	</members>
 </class>
