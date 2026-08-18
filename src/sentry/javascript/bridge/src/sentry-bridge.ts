@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
 import { _INTERNAL_setSpanForScope, generateSpanId } from "@sentry/core";
-import type { Attachment, Metric, SpanStatus } from "@sentry/core";
+import type { Attachment, Metric } from "@sentry/core";
 import { wasmIntegration } from "@sentry/wasm";
 
 // ID-based store for WASM/JS interop. Assigns auto-incrementing uint32 IDs (0 is reserved).
@@ -37,6 +37,13 @@ class IdStore<T> {
 // bytes when an event is captured. Sentry copies only its own known fields into the envelope, so the
 // marker is never sent.
 const PENDING_PATH_KEY = "__godotPath";
+
+// SentrySpan.SpanStatus value for a failed span, as the C++ layer sends it.
+const SPAN_STATUS_ERROR = 1;
+
+// OpenTelemetry status codes, which @sentry/core expects but does not export as constants.
+const OTEL_CODE_OK = 1;
+const OTEL_CODE_ERROR = 2;
 
 // Handed to the C++ layer to have it read one file; it leaves the bytes unset if the read fails.
 interface AttachmentRequest {
@@ -390,8 +397,8 @@ class SentryBridge {
     });
   }
 
-  public spanSetStatus(span: Sentry.Span, code: SpanStatus["code"]): void {
-    span.setStatus({ code });
+  public spanSetStatus(span: Sentry.Span, status: number): void {
+    span.setStatus({ code: status === SPAN_STATUS_ERROR ? OTEL_CODE_ERROR : OTEL_CODE_OK });
   }
 
   public logTrace(message: string, attributesJson?: string, scope?: Sentry.Scope): void {
