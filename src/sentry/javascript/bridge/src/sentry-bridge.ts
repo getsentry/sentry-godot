@@ -252,6 +252,12 @@ class SentryBridge {
 
     Sentry.init(options);
 
+    // Use one stable fallback span ID for captures without an active span.
+    Sentry.getCurrentScope().setPropagationContext({
+      ...Sentry.getCurrentScope().getPropagationContext(),
+      propagationSpanId: generateSpanId(),
+    });
+
     if (readAttachmentCallback) {
       // Runs for every event type right before the attachments become envelope items, whereas
       // beforeSend only sees error events and would leave feedback captures with empty bytes.
