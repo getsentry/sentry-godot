@@ -15,7 +15,7 @@
 		[/codeblock]
 		Always end spans created with [method SentrySDK.start_span]. A span that never ends is never sent, and an active one keeps its scope fork alive, so spans left unended accumulate on the thread's scope stack until the SDK warns that it has grown unusually deep. [method SentrySDK.with_span] ends the span for you.
 		[b]Note:[/b] Spans are thread-local. Call span methods only from the thread that created the span.
-		[b]Note:[/b] On platforms where spans are not implemented yet, the SDK returns a no-op span and prints a one-time warning. Calling methods on that span is safe, but no span is recorded.
+		[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning. Calling methods on that span is safe, but no span is recorded.
 	</description>
 	<tutorials>
 	</tutorials>
