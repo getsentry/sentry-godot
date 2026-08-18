@@ -107,6 +107,17 @@ func test_count_with_attributes() -> void:
 	})
 
 
+func test_count_with_empty_attribute_key() -> void:
+	metric_processed.connect(func(metric: SentryMetric):
+		assert_that(metric.get_attribute("")).is_null()
+		assert_str(metric.get_attribute("level")).is_equal("forest")
+	, CONNECT_ONE_SHOT)
+	SentrySDK.metrics.count("enemy_defeated", 1, {
+		"": "should be dropped",
+		"level": "forest"
+	})
+
+
 func test_metric_attribute_methods() -> void:
 	metric_processed.connect(func(metric: SentryMetric):
 		metric.add_attributes({
