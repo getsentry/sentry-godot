@@ -37,6 +37,8 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         "CaptureEvent(SentryEvent, Action<Scope>)",
         "CaptureEvent(SentryEvent, SentryHint?, Action<Scope>)",
         "CaptureException(Exception, Action<Scope>)",
+        "CaptureException(Exception, bool, bool)",
+        "CaptureException(Exception, bool, bool, Action<Scope>)",
         "CaptureMessage(string, Action<Scope>, SentryLevel)",
         "CaptureFeedback(SentryFeedback, Action<Scope>, SentryHint?)",
         "CaptureFeedback(SentryFeedback, out CaptureFeedbackResult, Action<Scope>, SentryHint?)",
