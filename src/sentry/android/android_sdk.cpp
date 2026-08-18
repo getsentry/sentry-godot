@@ -34,7 +34,9 @@ Dictionary _sanitize_attributes(const Dictionary &p_attributes) {
 		const Array &keys = p_attributes.keys();
 		for (int i = 0; i < keys.size(); i++) {
 			const Variant &key = keys[i];
-			attributes[key.stringify()] = _as_attribute(p_attributes[key]);
+			String name = key.stringify();
+			ERR_CONTINUE_MSG(name.is_empty(), "Sentry: Can't set attribute with an empty name.");
+			attributes[name] = _as_attribute(p_attributes[key]);
 		}
 	}
 	return attributes;

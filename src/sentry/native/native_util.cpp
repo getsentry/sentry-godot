@@ -180,7 +180,9 @@ sentry_value_t dictionary_to_attributes(const Dictionary &p_attributes) {
 	}
 	sentry_value_t rv = sentry_value_new_object();
 	for (const Variant &key : p_attributes.keys()) {
-		sentry_value_set_by_key(rv, key.stringify().utf8(),
+		String name = key.stringify();
+		ERR_CONTINUE_MSG(name.is_empty(), "Sentry: Can't set attribute with an empty name.");
+		sentry_value_set_by_key(rv, name.utf8(),
 				variant_to_attribute(p_attributes[key]));
 	}
 	return rv;
