@@ -11,6 +11,7 @@ $packageJsonFile = "$bridgeDir/package.json"
 # Sentry packages to track — add new packages here.
 $sentryPackages = @(
 	"@sentry/browser",
+	"@sentry/core",
 	"@sentry/wasm"
 )
 
