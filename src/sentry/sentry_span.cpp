@@ -109,7 +109,6 @@ void SentrySpan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_status", "status"), &SentrySpan::set_status);
 	ClassDB::bind_method(D_METHOD("end"), &SentrySpan::end);
 
-	BIND_ENUM_CONSTANT(SPAN_STATUS_UNSET);
 	BIND_ENUM_CONSTANT(SPAN_STATUS_OK);
 	BIND_ENUM_CONSTANT(SPAN_STATUS_ERROR);
 }
