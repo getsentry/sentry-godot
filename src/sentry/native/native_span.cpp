@@ -31,10 +31,6 @@ void NativeSpan::set_status(SpanStatus p_status) {
 	if (!_is_live()) {
 		return;
 	}
-	if (p_status == SPAN_STATUS_UNSET) {
-		WARN_PRINT_ONCE("Sentry: Clearing a span status is not supported on this platform.");
-		return;
-	}
 	sentry_span_status_t native_status = p_status == SPAN_STATUS_OK ? SENTRY_SPAN_STATUS_OK : SENTRY_SPAN_STATUS_INTERNAL_ERROR;
 	if (_transaction) {
 		sentry_transaction_set_status(_transaction, native_status);
