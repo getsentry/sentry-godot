@@ -214,7 +214,7 @@
 				When [param parent_span] is omitted, the new span becomes a child of [method SentrySDK.get_active_span] if one exists; otherwise it starts a new root span. Pass [code]null[/code] explicitly to force a new root span. Pass a [SentrySpan] to create the new span under that parent, even if another span is currently active. When such a span is active, it forks the explicit parent's scope instead of the current scope, so it inherits the parent's scope data.
 				The [param attributes] dictionary is added to the span when it starts. The special [code]sentry.op[/code] attribute sets the operation the span is grouped under in Sentry. The SDK skips an entry with an empty key and prints an error.
 				[b]Note:[/b] Spans are only sent to Sentry if [member SentryOptions.traces_sample_rate] is raised above its default of 0.0. The rest of the API works either way, so telemetry captured during a span is associated with it even when the span itself is not sent.
-				[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
+				[b]Platform support:[/b] Spans are not supported on macOS, iOS, or Android yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
 			</description>
 		</method>
 		<method name="with_scope">
@@ -261,7 +261,7 @@
 				Nested calls create nested spans. When the callable returns, the enclosing active span and scope are restored.
 				[b]Note:[/b] The span covers the synchronous part of [param callable] only. If the callable awaits, the span is ended at the first [code]await[/code] and a warning is printed.
 				[b]Note:[/b] Spans are only sent to Sentry if [member SentryOptions.traces_sample_rate] is raised above its default of 0.0.
-				[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
+				[b]Platform support:[/b] Spans are not supported on macOS, iOS, or Android yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
 			</description>
 		</method>
 	</methods>
