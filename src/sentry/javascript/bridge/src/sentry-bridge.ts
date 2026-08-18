@@ -249,6 +249,12 @@ class SentryBridge {
 
     Sentry.init(options);
 
+    // Use one stable fallback span ID for captures without an active span.
+    Sentry.getCurrentScope().setPropagationContext({
+      ...Sentry.getCurrentScope().getPropagationContext(),
+      propagationSpanId: generateSpanId(),
+    });
+
     if (beforeSendFeedbackCallback) {
       // @sentry/core has no beforeSendFeedback option, and feedback also bypasses beforeSend.
       Sentry.getClient()?.addEventProcessor((event: Sentry.Event) => {
