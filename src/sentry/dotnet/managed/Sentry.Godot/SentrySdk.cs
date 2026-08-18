@@ -270,6 +270,22 @@ public static partial class SentrySdk
         return Sentry.SentrySdk.CaptureException(exception, configureScope);
     }
 
+    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureException(System.Exception,System.Boolean,System.Boolean)"/>
+    [DebuggerStepThrough]
+    public static SentryId CaptureException(Exception exception, bool handled, bool terminal = false)
+    {
+        using var _ = new LocalScopeGuard();
+        return Sentry.SentrySdk.CaptureException(exception, handled, terminal);
+    }
+
+    /// <inheritdoc cref="M:Sentry.SentrySdk.CaptureException(System.Exception,System.Boolean,System.Boolean,System.Action{Sentry.Scope})"/>
+    [DebuggerStepThrough]
+    public static SentryId CaptureException(Exception exception, bool handled, bool terminal, Action<Scope> configureScope)
+    {
+        using var _ = new LocalScopeGuard();
+        return Sentry.SentrySdk.CaptureException(exception, handled, terminal, configureScope);
+    }
+
     /// <inheritdoc cref="M:Sentry.HubExtensions.CaptureFeedback(Sentry.IHub,Sentry.SentryFeedback,System.Action{Sentry.Scope},Sentry.SentryHint)"/>
     [DebuggerStepThrough]
     public static SentryId CaptureFeedback(SentryFeedback feedback, Action<Scope> configureScope, SentryHint? hint = null)
