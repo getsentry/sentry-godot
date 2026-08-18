@@ -7,6 +7,7 @@
 #include "sentry/javascript/javascript_log.h"
 #include "sentry/javascript/javascript_metric.h"
 #include "sentry/javascript/javascript_scope.h"
+#include "sentry/javascript/javascript_span.h"
 #include "sentry/javascript/javascript_util.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
@@ -325,8 +326,8 @@ SentryScopeImpl *JavaScriptSDK::create_scope() {
 }
 
 SentrySpanImpl *JavaScriptSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
-	WARN_PRINT_ONCE("Sentry: Spans are not implemented on this platform yet - nothing will be recorded.");
-	return SentrySpanImpl::create_noop();
+	ERR_FAIL_COND_V(!js_bridge(), SentrySpanImpl::create_noop());
+	return start_js_span(p_name, p_attributes, nullptr);
 }
 
 void JavaScriptSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
@@ -363,6 +364,7 @@ void JavaScriptSDK::init() {
 			SENTRY_OPTIONS()->get_dist().utf8(),
 			SENTRY_OPTIONS()->get_environment().utf8(),
 			SENTRY_OPTIONS()->get_sample_rate(),
+			SENTRY_OPTIONS()->get_traces_sample_rate(),
 			SENTRY_OPTIONS()->get_max_breadcrumbs(),
 			SENTRY_OPTIONS()->is_send_default_pii_enabled(),
 			SENTRY_GODOT_SDK_VERSION);

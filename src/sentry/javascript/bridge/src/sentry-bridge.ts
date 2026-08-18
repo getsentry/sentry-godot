@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
-import type { Attachment, Metric } from "@sentry/core";
+import { _INTERNAL_setSpanForScope, generateSpanId } from "@sentry/core";
+import type { Attachment, Metric, SpanStatus } from "@sentry/core";
 import { wasmIntegration } from "@sentry/wasm";
 
 // ID-based store for WASM/JS interop. Assigns auto-incrementing uint32 IDs (0 is reserved).
@@ -140,6 +141,7 @@ class SentryBridge {
     dist: string,
     environment: string,
     sampleRate: number,
+    tracesSampleRate: number,
     maxBreadcrumbs: number,
     sendDefaultPii: boolean,
     sdkVersion: string,
@@ -155,6 +157,7 @@ class SentryBridge {
       dist,
       environment,
       sampleRate,
+      tracesSampleRate,
       maxBreadcrumbs,
       sendDefaultPii,
       _metadata: {
@@ -173,6 +176,7 @@ class SentryBridge {
           return !excludedIntegrations.includes(integration.name);
         });
         filtered.push(wasmIntegration());
+        filtered.push(Sentry.spanStreamingIntegration());
         filtered.push(
           Sentry.breadcrumbsIntegration({
             console: false, // very noisy in Godot SDK
@@ -386,6 +390,23 @@ class SentryBridge {
     const propagationContext = scope.getPropagationContext();
     scope.clear();
     scope.setPropagationContext(propagationContext);
+  }
+
+  public scopeSetSpan(scope: Sentry.Scope, span?: Sentry.Span): void {
+    // No public alternative: setActiveSpanInBrowser binds only to the current scope.
+    _INTERNAL_setSpanForScope(scope, span ?? undefined);
+  }
+
+  public startSpan(name: string, attributesJson: string, parentSpan?: Sentry.Span): Sentry.Span {
+    return Sentry.startInactiveSpan({
+      name,
+      attributes: safeParseJSON(attributesJson, {}),
+      parentSpan: parentSpan ?? null,
+    });
+  }
+
+  public spanSetStatus(span: Sentry.Span, code: SpanStatus["code"]): void {
+    span.setStatus({ code });
   }
 
   public logTrace(message: string, attributesJson?: string, scope?: Sentry.Scope): void {
