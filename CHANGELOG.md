@@ -22,12 +22,12 @@
   - Add `SentryScope.add_attachment()` to send a file or a block of bytes with the events captured within a scope instead of with every event ([#856](https://github.com/getsentry/sentry-godot/pull/856))
 - Add the `SentryOptions.before_send_feedback` callback to filter or enrich user feedback before it is sent ([#878](https://github.com/getsentry/sentry-godot/pull/878))
   - Not supported on macOS and iOS yet, where feedback is still sent but the callback never runs
-- Add Spans support to the GDScript API for measuring operations and grouping telemetry captured while they run ([#863](https://github.com/getsentry/sentry-godot/pull/863))
+- Add Spans support to the GDScript API for measuring operations and grouping telemetry captured while they run ([#863](https://github.com/getsentry/sentry-godot/pull/863), [#875](https://github.com/getsentry/sentry-godot/pull/875))
   - `SentrySDK.start_span()` starts a span and makes it active, and `SentrySDK.get_active_span()` returns the active span for the calling thread
   - The new `SentrySpan` class carries attributes and status; call `SentrySpan.end()` to finish the operation
   - Events captured during an active span are associated with that operation
   - `SentryOptions.traces_sample_rate` controls the share of traces sent to Sentry. It defaults to `0.0`; set it above `0.0` to enable performance tracing and send spans
-  - Not supported on macOS, iOS, Android, or Web yet, where the SDK returns a no-op span with a warning
+  - Not supported on macOS, iOS, or Android yet, where the SDK returns a no-op span with a warning
 
 ### Improvements
 
