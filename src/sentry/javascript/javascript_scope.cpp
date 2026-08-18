@@ -2,6 +2,7 @@
 
 #include "sentry/disabled/disabled_scope.h"
 #include "sentry/javascript/javascript_breadcrumb.h"
+#include "sentry/javascript/javascript_span.h"
 #include "sentry/sentry_sdk.h"
 
 #include <godot_cpp/classes/json.hpp>
@@ -83,6 +84,14 @@ void JavaScriptScope::add_attachment(const Ref<SentryAttachment> &p_attachment) 
 				p_attachment->get_bytes(),
 				p_attachment->get_content_type_or_default().utf8(),
 				p_attachment->get_attachment_type().utf8());
+	}
+}
+
+void JavaScriptScope::set_span(SentrySpanImpl *p_span) {
+	if (JavaScriptSpan *js_span = Castable::cast_to<JavaScriptSpan>(p_span)) {
+		js_bridge()->call("scopeSetSpan", js_obj, js_span->get_js_object());
+	} else {
+		js_bridge()->call("scopeSetSpan", js_obj, nullptr);
 	}
 }
 
