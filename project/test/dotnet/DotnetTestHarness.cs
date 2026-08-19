@@ -24,7 +24,23 @@ public partial class DotnetTestHarness : RefCounted
             options.Debug = false;
             options.AttachScreenshot = false; // CI runs headless
             options.Native.SetBeforeSend(OnBeforeSend);
+            options.SetBeforeSend((SentryEvent _) => null);
         });
+    }
+
+    /// <summary>
+    /// Captures a managed event, running the .NET event processors that reach into the native layer.
+    /// Returns false if the managed SDK is disabled, meaning nothing was captured.
+    /// </summary>
+    public bool CaptureManagedEvent()
+    {
+        if (!SentrySdk.IsEnabled)
+        {
+            return false;
+        }
+
+        SentrySdk.CaptureMessage("Managed event from the CPP test harness");
+        return true;
     }
 
     public void Close()
@@ -56,12 +72,17 @@ public partial class DotnetTestHarness : RefCounted
     private readonly Godot.Collections.Dictionary _seenEventValues = [];
     public Godot.Collections.Dictionary GetSeenEventValues() => _seenEventValues;
 
+    private int _nativeBeforeSendCallCount;
+    public int GetNativeBeforeSendCallCount() => _nativeBeforeSendCallCount;
+
     /// <summary>
     /// Native before-send callback exercised by the CPP tests.
     /// Records the values it reads through the getters, then overrides them through the setters.
     /// </summary>
     private SentryNativeEvent OnBeforeSend(SentryNativeEvent ev)
     {
+        _nativeBeforeSendCallCount++;
+
         if (ev.Message is not null && ev.Message.Contains("DROP_ME"))
         {
             return null;

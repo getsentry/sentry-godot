@@ -78,6 +78,22 @@ TEST_SUITE("[.NET] Test options.Native.SetBeforeSend bridging") {
 			Ref<SentryEvent> drop_result = sentry::process_event(drop_event);
 			CHECK(drop_result.is_null());
 		}
+
+		SUBCASE("Native event invokes the callback exactly once") {
+			const int64_t calls_before = fixture.get_harness()->call("GetNativeBeforeSendCallCount");
+			sentry::process_event(_make_message_event("Counted native event"));
+			const int64_t calls_after = fixture.get_harness()->call("GetNativeBeforeSendCallCount");
+			CHECK(calls_after == calls_before + 1);
+		}
+
+		SUBCASE("Managed event capture never reaches the callback") {
+			// The .NET default-attachments routine calls into the native processing pipeline,
+			// which must not run the managed before-send hook on a throwaway event.
+			const int64_t calls_before = fixture.get_harness()->call("GetNativeBeforeSendCallCount");
+			REQUIRE(bool(fixture.get_harness()->call("CaptureManagedEvent")));
+			const int64_t calls_after = fixture.get_harness()->call("GetNativeBeforeSendCallCount");
+			CHECK(calls_after == calls_before);
+		}
 	}
 }
 
