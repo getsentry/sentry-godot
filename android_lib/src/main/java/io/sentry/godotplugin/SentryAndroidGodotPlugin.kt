@@ -235,6 +235,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun init(
         optionsData: Dictionary,
         beforeSendHandlerId: Long,
+        beforeSendFeedbackHandlerId: Long,
         beforeSendLogHandlerId: Long,
         beforeSendMetricHandlerId: Long
     ) {
@@ -282,6 +283,12 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                         Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
                         val handle: Int = registerEvent(event)
                         Callable.call(beforeSendHandlerId, "before_send", handle)
+                        eventsByHandle.get()?.remove(handle) // Returns the event or null if it was discarded.
+                    }
+                options.beforeSendFeedback =
+                    SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
+                        val handle: Int = registerEvent(event)
+                        Callable.call(beforeSendFeedbackHandlerId, "before_send_feedback", handle)
                         eventsByHandle.get()?.remove(handle) // Returns the event or null if it was discarded.
                     }
                 if (beforeSendLogHandlerId != 0L) {

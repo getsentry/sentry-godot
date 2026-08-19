@@ -3,6 +3,7 @@
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/engine_lifecycle/sentry_scene_tree_watcher.h"
 #include "sentry/logging/sentry_godot_logger.h"
+#include "sentry/processing/enrichment_processor.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/sentry_event_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
@@ -97,6 +98,7 @@ void register_runtime_classes() {
 	GDREGISTER_ABSTRACT_CLASS(SentryScope);
 	GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
+	GDREGISTER_INTERNAL_CLASS(EnrichmentProcessor);
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
 	GDREGISTER_INTERNAL_CLASS(ViewHierarchyProcessor);
 	GDREGISTER_INTERNAL_CLASS(logging::SentryGodotLogger);
@@ -117,6 +119,7 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(android::AndroidLog);
 	GDREGISTER_INTERNAL_CLASS(android::AndroidMetric);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendHandler);
+	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendFeedbackHandler);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendLogHandler);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendMetricHandler);
 #endif

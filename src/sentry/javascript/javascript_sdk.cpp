@@ -10,6 +10,7 @@
 #include "sentry/javascript/javascript_util.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/processing/process_feedback.h"
 #include "sentry/processing/process_log.h"
 #include "sentry/processing/process_metric.h"
 #include "sentry/sentry_sdk.h"
@@ -38,6 +39,20 @@ static void before_send_wasm_callback(int32_t *p_ids, int32_t p_len) {
 
 	// NOTE: We cannot return a value from a callback, so we use the same
 	//       event object to communicate the result back.
+	event_obj->set("shouldDiscard", processed.is_null());
+}
+
+static void before_send_feedback_wasm_callback(int32_t *p_ids, int32_t p_len) {
+	ERR_FAIL_COND(p_len != 1);
+
+	JSObjectPtr event_obj = JSObject::from_id(p_ids[0]);
+	ERR_FAIL_COND(!event_obj);
+
+	Ref<JavaScriptEvent> event = memnew(JavaScriptEvent(event_obj));
+	Ref<JavaScriptEvent> processed = sentry::process_feedback(event);
+
+	// We cannot return a value from a callback, so we use the same
+	// event object to communicate the result back.
 	event_obj->set("shouldDiscard", processed.is_null());
 }
 
@@ -317,6 +332,7 @@ void JavaScriptSDK::init() {
 	ERR_FAIL_COND(!js_bridge());
 
 	JSObjectPtr before_send_callback = JSObject::create_callback(before_send_wasm_callback);
+	JSObjectPtr before_send_feedback_callback = JSObject::create_callback(before_send_feedback_wasm_callback);
 	JSObjectPtr read_attachment_callback = JSObject::create_callback(read_attachment_wasm_callback);
 
 	// Only create the before_send_log callback if user has set a callback
@@ -332,6 +348,7 @@ void JavaScriptSDK::init() {
 
 	js_bridge()->call("init",
 			before_send_callback,
+			before_send_feedback_callback,
 			before_send_log_callback,
 			before_send_metric_callback,
 			read_attachment_callback,

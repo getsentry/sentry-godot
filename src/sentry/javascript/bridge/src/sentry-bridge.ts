@@ -130,6 +130,7 @@ class SentryBridge {
 
   public init(
     beforeSendCallback: (event: Sentry.Event) => void,
+    beforeSendFeedbackCallback: (event: Sentry.Event) => void,
     beforeSendLogCallback: ((log: Sentry.Log) => void) | null,
     beforeSendMetricCallback: ((metric: Metric) => void) | null,
     readAttachmentCallback: (request: AttachmentRequest) => void,
@@ -247,6 +248,26 @@ class SentryBridge {
     Sentry.getCurrentScope().clear();
 
     Sentry.init(options);
+
+    if (beforeSendFeedbackCallback) {
+      // @sentry/core has no beforeSendFeedback option, and feedback also bypasses beforeSend.
+      Sentry.getClient()?.addEventProcessor((event: Sentry.Event) => {
+        if (event.type !== "feedback") {
+          return event;
+        }
+
+        beforeSendFeedbackCallback(event);
+
+        const shouldDiscard: boolean = (event as any).shouldDiscard;
+        delete (event as any).shouldDiscard;
+
+        return shouldDiscard ? null : event;
+      });
+    } else {
+      console.error(
+        "Sentry: beforeSendFeedback callback is missing. User feedback will be sent without native-side processing; this is unexpected and likely indicates the bridge failed to initialize correctly.",
+      );
+    }
 
     if (readAttachmentCallback) {
       // Runs for every event type right before the attachments become envelope items, whereas

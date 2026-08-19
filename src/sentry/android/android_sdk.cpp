@@ -10,6 +10,7 @@
 #include "sentry/common_defs.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/processing/process_feedback.h"
 #include "sentry/processing/process_log.h"
 #include "sentry/processing/process_metric.h"
 #include "sentry/sentry_attachment.h"
@@ -68,6 +69,24 @@ void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
 
 void SentryAndroidBeforeSendHandler::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("before_send"), &SentryAndroidBeforeSendHandler::_before_send);
+}
+
+// *** SentryAndroidBeforeSendFeedbackHandler
+
+void SentryAndroidBeforeSendFeedbackHandler::_before_send_feedback(int32_t p_event_handle) {
+	Ref<AndroidEvent> event_obj = memnew(AndroidEvent(android_plugin, p_event_handle));
+	event_obj->set_as_borrowed();
+
+	Ref<AndroidEvent> processed = sentry::process_feedback(event_obj);
+
+	if (processed.is_null()) {
+		// Discard feedback.
+		android_plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
+	}
+}
+
+void SentryAndroidBeforeSendFeedbackHandler::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("before_send_feedback"), &SentryAndroidBeforeSendFeedbackHandler::_before_send_feedback);
 }
 
 // *** SentryAndroidBeforeSendLogHandler
@@ -389,6 +408,7 @@ void AndroidSDK::init() {
 	android_plugin->call(ANDROID_SN(init),
 			optionsData,
 			before_send_handler->get_instance_id(),
+			before_send_feedback_handler->get_instance_id(),
 			SENTRY_OPTIONS()->get_before_send_log().is_valid() ? before_send_log_handler->get_instance_id() : 0,
 			SENTRY_OPTIONS()->get_before_send_metric().is_valid() ? before_send_metric_handler->get_instance_id() : 0);
 
@@ -421,6 +441,9 @@ AndroidSDK::AndroidSDK() {
 	before_send_handler = memnew(SentryAndroidBeforeSendHandler);
 	before_send_handler->_initialize(android_plugin);
 
+	before_send_feedback_handler = memnew(SentryAndroidBeforeSendFeedbackHandler);
+	before_send_feedback_handler->_initialize(android_plugin);
+
 	before_send_log_handler = memnew(SentryAndroidBeforeSendLogHandler);
 	before_send_log_handler->_initialize(android_plugin);
 
@@ -432,6 +455,9 @@ AndroidSDK::~AndroidSDK() {
 	AndroidStringNames::destroy_singleton();
 	if (before_send_handler) {
 		memdelete(before_send_handler);
+	}
+	if (before_send_feedback_handler) {
+		memdelete(before_send_feedback_handler);
 	}
 	if (before_send_log_handler) {
 		memdelete(before_send_log_handler);
