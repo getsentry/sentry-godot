@@ -58,6 +58,18 @@
 			[/codeblock]
 			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/filtering/]Filtering documentation[/url]. Also, check out [url=https://docs.sentry.io/platforms/godot/data-management/sensitive-data/]Scrubbing Sensitive Data[/url].
 		</member>
+		<member name="before_send_feedback" type="Callable" setter="set_before_send_feedback" getter="get_before_send_feedback" default="Callable()">
+			If assigned, this callback runs before user feedback is sent to Sentry. It takes [SentryEvent] as a parameter and returns either the same event object, with or without modifications, or [code]null[/code] to skip reporting the feedback. You can assign it in a configuration callback using manual initialization (see [method SentrySDK.init]). The fields submitted with the [SentryFeedback] object are carried in the event's [code]feedback[/code] context.
+			[codeblock]
+			func _before_send_feedback(event: SentryEvent) -&gt; SentryEvent:
+			    if event.environment == "editor_dev_run":
+			        # Discard feedback submitted while running from the editor.
+			        return null
+			    event.set_tag("feedback_source", "in_game_form")
+			    return event
+			[/codeblock]
+			[b]Platform support:[/b] This callback is not supported on iOS and macOS yet. Feedback is still sent there, but the callback never runs.
+		</member>
 		<member name="before_send_log" type="Callable" setter="set_before_send_log" getter="get_before_send_log" default="Callable()">
 			If assigned, this callback will be called before sending a log message to Sentry. It can be used to modify the log message or prevent it from being sent.
 			[codeblock]
