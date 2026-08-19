@@ -40,13 +40,13 @@ void NativeScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 }
 
 void NativeScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
-	sentry_attachment_t *native_attachment = nullptr;
+	sentry_value_t native_attachment = sentry_value_new_null();
 
 	if (!p_attachment->get_path().is_empty()) {
 		String absolute_path = p_attachment->get_globalized_path();
 
-		native_attachment = sentry_scope_attach_file(_scope, absolute_path.utf8());
-		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach file: %s", absolute_path));
+		native_attachment = sentry_attachment_from_file(absolute_path.utf8());
+		ERR_FAIL_COND_MSG(sentry_value_is_null(native_attachment), vformat("Sentry: Failed to create file attachment: %s", absolute_path));
 
 		if (!p_attachment->get_filename().is_empty()) {
 			sentry_attachment_set_filename(native_attachment, p_attachment->get_filename().utf8());
@@ -54,16 +54,19 @@ void NativeScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	} else {
 		PackedByteArray bytes = p_attachment->get_bytes();
 
-		native_attachment = sentry_scope_attach_bytes(_scope,
+		native_attachment = sentry_attachment_from_bytes(
 				reinterpret_cast<const char *>(bytes.ptr()),
 				bytes.size(),
 				p_attachment->get_filename().utf8());
-		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach bytes with filename: %s", p_attachment->get_filename()));
+		ERR_FAIL_COND_MSG(sentry_value_is_null(native_attachment), vformat("Sentry: Failed to create bytes attachment with filename: %s", p_attachment->get_filename()));
 	}
 
 	if (!p_attachment->get_content_type().is_empty()) {
 		sentry_attachment_set_content_type(native_attachment, p_attachment->get_content_type().utf8());
 	}
+
+	sentry_uuid_t uuid = sentry_scope_add_attachment(_scope, native_attachment);
+	ERR_FAIL_COND_MSG(sentry_uuid_is_nil(&uuid), vformat("Sentry: Failed to add attachment: %s", p_attachment->get_path().is_empty() ? p_attachment->get_filename() : p_attachment->get_globalized_path()));
 }
 
 void NativeScope::clear() {
