@@ -79,6 +79,7 @@ void NativeScope::set_span(SentrySpanImpl *p_span) {
 	if (NativeSpan *native_span = Castable::cast_to<NativeSpan>(p_span)) {
 		native_span->bind_to_scope(_scope);
 	} else {
+		sentry_scope_set_transaction_object(_scope, nullptr);
 		sentry_scope_set_span(_scope, nullptr);
 	}
 }
