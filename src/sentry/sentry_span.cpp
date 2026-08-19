@@ -22,7 +22,8 @@ void _release_unassigned_sentinel() {
 namespace sentry {
 
 Ref<SentrySpan> SentrySpan::create_noop() {
-	return Ref<SentrySpan>(memnew(SentrySpan(memnew(DisabledSpan))));
+	SentrySpanImpl *impl = memnew(DisabledSpan);
+	return Ref<SentrySpan>(memnew(SentrySpan(impl)));
 }
 
 Ref<SentrySpan> SentrySpan::unassigned() {
