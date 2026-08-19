@@ -249,7 +249,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
-				Starts an active span named [param name], calls [param callable] with that [SentrySpan], ends the span when the callable returns, and returns the callable's return value.
+				Starts an active span named [param name], calls [param callable] with that [SentrySpan], ends the span when the callable returns, and returns the callable's return value. If [param name] is empty, the SDK prints an error and runs [param callable] with a no-op span.
 				Use this helper when the operation fits in one synchronous callable. Use [method SentrySDK.start_span] instead when you need to set initial attributes, choose a parent span, keep a span open across multiple functions, or create an inactive span.
 				[codeblock]
 				var result: Variant = SentrySDK.with_span("generate_chunk", func(span: SentrySpan) -&gt; Variant:
