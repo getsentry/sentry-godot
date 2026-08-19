@@ -225,8 +225,6 @@ void SentrySDK::notify_span_ended(const SentrySpan *p_span) {
 }
 
 Variant SentrySDK::with_span(const String &p_name, const Callable &p_callable) {
-	ERR_FAIL_COND_V_MSG(p_name.is_empty(), Variant(), "Sentry: Can't start a span with an empty name.");
-
 	Ref<SentrySpan> active_span = start_span(p_name);
 	Variant result = p_callable.call(active_span);
 	static bool first_warning = true;
