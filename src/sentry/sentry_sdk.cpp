@@ -184,7 +184,7 @@ Variant SentrySDK::with_scope(const Callable &p_callable) {
 }
 
 Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Dictionary &p_attributes, const Ref<SentrySpan> &p_parent_span, bool p_active) {
-	ERR_FAIL_COND_V_MSG(p_name.is_empty(), Ref<SentrySpan>(), "Sentry: Can't start a span with an empty name.");
+	ERR_FAIL_COND_V_MSG(p_name.is_empty(), SentrySpan::create_noop(), "Sentry: Can't start a span with an empty name.");
 
 	// The unassigned sentinel means "inherit the active span", while an explicit null forces a segment (new root-level span).
 	const bool parent_given = p_parent_span != SentrySpan::unassigned();
