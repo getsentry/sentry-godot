@@ -117,6 +117,17 @@ func test_structured_logs_with_custom_attributes() -> void:
 	})
 
 
+func test_structured_logs_with_empty_attribute_key() -> void:
+	log_processed.connect(func(entry: SentryLog):
+		assert_that(entry.get_attribute("")).is_null()
+		assert_str(entry.get_attribute("level")).is_equal("forest")
+	, CONNECT_ONE_SHOT)
+	SentrySDK.logger.info("Test 123", [], {
+		"": "should be dropped",
+		"level": "forest"
+	})
+
+
 func test_structured_logs_with_attribute_removal() -> void:
 	log_processed.connect(func(entry: SentryLog):
 		assert_str(entry.get_attribute("level")).is_equal("forest")

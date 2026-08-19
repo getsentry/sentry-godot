@@ -16,6 +16,7 @@
 ### Fixes
 
 - Web: Fixed tags, breadcrumbs and other globally set data carrying over into the next session when the SDK is closed and initialized again ([#857](https://github.com/getsentry/sentry-godot/pull/857))
+- Fixed attributes with an empty key not being rejected on structured logs and metrics; such attributes are now dropped and reported as an error ([#876](https://github.com/getsentry/sentry-godot/pull/876))
 
 ### Dependencies
 

@@ -15,9 +15,11 @@ String attributes_to_json(const Dictionary &p_attributes) {
 	Array keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
 		const Variant &key = keys[i];
+		String name = key.stringify();
+		ERR_CONTINUE_MSG(name.is_empty(), "Sentry: Can't set attribute with an empty name.");
 		Variant value = p_attributes[key];
 
-		writer.key(key.stringify());
+		writer.key(name);
 		switch (value.get_type()) {
 			case Variant::BOOL: {
 				writer.value_bool(value.operator bool());

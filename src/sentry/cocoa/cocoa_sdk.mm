@@ -54,7 +54,9 @@ NSDictionary<NSString *, SentryObjCAttributeContent *> *_metric_attributes_to_ob
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
 		const Variant &key = keys[i];
-		attributes[sentry::cocoa::string_to_objc(key.stringify())] = sentry::cocoa::variant_to_attribute_content(p_attributes[key]);
+		String name = key.stringify();
+		ERR_CONTINUE_MSG(name.is_empty(), "Sentry: Can't set attribute with an empty name.");
+		attributes[sentry::cocoa::string_to_objc(name)] = sentry::cocoa::variant_to_attribute_content(p_attributes[key]);
 	}
 	return attributes;
 }
@@ -172,7 +174,9 @@ void CocoaSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, co
 		const Array &keys = p_attributes.keys();
 		for (int i = 0; i < keys.size(); i++) {
 			const Variant &key = keys[i];
-			const NSString *objc_key = [NSString stringWithUTF8String:key.stringify().utf8()];
+			String name = key.stringify();
+			ERR_CONTINUE_MSG(name.is_empty(), "Sentry: Can't set attribute with an empty name.");
+			const NSString *objc_key = [NSString stringWithUTF8String:name.utf8()];
 			const NSObject *objc_value = _as_attribute(p_attributes[key]);
 			[attributes setObject:objc_value forKey:objc_key];
 		}
