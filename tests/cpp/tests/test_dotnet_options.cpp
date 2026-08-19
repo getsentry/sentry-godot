@@ -51,7 +51,7 @@ TEST_SUITE("[.NET] Options interop") {
 		// To cover a new option: add a row here, then report it from InitWithInteropOptions()
 		// in DotnetTestHarness.cs, keyed by the last segment of the property path.
 		// The two value columns must differ from each other, and "from native" must differ from the
-		// option's default, or the row proves nothing.
+		// option's C# default, or the managed side reports a value that never crossed and the row passes.
 		const LocalVector<OptionCase> cases = {
 			// clang-format off
 			// project setting                                                 property                                        from native                     from managed
@@ -59,16 +59,16 @@ TEST_SUITE("[.NET] Options interop") {
 			{ "sentry/options/release",                                        "release",                                      "interop-native-release@1.1.1", "interop-managed-release@2.2.2" },
 			{ "sentry/options/dist",                                           "dist",                                         "interop-native-dist",          "interop-managed-dist" },
 			{ "sentry/options/environment",                                    "environment",                                  "interop-native-env",           "interop-managed-env" },
-			{ "sentry/options/debug_printing",                                 "debug",                                        false,                          true },
+			{ "sentry/options/debug_printing",                                 "debug",                                        true,                           false },
 			{ "sentry/options/diagnostic_level",                               "diagnostic_level",                             LEVEL_WARNING,                  LEVEL_ERROR },
 			{ "sentry/options/sample_rate",                                    "sample_rate",                                  0.5,                            0.75 },
 			{ "sentry/options/traces_sample_rate",                             "traces_sample_rate",                           0.6,                            0.8 },
 			{ "sentry/options/max_breadcrumbs",                                "max_breadcrumbs",                              11,                             22 },
 			{ "sentry/options/shutdown_timeout_ms",                            "shutdown_timeout_ms",                          1100,                           2200 },
 			{ "sentry/options/send_default_pii",                               "send_default_pii",                             true,                           false },
-			{ "sentry/options/enable_logs",                                    "enable_logs",                                  false,                          true },
+			{ "sentry/options/enable_logs",                                    "enable_logs",                                  true,                           false },
 			{ "sentry/options/attach_log",                                     "attach_log",                                   false,                          true },
-			{ "sentry/options/attach_scene_tree",                              "attach_scene_tree",                            false,                          true },
+			{ "sentry/options/attach_scene_tree",                              "attach_scene_tree",                            true,                           false },
 			{ "sentry/experimental/attach_screenshot",                         "attach_screenshot",                            true,                           false },
 			{ "sentry/experimental/screenshot_level",                          "screenshot_level",                             LEVEL_ERROR,                    LEVEL_WARNING },
 			{ "sentry/options/app_hang/tracking",                              "enable_app_hang_tracking",                     false,                          true },
@@ -76,7 +76,7 @@ TEST_SUITE("[.NET] Options interop") {
 			{ "sentry/options/enable_metrics",                                 "enable_metrics",                               false,                          true },
 			{ "sentry/godot_logger/enabled",                                   "godot_logger:enabled",                         false,                          true },
 			{ "sentry/godot_logger/include_source_context",                    "godot_logger:include_source_context",          false,                          true },
-			{ "sentry/godot_logger/include_variables",                         "godot_logger:include_variables",               false,                          true },
+			{ "sentry/godot_logger/include_variables",                         "godot_logger:include_variables",               true,                           false },
 			{ "sentry/godot_logger/events",                                    "godot_logger:event_mask",                      MASK_ERROR | MASK_WARNING,      MASK_SCRIPT | MASK_SHADER },
 			{ "sentry/godot_logger/breadcrumbs",                               "godot_logger:breadcrumb_mask",                 MASK_SCRIPT,                    MASK_WARNING },
 			{ "sentry/godot_logger/logs",                                      "godot_logger:log_mask",                        MASK_SHADER,                    MASK_ERROR },
