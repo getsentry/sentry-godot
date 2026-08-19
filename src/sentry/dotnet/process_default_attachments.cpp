@@ -15,9 +15,8 @@ void process_default_attachments(sentry::Level p_level) {
 	dummy_event.instantiate();
 	dummy_event->set_level(p_level);
 	for (const Ref<SentryEventProcessor> &processor : SENTRY_OPTIONS()->get_event_processors()) {
-		dummy_event = processor->process_event(dummy_event);
-		if (dummy_event.is_null()) {
-			return;
+		if (processor->produces_default_attachment()) {
+			processor->process_event(dummy_event);
 		}
 	}
 }

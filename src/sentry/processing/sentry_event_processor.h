@@ -20,6 +20,9 @@ public:
 	// Returns the same event (potentially modified) or null to discard it.
 	virtual Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) { return p_event; }
 
+	// Returns true if processing an event also produces one of the SDK's attachments.
+	virtual bool produces_default_attachment() const { return false; }
+
 	virtual ~SentryEventProcessor() = default;
 };
 

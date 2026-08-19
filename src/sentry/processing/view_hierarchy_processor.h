@@ -20,6 +20,7 @@ protected:
 
 public:
 	virtual Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) override;
+	virtual bool produces_default_attachment() const override { return true; }
 
 	ViewHierarchyProcessor();
 };
