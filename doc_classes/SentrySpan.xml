@@ -14,6 +14,7 @@
 		)
 		[/codeblock]
 		Always end spans created with [method SentrySDK.start_span]. A span that never ends is never sent, and an active one keeps its scope fork alive, so spans left unended accumulate on the thread's scope stack until the SDK warns that it has grown unusually deep. [method SentrySDK.with_span] ends the span for you.
+		Set [code]sentry.op[/code] to categorize the work the span measures, such as [code]asset.load[/code] or [code]db.query[/code]. Sentry groups and filters spans by operation. Pass it in the [code]attributes[/code] dictionary of [method SentrySDK.start_span], since some platforms fix the operation when the span starts.
 		[b]Note:[/b] Spans are thread-local. Call span methods only from the thread that created the span.
 		[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning. Calling methods on that span is safe, but no span is recorded.
 	</description>
@@ -34,6 +35,7 @@
 			<description>
 				Sets one attribute on the span. Attributes are searchable metadata that help describe the operation, such as the level being loaded, the asset path, or a gameplay flag.
 				The [param key] must not be empty. Supported value types are [bool], [int], [float], and [String]. Other types will be stringified.
+				Pass [code]sentry.op[/code] to [method SentrySDK.start_span] instead of setting it here, since some platforms fix the operation when the span starts.
 			</description>
 		</method>
 		<method name="set_attributes">
@@ -41,15 +43,14 @@
 			<param index="0" name="attributes" type="Dictionary" />
 			<description>
 				Sets multiple attributes on the span from [param attributes]. Each dictionary entry becomes one span attribute.
-				Empty keys are skipped and reported as errors. Values use the same conversion rules as [method set_attribute].
+				The SDK skips an entry with an empty key and prints an error. Values use the same conversion rules as [method set_attribute].
 			</description>
 		</method>
 		<method name="set_status">
 			<return type="void" />
 			<param index="0" name="status" type="int" enum="SentrySpan.SpanStatus" />
 			<description>
-				Sets the outcome of the span. Use [constant SentrySpan.SPAN_STATUS_OK] for successful operations and [constant SentrySpan.SPAN_STATUS_ERROR] for failed operations.
-				Sentry reports a span that was never given a status as successful, so set [constant SentrySpan.SPAN_STATUS_ERROR] on the paths that fail.
+				Sets the outcome of the span. Use [constant SPAN_STATUS_OK] for successful operations and [constant SPAN_STATUS_ERROR] for failed operations. Sentry reports a span that was never given a status as successful.
 			</description>
 		</method>
 	</methods>
