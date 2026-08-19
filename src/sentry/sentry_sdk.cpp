@@ -171,7 +171,7 @@ Variant SentrySDK::with_scope(const Callable &p_callable) {
 
 	Ref<SentryScope> scope = _push_scope(get_current_scope());
 	Variant result = p_callable.call(scope);
-	static bool first_warning = true;
+	static bool first_warning = true; // acceptable race: several warnings are OK.
 	if (first_warning) {
 		if (Object *obj = result.get_validated_object();
 				unlikely(obj != nullptr && obj->get_class() == "GDScriptFunctionState")) {
@@ -227,7 +227,7 @@ void SentrySDK::notify_span_ended(const SentrySpan *p_span) {
 Variant SentrySDK::with_span(const String &p_name, const Callable &p_callable) {
 	Ref<SentrySpan> active_span = start_span(p_name);
 	Variant result = p_callable.call(active_span);
-	static bool first_warning = true;
+	static bool first_warning = true; // acceptable race: several warnings are OK.
 	if (first_warning) {
 		if (Object *obj = result.get_validated_object();
 				unlikely(obj != nullptr && obj->get_class() == "GDScriptFunctionState")) {
