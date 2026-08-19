@@ -80,7 +80,8 @@ Ref<SentrySpan> SentryScope::get_span() const {
 Ref<SentryScope> SentryScope::clone() const {
 	ERR_SENTRY_THREAD_GUARD_V(Ref<SentryScope>(), WRONG_THREAD_MSG);
 	_sync_active_span();
-	Ref<SentryScope> copy = Ref<SentryScope>(memnew(SentryScope(_impl->clone())));
+	SentryScopeImpl *cloned_impl = _impl->clone();
+	Ref<SentryScope> copy = Ref<SentryScope>(memnew(SentryScope(cloned_impl)));
 	copy->_span = _span;
 	return copy;
 }
