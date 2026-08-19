@@ -29,6 +29,8 @@ Ref<SentrySpan> SentrySpan::create_noop() {
 Ref<SentrySpan> SentrySpan::unassigned() {
 	// FYI: Internal SDK is not initialized yet when this is first called, which
 	// happens while binding methods, since it is the default value for start_span().
+	// That first call is also what makes the unsynchronized init safe: it happens on
+	// the main thread during class registration, before any thread can reach start_span().
 	if (_unassigned_sentinel.is_null()) {
 		_unassigned_sentinel = create_noop();
 		// Holding it until process exit would outlive ObjectDB and crash on teardown.
