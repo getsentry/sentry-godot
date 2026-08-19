@@ -113,7 +113,7 @@ public partial class DotnetTestHarness : RefCounted
             options.EnableLogs = false;
             options.AttachLog = true;
             options.AttachSceneTree = false;
-            options.AttachScreenshot = false; // CI runs headless
+            options.AttachScreenshot = false;
             options.ScreenshotLevel = SentryLevel.Warning;
             options.EnableAppHangTracking = true;
             options.AppHangTimeout = TimeSpan.FromMilliseconds(2300);
