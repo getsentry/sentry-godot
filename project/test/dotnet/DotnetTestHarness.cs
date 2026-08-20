@@ -24,6 +24,7 @@ public partial class DotnetTestHarness : RefCounted
             options.Debug = false;
             options.AttachScreenshot = false; // CI runs headless
             options.Native.SetBeforeSend(OnBeforeSend);
+            options.Native.SetBeforeSendFeedback(OnBeforeSendFeedback);
             options.SetBeforeSend((SentryEvent _) => null);
         });
     }
@@ -99,6 +100,33 @@ public partial class DotnetTestHarness : RefCounted
         ev.Level = SentryLevel.Warning;
         ev.SetTag("before_send.added", "added 世界 👋");
         ev.UnsetTag("before_send.remove_me");
+        return ev;
+    }
+
+    private readonly Godot.Collections.Dictionary _seenFeedbackValues = [];
+    public Godot.Collections.Dictionary GetSeenFeedbackValues() => _seenFeedbackValues;
+
+    private int _nativeBeforeSendFeedbackCallCount;
+    public int GetNativeBeforeSendFeedbackCallCount() => _nativeBeforeSendFeedbackCallCount;
+
+    /// <summary>
+    /// Native before-send-feedback callback exercised by the CPP tests.
+    /// Records the values it reads through the getters, then overrides them through the setters.
+    /// </summary>
+    private SentryNativeEvent OnBeforeSendFeedback(SentryNativeEvent ev)
+    {
+        _nativeBeforeSendFeedbackCallCount++;
+
+        if (ev.Message is not null && ev.Message.Contains("DROP_ME"))
+        {
+            return null;
+        }
+
+        _seenFeedbackValues["message"] = ev.Message;
+        _seenFeedbackValues["tag"] = ev.GetTag("before_send_feedback.read_me");
+
+        ev.Level = SentryLevel.Warning;
+        ev.SetTag("before_send_feedback.added", "added 世界 👋");
         return ev;
     }
 }

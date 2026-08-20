@@ -73,6 +73,7 @@ internal static partial class NativeBridge
     {
         None = 0,
         BeforeSend = 1 << 0,
+        BeforeSendFeedback = 1 << 1,
     }
 
     private static ManagedDefinedHooks GetManagedDefinedHooks(SentryGodotOptions options)
@@ -81,6 +82,10 @@ internal static partial class NativeBridge
         if (options.Native.BeforeSend is not null)
         {
             hooks |= ManagedDefinedHooks.BeforeSend;
+        }
+        if (options.Native.BeforeSendFeedback is not null)
+        {
+            hooks |= ManagedDefinedHooks.BeforeSendFeedback;
         }
         return hooks;
     }
@@ -266,6 +271,7 @@ internal static partial class NativeBridge
         public delegate* unmanaged[Cdecl]<char*, int, char*, int, char*, int, char*, int, void> set_user;
         public delegate* unmanaged[Cdecl]<void> remove_user;
         public delegate* unmanaged[Cdecl]<IntPtr, byte> process_native_event;
+        public delegate* unmanaged[Cdecl]<IntPtr, byte> process_native_feedback;
     }
 
     [LibraryImport(Lib)]
@@ -305,6 +311,7 @@ internal static partial class NativeBridge
             set_user = &SetUserCallback,
             remove_user = &RemoveUserCallback,
             process_native_event = &ProcessNativeEventCallback,
+            process_native_feedback = &ProcessNativeFeedbackCallback,
         });
     }
 
@@ -488,6 +495,31 @@ internal static partial class NativeBridge
         catch (Exception ex)
         {
             GodotLog.Error($"Error in options.Native.SetBeforeSend callback: {ex}");
+            return 1;
+        }
+    }
+
+    /// <remarks>
+    /// Called by native for each user feedback captured outside .NET.
+    /// Runs the options.Native.SetBeforeSendFeedback callback with a temporary event wrapper.
+    /// Returns 1 to keep the feedback, 0 to discard.
+    /// </remarks>
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static byte ProcessNativeFeedbackCallback(IntPtr eventHandle)
+    {
+        try
+        {
+            var callback = Sentry.Godot.SentrySdk.CurrentOptions?.Native.BeforeSendFeedback;
+            if (callback is null)
+            {
+                return 1;
+            }
+            var result = callback(new SentryNativeEvent(eventHandle));
+            return (byte)(result is null ? 0 : 1);
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Error in options.Native.SetBeforeSendFeedback callback: {ex}");
             return 1;
         }
     }

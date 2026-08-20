@@ -94,6 +94,7 @@ struct ManagedFunctions {
 	void (*set_user)(const char16_t *id, int32_t id_len, const char16_t *username, int32_t username_len, const char16_t *email, int32_t email_len, const char16_t *ip, int32_t ip_len);
 	void (*remove_user)();
 	uint8_t (*process_native_event)(void *event_handle); // Returns 1 to keep, 0 to discard.
+	uint8_t (*process_native_feedback)(void *event_handle); // Returns 1 to keep, 0 to discard.
 };
 
 static ManagedFunctions s_managed_funcs = {};
@@ -104,6 +105,7 @@ static ManagedFunctions s_managed_funcs = {};
 enum ManagedDefinedHooks {
 	DEFINED_NONE = 0,
 	DEFINED_BEFORE_SEND = 1 << 0, // options.Native.SetBeforeSend
+	DEFINED_BEFORE_SEND_FEEDBACK = 1 << 1, // options.Native.SetBeforeSendFeedback
 };
 
 static BitField<ManagedDefinedHooks> s_managed_defined_hooks = DEFINED_NONE;
@@ -769,8 +771,32 @@ bool process_event_in_managed_layer(const Ref<SentryEvent> &p_event) {
 	return keep;
 }
 
+bool process_feedback_in_managed_layer(const Ref<SentryEvent> &p_event) {
+	FAIL_COND_V_PRINT_ERROR(p_event.is_null(), true, "Internal error: options.Native.SetBeforeSendFeedback received a null native event.");
+
+	if (s_managed_funcs.process_native_feedback == nullptr || !s_managed_defined_hooks.has_flag(DEFINED_BEFORE_SEND_FEEDBACK)) {
+		// .NET layer unavailable, or no before-send-feedback callback registered.
+		return true;
+	}
+
+	static thread_local bool in_before_send_feedback = false;
+	if (in_before_send_feedback) {
+		return true;
+	}
+	in_before_send_feedback = true;
+
+	const bool keep = s_managed_funcs.process_native_feedback((void *)p_event.ptr()) != 0;
+
+	in_before_send_feedback = false;
+	return keep;
+}
+
 bool is_managed_layer_registered() {
 	return s_managed_funcs.init != nullptr;
+}
+
+bool is_before_send_feedback_defined() {
+	return s_managed_defined_hooks.has_flag(DEFINED_BEFORE_SEND_FEEDBACK);
 }
 
 #ifdef TESTS_ENABLED

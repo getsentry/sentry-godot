@@ -1,5 +1,6 @@
 #include "process_feedback.h"
 
+#include "sentry/dotnet/csharp_interop.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/sentry_event_processor.h"
 #include "sentry/sentry_sdk.h"
@@ -33,6 +34,12 @@ Ref<SentryEvent> process_feedback(const Ref<SentryEvent> &p_event) {
 			sentry::logging::print_error("Event processor returned a different event object – discarding processor result");
 			event = p_event; // Reset to original event
 		}
+	}
+
+	// Managed (.NET) before-send-feedback hook.
+	if (!sentry::dotnet::process_feedback_in_managed_layer(event)) {
+		sentry::logging::print_debug("managed layer discarded feedback ", p_event->get_id());
+		return nullptr;
 	}
 
 	if (const Callable &before_send_feedback = SENTRY_OPTIONS()->get_before_send_feedback(); before_send_feedback.is_valid()) {

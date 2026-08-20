@@ -27,4 +27,21 @@ public sealed class SentryNativeOptions
     {
         BeforeSend = beforeSend;
     }
+
+    internal Func<SentryNativeEvent, SentryNativeEvent?>? BeforeSendFeedback { get; private set; }
+
+    /// <summary>
+    /// Sets the callback invoked before user feedback is sent, allowing you to inspect, modify, or discard it.
+    /// </summary>
+    /// <remarks>
+    /// The callback receives a <see cref="SentryNativeEvent"/>; return it to send the feedback, or return null
+    /// to discard it. The fields submitted with the feedback are carried in the event's feedback context.
+    /// Feedback captured through the managed (.NET) API is configured through
+    /// <see cref="SentryOptions.SetBeforeSendFeedback(Func{SentryEvent, SentryHint, SentryEvent?})"/> instead.
+    /// This callback is not supported on iOS and macOS yet. Feedback is still sent there, but the callback never runs.
+    /// </remarks>
+    public void SetBeforeSendFeedback(Func<SentryNativeEvent, SentryNativeEvent?> beforeSendFeedback)
+    {
+        BeforeSendFeedback = beforeSendFeedback;
+    }
 }

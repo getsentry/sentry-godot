@@ -39,8 +39,16 @@ void remove_user();
 // No-op returning true when the .NET layer or callback is unavailable.
 bool process_event_in_managed_layer(const Ref<SentryEvent> &p_event);
 
+// Forwards user feedback to the options.Native.SetBeforeSendFeedback callback in the .NET layer.
+// Returns true to keep the feedback, false to discard it. Mutates the event in place.
+// No-op returning true when the .NET layer or callback is unavailable.
+bool process_feedback_in_managed_layer(const Ref<SentryEvent> &p_event);
+
 // Returns true once the managed layer has loaded and registered its native callbacks.
 bool is_managed_layer_registered();
+
+// Returns true if the managed layer registered an options.Native.SetBeforeSendFeedback callback.
+bool is_before_send_feedback_defined();
 
 #ifdef TESTS_ENABLED
 

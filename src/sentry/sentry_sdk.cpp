@@ -218,7 +218,8 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 
 	_invalidate_scopes();
 
-	if (unlikely(options->get_before_send_feedback().is_valid() && !internal_sdk->supports_before_send_feedback())) {
+	const bool before_send_feedback_defined = options->get_before_send_feedback().is_valid() || sentry::dotnet::is_before_send_feedback_defined();
+	if (unlikely(before_send_feedback_defined && !internal_sdk->supports_before_send_feedback())) {
 		WARN_PRINT_ONCE("Sentry: before_send_feedback is not supported on this platform yet - the callback will not run.");
 	}
 
