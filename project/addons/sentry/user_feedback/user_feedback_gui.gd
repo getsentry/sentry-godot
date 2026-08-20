@@ -117,6 +117,7 @@ func _resize_children() -> void:
 
 
 func _on_user_feedback_form_feedback_submitted(feedback: SentryFeedback) -> void:
+	# Hide instead of freeing: the form captures the feedback a frame later.
 	hide()
 
 
