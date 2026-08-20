@@ -256,6 +256,10 @@ class SentryBridge {
           return event;
         }
 
+        if (!this.isEnabled()) {
+          return null;
+        }
+
         beforeSendFeedbackCallback(event);
 
         const shouldDiscard: boolean = (event as any).shouldDiscard;
