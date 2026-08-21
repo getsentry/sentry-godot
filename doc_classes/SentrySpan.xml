@@ -17,6 +17,7 @@
 		Set [code]sentry.op[/code] to categorize the work the span measures, such as [code]asset.load[/code] or [code]db.query[/code]. Sentry groups and filters spans by operation. Pass it in the [code]attributes[/code] dictionary of [method SentrySDK.start_span], since some platforms fix the operation when the span starts.
 		[b]Note:[/b] Spans are thread-local. Call span methods only from the thread that created the span.
 		[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning. Calling methods on that span is safe, but no span is recorded.
+		To learn more, visit [url=https://docs.sentry.io/concepts/key-terms/tracing/]Tracing documentation[/url].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -50,7 +51,7 @@
 			<return type="void" />
 			<param index="0" name="status" type="int" enum="SentrySpan.SpanStatus" />
 			<description>
-				Sets the outcome of the span. Use [constant SPAN_STATUS_OK] for successful operations and [constant SPAN_STATUS_ERROR] for failed operations. Sentry reports a span that was never given a status as successful.
+				Sets the outcome of the span. Use [constant SPAN_STATUS_OK] for successful operations and [constant SPAN_STATUS_ERROR] for failed operations. Sentry treats a span that was never given a status as successful.
 			</description>
 		</method>
 	</methods>
