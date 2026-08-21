@@ -1,6 +1,7 @@
 #include "editor/sentry_editor_plugin.h"
 #include "sentry/disabled/disabled_event.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/engine_lifecycle/sentry_scene_tree_watcher.h"
 #include "sentry/logging/sentry_godot_logger.h"
 #include "sentry/processing/screenshot_processor.h"
@@ -20,6 +21,7 @@
 #include "sentry/sentry_scope.h"
 #include "sentry/sentry_scope_observer.h"
 #include "sentry/sentry_sdk.h"
+#include "sentry/sentry_span.h"
 #include "sentry/sentry_unit.h"
 #include "sentry/sentry_user.h"
 
@@ -88,6 +90,7 @@ void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryBadCode);
 	GDREGISTER_CLASS(SentryUnit);
 	GDREGISTER_CLASS(SentryFeedback);
+	GDREGISTER_ABSTRACT_CLASS(SentrySpan);
 	GDREGISTER_CLASS(SentrySDK);
 	GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
 	GDREGISTER_ABSTRACT_CLASS(SentryEvent);
@@ -177,6 +180,7 @@ void uninitialize_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		SentrySDK::destroy_singleton();
 		SentryUnit::destroy_singleton();
+		engine_lifecycle::notify_module_terminating();
 	}
 }
 

@@ -18,10 +18,18 @@ void mark_engine_singletons_as_ready();
 bool are_engine_singletons_ready();
 
 // Registers a callback to be invoked once when the engine begins shutting down,
-// shortly before the script runtime is torn down.
+// shortly before the script runtime is torn down. Must be called from the main thread.
 void add_shutdown_callback(const Callable &p_callback);
 
-// Unregisters shutdown callback.
+// Unregisters shutdown callback. Must be called from the main thread.
 void remove_shutdown_callback(const Callable &p_callback);
+
+// Registers a callback to be invoked once when this extension is deinitialized.
+// Useful for releasing statics. Must be called from the main thread.
+void add_module_termination_callback(const Callable &p_callback);
+
+// Called from register_types.cpp when the module is deinitialized.
+// Runs all registered module termination callbacks and then releases all callbacks.
+void notify_module_terminating();
 
 } // namespace sentry::engine_lifecycle

@@ -47,6 +47,7 @@ public:
 	virtual void remove_attribute(const String &p_name) override;
 
 	virtual SentryScopeImpl *create_scope() override;
+	virtual SentrySpanImpl *create_span(const String &p_name, const Dictionary &p_attributes) override;
 
 	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) override;
 

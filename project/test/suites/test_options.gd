@@ -56,6 +56,13 @@ func test_sample_rate() -> void:
 	assert_float(options.sample_rate).is_equal_approx(0.5, 0.01)
 
 
+## SentryOptions.traces_sample_rate should default to 0.0 and be set to the specified value.
+func test_traces_sample_rate() -> void:
+	assert_float(options.traces_sample_rate).is_equal_approx(0.0, 0.01)
+	options.traces_sample_rate = 0.5
+	assert_float(options.traces_sample_rate).is_equal_approx(0.5, 0.01)
+
+
 ## SentryOptions.max_breadcrumbs should be set to the specified value.
 func test_max_breadcrumbs() -> void:
 	options.max_breadcrumbs = 42

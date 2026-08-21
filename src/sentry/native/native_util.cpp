@@ -157,21 +157,25 @@ Level cstring_to_level(const CharString &p_cstring) {
 	}
 }
 
-sentry_value_t variant_to_attribute(const Variant &p_value) {
+sentry_value_t variant_to_attribute_value(const Variant &p_value) {
 	switch (p_value.get_type()) {
 		case Variant::BOOL: {
-			return sentry_value_new_attribute(sentry_value_new_bool((bool)p_value), NULL);
+			return sentry_value_new_bool((bool)p_value);
 		} break;
 		case Variant::INT: {
-			return sentry_value_new_attribute(sentry_value_new_int64((int64_t)p_value), NULL);
+			return sentry_value_new_int64((int64_t)p_value);
 		} break;
 		case Variant::FLOAT: {
-			return sentry_value_new_attribute(sentry_value_new_double((double)p_value), NULL);
+			return sentry_value_new_double((double)p_value);
 		} break;
 		default: {
-			return sentry_value_new_attribute(sentry_value_new_string(p_value.stringify().utf8()), NULL);
+			return sentry_value_new_string(p_value.stringify().utf8());
 		} break;
 	}
+}
+
+sentry_value_t variant_to_attribute(const Variant &p_value) {
+	return sentry_value_new_attribute(variant_to_attribute_value(p_value), NULL);
 }
 
 sentry_value_t dictionary_to_attributes(const Dictionary &p_attributes) {

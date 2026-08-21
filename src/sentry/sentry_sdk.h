@@ -12,6 +12,7 @@
 #include "sentry/sentry_metrics.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_scope.h"
+#include "sentry/sentry_span.h"
 
 #include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/core/object.hpp>
@@ -72,7 +73,7 @@ private:
 	// Marks every thread's scope stack as stale.
 	void _invalidate_scopes();
 
-	_FORCE_INLINE_ Ref<SentryScope> _push_scope() { return current_scopes.push_back(Ref<SentryScope>(get_current_scope()->clone()))->get(); }
+	Ref<SentryScope> _push_scope(const Ref<SentryScope> &p_source);
 	_FORCE_INLINE_ void _pop_scope(const Ref<SentryScope> &p_scope) { current_scopes.erase(p_scope); }
 
 protected:
@@ -128,8 +129,14 @@ public:
 	// * Scopes
 
 	Ref<SentryScope> get_current_scope() const;
-
 	Variant with_scope(const Callable &p_callable);
+
+	// * Spans
+
+	Ref<SentrySpan> start_span(const String &p_name, const Dictionary &p_attributes = {},
+			const Ref<SentrySpan> &p_parent_span = SentrySpan::unassigned(), bool p_active = true);
+	Variant with_span(const String &p_name, const Callable &p_callable);
+	Ref<SentrySpan> get_active_span() const;
 
 	// * Hidden API methods -- used in testing
 
@@ -137,9 +144,13 @@ public:
 	void unset_before_send() { options->set_before_send(Callable()); }
 	Callable get_before_send() { return options->get_before_send(); }
 
+	// * Not exposed in the public API
+
 	void prepare_and_auto_initialize();
 
 	_FORCE_INLINE_ TraceContext get_trace_context() const { return trace_context; }
+
+	void notify_span_ended(const SentrySpan *p_span);
 
 	SentrySDK();
 	~SentrySDK();

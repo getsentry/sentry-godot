@@ -129,6 +129,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
 	_define_setting(sentry::make_level_enum_property("sentry/options/diagnostic_level"), p_options->diagnostic_level);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate, false);
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/traces_sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->traces_sample_rate, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/shutdown_timeout_ms", PROPERTY_HINT_RANGE, "0,30000"), p_options->shutdown_timeout_ms, false);
 	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
@@ -221,6 +222,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->diagnostic_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/diagnostic_level", p_options->diagnostic_level);
 
 	p_options->sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/sample_rate", p_options->sample_rate);
+	p_options->traces_sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/traces_sample_rate", p_options->traces_sample_rate);
 	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/options/max_breadcrumbs", p_options->max_breadcrumbs);
 	p_options->shutdown_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/shutdown_timeout_ms", p_options->shutdown_timeout_ms);
 	p_options->send_default_pii = ProjectSettings::get_singleton()->get_setting("sentry/options/send_default_pii", p_options->send_default_pii);
@@ -415,6 +417,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, sentry::make_level_enum_property("diagnostic_level"), set_diagnostic_level, get_diagnostic_level);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "environment"), set_environment, get_environment);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "sample_rate"), set_sample_rate, get_sample_rate);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "traces_sample_rate"), set_traces_sample_rate, get_traces_sample_rate);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "max_breadcrumbs"), set_max_breadcrumbs, get_max_breadcrumbs);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "shutdown_timeout_ms", PROPERTY_HINT_RANGE, "0,30000"), set_shutdown_timeout_ms, get_shutdown_timeout_ms);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "send_default_pii"), set_send_default_pii, is_send_default_pii_enabled);

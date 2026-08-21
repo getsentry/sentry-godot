@@ -38,6 +38,10 @@ _FORCE_INLINE_ void sentry_value_set_or_remove_string_by_key(sentry_value_t valu
 	}
 }
 
+// Converts a Variant to an attribute-supported value type, stringifying unsupported types.
+// Returns the raw value for use where no attribute type tag is stored.
+sentry_value_t variant_to_attribute_value(const Variant &p_value);
+
 sentry_value_t variant_to_attribute(const Variant &p_value);
 sentry_value_t dictionary_to_attributes(const Dictionary &p_attributes);
 

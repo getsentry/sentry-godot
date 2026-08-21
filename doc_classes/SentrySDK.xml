@@ -72,6 +72,14 @@
 				Creates a new [SentryEvent] object. You can capture the event with [method SentrySDK.capture_event].
 			</description>
 		</method>
+		<method name="get_active_span" qualifiers="const">
+			<return type="SentrySpan" />
+			<description>
+				Returns the span currently bound to the calling thread's current scope, or [code]null[/code] if no span is active. Events captured while a span is active are associated with that span's trace context.
+				Active spans are created by [method SentrySDK.start_span] and [method SentrySDK.with_span]. When an active span ends, the SDK restores the previously active span, if any.
+				[b]Note:[/b] The returned span belongs to the calling thread. Span methods must be called from the thread that created the span.
+			</description>
+		</method>
 		<method name="get_current_scope" qualifiers="const">
 			<return type="SentryScope" />
 			<description>
@@ -185,6 +193,30 @@
 				Assigns user data. See [SentryUser].
 			</description>
 		</method>
+		<method name="start_span">
+			<return type="SentrySpan" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="attributes" type="Dictionary" default="{}" />
+			<param index="2" name="parent_span" type="SentrySpan" default="Object(SentrySpan,&quot;script&quot;:null) " />
+			<param index="3" name="active" type="bool" default="true" />
+			<description>
+				Starts a span named [param name] and returns it. Use the returned [SentrySpan] to attach attributes, set a status, and call [method SentrySpan.end] when the measured operation finishes. If [param name] is empty, the SDK prints an error and returns a no-op span.
+				If [param active] is [code]true[/code], the SDK forks the current scope and makes the new span active on the fork, so telemetry captured while the span is active is associated with it. Writes to the current scope during the span are discarded when the span ends, and the scope that was current when the span started becomes current again. Pass [code]false[/code] to record a span without making it current. An inactive span is not bound to a scope, so it does not affect [method SentrySDK.get_active_span] and does not stamp telemetry captured alongside it.
+				[codeblock]
+				var span := SentrySDK.start_span("load_level", {
+					"sentry.op": "asset.load",
+					"level": level_name
+				})
+				load_level(level_name)
+				span.set_status(SentrySpan.SPAN_STATUS_OK)
+				span.end()
+				[/codeblock]
+				When [param parent_span] is omitted, the new span becomes a child of [method SentrySDK.get_active_span] if one exists; otherwise it starts a new root span. Pass [code]null[/code] explicitly to force a new root span. Pass a [SentrySpan] to create the new span under that parent, even if another span is currently active. When such a span is active, it forks the explicit parent's scope instead of the current scope, so it inherits the parent's scope data.
+				The [param attributes] dictionary is added to the span when it starts. The special [code]sentry.op[/code] attribute sets the operation the span is grouped under in Sentry. The SDK skips an entry with an empty key and prints an error.
+				[b]Note:[/b] Spans are only sent to Sentry if [member SentryOptions.traces_sample_rate] is raised above its default of 0.0. The rest of the API works either way, so telemetry captured during a span is associated with it even when the span itself is not sent.
+				[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
+			</description>
+		</method>
 		<method name="with_scope">
 			<return type="Variant" />
 			<param index="0" name="callable" type="Callable" />
@@ -210,6 +242,26 @@
 				For more information, see [SentryScope] class.
 				[b]Note:[/b] The fork covers the synchronous part of [param callable] only. If the callable awaits, the fork is discarded at the first [code]await[/code] and a warning is printed.
 				[b]Note:[/b] The SDK does not support scopes on macOS and iOS yet. On those platforms it still captures telemetry, but discards the data written to the forked scope and prints a warning.
+			</description>
+		</method>
+		<method name="with_span">
+			<return type="Variant" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+				Starts an active span named [param name], calls [param callable] with that [SentrySpan], ends the span when the callable returns, and returns the callable's return value. If [param name] is empty, the SDK prints an error and runs [param callable] with a no-op span.
+				Use this helper when the operation fits in one synchronous callable. Use [method SentrySDK.start_span] instead when you need to set initial attributes, choose a parent span, keep a span open across multiple functions, or create an inactive span.
+				[codeblock]
+				var result: Variant = SentrySDK.with_span("generate_chunk", func(span: SentrySpan) -&gt; Variant:
+					span.set_attribute("chunk_x", chunk_x)
+					span.set_attribute("chunk_y", chunk_y)
+					return generate_chunk(chunk_x, chunk_y)
+				)
+				[/codeblock]
+				Nested calls create nested spans. When the callable returns, the enclosing active span and scope are restored.
+				[b]Note:[/b] The span covers the synchronous part of [param callable] only. If the callable awaits, the span is ended at the first [code]await[/code] and a warning is printed.
+				[b]Note:[/b] Spans are only sent to Sentry if [member SentryOptions.traces_sample_rate] is raised above its default of 0.0.
+				[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
 			</description>
 		</method>
 	</methods>

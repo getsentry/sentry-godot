@@ -113,6 +113,7 @@ private:
 	sentry::Level diagnostic_level = sentry::LEVEL_DEBUG;
 	String environment = "{auto}";
 	double sample_rate = 1.0;
+	double traces_sample_rate = 0.0;
 	int max_breadcrumbs = 100;
 	int shutdown_timeout_ms = 2000;
 	bool send_default_pii = false;
@@ -182,6 +183,9 @@ public:
 
 	_FORCE_INLINE_ double get_sample_rate() const { return sample_rate; }
 	_FORCE_INLINE_ void set_sample_rate(double p_sample_rate) { sample_rate = p_sample_rate; }
+
+	_FORCE_INLINE_ double get_traces_sample_rate() const { return traces_sample_rate; }
+	_FORCE_INLINE_ void set_traces_sample_rate(double p_traces_sample_rate) { traces_sample_rate = p_traces_sample_rate; }
 
 	_FORCE_INLINE_ int get_max_breadcrumbs() const { return max_breadcrumbs; }
 	_FORCE_INLINE_ void set_max_breadcrumbs(int p_max_breadcrumbs) { max_breadcrumbs = p_max_breadcrumbs; }

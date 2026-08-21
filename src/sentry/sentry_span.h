@@ -1,0 +1,81 @@
+#pragma once
+
+#include "sentry/sentry_span_impl.h"
+#include "sentry/span_status.h"
+#include "sentry/util/thread_guard.h"
+
+#include <godot_cpp/classes/ref_counted.hpp>
+
+using namespace godot;
+
+namespace sentry {
+
+class SentryScope;
+
+// Godot-exported representation of a Sentry span.
+// Platform-specific behavior is provided by SentrySpanImpl subclasses.
+class SentrySpan : public RefCounted {
+	GDCLASS(SentrySpan, RefCounted);
+
+public:
+	// SentrySpan.SpanStatus is defined in sentry/span_status.h.
+	// Godot extensions can't expose global enums; they must belong to a class.
+	// This alias avoids circular dependencies with headers that use SpanStatus.
+	using SpanStatus = sentry::SpanStatus;
+
+private:
+	SentrySpanImpl *_impl;
+
+	// The span this one displaced when it was bound to a scope, assigned by SentrySDK.
+	// Scopes resolve their slot through this chain, so it must outlive this span's end().
+	Ref<SentrySpan> _previous;
+
+	uint64_t _scope_id = 0;
+
+	bool _ended = false;
+
+	SENTRY_THREAD_OWNER;
+
+protected:
+	static void _bind_methods();
+
+public:
+	// Returns a no-op span that does nothing.
+	static Ref<SentrySpan> create_noop();
+
+	// Returns a sentinel value that indicates an unassigned span.
+	static Ref<SentrySpan> unassigned();
+
+	void set_attribute(const String &p_key, const Variant &p_value);
+	void set_attributes(const Dictionary &p_attributes);
+
+	void set_status(SpanStatus p_status);
+
+	void end();
+
+	// *** Not exposed in the public API
+
+	Ref<SentrySpan> start_child(const String &p_name, const Dictionary &p_attributes);
+
+	_FORCE_INLINE_ bool is_ended() const { return _ended; }
+	_FORCE_INLINE_ void set_previous(const Ref<SentrySpan> &p_span) { _previous = p_span; }
+	_FORCE_INLINE_ Ref<SentrySpan> get_previous() const { return _previous; }
+
+	// Stores the ID of the scope fork created when this span becomes active.
+	// The forked scope is stored as a weak reference, because the scope holds this span strongly.
+	void set_associated_scope(const Ref<SentryScope> &p_scope);
+
+	// Returns null if this span was never active, or if its fork is already gone (unlikely).
+	Ref<SentryScope> get_associated_scope() const;
+
+	SentrySpanImpl *get_implementation() const { return _impl; }
+
+	SentrySpan();
+	SentrySpan(const String &p_name, const Dictionary &p_attributes);
+	SentrySpan(SentrySpanImpl *p_impl);
+	~SentrySpan();
+};
+
+} // namespace sentry
+
+VARIANT_ENUM_CAST(sentry::SentrySpan::SpanStatus);

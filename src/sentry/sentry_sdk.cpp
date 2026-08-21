@@ -155,14 +155,22 @@ Ref<SentryScope> SentrySDK::get_current_scope() const {
 	return current_scopes.back()->get();
 }
 
+Ref<SentryScope> SentrySDK::_push_scope(const Ref<SentryScope> &p_source) {
+	constexpr int SCOPE_DEPTH_WARNING_THRESHOLD = 64;
+	if (unlikely(current_scopes.size() >= SCOPE_DEPTH_WARNING_THRESHOLD)) {
+		WARN_PRINT_ONCE("Sentry: Scope stack is growing unusually deep. This may indicate that spans are not being ended, or that with_scope() calls are nesting without bound.");
+	}
+	return current_scopes.push_back(p_source->clone())->get();
+}
+
 Variant SentrySDK::with_scope(const Callable &p_callable) {
 	if (unlikely(!internal_sdk->supports_scopes())) {
 		WARN_PRINT_ONCE("Sentry: Scopes are not supported on this platform yet - writes to the scope will be discarded.");
 	}
 
-	Ref<SentryScope> scope = _push_scope();
+	Ref<SentryScope> scope = _push_scope(get_current_scope());
 	Variant result = p_callable.call(scope);
-	static bool first_warning = true;
+	static bool first_warning = true; // acceptable race: several warnings are OK.
 	if (first_warning) {
 		if (Object *obj = result.get_validated_object();
 				unlikely(obj != nullptr && obj->get_class() == "GDScriptFunctionState")) {
@@ -172,6 +180,66 @@ Variant SentrySDK::with_scope(const Callable &p_callable) {
 	}
 	_pop_scope(scope);
 	return result;
+}
+
+Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Dictionary &p_attributes, const Ref<SentrySpan> &p_parent_span, bool p_active) {
+	ERR_FAIL_COND_V_MSG(p_name.is_empty(), SentrySpan::create_noop(), "Sentry: Can't start a span with an empty name.");
+
+	// The unassigned sentinel means "inherit the active span", while an explicit null forces a segment (new root-level span).
+	const bool parent_given = p_parent_span != SentrySpan::unassigned();
+	Ref<SentrySpan> parent = parent_given ? p_parent_span : get_active_span();
+
+	Ref<SentrySpan> span;
+	if (parent.is_valid()) {
+		span = parent->start_child(p_name, p_attributes);
+		if (span.is_null()) {
+			// start_child() already reported why.
+			return span;
+		}
+	} else {
+		span = Ref<SentrySpan>(memnew(SentrySpan(p_name, p_attributes)));
+	}
+
+	if (p_active) {
+		// When a new span is started, the current scope of the parent span MUST be forked.
+		Ref<SentryScope> source;
+		if (parent_given && parent.is_valid()) {
+			source = parent->get_associated_scope();
+		}
+		if (source.is_null()) {
+			// The parent was never active, or is no longer.
+			source = get_current_scope();
+		}
+		Ref<SentryScope> forked_scope = _push_scope(source);
+		forked_scope->set_span(span);
+		span->set_associated_scope(forked_scope);
+	}
+	return span;
+}
+
+void SentrySDK::notify_span_ended(const SentrySpan *p_span) {
+	if (Ref<SentryScope> scope = p_span->get_associated_scope(); scope.is_valid()) {
+		_pop_scope(scope);
+	}
+}
+
+Variant SentrySDK::with_span(const String &p_name, const Callable &p_callable) {
+	Ref<SentrySpan> active_span = start_span(p_name);
+	Variant result = p_callable.call(active_span);
+	static bool first_warning = true; // acceptable race: several warnings are OK.
+	if (first_warning) {
+		if (Object *obj = result.get_validated_object();
+				unlikely(obj != nullptr && obj->get_class() == "GDScriptFunctionState")) {
+			first_warning = false;
+			WARN_PRINT("Sentry: with_span() does not support await - the span is only active until the first await.");
+		}
+	}
+	active_span->end();
+	return result;
+}
+
+Ref<SentrySpan> SentrySDK::get_active_span() const {
+	return get_current_scope()->get_span();
 }
 
 void SentrySDK::init(const Callable &p_configuration_callback) {
@@ -599,6 +667,10 @@ void SentrySDK::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_current_scope"), &SentrySDK::get_current_scope);
 	ClassDB::bind_method(D_METHOD("with_scope", "callable"), &SentrySDK::with_scope);
+
+	ClassDB::bind_method(D_METHOD("start_span", "name", "attributes", "parent_span", "active"), &SentrySDK::start_span, DEFVAL(Dictionary()), DEFVAL(SentrySpan::unassigned()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("with_span", "name", "callable"), &SentrySDK::with_span);
+	ClassDB::bind_method(D_METHOD("get_active_span"), &SentrySDK::get_active_span);
 
 	// Hidden API methods -- used in testing.
 	ClassDB::bind_method(D_METHOD("_set_before_send", "callable"), &SentrySDK::set_before_send);
