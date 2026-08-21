@@ -22,6 +22,20 @@
 				Returns the exception value (error message) at the specified [param index], or an empty string if [param index] is out of bounds.
 			</description>
 		</method>
+		<method name="get_feedback" qualifiers="const">
+			<return type="SentryFeedback" />
+			<description>
+				Returns the user feedback attached to this event, or [code]null[/code] if there is none. Changes made to the returned object are applied to the event itself, which allows a [member SentryOptions.before_send_feedback] callback to scrub user-submitted feedback before it is sent.
+				[codeblock]
+				func _before_send_feedback(event: SentryEvent) -&gt; SentryEvent:
+					var feedback := event.get_feedback()
+					if feedback != null:
+						# Scrub or modify the feedback before sending.
+						feedback.contact_email = "redacted@example.com"
+					return event
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_tag">
 			<return type="String" />
 			<param index="0" name="key" type="String" />
