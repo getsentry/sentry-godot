@@ -55,6 +55,7 @@ try {
 			"setUser",
 			"removeUser",
 			"eventSetUser",
+			"eventGetFeedback",
 			"createScope",
 			"scopeSetContext",
 			"scopeSetFingerprint",
@@ -356,6 +357,16 @@ try {
 			assertEqual(seen.contexts.feedback.contact_email, "test@example.com", "the callback should see the submitted email");
 			const scoped = bridge.captureFeedback("Test feedback", "", "", "", bridge.createScope());
 			assertEqual(typeof scoped, "string", "Scoped captureFeedback should return a string");
+		});
+
+		runTest("eventGetFeedback()", () => {
+			const feedbackEvent = feedbackEvents[feedbackEvents.length - 1];
+			const feedback = bridge.eventGetFeedback(feedbackEvent);
+			assert(feedback !== null, "eventGetFeedback should return the feedback context of a feedback event");
+			assertEqual(feedback.message, "Test feedback", "eventGetFeedback should return the submitted message");
+			feedback.message = "Rewritten feedback";
+			assertEqual(feedbackEvent.contexts.feedback.message, "Rewritten feedback", "writes through the returned object should reach the event");
+			assertEqual(bridge.eventGetFeedback({}), null, "eventGetFeedback should return null for an event carrying no feedback");
 		});
 
 		runTest("storeBytes() / takeBytes()", () => {
