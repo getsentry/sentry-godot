@@ -1,6 +1,7 @@
 #include "process_event.h"
 
 #include "sentry/contexts.h"
+#include "sentry/dotnet/csharp_interop.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/sentry_event_processor.h"
 #include "sentry/sentry_sdk.h"
@@ -65,6 +66,13 @@ Ref<SentryEvent> process_event(const Ref<SentryEvent> &p_event) {
 			sentry::logging::print_error("Event processor returned a different event object – discarding processor result");
 			event = p_event; // Reset to original event
 		}
+	}
+
+	// Managed (.NET) before-send hook.
+	// TODO: Determine when crash events can be safely processed in the managed layer. Skipped for now.
+	if (!event->is_crash() && !sentry::dotnet::process_event_in_managed_layer(event)) {
+		sentry::logging::print_debug("managed layer discarded ", p_event->get_id());
+		return nullptr;
 	}
 
 	// Before send callback

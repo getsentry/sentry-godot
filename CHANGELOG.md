@@ -17,6 +17,7 @@
 
 - Web: Fixed tags, breadcrumbs and other globally set data carrying over into the next session when the SDK is closed and initialized again ([#857](https://github.com/getsentry/sentry-godot/pull/857))
 - Fixed attributes with an empty key not being rejected on structured logs and metrics; such attributes are now dropped and reported as an error ([#876](https://github.com/getsentry/sentry-godot/pull/876))
+- .NET: Fixed the `options.Native.SetBeforeSend` callback running once for every event captured in the .NET layer, where it received a placeholder event it could neither read nor modify ([#877](https://github.com/getsentry/sentry-godot/pull/877))
 
 ### Dependencies
 
