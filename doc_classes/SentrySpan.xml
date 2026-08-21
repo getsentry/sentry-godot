@@ -16,7 +16,8 @@
 		Always end spans created with [method SentrySDK.start_span]. A span that never ends is never sent, and an active one keeps its scope fork alive, so spans left unended accumulate on the thread's scope stack until the SDK warns that it has grown unusually deep. [method SentrySDK.with_span] ends the span for you.
 		Set [code]sentry.op[/code] to categorize the work the span measures, such as [code]asset.load[/code] or [code]db.query[/code]. Sentry groups and filters spans by operation. Pass it in the [code]attributes[/code] dictionary of [method SentrySDK.start_span], since some platforms fix the operation when the span starts.
 		[b]Note:[/b] Spans are thread-local. Call span methods only from the thread that created the span.
-		[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning. Calling methods on that span is safe, but no span is recorded.
+		[b]Platform support:[/b] Spans are not supported on macOS, iOS, or Android yet. On those platforms, the SDK returns a no-op span and prints a one-time warning. Calling methods on that span is safe, but no span is recorded.
+		[b]On Web:[/b] The SDK sends spans in the Span v2 format, which self-hosted Sentry does not ingest yet, so spans from a web export only reach Sentry SaaS.
 	</description>
 	<tutorials>
 	</tutorials>

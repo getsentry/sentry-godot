@@ -3,7 +3,7 @@ extends SentryTestSuite
 
 
 # TODO: widen the platform list as spans are implemented on other backends.
-func before(_do_skip = OS.get_name() not in ["Windows", "Linux"],
+func before(_do_skip = OS.get_name() not in ["Windows", "Linux", "Web"],
 		_skip_reason = "Spans are not implemented on this platform yet.") -> void:
 	super()
 
