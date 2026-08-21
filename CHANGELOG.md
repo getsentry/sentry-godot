@@ -14,6 +14,7 @@
 ### Improvements
 
 - Deprecate the `SentryOptions.enable_logs` and `SentryOptions.enable_metrics` options and their Project Settings counterparts, to be removed in v3; logs and metrics are only sent when you use `SentrySDK.logger` or `SentrySDK.metrics`, or enable automatic log capture with `godot_logger.log_mask` ([#869](https://github.com/getsentry/sentry-godot/pull/869))
+- The bundled user feedback form now waits a frame for the UI to hide before capturing, so a screenshot attached to the feedback shows the game instead of the form and the text typed into it ([#880](https://github.com/getsentry/sentry-godot/pull/880))
 
 ### Fixes
 

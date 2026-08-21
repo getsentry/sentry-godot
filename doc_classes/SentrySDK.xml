@@ -42,6 +42,12 @@
 			<param index="0" name="feedback" type="SentryFeedback" />
 			<description>
 				Captures user [param feedback] and sends it to Sentry. The feedback can optionally be associated with a specific error event if the [member SentryFeedback.associated_event_id] is set.
+				[b]Note:[/b] If your game collects feedback with an in-game form, capture on the next drawn frame so the form can be hidden or freed first. A screenshot attached to the feedback (see [member SentryOptions.attach_screenshot]) then shows the game rather than the form and the text typed into it.
+				[codeblock]
+				RenderingServer.frame_post_draw.connect(
+						SentrySDK.capture_feedback.bind(feedback), CONNECT_ONE_SHOT)
+				_feedback_form.hide()
+				[/codeblock]
 				For more information, see [SentryFeedback] class and visit [url=https://docs.sentry.io/platforms/godot/user-feedback/]User Feedback documentation[/url].
 			</description>
 		</method>
