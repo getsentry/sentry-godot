@@ -58,6 +58,8 @@ public:
 	// writes, which is a platform gap worth warning about.
 	virtual bool supports_scopes() const { return false; }
 
+	virtual bool supports_before_send_feedback() const = 0;
+
 	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) = 0;
 
 	virtual void init() = 0;

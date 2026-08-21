@@ -120,8 +120,14 @@ try {
 			}
 		};
 
+		// Stands in for the C++ layer: records the feedback events the hook receives.
+		const feedbackEvents = [];
+		const beforeSendFeedback = (event) => {
+			feedbackEvents.push(event);
+		};
+
 		runTest("init()", () => {
-			bridge.init(() => {}, null, null, readAttachment, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 100, false, false, false, "0.1.0");
+			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 100, false, false, false, "0.1.0");
 		});
 
 		// Observes what actually goes out with an event. The bridge registers its own handler during
@@ -339,8 +345,15 @@ try {
 		});
 
 		runTest("captureFeedback()", () => {
+			const feedbackCountBefore = feedbackEvents.length;
 			const result = bridge.captureFeedback("Test feedback", "Test User", "test@example.com", "");
 			assertEqual(typeof result, "string", "captureFeedback should return a string");
+			assertEqual(feedbackEvents.length, feedbackCountBefore + 1, "captureFeedback should run the before-send-feedback callback once");
+			const seen = feedbackEvents[feedbackEvents.length - 1];
+			assertEqual(seen.type, "feedback", "the callback should receive a feedback event");
+			assertEqual(seen.contexts.feedback.message, "Test feedback", "the callback should see the submitted message");
+			assertEqual(seen.contexts.feedback.name, "Test User", "the callback should see the submitted name");
+			assertEqual(seen.contexts.feedback.contact_email, "test@example.com", "the callback should see the submitted email");
 			const scoped = bridge.captureFeedback("Test feedback", "", "", "", bridge.createScope());
 			assertEqual(typeof scoped, "string", "Scoped captureFeedback should return a string");
 		});

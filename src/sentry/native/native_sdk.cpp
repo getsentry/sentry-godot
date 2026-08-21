@@ -12,6 +12,7 @@
 #include "sentry/native/native_util.h"
 #include "sentry/native/platform_detection.h"
 #include "sentry/processing/process_event.h"
+#include "sentry/processing/process_feedback.h"
 #include "sentry/processing/process_log.h"
 #include "sentry/processing/process_metric.h"
 #include "sentry/sentry_attachment.h"
@@ -40,6 +41,19 @@ sentry_value_t _handle_before_send(sentry_value_t event, void *hint, void *closu
 		return sentry_value_new_null();
 	} else {
 		return event;
+	}
+}
+
+sentry_value_t _handle_before_send_feedback(sentry_value_t p_feedback, sentry_hint_t *p_hint, void *p_user_data) {
+	Ref<NativeEvent> event_obj = memnew(NativeEvent(p_feedback, false));
+	Ref<NativeEvent> processed = sentry::process_feedback(event_obj);
+
+	if (unlikely(processed.is_null())) {
+		// Discard feedback.
+		sentry_value_decref(p_feedback);
+		return sentry_value_new_null();
+	} else {
+		return p_feedback;
 	}
 }
 
@@ -449,6 +463,7 @@ void NativeSDK::init() {
 
 	// Hooks.
 	sentry_options_set_before_send(options, _handle_before_send, NULL);
+	sentry_options_set_before_send_feedback(options, _handle_before_send_feedback, NULL);
 	sentry_options_set_on_crash(options, _handle_on_crash, NULL);
 	sentry_options_set_logger(options, _log_native_message, NULL);
 

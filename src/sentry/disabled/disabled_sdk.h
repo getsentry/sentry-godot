@@ -44,6 +44,7 @@ class DisabledSDK : public InternalSDK {
 
 	// Nothing is captured, so nothing is lost by discarding scope writes.
 	virtual bool supports_scopes() const override { return true; }
+	virtual bool supports_before_send_feedback() const override { return true; }
 
 	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) override {}
 

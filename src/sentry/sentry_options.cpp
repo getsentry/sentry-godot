@@ -402,6 +402,7 @@ void SentryOptions::add_default_attachment(const Ref<SentryAttachment> &p_attach
 
 void SentryOptions::release_callables() {
 	before_send = Callable();
+	before_send_feedback = Callable();
 	before_send_log = Callable();
 	before_send_metric = Callable();
 	before_capture_screenshot = Callable();
@@ -431,6 +432,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "app_hang_timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), set_app_hang_timeout_ms, get_app_hang_timeout_ms);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send"), set_before_send, get_before_send);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_send_feedback"), set_before_send_feedback, get_before_send_feedback);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_capture_screenshot"), set_before_capture_screenshot, get_before_capture_screenshot);
 
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);

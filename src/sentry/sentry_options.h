@@ -136,6 +136,7 @@ private:
 	Ref<SentryGodotLoggerOptions> godot_logger;
 
 	Callable before_send;
+	Callable before_send_feedback;
 	Callable before_capture_screenshot;
 
 	Vector<Ref<SentryEventProcessor>> event_processors;
@@ -224,6 +225,9 @@ public:
 
 	_FORCE_INLINE_ Callable get_before_send() const { return before_send; }
 	_FORCE_INLINE_ void set_before_send(const Callable &p_before_send) { before_send = p_before_send; }
+
+	_FORCE_INLINE_ Callable get_before_send_feedback() const { return before_send_feedback; }
+	_FORCE_INLINE_ void set_before_send_feedback(const Callable &p_before_send_feedback) { before_send_feedback = p_before_send_feedback; }
 
 	_FORCE_INLINE_ Callable get_before_capture_screenshot() const { return before_capture_screenshot; }
 	_FORCE_INLINE_ void set_before_capture_screenshot(const Callable &p_before_capture_screenshot) { before_capture_screenshot = p_before_capture_screenshot; }

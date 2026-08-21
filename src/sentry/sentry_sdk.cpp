@@ -8,6 +8,7 @@
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/logging/print.h"
+#include "sentry/processing/enrichment_processor.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/sentry_attachment.h"
@@ -197,6 +198,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	}
 
 	// Add built-in event processors.
+	options->add_event_processor(memnew(EnrichmentProcessor));
 	if (options->is_attach_screenshot_enabled()) {
 		options->add_event_processor(memnew(ScreenshotProcessor));
 	}
@@ -215,6 +217,10 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 	}
 
 	_invalidate_scopes();
+
+	if (unlikely(options->get_before_send_feedback().is_valid() && !internal_sdk->supports_before_send_feedback())) {
+		WARN_PRINT_ONCE("Sentry: before_send_feedback is not supported on this platform yet - the callback will not run.");
+	}
 
 	sentry::logging::print_debug("Initializing Sentry SDK");
 	internal_sdk->init();
