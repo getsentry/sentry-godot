@@ -16,14 +16,10 @@ extends PanelContainer
 ## - sentry_theme.tres: Reference UI theme file.
 
 
-## Emitted when the user clicks the "Submit" button, right before the feedback is captured.
-## Hide the form in response, and don't free it yet: the feedback is captured a frame later, so
-## that a screenshot attached to it shows the game instead of the form and the text typed into it.
+## Emitted when the user clicks the "Submit" button, right after feedback is queued for capture.
+## Hide or free the form in response. Feedback is captured on the next drawn frame so the
+## attached screenshot shows the game without the form or any text entered into it.
 signal feedback_submitted(feedback: SentryFeedback)
-
-## Emitted after the feedback is handed over to the SDK, a frame after [signal feedback_submitted].
-## The form is safe to free at this point.
-signal feedback_captured(feedback: SentryFeedback)
 
 ## Emitted when feedback is cancelled after the user clicks the "Cancel" button.
 signal feedback_cancelled()
@@ -78,15 +74,11 @@ func _on_submit_button_pressed() -> void:
 	# Reset feedback message
 	_message_edit.text = ""
 
+	# Capture on the next drawn frame so the UI can be hidden or freed first.
+	# This keeps the form and typed message out of the feedback screenshot.
+	RenderingServer.frame_post_draw.connect(SentrySDK.capture_feedback.bind(feedback), CONNECT_ONE_SHOT)
+
 	feedback_submitted.emit(feedback)
-
-	# Wait one frame after emitting feedback_submitted so the UI can be hidden.
-	# This prevents the feedback form and typed message from appearing in the attached screenshot.
-	await RenderingServer.frame_post_draw
-
-	SentrySDK.capture_feedback(feedback)
-
-	feedback_captured.emit(feedback)
 
 
 func _on_message_edit_text_changed() -> void:
