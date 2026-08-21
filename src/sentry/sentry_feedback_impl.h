@@ -9,10 +9,6 @@ using namespace godot;
 namespace sentry {
 
 // Base class for user feedback implementations; see Godot-facing SentryFeedback.
-// Splitting the implementation from SentryFeedback keeps SentryFeedback.new()
-// working, which an abstract class with a create() factory would break.
-// Kept as a pure C++ class instead of a Godot class to avoid ClassDB
-// registration and reduce overhead.
 // Lifetime governed by SentryFeedback.
 class SentryFeedbackImpl : public Castable {
 	SENTRY_CASTABLE(SentryFeedbackImpl, Castable);
