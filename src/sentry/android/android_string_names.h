@@ -73,6 +73,7 @@ public:
 	StringName eventSetFingerprint;
 	StringName eventSetContext;
 	StringName eventMergeContext;
+	StringName eventGetFeedback;
 	StringName eventIsCrash;
 	StringName eventToJson;
 
@@ -82,6 +83,17 @@ public:
 	StringName eventSetExceptionValue;
 	StringName eventGetExceptionValue;
 	StringName eventAddThreadStackTrace;
+
+	// Feedback.
+	StringName releaseFeedback;
+	StringName feedbackSetMessage;
+	StringName feedbackGetMessage;
+	StringName feedbackSetContactEmail;
+	StringName feedbackGetContactEmail;
+	StringName feedbackSetName;
+	StringName feedbackGetName;
+	StringName feedbackSetAssociatedEventId;
+	StringName feedbackGetAssociatedEventId;
 
 	// Breadcrumbs.
 	StringName createBreadcrumb;

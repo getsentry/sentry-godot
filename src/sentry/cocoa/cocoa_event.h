@@ -53,6 +53,8 @@ public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
 	virtual void merge_context(const String &p_key, const Dictionary &p_value) override;
 
+	virtual Ref<SentryFeedback> get_feedback() const override;
+
 	virtual void add_exception(const Exception &p_exception) override;
 
 	virtual int get_exception_count() const override;

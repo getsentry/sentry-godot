@@ -56,6 +56,12 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
+    private val feedbacksByHandle = object : ThreadLocal<MutableMap<Int, Feedback>>() {
+        override fun initialValue(): MutableMap<Int, Feedback> {
+            return mutableMapOf()
+        }
+    }
+
     private val breadcrumbsByHandle = object : ThreadLocal<MutableMap<Int, Breadcrumb>>() {
         override fun initialValue(): MutableMap<Int, Breadcrumb> {
             return mutableMapOf()
@@ -92,6 +98,14 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             Log.e(TAG, "Internal Error -- SentryEvent not found: $eventHandle")
         }
         return event
+    }
+
+    private fun getFeedback(feedbackHandle: Int): Feedback? {
+        val feedback: Feedback? = feedbacksByHandle.get()?.get(feedbackHandle)
+        if (feedback == null) {
+            Log.e(TAG, "Internal Error -- Feedback not found: $feedbackHandle")
+        }
+        return feedback
     }
 
     private fun getBreadcrumb(breadcrumbHandle: Int): Breadcrumb? {
@@ -164,6 +178,21 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
 
         eventsMap[handle] = event
+        return handle
+    }
+
+    private fun registerFeedback(feedback: Feedback): Int {
+        val feedbacksMap = feedbacksByHandle.get() ?: run {
+            Log.e(TAG, "Internal Error -- feedbacksByHandle is null")
+            return 0
+        }
+
+        var handle = Random.nextInt()
+        while (handle == 0 || feedbacksMap.containsKey(handle)) {
+            handle = Random.nextInt()
+        }
+
+        feedbacksMap[handle] = feedback
         return handle
     }
 
@@ -514,7 +543,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun captureFeedback(scopeHandle: Int, message: String, contactEmail: String, name: String, associatedEventId: String) {
+    fun captureFeedback(
+        scopeHandle: Int,
+        message: String,
+        contactEmail: String,
+        name: String,
+        associatedEventId: String
+    ) {
         val feedback = Feedback(message)
         feedback.contactEmail = contactEmail.ifEmpty { null }
         feedback.name = name.ifEmpty { null }
@@ -695,6 +730,12 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun eventGetFeedback(eventHandle: Int): Int {
+        val feedback: Feedback = getEvent(eventHandle)?.contexts?.feedback ?: return 0
+        return registerFeedback(feedback)
+    }
+
+    @UsedByGodot
     fun eventIsCrash(eventHandle: Int): Boolean {
         return getEvent(eventHandle)?.isCrashed == true
     }
@@ -781,6 +822,55 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun eventGetExceptionValue(eventHandle: Int, index: Int): String {
         return getEvent(eventHandle)?.exceptions?.getOrNull(index)?.value ?: ""
+    }
+
+    @UsedByGodot
+    fun releaseFeedback(handle: Int) {
+        feedbacksByHandle.get()?.remove(handle)
+    }
+
+    @UsedByGodot
+    fun feedbackSetMessage(handle: Int, message: String) {
+        getFeedback(handle)?.message = message
+    }
+
+    @UsedByGodot
+    fun feedbackGetMessage(handle: Int): String {
+        return getFeedback(handle)?.message ?: ""
+    }
+
+    @UsedByGodot
+    fun feedbackSetContactEmail(handle: Int, contactEmail: String) {
+        getFeedback(handle)?.contactEmail = contactEmail.ifEmpty { null }
+    }
+
+    @UsedByGodot
+    fun feedbackGetContactEmail(handle: Int): String {
+        return getFeedback(handle)?.contactEmail ?: ""
+    }
+
+    @UsedByGodot
+    fun feedbackSetName(handle: Int, name: String) {
+        getFeedback(handle)?.name = name.ifEmpty { null }
+    }
+
+    @UsedByGodot
+    fun feedbackGetName(handle: Int): String {
+        return getFeedback(handle)?.name ?: ""
+    }
+
+    @UsedByGodot
+    fun feedbackSetAssociatedEventId(handle: Int, associatedEventId: String) {
+        // sentry-java takes a non-null SentryId here, so the id can be replaced but not cleared.
+        if (associatedEventId.isEmpty()) {
+            return
+        }
+        getFeedback(handle)?.setAssociatedEventId(SentryId(associatedEventId))
+    }
+
+    @UsedByGodot
+    fun feedbackGetAssociatedEventId(handle: Int): String {
+        return getFeedback(handle)?.associatedEventId?.toString() ?: ""
     }
 
     @UsedByGodot

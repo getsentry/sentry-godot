@@ -11,4 +11,16 @@ void SentryFeedback::_bind_methods() {
 	BIND_PROPERTY(SentryFeedback, PropertyInfo(Variant::STRING, "associated_event_id"), set_associated_event_id, get_associated_event_id);
 }
 
+SentryFeedback::SentryFeedback() {
+	_impl = memnew(PlainFeedback);
+}
+
+SentryFeedback::SentryFeedback(SentryFeedbackImpl *p_impl) :
+		_impl(p_impl) {
+}
+
+SentryFeedback::~SentryFeedback() {
+	memdelete(_impl);
+}
+
 } //namespace sentry

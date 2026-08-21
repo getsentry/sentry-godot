@@ -62,6 +62,7 @@ AndroidStringNames::AndroidStringNames() {
 	eventSetFingerprint = StringName("eventSetFingerprint");
 	eventSetContext = StringName("eventSetContext");
 	eventMergeContext = StringName("eventMergeContext");
+	eventGetFeedback = StringName("eventGetFeedback");
 	eventIsCrash = StringName("eventIsCrash");
 	eventToJson = StringName("eventToJson");
 
@@ -71,6 +72,17 @@ AndroidStringNames::AndroidStringNames() {
 	eventSetExceptionValue = StringName("eventSetExceptionValue");
 	eventGetExceptionValue = StringName("eventGetExceptionValue");
 	eventAddThreadStackTrace = StringName("eventAddThreadStackTrace");
+
+	// Feedback.
+	releaseFeedback = StringName("releaseFeedback");
+	feedbackSetMessage = StringName("feedbackSetMessage");
+	feedbackGetMessage = StringName("feedbackGetMessage");
+	feedbackSetContactEmail = StringName("feedbackSetContactEmail");
+	feedbackGetContactEmail = StringName("feedbackGetContactEmail");
+	feedbackSetName = StringName("feedbackSetName");
+	feedbackGetName = StringName("feedbackGetName");
+	feedbackSetAssociatedEventId = StringName("feedbackSetAssociatedEventId");
+	feedbackGetAssociatedEventId = StringName("feedbackGetAssociatedEventId");
 
 	// Breadcrumbs.
 	createBreadcrumb = StringName("createBreadcrumb");
