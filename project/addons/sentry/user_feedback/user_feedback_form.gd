@@ -65,14 +65,18 @@ func _update_controls() -> void:
 		%NameSection.visible = name_visible
 
 
+func _reset_form() -> void:
+	_message_edit.text = ""
+	_on_message_edit_text_changed()
+
+
 func _on_submit_button_pressed() -> void:
 	var feedback := SentryFeedback.new()
 	feedback.message = _message_edit.text
 	feedback.name = _name_edit.text
 	feedback.contact_email = _email_edit.text
 
-	# Reset feedback message
-	_message_edit.text = ""
+	_reset_form()
 
 	# Capture on the next drawn frame so the UI can be hidden or freed first.
 	# This keeps the form and typed message out of the feedback screenshot.
