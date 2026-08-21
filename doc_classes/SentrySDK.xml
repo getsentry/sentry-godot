@@ -215,6 +215,7 @@
 				The [param attributes] dictionary is added to the span when it starts. The special [code]sentry.op[/code] attribute sets the operation the span is grouped under in Sentry. The SDK skips an entry with an empty key and prints an error.
 				[b]Note:[/b] Spans are only sent to Sentry if [member SentryOptions.traces_sample_rate] is raised above its default of 0.0. The rest of the API works either way, so telemetry captured during a span is associated with it even when the span itself is not sent.
 				[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
+				To learn more, visit [url=https://docs.sentry.io/concepts/key-terms/tracing/]Tracing documentation[/url].
 			</description>
 		</method>
 		<method name="with_scope">

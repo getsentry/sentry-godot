@@ -168,6 +168,7 @@
 		<member name="traces_sample_rate" type="float" setter="set_traces_sample_rate" getter="get_traces_sample_rate" default="0.0">
 			Configures the sample rate for performance traces, in the range of 0.0 to 1.0. The default is 0.0, which prevents spans from being sent. If set to 1.0, all traces are sent. If set to 0.1, approximately 10% of traces are sent.
 			The sampling decision is made randomly per trace, so either all spans in a trace are sent or none of them are. See [method SentrySDK.start_span] for information on recording spans.
+			To learn more, visit [url=https://docs.sentry.io/concepts/key-terms/tracing/]Tracing documentation[/url].
 		</member>
 	</members>
 	<constants>
