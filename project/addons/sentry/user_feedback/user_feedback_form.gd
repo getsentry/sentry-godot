@@ -76,7 +76,8 @@ func _on_submit_button_pressed() -> void:
 
 	# Capture on the next drawn frame so the UI can be hidden or freed first.
 	# This keeps the form and typed message out of the feedback screenshot.
-	RenderingServer.frame_post_draw.connect(SentrySDK.capture_feedback.bind(feedback), CONNECT_ONE_SHOT)
+	RenderingServer.frame_post_draw.connect(
+		SentrySDK.capture_feedback.bind(feedback), CONNECT_ONE_SHOT)
 
 	feedback_submitted.emit(feedback)
 
