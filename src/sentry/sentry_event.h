@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sentry/level.h"
+#include "sentry/sentry_feedback.h"
 #include "sentry/sentry_timestamp.h"
 #include "sentry/sentry_user.h"
 
@@ -76,6 +77,8 @@ public:
 
 	virtual void set_context(const String &p_key, const Dictionary &p_value) = 0;
 	virtual void merge_context(const String &p_key, const Dictionary &p_value) = 0;
+
+	virtual Ref<SentryFeedback> get_feedback() const = 0;
 
 	virtual void add_exception(const Exception &p_exception) = 0;
 

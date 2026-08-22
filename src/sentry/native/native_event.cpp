@@ -1,6 +1,7 @@
 #include "native_event.h"
 
 #include "sentry/level.h"
+#include "sentry/native/native_feedback.h"
 #include "sentry/native/native_util.h"
 
 #include <sentry.h>
@@ -222,6 +223,16 @@ void NativeEvent::set_context(const String &p_key, const Dictionary &p_value) {
 void NativeEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
 	sentry_event_merge_context(native_event, p_key.utf8(), p_value);
+}
+
+Ref<SentryFeedback> NativeEvent::get_feedback() const {
+	sentry_value_t contexts = sentry_value_get_by_key(native_event, "contexts");
+	sentry_value_t feedback = sentry_value_get_by_key(contexts, "feedback");
+	if (sentry_value_get_type(feedback) != SENTRY_VALUE_TYPE_OBJECT) {
+		return Ref<SentryFeedback>();
+	}
+	NativeFeedback *impl = memnew(NativeFeedback(feedback));
+	return Ref<SentryFeedback>(memnew(SentryFeedback(impl)));
 }
 
 void NativeEvent::add_exception(const Exception &p_exception) {

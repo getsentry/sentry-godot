@@ -5,6 +5,13 @@
 	</brief_description>
 	<description>
 		[SentryFeedback] allows you to collect and send user feedback to Sentry. Create an instance of this class, set the required [member message] and optional fields, then submit it using [method SentrySDK.capture_feedback].
+		[codeblock]
+		var feedback := SentryFeedback.new()
+		feedback.message = "The boss fight ends before it starts"
+		feedback.contact_email = "player@example.com"
+		SentrySDK.capture_feedback(feedback)
+		[/codeblock]
+		[SentryFeedback] can also represent feedback attached to an event, as returned by [method SentryEvent.get_feedback]. Writing to this object updates the feedback stored on the event itself. This is useful in a [member SentryOptions.before_send_feedback] callback for scrubbing or modifying user-submitted feedback before it is sent. The returned object is only valid for the duration of the callback, because the event is sent as soon as the callback returns.
 		To learn more, visit [url=https://docs.sentry.io/platforms/godot/user-feedback/]User Feedback[/url] documentation.
 	</description>
 	<tutorials>
@@ -13,6 +20,7 @@
 		<member name="associated_event_id" type="String" setter="set_associated_event_id" getter="get_associated_event_id" default="&quot;&quot;">
 			The identifier of an error event in the same project. [i]Optional[/i].
 			Use this to explicitly link a related error in the feedback UI.
+			[b]Note:[/b] On Android, for an object returned by [method SentryEvent.get_feedback], assigning an empty string leaves this field unchanged. On other platforms, it clears the field.
 		</member>
 		<member name="contact_email" type="String" setter="set_contact_email" getter="get_contact_email" default="&quot;&quot;">
 			The email of the user who submitted the feedback. [i]Optional[/i].

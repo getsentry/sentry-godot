@@ -346,6 +346,10 @@ class SentryBridge {
     event.user = makeUser(id, username, email, ip);
   }
 
+  public eventGetFeedback(event: Sentry.Event): Record<string, unknown> | null {
+    return event.contexts?.feedback ?? null;
+  }
+
   public createScope(): Sentry.Scope {
     const scope = new Sentry.Scope();
     scope.setClient(Sentry.getClient());
