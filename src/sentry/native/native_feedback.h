@@ -1,8 +1,8 @@
 #pragma once
 
-#include "sentry/sentry_feedback_impl.h"
+#include "sentry.h"
 
-#include <sentry.h>
+#include "sentry/sentry_feedback_impl.h"
 
 namespace sentry::native {
 
