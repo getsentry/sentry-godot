@@ -360,7 +360,8 @@ Install-Module -Name Pester -Force -SkipPublisherCheck
 - `SENTRY_AUTH_TOKEN`: Sentry API token for retrieving and validating events
 
 **Optional:**
-- `SENTRY_TEST_PLATFORM`: Target platform: Linux, macOS, Windows, Android, etc (see [`app-runner`](https://github.com/getsentry/app-runner) submodule)
+- `SENTRY_TEST_PLATFORM`: Target platform, such as Linux, macOS, Windows, or Adb (see the [`app-runner`](https://github.com/getsentry/app-runner) submodule)
+- `SENTRY_TEST_DEVICE`: Device identifier for the selected provider, such as an ADB serial
 - `SENTRY_TEST_DSN`: Sentry project DSN where test events will be sent (defaults to reading from project.godot)
 - `SENTRY_TEST_EXECUTABLE`: Path to test executable (defaults to `$env:GODOT`)
 
@@ -379,6 +380,55 @@ Invoke-Pester -Path Integration.Tests.ps1
 ```
 
 Tests validate crash capture, message capture, runtime error capture, and event metadata. Results are saved to `tests/integration/results/`.
+
+#### Run on a local Android device
+
+Install the matching Godot Android export templates, configure the Android SDK and Java 17 in Godot, and connect an unlocked device with USB debugging enabled. Confirm that ADB reports it as authorized:
+
+```bash
+adb devices
+```
+
+Set the API token and run the local Android integration-test script from the repository root:
+
+```powershell
+$env:SENTRY_AUTH_TOKEN = "<token>"
+pwsh scripts/run-android-integration-tests.ps1
+```
+
+The script exports `exports/android.apk`, selects the only online ADB device, and runs the GDScript integration suite through the app-runner `AdbProvider`. Select the .NET suite or both suites with `-Suite`:
+
+```powershell
+$env:GODOT = "/path/to/godot"
+$env:GODOT_DOTNET = "/path/to/godot-dotnet"
+pwsh scripts/run-android-integration-tests.ps1 -Suite Dotnet
+pwsh scripts/run-android-integration-tests.ps1 -Suite All
+```
+
+`GODOT` may point to either a standard or .NET Godot executable. When it points to a .NET build, the script builds `project/Sentry demo project.csproj` before exporting the GDScript suite and verifies that the Android APK contains the Mono runtime.
+
+The `Dotnet` mode requires the `dotnet` CLI, a Godot .NET executable, and matching Mono Android export templates. The `All` mode uses `GODOT` to export and run the GDScript suite first, then builds the project and uses `GODOT_DOTNET` to export and run the .NET suite.
+
+If more than one device is online, select one by its ADB serial:
+
+```powershell
+pwsh scripts/run-android-integration-tests.ps1 -DeviceSerial "<serial>"
+```
+
+An emulator uses the same path. Start it separately, wait until `adb devices` reports it as `device`, then pass its serial to the script. For example, this starts the first configured AVD without a window:
+
+```bash
+emulator -avd "$(emulator -list-avds | head -n 1)" \
+  -no-window \
+  -no-snapshot-save \
+  -gpu swiftshader_indirect \
+  -noaudio \
+  -no-boot-anim \
+  -camera-back none \
+  -camera-front none
+```
+
+The integration-test script does not start or stop the emulator.
 
 ## Releasing
 
