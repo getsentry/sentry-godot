@@ -307,6 +307,13 @@ if ($failedContainersCount -gt 0) {
 }
 Write-Host
 
+foreach ($result in $results | Where-Object { $_.Result -eq "Failed" }) {
+    foreach ($container in $result.Containers) {
+        $failedPath = [System.IO.Path]::GetRelativePath($repoRoot, $container.Item.FullName)
+        Write-Host "Failed: $failedPath" -ForegroundColor Red
+    }
+}
+
 if ($results.Result -contains "Failed") {
     exit 1
 }
