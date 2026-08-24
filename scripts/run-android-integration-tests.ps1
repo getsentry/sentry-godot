@@ -279,6 +279,34 @@ finally {
     }
 }
 
+$passedCount = ($results.PassedCount | Measure-Object -Sum).Sum
+$failedCount = ($results.FailedCount | Measure-Object -Sum).Sum
+$skippedCount = ($results.SkippedCount | Measure-Object -Sum).Sum
+$inconclusiveCount = ($results.InconclusiveCount | Measure-Object -Sum).Sum
+$notRunCount = ($results.NotRunCount | Measure-Object -Sum).Sum
+$failedBlocksCount = ($results.FailedBlocksCount | Measure-Object -Sum).Sum
+$failedContainersCount = ($results.FailedContainersCount | Measure-Object -Sum).Sum
+$failedColor = if ($failedCount -gt 0) { "Red" } else { "DarkGray" }
+$skippedColor = if ($skippedCount -gt 0) { "Yellow" } else { "DarkGray" }
+
+Write-Host "Overall:" -ForegroundColor Cyan -NoNewline
+Write-Host " Passed: $passedCount" -ForegroundColor Green -NoNewline
+Write-Host " Failed: $failedCount" -ForegroundColor $failedColor -NoNewline
+Write-Host " Skipped: $skippedCount" -ForegroundColor $skippedColor -NoNewline
+if ($inconclusiveCount -gt 0) {
+    Write-Host " Inconclusive: $inconclusiveCount" -ForegroundColor DarkGray -NoNewline
+}
+if ($notRunCount -gt 0) {
+    Write-Host " Not run: $notRunCount" -ForegroundColor DarkGray -NoNewline
+}
+if ($failedBlocksCount -gt 0) {
+    Write-Host " Failed blocks: $failedBlocksCount" -ForegroundColor Red -NoNewline
+}
+if ($failedContainersCount -gt 0) {
+    Write-Host " Failed containers: $failedContainersCount" -ForegroundColor Red -NoNewline
+}
+Write-Host
+
 if ($results.Result -contains "Failed") {
     exit 1
 }
