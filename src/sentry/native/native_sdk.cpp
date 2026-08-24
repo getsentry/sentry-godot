@@ -391,7 +391,7 @@ SentryScopeImpl *NativeSDK::create_scope() {
 }
 
 SentrySpanImpl *NativeSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
-	return memnew(NativeSpan(p_name, p_attributes));
+	return NativeSpan::start_root(p_name, p_attributes);
 }
 
 void NativeSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

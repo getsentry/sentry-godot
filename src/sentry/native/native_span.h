@@ -14,24 +14,22 @@ private:
 	sentry_transaction_t *_transaction = nullptr;
 	sentry_span_t *_span = nullptr;
 
-	// Finishing hands the handle over to sentry-native, which frees it.
-	_FORCE_INLINE_ bool _is_live() const { return _transaction || _span; }
-
 	void _apply_attributes(const Dictionary &p_attributes);
 
+	NativeSpan(sentry_transaction_t *p_transaction, const Dictionary &p_attributes);
+	NativeSpan(sentry_span_t *p_span, const Dictionary &p_attributes);
+
 public:
+	static SentrySpanImpl *start_root(const String &p_name, const Dictionary &p_attributes);
+	virtual SentrySpanImpl *start_child(const String &p_name, const Dictionary &p_attributes) override;
+
 	virtual void set_attribute(const String &p_key, const Variant &p_value) override;
 	virtual void set_status(SpanStatus p_status) override;
 
 	virtual void end() override;
 
-	virtual SentrySpanImpl *start_child(const String &p_name, const Dictionary &p_attributes) override;
-
 	void bind_to_scope(sentry_scope_t *p_scope);
 
-	NativeSpan() = delete;
-	NativeSpan(const String &p_name, const Dictionary &p_attributes);
-	NativeSpan(sentry_span_t *p_span, const Dictionary &p_attributes);
 	virtual ~NativeSpan() override;
 };
 
