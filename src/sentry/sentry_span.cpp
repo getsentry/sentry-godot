@@ -9,6 +9,9 @@
 #define WRONG_THREAD_MSG \
 	"Sentry: Span methods must be called on the thread that created the span."
 
+#define ENDED_SPAN_MSG \
+	"Sentry: Can't modify a span that has ended."
+
 namespace {
 
 Ref<sentry::SentrySpan> _unassigned_sentinel;
@@ -41,12 +44,14 @@ Ref<SentrySpan> SentrySpan::unassigned() {
 
 void SentrySpan::set_attribute(const String &p_key, const Variant &p_value) {
 	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
+	ERR_FAIL_COND_MSG(_ended, ENDED_SPAN_MSG);
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set attribute with an empty key.");
 	_impl->set_attribute(p_key, p_value);
 }
 
 void SentrySpan::set_attributes(const Dictionary &p_attributes) {
 	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
+	ERR_FAIL_COND_MSG(_ended, ENDED_SPAN_MSG);
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
 		const Variant &key = keys[i];
@@ -58,6 +63,7 @@ void SentrySpan::set_attributes(const Dictionary &p_attributes) {
 
 void SentrySpan::set_status(SpanStatus p_status) {
 	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
+	ERR_FAIL_COND_MSG(_ended, ENDED_SPAN_MSG);
 	_impl->set_status(p_status);
 }
 
@@ -83,6 +89,7 @@ Ref<SentryScope> SentrySpan::get_associated_scope() const {
 
 Ref<SentrySpan> SentrySpan::start_child(const String &p_name, const Dictionary &p_attributes) {
 	ERR_SENTRY_THREAD_GUARD_V(Ref<SentrySpan>(), WRONG_THREAD_MSG);
+	ERR_FAIL_COND_V_MSG(_ended, Ref<SentrySpan>(), "Sentry: Can't start a child span on a span that has ended.");
 	ERR_FAIL_COND_V_MSG(p_name.is_empty(), Ref<SentrySpan>(), "Sentry: Can't start a child span with an empty name.");
 	SentrySpanImpl *child_impl = _impl->start_child(p_name, p_attributes);
 	return memnew(SentrySpan(child_impl));
@@ -119,3 +126,4 @@ void SentrySpan::_bind_methods() {
 } // namespace sentry
 
 #undef WRONG_THREAD_MSG
+#undef ENDED_SPAN_MSG

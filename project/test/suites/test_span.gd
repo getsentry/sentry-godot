@@ -211,6 +211,15 @@ func test_explicit_parent_inherits_the_parents_scope() -> void:
 		.verify()
 
 
+func test_ended_span_refuses_a_child() -> void:
+	var parent := SentrySDK.start_span("test.ended_parent")
+	parent.end()
+
+	assert_object(SentrySDK.start_span("test.orphan", {}, parent)) \
+		.override_failure_message("an ended span must not accept new children") \
+		.is_null()
+
+
 func test_scope_clear_drops_the_span() -> void:
 	var span := SentrySDK.start_span("test.cleared")
 	SentrySDK.capture_event(SentrySDK.create_event())

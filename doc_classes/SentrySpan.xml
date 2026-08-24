@@ -27,6 +27,7 @@
 			<description>
 				Finishes the span and records its duration. If this span is active, ending it removes the scope fork created for the span and restores the previous active span, if there was one.
 				Calling [method end] more than once is safe. Calls after the first one do nothing.
+				Record everything the span needs before ending it. Once a span has ended, [method set_attribute], [method set_attributes] and [method set_status] print an error and change nothing, and passing the span as [code]parent_span[/code] to [method SentrySDK.start_span] fails.
 			</description>
 		</method>
 		<method name="set_attribute">
