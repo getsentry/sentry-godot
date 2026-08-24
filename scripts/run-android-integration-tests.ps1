@@ -52,7 +52,7 @@ function Get-AdbDevices {
     }
 
     return @($output | ForEach-Object {
-        if ($_ -match '^(\S+)\s+(\S+)') {
+        if ($_ -match '^(\S+)\t(\S+)') {
             [PSCustomObject]@{
                 Serial = $matches[1]
                 State = $matches[2]
