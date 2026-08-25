@@ -22,8 +22,8 @@
 				return metric
 			[/codeblock]
 		</member>
-		<member name="enable_metrics" type="bool" setter="set_enable_metrics" getter="get_enable_metrics" default="true" deprecated="Will be removed in v3. Metrics are only sent if you use [member SentrySDK.metrics].">
-			Enables Sentry metrics functionality. When enabled, you can emit custom metrics using the [SentryMetrics] API available through [member SentrySDK.metrics].
+		<member name="enable_metrics" type="bool" setter="set_enable_metrics" getter="get_enable_metrics" default="true" deprecated="Has no effect and will be removed in v3. Use [member SentrySDK.metrics] to send metrics.">
+			This compatibility property always returns [code]true[/code], and assigning it has no effect. Metrics are sent when you use the [SentryMetrics] API available through [member SentrySDK.metrics].
 		</member>
 	</members>
 </class>

@@ -113,13 +113,13 @@
 			If [code]true[/code], enables automatic detection and reporting of application hangs. The SDK will monitor the main thread and report hang events when it becomes unresponsive for longer than the duration specified in [member app_hang_timeout_ms]. This helps identify performance issues where the application becomes frozen or unresponsive.
 			[b]Note:[/b] This feature applies to iOS and macOS only. On Android, [member android] configures ANR (Application Not Responding) detection instead.
 		</member>
-		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="true" deprecated="Will be removed in v3. Logs are only sent if you use [member SentrySDK.logger] or set [member SentryGodotLoggerOptions.log_mask].">
-			Enables Sentry's structured logging. If [code]true[/code], log entries can be emitted through [member SentrySDK.logger], and Godot logger events listed in [member SentryGodotLoggerOptions.log_mask] are automatically captured as Sentry Logs. [member SentryGodotLoggerOptions.log_mask] is empty by default, so no events are auto-captured.
+		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="true" deprecated="Has no effect and will be removed in v3. Use [member SentrySDK.logger] or [member SentryGodotLoggerOptions.log_mask] to send logs.">
+			This compatibility property always returns [code]true[/code], and assigning it has no effect. Log entries are sent when you use [member SentrySDK.logger], and Godot logger events listed in [member SentryGodotLoggerOptions.log_mask] are automatically captured as Sentry Logs. [member SentryGodotLoggerOptions.log_mask] is empty by default, so no events are auto-captured.
 			See [member godot_logger] for options to capture Godot errors as Sentry events or breadcrumbs.
 			For more information, see [url=https://docs.sentry.io/platforms/godot/logs/]Sentry Logs[/url] documentation.
 		</member>
-		<member name="enable_metrics" type="bool" setter="set_enable_metrics" getter="get_enable_metrics" default="true" deprecated="Will be removed in v3. Metrics are only sent if you use [member SentrySDK.metrics].">
-			Enables Sentry metrics functionality. When enabled, you can emit custom metrics using the [SentryMetrics] API available through [member SentrySDK.metrics].
+		<member name="enable_metrics" type="bool" setter="set_enable_metrics" getter="get_enable_metrics" default="true" deprecated="Has no effect and will be removed in v3. Use [member SentrySDK.metrics] to send metrics.">
+			This compatibility property always returns [code]true[/code], and assigning it has no effect. Metrics are sent when you use the [SentryMetrics] API available through [member SentrySDK.metrics].
 		</member>
 		<member name="environment" type="String" setter="set_environment" getter="get_environment" default="&quot;{auto}&quot;">
 			Environments indicate where an error occurred, such as in a release export, headless server, QA build, or another deployment. The SDK automatically detects Godot-specific environments, such as [code]headless_server[/code] and [code]export_release[/code], but you can also assign it in a configuration callback using manual initialization (see [method SentrySDK.init]).
