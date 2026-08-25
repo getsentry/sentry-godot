@@ -8,6 +8,7 @@
 #   SENTRY_TEST_DSN: test DSN
 #   SENTRY_AUTH_TOKEN: authentication token for Sentry API
 #   SENTRY_TEST_PLATFORM: test platform (aka device provider) such as "Local"
+#   SENTRY_TEST_DEVICE: optional device identifier for the selected provider
 #   GODOT_DOTNET: path to a Godot mono binary, used when SENTRY_TEST_EXECUTABLE is unset
 
 Set-StrictMode -Version latest
@@ -93,7 +94,15 @@ $DotnetCommonTestCases = @(
             param($SentryEvent)
             # Without an attached image, the symbolicator can't bind the frame to any image and reports unknown_image.
             $frames = $SentryEvent.exception.values[0].stacktrace.frames
-            $unknown = @($frames | Where-Object { $_.data.symbolicator_status -eq "unknown_image" })
+            $unknown = @($frames | Where-Object {
+                    $dataProperty = $_.PSObject.Properties["data"]
+                    if ($null -eq $dataProperty -or $null -eq $dataProperty.Value) {
+                        return $false
+                    }
+
+                    $statusProperty = $dataProperty.Value.PSObject.Properties["symbolicator_status"]
+                    return $null -ne $statusProperty -and $statusProperty.Value -eq "unknown_image"
+                })
             $unknown.Count | Should -Be 0
         }
     }
@@ -187,6 +196,7 @@ BeforeAll {
         Dsn = $env:SENTRY_TEST_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
         Platform = $env:SENTRY_TEST_PLATFORM
+        Device = $env:SENTRY_TEST_DEVICE
         AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
         IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
         IsCocoa = ($env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
@@ -251,8 +261,7 @@ AfterAll {
 Describe ".NET Integration Tests" {
     BeforeAll {
         try {
-            Connect-Device -Platform $script:TestSetup.Platform
-            Install-DeviceApp -Path $script:TestSetup.Executable
+            Connect-IntegrationTestDevice -TestSetup $script:TestSetup
 
             $script:dotnetInitRunResult      = Invoke-TestAction -Action "dotnet-capture-via-dotnet-init"
             $script:bareRethrowRunResult    = Invoke-TestAction -Action "dotnet-exception-capture" -AdditionalArgs @("bare-rethrow")

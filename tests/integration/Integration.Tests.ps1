@@ -8,6 +8,7 @@
 #   SENTRY_TEST_DSN: test DSN
 #   SENTRY_AUTH_TOKEN: authentication token for Sentry API
 #   SENTRY_TEST_PLATFORM: test platform (aka device provider) such as "Local" or "Android"
+#   SENTRY_TEST_DEVICE: optional device identifier for the selected provider
 
 Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
@@ -64,7 +65,7 @@ BeforeAll {
         # Launch app again to ensure crash report is sent
         # NOTE: On Cocoa & Android, crashes are sent during the next app launch.
         if (
-            ($Action -eq "crash-capture" -or $runResult.ExitCode -ne 0) -and
+            ($Action -eq "crash-capture" -or ($null -ne $runResult.ExitCode -and $runResult.ExitCode -ne 0)) -and
                 $script:TestSetup.Platform -in @("macOS", "Local", "Adb", "AndroidSauceLabs", "iOSSauceLabs")
         ) {
             Write-Host "Running crash-send to ensure crash report is sent..."
@@ -135,6 +136,7 @@ BeforeAll {
         Dsn = $env:SENTRY_TEST_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
         Platform = $env:SENTRY_TEST_PLATFORM
+        Device = $env:SENTRY_TEST_DEVICE
         AndroidComponent = "io.sentry.godot.project/com.godot.game.GodotApp"
         IsAndroid = ($env:SENTRY_TEST_PLATFORM -in @("Adb", "AndroidSauceLabs"))
         IsCocoa = ($env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
@@ -207,8 +209,7 @@ Describe "Platform Integration Tests" {
         # sits idle during Sentry API polling (up to 120s per event) between launches.
         try {
             if (-not $script:TestSetup.IsWeb) {
-                Connect-Device -Platform $script:TestSetup.Platform
-                Install-DeviceApp -Path $script:TestSetup.Executable
+                Connect-IntegrationTestDevice -TestSetup $script:TestSetup
             }
 
             if (-not $script:TestSetup.IsWeb) {
