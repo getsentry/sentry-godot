@@ -99,7 +99,7 @@ TEST_SUITE("[.NET] Options interop") {
 			}
 			const HashSet<String> not_crossed = {
 				// Callables, which each layer keeps to itself.
-				"before_send", "before_send_log", "before_send_metric", "before_capture_screenshot",
+				"before_send", "before_send_feedback", "before_send_log", "before_send_metric", "before_capture_screenshot",
 				// Sub-objects, whose own properties cross instead.
 				"experimental", "android", "godot_logger", "limits",
 				// Deprecated aliases for the properties above.
