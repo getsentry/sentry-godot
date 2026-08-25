@@ -4,8 +4,9 @@
 		Represents a timed operation in a Sentry trace.
 	</brief_description>
 	<description>
-		A span measures one operation and records metadata about that operation. Spans can be nested, letting Sentry show how work is structured inside a trace.
-		Create spans with [method SentrySDK.start_span] or [method SentrySDK.with_span]. While a span is active, events captured on the same thread are associated with that span's trace context. You can add details with [method set_attribute] and [method set_attributes], set the outcome with [method set_status], and finish the span with [method end].
+		A span measures an operation and records its duration, outcome, and attributes. Nested spans show how work is divided within a trace.
+		Create spans with [method SentrySDK.start_span] or [method SentrySDK.with_span]. Telemetry captured on the same thread while a span is active carries that span's trace context.
+		Use [method set_attribute] or [method set_attributes] to add details to the operation, [method set_status] to set its outcome, and [method end] to end the span.
 		[codeblock]
 		SentrySDK.with_span("load_level", func(span: SentrySpan) -&gt; void:
 			span.set_attribute("level", level_name)
@@ -13,7 +14,8 @@
 			span.set_status(SentrySpan.SPAN_STATUS_OK)
 		)
 		[/codeblock]
-		Always end spans created with [method SentrySDK.start_span]. End child spans before their root span. A root span that never ends is not sent, and an active span left open keeps its scope fork alive. Unended active spans accumulate on the thread's scope stack until the SDK warns that it has grown unusually deep. [method SentrySDK.with_span] ends the span for you.
+		Call [method end] on every span created with [method SentrySDK.start_span]. End all child spans before their root span. An unended root span is not sent.
+		Each unended active span also leaves a scope fork on the calling thread; the SDK warns if the scope stack grows unusually deep. [method SentrySDK.with_span] ends its span automatically.
 		Set [code]sentry.op[/code] to categorize the work the span measures, such as [code]asset.load[/code] or [code]db.query[/code]. Sentry groups and filters spans by operation. Pass it in the [code]attributes[/code] dictionary of [method SentrySDK.start_span], since some platforms fix the operation when the span starts.
 		[b]Note:[/b] Spans are thread-local. Call span methods only from the thread that created the span.
 		[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning. Calling methods on that span is safe, but no span is recorded.
@@ -25,10 +27,9 @@
 		<method name="end">
 			<return type="void" />
 			<description>
-				Finishes the span and records its duration. If this span is active, ending it removes the scope fork created for the span and restores the previous active span, if there was one.
-				Calling [method end] more than once is safe. Calls after the first one do nothing.
-				Record everything the span needs before ending it. Once a span has ended, [method set_attribute], [method set_attributes] and [method set_status] print an error and change nothing, and passing the span as [code]parent_span[/code] to [method SentrySDK.start_span] fails.
-				[b]Note:[/b] End child spans before ending their root span. A child that remains open may be dropped, finalized at the root span's end time, or sent later.
+				Finishes the span and records its duration. If the span is active, the SDK removes its scope fork and restores the previous active span, if any. Calling [method end] again has no effect.
+				Set attributes and status before calling [method end]. After the span ends, [method set_attribute], [method set_attributes], and [method set_status] print an error and do nothing. The SDK also rejects the ended span as [code]parent_span[/code] in [method SentrySDK.start_span].
+				[b]Note:[/b] End every child span before its root span. If the root ends first, the SDK may drop an unfinished child, give it the root's end time, or send it after the child ends, depending on the platform.
 			</description>
 		</method>
 		<method name="set_attribute">
