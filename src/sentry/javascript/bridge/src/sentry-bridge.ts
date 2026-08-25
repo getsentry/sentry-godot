@@ -398,11 +398,11 @@ class SentryBridge {
     scope.addAttachment(makePendingAttachment(path, filename, contentType, attachmentType));
   }
 
-  public scopeClear(scope: Sentry.Scope): void {
-    // Preserve the propagation context across clear() because Scope.clear() rotates the trace in JS.
-    const propagationContext = scope.getPropagationContext();
-    scope.clear();
-    scope.setPropagationContext(propagationContext);
+  public scopeClear(scope: Sentry.Scope): Sentry.Scope {
+    const fresh = new Sentry.Scope();
+    fresh.setClient(scope.getClient() ?? Sentry.getClient());
+    fresh.setPropagationContext(scope.getPropagationContext());
+    return fresh;
   }
 
   public scopeSetSpan(scope: Sentry.Scope, span?: Sentry.Span): void {

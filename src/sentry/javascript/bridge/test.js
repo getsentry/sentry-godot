@@ -197,8 +197,7 @@ try {
 			assert(spanId, "init should pin a span id for events captured outside a span");
 			assertEqual(bridge.createScope().getPropagationContext().propagationSpanId, spanId,
 					"every scope should carry the same pinned span id");
-			bridge.scopeClear(scope);
-			assertEqual(scope.getPropagationContext().propagationSpanId, spanId,
+			assertEqual(bridge.scopeClear(scope).getPropagationContext().propagationSpanId, spanId,
 					"scopeClear should preserve the pinned span id");
 		});
 
@@ -314,10 +313,11 @@ try {
 			const scope = bridge.createScope();
 			bridge.scopeSetContext(scope, "test-context", '{"key": "value"}');
 			const traceId = scope.getPropagationContext().traceId;
-			bridge.scopeClear(scope);
-			assertEqual(scope.getScopeData().contexts["test-context"], undefined, "scopeClear should clear scope data");
-			assertEqual(scope.getPropagationContext().traceId, traceId,
+			const cleared = bridge.scopeClear(scope);
+			assertEqual(cleared.getScopeData().contexts["test-context"], undefined, "scopeClear should clear scope data");
+			assertEqual(cleared.getPropagationContext().traceId, traceId,
 					"scopeClear should preserve the propagation context");
+			assert(cleared.getClient() !== undefined, "scopeClear should keep the client bound");
 		});
 
 		runTest("spans stream instead of becoming transactions", () => {
@@ -369,8 +369,7 @@ try {
 			bridge.scopeSetSpan(scope, span);
 			assertEqual(scope.getScopeData().span, span, "scopeSetSpan should bind the span to the scope");
 			assertEqual(scope.clone().getScopeData().span, span, "a forked scope should inherit the bound span");
-			bridge.scopeClear(scope);
-			assertEqual(scope.getScopeData().span, undefined, "scopeClear should drop the bound span");
+			assertEqual(bridge.scopeClear(scope).getScopeData().span, undefined, "scopeClear should drop the bound span");
 			bridge.scopeSetSpan(scope, span);
 			bridge.scopeSetSpan(scope);
 			assertEqual(scope.getScopeData().span, undefined, "scopeSetSpan without a span should unbind");
