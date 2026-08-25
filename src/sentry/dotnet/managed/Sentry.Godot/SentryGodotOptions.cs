@@ -225,9 +225,6 @@ public sealed class SentryGodotLoggerOptions
     /// Accepts a single value or a bitwise combination of <see cref="GodotLoggerEventMask"/> masks.
     /// Empty by default, so no events are captured as logs.
     /// </summary>
-    /// <remarks>
-    /// Log capture requires <see cref="SentryOptions.EnableLogs"/> to be enabled.
-    /// </remarks>
     public GodotLoggerEventMask LogMask { get; set; } = GodotLoggerEventMask.None;
 
     /// <summary>

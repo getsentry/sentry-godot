@@ -359,8 +359,6 @@ void JavaScriptSDK::init() {
 			SENTRY_OPTIONS()->get_environment().utf8(),
 			SENTRY_OPTIONS()->get_sample_rate(),
 			SENTRY_OPTIONS()->get_max_breadcrumbs(),
-			SENTRY_OPTIONS()->get_enable_logs(),
-			SENTRY_OPTIONS()->get_enable_metrics(),
 			SENTRY_OPTIONS()->is_send_default_pii_enabled(),
 			SENTRY_GODOT_SDK_VERSION);
 

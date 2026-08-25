@@ -386,9 +386,6 @@ void CocoaSDK::init() {
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
 
-		options.enableLogs = SENTRY_OPTIONS()->get_enable_logs();
-		options.enableMetrics = SENTRY_OPTIONS()->get_enable_metrics();
-
 		options.initialScope = ^(SentryObjCScope *scope) {
 			_add_default_attachments(scope);
 

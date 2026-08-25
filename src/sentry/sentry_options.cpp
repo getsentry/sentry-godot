@@ -76,14 +76,12 @@ SentryGodotLoggerOptions::SentryGodotLoggerOptions() {
 
 // *** SentryExperimental
 
-void SentryExperimental::deprecated_set_enable_metrics(bool p_value) {
-	WARN_DEPRECATED_MSG("The \"enable_metrics\" option is deprecated and will be removed in version 3.0. Metrics are only sent if you use SentrySDK.metrics.");
-	ERR_FAIL_NULL(owner);
-	owner->set_enable_metrics(p_value);
+void SentryExperimental::deprecated_set_enable_metrics(bool) {
+	WARN_DEPRECATED_MSG("The \"enable_metrics\" option is deprecated, has no effect, and will be removed in version 3.0. Metrics are sent when you use SentrySDK.metrics.");
 }
 
 bool SentryExperimental::deprecated_get_enable_metrics() {
-	return owner ? owner->get_enable_metrics() : true;
+	return true;
 }
 
 void SentryExperimental::deprecated_set_before_send_metric(Callable p_value) {
@@ -135,9 +133,6 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/options/attach_log", p_options->attach_log, false);
 	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
-
-	_define_setting("sentry/options/enable_logs", p_options->enable_logs, false);
-	_define_setting("sentry/options/enable_metrics", p_options->enable_metrics, false);
 
 	_define_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/app_hang/timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), p_options->app_hang_timeout_ms, false);
@@ -227,17 +222,6 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
 	p_options->attach_scene_tree = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
-
-	p_options->enable_logs = ProjectSettings::get_singleton()->get_setting("sentry/options/enable_logs", p_options->enable_logs);
-	p_options->enable_metrics = ProjectSettings::get_singleton()->get_setting("sentry/options/enable_metrics", p_options->enable_metrics);
-
-	// Only a disabled setting is worth warning about: the enabled default carries no user intent.
-	if (!p_options->enable_logs) {
-		WARN_PRINT_ONCE("Sentry: The \"Enable Logs\" project setting is deprecated and will be removed in version 3.0. Logs are only sent if you use SentrySDK.logger or set \"sentry/godot_logger/logs\".");
-	}
-	if (!p_options->enable_metrics) {
-		WARN_PRINT_ONCE("Sentry: The \"Enable Metrics\" project setting is deprecated and will be removed in version 3.0. Metrics are only sent if you use SentrySDK.metrics.");
-	}
 
 	p_options->enable_app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking);
 	p_options->app_hang_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_ms", p_options->app_hang_timeout_ms);
@@ -355,14 +339,12 @@ void SentryOptions::deprecated_set_logger_limits(const Ref<SentryLoggerLimits> &
 	godot_logger->deprecated_set_limits(p_limits);
 }
 
-void SentryOptions::deprecated_set_enable_logs(bool p_enabled) {
-	WARN_DEPRECATED_MSG("The \"enable_logs\" option is deprecated and will be removed in version 3.0. Logs are only sent if you use SentrySDK.logger or set \"godot_logger.log_mask\".");
-	set_enable_logs(p_enabled);
+void SentryOptions::deprecated_set_enable_logs(bool) {
+	WARN_DEPRECATED_MSG("The \"enable_logs\" option is deprecated, has no effect, and will be removed in version 3.0. Logs are sent when you use SentrySDK.logger or set \"godot_logger.log_mask\".");
 }
 
-void SentryOptions::deprecated_set_enable_metrics(bool p_enabled) {
-	WARN_DEPRECATED_MSG("The \"enable_metrics\" option is deprecated and will be removed in version 3.0. Metrics are only sent if you use SentrySDK.metrics.");
-	set_enable_metrics(p_enabled);
+void SentryOptions::deprecated_set_enable_metrics(bool) {
+	WARN_DEPRECATED_MSG("The \"enable_metrics\" option is deprecated, has no effect, and will be removed in version 3.0. Metrics are sent when you use SentrySDK.metrics.");
 }
 
 void SentryOptions::set_release(const String &p_release) {

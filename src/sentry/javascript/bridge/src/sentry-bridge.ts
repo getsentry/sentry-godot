@@ -141,8 +141,6 @@ class SentryBridge {
     environment: string,
     sampleRate: number,
     maxBreadcrumbs: number,
-    enableLogs: boolean,
-    enableMetrics: boolean,
     sendDefaultPii: boolean,
     sdkVersion: string,
   ): void {
@@ -158,8 +156,6 @@ class SentryBridge {
       environment,
       sampleRate,
       maxBreadcrumbs,
-      enableLogs,
-      enableMetrics,
       sendDefaultPii,
       _metadata: {
         sdk: {
