@@ -327,7 +327,7 @@ SentryScopeImpl *JavaScriptSDK::create_scope() {
 
 SentrySpanImpl *JavaScriptSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
 	ERR_FAIL_COND_V(!js_bridge(), SentrySpanImpl::create_noop());
-	return start_js_span(p_name, p_attributes, nullptr);
+	return JavaScriptSpan::start_span(p_name, p_attributes, nullptr);
 }
 
 void JavaScriptSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {

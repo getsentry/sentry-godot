@@ -13,20 +13,19 @@ class JavaScriptSpan : public SentrySpanImpl {
 private:
 	JSObjectPtr js_obj;
 
+	explicit JavaScriptSpan(const JSObjectPtr &p_js_span_object);
+
 public:
+	// Starts a JavaScript span, parented to p_parent when provided; otherwise starts a root-level span.
+	static SentrySpanImpl *start_span(const String &p_name, const Dictionary &p_attributes, const JSObjectPtr &p_parent);
+
+	virtual SentrySpanImpl *start_child(const String &p_name, const Dictionary &p_attributes) override;
+
 	_FORCE_INLINE_ JSObjectPtr get_js_object() const { return js_obj; }
 
 	virtual void set_attribute(const String &p_key, const Variant &p_value) override;
 	virtual void set_status(SpanStatus p_status) override;
 	virtual void end() override;
-
-	virtual SentrySpanImpl *start_child(const String &p_name, const Dictionary &p_attributes) override;
-
-	explicit JavaScriptSpan(const JSObjectPtr &p_js_span_object);
-	JavaScriptSpan() = delete;
 };
-
-// Starts a JavaScript span, parented to p_parent when provided; otherwise starts a root-level span.
-SentrySpanImpl *start_js_span(const String &p_name, const Dictionary &p_attributes, const JSObjectPtr &p_parent);
 
 } //namespace sentry::javascript
