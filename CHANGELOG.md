@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+> [!IMPORTANT]
+> Structured logging and metrics are now always enabled, having been on by default since `2.0.0`. The corresponding `SentryOptions.enable_logs` and `SentryOptions.enable_metrics` options and Project Settings are deprecated and no longer have any effect.
+>
+> We recognize that this change may inconvenience applications that relied on the opt-out. Use `SentryOptions.before_send_log` or `SentryOptions.before_send_metric` to filter logs or metrics before they are sent. This deliberate tradeoff keeps these features consistent across SDK integrations.
+
 ### Features
 
 - Add current scope support to the GDScript API to enrich the telemetry captured within a specific part of the code ([#834](https://github.com/getsentry/sentry-godot/pull/834), [#835](https://github.com/getsentry/sentry-godot/pull/835), [#836](https://github.com/getsentry/sentry-godot/pull/836))
