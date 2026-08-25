@@ -311,7 +311,7 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
-	sentry_attachment_t *native_attachment = nullptr;
+	sentry_value_t native_attachment = sentry_value_new_null();
 
 	if (!p_attachment->get_path().is_empty()) {
 		// File attachment
@@ -319,8 +319,8 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
 
-		native_attachment = sentry_attach_file(absolute_path.utf8());
-		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach file: %s", absolute_path));
+		native_attachment = sentry_attachment_from_file(absolute_path.utf8());
+		ERR_FAIL_COND_MSG(sentry_value_is_null(native_attachment), vformat("Sentry: Failed to create file attachment: %s", absolute_path));
 
 		if (!p_attachment->get_filename().is_empty()) {
 			sentry_attachment_set_filename(native_attachment, p_attachment->get_filename().utf8());
@@ -332,23 +332,25 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 		sentry::logging::print_debug(vformat("attaching bytes with filename: %s", p_attachment->get_filename()));
 
-		native_attachment = sentry_attach_bytes(
+		native_attachment = sentry_attachment_from_bytes(
 				reinterpret_cast<const char *>(bytes.ptr()),
 				bytes.size(),
 				p_attachment->get_filename().utf8());
-		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach bytes with filename: %s", p_attachment->get_filename()));
+		ERR_FAIL_COND_MSG(sentry_value_is_null(native_attachment), vformat("Sentry: Failed to create bytes attachment with filename: %s", p_attachment->get_filename()));
 	}
 
 	if (!p_attachment->get_content_type().is_empty()) {
 		sentry_attachment_set_content_type(native_attachment, p_attachment->get_content_type().utf8());
 	}
 
-	user_attachments.push_back(native_attachment);
+	sentry_uuid_t uuid = sentry_add_attachment(native_attachment);
+	ERR_FAIL_COND_MSG(sentry_uuid_is_nil(&uuid), vformat("Sentry: Failed to add attachment: %s", p_attachment->get_path().is_empty() ? p_attachment->get_filename() : p_attachment->get_globalized_path()));
+	user_attachments.push_back(uuid);
 }
 
 void NativeSDK::clear_attachments() {
-	for (sentry_attachment_t *att : user_attachments) {
-		sentry_remove_attachment(att);
+	for (sentry_uuid_t uuid : user_attachments) {
+		sentry_remove_attachment(uuid);
 	}
 	user_attachments.clear();
 }
