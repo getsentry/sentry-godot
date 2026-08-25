@@ -207,7 +207,9 @@
 			<param index="3" name="active" type="bool" default="true" />
 			<description>
 				Starts a span named [param name] and returns it. Use the returned [SentrySpan] to attach attributes, set a status, and call [method SentrySpan.end] when the measured operation finishes. If [param name] is empty, the SDK prints an error and returns a no-op span.
-				If [param active] is [code]true[/code], the SDK forks the current scope and makes the new span active on the fork, so telemetry captured while the span is active is associated with it. Writes to the current scope during the span are discarded when the span ends, and the scope that was current when the span started becomes current again. Pass [code]false[/code] to record a span without making it current. An inactive span is not bound to a scope, so it does not affect [method SentrySDK.get_active_span] and does not stamp telemetry captured alongside it.
+				If [param active] is [code]true[/code], the SDK forks the current scope and makes the span active on the fork. If [param parent_span] refers to a span that was started as active, the SDK forks that parent's scope instead.
+				Telemetry captured on the same thread carries the span's trace context until the span ends. Writes made directly to the fork do not outlive the span, and the previous scope then becomes current again.
+				If [param active] is [code]false[/code], the SDK records the span without making it current. It does not affect [method SentrySDK.get_active_span] or add its trace context to telemetry captured alongside it.
 				[codeblock]
 				var span := SentrySDK.start_span("load_level", {
 					"sentry.op": "asset.load",
@@ -217,7 +219,7 @@
 				span.set_status(SentrySpan.SPAN_STATUS_OK)
 				span.end()
 				[/codeblock]
-				When [param parent_span] is omitted, the new span becomes a child of [method SentrySDK.get_active_span] if one exists; otherwise, it starts a new root span. Pass [code]null[/code] to force a new root span, or pass a [SentrySpan] to create a child of that span even when another span is active. When the new child is active, it forks the parent's scope if that parent was started as active; otherwise, it forks the current scope. If [param parent_span] has ended, the SDK prints an error and returns [code]null[/code].
+				When [param parent_span] is omitted, the new span becomes a child of [method SentrySDK.get_active_span] if one exists; otherwise, it starts a new root span. Pass [code]null[/code] to force a new root span, or pass a [SentrySpan] to create a child of that span even when another span is active. If [param parent_span] has ended, the SDK prints an error and returns [code]null[/code].
 				The [param attributes] dictionary is added to the span when it starts. The special [code]sentry.op[/code] attribute sets the operation the span is grouped under in Sentry. The SDK skips an entry with an empty key and prints an error.
 				[b]Note:[/b] Spans are only sent to Sentry if [member SentryOptions.traces_sample_rate] is raised above its default of 0.0. The rest of the API works either way, so telemetry captured during a span is associated with it even when the span itself is not sent.
 				[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
