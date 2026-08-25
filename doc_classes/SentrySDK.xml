@@ -222,7 +222,7 @@
 				When [param parent_span] is omitted, the new span becomes a child of [method SentrySDK.get_active_span] if one exists; otherwise, it starts a new root span. Pass [code]null[/code] to force a new root span, or pass a [SentrySpan] to create a child of that span even when another span is active. If [param parent_span] has ended, the SDK prints an error and returns a no-op span.
 				The [param attributes] dictionary is added to the span when it starts. The special [code]sentry.op[/code] attribute sets the operation the span is grouped under in Sentry. The SDK skips an entry with an empty key and prints an error.
 				[b]Note:[/b] The SDK sends spans only if [member SentryOptions.traces_sample_rate] is set above its default of [code]0.0[/code]. The API works either way: telemetry captured during an active span carries its trace context even when the span is not sent.
-				[b]Platform support:[/b] Spans are not supported on macOS, iOS, or Android yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
+				[b]Platform support:[/b] Spans are not supported on macOS or iOS yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
 				To learn more, visit [url=https://docs.sentry.io/concepts/key-terms/tracing/]Tracing documentation[/url].
 			</description>
 		</method>
