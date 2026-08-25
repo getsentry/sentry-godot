@@ -386,6 +386,9 @@ void CocoaSDK::init() {
 		// NOTE: This only works for captureMessage(), unfortunately.
 		options.attachStacktrace = false;
 
+		// sentry-cocoa disables logs by default, unlike metrics.
+		options.enableLogs = YES;
+
 		options.initialScope = ^(SentryObjCScope *scope) {
 			_add_default_attachments(scope);
 

@@ -264,6 +264,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.maxBreadcrumbs = maxBreadcrumbs
                 options.sdkVersion?.name = "sentry.java.android.godot"
                 options.nativeSdkName = "sentry.native.android.godot"
+                // sentry-android disables logs by default, unlike metrics.
+                options.logs.isEnabled = true
                 options.isAnrEnabled = enableAnrDetection
                 options.anrTimeoutIntervalMillis = anrTimeoutIntervalMs
                 options.isAttachAnrThreadDump = attachAnrThreadDump
@@ -510,7 +512,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun captureFeedback(scopeHandle: Int, message: String, contactEmail: String, name: String, associatedEventId: String) {
+    fun captureFeedback(
+        scopeHandle: Int,
+        message: String,
+        contactEmail: String,
+        name: String,
+        associatedEventId: String
+    ) {
         val feedback = Feedback(message)
         feedback.contactEmail = contactEmail.ifEmpty { null }
         feedback.name = name.ifEmpty { null }

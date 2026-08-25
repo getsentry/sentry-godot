@@ -115,6 +115,11 @@ public static partial class SentrySdk
     {
         CurrentOptions = godotOptions;
         GodotLog.Debug("Initializing Sentry in .NET...");
+
+        // Deprecated no-ops in the Godot API, enforced here so the user callback can't disable them.
+        godotOptions.EnableLogs = true;
+        godotOptions.EnableMetrics = true;
+
         ConfigureAssemblyReader(godotOptions);
         ConfigureCocoaDebugImagesOnIOS(godotOptions);
         Sentry.SentrySdk.Init(godotOptions);

@@ -16,6 +16,9 @@ public sealed class SentryGodotOptions : SentryOptions
         // Native layer owns sessions; .NET-side tracking would double-count.
         AutoSessionTracking = false;
 
+        // sentry-dotnet disables logs by default, unlike metrics.
+        EnableLogs = true;
+
         AddInAppExclude("Godot");
         AddIntegration(new GodotSdkIntegration());
 
