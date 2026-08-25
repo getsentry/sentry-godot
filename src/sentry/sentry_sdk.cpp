@@ -193,10 +193,6 @@ Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Dictionary &p_
 	Ref<SentrySpan> span;
 	if (parent.is_valid()) {
 		span = parent->start_child(p_name, p_attributes);
-		if (span.is_null()) {
-			// start_child() already reported why.
-			return span;
-		}
 	} else {
 		span = Ref<SentrySpan>(memnew(SentrySpan(p_name, p_attributes)));
 	}

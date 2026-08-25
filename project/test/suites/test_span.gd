@@ -215,9 +215,16 @@ func test_ended_span_refuses_a_child() -> void:
 	var parent := SentrySDK.start_span("test.ended_parent")
 	parent.end()
 
-	assert_object(SentrySDK.start_span("test.orphan", {}, parent)) \
-		.override_failure_message("an ended span must not accept new children") \
-		.is_null()
+	var orphan := SentrySDK.start_span("test.orphan", {}, parent)
+
+	assert_object(orphan) \
+		.override_failure_message("an ended span must yield a no-op span instead of null") \
+		.is_not_null()
+	assert_object(SentrySDK.get_active_span()) \
+		.override_failure_message("a no-op span must become active so its children inherit it") \
+		.is_same(orphan)
+
+	orphan.end()
 
 
 func test_scope_clear_drops_the_span() -> void:
