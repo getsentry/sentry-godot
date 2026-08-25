@@ -104,6 +104,18 @@ AndroidStringNames::AndroidStringNames() {
 	scopeAddFileAttachment = StringName("scopeAddFileAttachment");
 	scopeAddBytesAttachment = StringName("scopeAddBytesAttachment");
 	scopeClear = StringName("scopeClear");
+	scopeSetSpan = StringName("scopeSetSpan");
+
+	// Spans.
+	startSpan = StringName("startSpan");
+	releaseSpan = StringName("releaseSpan");
+	spanStartChild = StringName("spanStartChild");
+	spanSetAttributeBool = StringName("spanSetAttributeBool");
+	spanSetAttributeLong = StringName("spanSetAttributeLong");
+	spanSetAttributeDouble = StringName("spanSetAttributeDouble");
+	spanSetAttributeString = StringName("spanSetAttributeString");
+	spanSetStatus = StringName("spanSetStatus");
+	spanEnd = StringName("spanEnd");
 
 	// Logs.
 	releaseLog = StringName("releaseLog");

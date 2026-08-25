@@ -2,12 +2,15 @@ package io.sentry.godotplugin
 
 import android.util.Log
 import io.sentry.Attachment
+import io.sentry.Baggage
 import io.sentry.Breadcrumb
 import io.sentry.Hint
 import io.sentry.IScope
 import io.sentry.IScopes
 import io.sentry.ISerializer
+import io.sentry.ISpan
 import io.sentry.JsonUnknown
+import io.sentry.NoOpLogger
 import io.sentry.Scope
 import io.sentry.ScopeType
 import io.sentry.Scopes
@@ -20,6 +23,9 @@ import io.sentry.SentryLogEventAttributeValue
 import io.sentry.SentryLogLevel
 import io.sentry.SentryMetricsEvent
 import io.sentry.SentryOptions
+import io.sentry.SpanId
+import io.sentry.TransactionContext
+import io.sentry.TransactionOptions
 import io.sentry.android.core.InternalSentrySdk
 import io.sentry.android.core.SentryAndroid
 import io.sentry.logger.ILoggerApi
@@ -86,6 +92,14 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
+    // Thread-local is safe here: the C++ layer thread-guards every span method, so a span is only
+    // ever touched from the thread that started it.
+    private val spansByHandle = object : ThreadLocal<MutableMap<Int, ISpan>>() {
+        override fun initialValue(): MutableMap<Int, ISpan> {
+            return mutableMapOf()
+        }
+    }
+
     private fun getEvent(eventHandle: Int): SentryEvent? {
         val event: SentryEvent? = eventsByHandle.get()?.get(eventHandle)
         if (event == null) {
@@ -124,6 +138,14 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             Log.e(TAG, "Internal Error -- Scope not found: $scopeHandle")
         }
         return scope
+    }
+
+    private fun getSpan(spanHandle: Int): ISpan? {
+        val span: ISpan? = spansByHandle.get()?.get(spanHandle)
+        if (span == null) {
+            Log.e(TAG, "Internal Error -- Span not found: $spanHandle")
+        }
+        return span
     }
 
     // Returns combined scopes by the given scope handle (scope is owned by C++ layer).
@@ -227,6 +249,21 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         return handle
     }
 
+    private fun registerSpan(span: ISpan): Int {
+        val spansMap = spansByHandle.get() ?: run {
+            Log.e(TAG, "Internal Error -- spansByHandle is null")
+            return 0
+        }
+
+        var handle = Random.nextInt()
+        while (handle == 0 || spansMap.containsKey(handle)) {
+            handle = Random.nextInt()
+        }
+
+        spansMap[handle] = span
+        return handle
+    }
+
     override fun getPluginName(): String {
         return "SentryAndroidGodotPlugin"
     }
@@ -248,6 +285,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val dist = optionsData["dist"] as String
             val environment = optionsData["environment"] as String
             val sampleRate = optionsData["sample_rate"].toDoubleOrThrow()
+            val tracesSampleRate = optionsData["traces_sample_rate"].toDoubleOrThrow()
             val maxBreadcrumbs = optionsData["max_breadcrumbs"].toIntOrThrow()
             val enableAnrDetection = optionsData["enable_anr_detection"] as Boolean
             val anrTimeoutIntervalMs = optionsData["anr_timeout_interval_ms"].toLongOrThrow()
@@ -261,6 +299,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.dist = dist.ifEmpty { null }
                 options.environment = environment.ifEmpty { null }
                 options.sampleRate = sampleRate
+                options.tracesSampleRate = tracesSampleRate
                 options.maxBreadcrumbs = maxBreadcrumbs
                 options.sdkVersion?.name = "sentry.java.android.godot"
                 options.nativeSdkName = "sentry.native.android.godot"
@@ -991,7 +1030,81 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun scopeClear(handle: Int) {
-        getScope(handle)?.clear()
+        val scope = getScope(handle) ?: return
+        scope.clear()
+        // WORKAROUND: Scope.clear() only clears transaction, leaving the active span in place.
+        scope.setActiveSpan(null)
+    }
+
+    @UsedByGodot
+    fun scopeSetSpan(scopeHandle: Int, spanHandle: Int) {
+        val scope = getScope(scopeHandle) ?: return
+        scope.setActiveSpan(if (spanHandle != 0) getSpan(spanHandle) else null)
+    }
+
+    @UsedByGodot
+    fun startSpan(name: String, op: String): Int {
+        if (!Sentry.isEnabled()) {
+            return 0
+        }
+
+        // Continue the propagated trace so this transaction remains connected to it,
+        // but use a new span ID so captures outside the transaction keep the propagation context's ID.
+        // Use separate baggage because finishing the transaction mutates and freezes it.
+        val propagationContext = Sentry.getCurrentScopes().globalScope.propagationContext
+        val baggage = Baggage(NoOpLogger.getInstance()).apply { sampleRand = propagationContext.sampleRand }
+        val context = TransactionContext(
+            propagationContext.traceId,
+            SpanId(),
+            propagationContext.parentSpanId,
+            null,
+            baggage
+        )
+        context.name = name
+        context.operation = op
+
+        return registerSpan(Sentry.startTransaction(context, TransactionOptions()))
+    }
+
+    @UsedByGodot
+    fun spanStartChild(handle: Int, name: String, op: String): Int {
+        val span = getSpan(handle) ?: return 0
+        return registerSpan(span.startChild(op, name))
+    }
+
+    @UsedByGodot
+    fun spanSetAttributeBool(handle: Int, key: String, value: Boolean) {
+        getSpan(handle)?.setData(key, value)
+    }
+
+    @UsedByGodot
+    fun spanSetAttributeLong(handle: Int, key: String, value: Long) {
+        getSpan(handle)?.setData(key, value)
+    }
+
+    @UsedByGodot
+    fun spanSetAttributeDouble(handle: Int, key: String, value: Double) {
+        getSpan(handle)?.setData(key, value)
+    }
+
+    @UsedByGodot
+    fun spanSetAttributeString(handle: Int, key: String, value: String) {
+        getSpan(handle)?.setData(key, value)
+    }
+
+    @UsedByGodot
+    fun spanSetStatus(handle: Int, status: Int) {
+        getSpan(handle)?.status = status.toSentrySpanStatus()
+    }
+
+    @UsedByGodot
+    fun spanEnd(handle: Int) {
+        getSpan(handle)?.finish()
+    }
+
+    @UsedByGodot
+    fun releaseSpan(handle: Int) {
+        spansByHandle.get()?.remove(handle)
     }
 
     @UsedByGodot
