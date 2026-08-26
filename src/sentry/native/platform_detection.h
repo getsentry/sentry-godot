@@ -6,13 +6,6 @@ using namespace godot;
 
 namespace sentry::native {
 
-struct WineProtonInfo {
-	bool is_wine = false;
-	bool is_proton = false;
-	String version; // "10.0-4", "10.0-20260113", "9-27"
-	String runtime_name; // "Wine", "Proton", "Proton Experimental", "GE-Proton"
-};
-
 struct DistroInfo {
 	String name; // "SteamOS", "Bazzite"
 	String pretty_name; // "Ubuntu 24.04.3 LTS"
@@ -32,9 +25,9 @@ struct ProductInfo {
 
 struct PlatformInfo {
 	ProductInfo product;
-	WineProtonInfo wine_proton;
 	DistroInfo distro;
 	String kernel_version;
+	bool is_wine = false;
 	bool is_steamos = false;
 	bool is_bazzite = false;
 	bool is_steam = false;
