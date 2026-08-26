@@ -82,7 +82,7 @@
 			<return type="SentrySpan" />
 			<description>
 				Returns the span currently bound to the calling thread's current scope, or [code]null[/code] if no span is active. Events captured while a span is active are associated with that span's trace context.
-				Active spans are created by [method SentrySDK.start_span]. When an active span ends, the SDK restores the previously active span, if any.
+				Active spans are created by [method SentrySDK.start_span] and [method SentrySDK.with_span]. When an active span ends, the SDK restores the previously active span, if any.
 				[b]Note:[/b] The returned span belongs to the calling thread. Span methods must be called from the thread that created the span.
 			</description>
 		</method>
@@ -251,6 +251,26 @@
 				For more information, see [SentryScope] class.
 				[b]Note:[/b] The fork covers the synchronous part of [param callable] only. If the callable awaits, the fork is discarded at the first [code]await[/code] and a warning is printed.
 				[b]Note:[/b] The SDK does not support scopes on macOS and iOS yet. On those platforms it still captures telemetry, but discards the data written to the forked scope and prints a warning.
+			</description>
+		</method>
+		<method name="with_span">
+			<return type="Variant" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+				Starts an active span named [param name], calls [param callable] with that [SentrySpan], ends the span when the callable returns, and returns the callable's return value. If [param name] is empty, the SDK prints an error and runs [param callable] with a no-op span.
+				Use this helper when the operation fits in one synchronous callable. Use [method SentrySDK.start_span] instead when you need to set initial attributes, choose a parent span, keep a span open across multiple functions, or create an inactive span.
+				[codeblock]
+				var result: Variant = SentrySDK.with_span("generate_chunk", func(span: SentrySpan) -&gt; Variant:
+					span.set_attribute("chunk_x", chunk_x)
+					span.set_attribute("chunk_y", chunk_y)
+					return generate_chunk(chunk_x, chunk_y)
+				)
+				[/codeblock]
+				Nested calls create nested spans. When the callable returns, the enclosing active span and scope are restored.
+				[b]Note:[/b] The span covers the synchronous part of [param callable] only. If the callable awaits, the span is ended at the first [code]await[/code] and a warning is printed.
+				[b]Note:[/b] The SDK sends spans only if [member SentryOptions.traces_sample_rate] is set above its default of [code]0.0[/code].
+				[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
 			</description>
 		</method>
 	</methods>

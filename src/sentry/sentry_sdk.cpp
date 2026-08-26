@@ -224,6 +224,21 @@ void SentrySDK::notify_span_ended(const SentrySpan *p_span) {
 	}
 }
 
+Variant SentrySDK::with_span(const String &p_name, const Callable &p_callable) {
+	Ref<SentrySpan> active_span = start_span(p_name);
+	Variant result = p_callable.call(active_span);
+	static bool first_warning = true; // acceptable race: several warnings are OK.
+	if (first_warning) {
+		if (Object *obj = result.get_validated_object();
+				unlikely(obj != nullptr && obj->get_class() == "GDScriptFunctionState")) {
+			first_warning = false;
+			WARN_PRINT("Sentry: with_span() does not support await - the span is only active until the first await.");
+		}
+	}
+	active_span->end();
+	return result;
+}
+
 Ref<SentrySpan> SentrySDK::get_active_span() const {
 	return get_current_scope()->get_span();
 }
@@ -655,6 +670,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("with_scope", "callable"), &SentrySDK::with_scope);
 
 	ClassDB::bind_method(D_METHOD("start_span", "name", "attributes", "parent_span", "active"), &SentrySDK::start_span, DEFVAL(Dictionary()), DEFVAL(SentrySpan::unassigned()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("with_span", "name", "callable"), &SentrySDK::with_span);
 	ClassDB::bind_method(D_METHOD("get_active_span"), &SentrySDK::get_active_span);
 
 	// Hidden API methods -- used in testing.
