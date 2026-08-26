@@ -25,6 +25,28 @@ func test_bool_properties(property: String, test_parameters := [
 	assert_bool(options.get(property)).is_false()
 
 
+@warning_ignore("unused_parameter")
+func test_deprecated_enable_options_are_noop(property: String, test_parameters := [
+		["enable_logs"],
+		["enable_metrics"],
+]) -> void:
+	options.set(property, false)
+	assert_bool(options.get(property)).is_true()
+
+
+func test_deprecated_experimental_enable_metrics_is_noop() -> void:
+	options.experimental.enable_metrics = false
+	assert_bool(options.experimental.enable_metrics).is_true()
+
+
+@warning_ignore("unused_parameter")
+func test_deprecated_enable_project_settings_are_removed(setting: String, test_parameters := [
+		["sentry/options/enable_logs"],
+		["sentry/options/enable_metrics"],
+]) -> void:
+	assert_bool(ProjectSettings.has_setting(setting)).is_false()
+
+
 ## Test simple bool properties on godot_logger options.
 @warning_ignore("unused_parameter")
 func test_godot_logger_bool_properties(property: String, test_parameters := [

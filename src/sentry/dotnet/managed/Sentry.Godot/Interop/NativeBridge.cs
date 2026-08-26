@@ -120,7 +120,6 @@ internal static partial class NativeBridge
         public int max_breadcrumbs;
         public double shutdown_timeout_ms;
         public byte send_default_pii;
-        public byte enable_logs;
         public byte attach_log;
         public byte attach_scene_tree;
         public byte attach_screenshot;
@@ -133,7 +132,6 @@ internal static partial class NativeBridge
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
         public int logger_log_mask;
-        public byte enable_metrics;
         public byte android_enable_anr_detection;
         public int android_anr_timeout_interval_ms;
         public byte android_attach_anr_thread_dump;
@@ -158,7 +156,6 @@ internal static partial class NativeBridge
         public int max_breadcrumbs;
         public double shutdown_timeout_ms;
         public byte send_default_pii;
-        public byte enable_logs;
         public byte attach_log;
         public byte attach_scene_tree;
         public byte attach_screenshot;
@@ -171,7 +168,6 @@ internal static partial class NativeBridge
         public int logger_event_mask;
         public int logger_breadcrumb_mask;
         public int logger_log_mask;
-        public byte enable_metrics;
         public uint defined_hooks;
         public byte android_enable_anr_detection;
         public int android_anr_timeout_interval_ms;
@@ -517,7 +513,6 @@ internal static partial class NativeBridge
         opts.MaxBreadcrumbs = data.max_breadcrumbs;
         opts.ShutdownTimeout = TimeSpan.FromMilliseconds(data.shutdown_timeout_ms);
         opts.SendDefaultPii = data.send_default_pii != 0;
-        opts.EnableLogs = data.enable_logs != 0;
         opts.AttachLog = data.attach_log != 0;
         opts.AttachSceneTree = data.attach_scene_tree != 0;
         opts.AttachScreenshot = data.attach_screenshot != 0;
@@ -530,7 +525,6 @@ internal static partial class NativeBridge
         opts.GodotLogger.EventMask = (GodotLoggerEventMask)data.logger_event_mask;
         opts.GodotLogger.BreadcrumbMask = (GodotLoggerEventMask)data.logger_breadcrumb_mask;
         opts.GodotLogger.LogMask = (GodotLoggerEventMask)data.logger_log_mask;
-        opts.EnableMetrics = data.enable_metrics != 0;
         opts.Android.EnableAnrDetection = data.android_enable_anr_detection != 0;
         opts.Android.AnrTimeoutInterval = TimeSpan.FromMilliseconds(data.android_anr_timeout_interval_ms);
         opts.Android.AttachAnrThreadDump = data.android_attach_anr_thread_dump != 0;
@@ -816,7 +810,6 @@ internal static partial class NativeBridge
                 max_breadcrumbs = opts.MaxBreadcrumbs,
                 shutdown_timeout_ms = opts.ShutdownTimeout.TotalMilliseconds,
                 send_default_pii = (byte)(opts.SendDefaultPii ? 1 : 0),
-                enable_logs = (byte)(opts.EnableLogs ? 1 : 0),
                 attach_log = (byte)(opts.AttachLog ? 1 : 0),
                 attach_scene_tree = (byte)(opts.AttachSceneTree ? 1 : 0),
                 attach_screenshot = (byte)(opts.AttachScreenshot ? 1 : 0),
@@ -829,7 +822,6 @@ internal static partial class NativeBridge
                 logger_event_mask = (int)opts.GodotLogger.EventMask,
                 logger_breadcrumb_mask = (int)opts.GodotLogger.BreadcrumbMask,
                 logger_log_mask = (int)opts.GodotLogger.LogMask,
-                enable_metrics = (byte)(opts.EnableMetrics ? 1 : 0),
                 defined_hooks = (uint)GetManagedDefinedHooks(opts),
                 android_enable_anr_detection = (byte)(opts.Android.EnableAnrDetection ? 1 : 0),
                 android_anr_timeout_interval_ms = (int)opts.Android.AnrTimeoutInterval.TotalMilliseconds,

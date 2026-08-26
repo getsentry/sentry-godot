@@ -127,7 +127,7 @@ try {
 		};
 
 		runTest("init()", () => {
-			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 100, false, false, false, "0.1.0");
+			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 100, false, "0.1.0");
 		});
 
 		// Observes what actually goes out with an event. The bridge registers its own handler during

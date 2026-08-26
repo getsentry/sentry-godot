@@ -141,7 +141,6 @@ struct NativeOptions {
 	int32_t max_breadcrumbs;
 	double shutdown_timeout_ms;
 	uint8_t send_default_pii;
-	uint8_t enable_logs;
 
 	// Godot-specific
 	uint8_t attach_log;
@@ -158,9 +157,6 @@ struct NativeOptions {
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
 	int32_t logger_log_mask;
-
-	// Experimental
-	uint8_t enable_metrics;
 
 	// Android
 	uint8_t android_enable_anr_detection;
@@ -204,7 +200,6 @@ struct ManagedOptions {
 	int32_t max_breadcrumbs;
 	double shutdown_timeout_ms;
 	uint8_t send_default_pii;
-	uint8_t enable_logs;
 
 	uint8_t attach_log;
 	uint8_t attach_scene_tree;
@@ -219,8 +214,6 @@ struct ManagedOptions {
 	int32_t logger_event_mask;
 	int32_t logger_breadcrumb_mask;
 	int32_t logger_log_mask;
-
-	uint8_t enable_metrics;
 
 	// Flags indicating which native-layer hooks are implemented in managed code; see ManagedDefinedHooks.
 	uint32_t defined_hooks;
@@ -252,7 +245,6 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_max_breadcrumbs(data.max_breadcrumbs);
 	options->set_shutdown_timeout_ms(data.shutdown_timeout_ms);
 	options->set_send_default_pii(data.send_default_pii);
-	options->set_enable_logs(data.enable_logs);
 	options->set_attach_log(data.attach_log);
 	options->set_attach_scene_tree(data.attach_scene_tree);
 	options->set_attach_screenshot(data.attach_screenshot);
@@ -265,7 +257,6 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->get_godot_logger()->set_event_mask(data.logger_event_mask);
 	options->get_godot_logger()->set_breadcrumb_mask(data.logger_breadcrumb_mask);
 	options->get_godot_logger()->set_log_mask(data.logger_log_mask);
-	options->set_enable_metrics(data.enable_metrics);
 	options->get_android()->set_enable_anr_detection(data.android_enable_anr_detection);
 	options->get_android()->set_anr_timeout_interval_ms(data.android_anr_timeout_interval_ms);
 	options->get_android()->set_attach_anr_thread_dump(data.android_attach_anr_thread_dump);
@@ -290,7 +281,6 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.max_breadcrumbs = options->get_max_breadcrumbs();
 	r_data.shutdown_timeout_ms = options->get_shutdown_timeout_ms();
 	r_data.send_default_pii = options->is_send_default_pii_enabled();
-	r_data.enable_logs = options->get_enable_logs();
 	r_data.attach_log = options->is_attach_log_enabled();
 	r_data.attach_scene_tree = options->is_attach_scene_tree_enabled();
 	r_data.attach_screenshot = options->is_attach_screenshot_enabled();
@@ -303,7 +293,6 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.logger_event_mask = options->get_godot_logger()->get_event_mask();
 	r_data.logger_breadcrumb_mask = options->get_godot_logger()->get_breadcrumb_mask();
 	r_data.logger_log_mask = options->get_godot_logger()->get_log_mask();
-	r_data.enable_metrics = options->get_enable_metrics();
 	r_data.android_enable_anr_detection = options->get_android()->get_enable_anr_detection();
 	r_data.android_anr_timeout_interval_ms = options->get_android()->get_anr_timeout_interval_ms();
 	r_data.android_attach_anr_thread_dump = options->get_android()->get_attach_anr_thread_dump();

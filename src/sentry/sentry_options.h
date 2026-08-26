@@ -122,10 +122,8 @@ private:
 	sentry::Level screenshot_level = sentry::LEVEL_FATAL;
 	bool attach_scene_tree = false;
 
-	bool enable_logs = true;
 	Callable before_send_log;
 
-	bool enable_metrics = true;
 	Callable before_send_metric;
 
 	bool enable_app_hang_tracking = true;
@@ -205,14 +203,8 @@ public:
 	_FORCE_INLINE_ void set_attach_scene_tree(bool p_enable) { attach_scene_tree = p_enable; }
 	_FORCE_INLINE_ bool is_attach_scene_tree_enabled() const { return attach_scene_tree; }
 
-	_FORCE_INLINE_ bool get_enable_logs() const { return enable_logs; }
-	_FORCE_INLINE_ void set_enable_logs(bool p_enabled) { enable_logs = p_enabled; }
-
 	_FORCE_INLINE_ Callable get_before_send_log() const { return before_send_log; }
 	_FORCE_INLINE_ void set_before_send_log(const Callable &p_callback) { before_send_log = p_callback; }
-
-	_FORCE_INLINE_ bool get_enable_metrics() const { return enable_metrics; }
-	_FORCE_INLINE_ void set_enable_metrics(bool p_enabled) { enable_metrics = p_enabled; }
 
 	_FORCE_INLINE_ Callable get_before_send_metric() const { return before_send_metric; }
 	_FORCE_INLINE_ void set_before_send_metric(const Callable &p_callback) { before_send_metric = p_callback; }
@@ -238,9 +230,9 @@ public:
 
 	_FORCE_INLINE_ bool should_capture_event(GodotErrorType p_error_type) { return godot_logger->get_event_mask().has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
 	_FORCE_INLINE_ bool should_capture_breadcrumb(GodotErrorType p_error_type) { return godot_logger->get_breadcrumb_mask().has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
-	_FORCE_INLINE_ bool should_capture_log(GodotErrorType p_error_type) { return enable_logs && godot_logger->get_log_mask().has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
+	_FORCE_INLINE_ bool should_capture_log(GodotErrorType p_error_type) { return godot_logger->get_log_mask().has_flag(sentry::godot_error_type_as_mask(p_error_type)); }
 	_FORCE_INLINE_ bool should_capture_message_breadcrumb() { return godot_logger->get_breadcrumb_mask().has_flag(MASK_MESSAGE); }
-	_FORCE_INLINE_ bool should_capture_message_log() { return enable_logs && godot_logger->get_log_mask().has_flag(MASK_MESSAGE); }
+	_FORCE_INLINE_ bool should_capture_message_log() { return godot_logger->get_log_mask().has_flag(MASK_MESSAGE); }
 
 	// Clears every Callable property, dropping user callbacks such as before_send.
 	// Workaround for https://github.com/getsentry/sentry-godot/issues/797
@@ -295,10 +287,10 @@ public:
 	Ref<SentryLoggerLimits> deprecated_get_logger_limits() const { return godot_logger->get_limits(); }
 	void deprecated_set_logger_limits(const Ref<SentryLoggerLimits> &p_limits);
 
-	bool deprecated_get_enable_logs() const { return enable_logs; }
+	bool deprecated_get_enable_logs() const { return true; }
 	void deprecated_set_enable_logs(bool p_enabled);
 
-	bool deprecated_get_enable_metrics() const { return enable_metrics; }
+	bool deprecated_get_enable_metrics() const { return true; }
 	void deprecated_set_enable_metrics(bool p_enabled);
 };
 

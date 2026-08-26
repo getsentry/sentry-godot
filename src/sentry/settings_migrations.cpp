@@ -102,11 +102,18 @@ void _migrate_to_v4() {
 	_rename_setting("sentry/experimental/enable_metrics", "sentry/options/enable_metrics");
 }
 
+void _migrate_to_v5() {
+	ProjectSettings::get_singleton()->set_setting("sentry/experimental/enable_logs", Variant());
+	ProjectSettings::get_singleton()->set_setting("sentry/experimental/enable_metrics", Variant());
+	ProjectSettings::get_singleton()->set_setting("sentry/options/enable_logs", Variant());
+	ProjectSettings::get_singleton()->set_setting("sentry/options/enable_metrics", Variant());
+}
+
 } // unnamed namespace
 
 namespace sentry {
 
-constexpr static int SCHEMA_VERSION = 4;
+constexpr static int SCHEMA_VERSION = 5;
 
 void run_project_settings_migrations() {
 	const String schema_version_key = "sentry/schema_version";
@@ -142,6 +149,10 @@ void run_project_settings_migrations() {
 
 	if (from_version < 4) {
 		_migrate_to_v4();
+	}
+
+	if (from_version < 5) {
+		_migrate_to_v5();
 	}
 
 	if (from_version < SCHEMA_VERSION) {
