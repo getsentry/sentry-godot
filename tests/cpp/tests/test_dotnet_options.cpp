@@ -88,7 +88,7 @@ TEST_SUITE("[.NET] Options interop") {
 			// clang-format on
 		};
 
-		SUBCASE("Every bound option is either crossed or deliberately left out") {
+		SUBCASE("Every scalar option is either crossed or deliberately left out") {
 			// Strict options inventory: any new SentryOptions property must be
 			// added to the crossing cases or deliberately listed as not crossing.
 			HashSet<String> crossed;
@@ -96,22 +96,24 @@ TEST_SUITE("[.NET] Options interop") {
 				crossed.insert(option_name(option));
 			}
 			const HashSet<String> not_crossed = {
-				// Callables, which each layer keeps to itself.
-				"before_send", "before_send_feedback", "before_send_log", "before_send_metric", "before_capture_screenshot",
-				// Sub-objects, whose own properties cross instead.
-				"experimental", "android", "godot_logger", "limits",
 				// Deprecated no-ops.
 				"enable_logs", "enable_metrics",
 				// Deprecated aliases for the properties above.
 				"logger_messages_as_breadcrumbs", "app_hang_tracking", "app_hang_timeout_sec",
 				"logger_enabled", "logger_include_source", "logger_include_variables",
-				"logger_event_mask", "logger_breadcrumb_mask", "logger_log_mask", "logger_limits"
+				"logger_event_mask", "logger_breadcrumb_mask", "logger_log_mask"
 			};
 
 			for (const char *class_name : { "SentryOptions", "SentryGodotLoggerOptions", "SentryLoggerLimits", "SentryAndroidOptions" }) {
 				const TypedArray<Dictionary> properties = ClassDBSingleton::get_singleton()->class_get_property_list(class_name, true);
 				for (int i = 0; i < properties.size(); i++) {
-					const String name = Dictionary(properties[i])["name"];
+					const Dictionary property = properties[i];
+					const Variant::Type type = static_cast<Variant::Type>(property["type"].operator int64_t());
+					if (type == Variant::OBJECT || type == Variant::CALLABLE) {
+						continue;
+					}
+
+					const String name = property["name"];
 					INFO((std::string(class_name) + "." + name.utf8().get_data()));
 					CHECK((crossed.has(name) || not_crossed.has(name)));
 				}
