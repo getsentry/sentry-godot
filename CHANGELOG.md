@@ -20,6 +20,7 @@
 
 - Make the deprecated `SentryOptions.enable_logs` and `SentryOptions.enable_metrics` options no-ops, and remove their Project Settings counterparts ([#869](https://github.com/getsentry/sentry-godot/pull/869), [#887](https://github.com/getsentry/sentry-godot/pull/887))
 - The bundled user feedback form now waits a frame for the UI to hide before capturing, so a screenshot attached to the feedback shows the game instead of the form and the text typed into it ([#880](https://github.com/getsentry/sentry-godot/pull/880))
+- Report Wine and Proton metadata through the Native SDK's separate `wine` runtime context instead of the generic `runtime` context ([#890](https://github.com/getsentry/sentry-godot/pull/890), [sentry-native#1995](https://github.com/getsentry/sentry-native/pull/1995))
 
 ### Fixes
 

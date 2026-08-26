@@ -384,7 +384,7 @@ Dictionary make_os_context_override() {
 	} else if (info.is_bazzite) {
 		os_context["name"] = "Bazzite";
 		prefer_distro_version = true;
-	} else if (info.wine_proton.is_wine) {
+	} else if (info.is_wine) {
 		// Windows build running on other Linux distro using Wine/Proton.
 		os_context["name"] = "Linux";
 		prefer_distro_version = false;
@@ -431,23 +431,6 @@ Dictionary make_os_context_override() {
 #endif // SDK_NATIVE
 
 	return os_context;
-}
-
-Dictionary make_runtime_context() {
-	Dictionary runtime_context;
-
-#ifdef SDK_NATIVE
-	const auto &info = sentry::native::detect_platform();
-	if (info.wine_proton.is_wine) {
-		const String &runtime_name = info.wine_proton.runtime_name;
-		runtime_context["name"] = !runtime_name.is_empty() ? runtime_name : "Wine";
-		if (!info.wine_proton.version.is_empty()) {
-			runtime_context["version"] = info.wine_proton.version;
-		}
-	}
-#endif // SDK_NATIVE
-
-	return runtime_context;
 }
 
 Dictionary make_godot_engine_context() {

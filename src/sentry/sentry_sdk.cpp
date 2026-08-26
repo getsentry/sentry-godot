@@ -398,7 +398,7 @@ void SentrySDK::_init_contexts() {
 	internal_sdk->set_context("godot_engine", sentry::contexts::make_godot_engine_context());
 	internal_sdk->set_context("environment", sentry::contexts::make_environment_context());
 
-	// Linux distro and Proton/Wine compatibility layer enrichment.
+	// Linux distro and Steam.
 #if defined(SDK_NATIVE)
 	{
 		// Contexts.
@@ -406,11 +406,6 @@ void SentrySDK::_init_contexts() {
 		if (!os_override.is_empty()) {
 			internal_sdk->set_context("os", os_override);
 		}
-		Dictionary runtime_ctx = sentry::contexts::make_runtime_context();
-		if (!runtime_ctx.is_empty()) {
-			internal_sdk->set_context("runtime", runtime_ctx);
-		}
-
 		// Tags.
 		const auto &platform_info = sentry::native::detect_platform();
 		if (platform_info.is_steam) {
