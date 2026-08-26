@@ -212,7 +212,10 @@ func test_explicit_parent_inherits_the_parents_scope() -> void:
 
 
 func test_ended_span_refuses_a_child() -> void:
+	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
+
 	var parent := SentrySDK.start_span("test.ended_parent")
+	var json_in_parent: String = await capture_event_and_get_json(SentrySDK.create_event())
 	parent.end()
 
 	var orphan := SentrySDK.start_span("test.orphan", {}, parent)
@@ -224,7 +227,19 @@ func test_ended_span_refuses_a_child() -> void:
 		.override_failure_message("a no-op span must become active so its children inherit it") \
 		.is_same(orphan)
 
+	var json_in_orphan: String = await capture_event_and_get_json(SentrySDK.create_event())
 	orphan.end()
+
+	assert_json(json_in_orphan).describe("a no-op span leaves its events on the propagation context instead of the ended parent") \
+		.at("/contexts/trace/span_id") \
+		.is_not_equal(_span_id(json_in_parent)) \
+		.is_equal(_span_id(json_before)) \
+		.verify()
+
+	assert_json(json_in_orphan).describe("a no-op span stays on the trace it was started from") \
+		.at("/contexts/trace/trace_id") \
+		.is_equal(_trace_id(json_before)) \
+		.verify()
 
 
 func test_scope_clear_drops_the_span() -> void:
