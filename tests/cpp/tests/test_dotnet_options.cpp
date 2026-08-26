@@ -66,14 +66,12 @@ TEST_SUITE("[.NET] Options interop") {
 			{ "sentry/options/max_breadcrumbs",                                "max_breadcrumbs",                              11,                             22 },
 			{ "sentry/options/shutdown_timeout_ms",                            "shutdown_timeout_ms",                          1100,                           2200 },
 			{ "sentry/options/send_default_pii",                               "send_default_pii",                             true,                           false },
-			{ "sentry/options/enable_logs",                                    "enable_logs",                                  true,                           false },
 			{ "sentry/options/attach_log",                                     "attach_log",                                   false,                          true },
 			{ "sentry/options/attach_scene_tree",                              "attach_scene_tree",                            true,                           false },
 			{ "sentry/experimental/attach_screenshot",                         "attach_screenshot",                            true,                           false },
 			{ "sentry/experimental/screenshot_level",                          "screenshot_level",                             LEVEL_ERROR,                    LEVEL_WARNING },
 			{ "sentry/options/app_hang/tracking",                              "enable_app_hang_tracking",                     false,                          true },
 			{ "sentry/options/app_hang/timeout_ms",                            "app_hang_timeout_ms",                          1200,                           2300 },
-			{ "sentry/options/enable_metrics",                                 "enable_metrics",                               false,                          true },
 			{ "sentry/godot_logger/enabled",                                   "godot_logger:enabled",                         false,                          true },
 			{ "sentry/godot_logger/include_source_context",                    "godot_logger:include_source_context",          false,                          true },
 			{ "sentry/godot_logger/include_variables",                         "godot_logger:include_variables",               true,                           false },
@@ -102,6 +100,8 @@ TEST_SUITE("[.NET] Options interop") {
 				"before_send", "before_send_feedback", "before_send_log", "before_send_metric", "before_capture_screenshot",
 				// Sub-objects, whose own properties cross instead.
 				"experimental", "android", "godot_logger", "limits",
+				// Deprecated no-ops.
+				"enable_logs", "enable_metrics",
 				// Deprecated aliases for the properties above.
 				"logger_messages_as_breadcrumbs", "app_hang_tracking", "app_hang_timeout_sec",
 				"logger_enabled", "logger_include_source", "logger_include_variables",
