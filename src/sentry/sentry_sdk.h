@@ -135,7 +135,6 @@ public:
 
 	Ref<SentrySpan> start_span(const String &p_name, const Dictionary &p_attributes = {},
 			const Ref<SentrySpan> &p_parent_span = SentrySpan::unassigned(), bool p_active = true);
-	Variant with_span(const String &p_name, const Callable &p_callable);
 	Ref<SentrySpan> get_active_span() const;
 
 	// * Hidden API methods -- used in testing
