@@ -8,6 +8,9 @@ console.log("🔍 Testing Final Sentry Bridge Bundle...\n");
 let failureCount = 0;
 let passCount = 0;
 
+const TRACE_LIFECYCLE_STATIC = 0;
+const TRACE_LIFECYCLE_STREAM = 1;
+
 function assert(condition, message) {
 	if (!condition) {
 		throw new Error(message || "Assertion failed");
@@ -130,9 +133,13 @@ try {
 		const beforeSendFeedback = (event) => {
 			feedbackEvents.push(event);
 		};
+		const initBridge = (traceLifecycle) => {
+			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false,
+					"1.0.0", "1", "production", 1.0, 1.0, traceLifecycle, 100, false, "0.1.0");
+		};
 
 		runTest("init()", () => {
-			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 1.0, 100, false, "0.1.0");
+			initBridge(TRACE_LIFECYCLE_STREAM);
 		});
 
 		// Observes what actually goes out with an event. The bridge registers its own handler during
@@ -500,6 +507,16 @@ try {
 
 		runTest("removeAttribute()", () => {
 			bridge.removeAttribute("test-attr");
+		});
+
+		runTest("static trace lifecycle", () => {
+			bridge.close(2000);
+			initBridge(TRACE_LIFECYCLE_STATIC);
+			const client = bridge.createScope().getClient();
+			assertEqual(client.getOptions().traceLifecycle, "static",
+					"init should preserve the static trace lifecycle");
+			assertEqual(client.getIntegrationByName("SpanStreaming"), undefined,
+					"init should not register span streaming in static mode");
 		});
 
 		runTest("close()", () => {
