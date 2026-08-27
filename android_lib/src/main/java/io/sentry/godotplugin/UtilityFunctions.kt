@@ -32,7 +32,8 @@ fun Int.toSentryLogLevel(): SentryLogLevel =
 fun Int.toSentrySpanStatus(): SpanStatus =
     when (this) {
         0 -> SpanStatus.OK
-        else -> SpanStatus.INTERNAL_ERROR
+        // Sentry maps a failure reported without further detail to "unknown_error".
+        else -> SpanStatus.UNKNOWN_ERROR
     }
 
 fun SentryLevel.toInt(): Int =
@@ -99,7 +100,7 @@ fun Any?.toIntOrNull(): Int? =
         is Number -> this.toInt()
         is String -> this.parseIntOrNull()
         else -> null
-}
+    }
 
 fun Any?.toLongOrNull(): Long? =
     when (this) {
@@ -110,4 +111,4 @@ fun Any?.toLongOrNull(): Long? =
         is Number -> this.toLong()
         is String -> this.parseLongOrNull()
         else -> null
-}
+    }
