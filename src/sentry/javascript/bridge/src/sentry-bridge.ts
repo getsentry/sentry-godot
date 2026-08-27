@@ -183,7 +183,6 @@ class SentryBridge {
           return !excludedIntegrations.includes(integration.name);
         });
         filtered.push(wasmIntegration());
-        filtered.push(Sentry.spanStreamingIntegration());
         filtered.push(
           Sentry.breadcrumbsIntegration({
             console: false, // very noisy in Godot SDK
