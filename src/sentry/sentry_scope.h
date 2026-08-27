@@ -50,6 +50,8 @@ public:
 
 	// *** Not exposed in the public API
 
+	_FORCE_INLINE_ bool is_owner_thread() const { return _thread_owner.is_owner_thread(); }
+
 	void set_span(const Ref<SentrySpan> &p_span);
 	Ref<SentrySpan> get_span() const;
 

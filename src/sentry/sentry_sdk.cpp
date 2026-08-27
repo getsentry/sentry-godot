@@ -161,7 +161,11 @@ Ref<SentryScope> SentrySDK::_push_scope(const Ref<SentryScope> &p_source) {
 	if (unlikely(current_scopes.size() >= SCOPE_DEPTH_WARNING_THRESHOLD)) {
 		WARN_PRINT_ONCE("Sentry: Scope stack is growing unusually deep. This may indicate that spans are not being ended, or that with_scope() calls are nesting without bound.");
 	}
-	return current_scopes.push_back(p_source->clone())->get();
+	Ref<SentryScope> forked = likely(p_source->is_owner_thread())
+			? p_source->clone()
+			: get_current_scope()->clone();
+	current_scopes.push_back(forked);
+	return forked;
 }
 
 Variant SentrySDK::with_scope(const Callable &p_callable) {
