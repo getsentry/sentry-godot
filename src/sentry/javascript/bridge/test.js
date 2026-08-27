@@ -320,10 +320,12 @@ try {
 			assert(cleared.getClient() !== undefined, "scopeClear should keep the client bound");
 		});
 
-		runTest("spans become transactions", () => {
+		runTest("spans stream instead of becoming transactions", () => {
 			const client = bridge.createScope().getClient();
-			assertEqual(client.getIntegrationByName("SpanStreaming"), undefined,
-					"init should not register span streaming");
+			assertEqual(client.getOptions().traceLifecycle, "stream",
+					"init should put the client on the streaming trace lifecycle");
+			assert(client.getIntegrationByName("SpanStreaming"),
+					"init should register the integration that streams ended spans");
 		});
 
 		runTest("startSpan()", () => {

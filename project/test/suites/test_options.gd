@@ -85,6 +85,12 @@ func test_traces_sample_rate() -> void:
 	assert_float(options.traces_sample_rate).is_equal_approx(0.5, 0.01)
 
 
+func test_trace_lifecycle() -> void:
+	assert_int(options.trace_lifecycle).is_equal(SentryOptions.TRACE_LIFECYCLE_STATIC)
+	options.trace_lifecycle = SentryOptions.TRACE_LIFECYCLE_STREAM
+	assert_int(options.trace_lifecycle).is_equal(SentryOptions.TRACE_LIFECYCLE_STREAM)
+
+
 ## SentryOptions.max_breadcrumbs should be set to the specified value.
 func test_max_breadcrumbs() -> void:
 	options.max_breadcrumbs = 42
