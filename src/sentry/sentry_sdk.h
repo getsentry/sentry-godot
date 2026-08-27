@@ -42,7 +42,7 @@ public:
 private:
 	static SentrySDK *singleton;
 
-	// Scopes are thread-local. _push_scope() scopes are removed by _pop_scope(),
+	// Scopes are thread-local. _fork_scope() scopes are removed by _pop_scope(),
 	// but each thread's lazily-created root scope lives until the thread exits or
 	// the SDK is reinitialized/closed. init() and close() bump a global epoch so
 	// threads can detect and discard stale scope stacks on next access.
@@ -73,7 +73,10 @@ private:
 	// Marks every thread's scope stack as stale.
 	void _invalidate_scopes();
 
-	Ref<SentryScope> _push_scope(const Ref<SentryScope> &p_source);
+	// Clones the source scope and makes it the current scope on the calling thread.
+	Ref<SentryScope> _fork_scope(const Ref<SentryScope> &p_source);
+
+	// Removes the scope from the current thread's scope stack.
 	_FORCE_INLINE_ void _pop_scope(const Ref<SentryScope> &p_scope) { current_scopes.erase(p_scope); }
 
 protected:

@@ -156,7 +156,7 @@ Ref<SentryScope> SentrySDK::get_current_scope() const {
 	return current_scopes.back()->get();
 }
 
-Ref<SentryScope> SentrySDK::_push_scope(const Ref<SentryScope> &p_source) {
+Ref<SentryScope> SentrySDK::_fork_scope(const Ref<SentryScope> &p_source) {
 	constexpr int SCOPE_DEPTH_WARNING_THRESHOLD = 64;
 	if (unlikely(current_scopes.size() >= SCOPE_DEPTH_WARNING_THRESHOLD)) {
 		WARN_PRINT_ONCE("Sentry: Scope stack is growing unusually deep. This may indicate that spans are not being ended, or that with_scope() calls are nesting without bound.");
@@ -173,7 +173,7 @@ Variant SentrySDK::with_scope(const Callable &p_callable) {
 		WARN_PRINT_ONCE("Sentry: Scopes are not supported on this platform yet - writes to the scope will be discarded.");
 	}
 
-	Ref<SentryScope> scope = _push_scope(get_current_scope());
+	Ref<SentryScope> scope = _fork_scope(get_current_scope());
 	Variant result = p_callable.call(scope);
 	static bool first_warning = true; // acceptable race: several warnings are OK.
 	if (first_warning) {
@@ -211,7 +211,7 @@ Ref<SentrySpan> SentrySDK::start_span(const String &p_name, const Dictionary &p_
 			// The parent was never active, or is no longer.
 			source = get_current_scope();
 		}
-		Ref<SentryScope> forked_scope = _push_scope(source);
+		Ref<SentryScope> forked_scope = _fork_scope(source);
 		forked_scope->set_span(span);
 		span->set_associated_scope(forked_scope);
 	}
