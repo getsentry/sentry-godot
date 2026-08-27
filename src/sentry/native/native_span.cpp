@@ -44,9 +44,7 @@ void NativeSpan::set_attribute(const String &p_key, const Variant &p_value) {
 }
 
 void NativeSpan::set_status(SpanStatus p_status) {
-	// Sentry maps a failure reported without further detail to "unknown_error",
-	// and documents "unknown" as the equivalent status.
-	sentry_span_status_t native_status = p_status == SPAN_STATUS_OK ? SENTRY_SPAN_STATUS_OK : SENTRY_SPAN_STATUS_UNKNOWN;
+	sentry_span_status_t native_status = p_status == SPAN_STATUS_OK ? SENTRY_SPAN_STATUS_OK : SENTRY_SPAN_STATUS_INTERNAL_ERROR;
 	if (_transaction) {
 		sentry_transaction_set_status(_transaction, native_status);
 	} else {
