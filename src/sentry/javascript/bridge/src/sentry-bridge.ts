@@ -149,6 +149,7 @@ class SentryBridge {
     environment: string,
     sampleRate: number,
     tracesSampleRate: number,
+    traceLifecycle: number,
     maxBreadcrumbs: number,
     sendDefaultPii: boolean,
     sdkVersion: string,
@@ -165,6 +166,7 @@ class SentryBridge {
       environment,
       sampleRate,
       tracesSampleRate,
+      traceLifecycle: traceLifecycle === 1 ? "stream" : "static",
       maxBreadcrumbs,
       sendDefaultPii,
       _metadata: {
@@ -183,6 +185,9 @@ class SentryBridge {
           return !excludedIntegrations.includes(integration.name);
         });
         filtered.push(wasmIntegration());
+        if (traceLifecycle === 1) {
+          filtered.push(Sentry.spanStreamingIntegration());
+        }
         filtered.push(
           Sentry.breadcrumbsIntegration({
             console: false, // very noisy in Godot SDK

@@ -96,6 +96,11 @@ public:
 	using GodotErrorType = sentry::GodotErrorType;
 	using GodotLoggerEventMask = sentry::GodotLoggerEventMask;
 
+	enum TraceLifecycle {
+		TRACE_LIFECYCLE_STATIC,
+		TRACE_LIFECYCLE_STREAM
+	};
+
 private:
 	enum class DebugMode {
 		DEBUG_OFF = 0,
@@ -114,6 +119,7 @@ private:
 	String environment = "{auto}";
 	double sample_rate = 1.0;
 	double traces_sample_rate = 0.0;
+	TraceLifecycle trace_lifecycle = TRACE_LIFECYCLE_STATIC;
 	int max_breadcrumbs = 100;
 	int shutdown_timeout_ms = 2000;
 	bool send_default_pii = false;
@@ -185,6 +191,9 @@ public:
 
 	_FORCE_INLINE_ double get_traces_sample_rate() const { return traces_sample_rate; }
 	_FORCE_INLINE_ void set_traces_sample_rate(double p_traces_sample_rate) { traces_sample_rate = p_traces_sample_rate; }
+
+	_FORCE_INLINE_ TraceLifecycle get_trace_lifecycle() const { return trace_lifecycle; }
+	_FORCE_INLINE_ void set_trace_lifecycle(TraceLifecycle p_trace_lifecycle) { trace_lifecycle = p_trace_lifecycle; }
 
 	_FORCE_INLINE_ int get_max_breadcrumbs() const { return max_breadcrumbs; }
 	_FORCE_INLINE_ void set_max_breadcrumbs(int p_max_breadcrumbs) { max_breadcrumbs = p_max_breadcrumbs; }
@@ -300,4 +309,5 @@ public:
 
 } // namespace sentry
 
+VARIANT_ENUM_CAST(sentry::SentryOptions::TraceLifecycle);
 VARIANT_BITFIELD_CAST(sentry::SentryOptions::GodotLoggerEventMask);
