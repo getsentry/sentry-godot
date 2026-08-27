@@ -8,9 +8,6 @@ console.log("🔍 Testing Final Sentry Bridge Bundle...\n");
 let failureCount = 0;
 let passCount = 0;
 
-const TRACE_LIFECYCLE_STATIC = 0;
-const TRACE_LIFECYCLE_STREAM = 1;
-
 function assert(condition, message) {
 	if (!condition) {
 		throw new Error(message || "Assertion failed");
@@ -139,7 +136,7 @@ try {
 		};
 
 		runTest("init()", () => {
-			initBridge(TRACE_LIFECYCLE_STREAM);
+			initBridge(bridge.TraceLifecycle.Stream);
 		});
 
 		// Observes what actually goes out with an event. The bridge registers its own handler during
@@ -511,7 +508,7 @@ try {
 
 		runTest("static trace lifecycle", () => {
 			bridge.close(2000);
-			initBridge(TRACE_LIFECYCLE_STATIC);
+			initBridge(bridge.TraceLifecycle.Static);
 			const client = bridge.createScope().getClient();
 			assertEqual(client.getOptions().traceLifecycle, "static",
 					"init should preserve the static trace lifecycle");
