@@ -12,7 +12,7 @@
 
 ### Breaking changes
 
-- Raise the minimum supported macOS version to 12.0 to match the bundled Cocoa SDK ([#898](https://github.com/getsentry/sentry-godot/pull/898))
+- Raise the minimum supported macOS version to 12.0 to match the bundled Cocoa SDK ([#899](https://github.com/getsentry/sentry-godot/pull/899))
 
 ### Features
 
@@ -37,7 +37,7 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v9.24.0 to v9.26.0 ([#898](https://github.com/getsentry/sentry-godot/pull/898))
+- Bump Cocoa SDK from v9.24.0 to v9.26.0 ([#899](https://github.com/getsentry/sentry-godot/pull/899))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9260)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.24.0...9.26.0)
 - Bump Sentry Android from v8.51.0 to v8.53.0 ([#855](https://github.com/getsentry/sentry-godot/pull/855), [#866](https://github.com/getsentry/sentry-godot/pull/866))
