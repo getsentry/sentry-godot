@@ -308,18 +308,7 @@ jobs:
       - name: Verify macOS binary compatibility
         if: matrix.platform == 'macos'
         shell: bash
-        run: |
-          extension="project/addons/sentry/bin/macos/libsentry.macos.${{matrix.target == 'editor' && 'debug' || 'release'}}.dylib"
-          for binary in "$extension" project/addons/sentry/bin/macos/libSentry.dylib; do
-            lipo "$binary" -verify_arch arm64 x86_64
-            for architecture in arm64 x86_64; do
-              min_version=$(otool -arch "$architecture" -l "$binary" | awk '$1 == "minos" { print $2; exit }')
-              if [[ "$min_version" != "12.0" ]]; then
-                echo "::error file=$binary::Expected $architecture minimum macOS version 12.0, found ${min_version:-none}."
-                exit 1
-              fi
-            done
-          done
+        run: ./scripts/verify-macos-binaries.sh
 
       - name: Upload artifacts
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
