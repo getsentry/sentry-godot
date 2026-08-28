@@ -270,7 +270,7 @@
 				Nested calls create nested spans. When the callable returns, the enclosing active span and scope are restored.
 				[b]Note:[/b] The span covers the synchronous part of [param callable] only. If the callable awaits, the span is ended at the first [code]await[/code] and a warning is printed.
 				[b]Note:[/b] The SDK sends spans only if [member SentryOptions.traces_sample_rate] is set above its default of [code]0.0[/code].
-				[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
+				[b]Platform support:[/b] Spans are not supported on macOS or iOS yet. On those platforms, the SDK returns a no-op span and prints a one-time warning.
 			</description>
 		</method>
 	</methods>
