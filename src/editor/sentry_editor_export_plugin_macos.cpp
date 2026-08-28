@@ -24,12 +24,12 @@ TypedArray<Dictionary> SentryEditorExportPluginMacOS::_get_export_options(const 
 
 bool SentryEditorExportPluginMacOS::_has_incompatible_minimum_version() const {
 	String architecture = get_option("binary_format/architecture");
-	String min_macos_version_x86_64 = get_option("application/min_macos_version_x86_64");
-	String min_macos_version_arm64 = get_option("application/min_macos_version_arm64");
-	bool exports_x86_64 = architecture == "universal" || architecture == "x86_64";
-	bool exports_arm64 = architecture == "universal" || architecture == "arm64";
-	return (exports_x86_64 && min_macos_version_x86_64.to_float() < SENTRY_MACOS_MIN_VERSION) ||
-			(exports_arm64 && min_macos_version_arm64.to_float() < SENTRY_MACOS_MIN_VERSION);
+	String min_macos_version_intel = get_option("application/min_macos_version_x86_64");
+	String min_macos_version_arm = get_option("application/min_macos_version_arm64");
+	bool exports_intel = architecture == "universal" || architecture == "x86_64";
+	bool exports_arm = architecture == "universal" || architecture == "arm64";
+	return (exports_intel && min_macos_version_intel.to_float() < SENTRY_MACOS_MIN_VERSION) ||
+			(exports_arm && min_macos_version_arm.to_float() < SENTRY_MACOS_MIN_VERSION);
 }
 
 String SentryEditorExportPluginMacOS::_get_export_option_warning(const Ref<EditorExportPlatform> &p_platform, const String &p_option) const {
