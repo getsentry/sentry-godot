@@ -44,7 +44,11 @@ for binary in "${extension_binaries[@]}" "$bin_dir/libSentry.dylib"; do
     for architecture in arm64 x86_64; do
         actual_min_version="$(otool -arch "$architecture" -l "$binary" | awk '$1 == "minos" { print $2; exit }')"
         if [[ "$actual_min_version" != "$expected_min_version" ]]; then
-            die "::error file=$binary::Expected $architecture minimum macOS version $expected_min_version, found ${actual_min_version:-none}."
+            message="Expected $architecture minimum macOS version $expected_min_version, found ${actual_min_version:-none}."
+            if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+                die "::error file=$binary::$message"
+            fi
+            die "Error: $binary: $message"
         fi
     done
 done
