@@ -1048,9 +1048,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             return 0
         }
 
-        // Continue the propagated trace so this transaction remains connected to it,
-        // but use a new span ID so captures outside the transaction keep the propagation context's ID.
-        // Use separate baggage because finishing the transaction mutates and freezes it.
+        // Keep this transaction on the same trace as captures made outside it.
         val propagationContext = Sentry.getCurrentScopes().globalScope.propagationContext
         val baggage = Baggage(NoOpLogger.getInstance()).apply { sampleRand = propagationContext.sampleRand }
         val context = TransactionContext(
