@@ -2,18 +2,8 @@ name: 🔌 Build GDExtension libs
 
 on:
   workflow_call:
-    inputs:
-      ref:
-        type: string
-        default: ""
-        description: "The branch, tag or SHA to checkout (leave empty for event SHA)"
 
   workflow_dispatch:
-    inputs:
-      ref:
-        type: string
-        default: ""
-        description: "The branch, tag or SHA to checkout (leave empty for event SHA)"
 
 permissions:
   contents: read
@@ -247,7 +237,6 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           submodules: recursive
-          ref: ${{inputs.ref}}
 
       - name: Install Linux dependencies (x86_64, arm64)
         if: matrix.platform == 'linux' && matrix.arch != 'x86_32'
@@ -323,8 +312,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{inputs.ref}}
 
       - name: Set up Java 17
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -354,7 +341,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{inputs.ref}}
           submodules: recursive
 
       - name: Download iOS artifacts
@@ -403,8 +389,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{inputs.ref}}
 
       - name: Set up Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
@@ -435,8 +419,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{inputs.ref}}
 
       - name: Set up .NET
         uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
