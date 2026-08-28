@@ -11,7 +11,8 @@ class SentryEditorExportPluginMacOS : public EditorExportPlugin {
 	GDCLASS(SentryEditorExportPluginMacOS, EditorExportPlugin);
 
 private:
-	bool is_macos = false;
+	bool _is_macos = false;
+	bool _has_incompatible_minimum_version() const;
 
 protected:
 	static void _bind_methods() {}
