@@ -3,7 +3,7 @@
 ## Unreleased
 
 > [!WARNING]
-> macOS 12 Monterey or newer is now required. Intel Macs remain supported when running macOS 12 or newer.
+> Exporting to macOS now requires macOS 12 Monterey or newer. Projects that support older macOS versions must use an earlier Sentry SDK release.
 
 > [!IMPORTANT]
 > Structured logging and metrics are now always enabled, having been on by default since `2.0.0`. The corresponding `SentryOptions.enable_logs` and `SentryOptions.enable_metrics` options and Project Settings are deprecated and no longer have any effect.
