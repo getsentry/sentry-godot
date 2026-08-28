@@ -66,6 +66,7 @@
 #ifdef TOOLS_ENABLED
 #include "editor/sentry_editor_export_plugin_android.h"
 #include "editor/sentry_editor_export_plugin_ios.h"
+#include "editor/sentry_editor_export_plugin_macos.h"
 #include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_export_plugin_web.h"
 #include "editor/sentry_editor_plugin.h"
@@ -144,6 +145,7 @@ void register_editor_classes() {
 	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginAndroid);
 	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginWeb);
 	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginIOS);
+	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginMacOS);
 	GDREGISTER_INTERNAL_CLASS(SentryEditorPlugin);
 
 #ifndef WINDOWS_ENABLED
