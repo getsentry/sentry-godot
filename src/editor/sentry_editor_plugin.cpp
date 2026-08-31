@@ -4,6 +4,7 @@
 
 #include "editor/sentry_editor_export_plugin_android.h"
 #include "editor/sentry_editor_export_plugin_ios.h"
+#include "editor/sentry_editor_export_plugin_macos.h"
 #include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_export_plugin_web.h"
 #include "sentry/logging/print.h"
@@ -34,6 +35,11 @@ void SentryEditorPlugin::_notification(int p_what) {
 				ios_export_plugin = Ref(memnew(SentryEditorExportPluginIOS));
 			}
 			add_export_plugin(ios_export_plugin);
+
+			if (macos_export_plugin.is_null()) {
+				macos_export_plugin = Ref(memnew(SentryEditorExportPluginMacOS));
+			}
+			add_export_plugin(macos_export_plugin);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -57,6 +63,11 @@ void SentryEditorPlugin::_notification(int p_what) {
 			if (ios_export_plugin.is_valid()) {
 				remove_export_plugin(ios_export_plugin);
 				ios_export_plugin.unref();
+			}
+
+			if (macos_export_plugin.is_valid()) {
+				remove_export_plugin(macos_export_plugin);
+				macos_export_plugin.unref();
 			}
 		} break;
 	}

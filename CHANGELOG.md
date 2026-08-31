@@ -2,10 +2,17 @@
 
 ## Unreleased
 
+> [!WARNING]
+> Exporting to macOS now requires macOS 12 Monterey or newer. Projects that support older macOS versions must use an earlier Sentry SDK release.
+
 > [!IMPORTANT]
 > Structured logging and metrics are now always enabled, having been on by default since `2.0.0`. The corresponding `SentryOptions.enable_logs` and `SentryOptions.enable_metrics` options and Project Settings are deprecated and no longer have any effect.
 >
 > We recognize that this change may inconvenience applications that relied on the opt-out. Use `SentryOptions.before_send_log` or `SentryOptions.before_send_metric` to filter logs or metrics before they are sent. This deliberate tradeoff keeps these features consistent across SDK integrations.
+
+### Breaking changes
+
+- Raise the minimum supported macOS version to 12.0 to match the bundled Cocoa SDK ([#899](https://github.com/getsentry/sentry-godot/pull/899))
 
 ### Features
 
@@ -30,6 +37,9 @@
 
 ### Dependencies
 
+- Bump Cocoa SDK from v9.24.0 to v9.26.0 ([#899](https://github.com/getsentry/sentry-godot/pull/899))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9260)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.24.0...9.26.0)
 - Bump Sentry Android from v8.51.0 to v8.53.0 ([#855](https://github.com/getsentry/sentry-godot/pull/855), [#866](https://github.com/getsentry/sentry-godot/pull/866))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8530)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.51.0...8.53.0)

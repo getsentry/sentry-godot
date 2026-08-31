@@ -294,6 +294,11 @@ jobs:
         run: |
           scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}} ${{matrix.scons-flags}}
 
+      - name: Verify macOS binary compatibility
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: ./scripts/verify-macos-binaries.sh
+
       - name: Upload artifacts
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
