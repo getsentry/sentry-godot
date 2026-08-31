@@ -36,6 +36,8 @@ function runTest(name, testFn) {
 try {
 	require("./dist/sentry-bundle.js");
 
+	const { spanToStreamedSpanJSON } = require("@sentry/core");
+
 	console.log("✅ Bundle loaded successfully\n");
 
 	const bridge = global.window.SentryBridge;
@@ -62,6 +64,9 @@ try {
 			"scopeAddBytesAttachment",
 			"scopeAddFileAttachment",
 			"scopeClear",
+			"scopeSetSpan",
+			"startSpan",
+			"spanSetStatus",
 			"logTrace",
 			"logDebug",
 			"logInfo",
@@ -127,7 +132,7 @@ try {
 		};
 
 		runTest("init()", () => {
-			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 100, false, "0.1.0");
+			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 1.0, 100, false, "0.1.0");
 		});
 
 		// Observes what actually goes out with an event. The bridge registers its own handler during
@@ -184,6 +189,16 @@ try {
 			assertEqual(bridge.createScope().getPropagationContext().traceId,
 					scope.getPropagationContext().traceId,
 					"createScope should inherit the current trace");
+		});
+
+		runTest("events outside a span share one span id", () => {
+			const scope = bridge.createScope();
+			const spanId = scope.getPropagationContext().propagationSpanId;
+			assert(spanId, "init should pin a span id for events captured outside a span");
+			assertEqual(bridge.createScope().getPropagationContext().propagationSpanId, spanId,
+					"every scope should carry the same pinned span id");
+			assertEqual(bridge.scopeClear(scope).getPropagationContext().propagationSpanId, spanId,
+					"scopeClear should preserve the pinned span id");
 		});
 
 		runTest("scope setters", () => {
@@ -298,10 +313,65 @@ try {
 			const scope = bridge.createScope();
 			bridge.scopeSetContext(scope, "test-context", '{"key": "value"}');
 			const traceId = scope.getPropagationContext().traceId;
-			bridge.scopeClear(scope);
-			assertEqual(scope.getScopeData().contexts["test-context"], undefined, "scopeClear should clear scope data");
-			assertEqual(scope.getPropagationContext().traceId, traceId,
+			const cleared = bridge.scopeClear(scope);
+			assertEqual(cleared.getScopeData().contexts["test-context"], undefined, "scopeClear should clear scope data");
+			assertEqual(cleared.getPropagationContext().traceId, traceId,
 					"scopeClear should preserve the propagation context");
+			assert(cleared.getClient() !== undefined, "scopeClear should keep the client bound");
+		});
+
+		runTest("spans become transactions", () => {
+			const client = bridge.createScope().getClient();
+			assertEqual(client.getIntegrationByName("SpanStreaming"), undefined,
+					"init should not register span streaming");
+		});
+
+		runTest("startSpan()", () => {
+			const span = bridge.startSpan("load-level", '{"sentry.op":"asset.load","chunks":7}');
+			const json = spanToStreamedSpanJSON(span);
+			assertEqual(json.name, "load-level", "startSpan should name the span");
+			assertEqual(json.attributes["sentry.op"], "asset.load", "startSpan should carry the op through as an attribute");
+			assertEqual(json.attributes.chunks, 7, "startSpan should apply the attributes");
+			span.setAttribute("biome", "forest");
+			assertEqual(spanToStreamedSpanJSON(span).attributes.biome, "forest", "the started span should record attributes");
+			span.end();
+		});
+
+		runTest("startSpan() with a parent", () => {
+			const parent = bridge.startSpan("load-level", "");
+			const child = bridge.startSpan("decompress", "", parent);
+			assertEqual(child.spanContext().traceId, parent.spanContext().traceId,
+					"a child span should stay on the parent's trace");
+			assertEqual(spanToStreamedSpanJSON(child).parent_span_id, parent.spanContext().spanId,
+					"a child span should point at the parent");
+			assertEqual(spanToStreamedSpanJSON(child).is_segment, false,
+					"a child span should not be a segment");
+			assertEqual(spanToStreamedSpanJSON(bridge.startSpan("unrelated", "")).is_segment, true,
+					"a span started without a parent should be a segment");
+			child.end();
+			parent.end();
+		});
+
+		runTest("spanSetStatus()", () => {
+			const span = bridge.startSpan("load-level", "");
+			bridge.spanSetStatus(span, 1);
+			assertEqual(spanToStreamedSpanJSON(span).status, "error", "SPAN_STATUS_ERROR should stream as error");
+			bridge.spanSetStatus(span, 0);
+			assertEqual(spanToStreamedSpanJSON(span).status, "ok", "SPAN_STATUS_OK should stream as ok");
+			span.end();
+		});
+
+		runTest("scopeSetSpan()", () => {
+			const scope = bridge.createScope();
+			const span = bridge.startSpan("load-level", "");
+			bridge.scopeSetSpan(scope, span);
+			assertEqual(scope.getScopeData().span, span, "scopeSetSpan should bind the span to the scope");
+			assertEqual(scope.clone().getScopeData().span, span, "a forked scope should inherit the bound span");
+			assertEqual(bridge.scopeClear(scope).getScopeData().span, undefined, "scopeClear should drop the bound span");
+			bridge.scopeSetSpan(scope, span);
+			bridge.scopeSetSpan(scope);
+			assertEqual(scope.getScopeData().span, undefined, "scopeSetSpan without a span should unbind");
+			span.end();
 		});
 
 		runTest("logTrace()", () => {

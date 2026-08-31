@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
+import { _INTERNAL_setSpanForScope, generateSpanId } from "@sentry/core";
 import type { Attachment, Metric } from "@sentry/core";
 import { wasmIntegration } from "@sentry/wasm";
 
@@ -36,6 +37,13 @@ class IdStore<T> {
 // bytes when an event is captured. Sentry copies only its own known fields into the envelope, so the
 // marker is never sent.
 const PENDING_PATH_KEY = "__godotPath";
+
+// SentrySpan.SpanStatus value for a failed span, as the C++ layer sends it.
+const SPAN_STATUS_ERROR = 1;
+
+// OpenTelemetry status codes, which @sentry/core expects but does not export as constants.
+const OTEL_CODE_OK = 1;
+const OTEL_CODE_ERROR = 2;
 
 // Handed to the C++ layer to have it read one file; it leaves the bytes unset if the read fails.
 interface AttachmentRequest {
@@ -140,6 +148,7 @@ class SentryBridge {
     dist: string,
     environment: string,
     sampleRate: number,
+    tracesSampleRate: number,
     maxBreadcrumbs: number,
     sendDefaultPii: boolean,
     sdkVersion: string,
@@ -155,6 +164,7 @@ class SentryBridge {
       dist,
       environment,
       sampleRate,
+      tracesSampleRate,
       maxBreadcrumbs,
       sendDefaultPii,
       _metadata: {
@@ -244,6 +254,12 @@ class SentryBridge {
     Sentry.getCurrentScope().clear();
 
     Sentry.init(options);
+
+    // Use one stable fallback span ID for captures without an active span.
+    Sentry.getCurrentScope().setPropagationContext({
+      ...Sentry.getCurrentScope().getPropagationContext(),
+      propagationSpanId: generateSpanId(),
+    });
 
     if (beforeSendFeedbackCallback) {
       // @sentry/core has no beforeSendFeedback option, and feedback also bypasses beforeSend.
@@ -381,11 +397,28 @@ class SentryBridge {
     scope.addAttachment(makePendingAttachment(path, filename, contentType, attachmentType));
   }
 
-  public scopeClear(scope: Sentry.Scope): void {
-    // Preserve the propagation context across clear() because Scope.clear() rotates the trace in JS.
-    const propagationContext = scope.getPropagationContext();
-    scope.clear();
-    scope.setPropagationContext(propagationContext);
+  public scopeClear(scope: Sentry.Scope): Sentry.Scope {
+    const fresh = new Sentry.Scope();
+    fresh.setClient(scope.getClient() ?? Sentry.getClient());
+    fresh.setPropagationContext(scope.getPropagationContext());
+    return fresh;
+  }
+
+  public scopeSetSpan(scope: Sentry.Scope, span?: Sentry.Span): void {
+    // No public alternative: setActiveSpanInBrowser binds only to the current scope.
+    _INTERNAL_setSpanForScope(scope, span ?? undefined);
+  }
+
+  public startSpan(name: string, attributesJson: string, parentSpan?: Sentry.Span): Sentry.Span {
+    return Sentry.startInactiveSpan({
+      name,
+      attributes: safeParseJSON(attributesJson, {}),
+      parentSpan: parentSpan ?? null,
+    });
+  }
+
+  public spanSetStatus(span: Sentry.Span, status: number): void {
+    span.setStatus({ code: status === SPAN_STATUS_ERROR ? OTEL_CODE_ERROR : OTEL_CODE_OK });
   }
 
   public logTrace(message: string, attributesJson?: string, scope?: Sentry.Scope): void {

@@ -2,6 +2,7 @@
 
 #include "sentry/disabled/disabled_scope.h"
 #include "sentry/javascript/javascript_breadcrumb.h"
+#include "sentry/javascript/javascript_span.h"
 #include "sentry/sentry_sdk.h"
 
 #include <godot_cpp/classes/json.hpp>
@@ -86,8 +87,18 @@ void JavaScriptScope::add_attachment(const Ref<SentryAttachment> &p_attachment) 
 	}
 }
 
+void JavaScriptScope::set_span(SentrySpanImpl *p_span) {
+	if (JavaScriptSpan *js_span = Castable::cast_to<JavaScriptSpan>(p_span)) {
+		js_bridge()->call("scopeSetSpan", js_obj, js_span->get_js_object());
+	} else {
+		js_bridge()->call("scopeSetSpan", js_obj, nullptr);
+	}
+}
+
 void JavaScriptScope::clear() {
-	js_bridge()->call("scopeClear", js_obj);
+	JSObjectPtr fresh_obj = js_bridge()->call("scopeClear", js_obj).as_object();
+	ERR_FAIL_COND_MSG(!fresh_obj, "Sentry: Failed to clear scope object.");
+	js_obj = fresh_obj;
 }
 
 SentryScopeImpl *JavaScriptScope::clone() const {
