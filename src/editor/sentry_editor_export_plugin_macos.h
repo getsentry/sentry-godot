@@ -12,6 +12,7 @@ class SentryEditorExportPluginMacOS : public EditorExportPlugin {
 
 private:
 	bool _is_macos = false;
+	bool _is_minimum_version_incompatible(const String &p_architecture, const String &p_option) const;
 	bool _has_incompatible_minimum_version() const;
 
 protected:

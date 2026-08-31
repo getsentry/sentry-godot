@@ -22,20 +22,27 @@ TypedArray<Dictionary> SentryEditorExportPluginMacOS::_get_export_options(const 
 	return options;
 }
 
-bool SentryEditorExportPluginMacOS::_has_incompatible_minimum_version() const {
+bool SentryEditorExportPluginMacOS::_is_minimum_version_incompatible(const String &p_architecture, const String &p_option) const {
 	String architecture = get_option("binary_format/architecture");
-	String min_macos_version_intel = get_option("application/min_macos_version_x86_64");
-	String min_macos_version_arm = get_option("application/min_macos_version_arm64");
-	bool exports_intel = architecture == "universal" || architecture == "x86_64";
-	bool exports_arm = architecture == "universal" || architecture == "arm64";
-	return (exports_intel && min_macos_version_intel.to_float() < SENTRY_MACOS_MIN_VERSION) ||
-			(exports_arm && min_macos_version_arm.to_float() < SENTRY_MACOS_MIN_VERSION);
+	String minimum_version = get_option(p_option);
+	return (architecture == "universal" || architecture == p_architecture) && minimum_version.to_float() < SENTRY_MACOS_MIN_VERSION;
+}
+
+bool SentryEditorExportPluginMacOS::_has_incompatible_minimum_version() const {
+	return _is_minimum_version_incompatible("x86_64", "application/min_macos_version_x86_64") ||
+			_is_minimum_version_incompatible("arm64", "application/min_macos_version_arm64");
 }
 
 String SentryEditorExportPluginMacOS::_get_export_option_warning(const Ref<EditorExportPlatform> &p_platform, const String &p_option) const {
-	if ((is_builtin_option_or_hidden_export_option(p_option, "application/min_macos_version_x86_64") ||
-				is_builtin_option_or_hidden_export_option(p_option, "application/min_macos_version_arm64")) &&
-			_has_incompatible_minimum_version()) {
+	bool incompatible = false;
+	if (p_option == "application/min_macos_version_x86_64") {
+		incompatible = _is_minimum_version_incompatible("x86_64", p_option);
+	} else if (p_option == "application/min_macos_version_arm64") {
+		incompatible = _is_minimum_version_incompatible("arm64", p_option);
+	} else if (p_option == "sentry/_export_check") {
+		incompatible = _has_incompatible_minimum_version();
+	}
+	if (incompatible) {
 		return vformat("Sentry requires each exported architecture to target macOS %.1f or higher. Please adjust these settings.", SENTRY_MACOS_MIN_VERSION);
 	}
 	return String();
