@@ -41,6 +41,7 @@ func _register_commands() -> void:
 	_parser.add_command("attachment-capture", _cmd_attachment_capture, "Capture a message with custom attachments")
 	_parser.add_command("log-capture", _cmd_log_capture, "Capture a structured log to Sentry")
 	_parser.add_command("metric-capture", _cmd_metric_capture, "Capture metrics to Sentry")
+	_parser.add_command("span-capture", _cmd_span_capture, "Capture a trace with a span tree")
 	_parser.add_command("pii-capture", _cmd_pii_capture, "Capture a message with send_default_pii enabled")
 	_parser.add_command("run-tests", _cmd_run_tests, "Run unit tests")
 	_parser.add_command("dotnet-exception-capture", _cmd_dotnet_exception_capture, "Capture a .NET exception (scenario: plain | bare-rethrow | wrapped-rethrow)")
@@ -248,6 +249,48 @@ func _before_send_metric(metric: SentryMetric) -> SentryMetric:
 	metric.set_attribute("handler_added", "added_value")
 	metric.remove_attribute("deleted_metric_attribute")
 	return metric
+
+
+## Captures a trace with a small span tree (transaction).
+func _cmd_span_capture() -> int:
+	await _init_sentry(func(options: SentryOptions) -> void:
+		options.traces_sample_rate = 1.0
+		options.before_send = func(event: SentryEvent) -> SentryEvent:
+			var data: Variant = JSON.parse_string(event.to_json())
+			print("SPAN_TRIGGERED: ", data.get("contexts", {}).get("trace", {}).get("trace_id", ""))
+			return event
+	)
+	_add_integration_test_context("span-capture")
+
+	var root_name := "span-capture-" + _generate_uuid()
+	print("SPAN_NAME: ", root_name)
+
+	var root := SentrySDK.start_span(root_name, {
+		"sentry.op": "test.span_capture",
+		"root_attribute": "root_value",
+	})
+	root.set_attribute("late_root_attribute", "late_value")
+
+	var child := SentrySDK.start_span("child-span", {"sentry.op": "test.child"})
+	child.set_attribute("child_attribute", "child_value")
+	child.set_status(SentrySpan.SPAN_STATUS_ERROR)
+	child.end()
+
+	SentrySDK.with_span("with-span-child", func(span: SentrySpan) -> void:
+		span.set_attribute("with_span_attribute", "with_span_value")
+		)
+
+	var event_id := SentrySDK.capture_message("Span capture test message")
+	print("EVENT_CAPTURED: ", event_id)
+
+	root.set_status(SentrySpan.SPAN_STATUS_OK)
+	root.end()
+
+	SentrySDK.close()
+	await get_tree().create_timer(1.0).timeout
+
+	_print_test_result("span-capture", true, "Test complete")
+	return 0
 
 
 ## Captures a message with `send_default_pii` enabled to verify correct PII forwarding.
