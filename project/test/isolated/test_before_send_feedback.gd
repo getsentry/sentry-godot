@@ -92,6 +92,56 @@ func test_callback_can_modify_the_event() -> void:
 		.verify()
 
 
+func test_callback_reads_the_submitted_fields() -> void:
+	var seen := {}
+	before_send_feedback = func(event: SentryEvent) -> SentryEvent:
+		var submitted := event.get_feedback()
+		seen["message"] = submitted.message
+		seen["name"] = submitted.name
+		seen["contact_email"] = submitted.contact_email
+		seen["associated_event_id"] = submitted.associated_event_id
+		return _default_before_send_feedback(event)
+
+	var feedback := SentryFeedback.new()
+	feedback.message = "The elevator eats my keys 🔑"
+	feedback.name = "Alice"
+	feedback.contact_email = "alice@example.com"
+	feedback.associated_event_id = "3c9f2b1ae5d4487fa1b0d5c6e7f80912"
+
+	SentrySDK.capture_feedback(feedback)
+	await wait_for_captured_feedback_json()
+
+	assert_str(seen["message"]).is_equal("The elevator eats my keys 🔑")
+	assert_str(seen["name"]).is_equal("Alice")
+	assert_str(seen["contact_email"]).is_equal("alice@example.com")
+	assert_str(seen["associated_event_id"]).is_equal("3c9f2b1ae5d4487fa1b0d5c6e7f80912")
+
+
+func test_callback_can_scrub_the_feedback() -> void:
+	before_send_feedback = func(event: SentryEvent) -> SentryEvent:
+		var submitted := event.get_feedback()
+		submitted.message = "[redacted]"
+		submitted.name = "Anonymous"
+		submitted.contact_email = ""
+		return _default_before_send_feedback(event)
+
+	var feedback := SentryFeedback.new()
+	feedback.message = "My password is hunter2"
+	feedback.name = "Bob"
+	feedback.contact_email = "bob@example.com"
+
+	SentrySDK.capture_feedback(feedback)
+	var json: String = await wait_for_captured_feedback_json()
+
+	assert_json(json).describe("fields rewritten in the callback reach the event") \
+		.at("/contexts/feedback") \
+		.is_object() \
+		.must_contain("message", "[redacted]") \
+		.must_contain("name", "Anonymous") \
+		.must_not_contain("contact_email") \
+		.verify()
+
+
 func test_feedback_does_not_reach_before_send() -> void:
 	var feedback := SentryFeedback.new()
 	feedback.message = "Feedback stays out of before_send"

@@ -1,5 +1,6 @@
 #include "javascript_event.h"
 
+#include "sentry/javascript/javascript_feedback.h"
 #include "sentry/util/json_writer.h"
 #include "sentry/uuid.h"
 
@@ -229,6 +230,16 @@ void JavaScriptEvent::merge_context(const String &p_key, const Dictionary &p_val
 			context_jso->merge_properties_from_json(JSON::stringify(p_value).utf8());
 		}
 	}
+}
+
+Ref<SentryFeedback> JavaScriptEvent::get_feedback() const {
+	ERR_FAIL_COND_V(!js_obj, Ref<SentryFeedback>());
+	JSObjectPtr feedback_jso = js_bridge()->call("eventGetFeedback", js_obj).as_object();
+	if (!feedback_jso) {
+		return Ref<SentryFeedback>();
+	}
+	JavaScriptFeedback *impl = memnew(JavaScriptFeedback(feedback_jso));
+	return Ref<SentryFeedback>(memnew(SentryFeedback(impl)));
 }
 
 void JavaScriptEvent::add_exception(const Exception &p_exception) {

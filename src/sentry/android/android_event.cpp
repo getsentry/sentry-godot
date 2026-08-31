@@ -1,5 +1,6 @@
 #include "android_event.h"
 
+#include "android_feedback.h"
 #include "android_string_names.h"
 #include "android_util.h"
 #include "sentry/logging/print.h"
@@ -136,6 +137,16 @@ void AndroidEvent::merge_context(const String &p_key, const Dictionary &p_value)
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
 	android_plugin->call(ANDROID_SN(eventMergeContext),
 			event_handle, p_key, sanitize_variant(p_value));
+}
+
+Ref<SentryFeedback> AndroidEvent::get_feedback() const {
+	ERR_FAIL_NULL_V(android_plugin, Ref<SentryFeedback>());
+	int32_t feedback_handle = android_plugin->call(ANDROID_SN(eventGetFeedback), event_handle);
+	if (feedback_handle == 0) {
+		return Ref<SentryFeedback>();
+	}
+	AndroidFeedback *impl = memnew(AndroidFeedback(android_plugin, feedback_handle));
+	return Ref<SentryFeedback>(memnew(SentryFeedback(impl)));
 }
 
 void AndroidEvent::add_exception(const Exception &p_exception) {

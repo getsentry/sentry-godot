@@ -226,6 +226,12 @@ void CocoaEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	cocoa_event.context = mut_contexts;
 }
 
+Ref<SentryFeedback> CocoaEvent::get_feedback() const {
+	// sentry-cocoa doesn't export before-send-feedback, so feedback is never
+	// handed to user code through an event on this platform.
+	return Ref<SentryFeedback>();
+}
+
 void CocoaEvent::add_exception(const Exception &p_exception) {
 	ERR_FAIL_NULL(cocoa_event);
 
