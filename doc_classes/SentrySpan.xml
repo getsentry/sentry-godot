@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentrySpan" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Represents a timed operation in a Sentry trace.
+	</brief_description>
+	<description>
+		A span measures an operation and records its duration, outcome, and attributes. Nested spans show how work is divided within a trace.
+		Create spans with [method SentrySDK.start_span]. Telemetry captured on the same thread while a span is active carries that span's trace context.
+		Use [method set_attribute] or [method set_attributes] to add details to the operation, [method set_status] to set its outcome, and [method end] to end the span.
+		[codeblock]
+		var span := SentrySDK.start_span("load_level")
+		span.set_attribute("level", level_name)
+		load_level(level_name)
+		span.set_status(SentrySpan.SPAN_STATUS_OK)
+		span.end()
+		[/codeblock]
+		Call [method end] on every span created with [method SentrySDK.start_span]. End all child spans before their root span. An unended root span is not sent.
+		Each unended active span also leaves a scope fork on the calling thread; the SDK warns if the scope stack grows unusually deep.
+		Set [code]sentry.op[/code] to categorize the work the span measures, such as [code]asset.load[/code] or [code]db.query[/code]. Sentry groups and filters spans by operation. Pass it in the [code]attributes[/code] dictionary of [method SentrySDK.start_span], since some platforms fix the operation when the span starts.
+		[b]Note:[/b] Spans are thread-local. Call span methods only from the thread that created the span.
+		[b]Platform support:[/b] Spans are not supported on macOS, iOS, Android, or Web yet. On those platforms, the SDK returns a no-op span and prints a one-time warning. Calling methods on that span is safe, but no span is recorded.
+		To learn more, visit [url=https://docs.sentry.io/concepts/key-terms/tracing/]Tracing documentation[/url].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="end">
+			<return type="void" />
+			<description>
+				Finishes the span and records its duration. If the span is active, the SDK removes its scope fork and restores the previous active span, if any. Calling [method end] again has no effect.
+				Set attributes and status before calling [method end]. After the span ends, [method set_attribute], [method set_attributes], and [method set_status] print an error and do nothing. The SDK also rejects the ended span as [code]parent_span[/code] in [method SentrySDK.start_span].
+				[b]Note:[/b] End every child span before its root span. If the root ends first, the SDK may drop an unfinished child, give it the root's end time, or send it after the child ends, depending on the platform.
+			</description>
+		</method>
+		<method name="set_attribute">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets one attribute on the span. Attributes are searchable metadata that help describe the operation, such as the level being loaded, the asset path, or a gameplay flag.
+				The [param key] must not be empty. Supported value types are [bool], [int], [float], and [String]. Other types will be stringified.
+				Pass [code]sentry.op[/code] to [method SentrySDK.start_span] instead of setting it here, since some platforms fix the operation when the span starts.
+			</description>
+		</method>
+		<method name="set_attributes">
+			<return type="void" />
+			<param index="0" name="attributes" type="Dictionary" />
+			<description>
+				Sets multiple attributes on the span from [param attributes]. Each dictionary entry becomes one span attribute.
+				The SDK skips an entry with an empty key and prints an error. Values use the same conversion rules as [method set_attribute].
+			</description>
+		</method>
+		<method name="set_status">
+			<return type="void" />
+			<param index="0" name="status" type="int" enum="SentrySpan.SpanStatus" />
+			<description>
+				Sets the outcome of the span. Use [constant SPAN_STATUS_OK] for successful operations and [constant SPAN_STATUS_ERROR] for failed operations. Sentry treats a span that was never given a status as successful.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="SPAN_STATUS_OK" value="0" enum="SpanStatus">
+			The operation completed successfully.
+		</constant>
+		<constant name="SPAN_STATUS_ERROR" value="1" enum="SpanStatus">
+			The operation failed.
+		</constant>
+	</constants>
+</class>

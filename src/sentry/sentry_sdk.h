@@ -12,6 +12,7 @@
 #include "sentry/sentry_metrics.h"
 #include "sentry/sentry_options.h"
 #include "sentry/sentry_scope.h"
+#include "sentry/sentry_span.h"
 
 #include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/core/object.hpp>
@@ -41,7 +42,7 @@ public:
 private:
 	static SentrySDK *singleton;
 
-	// Scopes are thread-local. _push_scope() scopes are removed by _pop_scope(),
+	// Scopes are thread-local. _fork_scope() scopes are removed by _pop_scope(),
 	// but each thread's lazily-created root scope lives until the thread exits or
 	// the SDK is reinitialized/closed. init() and close() bump a global epoch so
 	// threads can detect and discard stale scope stacks on next access.
@@ -72,7 +73,10 @@ private:
 	// Marks every thread's scope stack as stale.
 	void _invalidate_scopes();
 
-	_FORCE_INLINE_ Ref<SentryScope> _push_scope() { return current_scopes.push_back(Ref<SentryScope>(get_current_scope()->clone()))->get(); }
+	// Clones the source scope and makes it the current scope on the calling thread.
+	Ref<SentryScope> _fork_scope(const Ref<SentryScope> &p_source);
+
+	// Removes the scope from the current thread's scope stack.
 	_FORCE_INLINE_ void _pop_scope(const Ref<SentryScope> &p_scope) { current_scopes.erase(p_scope); }
 
 protected:
@@ -128,8 +132,13 @@ public:
 	// * Scopes
 
 	Ref<SentryScope> get_current_scope() const;
-
 	Variant with_scope(const Callable &p_callable);
+
+	// * Spans
+
+	Ref<SentrySpan> start_span(const String &p_name, const Dictionary &p_attributes = {},
+			const Ref<SentrySpan> &p_parent_span = SentrySpan::unassigned(), bool p_active = true);
+	Ref<SentrySpan> get_active_span() const;
 
 	// * Hidden API methods -- used in testing
 
@@ -137,9 +146,13 @@ public:
 	void unset_before_send() { options->set_before_send(Callable()); }
 	Callable get_before_send() { return options->get_before_send(); }
 
+	// * Not exposed in the public API
+
 	void prepare_and_auto_initialize();
 
 	_FORCE_INLINE_ TraceContext get_trace_context() const { return trace_context; }
+
+	void notify_span_ended(const SentrySpan *p_span);
 
 	SentrySDK();
 	~SentrySDK();

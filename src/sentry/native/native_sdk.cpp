@@ -9,6 +9,7 @@
 #include "sentry/native/native_log.h"
 #include "sentry/native/native_metric.h"
 #include "sentry/native/native_scope.h"
+#include "sentry/native/native_span.h"
 #include "sentry/native/native_util.h"
 #include "sentry/native/platform_detection.h"
 #include "sentry/processing/process_event.h"
@@ -389,6 +390,10 @@ SentryScopeImpl *NativeSDK::create_scope() {
 	return memnew(NativeScope);
 }
 
+SentrySpanImpl *NativeSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
+	return NativeSpan::start_root(p_name, p_attributes);
+}
+
 void NativeSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
 	ERR_FAIL_COND(p_trace_id.is_empty());
 	if (p_parent_span_id.is_empty()) {
@@ -411,6 +416,7 @@ void NativeSDK::init() {
 	sentry_options_set_dist(options, SENTRY_OPTIONS()->get_dist().utf8());
 	sentry_options_set_environment(options, SENTRY_OPTIONS()->get_environment().utf8());
 	sentry_options_set_sample_rate(options, SENTRY_OPTIONS()->get_sample_rate());
+	sentry_options_set_traces_sample_rate(options, SENTRY_OPTIONS()->get_traces_sample_rate());
 	sentry_options_set_max_breadcrumbs(options, SENTRY_OPTIONS()->get_max_breadcrumbs());
 	sentry_options_set_shutdown_timeout(options, SENTRY_OPTIONS()->get_shutdown_timeout_ms());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");

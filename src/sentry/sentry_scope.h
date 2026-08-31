@@ -4,6 +4,7 @@
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_scope_impl.h"
+#include "sentry/sentry_span.h"
 #include "sentry/sentry_user.h"
 #include "sentry/util/thread_guard.h"
 
@@ -22,7 +23,14 @@ class SentryScope : public RefCounted {
 private:
 	SentryScopeImpl *_impl;
 
+	// Scope's bound span slot managed primarily by SentrySDK.
+	// Always access through get_span() due to deferred ended span resolution.
+	mutable Ref<SentrySpan> _span;
+
 	SENTRY_THREAD_OWNER;
+
+	// Unwinds finished active spans to the nearest live ancestor and syncs with the backing scope.
+	void _sync_active_span() const;
 
 protected:
 	static void _bind_methods();
@@ -40,7 +48,14 @@ public:
 
 	Ref<SentryScope> clone() const;
 
-	SentryScopeImpl *get_implementation() const { return _impl; }
+	// *** Not exposed in the public API
+
+	_FORCE_INLINE_ bool is_owner_thread() const { return _thread_owner.is_owner_thread(); }
+
+	void set_span(const Ref<SentrySpan> &p_span);
+	Ref<SentrySpan> get_span() const;
+
+	SentryScopeImpl *get_implementation() const;
 
 	SentryScope();
 	SentryScope(SentryScopeImpl *p_impl);

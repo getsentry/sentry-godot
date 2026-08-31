@@ -349,6 +349,11 @@ SentryScopeImpl *CocoaSDK::create_scope() {
 	return memnew(DisabledScope);
 }
 
+SentrySpanImpl *CocoaSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
+	WARN_PRINT_ONCE("Sentry: Spans are not implemented on this platform yet - nothing will be recorded.");
+	return SentrySpanImpl::create_noop();
+}
+
 void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
 	ERR_FAIL_COND(p_trace_id.is_empty());
 

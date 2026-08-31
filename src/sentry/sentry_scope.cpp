@@ -59,12 +59,47 @@ void SentryScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 void SentryScope::clear() {
 	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
+	_span.unref();
 	_impl->clear();
+}
+
+void SentryScope::set_span(const Ref<SentrySpan> &p_span) {
+	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
+	ERR_FAIL_COND_MSG(p_span.is_null(), "Sentry: Can't bind a null span to the scope.");
+	p_span->set_previous(get_span());
+	_span = p_span;
+	_impl->set_span(p_span->get_implementation());
+}
+
+Ref<SentrySpan> SentryScope::get_span() const {
+	ERR_SENTRY_THREAD_GUARD_V(Ref<SentrySpan>(), WRONG_THREAD_MSG);
+	_sync_active_span();
+	return _span;
 }
 
 Ref<SentryScope> SentryScope::clone() const {
 	ERR_SENTRY_THREAD_GUARD_V(Ref<SentryScope>(), WRONG_THREAD_MSG);
-	return Ref<SentryScope>(memnew(SentryScope(_impl->clone())));
+	_sync_active_span();
+	SentryScopeImpl *cloned_impl = _impl->clone();
+	Ref<SentryScope> copy = Ref<SentryScope>(memnew(SentryScope(cloned_impl)));
+	copy->_span = _span;
+	return copy;
+}
+
+SentryScopeImpl *SentryScope::get_implementation() const {
+	_sync_active_span();
+	return _impl;
+}
+
+void SentryScope::_sync_active_span() const {
+	bool restored = false;
+	while (_span.is_valid() && _span->is_ended()) {
+		_span = _span->get_previous();
+		restored = true;
+	}
+	if (restored) {
+		_impl->set_span(_span.is_valid() ? _span->get_implementation() : nullptr);
+	}
 }
 
 void SentryScope::_bind_methods() {
