@@ -24,6 +24,8 @@ public:
 	virtual void set_user(const Ref<SentryUser> &p_user) {}
 	virtual void remove_user() {}
 
+	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) {}
+
 	virtual ~SentryScopeObserver() = default;
 };
 

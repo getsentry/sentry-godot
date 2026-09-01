@@ -50,4 +50,12 @@ void DotnetScopeObserver::remove_user() {
 	sentry::dotnet::remove_user();
 }
 
+void DotnetScopeObserver::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
+	if (SyncGuard::is_syncing()) {
+		return;
+	}
+	SyncGuard guard;
+	sentry::dotnet::set_trace(p_trace_id, p_parent_span_id);
+}
+
 } //namespace sentry::dotnet
