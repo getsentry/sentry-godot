@@ -220,6 +220,7 @@ Describe "Platform Integration Tests" {
             $script:runtimeErrorRunResult = Invoke-TestAction -Action "runtime-error-capture"
             $script:logRunResult = Invoke-TestAction -Action "log-capture"
             $script:metricRunResult = Invoke-TestAction -Action "metric-capture"
+            $script:spanRunResult = Invoke-TestAction -Action "span-capture"
             $script:piiRunResult = Invoke-TestAction -Action "pii-capture"
         }
         finally {
@@ -836,6 +837,110 @@ Describe "Platform Integration Tests" {
             $counter.deleted_global_attribute | Should -BeNullOrEmpty
             $distribution.deleted_global_attribute | Should -BeNullOrEmpty
             $gauge.deleted_global_attribute | Should -BeNullOrEmpty
+        }
+    }
+
+    Context "Spans" -Skip:$script:IsCocoa {
+        BeforeAll {
+            $runResult = $script:spanRunResult
+
+            $spanTriggeredLines = @($runResult.Output | Where-Object { $_ -match 'SPAN_TRIGGERED: ' })
+            $spanNameLines = @($runResult.Output | Where-Object { $_ -match 'SPAN_NAME: ' })
+            $traceId = $null
+            $spanName = $null
+            $transaction = $null
+            $capturedEvent = $null
+
+            if ($spanNameLines.Count -gt 0) {
+                $spanName = ($spanNameLines[0] -split 'SPAN_NAME: ')[-1].Trim()
+            }
+
+            if ($spanTriggeredLines.Count -gt 0) {
+                $traceId = ($spanTriggeredLines[0] -split 'SPAN_TRIGGERED: ')[-1].Trim()
+                Write-Host "Captured trace ID: $traceId" -ForegroundColor Cyan
+
+                Write-GitHub "::group::Getting transaction"
+                try {
+                    $transaction = Get-SentryTestTransaction -TraceId $traceId
+                }
+                catch {
+                    Write-Host "Warning: $_" -ForegroundColor Red
+                }
+                Write-GitHub "::endgroup::"
+            }
+            else {
+                Write-Host "Warning: No SPAN_TRIGGERED line found in output" -ForegroundColor Yellow
+            }
+
+            $eventId = Get-EventIds -AppOutput $runResult.Output -ExpectedCount 1
+            if ($eventId) {
+                Write-GitHub "::group::Getting event content"
+                $capturedEvent = Get-SentryTestEvent -EventId "$eventId"
+                Write-GitHub "::endgroup::"
+            }
+        }
+
+        It "Outputs the trace ID and the root span name" {
+            $traceId | Should -Not -BeNullOrEmpty
+            $spanName | Should -Not -BeNullOrEmpty
+        }
+
+        It "Exits with code zero" {
+            if ($TestSetup.Platform -in @("Adb", "AndroidSauceLabs")) {
+                # app-runner doesn't support exit code on Android.
+                return
+            }
+            $runResult.ExitCode | Should -Be 0
+        }
+
+        It "Outputs TEST_RESULT with success" {
+            $testResultLine = $runResult.Output | Where-Object { $_ -match 'TEST_RESULT:' }
+            $testResultLine | Should -Not -BeNullOrEmpty
+            $testResultLine | Should -Match '"success":true'
+        }
+
+        It "Sends the trace as a transaction" {
+            $transaction | Should -Not -BeNullOrEmpty
+            $transaction.type | Should -Be 'transaction'
+        }
+
+        It "Names the transaction after the root span" {
+            $transaction.title | Should -Be $spanName
+        }
+
+        It "Has the operation set on the root span" {
+            $transaction.contexts.trace.op | Should -Be 'test.span_capture'
+        }
+
+        It "Has the status set on the root span" {
+            $transaction.contexts.trace.status | Should -Be 'ok'
+        }
+
+        It "Has the attributes set on the root span" {
+            $transaction.contexts.trace.data.root_attribute | Should -Be 'root_value'
+            $transaction.contexts.trace.data.late_root_attribute | Should -Be 'late_value'
+        }
+
+        It "Contains the child span" {
+            $child = $transaction.spans | Where-Object { $_.description -eq 'child-span' }
+            $child | Should -Not -BeNullOrEmpty
+            $child.op | Should -Be 'test.child'
+            $child.parent_span_id | Should -Be $transaction.contexts.trace.span_id
+            $child.data.child_attribute | Should -Be 'child_value'
+            # Platforms differ in the status they report for a generic span failure.
+            $child.status | Should -Match '_error$'
+        }
+
+        It "Contains the span started by with_span" {
+            $withSpan = $transaction.spans | Where-Object { $_.description -eq 'with-span-child' }
+            $withSpan | Should -Not -BeNullOrEmpty
+            $withSpan.parent_span_id | Should -Be $transaction.contexts.trace.span_id
+            $withSpan.data.with_span_attribute | Should -Be 'with_span_value'
+        }
+
+        It "Captures an event on the trace of the span it was captured in" {
+            $capturedEvent | Should -Not -BeNullOrEmpty
+            $capturedEvent.contexts.trace.trace_id | Should -Be $traceId
         }
     }
 
