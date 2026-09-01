@@ -201,17 +201,15 @@ We maintain official documentation in https://github.com/getsentry/sentry-docs. 
 
 We also maintain a built-in Godot class reference. It is available offline right inside Godot editor. Each of the classes we export begins with "Sentry", so it's easy to find our API using the **Search Help** dialog. This documentation is located in the `doc_classes/` directory, with each class stored in a corresponding XML file. The structure of these files is auto-generated, while the documentation text itself is added manually.
 
-If you add or modify the public API, you must first regenerate these files and then update their content accordingly. To regenerate the XML documentation, run the following command from the `project/` directory:
+If you add or modify the public API, regenerate these files first, then fill in the text:
 
 ```sh
-godot --doctool ../ --gdextension-docs
+scripts/update-doc-classes.ps1
 ```
 
-This command generates XML files for new classes and updates existing ones by adding or removing class members based on your changes. Ensure that you **compile the library** with `target=editor` for your current platform before running this command; otherwise, your changes will not be detected!
+**Compile the library** with `target=editor` for your platform beforehand, or your changes will not be detected. Run the script again once you are done writing, as it corrects some style issues automatically.
 
-> 🛈 You can run `scripts/update-doc-classes.ps1` which wraps the same operation.
 
-Once the XML files are regenerated, you can begin updating the documentation for the affected classes. It is recommended to run regeneration process again after completing your changes, as this will correct certain style issues automatically.
 
 ## Testing
 

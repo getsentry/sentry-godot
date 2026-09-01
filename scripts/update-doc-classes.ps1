@@ -16,10 +16,19 @@ if (-not (Get-Command $godot -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-$startDir = Get-Location
-$scriptDir = Split-Path -Parent (Resolve-Path $MyInvocation.MyCommand.Path)
-Set-Location "$scriptDir/../project"
+Push-Location "$PSScriptRoot/../project"
 
-& $godot --doctool ../ --gdextension-docs
+try {
+    # Without an import pass the doctool finds no classes, erases every file in doc_classes/ and still exits 0.
+    Write-Host "Importing project..."
+    & $godot --headless --path . --import
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Project import failed with exit code $LASTEXITCODE. Aborting." -CategoryActivity "ERROR"
+        exit 1
+    }
 
-Set-Location $startDir
+    Write-Host "Generating class reference..."
+    & $godot --doctool ../ --gdextension-docs
+} finally {
+    Pop-Location
+}
