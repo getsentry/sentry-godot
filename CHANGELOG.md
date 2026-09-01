@@ -27,6 +27,7 @@
   - The new `SentrySpan` class carries attributes and status; call `SentrySpan.end()` to finish the operation
   - Events captured during an active span are associated with that operation
   - `SentryOptions.traces_sample_rate` controls the share of traces sent to Sentry. It defaults to `0.0`; set it above `0.0` to enable performance tracing and send spans
+  - `SentryOptions.trace_lifecycle` selects whether traces are sent as transactions or individual spans; it currently only affects Web ([#895](https://github.com/getsentry/sentry-godot/pull/895))
   - Not supported on macOS, iOS, or Android yet, where the SDK returns a no-op span with a warning
 
 ### Improvements

@@ -128,6 +128,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(sentry::make_level_enum_property("sentry/options/diagnostic_level"), p_options->diagnostic_level);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate, false);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/traces_sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->traces_sample_rate, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/trace_lifecycle", PROPERTY_HINT_ENUM, "Static,Stream"), p_options->trace_lifecycle, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/shutdown_timeout_ms", PROPERTY_HINT_RANGE, "0,30000"), p_options->shutdown_timeout_ms, false);
 	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
@@ -218,6 +219,7 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/sample_rate", p_options->sample_rate);
 	p_options->traces_sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/traces_sample_rate", p_options->traces_sample_rate);
+	p_options->trace_lifecycle = (SentryOptions::TraceLifecycle)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/trace_lifecycle", p_options->trace_lifecycle);
 	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/options/max_breadcrumbs", p_options->max_breadcrumbs);
 	p_options->shutdown_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/shutdown_timeout_ms", p_options->shutdown_timeout_ms);
 	p_options->send_default_pii = ProjectSettings::get_singleton()->get_setting("sentry/options/send_default_pii", p_options->send_default_pii);
@@ -401,6 +403,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "environment"), set_environment, get_environment);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "sample_rate"), set_sample_rate, get_sample_rate);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::FLOAT, "traces_sample_rate"), set_traces_sample_rate, get_traces_sample_rate);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "trace_lifecycle", PROPERTY_HINT_ENUM, "Static,Stream"), set_trace_lifecycle, get_trace_lifecycle);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "max_breadcrumbs"), set_max_breadcrumbs, get_max_breadcrumbs);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "shutdown_timeout_ms", PROPERTY_HINT_RANGE, "0,30000"), set_shutdown_timeout_ms, get_shutdown_timeout_ms);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "send_default_pii"), set_send_default_pii, is_send_default_pii_enabled);
@@ -423,6 +426,9 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "android", PROPERTY_HINT_TYPE_STRING, "SentryAndroidOptions", PROPERTY_USAGE_NONE), get_android);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "godot_logger", PROPERTY_HINT_TYPE_STRING, "SentryGodotLoggerOptions", PROPERTY_USAGE_NONE), get_godot_logger);
+
+	BIND_ENUM_CONSTANT(TRACE_LIFECYCLE_STATIC);
+	BIND_ENUM_CONSTANT(TRACE_LIFECYCLE_STREAM);
 
 	{
 		using namespace sentry;

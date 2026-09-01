@@ -45,6 +45,11 @@ const SPAN_STATUS_ERROR = 1;
 const OTEL_CODE_OK = 1;
 const OTEL_CODE_ERROR = 2;
 
+enum TraceLifecycle {
+  Static = 0,
+  Stream = 1,
+}
+
 // Handed to the C++ layer to have it read one file; it leaves the bytes unset if the read fails.
 interface AttachmentRequest {
   path: string;
@@ -105,6 +110,8 @@ function makeUser(id: string, username: string, email: string, ip: string): User
 // *** SentryBridge
 
 class SentryBridge {
+  public readonly TraceLifecycle = TraceLifecycle;
+
   constructor() {}
 
   private _byteStore = new IdStore<Uint8Array>();
@@ -149,6 +156,7 @@ class SentryBridge {
     environment: string,
     sampleRate: number,
     tracesSampleRate: number,
+    traceLifecycle: TraceLifecycle,
     maxBreadcrumbs: number,
     sendDefaultPii: boolean,
     sdkVersion: string,
@@ -165,6 +173,7 @@ class SentryBridge {
       environment,
       sampleRate,
       tracesSampleRate,
+      traceLifecycle: traceLifecycle === TraceLifecycle.Stream ? "stream" : "static",
       maxBreadcrumbs,
       sendDefaultPii,
       _metadata: {
@@ -183,6 +192,9 @@ class SentryBridge {
           return !excludedIntegrations.includes(integration.name);
         });
         filtered.push(wasmIntegration());
+        if (traceLifecycle === TraceLifecycle.Stream) {
+          filtered.push(Sentry.spanStreamingIntegration());
+        }
         filtered.push(
           Sentry.breadcrumbsIntegration({
             console: false, // very noisy in Godot SDK

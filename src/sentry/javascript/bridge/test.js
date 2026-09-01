@@ -130,9 +130,13 @@ try {
 		const beforeSendFeedback = (event) => {
 			feedbackEvents.push(event);
 		};
+		const initBridge = (traceLifecycle) => {
+			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false,
+					"1.0.0", "1", "production", 1.0, 1.0, traceLifecycle, 100, false, "0.1.0");
+		};
 
 		runTest("init()", () => {
-			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false, "1.0.0", "1", "production", 1.0, 1.0, 100, false, "0.1.0");
+			initBridge(bridge.TraceLifecycle.Stream);
 		});
 
 		// Observes what actually goes out with an event. The bridge registers its own handler during
@@ -320,10 +324,12 @@ try {
 			assert(cleared.getClient() !== undefined, "scopeClear should keep the client bound");
 		});
 
-		runTest("spans become transactions", () => {
+		runTest("spans stream instead of becoming transactions", () => {
 			const client = bridge.createScope().getClient();
-			assertEqual(client.getIntegrationByName("SpanStreaming"), undefined,
-					"init should not register span streaming");
+			assertEqual(client.getOptions().traceLifecycle, "stream",
+					"init should put the client on the streaming trace lifecycle");
+			assert(client.getIntegrationByName("SpanStreaming"),
+					"init should register the integration that streams ended spans");
 		});
 
 		runTest("startSpan()", () => {
@@ -498,6 +504,16 @@ try {
 
 		runTest("removeAttribute()", () => {
 			bridge.removeAttribute("test-attr");
+		});
+
+		runTest("static trace lifecycle", () => {
+			bridge.close(2000);
+			initBridge(bridge.TraceLifecycle.Static);
+			const client = bridge.createScope().getClient();
+			assertEqual(client.getOptions().traceLifecycle, "static",
+					"init should preserve the static trace lifecycle");
+			assertEqual(client.getIntegrationByName("SpanStreaming"), undefined,
+					"init should not register span streaming in static mode");
 		});
 
 		runTest("close()", () => {

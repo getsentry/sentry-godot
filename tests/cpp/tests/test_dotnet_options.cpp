@@ -96,6 +96,8 @@ TEST_SUITE("[.NET] Options interop") {
 				crossed.insert(option_name(option));
 			}
 			const HashSet<String> not_crossed = {
+				// Only affects the JavaScript SDK on Web.
+				"trace_lifecycle",
 				// Deprecated no-ops.
 				"enable_logs", "enable_metrics",
 				// Deprecated aliases for the properties above.
