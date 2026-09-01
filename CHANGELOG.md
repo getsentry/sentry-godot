@@ -24,6 +24,7 @@
   - Not supported on macOS and iOS yet, where feedback is still sent but the callback never runs
 - Add Spans support to the GDScript API for measuring operations and grouping telemetry captured while they run ([#863](https://github.com/getsentry/sentry-godot/pull/863), [#875](https://github.com/getsentry/sentry-godot/pull/875), [#886](https://github.com/getsentry/sentry-godot/pull/886))
   - `SentrySDK.start_span()` starts a span and makes it active, and `SentrySDK.get_active_span()` returns the active span for the calling thread
+  - `SentrySDK.with_span()` runs a callable with an active span and ends it on return ([#892](https://github.com/getsentry/sentry-godot/pull/892))
   - The new `SentrySpan` class carries attributes and status; call `SentrySpan.end()` to finish the operation
   - Events captured during an active span are associated with that operation
   - `SentryOptions.traces_sample_rate` controls the share of traces sent to Sentry. It defaults to `0.0`; set it above `0.0` to enable performance tracing and send spans
