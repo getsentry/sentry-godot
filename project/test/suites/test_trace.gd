@@ -1,5 +1,5 @@
 extends SentryTestSuite
-## Verifies telemetry stays on a single trace across scope operations.
+## Verifies telemetry stays on a single trace across scope operations, and moves off it when a new trace is started.
 
 
 # TODO: widen the platform list as scopes are implemented on other backends.
@@ -57,4 +57,28 @@ func test_scope_clear_keeps_trace() -> void:
 	assert_json(json_after_clear).describe("clear() does not change the trace") \
 		.at("/contexts/trace/trace_id") \
 		.is_equal(_trace_id(json_before)) \
+		.verify()
+
+
+func test_start_new_trace_replaces_the_trace() -> void:
+	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	SentrySDK.start_new_trace()
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_after).describe("start_new_trace() moves later events onto another trace") \
+		.at("/contexts/trace/trace_id") \
+		.is_not_equal(_trace_id(json_before)) \
+		.verify()
+
+
+func test_events_after_start_new_trace_share_trace() -> void:
+	SentrySDK.start_new_trace()
+
+	var json_first: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_second: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_second).describe("events captured after start_new_trace() share one trace") \
+		.at("/contexts/trace/trace_id") \
+		.is_equal(_trace_id(json_first)) \
 		.verify()
