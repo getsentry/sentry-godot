@@ -115,6 +115,18 @@ public:
 	StringName scopeAddFileAttachment;
 	StringName scopeAddBytesAttachment;
 	StringName scopeClear;
+	StringName scopeSetSpan;
+
+	// Spans.
+	StringName startSpan;
+	StringName releaseSpan;
+	StringName spanStartChild;
+	StringName spanSetAttributeBool;
+	StringName spanSetAttributeLong;
+	StringName spanSetAttributeDouble;
+	StringName spanSetAttributeString;
+	StringName spanSetStatus;
+	StringName spanEnd;
 
 	// Logs.
 	StringName releaseLog;

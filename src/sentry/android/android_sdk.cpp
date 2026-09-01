@@ -5,6 +5,7 @@
 #include "android_log.h"
 #include "android_metric.h"
 #include "android_scope.h"
+#include "android_span.h"
 #include "android_string_names.h"
 #include "android_util.h"
 #include "sentry/common_defs.h"
@@ -355,8 +356,7 @@ SentryScopeImpl *AndroidSDK::create_scope() {
 }
 
 SentrySpanImpl *AndroidSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
-	WARN_PRINT_ONCE("Sentry: Spans are not implemented on this platform yet - nothing will be recorded.");
-	return SentrySpanImpl::create_noop();
+	return AndroidSpan::start_root(_get_android_plugin(), p_name, p_attributes);
 }
 
 void AndroidSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
@@ -402,6 +402,7 @@ void AndroidSDK::init() {
 	optionsData["dist"] = SENTRY_OPTIONS()->get_dist();
 	optionsData["environment"] = SENTRY_OPTIONS()->get_environment();
 	optionsData["sample_rate"] = SENTRY_OPTIONS()->get_sample_rate();
+	optionsData["traces_sample_rate"] = SENTRY_OPTIONS()->get_traces_sample_rate();
 	optionsData["max_breadcrumbs"] = SENTRY_OPTIONS()->get_max_breadcrumbs();
 	optionsData["enable_anr_detection"] = SENTRY_OPTIONS()->get_android()->get_enable_anr_detection();
 	optionsData["anr_timeout_interval_ms"] = SENTRY_OPTIONS()->get_android()->get_anr_timeout_interval_ms();

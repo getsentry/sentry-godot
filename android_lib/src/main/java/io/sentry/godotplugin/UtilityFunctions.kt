@@ -2,6 +2,7 @@ package io.sentry.godotplugin
 
 import io.sentry.SentryLevel
 import io.sentry.SentryLogLevel
+import io.sentry.SpanStatus
 import java.util.Date
 import java.time.Instant
 import kotlin.text.toIntOrNull as parseIntOrNull
@@ -26,6 +27,13 @@ fun Int.toSentryLogLevel(): SentryLogLevel =
         4 -> SentryLogLevel.ERROR
         5 -> SentryLogLevel.FATAL
         else -> SentryLogLevel.INFO
+    }
+
+fun Int.toSentrySpanStatus(): SpanStatus =
+    when (this) {
+        0 -> SpanStatus.OK
+        // Sentry maps a failure reported without further detail to "unknown_error".
+        else -> SpanStatus.UNKNOWN_ERROR
     }
 
 fun SentryLevel.toInt(): Int =
@@ -92,7 +100,7 @@ fun Any?.toIntOrNull(): Int? =
         is Number -> this.toInt()
         is String -> this.parseIntOrNull()
         else -> null
-}
+    }
 
 fun Any?.toLongOrNull(): Long? =
     when (this) {
@@ -103,4 +111,4 @@ fun Any?.toLongOrNull(): Long? =
         is Number -> this.toLong()
         is String -> this.parseLongOrNull()
         else -> null
-}
+    }

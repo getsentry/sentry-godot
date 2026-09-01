@@ -1,6 +1,7 @@
 #include "android_scope.h"
 
 #include "android_breadcrumb.h"
+#include "android_span.h"
 #include "android_string_names.h"
 #include "android_util.h"
 
@@ -90,6 +91,12 @@ void AndroidScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 				p_attachment->get_content_type(),
 				p_attachment->get_attachment_type());
 	}
+}
+
+void AndroidScope::set_span(SentrySpanImpl *p_span) {
+	ERR_FAIL_NULL(android_plugin);
+	AndroidSpan *android_span = Castable::cast_to<AndroidSpan>(p_span);
+	android_plugin->call(ANDROID_SN(scopeSetSpan), handle, android_span ? android_span->get_handle() : 0);
 }
 
 void AndroidScope::clear() {

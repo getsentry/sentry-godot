@@ -2,8 +2,8 @@ extends SentryTestSuite
 ## Verifies events captured while a span is active are stamped with that span.
 
 
-# TODO: widen the platform list as spans are implemented on other backends.
-func before(_do_skip = OS.get_name() not in ["Windows", "Linux", "Web"],
+# TODO: drop the skip when Cocoa gains span support.
+func before(_do_skip = OS.get_name() in ["macOS", "iOS"],
 		_skip_reason = "Spans are not implemented on this platform yet.") -> void:
 	super()
 
