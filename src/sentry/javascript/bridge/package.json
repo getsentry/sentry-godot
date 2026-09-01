@@ -26,8 +26,8 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "@sentry/browser": "^10.72.0",
-    "@sentry/core": "^10.72.0",
-    "@sentry/wasm": "^10.72.0"
+    "@sentry/browser": "^10.73.0",
+    "@sentry/core": "^10.73.0",
+    "@sentry/wasm": "^10.73.0"
   }
 }
