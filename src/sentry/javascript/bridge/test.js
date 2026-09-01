@@ -56,6 +56,7 @@ try {
 			"removeTag",
 			"setUser",
 			"removeUser",
+			"setTrace",
 			"eventSetUser",
 			"createScope",
 			"scopeSetContext",
@@ -173,6 +174,26 @@ try {
 
 		runTest("removeUser()", () => {
 			bridge.removeUser();
+		});
+
+		runTest("setTrace()", () => {
+			bridge.setTrace("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbb");
+			const withParent = bridge.createScope().getPropagationContext();
+			assertEqual(withParent.traceId, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"setTrace should adopt the given trace id");
+			assertEqual(withParent.parentSpanId, "bbbbbbbbbbbbbbbb",
+					"setTrace should adopt the given parent span id");
+			assert(withParent.propagationSpanId !== undefined,
+					"setTrace should mint a span id for captures outside a span");
+
+			bridge.setTrace("cccccccccccccccccccccccccccccccc", "");
+			const noParent = bridge.createScope().getPropagationContext();
+			assertEqual(noParent.traceId, "cccccccccccccccccccccccccccccccc",
+					"setTrace should replace the trace id");
+			assertEqual(noParent.parentSpanId, undefined,
+					"setTrace should leave the parent unset when none is given");
+			assert(noParent.propagationSpanId !== withParent.propagationSpanId,
+					"setTrace should mint a fresh span id on every call");
 		});
 
 		runTest("eventSetUser()", () => {
