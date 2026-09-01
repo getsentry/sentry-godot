@@ -2,10 +2,7 @@ extends SentryTestSuite
 ## Verifies telemetry stays on a single trace across scope operations, and moves off it when a new trace is started.
 
 
-# TODO: widen the platform list as scopes are implemented on other backends.
-func before(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android", "Web"],
-		_skip_reason = "Scopes are not implemented on this platform yet.") -> void:
-	super()
+# TODO: drop the skips when Cocoa gains scope support.
 
 
 func _trace_id(json: String) -> Variant:
@@ -13,7 +10,8 @@ func _trace_id(json: String) -> Variant:
 	return data.get("contexts", {}).get("trace", {}).get("trace_id")
 
 
-func test_scoped_event_shares_trace() -> void:
+func test_scoped_event_shares_trace(_do_skip = OS.get_name() in ["macOS", "iOS"],
+		_skip_reason = "Scopes are not implemented on this platform yet.") -> void:
 	var json_outside: String = await capture_event_and_get_json(SentrySDK.create_event())
 
 	SentrySDK.with_scope(func(_scope: SentryScope) -> void:
@@ -27,7 +25,8 @@ func test_scoped_event_shares_trace() -> void:
 		.verify()
 
 
-func test_nested_with_scope_keeps_trace() -> void:
+func test_nested_with_scope_keeps_trace(_do_skip = OS.get_name() in ["macOS", "iOS"],
+		_skip_reason = "Scopes are not implemented on this platform yet.") -> void:
 	SentrySDK.with_scope(func(_outer: SentryScope) -> void:
 		SentrySDK.capture_event(SentrySDK.create_event())
 
@@ -45,7 +44,8 @@ func test_nested_with_scope_keeps_trace() -> void:
 		.verify()
 
 
-func test_scope_clear_keeps_trace() -> void:
+func test_scope_clear_keeps_trace(_do_skip = OS.get_name() in ["macOS", "iOS"],
+		_skip_reason = "Scopes are not implemented on this platform yet.") -> void:
 	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
 
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
