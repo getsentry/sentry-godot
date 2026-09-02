@@ -374,6 +374,8 @@ class SentryBridge {
     context.parentSpanId = parentSpanId || undefined;
     context.propagationSpanId = generateSpanId();
     context.sampleRand = Math.random();
+    context.dsc = undefined;
+    context.sampled = undefined;
   }
 
   public eventSetUser(event: Sentry.Event, id: string, username: string, email: string, ip: string): void {

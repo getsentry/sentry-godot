@@ -36,7 +36,7 @@ function runTest(name, testFn) {
 try {
 	require("./dist/sentry-bundle.js");
 
-	const { spanToStreamedSpanJSON } = require("@sentry/core");
+	const { spanToStreamedSpanJSON, getCurrentScope, propagationContextFromHeaders } = require("@sentry/core");
 
 	console.log("✅ Bundle loaded successfully\n");
 
@@ -203,6 +203,21 @@ try {
 					"setTrace should mint a fresh span id on every call");
 			assertEqual(existing.getPropagationContext().parentSpanId, undefined,
 					"setTrace should clear the parent on a scope that already exists");
+		});
+
+		runTest("setTrace() over a continued trace", () => {
+			getCurrentScope().setPropagationContext(propagationContextFromHeaders(
+					"12345678123456781234567812345678-1234567812345678-1",
+					"sentry-trace_id=12345678123456781234567812345678,sentry-sample_rate=0.5"));
+			const continued = bridge.createScope();
+
+			bridge.setTrace("dddddddddddddddddddddddddddddddd", "");
+			assertEqual(continued.getPropagationContext().traceId, "dddddddddddddddddddddddddddddddd",
+					"setTrace should replace a continued trace");
+			assertEqual(continued.getPropagationContext().dsc, undefined,
+					"setTrace should drop the frozen baggage of the trace it replaces");
+			assertEqual(continued.getPropagationContext().sampled, undefined,
+					"setTrace should drop the sampling decision of the trace it replaces");
 		});
 
 		runTest("eventSetUser()", () => {
