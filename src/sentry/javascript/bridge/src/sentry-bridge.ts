@@ -428,6 +428,14 @@ class SentryBridge {
     return fresh;
   }
 
+  public scopeClone(scope: Sentry.Scope): Sentry.Scope {
+    const cloned = scope.clone();
+    // WORKAROUND: clone() copies the propagation context instead of sharing it, which would strand
+    // the fork on the trace it was made with. Re-share it so a forked scope keeps following setTrace().
+    cloned.setPropagationContext(scope.getPropagationContext());
+    return cloned;
+  }
+
   public scopeSetSpan(scope: Sentry.Scope, span?: Sentry.Span): void {
     // No public alternative: setActiveSpanInBrowser binds only to the current scope.
     _INTERNAL_setSpanForScope(scope, span ?? undefined);

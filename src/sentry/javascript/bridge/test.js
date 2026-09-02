@@ -65,6 +65,7 @@ try {
 			"scopeAddBytesAttachment",
 			"scopeAddFileAttachment",
 			"scopeClear",
+			"scopeClone",
 			"scopeSetSpan",
 			"startSpan",
 			"spanSetStatus",
@@ -218,6 +219,17 @@ try {
 					"setTrace should drop the frozen baggage of the trace it replaces");
 			assertEqual(continued.getPropagationContext().sampled, undefined,
 					"setTrace should drop the sampling decision of the trace it replaces");
+		});
+
+		runTest("scopeClone()", () => {
+			const base = bridge.createScope();
+			const fork = bridge.scopeClone(base);
+
+			bridge.setTrace("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "");
+			assertEqual(fork.getPropagationContext().traceId, "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+					"a forked scope should follow a trace change");
+			assertEqual(fork.getPropagationContext().traceId, base.getPropagationContext().traceId,
+					"a forked scope should stay on the trace of the scope it was forked from");
 		});
 
 		runTest("eventSetUser()", () => {
