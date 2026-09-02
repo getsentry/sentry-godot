@@ -1,8 +1,7 @@
 extends SentryTestSuite
 ## Verifies telemetry stays on a single trace across scope operations, and moves off it when a new trace is started.
-
-
-# TODO: drop the skips when Cocoa gains scope support.
+##
+## TODO: drop the skips when Cocoa gains scope support.
 
 
 func _trace_id(json: String) -> Variant:
