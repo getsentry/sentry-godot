@@ -59,6 +59,22 @@ func test_scope_clear_keeps_trace(_do_skip = OS.get_name() in ["macOS", "iOS"],
 		.verify()
 
 
+func test_start_new_trace_reaches_forked_scope(_do_skip = OS.get_name() in ["macOS", "iOS"],
+		_skip_reason = "Scopes are not implemented on this platform yet.") -> void:
+	SentrySDK.with_scope(func(_scope: SentryScope) -> void:
+		SentrySDK.start_new_trace()
+		SentrySDK.capture_event(SentrySDK.create_event())
+		)
+	var json_in_scope: String = await wait_for_captured_event_json()
+
+	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json_in_scope).describe("an event captured in a forked scope after start_new_trace() is on the new trace") \
+		.at("/contexts/trace/trace_id") \
+		.is_equal(_trace_id(json_after)) \
+		.verify()
+
+
 func test_start_new_trace_replaces_the_trace() -> void:
 	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
 
