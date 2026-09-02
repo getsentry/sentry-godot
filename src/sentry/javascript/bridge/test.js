@@ -177,6 +177,10 @@ try {
 		});
 
 		runTest("setTrace()", () => {
+			// Scopes hold the propagation context by reference, so one made before the call has to move
+			// onto the new trace too, and values have to be read out before the next call changes them.
+			const existing = bridge.createScope();
+
 			bridge.setTrace("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbb");
 			const withParent = bridge.createScope().getPropagationContext();
 			assertEqual(withParent.traceId, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -185,6 +189,9 @@ try {
 					"setTrace should adopt the given parent span id");
 			assert(withParent.propagationSpanId !== undefined,
 					"setTrace should mint a span id for captures outside a span");
+			assertEqual(existing.getPropagationContext().traceId, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"setTrace should move a scope that already exists onto the new trace");
+			const firstSpanId = withParent.propagationSpanId;
 
 			bridge.setTrace("cccccccccccccccccccccccccccccccc", "");
 			const noParent = bridge.createScope().getPropagationContext();
@@ -192,8 +199,10 @@ try {
 					"setTrace should replace the trace id");
 			assertEqual(noParent.parentSpanId, undefined,
 					"setTrace should leave the parent unset when none is given");
-			assert(noParent.propagationSpanId !== withParent.propagationSpanId,
+			assert(noParent.propagationSpanId !== firstSpanId,
 					"setTrace should mint a fresh span id on every call");
+			assertEqual(existing.getPropagationContext().parentSpanId, undefined,
+					"setTrace should clear the parent on a scope that already exists");
 		});
 
 		runTest("eventSetUser()", () => {

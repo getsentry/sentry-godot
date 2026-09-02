@@ -367,12 +367,13 @@ class SentryBridge {
   }
 
   public setTrace(traceId: string, parentSpanId: string): void {
-    Sentry.getCurrentScope().setPropagationContext({
-      traceId,
-      parentSpanId: parentSpanId || undefined,
-      propagationSpanId: generateSpanId(),
-      sampleRand: Math.random(),
-    });
+    // Scopes share this propagation context by reference via createScope(). Mutate it in place so
+    // all existing scopes move to the new trace; replacing it would strand them on the old trace.
+    const context = Sentry.getCurrentScope().getPropagationContext();
+    context.traceId = traceId;
+    context.parentSpanId = parentSpanId || undefined;
+    context.propagationSpanId = generateSpanId();
+    context.sampleRand = Math.random();
   }
 
   public eventSetUser(event: Sentry.Event, id: string, username: string, email: string, ip: string): void {
