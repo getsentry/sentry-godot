@@ -61,6 +61,22 @@ NSDictionary<NSString *, SentryObjCAttributeContent *> *_metric_attributes_to_ob
 	return attributes;
 }
 
+NSArray *_trace_propagation_targets_to_objc(const PackedStringArray &p_targets) {
+	NSMutableArray *targets = [NSMutableArray arrayWithCapacity:p_targets.size()];
+	for (const String &target : p_targets) {
+		if (target == ".*") {
+			NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@".*"
+																				   options:0
+																					 error:nil];
+			ERR_CONTINUE(regex == nil);
+			[targets addObject:regex];
+		} else {
+			[targets addObject:sentry::cocoa::string_to_objc(target)];
+		}
+	}
+	return targets;
+}
+
 void _add_default_attachments(SentryObjCScope *p_scope) {
 	for (const Ref<sentry::SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
 		sentry::logging::print_debug("adding attachment \"", att->get_path(), "\"");
@@ -378,6 +394,8 @@ void CocoaSDK::init() {
 		options.maxBreadcrumbs = (NSUInteger)SENTRY_OPTIONS()->get_max_breadcrumbs();
 		options.sendDefaultPii = SENTRY_OPTIONS()->is_send_default_pii_enabled();
 		options.diagnosticLevel = sentry_level_to_objc(SENTRY_OPTIONS()->get_diagnostic_level());
+		options.tracePropagationTargets = _trace_propagation_targets_to_objc(
+				SENTRY_OPTIONS()->get_trace_propagation_targets());
 
 		String dist = SENTRY_OPTIONS()->get_dist();
 		if (!dist.is_empty()) {
