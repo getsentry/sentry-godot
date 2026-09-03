@@ -52,6 +52,29 @@ internal static partial class NativeBridge
         public IntPtr Ptr;
         public int Count;
 
+        public unsafe string[] TakeStrings()
+        {
+            try
+            {
+                if (Ptr == IntPtr.Zero)
+                {
+                    return [];
+                }
+
+                var result = new string[Count];
+                var strings = (GodotStringHandle*)Ptr;
+                for (int i = 0; i < Count; i++)
+                {
+                    result[i] = strings[i].TakeString() ?? "";
+                }
+                return result;
+            }
+            finally
+            {
+                Dispose();
+            }
+        }
+
         public void Dispose()
         {
             if (Ptr != IntPtr.Zero)
@@ -136,6 +159,9 @@ internal static partial class NativeBridge
         public byte android_enable_anr_detection;
         public int android_anr_timeout_interval_ms;
         public byte android_attach_anr_thread_dump;
+        public GodotStringHandle org_id;
+        public NativeArray trace_propagation_targets;
+        public byte propagate_traceparent;
     }
 
     // Must match layout of ManagedOptions in csharp_interop.cpp.
@@ -174,6 +200,10 @@ internal static partial class NativeBridge
         public byte android_enable_anr_detection;
         public int android_anr_timeout_interval_ms;
         public byte android_attach_anr_thread_dump;
+        public char* org_id;
+        public int org_id_len;
+        public ManagedStringList trace_propagation_targets;
+        public byte propagate_traceparent;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -193,6 +223,17 @@ internal static partial class NativeBridge
         public char* Buffer;
         public int* Lengths;
         public int PairCount;
+    }
+
+    // Managed-owned string list for passing string arrays across P/Invoke.
+    // Buffer layout: all strings concatenated as UTF-16, with one length per entry.
+    // Must match layout of ManagedStringList in csharp_interop.cpp.
+    [StructLayout(LayoutKind.Sequential)]
+    private unsafe struct ManagedStringList
+    {
+        public char* Buffer;
+        public int* Lengths;
+        public int Count;
     }
 
     private delegate void ManagedStringMapAction(ManagedStringMap map);
@@ -249,6 +290,28 @@ internal static partial class NativeBridge
             };
             nativeFunc(map);
         }
+    }
+
+    private static (char[] Buffer, int[] Lengths) MarshallStringList<T>(IList<T> values)
+    {
+        int totalChars = 0;
+        for (int i = 0; i < values.Count; i++)
+        {
+            totalChars += values[i]?.ToString()?.Length ?? 0;
+        }
+
+        var lengths = new int[values.Count];
+        var buffer = new char[Math.Max(totalChars, 1)];
+
+        int position = 0;
+        for (int i = 0; i < values.Count; i++)
+        {
+            string value = values[i]?.ToString() ?? "";
+            lengths[i] = value.Length;
+            value.CopyTo(0, buffer, position, value.Length);
+            position += value.Length;
+        }
+        return (buffer, lengths);
     }
 
     // Must match ManagedFunctions struct in csharp_interop.cpp
@@ -554,6 +617,13 @@ internal static partial class NativeBridge
         opts.Android.EnableAnrDetection = data.android_enable_anr_detection != 0;
         opts.Android.AnrTimeoutInterval = TimeSpan.FromMilliseconds(data.android_anr_timeout_interval_ms);
         opts.Android.AttachAnrThreadDump = data.android_attach_anr_thread_dump != 0;
+        opts.OrgId = data.org_id.TakeString();
+        opts.TracePropagationTargets.Clear();
+        foreach (string target in data.trace_propagation_targets.TakeStrings())
+        {
+            opts.TracePropagationTargets.Add(target);
+        }
+        opts.PropagateTraceparent = data.propagate_traceparent != 0;
     }
 
     public static void ApplyNativeOptions(SentryGodotOptions opts)
@@ -807,11 +877,17 @@ internal static partial class NativeBridge
         var release = opts.Release ?? "";
         var dist = opts.Distribution ?? "";
         var env = opts.Environment ?? "";
+        var orgId = opts.OrgId ?? "";
+        var (tracePropagationTargetsBuffer, tracePropagationTargetsLengths) =
+                MarshallStringList(opts.TracePropagationTargets);
 
         fixed (char* dsnPtr = dsn)
         fixed (char* relPtr = release)
         fixed (char* distPtr = dist)
         fixed (char* envPtr = env)
+        fixed (char* orgIdPtr = orgId)
+        fixed (char* tracePropagationTargetsPtr = tracePropagationTargetsBuffer)
+        fixed (int* tracePropagationTargetLengthsPtr = tracePropagationTargetsLengths)
         {
             var managed = new ManagedOptions
             {
@@ -853,6 +929,15 @@ internal static partial class NativeBridge
                 android_enable_anr_detection = (byte)(opts.Android.EnableAnrDetection ? 1 : 0),
                 android_anr_timeout_interval_ms = (int)opts.Android.AnrTimeoutInterval.TotalMilliseconds,
                 android_attach_anr_thread_dump = (byte)(opts.Android.AttachAnrThreadDump ? 1 : 0),
+                org_id = orgIdPtr,
+                org_id_len = orgId.Length,
+                trace_propagation_targets = new ManagedStringList
+                {
+                    Buffer = tracePropagationTargetsPtr,
+                    Lengths = tracePropagationTargetLengthsPtr,
+                    Count = tracePropagationTargetsLengths.Length,
+                },
+                propagate_traceparent = (byte)(opts.PropagateTraceparent ? 1 : 0),
             };
             csharp_interop_sdk_init(managed);
         }
