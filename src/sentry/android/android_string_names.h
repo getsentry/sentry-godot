@@ -127,6 +127,7 @@ public:
 	StringName spanSetAttributeString;
 	StringName spanSetStatus;
 	StringName spanEnd;
+	StringName spanGetTraceHeaders;
 
 	// Logs.
 	StringName releaseLog;

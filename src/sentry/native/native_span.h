@@ -28,6 +28,8 @@ public:
 
 	virtual void end() override;
 
+	virtual PackedStringArray get_trace_headers() override;
+
 	void bind_to_scope(sentry_scope_t *p_scope);
 
 	virtual ~NativeSpan() override;

@@ -14,6 +14,17 @@
 
 namespace {
 
+bool _is_propagation_target(const String &p_url) {
+	const String url = p_url.to_lower();
+	const PackedStringArray targets = SENTRY_OPTIONS()->get_trace_propagation_targets();
+	for (const String &target : targets) {
+		if (target == ".*" || url.contains(target.to_lower())) {
+			return true;
+		}
+	}
+	return false;
+}
+
 Ref<sentry::SentrySpan> _unassigned_sentinel;
 
 void _release_unassigned_sentinel() {
@@ -67,6 +78,15 @@ void SentrySpan::set_status(SpanStatus p_status) {
 	_impl->set_status(p_status);
 }
 
+PackedStringArray SentrySpan::get_trace_headers(const String &p_url) {
+	ERR_SENTRY_THREAD_GUARD_V(PackedStringArray(), WRONG_THREAD_MSG);
+	ERR_FAIL_COND_V_MSG(_ended, PackedStringArray(), "Sentry: Can't read trace headers from a span that has ended.");
+	if (!p_url.is_empty() && !_is_propagation_target(p_url)) {
+		return PackedStringArray();
+	}
+	return _impl->get_trace_headers();
+}
+
 void SentrySpan::end() {
 	ERR_SENTRY_THREAD_GUARD(WRONG_THREAD_MSG);
 	if (_ended) {
@@ -117,6 +137,7 @@ void SentrySpan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_attribute", "key", "value"), &SentrySpan::set_attribute);
 	ClassDB::bind_method(D_METHOD("set_attributes", "attributes"), &SentrySpan::set_attributes);
 	ClassDB::bind_method(D_METHOD("set_status", "status"), &SentrySpan::set_status);
+	ClassDB::bind_method(D_METHOD("get_trace_headers", "url"), &SentrySpan::get_trace_headers, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("end"), &SentrySpan::end);
 
 	BIND_ENUM_CONSTANT(SPAN_STATUS_OK);

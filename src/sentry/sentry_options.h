@@ -120,6 +120,9 @@ private:
 	double sample_rate = 1.0;
 	double traces_sample_rate = 0.0;
 	TraceLifecycle trace_lifecycle = TRACE_LIFECYCLE_STATIC;
+	PackedStringArray trace_propagation_targets = { ".*" };
+	bool propagate_traceparent = false;
+	String org_id = "";
 	int max_breadcrumbs = 100;
 	int shutdown_timeout_ms = 2000;
 	bool send_default_pii = false;
@@ -194,6 +197,15 @@ public:
 
 	_FORCE_INLINE_ TraceLifecycle get_trace_lifecycle() const { return trace_lifecycle; }
 	_FORCE_INLINE_ void set_trace_lifecycle(TraceLifecycle p_trace_lifecycle) { trace_lifecycle = p_trace_lifecycle; }
+
+	_FORCE_INLINE_ PackedStringArray get_trace_propagation_targets() const { return trace_propagation_targets; }
+	_FORCE_INLINE_ void set_trace_propagation_targets(const PackedStringArray &p_targets) { trace_propagation_targets = p_targets; }
+
+	_FORCE_INLINE_ bool is_propagate_traceparent_enabled() const { return propagate_traceparent; }
+	_FORCE_INLINE_ void set_propagate_traceparent(bool p_enabled) { propagate_traceparent = p_enabled; }
+
+	_FORCE_INLINE_ String get_org_id() const { return org_id; }
+	_FORCE_INLINE_ void set_org_id(const String &p_org_id) { org_id = p_org_id; }
 
 	_FORCE_INLINE_ int get_max_breadcrumbs() const { return max_breadcrumbs; }
 	_FORCE_INLINE_ void set_max_breadcrumbs(int p_max_breadcrumbs) { max_breadcrumbs = p_max_breadcrumbs; }

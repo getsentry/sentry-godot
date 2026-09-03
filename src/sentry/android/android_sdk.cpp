@@ -403,6 +403,8 @@ void AndroidSDK::init() {
 	optionsData["environment"] = SENTRY_OPTIONS()->get_environment();
 	optionsData["sample_rate"] = SENTRY_OPTIONS()->get_sample_rate();
 	optionsData["traces_sample_rate"] = SENTRY_OPTIONS()->get_traces_sample_rate();
+	optionsData["propagate_traceparent"] = SENTRY_OPTIONS()->is_propagate_traceparent_enabled();
+	optionsData["org_id"] = SENTRY_OPTIONS()->get_org_id();
 	optionsData["max_breadcrumbs"] = SENTRY_OPTIONS()->get_max_breadcrumbs();
 	optionsData["enable_anr_detection"] = SENTRY_OPTIONS()->get_android()->get_enable_anr_detection();
 	optionsData["anr_timeout_interval_ms"] = SENTRY_OPTIONS()->get_android()->get_anr_timeout_interval_ms();

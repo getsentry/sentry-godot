@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
-import { _INTERNAL_setSpanForScope, generateSpanId } from "@sentry/core";
+import { _INTERNAL_setSpanForScope, generateSpanId, getTraceData } from "@sentry/core";
 import type { Attachment, Metric } from "@sentry/core";
 import { wasmIntegration } from "@sentry/wasm";
 
@@ -157,6 +157,8 @@ class SentryBridge {
     sampleRate: number,
     tracesSampleRate: number,
     traceLifecycle: TraceLifecycle,
+    propagateTraceparent: boolean,
+    orgId: string,
     maxBreadcrumbs: number,
     sendDefaultPii: boolean,
     sdkVersion: string,
@@ -174,6 +176,8 @@ class SentryBridge {
       sampleRate,
       tracesSampleRate,
       traceLifecycle: traceLifecycle === TraceLifecycle.Stream ? "stream" : "static",
+      propagateTraceparent,
+      ...(orgId && { orgId }),
       maxBreadcrumbs,
       sendDefaultPii,
       _metadata: {
@@ -451,6 +455,14 @@ class SentryBridge {
 
   public spanSetStatus(span: Sentry.Span, status: number): void {
     span.setStatus({ code: status === SPAN_STATUS_ERROR ? OTEL_CODE_ERROR : OTEL_CODE_OK });
+  }
+
+  public spanGetTraceHeaders(span: Sentry.Span): string {
+    const propagateTraceparent = Sentry.getClient()?.getOptions().propagateTraceparent;
+    const data = getTraceData({ span, propagateTraceparent });
+    return Object.entries(data)
+      .map(([name, value]) => `${name}: ${value}`)
+      .join("\n");
   }
 
   public logTrace(message: string, attributesJson?: string, scope?: Sentry.Scope): void {

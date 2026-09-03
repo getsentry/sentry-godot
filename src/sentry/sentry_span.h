@@ -51,6 +51,8 @@ public:
 
 	void set_status(SpanStatus p_status);
 
+	PackedStringArray get_trace_headers(const String &p_url);
+
 	void end();
 
 	// *** Not exposed in the public API

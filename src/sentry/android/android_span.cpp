@@ -63,6 +63,10 @@ void AndroidSpan::end() {
 	_android_plugin->call(ANDROID_SN(spanEnd), _handle);
 }
 
+PackedStringArray AndroidSpan::get_trace_headers() {
+	return _android_plugin->call(ANDROID_SN(spanGetTraceHeaders), _handle);
+}
+
 void AndroidSpan::_apply_attributes(const Dictionary &p_attributes) {
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
