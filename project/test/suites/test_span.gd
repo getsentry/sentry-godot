@@ -378,3 +378,72 @@ func test_with_span_inside_a_started_span_nests_under_it() -> void:
 		.at("/contexts/trace/span_id") \
 		.is_equal(_span_id(json_in_parent)) \
 		.verify()
+
+
+func _header_value(headers: PackedStringArray, name: String) -> String:
+	for line in headers:
+		if line.begins_with(name + ": "):
+			return line.substr(name.length() + 2)
+	return ""
+
+
+func test_trace_headers_carry_the_spans_own_ids() -> void:
+	var span := SentrySDK.start_span("test.headers")
+	var headers := span.get_trace_headers()
+	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	span.end()
+
+	assert_str(_header_value(headers, "sentry-trace")) \
+		.override_failure_message("sentry-trace should carry the trace id and span id of the span it was read from") \
+		.starts_with("%s-%s" % [_trace_id(json), _span_id(json)])
+
+	assert_str(_header_value(headers, "baggage")) \
+		.override_failure_message("baggage should stay on the span's trace") \
+		.contains("sentry-trace_id=%s" % _trace_id(json))
+
+
+func test_child_span_headers_carry_its_own_span_id() -> void:
+	var parent := SentrySDK.start_span("test.headers_parent")
+	var child := SentrySDK.start_span("test.headers_child")
+	var parent_trace := _header_value(parent.get_trace_headers(), "sentry-trace").split("-")
+	var child_trace := _header_value(child.get_trace_headers(), "sentry-trace").split("-")
+	child.end()
+	parent.end()
+
+	assert_str(child_trace[0]) \
+		.override_failure_message("a child span should report the trace of its parent") \
+		.is_equal(parent_trace[0])
+
+	assert_str(child_trace[1]) \
+		.override_failure_message("a child span should report its own span id, not its parent's") \
+		.is_not_equal(parent_trace[1])
+
+
+func test_trace_headers_omit_traceparent_by_default() -> void:
+	var span := SentrySDK.start_span("test.headers_no_traceparent")
+	var headers := span.get_trace_headers()
+	span.end()
+
+	assert_str(_header_value(headers, "traceparent")) \
+		.override_failure_message("propagate_traceparent defaults to false, so the W3C header should be absent") \
+		.is_empty()
+
+
+func test_default_propagation_targets_match_every_url() -> void:
+	var span := SentrySDK.start_span("test.headers_default_targets")
+	var for_url := span.get_trace_headers("https://third-party.example.org/ads")
+	var unfiltered := span.get_trace_headers()
+	span.end()
+
+	assert_array(for_url) \
+		.override_failure_message("the default \".*\" target should let every URL through")	\
+		.is_equal(unfiltered)
+
+
+func test_ended_span_yields_no_trace_headers() -> void:
+	var span := SentrySDK.start_span("test.headers_ended")
+	span.end()
+
+	assert_array(span.get_trace_headers()) \
+		.override_failure_message("an ended span has nothing left to propagate") \
+		.is_empty()
