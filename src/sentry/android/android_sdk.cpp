@@ -403,6 +403,7 @@ void AndroidSDK::init() {
 	optionsData["environment"] = SENTRY_OPTIONS()->get_environment();
 	optionsData["sample_rate"] = SENTRY_OPTIONS()->get_sample_rate();
 	optionsData["traces_sample_rate"] = SENTRY_OPTIONS()->get_traces_sample_rate();
+	optionsData["trace_propagation_targets"] = SENTRY_OPTIONS()->get_trace_propagation_targets();
 	optionsData["propagate_traceparent"] = SENTRY_OPTIONS()->is_propagate_traceparent_enabled();
 	optionsData["org_id"] = SENTRY_OPTIONS()->get_org_id();
 	optionsData["max_breadcrumbs"] = SENTRY_OPTIONS()->get_max_breadcrumbs();

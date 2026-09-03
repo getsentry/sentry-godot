@@ -288,6 +288,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val environment = optionsData["environment"] as String
             val sampleRate = optionsData["sample_rate"].toDoubleOrThrow()
             val tracesSampleRate = optionsData["traces_sample_rate"].toDoubleOrThrow()
+            val tracePropagationTargets = (optionsData["trace_propagation_targets"] as Array<*>).map { it as String }
             val propagateTraceparent = optionsData["propagate_traceparent"] as Boolean
             val orgId = optionsData["org_id"] as String
             val maxBreadcrumbs = optionsData["max_breadcrumbs"].toIntOrThrow()
@@ -304,6 +305,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.environment = environment.ifEmpty { null }
                 options.sampleRate = sampleRate
                 options.tracesSampleRate = tracesSampleRate
+                options.setTracePropagationTargets(tracePropagationTargets)
                 options.isPropagateTraceparent = propagateTraceparent
                 options.orgId = orgId.ifEmpty { null }
                 options.maxBreadcrumbs = maxBreadcrumbs
