@@ -52,6 +52,7 @@ TEST_SUITE("[.NET] Options interop") {
 		// in DotnetTestHarness.cs, keyed by the last segment of the property path.
 		// The two value columns must differ from each other, and "from native" must differ from the
 		// option's C# default, or the managed side reports a value that never crossed and the row passes.
+		using Strings = PackedStringArray;
 		const LocalVector<OptionCase> cases = {
 			// clang-format off
 			// project setting                                                 property                                        from native                     from managed
@@ -63,6 +64,9 @@ TEST_SUITE("[.NET] Options interop") {
 			{ "sentry/options/diagnostic_level",                               "diagnostic_level",                             LEVEL_WARNING,                  LEVEL_ERROR },
 			{ "sentry/options/sample_rate",                                    "sample_rate",                                  0.5,                            0.75 },
 			{ "sentry/options/traces_sample_rate",                             "traces_sample_rate",                           0.6,                            0.8 },
+			{ "sentry/options/trace_propagation_targets",                      "trace_propagation_targets",                    Strings({ "aaa", "bbb" }),      Strings({ "ccc", "ddd" }) },
+			{ "sentry/options/propagate_traceparent",                          "propagate_traceparent",                        true,                           false },
+			{ "sentry/options/org_id",                                         "org_id",                                       "111",                          "222" },
 			{ "sentry/options/max_breadcrumbs",                                "max_breadcrumbs",                              11,                             22 },
 			{ "sentry/options/shutdown_timeout_ms",                            "shutdown_timeout_ms",                          1100,                           2200 },
 			{ "sentry/options/send_default_pii",                               "send_default_pii",                             true,                           false },
@@ -98,8 +102,6 @@ TEST_SUITE("[.NET] Options interop") {
 			const HashSet<String> not_crossed = {
 				// Only affects the JavaScript SDK on Web.
 				"trace_lifecycle",
-				// Trace propagation options, not mirrored to the managed layer yet (follow-up needed).
-				"trace_propagation_targets", "propagate_traceparent", "org_id",
 				// Deprecated no-ops.
 				"enable_logs", "enable_metrics",
 				// Deprecated aliases for the properties above.
