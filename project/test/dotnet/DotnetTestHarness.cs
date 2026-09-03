@@ -72,6 +72,14 @@ public partial class DotnetTestHarness : RefCounted
             _receivedOptions["diagnostic_level"] = (int)options.DiagnosticLevel;
             _receivedOptions["sample_rate"] = options.SampleRate ?? -1.0f;
             _receivedOptions["traces_sample_rate"] = options.TracesSampleRate ?? -1.0;
+            var tracePropagationTargets = new string[options.TracePropagationTargets.Count];
+            for (int i = 0; i < tracePropagationTargets.Length; i++)
+            {
+                tracePropagationTargets[i] = options.TracePropagationTargets[i].ToString();
+            }
+            _receivedOptions["trace_propagation_targets"] = tracePropagationTargets;
+            _receivedOptions["propagate_traceparent"] = options.PropagateTraceparent;
+            _receivedOptions["org_id"] = options.OrgId;
             _receivedOptions["max_breadcrumbs"] = options.MaxBreadcrumbs;
             _receivedOptions["shutdown_timeout_ms"] = (int)options.ShutdownTimeout.TotalMilliseconds;
             _receivedOptions["send_default_pii"] = options.SendDefaultPii;
@@ -105,6 +113,11 @@ public partial class DotnetTestHarness : RefCounted
             options.DiagnosticLevel = SentryLevel.Error;
             options.SampleRate = 0.75f;
             options.TracesSampleRate = 0.8;
+            options.TracePropagationTargets.Clear();
+            options.TracePropagationTargets.Add("ccc");
+            options.TracePropagationTargets.Add("ddd");
+            options.PropagateTraceparent = false;
+            options.OrgId = "222";
             options.MaxBreadcrumbs = 22;
             options.ShutdownTimeout = TimeSpan.FromMilliseconds(2200);
             options.SendDefaultPii = false;
