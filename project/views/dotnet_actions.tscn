@@ -42,6 +42,10 @@ text = "Nested finally"
 layout_mode = 2
 text = "Replaced then rethrown"
 
+[node name="TriggerAppHang" type="Button" parent="."]
+layout_mode = 2
+text = "App Hang!"
+
 [connection signal="pressed" from="TriggerException" to="." method="TriggerException"]
 [connection signal="pressed" from="TriggerThreadException" to="." method="TriggerThreadException"]
 [connection signal="pressed" from="TriggerUserHandled" to="." method="TriggerUserHandled"]
@@ -49,3 +53,4 @@ text = "Replaced then rethrown"
 [connection signal="pressed" from="TriggerWrappedRethrow" to="." method="TriggerWrappedRethrow"]
 [connection signal="pressed" from="TriggerNestedFinally" to="." method="TriggerNestedFinally"]
 [connection signal="pressed" from="TriggerReplacedThenRethrown" to="." method="TriggerReplacedThenRethrown"]
+[connection signal="pressed" from="TriggerAppHang" to="." method="TriggerAppHang"]
