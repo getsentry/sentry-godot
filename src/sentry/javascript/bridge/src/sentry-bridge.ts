@@ -157,6 +157,7 @@ class SentryBridge {
     sampleRate: number,
     tracesSampleRate: number,
     traceLifecycle: TraceLifecycle,
+    tracePropagationTargetsJson: string,
     propagateTraceparent: boolean,
     orgId: string,
     maxBreadcrumbs: number,
@@ -176,6 +177,9 @@ class SentryBridge {
       sampleRate,
       tracesSampleRate,
       traceLifecycle: traceLifecycle === TraceLifecycle.Stream ? "stream" : "static",
+      tracePropagationTargets: safeParseJSON<string[]>(tracePropagationTargetsJson, []).map((target) =>
+        target === ".*" ? /.*/ : target,
+      ),
       propagateTraceparent,
       ...(orgId && { orgId }),
       maxBreadcrumbs,

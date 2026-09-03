@@ -367,6 +367,7 @@ void JavaScriptSDK::init() {
 			SENTRY_OPTIONS()->get_sample_rate(),
 			SENTRY_OPTIONS()->get_traces_sample_rate(),
 			(int)SENTRY_OPTIONS()->get_trace_lifecycle(),
+			JSON::stringify(SENTRY_OPTIONS()->get_trace_propagation_targets()).utf8(),
 			SENTRY_OPTIONS()->is_propagate_traceparent_enabled(),
 			SENTRY_OPTIONS()->get_org_id().utf8(),
 			SENTRY_OPTIONS()->get_max_breadcrumbs(),

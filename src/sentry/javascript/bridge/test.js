@@ -133,14 +133,18 @@ try {
 		const beforeSendFeedback = (event) => {
 			feedbackEvents.push(event);
 		};
-		const initBridge = (traceLifecycle, propagateTraceparent = false, orgId = "") => {
+		const initBridge = (traceLifecycle, propagateTraceparent = false, orgId = "", tracePropagationTargets = [ ".*" ]) => {
 			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false,
-					"1.0.0", "1", "production", 1.0, 1.0, traceLifecycle, propagateTraceparent, orgId, 100, false,
+					"1.0.0", "1", "production", 1.0, 1.0, traceLifecycle, JSON.stringify(tracePropagationTargets),
+					propagateTraceparent, orgId, 100, false,
 					"0.1.0");
 		};
 
 		runTest("init()", () => {
 			initBridge(bridge.TraceLifecycle.Stream);
+			const targets = bridge.createScope().getClient().getOptions().tracePropagationTargets;
+			assert(targets[0] instanceof RegExp, '".*" should become a regular expression');
+			assertEqual(targets[0].source, ".*", '".*" should match every URL');
 		});
 
 		// Observes what actually goes out with an event. The bridge registers its own handler during
