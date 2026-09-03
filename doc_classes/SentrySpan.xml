@@ -32,6 +32,23 @@
 				[b]Note:[/b] End every child span before its root span. If the root ends first, the SDK may drop an unfinished child, give it the root's end time, or send it after the child ends, depending on the platform.
 			</description>
 		</method>
+		<method name="get_trace_headers">
+			<return type="PackedStringArray" />
+			<param index="0" name="url" type="String" default="&quot;&quot;" />
+			<description>
+				Returns this span's distributed tracing headers as [code]Name: Value[/code] strings, in the format [method HTTPRequest.request], [method HTTPClient.request], and [member WebSocketPeer.handshake_headers] accept. Attach them to a request made while this span is open so the service that receives it can continue the same trace.
+				The array holds the [code]sentry-trace[/code] and [code]baggage[/code] lines, plus [code]traceparent[/code] when [member SentryOptions.propagate_traceparent] is enabled. Pass the whole array to the request. Its length depends on the configuration, so treat neither the count nor the order of the lines as fixed.
+				When [param url] is given, the SDK returns an empty array unless the URL matches [member SentryOptions.trace_propagation_targets]. Omitting [param url] skips that check and returns the headers unconditionally.
+				[codeblock]
+				var span := SentrySDK.start_span("fetch_scores")
+				var request := HTTPRequest.new()
+				add_child(request)
+				request.request(url, span.get_trace_headers(url))
+				[/codeblock]
+				[b]Note:[/b] Call this method from the thread that started the span. From any other thread, it prints an error and returns an empty array, leaving the request untraced.
+				[b]Note:[/b] The [code]sentry-trace[/code] header carries the sampling decision of the span. While [member SentryOptions.traces_sample_rate] is at its default of [code]0.0[/code], the span is not sent, and the headers tell the receiving service to leave the trace unsampled as well.
+			</description>
+		</method>
 		<method name="set_attribute">
 			<return type="void" />
 			<param index="0" name="key" type="String" />
