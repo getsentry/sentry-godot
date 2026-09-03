@@ -394,6 +394,8 @@ void CocoaSDK::init() {
 		options.maxBreadcrumbs = (NSUInteger)SENTRY_OPTIONS()->get_max_breadcrumbs();
 		options.sendDefaultPii = SENTRY_OPTIONS()->is_send_default_pii_enabled();
 		options.diagnosticLevel = sentry_level_to_objc(SENTRY_OPTIONS()->get_diagnostic_level());
+		options.orgId = string_to_objc_or_nil_if_empty(SENTRY_OPTIONS()->get_org_id());
+		options.enablePropagateTraceparent = SENTRY_OPTIONS()->is_propagate_traceparent_enabled();
 		options.tracePropagationTargets = _trace_propagation_targets_to_objc(
 				SENTRY_OPTIONS()->get_trace_propagation_targets());
 
