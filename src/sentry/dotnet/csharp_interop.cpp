@@ -53,6 +53,34 @@ CSHARP_EXPORT void csharp_interop_string_free(void *p_handle) {
 	}
 }
 
+// Generic array handle for returning native-allocated arrays across the interop boundary.
+// C# casts "ptr" to the concrete element type and must free it via csharp_interop_free_array().
+struct NativeArray {
+	void *ptr;
+	int32_t count;
+};
+
+CSHARP_EXPORT void csharp_interop_free_array(void *p_array) {
+	if (p_array) {
+		// Equivalent to memdelete_arr() for trivially-destructible types.
+		// memdelete_arr() can't be used directly here because the call site only has a void*.
+		Memory::free_static(p_array, true);
+	}
+}
+
+static NativeArray _make_string_array(const PackedStringArray &p_strings) {
+	NativeArray result = {};
+	result.count = p_strings.size();
+	if (result.count > 0) {
+		GodotStringHandle *items = memnew_arr(GodotStringHandle, result.count);
+		for (int32_t i = 0; i < result.count; i++) {
+			items[i] = _make_handle(p_strings[i]);
+		}
+		result.ptr = items;
+	}
+	return result;
+}
+
 // Managed-owned string map for passing Dictionary<string, string> across P/Invoke.
 // C# builds and pins this; native reads it synchronously during the call.
 // Buffer layout: key1+val1+key2+val2... concatenated as UTF-16.
@@ -80,6 +108,30 @@ static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map)
 		dict[key] = val;
 	}
 	return dict;
+}
+
+// Managed-owned string list for passing string arrays across P/Invoke.
+// C# builds and pins this; native reads it synchronously during the call.
+// Buffer layout: all strings concatenated as UTF-16, with one length per entry.
+struct ManagedStringList {
+	const char16_t *buffer;
+	const int32_t *lengths;
+	int32_t count;
+};
+
+static PackedStringArray _managed_string_list_to_packed_array(const ManagedStringList &list) {
+	PackedStringArray result;
+	if (list.count <= 0 || list.buffer == nullptr || list.lengths == nullptr) {
+		return result;
+	}
+	const char16_t *ptr = list.buffer;
+	result.resize(list.count);
+	for (int32_t i = 0; i < list.count; i++) {
+		const int32_t length = list.lengths[i];
+		result[i] = String::utf16(ptr, length);
+		ptr += length;
+	}
+	return result;
 }
 
 // Managed functions that are called from native layer.
@@ -164,22 +216,12 @@ struct NativeOptions {
 	uint8_t android_enable_anr_detection;
 	int32_t android_anr_timeout_interval_ms;
 	uint8_t android_attach_anr_thread_dump;
-};
 
-// Generic array handle for returning native-allocated arrays across the interop boundary.
-// C# casts "ptr" to the concrete element type and must free it via csharp_interop_free_array().
-struct NativeArray {
-	void *ptr;
-	int32_t count;
+	// Trace propagation
+	GodotStringHandle org_id;
+	NativeArray trace_propagation_targets;
+	uint8_t propagate_traceparent;
 };
-
-CSHARP_EXPORT void csharp_interop_free_array(void *p_array) {
-	if (p_array) {
-		// Equivalent to memdelete_arr() for trivially-destructible types.
-		// memdelete_arr() can't be used directly here because the call site only has a void*.
-		Memory::free_static(p_array, true);
-	}
-}
 
 // Managed-owned options for passing C# options to native.
 // C# pins strings; native reads synchronously. No free needed.
@@ -224,6 +266,12 @@ struct ManagedOptions {
 	uint8_t android_enable_anr_detection;
 	int32_t android_anr_timeout_interval_ms;
 	uint8_t android_attach_anr_thread_dump;
+
+	// Trace propagation
+	const char16_t *org_id;
+	int32_t org_id_len;
+	ManagedStringList trace_propagation_targets;
+	uint8_t propagate_traceparent;
 };
 
 struct NativeTraceContext {
@@ -264,6 +312,9 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->get_android()->set_enable_anr_detection(data.android_enable_anr_detection);
 	options->get_android()->set_anr_timeout_interval_ms(data.android_anr_timeout_interval_ms);
 	options->get_android()->set_attach_anr_thread_dump(data.android_attach_anr_thread_dump);
+	options->set_org_id(String::utf16(data.org_id, data.org_id_len));
+	options->set_trace_propagation_targets(_managed_string_list_to_packed_array(data.trace_propagation_targets));
+	options->set_propagate_traceparent(data.propagate_traceparent);
 }
 
 void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &options) {
@@ -301,6 +352,9 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.android_enable_anr_detection = options->get_android()->get_enable_anr_detection();
 	r_data.android_anr_timeout_interval_ms = options->get_android()->get_anr_timeout_interval_ms();
 	r_data.android_attach_anr_thread_dump = options->get_android()->get_attach_anr_thread_dump();
+	r_data.org_id = _make_handle(options->get_org_id());
+	r_data.trace_propagation_targets = _make_string_array(options->get_trace_propagation_targets());
+	r_data.propagate_traceparent = options->is_propagate_traceparent_enabled();
 }
 
 // *** Functions called from C#
