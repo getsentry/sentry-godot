@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
-import { _INTERNAL_setSpanForScope, generateSpanId } from "@sentry/core";
+import { _INTERNAL_setSpanForScope, generateSpanId, getTraceData } from "@sentry/core";
 import type { Attachment, Metric } from "@sentry/core";
 import { wasmIntegration } from "@sentry/wasm";
 
@@ -56,6 +56,11 @@ interface AttachmentRequest {
   data?: Uint8Array;
 }
 
+interface TracePropagationTarget {
+  pattern: string;
+  is_regex: boolean;
+}
+
 // *** Utility Functions
 
 function safeParseJSON<T = any>(json: string, fallback: T): T {
@@ -69,6 +74,23 @@ function safeParseJSON<T = any>(json: string, fallback: T): T {
     console.error("Failed to parse JSON:", error);
     return fallback;
   }
+}
+
+function deserializeTracePropagationTargets(json: string): (string | RegExp)[] {
+  const targets: (string | RegExp)[] = [];
+  for (const target of safeParseJSON<TracePropagationTarget[]>(json, [])) {
+    if (!target.is_regex && target.pattern !== ".*") {
+      targets.push(target.pattern);
+      continue;
+    }
+
+    try {
+      targets.push(new RegExp(target.pattern));
+    } catch (error) {
+      console.error("Failed to compile trace propagation target:", error);
+    }
+  }
+  return targets;
 }
 
 function makeAttachment(filename: string, bytes: Uint8Array, contentType: string, attachmentType: string): Attachment {
@@ -157,6 +179,9 @@ class SentryBridge {
     sampleRate: number,
     tracesSampleRate: number,
     traceLifecycle: TraceLifecycle,
+    tracePropagationTargetsJson: string,
+    propagateTraceparent: boolean,
+    orgId: string,
     maxBreadcrumbs: number,
     sendDefaultPii: boolean,
     sdkVersion: string,
@@ -174,6 +199,9 @@ class SentryBridge {
       sampleRate,
       tracesSampleRate,
       traceLifecycle: traceLifecycle === TraceLifecycle.Stream ? "stream" : "static",
+      tracePropagationTargets: deserializeTracePropagationTargets(tracePropagationTargetsJson),
+      propagateTraceparent,
+      ...(orgId && { orgId }),
       maxBreadcrumbs,
       sendDefaultPii,
       _metadata: {
@@ -451,6 +479,14 @@ class SentryBridge {
 
   public spanSetStatus(span: Sentry.Span, status: number): void {
     span.setStatus({ code: status === SPAN_STATUS_ERROR ? OTEL_CODE_ERROR : OTEL_CODE_OK });
+  }
+
+  public spanGetTraceHeaders(span: Sentry.Span): string {
+    const propagateTraceparent = Sentry.getClient()?.getOptions().propagateTraceparent;
+    const data = getTraceData({ span, propagateTraceparent });
+    return Object.entries(data)
+      .map(([name, value]) => `${name}: ${value}`)
+      .join("\n");
   }
 
   public logTrace(message: string, attributesJson?: string, scope?: Sentry.Scope): void {

@@ -69,6 +69,7 @@ try {
 			"scopeSetSpan",
 			"startSpan",
 			"spanSetStatus",
+			"spanGetTraceHeaders",
 			"logTrace",
 			"logDebug",
 			"logInfo",
@@ -132,13 +133,29 @@ try {
 		const beforeSendFeedback = (event) => {
 			feedbackEvents.push(event);
 		};
-		const initBridge = (traceLifecycle) => {
+		const initBridge = (traceLifecycle, propagateTraceparent = false, orgId = "", tracePropagationTargets = [ { pattern : ".*", is_regex : false } ]) => {
 			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false,
-					"1.0.0", "1", "production", 1.0, 1.0, traceLifecycle, 100, false, "0.1.0");
+					"1.0.0", "1", "production", 1.0, 1.0, traceLifecycle, JSON.stringify(tracePropagationTargets),
+					propagateTraceparent, orgId, 100, false,
+					"0.1.0");
 		};
 
 		runTest("init()", () => {
 			initBridge(bridge.TraceLifecycle.Stream);
+			const targets = bridge.createScope().getClient().getOptions().tracePropagationTargets;
+			assert(targets[0] instanceof RegExp, '".*" should become a regular expression');
+			assertEqual(targets[0].source, ".*", '".*" should match every URL');
+		});
+
+		runTest("init() preserves trace propagation target types", () => {
+			initBridge(bridge.TraceLifecycle.Stream, false, "", [
+				{ pattern : "api\\.example\\.com", is_regex : false },
+				{ pattern : "api\\.example\\.com", is_regex : true },
+			]);
+			const targets = bridge.createScope().getClient().getOptions().tracePropagationTargets;
+			assertEqual(targets[0], "api\\.example\\.com", "string targets should remain literal strings");
+			assert(targets[1] instanceof RegExp, "regular expression targets should become RegExp values");
+			assertEqual(targets[1].source, "api\\.example\\.com", "regular expression patterns should be preserved");
 		});
 
 		// Observes what actually goes out with an event. The bridge registers its own handler during
@@ -424,6 +441,19 @@ try {
 			span.end();
 		});
 
+		runTest("spanGetTraceHeaders()", () => {
+			const span = bridge.startSpan("load-level", "");
+			const headers = bridge.spanGetTraceHeaders(span).split("\n");
+			assertEqual(headers.length, 2, "the default configuration should yield sentry-trace and baggage");
+			assertEqual(headers[0], `sentry-trace: ${span.spanContext().traceId}-${span.spanContext().spanId}-1`,
+					"sentry-trace should carry the span's own ids");
+			assert(headers[1].startsWith(`baggage: sentry-environment=production,`),
+					`baggage should carry the dynamic sampling context, got "${headers[1]}"`);
+			assert(headers[1].includes(`sentry-trace_id=${span.spanContext().traceId}`),
+					"baggage should stay on the span's trace");
+			span.end();
+		});
+
 		runTest("scopeSetSpan()", () => {
 			const scope = bridge.createScope();
 			const span = bridge.startSpan("load-level", "");
@@ -561,6 +591,18 @@ try {
 
 		runTest("removeAttribute()", () => {
 			bridge.removeAttribute("test-attr");
+		});
+
+		runTest("spanGetTraceHeaders() with traceparent enabled", () => {
+			bridge.close(2000);
+			initBridge(bridge.TraceLifecycle.Stream, true, "42");
+			const span = bridge.startSpan("load-level", "");
+			const headers = bridge.spanGetTraceHeaders(span).split("\n");
+			assertEqual(headers.length, 3, "propagateTraceparent should add a third header");
+			assertEqual(headers[2], `traceparent: 00-${span.spanContext().traceId}-${span.spanContext().spanId}-01`,
+					"traceparent should follow the W3C format");
+			assert(headers[1].includes("sentry-org_id=42"), "orgId should reach the baggage header");
+			span.end();
 		});
 
 		runTest("static trace lifecycle", () => {

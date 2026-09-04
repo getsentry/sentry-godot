@@ -98,6 +98,8 @@ TEST_SUITE("[.NET] Options interop") {
 			const HashSet<String> not_crossed = {
 				// Only affects the JavaScript SDK on Web.
 				"trace_lifecycle",
+				// Trace propagation options, not mirrored to the managed layer yet (follow-up needed).
+				"trace_propagation_targets", "propagate_traceparent", "org_id",
 				// Deprecated no-ops.
 				"enable_logs", "enable_metrics",
 				// Deprecated aliases for the properties above.
