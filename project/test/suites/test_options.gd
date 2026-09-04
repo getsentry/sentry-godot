@@ -96,6 +96,11 @@ func test_invalid_trace_propagation_targets_are_filtered_out() -> void:
 	assert_array(options.trace_propagation_targets).contains_exactly(["valid.example.com"])
 
 
+func test_empty_trace_propagation_targets_are_filtered_out() -> void:
+	options.trace_propagation_targets = ["valid.example.com", ""]
+	assert_array(options.trace_propagation_targets).contains_exactly(["valid.example.com"])
+
+
 ## SentryOptions.max_breadcrumbs should be set to the specified value.
 func test_max_breadcrumbs() -> void:
 	options.max_breadcrumbs = 42
