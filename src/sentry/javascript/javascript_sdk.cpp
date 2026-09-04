@@ -331,7 +331,8 @@ SentrySpanImpl *JavaScriptSDK::create_span(const String &p_name, const Dictionar
 }
 
 void JavaScriptSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
-	SENTRY_PRINT_ONCE(sentry::LEVEL_DEBUG, "Setting trace info not implemented on Web platform - skipped.");
+	ERR_FAIL_COND(!js_bridge());
+	js_bridge()->call("setTrace", p_trace_id.utf8(), p_parent_span_id.utf8());
 }
 
 void JavaScriptSDK::init() {

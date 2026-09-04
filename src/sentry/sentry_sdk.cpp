@@ -425,6 +425,10 @@ void SentrySDK::remove_user() {
 	}
 }
 
+void SentrySDK::start_new_trace() {
+	set_trace(sentry::uuid::make_uuid_no_dashes(), String());
+}
+
 void SentrySDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
 	// Cache locally so get_trace_context() stays consistent with the backend.
 	trace_context.trace_id = p_trace_id;
@@ -665,6 +669,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_attachments"), &SentrySDK::clear_attachments);
 	ClassDB::bind_method(D_METHOD("set_attribute", "name", "value"), &SentrySDK::set_attribute);
 	ClassDB::bind_method(D_METHOD("remove_attribute", "name"), &SentrySDK::remove_attribute);
+	ClassDB::bind_method(D_METHOD("start_new_trace"), &SentrySDK::start_new_trace);
 
 	ClassDB::bind_method(D_METHOD("get_current_scope"), &SentrySDK::get_current_scope);
 	ClassDB::bind_method(D_METHOD("with_scope", "callable"), &SentrySDK::with_scope);

@@ -36,7 +36,7 @@ function runTest(name, testFn) {
 try {
 	require("./dist/sentry-bundle.js");
 
-	const { spanToStreamedSpanJSON } = require("@sentry/core");
+	const { spanToStreamedSpanJSON, getCurrentScope, propagationContextFromHeaders } = require("@sentry/core");
 
 	console.log("✅ Bundle loaded successfully\n");
 
@@ -56,6 +56,7 @@ try {
 			"removeTag",
 			"setUser",
 			"removeUser",
+			"setTrace",
 			"eventSetUser",
 			"createScope",
 			"scopeSetContext",
@@ -64,6 +65,7 @@ try {
 			"scopeAddBytesAttachment",
 			"scopeAddFileAttachment",
 			"scopeClear",
+			"scopeClone",
 			"scopeSetSpan",
 			"startSpan",
 			"spanSetStatus",
@@ -173,6 +175,61 @@ try {
 
 		runTest("removeUser()", () => {
 			bridge.removeUser();
+		});
+
+		runTest("setTrace()", () => {
+			// Scopes hold the propagation context by reference, so one made before the call has to move
+			// onto the new trace too, and values have to be read out before the next call changes them.
+			const existing = bridge.createScope();
+
+			bridge.setTrace("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbb");
+			const withParent = bridge.createScope().getPropagationContext();
+			assertEqual(withParent.traceId, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"setTrace should adopt the given trace id");
+			assertEqual(withParent.parentSpanId, "bbbbbbbbbbbbbbbb",
+					"setTrace should adopt the given parent span id");
+			assert(withParent.propagationSpanId !== undefined,
+					"setTrace should mint a span id for captures outside a span");
+			assertEqual(existing.getPropagationContext().traceId, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"setTrace should move a scope that already exists onto the new trace");
+			const firstSpanId = withParent.propagationSpanId;
+
+			bridge.setTrace("cccccccccccccccccccccccccccccccc", "");
+			const noParent = bridge.createScope().getPropagationContext();
+			assertEqual(noParent.traceId, "cccccccccccccccccccccccccccccccc",
+					"setTrace should replace the trace id");
+			assertEqual(noParent.parentSpanId, undefined,
+					"setTrace should leave the parent unset when none is given");
+			assert(noParent.propagationSpanId !== firstSpanId,
+					"setTrace should mint a fresh span id on every call");
+			assertEqual(existing.getPropagationContext().parentSpanId, undefined,
+					"setTrace should clear the parent on a scope that already exists");
+		});
+
+		runTest("setTrace() over a continued trace", () => {
+			getCurrentScope().setPropagationContext(propagationContextFromHeaders(
+					"12345678123456781234567812345678-1234567812345678-1",
+					"sentry-trace_id=12345678123456781234567812345678,sentry-sample_rate=0.5"));
+			const continued = bridge.createScope();
+
+			bridge.setTrace("dddddddddddddddddddddddddddddddd", "");
+			assertEqual(continued.getPropagationContext().traceId, "dddddddddddddddddddddddddddddddd",
+					"setTrace should replace a continued trace");
+			assertEqual(continued.getPropagationContext().dsc, undefined,
+					"setTrace should drop the frozen baggage of the trace it replaces");
+			assertEqual(continued.getPropagationContext().sampled, undefined,
+					"setTrace should drop the sampling decision of the trace it replaces");
+		});
+
+		runTest("scopeClone()", () => {
+			const base = bridge.createScope();
+			const fork = bridge.scopeClone(base);
+
+			bridge.setTrace("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "");
+			assertEqual(fork.getPropagationContext().traceId, "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+					"a forked scope should follow a trace change");
+			assertEqual(fork.getPropagationContext().traceId, base.getPropagationContext().traceId,
+					"a forked scope should stay on the trace of the scope it was forked from");
 		});
 
 		runTest("eventSetUser()", () => {

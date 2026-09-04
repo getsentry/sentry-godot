@@ -366,6 +366,18 @@ class SentryBridge {
     Sentry.setUser(null);
   }
 
+  public setTrace(traceId: string, parentSpanId: string): void {
+    // Scopes share this propagation context by reference via createScope(). Mutate it in place so
+    // all existing scopes move to the new trace; replacing it would strand them on the old trace.
+    const context = Sentry.getCurrentScope().getPropagationContext();
+    context.traceId = traceId;
+    context.parentSpanId = parentSpanId || undefined;
+    context.propagationSpanId = generateSpanId();
+    context.sampleRand = Math.random();
+    context.dsc = undefined;
+    context.sampled = undefined;
+  }
+
   public eventSetUser(event: Sentry.Event, id: string, username: string, email: string, ip: string): void {
     event.user = makeUser(id, username, email, ip);
   }
@@ -414,6 +426,14 @@ class SentryBridge {
     fresh.setClient(scope.getClient() ?? Sentry.getClient());
     fresh.setPropagationContext(scope.getPropagationContext());
     return fresh;
+  }
+
+  public scopeClone(scope: Sentry.Scope): Sentry.Scope {
+    const cloned = scope.clone();
+    // WORKAROUND: clone() copies the propagation context instead of sharing it, which would strand
+    // the fork on the trace it was made with. Re-share it so a forked scope keeps following setTrace().
+    cloned.setPropagationContext(scope.getPropagationContext());
+    return cloned;
   }
 
   public scopeSetSpan(scope: Sentry.Scope, span?: Sentry.Span): void {

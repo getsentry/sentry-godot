@@ -11,6 +11,7 @@ import io.sentry.ISerializer
 import io.sentry.ISpan
 import io.sentry.JsonUnknown
 import io.sentry.NoOpLogger
+import io.sentry.PropagationContext
 import io.sentry.Scope
 import io.sentry.ScopeType
 import io.sentry.Scopes
@@ -26,7 +27,6 @@ import io.sentry.SentryOptions
 import io.sentry.SpanId
 import io.sentry.TransactionContext
 import io.sentry.TransactionOptions
-import io.sentry.android.core.InternalSentrySdk
 import io.sentry.android.core.SentryAndroid
 import io.sentry.logger.ILoggerApi
 import io.sentry.logger.SentryLogParameters
@@ -40,6 +40,7 @@ import io.sentry.protocol.SentryStackFrame
 import io.sentry.protocol.SentryStackTrace
 import io.sentry.protocol.SentryThread
 import io.sentry.protocol.User
+import io.sentry.util.TracingUtils
 import java.io.File
 import java.io.StringWriter
 import kotlin.random.Random
@@ -519,7 +520,16 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun setTrace(traceId: String, parentSpanId: String) {
-        InternalSentrySdk.setTrace(traceId, parentSpanId, null, null)
+        TracingUtils.setTrace(
+            Sentry.getCurrentScopes(),
+            PropagationContext(
+                SentryId(traceId),
+                SpanId(),
+                if (parentSpanId.isEmpty()) null else SpanId(parentSpanId),
+                null,
+                null,
+            ),
+        )
     }
 
     @UsedByGodot

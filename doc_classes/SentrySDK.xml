@@ -199,6 +199,15 @@
 				Assigns user data. See [SentryUser].
 			</description>
 		</method>
+		<method name="start_new_trace">
+			<return type="void" />
+			<description>
+				Starts a new trace with a new trace ID. A trace groups connected events and operations under one trace ID. A new trace begins a separate group in Sentry.
+				Use this to draw a clean trace boundary where one piece of work ends and unrelated work begins. Without it, everything captured in a session shares the trace the SDK starts at initialization.
+				[b]Note:[/b] A span started with [method SentrySDK.start_span] keeps the trace it began on, and so does the telemetry captured while that span is active. The new trace takes effect once that span ends.
+				To learn more, visit [url=https://docs.sentry.io/concepts/key-terms/tracing/]Tracing documentation[/url].
+			</description>
+		</method>
 		<method name="start_span">
 			<return type="SentrySpan" />
 			<param index="0" name="name" type="String" />

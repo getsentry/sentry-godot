@@ -102,7 +102,7 @@ void JavaScriptScope::clear() {
 }
 
 SentryScopeImpl *JavaScriptScope::clone() const {
-	JSObjectPtr cloned_obj = js_obj->call("clone").as_object();
+	JSObjectPtr cloned_obj = js_bridge()->call("scopeClone", js_obj).as_object();
 	ERR_FAIL_COND_V_MSG(!cloned_obj, memnew(DisabledScope), "Sentry: Failed to clone scope object.");
 	return memnew(JavaScriptScope(cloned_obj));
 }
