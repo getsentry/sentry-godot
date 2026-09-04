@@ -264,6 +264,7 @@ internal static partial class NativeBridge
         public delegate* unmanaged[Cdecl]<char*, int, char*, int, char*, int, char*, int, void> set_user;
         public delegate* unmanaged[Cdecl]<void> remove_user;
         public delegate* unmanaged[Cdecl]<IntPtr, byte> process_native_event;
+        public delegate* unmanaged[Cdecl]<char*, int, char*, int, void> set_trace;
     }
 
     [LibraryImport(Lib)]
@@ -303,6 +304,7 @@ internal static partial class NativeBridge
             set_user = &SetUserCallback,
             remove_user = &RemoveUserCallback,
             process_native_event = &ProcessNativeEventCallback,
+            set_trace = &SetTraceCallback,
         });
     }
 
@@ -462,6 +464,27 @@ internal static partial class NativeBridge
         catch (Exception ex)
         {
             GodotLog.Error($"Failed to forward remove_user to Sentry .NET layer: {ex}");
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static unsafe void SetTraceCallback(
+        char* traceId, int traceIdLen,
+        char* parentSpanId, int parentSpanIdLen)
+    {
+        try
+        {
+            using var _ = new GodotScopeObserver.SyncGuard();
+            Sentry.Godot.SentrySdk.ContinueTrace(
+                new SentryTraceHeader(
+                    SentryId.Parse(new string(traceId, 0, traceIdLen)),
+                    parentSpanIdLen > 0 ? SpanId.Parse(new string(parentSpanId, 0, parentSpanIdLen)) : SpanId.Empty,
+                    isSampled: null),
+                baggageHeader: null);
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Failed to forward set_trace to Sentry .NET layer: {ex}");
         }
     }
 

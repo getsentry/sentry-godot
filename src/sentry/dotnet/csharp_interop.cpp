@@ -94,6 +94,7 @@ struct ManagedFunctions {
 	void (*set_user)(const char16_t *id, int32_t id_len, const char16_t *username, int32_t username_len, const char16_t *email, int32_t email_len, const char16_t *ip, int32_t ip_len);
 	void (*remove_user)();
 	uint8_t (*process_native_event)(void *event_handle); // Returns 1 to keep, 0 to discard.
+	void (*set_trace)(const char16_t *trace_id, int32_t trace_id_len, const char16_t *parent_span_id, int32_t parent_span_id_len);
 };
 
 static ManagedFunctions s_managed_funcs = {};
@@ -739,6 +740,16 @@ void set_user(const Ref<SentryUser> &p_user) {
 void remove_user() {
 	if (s_managed_funcs.remove_user) {
 		s_managed_funcs.remove_user();
+	}
+}
+
+void set_trace(const String &p_trace_id, const String &p_parent_span_id) {
+	if (s_managed_funcs.set_trace) {
+		Char16String trace_id_utf16 = p_trace_id.utf16();
+		Char16String parent_span_id_utf16 = p_parent_span_id.utf16();
+		s_managed_funcs.set_trace(
+				trace_id_utf16.get_data(), trace_id_utf16.length(),
+				parent_span_id_utf16.get_data(), parent_span_id_utf16.length());
 	}
 }
 

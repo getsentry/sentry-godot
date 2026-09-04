@@ -434,6 +434,9 @@ void SentrySDK::set_trace(const String &p_trace_id, const String &p_parent_span_
 	trace_context.trace_id = p_trace_id;
 	trace_context.parent_span_id = p_parent_span_id;
 	internal_sdk->set_trace(p_trace_id, p_parent_span_id);
+	for (const Ref<SentryScopeObserver> &observer : SENTRY_OPTIONS()->get_scope_observers()) {
+		observer->set_trace(p_trace_id, p_parent_span_id);
+	}
 }
 
 void SentrySDK::set_context(const godot::String &p_key, const godot::Dictionary &p_value) {

@@ -34,6 +34,8 @@ void remove_tag(const String &p_key);
 void set_user(const Ref<SentryUser> &p_user);
 void remove_user();
 
+void set_trace(const String &p_trace_id, const String &p_parent_span_id);
+
 // Forwards a native/engine event to the options.Native.SetBeforeSend callback in the .NET layer.
 // Returns true to keep the event, false to discard it. Mutates the event in place.
 // No-op returning true when the .NET layer or callback is unavailable.

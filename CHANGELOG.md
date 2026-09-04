@@ -31,6 +31,7 @@
   - `SentryOptions.trace_lifecycle` selects whether traces are sent as transactions or individual spans; it currently only affects Web ([#895](https://github.com/getsentry/sentry-godot/pull/895))
   - Not supported on macOS or iOS yet, where the SDK returns a no-op span with a warning
 - Add `SentrySDK.start_new_trace()` to start a trace unconnected to the current one, so the telemetry captured afterwards is grouped separately ([#909](https://github.com/getsentry/sentry-godot/pull/909))
+- Synchronize traces started in the native layer with the .NET layer, so telemetry captured from C# is associated with the same trace ([#910](https://github.com/getsentry/sentry-godot/pull/910))
 
 ### Improvements
 

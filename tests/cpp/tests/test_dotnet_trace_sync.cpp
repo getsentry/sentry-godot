@@ -1,5 +1,5 @@
-// Integration tests verifying that the native layer follows the .NET layer's
-// current trace as it changes.
+// Integration tests verifying that the native and .NET layers follow each
+// other's current trace as it changes.
 
 #if defined(TESTS_ENABLED)
 
@@ -52,6 +52,29 @@ TEST_SUITE("[.NET] Cross-layer trace sync") {
 		CHECK_FALSE(post_trace.is_empty());
 		CHECK(post_trace != tx_trace);
 		CHECK(_native_trace_id() == post_trace);
+	}
+
+	TEST_CASE("The .NET layer follows a trace started in the native layer") {
+		if (!sentry::dotnet::godot_supports_dotnet()) {
+			MESSAGE("Skipping: managed runtime unavailable (non-mono Godot build).");
+			return;
+		}
+
+		InitFixture fixture("Init"); // inits the SDK, closes at scope exit
+		Object *harness = fixture.get_harness();
+		REQUIRE(harness != nullptr);
+		REQUIRE(sentry::dotnet::is_managed_layer_registered());
+
+		const String session_trace = _native_trace_id();
+		CHECK_FALSE(session_trace.is_empty());
+		CHECK(String(harness->call("GetCurrentTraceId")) == session_trace);
+
+		SentrySDK::get_singleton()->start_new_trace();
+
+		const String new_trace = _native_trace_id();
+		CHECK_FALSE(new_trace.is_empty());
+		CHECK(new_trace != session_trace);
+		CHECK(String(harness->call("GetCurrentTraceId")) == new_trace);
 	}
 }
 
