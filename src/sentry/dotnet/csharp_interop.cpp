@@ -19,6 +19,7 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/reg_ex.hpp>
 #include <godot_cpp/core/type_info.hpp>
 
 #include <cstring>
@@ -68,13 +69,26 @@ CSHARP_EXPORT void csharp_interop_free_array(void *p_array) {
 	}
 }
 
-static NativeArray _make_string_array(const PackedStringArray &p_strings) {
+// Must match layout of NativeTracePropagationTarget in NativeBridge.cs.
+struct NativeTracePropagationTarget {
+	GodotStringHandle pattern;
+	uint8_t is_regex;
+};
+
+static NativeArray _make_trace_propagation_targets(const Array &p_targets) {
 	NativeArray result = {};
-	result.count = p_strings.size();
-	if (result.count > 0) {
-		GodotStringHandle *items = memnew_arr(GodotStringHandle, result.count);
-		for (int32_t i = 0; i < result.count; i++) {
-			items[i] = _make_handle(p_strings[i]);
+	if (!p_targets.is_empty()) {
+		NativeTracePropagationTarget *items = memnew_arr(NativeTracePropagationTarget, p_targets.size());
+		for (const Variant &target : p_targets) {
+			if (target.get_type() == Variant::STRING) {
+				items[result.count++] = { _make_handle(target), false };
+			} else {
+				ERR_CONTINUE_MSG(target.get_type() != Variant::OBJECT, "Sentry: Ignoring an invalid trace propagation target.");
+				Object *object = target;
+				RegEx *regex = Object::cast_to<RegEx>(object);
+				ERR_CONTINUE_MSG(regex == nullptr || !regex->is_valid(), "Sentry: Ignoring an invalid trace propagation target.");
+				items[result.count++] = { _make_handle(regex->get_pattern()), true };
+			}
 		}
 		result.ptr = items;
 	}
@@ -353,7 +367,7 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.android_anr_timeout_interval_ms = options->get_android()->get_anr_timeout_interval_ms();
 	r_data.android_attach_anr_thread_dump = options->get_android()->get_attach_anr_thread_dump();
 	r_data.org_id = _make_handle(options->get_org_id());
-	r_data.trace_propagation_targets = _make_string_array(options->get_trace_propagation_targets());
+	r_data.trace_propagation_targets = _make_trace_propagation_targets(options->get_trace_propagation_targets());
 	r_data.propagate_traceparent = options->is_propagate_traceparent_enabled();
 }
 

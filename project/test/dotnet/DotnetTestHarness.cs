@@ -1,4 +1,6 @@
 using System;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using Godot;
 using Sentry;
 using Sentry.Godot;
@@ -51,6 +53,25 @@ public partial class DotnetTestHarness : RefCounted
 
     private readonly Godot.Collections.Dictionary _receivedOptions = [];
     public Godot.Collections.Dictionary GetReceivedOptions() => _receivedOptions;
+
+    public string[] GetCurrentTracePropagationTargets()
+    {
+        var optionsProperty = typeof(SentrySdk).GetProperty("CurrentOptions", BindingFlags.NonPublic | BindingFlags.Static);
+        if (optionsProperty?.GetValue(null) is not SentryGodotOptions options)
+        {
+            return [];
+        }
+
+        var regexField = typeof(StringOrRegex).GetField("_regex", BindingFlags.NonPublic | BindingFlags.Instance);
+        var targets = new string[options.TracePropagationTargets.Count];
+        for (int i = 0; i < targets.Length; i++)
+        {
+            var target = options.TracePropagationTargets[i];
+            string type = regexField?.GetValue(target) is Regex ? "regex" : "string";
+            targets[i] = $"{type}:{target}";
+        }
+        return targets;
+    }
 
     /// <summary>
     /// Records every option the native layer handed over, then writes a different value to each one.
