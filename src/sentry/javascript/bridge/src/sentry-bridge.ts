@@ -56,6 +56,11 @@ interface AttachmentRequest {
   data?: Uint8Array;
 }
 
+interface TracePropagationTarget {
+  pattern: string;
+  is_regex: boolean;
+}
+
 // *** Utility Functions
 
 function safeParseJSON<T = any>(json: string, fallback: T): T {
@@ -69,6 +74,23 @@ function safeParseJSON<T = any>(json: string, fallback: T): T {
     console.error("Failed to parse JSON:", error);
     return fallback;
   }
+}
+
+function deserializeTracePropagationTargets(json: string): (string | RegExp)[] {
+  const targets: (string | RegExp)[] = [];
+  for (const target of safeParseJSON<TracePropagationTarget[]>(json, [])) {
+    if (!target.is_regex && target.pattern !== ".*") {
+      targets.push(target.pattern);
+      continue;
+    }
+
+    try {
+      targets.push(new RegExp(target.pattern));
+    } catch (error) {
+      console.error("Failed to compile trace propagation target:", error);
+    }
+  }
+  return targets;
 }
 
 function makeAttachment(filename: string, bytes: Uint8Array, contentType: string, attachmentType: string): Attachment {
@@ -177,9 +199,7 @@ class SentryBridge {
       sampleRate,
       tracesSampleRate,
       traceLifecycle: traceLifecycle === TraceLifecycle.Stream ? "stream" : "static",
-      tracePropagationTargets: safeParseJSON<string[]>(tracePropagationTargetsJson, []).map((target) =>
-        target === ".*" ? /.*/ : target,
-      ),
+      tracePropagationTargets: deserializeTracePropagationTargets(tracePropagationTargetsJson),
       propagateTraceparent,
       ...(orgId && { orgId }),
       maxBreadcrumbs,

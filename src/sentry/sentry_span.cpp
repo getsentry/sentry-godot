@@ -4,6 +4,8 @@
 #include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry_sdk.h" // Needed for VariantCaster<SentrySDK::Level>
 
+#include <godot_cpp/classes/reg_ex.hpp>
+#include <godot_cpp/classes/reg_ex_match.hpp>
 #include <godot_cpp/variant/callable_method_pointer.hpp>
 
 #define WRONG_THREAD_MSG \
@@ -16,10 +18,21 @@ namespace {
 
 bool _is_propagation_target(const String &p_url) {
 	const String url = p_url.to_lower();
-	const PackedStringArray targets = SENTRY_OPTIONS()->get_trace_propagation_targets();
-	for (const String &target : targets) {
-		if (target == ".*" || url.contains(target.to_lower())) {
-			return true;
+	const Array targets = SENTRY_OPTIONS()->get_trace_propagation_targets();
+	for (const Variant &target : targets) {
+		if (target.get_type() == Variant::STRING) {
+			const String text = target;
+			if (text == ".*" || url.contains(text.to_lower())) {
+				return true;
+			}
+		} else {
+			ERR_CONTINUE_MSG(target.get_type() != Variant::OBJECT, "Sentry: Ignoring an invalid trace propagation target.");
+			Object *object = target;
+			RegEx *regex = Object::cast_to<RegEx>(object);
+			ERR_CONTINUE_MSG(regex == nullptr || !regex->is_valid(), "Sentry: Ignoring an invalid trace propagation target.");
+			if (regex->search(p_url).is_valid()) {
+				return true;
+			}
 		}
 	}
 	return false;

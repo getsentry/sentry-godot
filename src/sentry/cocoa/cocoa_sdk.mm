@@ -18,6 +18,7 @@
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/reg_ex.hpp>
 #include <godot_cpp/core/mutex_lock.hpp>
 
 using namespace godot;
@@ -61,18 +62,30 @@ NSDictionary<NSString *, SentryObjCAttributeContent *> *_metric_attributes_to_ob
 	return attributes;
 }
 
-NSArray *_trace_propagation_targets_to_objc(const PackedStringArray &p_targets) {
+NSArray *_trace_propagation_targets_to_objc(const Array &p_targets) {
 	NSMutableArray *targets = [NSMutableArray arrayWithCapacity:p_targets.size()];
-	for (const String &target : p_targets) {
-		if (target == ".*") {
-			NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@".*"
-																				   options:0
-																					 error:nil];
-			ERR_CONTINUE(regex == nil);
-			[targets addObject:regex];
-		} else {
-			[targets addObject:sentry::cocoa::string_to_objc(target)];
+	for (const Variant &target : p_targets) {
+		if (target.get_type() == Variant::STRING && (String)target != ".*") {
+			[targets addObject:sentry::cocoa::string_to_objc((String)target)];
+			continue;
 		}
+
+		String pattern;
+		if (target.get_type() == Variant::STRING) {
+			pattern = target;
+		} else {
+			ERR_CONTINUE_MSG(target.get_type() != Variant::OBJECT, "Sentry: Ignoring an invalid trace propagation target.");
+			Object *object = target;
+			RegEx *regex = Object::cast_to<RegEx>(object);
+			ERR_CONTINUE_MSG(regex == nullptr || !regex->is_valid(), "Sentry: Ignoring an invalid trace propagation target.");
+			pattern = regex->get_pattern();
+		}
+
+		NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:sentry::cocoa::string_to_objc(pattern)
+																			   options:0
+																				 error:nil];
+		ERR_CONTINUE_MSG(regex == nil, "Sentry: Ignoring a trace propagation target that Cocoa cannot compile.");
+		[targets addObject:regex];
 	}
 	return targets;
 }

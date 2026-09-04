@@ -19,6 +19,7 @@
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/reg_ex.hpp>
 #include <godot_cpp/variant/callable.hpp>
 
 using namespace godot;
@@ -42,6 +43,24 @@ Dictionary _sanitize_attributes(const Dictionary &p_attributes) {
 		}
 	}
 	return attributes;
+}
+
+PackedStringArray _trace_propagation_targets_to_strings(const Array &p_targets) {
+	PackedStringArray targets;
+	for (const Variant &target : p_targets) {
+		if (target.get_type() == Variant::STRING) {
+			targets.append(target);
+			continue;
+		}
+
+		ERR_CONTINUE_MSG(target.get_type() != Variant::OBJECT, "Sentry: Ignoring an invalid trace propagation target.");
+		Object *object = target;
+		RegEx *regex = Object::cast_to<RegEx>(object);
+		ERR_CONTINUE_MSG(regex == nullptr || !regex->is_valid(), "Sentry: Ignoring an invalid trace propagation target.");
+		// Android takes each pattern as a string and matches it as both a substring and a regex.
+		targets.append(regex->get_pattern());
+	}
+	return targets;
 }
 
 } // unnamed namespace
@@ -403,7 +422,8 @@ void AndroidSDK::init() {
 	optionsData["environment"] = SENTRY_OPTIONS()->get_environment();
 	optionsData["sample_rate"] = SENTRY_OPTIONS()->get_sample_rate();
 	optionsData["traces_sample_rate"] = SENTRY_OPTIONS()->get_traces_sample_rate();
-	optionsData["trace_propagation_targets"] = SENTRY_OPTIONS()->get_trace_propagation_targets();
+	optionsData["trace_propagation_targets"] = _trace_propagation_targets_to_strings(
+			SENTRY_OPTIONS()->get_trace_propagation_targets());
 	optionsData["propagate_traceparent"] = SENTRY_OPTIONS()->is_propagate_traceparent_enabled();
 	optionsData["org_id"] = SENTRY_OPTIONS()->get_org_id();
 	optionsData["max_breadcrumbs"] = SENTRY_OPTIONS()->get_max_breadcrumbs();

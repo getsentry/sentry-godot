@@ -120,7 +120,7 @@ private:
 	double sample_rate = 1.0;
 	double traces_sample_rate = 0.0;
 	TraceLifecycle trace_lifecycle = TRACE_LIFECYCLE_STATIC;
-	PackedStringArray trace_propagation_targets = { ".*" };
+	Array trace_propagation_targets = { ".*" };
 	bool propagate_traceparent = false;
 	String org_id = "";
 	int max_breadcrumbs = 100;
@@ -198,8 +198,8 @@ public:
 	_FORCE_INLINE_ TraceLifecycle get_trace_lifecycle() const { return trace_lifecycle; }
 	_FORCE_INLINE_ void set_trace_lifecycle(TraceLifecycle p_trace_lifecycle) { trace_lifecycle = p_trace_lifecycle; }
 
-	_FORCE_INLINE_ PackedStringArray get_trace_propagation_targets() const { return trace_propagation_targets; }
-	_FORCE_INLINE_ void set_trace_propagation_targets(const PackedStringArray &p_targets) { trace_propagation_targets = p_targets; }
+	_FORCE_INLINE_ Array get_trace_propagation_targets() const { return trace_propagation_targets; }
+	void set_trace_propagation_targets(const Array &p_targets);
 
 	_FORCE_INLINE_ bool is_propagate_traceparent_enabled() const { return propagate_traceparent; }
 	_FORCE_INLINE_ void set_propagate_traceparent(bool p_enabled) { propagate_traceparent = p_enabled; }

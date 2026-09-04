@@ -15,15 +15,45 @@
 #include "sentry/processing/process_log.h"
 #include "sentry/processing/process_metric.h"
 #include "sentry/sentry_sdk.h"
+#include "sentry/util/json_writer.h"
 
 #include "gen/sdk_version.gen.h"
 
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/json.hpp>
+#include <godot_cpp/classes/reg_ex.hpp>
 
 #include <emscripten.h>
 
 namespace sentry::javascript {
+
+namespace {
+
+String _serialize_trace_propagation_targets(const Array &p_targets) {
+	util::JSONWriter writer;
+	writer.begin_array();
+	for (const Variant &target : p_targets) {
+		if (target.get_type() == Variant::STRING) {
+			writer.begin_object();
+			writer.kv_string("pattern", target);
+			writer.kv_bool("is_regex", false);
+			writer.end_object();
+		} else {
+			ERR_CONTINUE_MSG(target.get_type() != Variant::OBJECT, "Sentry: Ignoring an invalid trace propagation target.");
+			Object *object = target;
+			RegEx *regex = Object::cast_to<RegEx>(object);
+			ERR_CONTINUE_MSG(regex == nullptr || !regex->is_valid(), "Sentry: Ignoring an invalid trace propagation target.");
+			writer.begin_object();
+			writer.kv_string("pattern", regex->get_pattern());
+			writer.kv_bool("is_regex", true);
+			writer.end_object();
+		}
+	}
+	writer.end_array();
+	return writer.get_string();
+}
+
+} // unnamed namespace
 
 // *** WASM callbacks
 
@@ -367,7 +397,7 @@ void JavaScriptSDK::init() {
 			SENTRY_OPTIONS()->get_sample_rate(),
 			SENTRY_OPTIONS()->get_traces_sample_rate(),
 			(int)SENTRY_OPTIONS()->get_trace_lifecycle(),
-			JSON::stringify(SENTRY_OPTIONS()->get_trace_propagation_targets()).utf8(),
+			_serialize_trace_propagation_targets(SENTRY_OPTIONS()->get_trace_propagation_targets()).utf8(),
 			SENTRY_OPTIONS()->is_propagate_traceparent_enabled(),
 			SENTRY_OPTIONS()->get_org_id().utf8(),
 			SENTRY_OPTIONS()->get_max_breadcrumbs(),
