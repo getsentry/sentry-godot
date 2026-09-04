@@ -133,7 +133,7 @@ try {
 		const beforeSendFeedback = (event) => {
 			feedbackEvents.push(event);
 		};
-		const initBridge = (traceLifecycle, propagateTraceparent = false, orgId = "", tracePropagationTargets = [ ".*" ]) => {
+		const initBridge = (traceLifecycle, propagateTraceparent = false, orgId = "", tracePropagationTargets = [ { pattern : ".*", is_regex : false } ]) => {
 			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false,
 					"1.0.0", "1", "production", 1.0, 1.0, traceLifecycle, JSON.stringify(tracePropagationTargets),
 					propagateTraceparent, orgId, 100, false,
@@ -145,6 +145,17 @@ try {
 			const targets = bridge.createScope().getClient().getOptions().tracePropagationTargets;
 			assert(targets[0] instanceof RegExp, '".*" should become a regular expression');
 			assertEqual(targets[0].source, ".*", '".*" should match every URL');
+		});
+
+		runTest("init() preserves trace propagation target types", () => {
+			initBridge(bridge.TraceLifecycle.Stream, false, "", [
+				{ pattern : "api\\.example\\.com", is_regex : false },
+				{ pattern : "api\\.example\\.com", is_regex : true },
+			]);
+			const targets = bridge.createScope().getClient().getOptions().tracePropagationTargets;
+			assertEqual(targets[0], "api\\.example\\.com", "string targets should remain literal strings");
+			assert(targets[1] instanceof RegExp, "regular expression targets should become RegExp values");
+			assertEqual(targets[1].source, "api\\.example\\.com", "regular expression patterns should be preserved");
 		});
 
 		// Observes what actually goes out with an event. The bridge registers its own handler during

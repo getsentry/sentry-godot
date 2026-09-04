@@ -12,7 +12,11 @@ func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		options.traces_sample_rate = 1.0
 		# Spelled in mixed case to prove the match ignores case.
-		options.trace_propagation_targets = ["API.Example.com"]
+		options.trace_propagation_targets = [
+			"API.Example.com",
+			"literal\\.example\\.com",
+			RegEx.create_from_string("^https://regex\\.example\\.com/"),
+		]
 		options.propagate_traceparent = true
 	)
 
@@ -42,6 +46,26 @@ func test_non_matching_url_receives_nothing() -> void:
 	assert_array(headers) \
 		.override_failure_message("a URL outside trace_propagation_targets should receive no headers") \
 		.is_empty()
+
+
+func test_plain_string_with_regex_characters_is_matched_literally() -> void:
+	var span := SentrySDK.start_span("test.targets_literal")
+	var headers := span.get_trace_headers("https://literal.example.com/scores")
+	span.end()
+
+	assert_array(headers) \
+		.override_failure_message("regex characters in a string target should remain literal") \
+		.is_empty()
+
+
+func test_regex_target_receives_headers() -> void:
+	var span := SentrySDK.start_span("test.targets_regex")
+	var headers := span.get_trace_headers("https://regex.example.com/scores")
+	span.end()
+
+	assert_array(headers) \
+		.override_failure_message("a URL matching a RegEx propagation target should receive headers") \
+		.is_not_empty()
 
 
 func test_omitting_the_url_skips_the_allowlist() -> void:

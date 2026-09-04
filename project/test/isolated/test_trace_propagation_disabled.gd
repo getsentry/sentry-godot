@@ -11,7 +11,7 @@ func before(_do_skip = OS.get_name() in ["macOS", "iOS"],
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		options.traces_sample_rate = 1.0
-		options.trace_propagation_targets = PackedStringArray()
+		options.trace_propagation_targets = []
 	)
 
 
