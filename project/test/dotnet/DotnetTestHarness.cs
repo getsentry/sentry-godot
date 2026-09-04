@@ -1,4 +1,6 @@
 using System;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using Godot;
 using Sentry;
 using Sentry.Godot;
@@ -52,6 +54,25 @@ public partial class DotnetTestHarness : RefCounted
     private readonly Godot.Collections.Dictionary _receivedOptions = [];
     public Godot.Collections.Dictionary GetReceivedOptions() => _receivedOptions;
 
+    public string[] GetCurrentTracePropagationTargets()
+    {
+        var optionsProperty = typeof(SentrySdk).GetProperty("CurrentOptions", BindingFlags.NonPublic | BindingFlags.Static);
+        if (optionsProperty?.GetValue(null) is not SentryGodotOptions options)
+        {
+            return [];
+        }
+
+        var regexField = typeof(StringOrRegex).GetField("_regex", BindingFlags.NonPublic | BindingFlags.Instance);
+        var targets = new string[options.TracePropagationTargets.Count];
+        for (int i = 0; i < targets.Length; i++)
+        {
+            var target = options.TracePropagationTargets[i];
+            string type = regexField?.GetValue(target) is Regex ? "regex" : "string";
+            targets[i] = $"{type}:{target}";
+        }
+        return targets;
+    }
+
     /// <summary>
     /// Records every option the native layer handed over, then writes a different value to each one.
     /// The CPP test compares the recorded values against the project settings it wrote, and the values
@@ -72,6 +93,14 @@ public partial class DotnetTestHarness : RefCounted
             _receivedOptions["diagnostic_level"] = (int)options.DiagnosticLevel;
             _receivedOptions["sample_rate"] = options.SampleRate ?? -1.0f;
             _receivedOptions["traces_sample_rate"] = options.TracesSampleRate ?? -1.0;
+            var tracePropagationTargets = new string[options.TracePropagationTargets.Count];
+            for (int i = 0; i < tracePropagationTargets.Length; i++)
+            {
+                tracePropagationTargets[i] = options.TracePropagationTargets[i].ToString();
+            }
+            _receivedOptions["trace_propagation_targets"] = tracePropagationTargets;
+            _receivedOptions["propagate_traceparent"] = options.PropagateTraceparent;
+            _receivedOptions["org_id"] = options.OrgId;
             _receivedOptions["max_breadcrumbs"] = options.MaxBreadcrumbs;
             _receivedOptions["shutdown_timeout_ms"] = (int)options.ShutdownTimeout.TotalMilliseconds;
             _receivedOptions["send_default_pii"] = options.SendDefaultPii;
@@ -105,6 +134,11 @@ public partial class DotnetTestHarness : RefCounted
             options.DiagnosticLevel = SentryLevel.Error;
             options.SampleRate = 0.75f;
             options.TracesSampleRate = 0.8;
+            options.TracePropagationTargets.Clear();
+            options.TracePropagationTargets.Add("ccc");
+            options.TracePropagationTargets.Add("ddd");
+            options.PropagateTraceparent = false;
+            options.OrgId = "222";
             options.MaxBreadcrumbs = 22;
             options.ShutdownTimeout = TimeSpan.FromMilliseconds(2200);
             options.SendDefaultPii = false;
