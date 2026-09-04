@@ -91,6 +91,11 @@ func test_trace_lifecycle() -> void:
 	assert_int(options.trace_lifecycle).is_equal(SentryOptions.TRACE_LIFECYCLE_STREAM)
 
 
+func test_invalid_trace_propagation_targets_are_filtered_out() -> void:
+	options.trace_propagation_targets = ["valid.example.com", 42]
+	assert_array(options.trace_propagation_targets).contains_exactly(["valid.example.com"])
+
+
 ## SentryOptions.max_breadcrumbs should be set to the specified value.
 func test_max_breadcrumbs() -> void:
 	options.max_breadcrumbs = 42

@@ -403,19 +403,22 @@ void SentryOptions::release_callables() {
 }
 
 void SentryOptions::set_trace_propagation_targets(const Array &p_targets) {
+	Array valid_targets;
 	for (const Variant &target : p_targets) {
 		if (target.get_type() == Variant::STRING) {
+			valid_targets.append(target);
 			continue;
 		}
 
-		ERR_FAIL_COND_MSG(target.get_type() != Variant::OBJECT, "Sentry: trace_propagation_targets entries must be String or RegEx values.");
+		ERR_CONTINUE_MSG(target.get_type() != Variant::OBJECT, "Sentry: trace_propagation_targets entries must be String or RegEx values.");
 		Object *object = target;
 		RegEx *regex = Object::cast_to<RegEx>(object);
-		ERR_FAIL_NULL_MSG(regex, "Sentry: trace_propagation_targets entries must be String or RegEx values.");
-		ERR_FAIL_COND_MSG(!regex->is_valid(), "Sentry: trace_propagation_targets entries must contain valid regular expressions.");
+		ERR_CONTINUE_MSG(regex == nullptr, "Sentry: trace_propagation_targets entries must be String or RegEx values.");
+		ERR_CONTINUE_MSG(!regex->is_valid(), "Sentry: trace_propagation_targets entries must contain valid regular expressions.");
+		valid_targets.append(target);
 	}
 
-	trace_propagation_targets = p_targets.duplicate();
+	trace_propagation_targets = valid_targets;
 }
 
 void SentryOptions::_bind_methods() {
