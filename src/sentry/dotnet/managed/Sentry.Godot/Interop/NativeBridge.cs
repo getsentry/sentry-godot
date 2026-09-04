@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using Sentry.Godot.Internal;
 using Sentry.Protocol;
 
@@ -52,29 +53,6 @@ internal static partial class NativeBridge
         public IntPtr Ptr;
         public int Count;
 
-        public unsafe string[] TakeStrings()
-        {
-            try
-            {
-                if (Ptr == IntPtr.Zero)
-                {
-                    return [];
-                }
-
-                var result = new string[Count];
-                var strings = (GodotStringHandle*)Ptr;
-                for (int i = 0; i < Count; i++)
-                {
-                    result[i] = strings[i].TakeString() ?? "";
-                }
-                return result;
-            }
-            finally
-            {
-                Dispose();
-            }
-        }
-
         public void Dispose()
         {
             if (Ptr != IntPtr.Zero)
@@ -82,6 +60,58 @@ internal static partial class NativeBridge
                 csharp_interop_free_array(Ptr);
                 Ptr = IntPtr.Zero;
             }
+        }
+    }
+
+    // Must match layout of NativeTracePropagationTarget in csharp_interop.cpp.
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeTracePropagationTarget
+    {
+        public GodotStringHandle Pattern;
+        public byte IsRegex;
+    }
+
+    private static unsafe StringOrRegex[] TakeTracePropagationTargets(NativeArray array)
+    {
+        try
+        {
+            if (array.Ptr == IntPtr.Zero)
+            {
+                return [];
+            }
+
+            var patterns = new string[array.Count];
+            var regexFlags = new bool[array.Count];
+            var targets = (NativeTracePropagationTarget*)array.Ptr;
+            for (int i = 0; i < array.Count; i++)
+            {
+                patterns[i] = targets[i].Pattern.TakeString() ?? "";
+                regexFlags[i] = targets[i].IsRegex != 0;
+            }
+
+            var result = new List<StringOrRegex>(array.Count);
+            for (int i = 0; i < array.Count; i++)
+            {
+                if (!regexFlags[i])
+                {
+                    result.Add(patterns[i]);
+                    continue;
+                }
+
+                try
+                {
+                    result.Add(new Regex(patterns[i]));
+                }
+                catch (ArgumentException)
+                {
+                    GodotLog.Warn($"Sentry: Ignoring trace propagation target '{patterns[i]}' because it is not a valid .NET regular expression.");
+                }
+            }
+            return result.ToArray();
+        }
+        finally
+        {
+            array.Dispose();
         }
     }
 
@@ -619,7 +649,7 @@ internal static partial class NativeBridge
         opts.Android.AttachAnrThreadDump = data.android_attach_anr_thread_dump != 0;
         opts.OrgId = data.org_id.TakeString();
         opts.TracePropagationTargets.Clear();
-        foreach (string target in data.trace_propagation_targets.TakeStrings())
+        foreach (StringOrRegex target in TakeTracePropagationTargets(data.trace_propagation_targets))
         {
             opts.TracePropagationTargets.Add(target);
         }
@@ -878,6 +908,8 @@ internal static partial class NativeBridge
         var dist = opts.Distribution ?? "";
         var env = opts.Environment ?? "";
         var orgId = opts.OrgId ?? "";
+        // LIMITATION: sentry-dotnet does not expose whether StringOrRegex contains a regex,
+        // so managed targets cross as literals.
         var (tracePropagationTargetsBuffer, tracePropagationTargetsLengths) =
                 MarshallStringList(opts.TracePropagationTargets);
 
