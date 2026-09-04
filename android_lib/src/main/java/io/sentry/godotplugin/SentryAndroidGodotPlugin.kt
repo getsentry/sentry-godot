@@ -1125,7 +1125,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         span.toBaggageHeader(null)?.let { headers.add("${it.name}: ${it.value}") }
         if (Sentry.getCurrentScopes().options.isPropagateTraceparent) {
             val context = span.spanContext
-            W3CTraceparentHeader(context.traceId, context.spanId, span.isSampled).let {
+            W3CTraceparentHeader(context.traceId, context.spanId, span.isSampled ?: false).let {
                 headers.add("${it.name}: ${it.value}")
             }
         }
