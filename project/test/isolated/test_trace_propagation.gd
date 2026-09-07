@@ -2,6 +2,12 @@ extends SentryTestSuite
 ## Verifies trace header filtering and the W3C traceparent option.
 
 
+# TODO: drop the skip when Cocoa gains span support.
+func before(_do_skip = OS.get_name() in ["macOS", "iOS"],
+		_skip_reason = "Spans are not implemented on this platform yet.") -> void:
+	super()
+
+
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		options.traces_sample_rate = 1.0
