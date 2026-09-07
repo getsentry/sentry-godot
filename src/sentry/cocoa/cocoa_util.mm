@@ -1,12 +1,81 @@
 #include "cocoa_util.h"
 
 #include "sentry/common_defs.h"
+#include "sentry/logging/print.h"
 
 #include <cstring>
 
 using namespace godot;
 
 namespace sentry::cocoa {
+
+NSObject *variant_to_scope_attribute(const Variant &p_value) {
+	switch (p_value.get_type()) {
+		case Variant::BOOL: {
+			return [NSNumber numberWithBool:(bool)p_value];
+		} break;
+		case Variant::INT: {
+			return [NSNumber numberWithLongLong:(int64_t)p_value];
+		} break;
+		case Variant::FLOAT: {
+			return [NSNumber numberWithDouble:(double)p_value];
+		} break;
+		default: {
+			return [NSString stringWithUTF8String:p_value.stringify().utf8()];
+		} break;
+	}
+}
+
+SentryObjCAttachmentType attachment_type_to_objc(const String &p_attachment_type) {
+	if (p_attachment_type == "event.view_hierarchy") {
+		return SentryObjCAttachmentTypeViewHierarchy;
+	}
+	return SentryObjCAttachmentTypeEventAttachment;
+}
+
+SentryObjCAttachment *attachment_to_objc(const Ref<SentryAttachment> &p_attachment) {
+	ERR_FAIL_COND_V_MSG(p_attachment.is_null(), nil, "Sentry: Can't add null attachment.");
+
+	SentryObjCAttachment *attachment_objc = nil;
+
+	if (!p_attachment->get_path().is_empty()) {
+		String absolute_path = p_attachment->get_globalized_path();
+
+		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
+
+		attachment_objc = [[SentryObjCAttachment alloc] initWithPath:string_to_objc(absolute_path)
+															filename:string_to_objc(p_attachment->get_effective_filename())
+														 contentType:string_to_objc(p_attachment->get_content_type_or_default())
+													  attachmentType:attachment_type_to_objc(p_attachment->get_attachment_type())];
+	} else {
+		ERR_FAIL_COND_V_MSG(p_attachment->get_filename().is_empty(), nil, "Sentry: Can't add bytes attachment without filename.");
+		PackedByteArray bytes = p_attachment->get_bytes();
+		NSData *bytes_objc = [NSData dataWithBytes:bytes.ptr() length:bytes.size()];
+
+		sentry::logging::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
+
+		attachment_objc = [[SentryObjCAttachment alloc] initWithData:bytes_objc
+															filename:string_to_objc(p_attachment->get_filename())
+														 contentType:string_to_objc(p_attachment->get_content_type_or_default())
+													  attachmentType:attachment_type_to_objc(p_attachment->get_attachment_type())];
+	}
+
+	ERR_FAIL_NULL_V_MSG(attachment_objc, nil, "Sentry: Failed to create Cocoa attachment object from the provided SentryAttachment data.");
+
+	return attachment_objc;
+}
+
+SentryObjCUser *user_to_objc(const Ref<SentryUser> &p_user) {
+	if (p_user.is_null()) {
+		return nil;
+	}
+	SentryObjCUser *user = [[SentryObjCUser alloc] init];
+	user.userId = string_to_objc_or_nil_if_empty(p_user->get_id());
+	user.username = string_to_objc_or_nil_if_empty(p_user->get_username());
+	user.email = string_to_objc_or_nil_if_empty(p_user->get_email());
+	user.ipAddress = string_to_objc_or_nil_if_empty(p_user->get_ip_address());
+	return user;
+}
 
 NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 	switch (p_value.get_type()) {

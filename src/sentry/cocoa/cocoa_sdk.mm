@@ -5,10 +5,10 @@
 #include "cocoa_includes.h"
 #include "cocoa_log.h"
 #include "cocoa_metric.h"
+#include "cocoa_scope.h"
 #include "cocoa_util.h"
 #include "gen/sdk_version.gen.h"
 #include "sentry/common_defs.h"
-#include "sentry/disabled/disabled_scope.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
@@ -25,28 +25,11 @@ using namespace godot;
 
 namespace {
 
-NSObject *_as_attribute(const Variant &p_value) {
-	switch (p_value.get_type()) {
-		case Variant::BOOL: {
-			return [NSNumber numberWithBool:(bool)p_value];
-		} break;
-		case Variant::INT: {
-			return [NSNumber numberWithLongLong:(int64_t)p_value];
-		} break;
-		case Variant::FLOAT: {
-			return [NSNumber numberWithDouble:(double)p_value];
-		} break;
-		default: {
-			return [NSString stringWithUTF8String:p_value.stringify().utf8()];
-		} break;
-	}
-}
-
-SentryObjCAttachmentType _attachment_type_to_objc(const String &p_attachment_type) {
-	if (p_attachment_type == "event.view_hierarchy") {
-		return SentryObjCAttachmentTypeViewHierarchy;
-	}
-	return SentryObjCAttachmentTypeEventAttachment;
+void _with_scope(const Ref<sentry::SentryScope> &p_scope, void (^p_callback)()) {
+	ERR_FAIL_COND(p_scope.is_null());
+	sentry::cocoa::CocoaScope *scope = sentry::Castable::cast_to<sentry::cocoa::CocoaScope>(p_scope->get_implementation());
+	ERR_FAIL_NULL(scope);
+	[SentryObjCSDK.internal.scope withCurrentScope:scope->get_cocoa_scope() callback:p_callback];
 }
 
 NSDictionary<NSString *, SentryObjCAttributeContent *> *_metric_attributes_to_objc(const Dictionary &p_attributes) {
@@ -96,7 +79,7 @@ void _add_default_attachments(SentryObjCScope *p_scope) {
 		SentryObjCAttachment *objc_att = [[SentryObjCAttachment alloc] initWithPath:sentry::cocoa::string_to_objc(att->get_globalized_path())
 																		   filename:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_effective_filename())
 																		contentType:sentry::cocoa::string_to_objc_or_nil_if_empty(att->get_content_type())
-																	 attachmentType:_attachment_type_to_objc(att->get_attachment_type())];
+																	 attachmentType:sentry::cocoa::attachment_type_to_objc(att->get_attachment_type())];
 		ERR_CONTINUE(objc_att == nil);
 		[p_scope addAttachment:objc_att];
 	}
@@ -135,18 +118,7 @@ void CocoaSDK::remove_tag(const String &p_key) {
 }
 
 void CocoaSDK::set_user(const Ref<SentryUser> &p_user) {
-	if (p_user.is_valid()) {
-		SentryObjCUser *user = [[SentryObjCUser alloc] init];
-
-		user.userId = string_to_objc_or_nil_if_empty(p_user->get_id());
-		user.username = string_to_objc_or_nil_if_empty(p_user->get_username());
-		user.email = string_to_objc_or_nil_if_empty(p_user->get_email());
-		user.ipAddress = string_to_objc_or_nil_if_empty(p_user->get_ip_address());
-
-		[SentryObjCSDK setUser:user];
-	} else {
-		remove_user();
-	}
+	[SentryObjCSDK setUser:user_to_objc(p_user)];
 }
 
 void CocoaSDK::remove_user() {
@@ -171,71 +143,75 @@ void CocoaSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, co
 	}
 
 	NSString *objc_body = string_to_objc(p_body);
-
-	if (p_attributes.is_empty()) {
-		switch (p_level) {
-			case LOG_LEVEL_TRACE: {
-				[SentryObjCSDK.logger trace:objc_body];
-			} break;
-			case LOG_LEVEL_DEBUG: {
-				[SentryObjCSDK.logger debug:objc_body];
-			} break;
-			case LOG_LEVEL_INFO: {
-				[SentryObjCSDK.logger info:objc_body];
-			} break;
-			case LOG_LEVEL_WARN: {
-				[SentryObjCSDK.logger warn:objc_body];
-			} break;
-			case LOG_LEVEL_ERROR: {
-				[SentryObjCSDK.logger error:objc_body];
-			} break;
-			case LOG_LEVEL_FATAL: {
-				[SentryObjCSDK.logger fatal:objc_body];
-			} break;
-			default: {
-				sentry::logging::print_no_logger(LEVEL_WARNING,
-						vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
-				[SentryObjCSDK.logger info:objc_body];
-			} break;
-		}
-	} else {
-		NSMutableDictionary *attributes = [[NSMutableDictionary alloc] initWithCapacity:p_attributes.size()];
+	NSMutableDictionary *attributes = nil;
+	if (!p_attributes.is_empty()) {
+		attributes = [[NSMutableDictionary alloc] initWithCapacity:p_attributes.size()];
 		const Array &keys = p_attributes.keys();
 		for (int i = 0; i < keys.size(); i++) {
 			const Variant &key = keys[i];
 			String name = key.stringify();
 			ERR_CONTINUE_MSG(name.is_empty(), "Sentry: Can't set attribute with an empty name.");
 			const NSString *objc_key = [NSString stringWithUTF8String:name.utf8()];
-			const NSObject *objc_value = _as_attribute(p_attributes[key]);
+			const NSObject *objc_value = variant_to_scope_attribute(p_attributes[key]);
 			[attributes setObject:objc_value forKey:objc_key];
 		}
-
-		switch (p_level) {
-			case LOG_LEVEL_TRACE: {
-				[SentryObjCSDK.logger trace:objc_body attributes:attributes];
-			} break;
-			case LOG_LEVEL_DEBUG: {
-				[SentryObjCSDK.logger debug:objc_body attributes:attributes];
-			} break;
-			case LOG_LEVEL_INFO: {
-				[SentryObjCSDK.logger info:objc_body attributes:attributes];
-			} break;
-			case LOG_LEVEL_WARN: {
-				[SentryObjCSDK.logger warn:objc_body attributes:attributes];
-			} break;
-			case LOG_LEVEL_ERROR: {
-				[SentryObjCSDK.logger error:objc_body attributes:attributes];
-			} break;
-			case LOG_LEVEL_FATAL: {
-				[SentryObjCSDK.logger fatal:objc_body attributes:attributes];
-			} break;
-			default: {
-				sentry::logging::print_no_logger(LEVEL_WARNING,
-						vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
-				[SentryObjCSDK.logger info:objc_body attributes:attributes];
-			} break;
-		}
 	}
+
+	_with_scope(p_scope, ^{
+		if (attributes == nil) {
+			switch (p_level) {
+				case LOG_LEVEL_TRACE: {
+					[SentryObjCSDK.logger trace:objc_body];
+				} break;
+				case LOG_LEVEL_DEBUG: {
+					[SentryObjCSDK.logger debug:objc_body];
+				} break;
+				case LOG_LEVEL_INFO: {
+					[SentryObjCSDK.logger info:objc_body];
+				} break;
+				case LOG_LEVEL_WARN: {
+					[SentryObjCSDK.logger warn:objc_body];
+				} break;
+				case LOG_LEVEL_ERROR: {
+					[SentryObjCSDK.logger error:objc_body];
+				} break;
+				case LOG_LEVEL_FATAL: {
+					[SentryObjCSDK.logger fatal:objc_body];
+				} break;
+				default: {
+					sentry::logging::print_no_logger(LEVEL_WARNING,
+							vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
+					[SentryObjCSDK.logger info:objc_body];
+				} break;
+			}
+		} else {
+			switch (p_level) {
+				case LOG_LEVEL_TRACE: {
+					[SentryObjCSDK.logger trace:objc_body attributes:attributes];
+				} break;
+				case LOG_LEVEL_DEBUG: {
+					[SentryObjCSDK.logger debug:objc_body attributes:attributes];
+				} break;
+				case LOG_LEVEL_INFO: {
+					[SentryObjCSDK.logger info:objc_body attributes:attributes];
+				} break;
+				case LOG_LEVEL_WARN: {
+					[SentryObjCSDK.logger warn:objc_body attributes:attributes];
+				} break;
+				case LOG_LEVEL_ERROR: {
+					[SentryObjCSDK.logger error:objc_body attributes:attributes];
+				} break;
+				case LOG_LEVEL_FATAL: {
+					[SentryObjCSDK.logger fatal:objc_body attributes:attributes];
+				} break;
+				default: {
+					sentry::logging::print_no_logger(LEVEL_WARNING,
+							vformat("Sentry: Unexpected log level: %d, defaulting to info.", static_cast<int>(p_level)));
+					[SentryObjCSDK.logger info:objc_body attributes:attributes];
+				} break;
+			}
+		}
+	});
 }
 
 String CocoaSDK::get_last_event_id() {
@@ -253,7 +229,11 @@ String CocoaSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<Sentry
 	CocoaEvent *typed_event = Object::cast_to<CocoaEvent>(p_event.ptr());
 	ERR_FAIL_NULL_V(typed_event, String());
 	SentryObjCEvent *cocoa_event = typed_event->get_cocoa_event();
-	SentryObjCId *event_id = [SentryObjCSDK captureEvent:cocoa_event];
+
+	__block SentryObjCId *event_id = nil;
+	_with_scope(p_scope, ^{
+		event_id = [SentryObjCSDK captureEvent:cocoa_event];
+	});
 	return event_id ? string_from_objc(event_id.sentryIdString) : String();
 }
 
@@ -267,47 +247,21 @@ void CocoaSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<Sentr
 		id = [[SentryObjCId alloc] initWithUUIDString:string_to_objc(p_feedback->get_associated_event_id())];
 	}
 
-	[SentryObjCSDK captureFeedbackWithMessage:string_to_objc(p_feedback->get_message())
-										 name:string_to_objc_or_nil_if_empty(p_feedback->get_name())
-										email:string_to_objc_or_nil_if_empty(p_feedback->get_contact_email())
-									   source:SentryObjCFeedbackSourceCustom
-							associatedEventId:id
-								  attachments:nil];
+	_with_scope(p_scope, ^{
+		[SentryObjCSDK captureFeedbackWithMessage:string_to_objc(p_feedback->get_message())
+											 name:string_to_objc_or_nil_if_empty(p_feedback->get_name())
+											email:string_to_objc_or_nil_if_empty(p_feedback->get_contact_email())
+										   source:SentryObjCFeedbackSourceCustom
+								associatedEventId:id
+									  attachments:nil];
+	});
 }
 
 void CocoaSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
-	ERR_FAIL_COND_MSG(p_attachment.is_null(), "Sentry: Can't add null attachment.");
-
-	SentryObjCAttachment *attachment_objc = nil;
-
-	if (!p_attachment->get_path().is_empty()) {
-		// File attachment
-		String absolute_path = p_attachment->get_globalized_path();
-
-		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
-
-		attachment_objc = [[SentryObjCAttachment alloc] initWithPath:string_to_objc(absolute_path)
-															filename:string_to_objc(p_attachment->get_effective_filename())
-														 contentType:string_to_objc(p_attachment->get_content_type_or_default())
-													  attachmentType:_attachment_type_to_objc(p_attachment->get_attachment_type())];
-	} else {
-		// Bytes attachment
-		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add bytes attachment without filename.");
-		PackedByteArray bytes = p_attachment->get_bytes();
-		NSData *bytes_objc = [NSData dataWithBytes:bytes.ptr() length:bytes.size()];
-
-		sentry::logging::print_debug("attaching bytes with filename: ", p_attachment->get_filename());
-
-		attachment_objc = [[SentryObjCAttachment alloc] initWithData:bytes_objc
-															filename:string_to_objc(p_attachment->get_filename())
-														 contentType:string_to_objc(p_attachment->get_content_type_or_default())
-													  attachmentType:_attachment_type_to_objc(p_attachment->get_attachment_type())];
-	}
-
-	ERR_FAIL_NULL_MSG(attachment_objc, "Sentry: Failed to create Cocoa attachment object from the provided SentryAttachment data.");
-
+	SentryObjCAttachment *attachment = attachment_to_objc(p_attachment);
+	ERR_FAIL_NULL(attachment);
 	[SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
-		[scope addAttachment:attachment_objc];
+		[scope addAttachment:attachment];
 	}];
 }
 
@@ -320,51 +274,60 @@ void CocoaSDK::clear_attachments() {
 
 void CocoaSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
 	NSUInteger value = (NSUInteger)MAX(p_value, (int64_t)0);
-	if (p_attributes.is_empty()) {
-		[[SentryObjCSDK metrics] countWithKey:string_to_objc(p_name) value:value];
-	} else {
-		[[SentryObjCSDK metrics] countWithKey:string_to_objc(p_name)
-										value:value
-								   attributes:_metric_attributes_to_objc(p_attributes)];
-	}
+
+	_with_scope(p_scope, ^{
+		if (p_attributes.is_empty()) {
+			[[SentryObjCSDK metrics] countWithKey:string_to_objc(p_name) value:value];
+		} else {
+			[[SentryObjCSDK metrics] countWithKey:string_to_objc(p_name)
+											value:value
+									   attributes:_metric_attributes_to_objc(p_attributes)];
+		}
+	});
 }
 
 void CocoaSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	SentryObjCUnit *unit = p_unit.is_empty()
 			? nil
 			: [[SentryObjCUnit alloc] initWithRawValue:string_to_objc(p_unit)];
-	if (p_attributes.is_empty()) {
-		[[SentryObjCSDK metrics] gaugeWithKey:string_to_objc(p_name)
-										value:p_value
-										 unit:unit];
-	} else {
-		[[SentryObjCSDK metrics] gaugeWithKey:string_to_objc(p_name)
-										value:p_value
-										 unit:unit
-								   attributes:_metric_attributes_to_objc(p_attributes)];
-	}
+
+	_with_scope(p_scope, ^{
+		if (p_attributes.is_empty()) {
+			[[SentryObjCSDK metrics] gaugeWithKey:string_to_objc(p_name)
+											value:p_value
+											 unit:unit];
+		} else {
+			[[SentryObjCSDK metrics] gaugeWithKey:string_to_objc(p_name)
+											value:p_value
+											 unit:unit
+									   attributes:_metric_attributes_to_objc(p_attributes)];
+		}
+	});
 }
 
 void CocoaSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	SentryObjCUnit *unit = p_unit.is_empty()
 			? nil
 			: [[SentryObjCUnit alloc] initWithRawValue:string_to_objc(p_unit)];
-	if (p_attributes.is_empty()) {
-		[[SentryObjCSDK metrics] distributionWithKey:string_to_objc(p_name)
-											   value:p_value
-												unit:unit];
-	} else {
-		[[SentryObjCSDK metrics] distributionWithKey:string_to_objc(p_name)
-											   value:p_value
-												unit:unit
-										  attributes:_metric_attributes_to_objc(p_attributes)];
-	}
+
+	_with_scope(p_scope, ^{
+		if (p_attributes.is_empty()) {
+			[[SentryObjCSDK metrics] distributionWithKey:string_to_objc(p_name)
+												   value:p_value
+													unit:unit];
+		} else {
+			[[SentryObjCSDK metrics] distributionWithKey:string_to_objc(p_name)
+												   value:p_value
+													unit:unit
+											  attributes:_metric_attributes_to_objc(p_attributes)];
+		}
+	});
 }
 
 void CocoaSDK::set_attribute(const String &p_name, const Variant &p_value) {
 	[SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
 		// NOTE: Scope wants raw `id` scalars/arrays, not a wrapped `SentryObjCAttribute` (that's the Log API).
-		[scope setAttributeValue:_as_attribute(p_value) forKey:string_to_objc(p_name)];
+		[scope setAttributeValue:variant_to_scope_attribute(p_value) forKey:string_to_objc(p_name)];
 	}];
 }
 
@@ -375,7 +338,8 @@ void CocoaSDK::remove_attribute(const String &p_name) {
 }
 
 SentryScopeImpl *CocoaSDK::create_scope() {
-	return memnew(DisabledScope);
+	SentryObjCScope *scope = [SentryObjCSDK.internal.scope createScope];
+	return memnew(CocoaScope(scope));
 }
 
 SentrySpanImpl *CocoaSDK::create_span(const String &p_name, const Dictionary &p_attributes) {

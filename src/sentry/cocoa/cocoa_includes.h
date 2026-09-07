@@ -11,6 +11,7 @@
 #else // C++ context
 
 // Allow headers to compile: In C++ context, the ObjC types are not available.
+using SentryObjCScope = void;
 using SentryObjCEvent = void;
 using SentryObjCBreadcrumb = void;
 using SentryObjCLog = void;
