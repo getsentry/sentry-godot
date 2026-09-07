@@ -161,6 +161,14 @@
 		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">
 			Maximum number of breadcrumbs to send with an event. You should be aware that Sentry has a maximum payload size and any events exceeding that payload size will be dropped.
 		</member>
+		<member name="org_id" type="String" setter="set_org_id" getter="get_org_id" default="&quot;&quot;">
+			Sets the organization ID included as [code]sentry-org_id[/code] in the [code]baggage[/code] header returned by [method SentrySpan.get_trace_headers]. If empty, the SDK derives it from [member dsn].
+			Set this when the DSN does not include an organization ID, as can happen with self-hosted Sentry or a local Relay. Downstream services use the ID to determine whether an incoming trace belongs to the same organization before continuing it.
+		</member>
+		<member name="propagate_traceparent" type="bool" setter="set_propagate_traceparent" getter="is_propagate_traceparent_enabled" default="false">
+			If [code]true[/code], the headers returned by [method SentrySpan.get_trace_headers] include the W3C [code]traceparent[/code] header alongside [code]sentry-trace[/code] and [code]baggage[/code].
+			Enable this when downstream services use [code]traceparent[/code] to continue traces. [member trace_propagation_targets] controls which URLs receive it and the other trace headers.
+		</member>
 		<member name="release" type="String" setter="set_release" getter="get_release" default="&quot;{app_name}@{app_version}&quot;">
 			Release version of the application. This value must be unique across all projects in your organization. Suggested format is [code]my-game@1.0.0[/code].
 			You can use the [code]{app_name}[/code] and [code]{app_version}[/code] placeholders to insert the application name and version from the Project Settings.
@@ -181,6 +189,12 @@
 			Selects whether the SDK sends traces as transactions or streams completed spans. The default is [constant TRACE_LIFECYCLE_STATIC].
 			[b]Platform support:[/b] This option currently only affects Web. Other platforms ignore it.
 			[b]Note:[/b] Streaming sends spans in the Span v2 format. Sentry SaaS currently ingests this format, but self-hosted Sentry does not.
+		</member>
+		<member name="trace_propagation_targets" type="Array" setter="set_trace_propagation_targets" getter="get_trace_propagation_targets" default="[&quot;.*&quot;]">
+			Lists URL patterns that are allowed to receive trace headers. Each entry must be a [String] or [RegEx]. Strings match URL substrings, while regular expressions search the complete URL. The special string [code].*[/code] matches every URL and is the only entry by default.
+			Restrict this list to services you trust to prevent sending trace headers to third parties. Leave this empty to block trace headers for all specified URLs.
+			[b]Note:[/b] This option applies only when [method SentrySpan.get_trace_headers] is called with a URL. Omitting the URL bypasses target filtering.
+			[b]Note:[/b] The Project Settings field accepts only literal strings. Add [RegEx] entries from the configuration callback (see [method SentrySDK.init]).
 		</member>
 		<member name="traces_sample_rate" type="float" setter="set_traces_sample_rate" getter="get_traces_sample_rate" default="0.0">
 			Configures the sample rate for performance traces, in the range of 0.0 to 1.0. The default is 0.0, which prevents spans from being sent. If set to 1.0, all traces are sent. If set to 0.1, approximately 10% of traces are sent.

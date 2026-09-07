@@ -12,6 +12,10 @@ inline CharString _get_op(const Dictionary &p_attributes) {
 	return String(p_attributes.get(OP_KEY, String())).utf8();
 }
 
+void _append_header_line(const char *p_key, const char *p_value, void *p_userdata) {
+	static_cast<PackedStringArray *>(p_userdata)->append(String::utf8(p_key) + ": " + String::utf8(p_value));
+}
+
 } // unnamed namespace
 
 namespace sentry::native {
@@ -60,6 +64,16 @@ void NativeSpan::end() {
 		sentry_span_finish(_span);
 		_span = nullptr;
 	}
+}
+
+PackedStringArray NativeSpan::get_trace_headers() {
+	PackedStringArray headers;
+	if (_transaction) {
+		sentry_transaction_iter_headers(_transaction, _append_header_line, &headers);
+	} else {
+		sentry_span_iter_headers(_span, _append_header_line, &headers);
+	}
+	return headers;
 }
 
 void NativeSpan::bind_to_scope(sentry_scope_t *p_scope) {

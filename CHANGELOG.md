@@ -32,6 +32,7 @@
   - Not supported on macOS or iOS yet, where the SDK returns a no-op span with a warning
 - Add `SentrySDK.start_new_trace()` to start a trace unconnected to the current one, so the telemetry captured afterwards is grouped separately ([#909](https://github.com/getsentry/sentry-godot/pull/909))
 - Synchronize traces started in the native layer with the .NET layer, so telemetry captured from C# is associated with the same trace ([#910](https://github.com/getsentry/sentry-godot/pull/910))
+- Add distributed trace propagation from spans: `SentrySpan.get_trace_headers()` returns request headers for continuing a trace, with `SentryOptions.trace_propagation_targets`, `propagate_traceparent`, and `org_id` controlling where and how they are sent ([#915](https://github.com/getsentry/sentry-godot/pull/915))
 
 ### Improvements
 

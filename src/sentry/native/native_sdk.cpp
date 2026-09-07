@@ -417,6 +417,10 @@ void NativeSDK::init() {
 	sentry_options_set_environment(options, SENTRY_OPTIONS()->get_environment().utf8());
 	sentry_options_set_sample_rate(options, SENTRY_OPTIONS()->get_sample_rate());
 	sentry_options_set_traces_sample_rate(options, SENTRY_OPTIONS()->get_traces_sample_rate());
+	sentry_options_set_propagate_traceparent(options, SENTRY_OPTIONS()->is_propagate_traceparent_enabled());
+	if (!SENTRY_OPTIONS()->get_org_id().is_empty()) {
+		sentry_options_set_org_id(options, SENTRY_OPTIONS()->get_org_id().utf8());
+	}
 	sentry_options_set_max_breadcrumbs(options, SENTRY_OPTIONS()->get_max_breadcrumbs());
 	sentry_options_set_shutdown_timeout(options, SENTRY_OPTIONS()->get_shutdown_timeout_ms());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");

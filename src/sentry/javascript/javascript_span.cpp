@@ -47,6 +47,10 @@ void JavaScriptSpan::end() {
 	js_obj->call("end");
 }
 
+PackedStringArray JavaScriptSpan::get_trace_headers() {
+	return js_bridge()->call("spanGetTraceHeaders", js_obj).as_string().split("\n", false);
+}
+
 JavaScriptSpan::JavaScriptSpan(const JSObjectPtr &p_js_span_object) :
 		js_obj(p_js_span_object) {
 }

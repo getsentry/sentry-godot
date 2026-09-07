@@ -28,6 +28,8 @@ public:
 	virtual void set_status(SpanStatus p_status) override;
 	virtual void end() override;
 
+	virtual PackedStringArray get_trace_headers() override;
+
 	virtual ~AndroidSpan() override;
 };
 

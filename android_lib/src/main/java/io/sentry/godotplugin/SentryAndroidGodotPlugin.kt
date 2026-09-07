@@ -27,6 +27,7 @@ import io.sentry.SentryOptions
 import io.sentry.SpanId
 import io.sentry.TransactionContext
 import io.sentry.TransactionOptions
+import io.sentry.W3CTraceparentHeader
 import io.sentry.android.core.SentryAndroid
 import io.sentry.logger.ILoggerApi
 import io.sentry.logger.SentryLogParameters
@@ -287,6 +288,9 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val environment = optionsData["environment"] as String
             val sampleRate = optionsData["sample_rate"].toDoubleOrThrow()
             val tracesSampleRate = optionsData["traces_sample_rate"].toDoubleOrThrow()
+            val tracePropagationTargets = (optionsData["trace_propagation_targets"] as Array<*>).map { it as String }
+            val propagateTraceparent = optionsData["propagate_traceparent"] as Boolean
+            val orgId = optionsData["org_id"] as String
             val maxBreadcrumbs = optionsData["max_breadcrumbs"].toIntOrThrow()
             val enableAnrDetection = optionsData["enable_anr_detection"] as Boolean
             val anrTimeoutIntervalMs = optionsData["anr_timeout_interval_ms"].toLongOrThrow()
@@ -301,6 +305,9 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.environment = environment.ifEmpty { null }
                 options.sampleRate = sampleRate
                 options.tracesSampleRate = tracesSampleRate
+                options.setTracePropagationTargets(tracePropagationTargets)
+                options.isPropagateTraceparent = propagateTraceparent
+                options.orgId = orgId.ifEmpty { null }
                 options.maxBreadcrumbs = maxBreadcrumbs
                 options.sdkVersion?.name = "sentry.java.android.godot"
                 options.nativeSdkName = "sentry.native.android.godot"
@@ -1108,6 +1115,21 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     @UsedByGodot
     fun spanEnd(handle: Int) {
         getSpan(handle)?.finish()
+    }
+
+    @UsedByGodot
+    fun spanGetTraceHeaders(handle: Int): Array<String> {
+        val span = getSpan(handle) ?: return emptyArray()
+        val headers = mutableListOf<String>()
+        span.toSentryTrace().let { headers.add("${it.name}: ${it.value}") }
+        span.toBaggageHeader(null)?.let { headers.add("${it.name}: ${it.value}") }
+        if (Sentry.getCurrentScopes().options.isPropagateTraceparent) {
+            val context = span.spanContext
+            W3CTraceparentHeader(context.traceId, context.spanId, span.isSampled ?: false).let {
+                headers.add("${it.name}: ${it.value}")
+            }
+        }
+        return headers.toTypedArray()
     }
 
     @UsedByGodot

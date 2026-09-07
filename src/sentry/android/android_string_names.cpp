@@ -116,6 +116,7 @@ AndroidStringNames::AndroidStringNames() {
 	spanSetAttributeString = StringName("spanSetAttributeString");
 	spanSetStatus = StringName("spanSetStatus");
 	spanEnd = StringName("spanEnd");
+	spanGetTraceHeaders = StringName("spanGetTraceHeaders");
 
 	// Logs.
 	releaseLog = StringName("releaseLog");

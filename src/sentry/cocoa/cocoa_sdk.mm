@@ -18,6 +18,7 @@
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/reg_ex.hpp>
 #include <godot_cpp/core/mutex_lock.hpp>
 
 using namespace godot;
@@ -59,6 +60,34 @@ NSDictionary<NSString *, SentryObjCAttributeContent *> *_metric_attributes_to_ob
 		attributes[sentry::cocoa::string_to_objc(name)] = sentry::cocoa::variant_to_attribute_content(p_attributes[key]);
 	}
 	return attributes;
+}
+
+NSArray *_trace_propagation_targets_to_objc(const Array &p_targets) {
+	NSMutableArray *targets = [NSMutableArray arrayWithCapacity:p_targets.size()];
+	for (const Variant &target : p_targets) {
+		if (target.get_type() == Variant::STRING && (String)target != ".*") {
+			[targets addObject:sentry::cocoa::string_to_objc((String)target)];
+			continue;
+		}
+
+		String pattern;
+		if (target.get_type() == Variant::STRING) {
+			pattern = target;
+		} else {
+			ERR_CONTINUE_MSG(target.get_type() != Variant::OBJECT, "Sentry: Ignoring an invalid trace propagation target.");
+			Object *object = target;
+			RegEx *regex = Object::cast_to<RegEx>(object);
+			ERR_CONTINUE_MSG(regex == nullptr || !regex->is_valid(), "Sentry: Ignoring an invalid trace propagation target.");
+			pattern = regex->get_pattern();
+		}
+
+		NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:sentry::cocoa::string_to_objc(pattern)
+																			   options:0
+																				 error:nil];
+		ERR_CONTINUE_MSG(regex == nil, "Sentry: Ignoring a trace propagation target that Cocoa cannot compile.");
+		[targets addObject:regex];
+	}
+	return targets;
 }
 
 void _add_default_attachments(SentryObjCScope *p_scope) {
@@ -378,6 +407,10 @@ void CocoaSDK::init() {
 		options.maxBreadcrumbs = (NSUInteger)SENTRY_OPTIONS()->get_max_breadcrumbs();
 		options.sendDefaultPii = SENTRY_OPTIONS()->is_send_default_pii_enabled();
 		options.diagnosticLevel = sentry_level_to_objc(SENTRY_OPTIONS()->get_diagnostic_level());
+		options.orgId = string_to_objc_or_nil_if_empty(SENTRY_OPTIONS()->get_org_id());
+		options.enablePropagateTraceparent = SENTRY_OPTIONS()->is_propagate_traceparent_enabled();
+		options.tracePropagationTargets = _trace_propagation_targets_to_objc(
+				SENTRY_OPTIONS()->get_trace_propagation_targets());
 
 		String dist = SENTRY_OPTIONS()->get_dist();
 		if (!dist.is_empty()) {
