@@ -18,6 +18,7 @@ public:
 	void crash_with_stack_overflow();
 	void crash_with_abort();
 	void crash_with_division_by_zero();
+	void hang_app();
 
 	SentryBadCode() = default;
 };

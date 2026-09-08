@@ -37,7 +37,12 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Test diverse context"
 
+[node name="HangButton" type="Button" parent="."]
+layout_mode = 2
+text = "Hang App!"
+
 [connection signal="pressed" from="RunTestsButton" to="." method="_on_run_tests_button_pressed"]
 [connection signal="pressed" from="SendMetricsButton" to="." method="_on_send_metrics_button_pressed"]
 [connection signal="timeout" from="SendMetricsButton/MetricsTimer" to="." method="_on_metrics_timer_timeout"]
 [connection signal="pressed" from="TestDiverseContextButton" to="." method="_on_test_diverse_context_button_pressed"]
+[connection signal="pressed" from="HangButton" to="." method="_on_hang_button_pressed"]

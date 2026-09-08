@@ -28,11 +28,17 @@ void SentryBadCode::crash_with_division_by_zero() {
 	(void)c;
 }
 
+void SentryBadCode::hang_app() {
+	while (true) {
+	};
+}
+
 void SentryBadCode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("crash_with_null_dereference"), &SentryBadCode::crash_with_null_dereference);
 	ClassDB::bind_method(D_METHOD("crash_with_stack_overflow"), &SentryBadCode::crash_with_stack_overflow);
 	ClassDB::bind_method(D_METHOD("crash_with_abort"), &SentryBadCode::crash_with_abort);
 	ClassDB::bind_method(D_METHOD("crash_with_division_by_zero"), &SentryBadCode::crash_with_division_by_zero);
+	ClassDB::bind_method(D_METHOD("hang_app"), &SentryBadCode::hang_app);
 }
 
 } // namespace sentry
