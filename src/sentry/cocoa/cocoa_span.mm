@@ -21,6 +21,7 @@ SentrySpanImpl *CocoaSpan::start_root(const String &p_name, const Dictionary &p_
 			   parentSampled:SentryObjCSampleDecisionUndecided
 			parentSampleRate:nil
 			parentSampleRand:nil];
+	// Cocoa returns a span even for unsampled transactions; its headers still carry the trace context and sampling decision.
 	SentryObjCSpan *span = [SentryObjCSDK startTransactionWithContext:context bindToScope:NO];
 	return memnew(CocoaSpan(span, p_attributes));
 }
