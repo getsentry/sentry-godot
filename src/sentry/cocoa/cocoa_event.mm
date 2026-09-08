@@ -211,7 +211,7 @@ void CocoaEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	NSDictionary *existing_context = [mut_contexts objectForKey:context_name];
 	if (existing_context) {
 		// If context exists, update it with new values.
-		NSMutableDictionary *mut_exisiting_context = [existing_context mutableCopy] ?: [NSMutableDictionary dictionary];
+		NSMutableDictionary *mut_exisiting_context = [existing_context mutableCopy];
 		const Array &updated_keys = p_value.keys();
 		for (int i = 0; i < updated_keys.size(); i++) {
 			const Variant &key = updated_keys[i];
@@ -229,36 +229,40 @@ void CocoaEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 void CocoaEvent::add_exception(const Exception &p_exception) {
 	ERR_FAIL_NULL(cocoa_event);
 
-	NSMutableArray *mut_frames = [NSMutableArray arrayWithCapacity:p_exception.frames.size()];
-	for (const StackFrame &frame : p_exception.frames) {
-		SentryObjCFrame *cocoa_frame = [[SentryObjCFrame alloc] init];
-		cocoa_frame.fileName = string_to_objc(frame.filename);
-		cocoa_frame.function = string_to_objc(frame.function);
-		cocoa_frame.lineNumber = int_to_objc(frame.lineno);
-		cocoa_frame.inApp = bool_to_objc(frame.in_app);
-		cocoa_frame.platform = string_to_objc(frame.platform);
+	NSArray *frames = @[];
+	if (!p_exception.frames.is_empty()) {
+		NSMutableArray *mut_frames = [NSMutableArray arrayWithCapacity:p_exception.frames.size()];
+		for (const StackFrame &frame : p_exception.frames) {
+			SentryObjCFrame *cocoa_frame = [[SentryObjCFrame alloc] init];
+			cocoa_frame.fileName = string_to_objc(frame.filename);
+			cocoa_frame.function = string_to_objc(frame.function);
+			cocoa_frame.lineNumber = int_to_objc(frame.lineno);
+			cocoa_frame.inApp = bool_to_objc(frame.in_app);
+			cocoa_frame.platform = string_to_objc(frame.platform);
 
-		if (!frame.context_line.is_empty()) {
-			cocoa_frame.contextLine = string_to_objc(frame.context_line);
-			cocoa_frame.preContext = string_array_to_objc(frame.pre_context);
-			cocoa_frame.postContext = string_array_to_objc(frame.post_context);
-		}
-
-		if (!frame.vars.is_empty()) {
-			NSMutableDictionary *objc_vars = [NSMutableDictionary dictionaryWithCapacity:frame.vars.size()];
-			for (const auto &var : frame.vars) {
-				NSString *key = string_to_objc(var.first);
-				id value = variant_to_objc(var.second);
-				objc_vars[key] = value;
+			if (!frame.context_line.is_empty()) {
+				cocoa_frame.contextLine = string_to_objc(frame.context_line);
+				cocoa_frame.preContext = string_array_to_objc(frame.pre_context);
+				cocoa_frame.postContext = string_array_to_objc(frame.post_context);
 			}
-			cocoa_frame.vars = objc_vars;
-		}
 
-		[mut_frames addObject:cocoa_frame];
+			if (!frame.vars.is_empty()) {
+				NSMutableDictionary *objc_vars = [NSMutableDictionary dictionaryWithCapacity:frame.vars.size()];
+				for (const auto &var : frame.vars) {
+					NSString *key = string_to_objc(var.first);
+					id value = variant_to_objc(var.second);
+					objc_vars[key] = value;
+				}
+				cocoa_frame.vars = objc_vars;
+			}
+
+			[mut_frames addObject:cocoa_frame];
+		}
+		frames = mut_frames;
 	}
 
-	SentryObjCStacktrace *stack_trace = [[SentryObjCStacktrace alloc] initWithFrames:mut_frames
-																		   registers:[NSDictionary dictionary]];
+	SentryObjCStacktrace *stack_trace = [[SentryObjCStacktrace alloc] initWithFrames:frames
+																		   registers:@{}];
 
 	uint64_t thread_id = godot::OS::get_singleton()->get_thread_caller_id();
 	bool is_main = godot::OS::get_singleton()->get_main_thread_id() == thread_id;

@@ -98,6 +98,9 @@ NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 			}
 
 			Dictionary dict = p_value;
+			if (dict.is_empty()) {
+				return @{};
+			}
 			NSMutableDictionary *objc_dict = [[NSMutableDictionary alloc] init];
 
 			const Array &keys = dict.keys();
@@ -126,16 +129,20 @@ NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 				return [NSString stringWithUTF8String:"[...]"];
 			}
 
-			NSMutableArray *objc_array = [[NSMutableArray alloc] init];
 			bool oob = false;
 			bool valid = true;
 			int i = 0;
+			Variant item = p_value.get_indexed(i++, valid, oob);
+			if (oob) {
+				return @[];
+			}
+			NSMutableArray *objc_array = [[NSMutableArray alloc] init];
 
 			do {
-				Variant item = p_value.get_indexed(i++, valid, oob);
 				if (valid) {
 					[objc_array addObject:variant_to_objc(item, p_depth + 1)];
 				}
+				item = p_value.get_indexed(i++, valid, oob);
 			} while (!oob);
 
 			return objc_array;
@@ -195,6 +202,10 @@ NSDictionary *dictionary_to_objc(const godot::Dictionary &p_dictionary) {
 }
 
 NSArray<NSString *> *string_array_to_objc(const godot::PackedStringArray &p_array) {
+	if (p_array.is_empty()) {
+		return @[];
+	}
+
 	NSMutableArray<NSString *> *objc_array = [NSMutableArray arrayWithCapacity:p_array.size()];
 	for (int i = 0; i < p_array.size(); i++) {
 		[objc_array addObject:string_to_objc(p_array[i])];

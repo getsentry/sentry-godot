@@ -50,6 +50,10 @@ NSDictionary<NSString *, SentryObjCAttributeContent *> *_metric_attributes_to_ob
 }
 
 NSArray *_trace_propagation_targets_to_objc(const Array &p_targets) {
+	if (p_targets.is_empty()) {
+		return @[];
+	}
+
 	NSMutableArray *targets = [NSMutableArray arrayWithCapacity:p_targets.size()];
 	for (const Variant &target : p_targets) {
 		if (target.get_type() == Variant::STRING && (String)target != ".*") {
