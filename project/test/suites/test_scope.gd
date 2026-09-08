@@ -2,12 +2,6 @@ extends SentryTestSuite
 ## Verifies scope isolation for `SentrySDK.with_scope()`.
 
 
-# TODO: widen the platform list as scopes are implemented on other backends.
-func before(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android", "Web"],
-		_skip_reason = "Scopes are not implemented on this platform yet.") -> void:
-	super()
-
-
 func test_scoped_set_context() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_context("scene", {"name": "Dungeon", "depth": 3})

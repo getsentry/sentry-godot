@@ -55,11 +55,6 @@ public:
 	virtual SentryScopeImpl *create_scope() = 0;
 	virtual SentrySpanImpl *create_span(const String &p_name, const Dictionary &p_attributes) = 0;
 
-	// Whether local scopes are as capable as the rest of this backend.
-	// False means the backend captures events but silently discards scope
-	// writes, which is a platform gap worth warning about.
-	virtual bool supports_scopes() const { return false; }
-
 	virtual bool supports_before_send_feedback() const = 0;
 
 	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) = 0;

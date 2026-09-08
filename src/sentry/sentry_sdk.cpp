@@ -169,10 +169,6 @@ Ref<SentryScope> SentrySDK::_fork_scope(const Ref<SentryScope> &p_source) {
 }
 
 Variant SentrySDK::with_scope(const Callable &p_callable) {
-	if (unlikely(!internal_sdk->supports_scopes())) {
-		WARN_PRINT_ONCE("Sentry: Scopes are not supported on this platform yet - writes to the scope will be discarded.");
-	}
-
 	Ref<SentryScope> scope = _fork_scope(get_current_scope());
 	Variant result = p_callable.call(scope);
 	static bool first_warning = true; // acceptable race: several warnings are OK.

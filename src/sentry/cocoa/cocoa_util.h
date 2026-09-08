@@ -2,6 +2,8 @@
 
 #include "cocoa_includes.h"
 #include "sentry/level.h"
+#include "sentry/sentry_attachment.h"
+#include "sentry/sentry_user.h"
 
 #include <godot_cpp/variant/dictionary.hpp>
 
@@ -68,6 +70,11 @@ _FORCE_INLINE_ NSNumber *bool_to_objc(bool p_flag) {
 _FORCE_INLINE_ NSNumber *double_to_objc(double p_num) {
 	return [NSNumber numberWithDouble:p_num];
 }
+
+NSObject *variant_to_scope_attribute(const Variant &p_value);
+SentryObjCAttachmentType attachment_type_to_objc(const String &p_attachment_type);
+SentryObjCAttachment *attachment_to_objc(const Ref<SentryAttachment> &p_attachment);
+SentryObjCUser *user_to_objc(const Ref<SentryUser> &p_user);
 
 NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth = 0);
 godot::Variant variant_from_objc(const NSObject *p_object);

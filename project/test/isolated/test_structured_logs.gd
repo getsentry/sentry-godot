@@ -189,8 +189,8 @@ func test_structured_logs_body_with_format_specifiers() -> void:
 	SentrySDK.logger.info("Should preserve %n and %s and not crash")
 
 
-# NOTE: JS SDK merges global scope attributes at serialization time, after beforeSendLog.
-func test_structured_logs_with_global_attributes(_do_skip = OS.get_name() == "Web") -> void:
+func test_structured_logs_with_global_attributes(_do_skip = OS.get_name() == "Web",
+		_skip_reason = "Web merges global scope attributes after before_send_log.") -> void:
 	log_processed.connect(func(entry: SentryLog):
 		assert_bool(entry.get_attribute("global_bool")).is_equal(true)
 		assert_int(entry.get_attribute("global_int")).is_equal(42)
@@ -208,9 +208,8 @@ func test_structured_logs_with_global_attributes(_do_skip = OS.get_name() == "We
 	SentrySDK.logger.info("Test with global attributes")
 
 
-# TODO: remove skip when implemented on other platforms
-# Skipped: JS merges scope attributes at serialization time, after the callback has already run.
-func test_structured_logs_with_scope_attributes(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"]) -> void:
+func test_structured_logs_with_scope_attributes(_do_skip = OS.get_name() == "Web",
+		_skip_reason = "Web merges scope attributes after before_send_log") -> void:
 	SentrySDK.set_attribute("from_global", "global")
 	SentrySDK.set_attribute("scope_over_global", "global")
 	SentrySDK.set_attribute("log_over_all", "global")
@@ -244,9 +243,8 @@ func test_structured_logs_with_scope_attributes(_do_skip = OS.get_name() not in 
 	SentrySDK.logger.info("Test after scope is popped")
 
 
-# TODO: remove skip when implemented on other platforms
-# Skipped: JS merges scope attributes at serialization time, after the callback has already run.
-func test_structured_logs_with_scope_attribute_types(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"]) -> void:
+func test_structured_logs_with_scope_attribute_types(_do_skip = OS.get_name() == "Web",
+		_skip_reason = "Web merges scope attributes after before_send_log") -> void:
 	SentrySDK.with_scope(func(scope: SentryScope):
 		scope.set_attribute("level", "forest")
 		scope.set_attribute("enemy_id", 42)
@@ -264,8 +262,8 @@ func test_structured_logs_with_scope_attribute_types(_do_skip = OS.get_name() no
 	)
 
 
-# TODO: remove skip when implemented on other platforms
-func test_structured_logs_scope_clear_drops_attributes(_do_skip = OS.get_name() not in ["Windows", "Linux", "Android"]) -> void:
+func test_structured_logs_scope_clear_drops_attributes(_do_skip = OS.get_name() == "Web",
+		_skip_reason = "Web's before_send_log cannot observe scope attributes, so it cannot verify clear().") -> void:
 	SentrySDK.with_scope(func(scope: SentryScope):
 		scope.set_attribute("before_clear", "value")
 		scope.clear()
