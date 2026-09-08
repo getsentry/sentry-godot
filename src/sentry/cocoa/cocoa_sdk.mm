@@ -33,6 +33,10 @@ void _with_scope(const Ref<sentry::SentryScope> &p_scope, void (^p_callback)()) 
 }
 
 NSDictionary<NSString *, SentryObjCAttributeContent *> *_metric_attributes_to_objc(const Dictionary &p_attributes) {
+	if (p_attributes.is_empty()) {
+		return @{};
+	}
+
 	NSMutableDictionary<NSString *, SentryObjCAttributeContent *> *attributes =
 			[NSMutableDictionary dictionaryWithCapacity:p_attributes.size()];
 	const Array &keys = p_attributes.keys();
@@ -249,13 +253,9 @@ void CocoaSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &
 	NSUInteger value = (NSUInteger)MAX(p_value, (int64_t)0);
 
 	_with_scope(p_scope, ^{
-		if (p_attributes.is_empty()) {
-			[[SentryObjCSDK metrics] countWithKey:string_to_objc(p_name) value:value];
-		} else {
-			[[SentryObjCSDK metrics] countWithKey:string_to_objc(p_name)
-											value:value
-									   attributes:_metric_attributes_to_objc(p_attributes)];
-		}
+		[[SentryObjCSDK metrics] countWithKey:string_to_objc(p_name)
+										value:value
+								   attributes:_metric_attributes_to_objc(p_attributes)];
 	});
 }
 
@@ -265,16 +265,10 @@ void CocoaSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &
 			: [[SentryObjCUnit alloc] initWithRawValue:string_to_objc(p_unit)];
 
 	_with_scope(p_scope, ^{
-		if (p_attributes.is_empty()) {
-			[[SentryObjCSDK metrics] gaugeWithKey:string_to_objc(p_name)
-											value:p_value
-											 unit:unit];
-		} else {
-			[[SentryObjCSDK metrics] gaugeWithKey:string_to_objc(p_name)
-											value:p_value
-											 unit:unit
-									   attributes:_metric_attributes_to_objc(p_attributes)];
-		}
+		[[SentryObjCSDK metrics] gaugeWithKey:string_to_objc(p_name)
+										value:p_value
+										 unit:unit
+								   attributes:_metric_attributes_to_objc(p_attributes)];
 	});
 }
 
@@ -284,16 +278,10 @@ void CocoaSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const S
 			: [[SentryObjCUnit alloc] initWithRawValue:string_to_objc(p_unit)];
 
 	_with_scope(p_scope, ^{
-		if (p_attributes.is_empty()) {
-			[[SentryObjCSDK metrics] distributionWithKey:string_to_objc(p_name)
-												   value:p_value
-													unit:unit];
-		} else {
-			[[SentryObjCSDK metrics] distributionWithKey:string_to_objc(p_name)
-												   value:p_value
-													unit:unit
-											  attributes:_metric_attributes_to_objc(p_attributes)];
-		}
+		[[SentryObjCSDK metrics] distributionWithKey:string_to_objc(p_name)
+											   value:p_value
+												unit:unit
+										  attributes:_metric_attributes_to_objc(p_attributes)];
 	});
 }
 
