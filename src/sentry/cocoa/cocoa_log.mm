@@ -72,7 +72,7 @@ Variant CocoaLog::get_attribute(const String &p_name) const {
 }
 
 void CocoaLog::set_attribute(const String &p_name, const Variant &p_value) {
-	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy] ?: [NSMutableDictionary dictionary];
+	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy];
 	[mut_attributes setObject:variant_to_attribute(p_value) forKey:string_to_objc(p_name)];
 	cocoa_log.attributes = mut_attributes;
 }
@@ -82,7 +82,7 @@ void CocoaLog::add_attributes(const Dictionary &p_attributes) {
 		return;
 	}
 
-	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy] ?: [NSMutableDictionary dictionary];
+	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy];
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
 		const Variant &key = keys[i];
@@ -95,7 +95,7 @@ void CocoaLog::add_attributes(const Dictionary &p_attributes) {
 void CocoaLog::remove_attribute(const String &p_name) {
 	NSMutableDictionary *mut_attributes = [cocoa_log.attributes mutableCopy];
 	[mut_attributes removeObjectForKey:string_to_objc(p_name)];
-	cocoa_log.attributes = mut_attributes.count > 0 ? mut_attributes : nil;
+	cocoa_log.attributes = mut_attributes;
 }
 
 CocoaLog::CocoaLog() :

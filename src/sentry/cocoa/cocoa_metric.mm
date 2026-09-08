@@ -100,7 +100,7 @@ Variant CocoaMetric::get_attribute(const String &p_name) const {
 void CocoaMetric::set_attribute(const String &p_name, const Variant &p_value) {
 	ERR_FAIL_NULL(cocoa_metric);
 
-	NSMutableDictionary *mut_attributes = [cocoa_metric.attributes mutableCopy] ?: [NSMutableDictionary dictionary];
+	NSMutableDictionary *mut_attributes = [cocoa_metric.attributes mutableCopy];
 	[mut_attributes setObject:variant_to_attribute_content(p_value) forKey:string_to_objc(p_name)];
 	cocoa_metric.attributes = mut_attributes;
 }
@@ -112,7 +112,7 @@ void CocoaMetric::add_attributes(const Dictionary &p_attributes) {
 		return;
 	}
 
-	NSMutableDictionary *mut_attributes = [cocoa_metric.attributes mutableCopy] ?: [NSMutableDictionary dictionary];
+	NSMutableDictionary *mut_attributes = [cocoa_metric.attributes mutableCopy];
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
 		const Variant &key = keys[i];
@@ -127,7 +127,7 @@ void CocoaMetric::remove_attribute(const String &p_name) {
 
 	NSMutableDictionary *mut_attributes = [cocoa_metric.attributes mutableCopy];
 	[mut_attributes removeObjectForKey:string_to_objc(p_name)];
-	cocoa_metric.attributes = mut_attributes.count > 0 ? mut_attributes : nil;
+	cocoa_metric.attributes = mut_attributes;
 }
 
 CocoaMetric::CocoaMetric() :
