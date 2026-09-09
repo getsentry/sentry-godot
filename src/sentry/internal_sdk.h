@@ -24,6 +24,11 @@ public:
 	virtual void remove_context(const String &p_key) = 0;
 
 	virtual void set_tag(const String &p_key, const String &p_value) = 0;
+	virtual void set_tags(const Dictionary &p_tags) {
+		for (const Variant &key : p_tags.keys()) {
+			set_tag((String)key, (String)p_tags[key]);
+		}
+	}
 	virtual void remove_tag(const String &p_key) = 0;
 
 	virtual void set_user(const Ref<SentryUser> &p_user) = 0;

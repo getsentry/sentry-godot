@@ -20,6 +20,7 @@ public:
 	virtual void remove_context(const String &p_key) override;
 
 	virtual void set_tag(const String &p_key, const String &p_value) override;
+	virtual void set_tags(const Dictionary &p_tags) override;
 	virtual void remove_tag(const String &p_key) override;
 
 	virtual void set_user(const Ref<SentryUser> &p_user) override;

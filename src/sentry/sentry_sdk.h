@@ -104,6 +104,7 @@ public:
 	void set_context(const String &p_key, const Dictionary &p_value);
 
 	void set_tag(const String &p_key, const String &p_value);
+	void set_tags(const Dictionary &p_tags);
 	void remove_tag(const String &p_key);
 
 	void set_user(const Ref<SentryUser> &p_user);
