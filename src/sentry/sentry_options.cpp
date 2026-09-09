@@ -128,17 +128,18 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/debug_printing", PROPERTY_HINT_ENUM, "Off,On,Auto"), (int)SentryOptions::DEBUG_DEFAULT);
 	_define_setting(sentry::make_level_enum_property("sentry/options/diagnostic_level"), p_options->diagnostic_level);
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->sample_rate, false);
-	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/traces_sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->traces_sample_rate, false);
-	_define_setting(PropertyInfo(Variant::INT, "sentry/options/trace_lifecycle", PROPERTY_HINT_ENUM, "Static,Stream"), p_options->trace_lifecycle, false);
-	_define_setting("sentry/options/trace_propagation_targets", PackedStringArray(p_options->trace_propagation_targets), false);
-	_define_setting("sentry/options/propagate_traceparent", p_options->propagate_traceparent, false);
-	_define_setting("sentry/options/org_id", p_options->org_id, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/shutdown_timeout_ms", PROPERTY_HINT_RANGE, "0,30000"), p_options->shutdown_timeout_ms, false);
 	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
 
 	_define_setting("sentry/options/attach_log", p_options->attach_log, false);
 	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
+
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/options/tracing/traces_sample_rate", PROPERTY_HINT_RANGE, "0.0,1.0"), p_options->traces_sample_rate, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/tracing/trace_lifecycle", PROPERTY_HINT_ENUM, "Static,Stream"), p_options->trace_lifecycle, false);
+	_define_setting("sentry/options/tracing/trace_propagation_targets", PackedStringArray(p_options->trace_propagation_targets), false);
+	_define_setting("sentry/options/tracing/propagate_traceparent", p_options->propagate_traceparent, false);
+	_define_setting("sentry/options/tracing/org_id", p_options->org_id, false);
 
 	_define_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/app_hang/timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), p_options->app_hang_timeout_ms, false);
@@ -222,12 +223,12 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->diagnostic_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/diagnostic_level", p_options->diagnostic_level);
 
 	p_options->sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/sample_rate", p_options->sample_rate);
-	p_options->traces_sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/traces_sample_rate", p_options->traces_sample_rate);
-	p_options->trace_lifecycle = (SentryOptions::TraceLifecycle)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/trace_lifecycle", p_options->trace_lifecycle);
-	const PackedStringArray trace_propagation_targets = ProjectSettings::get_singleton()->get_setting("sentry/options/trace_propagation_targets", PackedStringArray(p_options->trace_propagation_targets));
+	p_options->traces_sample_rate = ProjectSettings::get_singleton()->get_setting("sentry/options/tracing/traces_sample_rate", p_options->traces_sample_rate);
+	p_options->trace_lifecycle = (SentryOptions::TraceLifecycle)(int)ProjectSettings::get_singleton()->get_setting("sentry/options/tracing/trace_lifecycle", p_options->trace_lifecycle);
+	const PackedStringArray trace_propagation_targets = ProjectSettings::get_singleton()->get_setting("sentry/options/tracing/trace_propagation_targets", PackedStringArray(p_options->trace_propagation_targets));
 	p_options->set_trace_propagation_targets(Array(trace_propagation_targets));
-	p_options->propagate_traceparent = ProjectSettings::get_singleton()->get_setting("sentry/options/propagate_traceparent", p_options->propagate_traceparent);
-	p_options->org_id = ProjectSettings::get_singleton()->get_setting("sentry/options/org_id", p_options->org_id);
+	p_options->propagate_traceparent = ProjectSettings::get_singleton()->get_setting("sentry/options/tracing/propagate_traceparent", p_options->propagate_traceparent);
+	p_options->org_id = ProjectSettings::get_singleton()->get_setting("sentry/options/tracing/org_id", p_options->org_id);
 	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/options/max_breadcrumbs", p_options->max_breadcrumbs);
 	p_options->shutdown_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/shutdown_timeout_ms", p_options->shutdown_timeout_ms);
 	p_options->send_default_pii = ProjectSettings::get_singleton()->get_setting("sentry/options/send_default_pii", p_options->send_default_pii);
