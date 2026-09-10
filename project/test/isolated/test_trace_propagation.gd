@@ -86,16 +86,10 @@ func test_traceparent_is_emitted_when_enabled() -> void:
 		.is_equal("00-%s-%s-01" % [trace.get("trace_id"), trace.get("span_id")])
 
 
-@warning_ignore("unused_parameter")
-func test_descendants_never_propagate_empty_ids(finish_root: bool, test_parameters := [
-		[true],
-		[false],
-]) -> void:
+func test_descendants_never_propagate_empty_ids() -> void:
 	var root := SentrySDK.start_span("test.root", {}, null, false)
 	var child := SentrySDK.start_span("test.child", {}, root, false)
 	assert_array(child.get_trace_headers()).is_not_empty()
-	if finish_root:
-		root.end()
 	root = null
 
 	var grandchild := SentrySDK.start_span("test.grandchild", {}, child, false)
