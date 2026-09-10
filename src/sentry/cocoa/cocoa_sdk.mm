@@ -6,6 +6,7 @@
 #include "cocoa_log.h"
 #include "cocoa_metric.h"
 #include "cocoa_scope.h"
+#include "cocoa_span.h"
 #include "cocoa_util.h"
 #include "gen/sdk_version.gen.h"
 #include "sentry/common_defs.h"
@@ -308,8 +309,7 @@ SentryScopeImpl *CocoaSDK::create_scope() {
 }
 
 SentrySpanImpl *CocoaSDK::create_span(const String &p_name, const Dictionary &p_attributes) {
-	WARN_PRINT_ONCE("Sentry: Spans are not implemented on this platform yet - nothing will be recorded.");
-	return SentrySpanImpl::create_noop();
+	return CocoaSpan::start_root(p_name, p_attributes);
 }
 
 void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
@@ -333,6 +333,7 @@ void CocoaSDK::init() {
 		options.releaseName = string_to_objc(SENTRY_OPTIONS()->get_release());
 		options.environment = string_to_objc(SENTRY_OPTIONS()->get_environment());
 		options.sampleRate = double_to_objc(SENTRY_OPTIONS()->get_sample_rate());
+		options.tracesSampleRate = double_to_objc(SENTRY_OPTIONS()->get_traces_sample_rate());
 		options.maxBreadcrumbs = (NSUInteger)SENTRY_OPTIONS()->get_max_breadcrumbs();
 		options.sendDefaultPii = SENTRY_OPTIONS()->is_send_default_pii_enabled();
 		options.diagnosticLevel = sentry_level_to_objc(SENTRY_OPTIONS()->get_diagnostic_level());

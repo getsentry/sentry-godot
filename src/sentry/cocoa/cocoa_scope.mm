@@ -1,6 +1,7 @@
 #include "cocoa_scope.h"
 
 #include "cocoa_breadcrumb.h"
+#include "cocoa_span.h"
 #include "cocoa_util.h"
 
 namespace sentry::cocoa {
@@ -45,6 +46,11 @@ void CocoaScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 void CocoaScope::clear() {
 	[_scope clear];
+}
+
+void CocoaScope::set_span(SentrySpanImpl *p_span) {
+	CocoaSpan *span = Castable::cast_to<CocoaSpan>(p_span);
+	_scope.span = span ? span->get_cocoa_span() : nil;
 }
 
 SentryScopeImpl *CocoaScope::clone() const {
