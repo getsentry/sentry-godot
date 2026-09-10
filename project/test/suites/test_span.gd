@@ -470,6 +470,34 @@ func test_inactive_span_lifecycle() -> void:
 
 
 @warning_ignore("unused_parameter")
+func test_active_span_lifecycle(clone_scope: bool, test_parameters := [
+		[false],
+		[true],
+]) -> void:
+	var root := SentrySDK.start_span("test.active_root")
+	var child := SentrySDK.start_span("test.active_child")
+	var root_ref: WeakRef = weakref(root)
+	var child_ref: WeakRef = weakref(child)
+	var scope_copy: SentryScope
+	if clone_scope:
+		scope_copy = SentrySDK.with_scope(func(scope: SentryScope) -> SentryScope:
+			return scope
+			)
+	child.end()
+	root.end()
+	root = null
+	assert_bool(root_ref.get_ref() != null).is_true()
+	child = null
+	assert_object(SentrySDK.get_active_span()).is_null()
+	if clone_scope:
+		assert_bool(child_ref.get_ref() != null).is_true()
+		assert_bool(root_ref.get_ref() != null).is_true()
+		scope_copy.clear()
+	assert_bool(child_ref.get_ref() == null).is_true()
+	assert_bool(root_ref.get_ref() == null).is_true()
+
+
+@warning_ignore("unused_parameter")
 func test_ended_ancestor_refuses_a_child(ended_depth: int, inherited_parent: bool, test_parameters := [
 		[0, false],
 		[1, false],
@@ -515,31 +543,3 @@ func test_ended_previous_span_is_not_a_tracing_ancestor() -> void:
 	child.end()
 	root.end()
 	assert_object(SentrySDK.get_active_span()).is_null()
-
-
-@warning_ignore("unused_parameter")
-func test_active_span_parent_links_are_released(clone_scope: bool, test_parameters := [
-		[false],
-		[true],
-]) -> void:
-	var root := SentrySDK.start_span("test.active_root")
-	var child := SentrySDK.start_span("test.active_child")
-	var root_ref: WeakRef = weakref(root)
-	var child_ref: WeakRef = weakref(child)
-	var scope_copy: SentryScope
-	if clone_scope:
-		scope_copy = SentrySDK.with_scope(func(scope: SentryScope) -> SentryScope:
-			return scope
-			)
-	child.end()
-	root.end()
-	root = null
-	assert_bool(root_ref.get_ref() != null).is_true()
-	child = null
-	assert_object(SentrySDK.get_active_span()).is_null()
-	if clone_scope:
-		assert_bool(child_ref.get_ref() != null).is_true()
-		assert_bool(root_ref.get_ref() != null).is_true()
-		scope_copy.clear()
-	assert_bool(child_ref.get_ref() == null).is_true()
-	assert_bool(root_ref.get_ref() == null).is_true()
