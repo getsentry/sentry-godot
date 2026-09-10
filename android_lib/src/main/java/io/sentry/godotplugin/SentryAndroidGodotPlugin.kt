@@ -252,6 +252,10 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     private fun registerSpan(span: ISpan): Int {
+        if (span.isNoOp) {
+            return 0
+        }
+
         val spansMap = spansByHandle.get() ?: run {
             Log.e(TAG, "Internal Error -- spansByHandle is null")
             return 0

@@ -10,8 +10,9 @@ func before(_do_skip = OS.get_name() in ["macOS", "iOS"],
 
 func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.traces_sample_rate = 1.0
+		options.traces_sample_rate = 0.0
 		options.trace_propagation_targets = []
+		options.propagate_traceparent = true
 	)
 
 
@@ -33,3 +34,20 @@ func test_omitting_the_url_still_yields_headers() -> void:
 	assert_array(headers) \
 		.override_failure_message("reading headers without a URL should skip the allowlist check") \
 		.is_not_empty()
+
+
+func test_unsampled_spans_keep_trace_headers() -> void:
+	var root := SentrySDK.start_span("test.unsampled_root", {}, null, false)
+	var child := SentrySDK.start_span("test.unsampled_child", {}, root, false)
+	for span: SentrySpan in [root, child]:
+		var sentry_trace := ""
+		var traceparent := ""
+		for header: String in span.get_trace_headers():
+			if header.begins_with("sentry-trace: "):
+				sentry_trace = header.trim_prefix("sentry-trace: ")
+			elif header.begins_with("traceparent: "):
+				traceparent = header.trim_prefix("traceparent: ")
+		assert_str(sentry_trace).ends_with("-0").not_contains("0000000000000000")
+		assert_str(traceparent).is_equal("00-%s0" % sentry_trace)
+	child.end()
+	root.end()

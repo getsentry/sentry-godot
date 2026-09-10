@@ -90,3 +90,30 @@ func test_traceparent_is_emitted_when_enabled() -> void:
 	assert_str(_header_value(headers, "traceparent")) \
 		.override_failure_message("traceparent should follow the W3C format and carry the span's own ids") \
 		.is_equal("00-%s-%s-01" % [trace.get("trace_id"), trace.get("span_id")])
+
+
+@warning_ignore("unused_parameter")
+func test_descendants_never_propagate_empty_ids(finish_root: bool, test_parameters := [
+		[true],
+		[false],
+]) -> void:
+	var root := SentrySDK.start_span("test.root", {}, null, false)
+	var child := SentrySDK.start_span("test.child", {}, root, false)
+	assert_array(child.get_trace_headers()).is_not_empty()
+	if finish_root:
+		root.end()
+	root = null
+
+	var grandchild := SentrySDK.start_span("test.grandchild", {}, child, false)
+	var descendant := SentrySDK.start_span("test.descendant", {}, grandchild, false)
+	for span: SentrySpan in [grandchild, descendant]:
+		var headers := span.get_trace_headers()
+		if headers.is_empty():
+			continue
+		var sentry_trace := _header_value(headers, "sentry-trace")
+		assert_str(sentry_trace).is_not_empty().not_contains("0000000000000000")
+		assert_str(_header_value(headers, "traceparent")) \
+			.is_equal("00-%s-01" % sentry_trace.trim_suffix("-1"))
+	descendant.end()
+	grandchild.end()
+	child.end()
