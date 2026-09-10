@@ -7,6 +7,10 @@ func _ready() -> void:
 	SentrySDK.logger.info("Starting UI on %s", [OS.get_name()])
 
 	if await cli_commands.check_and_execute_cli():
+		if OS.get_name() == "iOS":
+			# Forced iOS termination skips normal shutdown,
+			# so flush pending events first.
+			SentrySDK.close()
 		# Quit if a CLI command was executed
 		print(">>> App exit with code: ", cli_commands.exit_code)
 		if OS.get_name() == "iOS":
