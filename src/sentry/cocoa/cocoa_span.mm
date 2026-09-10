@@ -3,6 +3,16 @@
 #include "cocoa_util.h"
 #include "sentry/sentry_sdk.h"
 
+namespace {
+
+bool _is_noop(SentryObjCSpan *p_span) {
+	// Cocoa returns a no-op span with empty IDs when the owning transaction is gone or finished.
+	return [p_span.traceId.sentryIdString isEqualToString:SentryObjCId.empty.sentryIdString] ||
+			[p_span.spanId.sentrySpanIdString isEqualToString:SentryObjCSpanId.empty.sentrySpanIdString];
+}
+
+} // unnamed namespace
+
 namespace sentry::cocoa {
 
 SentrySpanImpl *CocoaSpan::start_root(const String &p_name, const Dictionary &p_attributes) {
@@ -23,12 +33,18 @@ SentrySpanImpl *CocoaSpan::start_root(const String &p_name, const Dictionary &p_
 			parentSampleRand:nil];
 	// Cocoa returns a span even for unsampled transactions; its headers still carry the trace context and sampling decision.
 	SentryObjCSpan *span = [SentryObjCSDK startTransactionWithContext:context bindToScope:NO];
+	if (_is_noop(span)) {
+		return SentrySpanImpl::create_noop();
+	}
 	return memnew(CocoaSpan(span, p_attributes));
 }
 
 SentrySpanImpl *CocoaSpan::start_child(const String &p_name, const Dictionary &p_attributes) {
 	SentryObjCSpan *child = [_span startChildWithOperation:string_to_objc(p_attributes.get("sentry.op", String()))
 											   description:string_to_objc(p_name)];
+	if (_is_noop(child)) {
+		return SentrySpanImpl::create_noop();
+	}
 	return memnew(CocoaSpan(child, p_attributes));
 }
 
