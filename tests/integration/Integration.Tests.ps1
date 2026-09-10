@@ -239,7 +239,7 @@ Describe "Platform Integration Tests" {
                 # Retrieve the Sentry event associated with the crash ID,
                 # which will be tested in the following "It" blocks.
                 Write-GitHub "::group::Getting event content"
-                $script:runEvent = Get-SentryTestEvent -TagName "test.crash_id" -TagValue "$eventId" -TimeoutSeconds 120
+                $script:runEvent = Get-SentryTestEvent -TagName "test.crash_id" -TagValue "$eventId"
                 Write-GitHub "::endgroup::"
             }
         }
