@@ -12,7 +12,6 @@ class NativeSDK : public InternalSDK {
 private:
 	sentry_uuid_t last_uuid;
 	Ref<Mutex> last_uuid_mutex;
-	bool initialized = false;
 	Vector<sentry_attachment_t *> user_attachments;
 
 public:

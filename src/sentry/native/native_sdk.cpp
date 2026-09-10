@@ -496,7 +496,6 @@ void NativeSDK::init() {
 #endif
 
 	int err = sentry_init(options);
-	initialized = (err == 0);
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());
@@ -507,7 +506,6 @@ void NativeSDK::init() {
 
 void NativeSDK::close() {
 	int err = sentry_close();
-	initialized = false;
 	user_attachments.clear();
 
 	if (err != 0) {
@@ -516,7 +514,7 @@ void NativeSDK::close() {
 }
 
 bool NativeSDK::is_enabled() const {
-	return initialized;
+	return sentry_is_enabled() != 0;
 }
 
 NativeSDK::NativeSDK() {
