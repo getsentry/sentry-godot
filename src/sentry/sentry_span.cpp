@@ -122,10 +122,14 @@ Ref<SentryScope> SentrySpan::get_associated_scope() const {
 
 Ref<SentrySpan> SentrySpan::start_child(const String &p_name, const Dictionary &p_attributes) {
 	ERR_SENTRY_THREAD_GUARD_V(create_noop(), WRONG_THREAD_MSG);
-	ERR_FAIL_COND_V_MSG(_ended, create_noop(), "Sentry: Can't start a child span on a span that has ended.");
+	for (const SentrySpan *ancestor = this; ancestor; ancestor = ancestor->_parent.ptr()) {
+		ERR_FAIL_COND_V_MSG(ancestor->_ended, create_noop(), "Sentry: Can't start a child span when its parent or an ancestor has ended.");
+	}
 	ERR_FAIL_COND_V_MSG(p_name.is_empty(), create_noop(), "Sentry: Can't start a child span with an empty name.");
 	SentrySpanImpl *child_impl = _impl->start_child(p_name, p_attributes);
-	return memnew(SentrySpan(child_impl));
+	Ref<SentrySpan> child = memnew(SentrySpan(child_impl));
+	child->_parent = Ref<SentrySpan>(this);
+	return child;
 }
 
 SentrySpan::SentrySpan() {

@@ -111,3 +111,17 @@ func test_descendants_never_propagate_empty_ids(finish_root: bool, test_paramete
 	descendant.end()
 	grandchild.end()
 	child.end()
+
+
+func test_existing_span_headers_survive_ancestor_end() -> void:
+	var root := SentrySDK.start_span("test.finished_root", {}, null, false)
+	var child := SentrySDK.start_span("test.surviving_child", {}, root, false)
+	var before := _header_value(child.get_trace_headers(), "sentry-trace")
+	assert_str(before).is_not_empty()
+	root.end()
+
+	var headers := child.get_trace_headers()
+	assert_str(_header_value(headers, "sentry-trace")).is_equal(before)
+	assert_str(_header_value(headers, "traceparent")) \
+		.is_equal("00-%s-01" % before.trim_suffix("-1"))
+	child.end()
