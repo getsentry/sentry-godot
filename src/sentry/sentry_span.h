@@ -25,6 +25,7 @@ public:
 
 private:
 	SentrySpanImpl *_impl;
+	Ref<SentrySpan> _parent;
 
 	// The span this one displaced when it was bound to a scope, assigned by SentrySDK.
 	// Scopes resolve their slot through this chain, so it must outlive this span's end().

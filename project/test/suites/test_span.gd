@@ -441,3 +441,105 @@ func test_ended_span_yields_no_trace_headers() -> void:
 	assert_array(span.get_trace_headers()) \
 		.override_failure_message("an ended span has nothing left to propagate") \
 		.is_empty()
+
+
+func test_inactive_span_lifecycle() -> void:
+	var root := SentrySDK.start_span("test.retained_root", {}, null, false)
+	var child := SentrySDK.start_span("test.retained_child", {}, root, false)
+	var grandchild := SentrySDK.start_span("test.retained_grandchild", {}, child, false)
+	var root_ref: WeakRef = weakref(root)
+	var child_ref: WeakRef = weakref(child)
+	var trace_id := _header_value(root.get_trace_headers(), "sentry-trace").get_slice("-", 0)
+	root = null
+	child = null
+
+	assert_bool(root_ref.get_ref() != null).is_true()
+	assert_bool(child_ref.get_ref() != null).is_true()
+	var descendant := SentrySDK.start_span("test.retained_descendant", {}, grandchild, false)
+	assert_str(_header_value(descendant.get_trace_headers(), "sentry-trace")).starts_with(trace_id + "-")
+	descendant.end()
+	grandchild.end()
+	if child_ref.get_ref() != null:
+		child_ref.get_ref().end()
+	if root_ref.get_ref() != null:
+		root_ref.get_ref().end()
+	descendant = null
+	grandchild = null
+	assert_bool(child_ref.get_ref() == null).is_true()
+	assert_bool(root_ref.get_ref() == null).is_true()
+
+
+@warning_ignore("unused_parameter")
+func test_active_span_lifecycle(clone_scope: bool, test_parameters := [
+		[false],
+		[true],
+]) -> void:
+	var root := SentrySDK.start_span("test.active_root")
+	var child := SentrySDK.start_span("test.active_child")
+	var root_ref: WeakRef = weakref(root)
+	var child_ref: WeakRef = weakref(child)
+	var scope_copy: SentryScope
+	if clone_scope:
+		scope_copy = SentrySDK.with_scope(func(scope: SentryScope) -> SentryScope:
+			return scope
+			)
+	child.end()
+	root.end()
+	root = null
+	assert_bool(root_ref.get_ref() != null).is_true()
+	child = null
+	assert_object(SentrySDK.get_active_span()).is_null()
+	if clone_scope:
+		assert_bool(child_ref.get_ref() != null).is_true()
+		assert_bool(root_ref.get_ref() != null).is_true()
+		scope_copy.clear()
+	assert_bool(child_ref.get_ref() == null).is_true()
+	assert_bool(root_ref.get_ref() == null).is_true()
+
+
+@warning_ignore("unused_parameter")
+func test_ended_ancestor_refuses_a_child(ended_depth: int, inherited_parent: bool, test_parameters := [
+		[0, false],
+		[1, false],
+		[2, false],
+		[0, true],
+		[1, true],
+]) -> void:
+	var root := SentrySDK.start_span("test.ancestor_root", {}, null, false)
+	var middle := SentrySDK.start_span("test.ancestor_middle", {}, root, false)
+	var parent := SentrySDK.start_span("test.ancestor_parent", {}, middle, inherited_parent)
+	match ended_depth:
+		0: root.end()
+		1: middle.end()
+		2: parent.end()
+
+	var rejected: SentrySpan
+	if inherited_parent:
+		rejected = SentrySDK.start_span("test.rejected_child")
+		assert_object(SentrySDK.get_active_span()).is_same(rejected)
+	else:
+		rejected = SentrySDK.start_span("test.rejected_child", {}, parent, false)
+	assert_array(rejected.get_trace_headers()).is_empty()
+	var descendant := SentrySDK.start_span("test.rejected_descendant", {}, rejected, false)
+	assert_array(descendant.get_trace_headers()).is_empty()
+	descendant.end()
+	rejected.end()
+	if inherited_parent:
+		assert_object(SentrySDK.get_active_span()).is_same(parent)
+	parent.end()
+	middle.end()
+	root.end()
+
+
+func test_ended_previous_span_is_not_a_tracing_ancestor() -> void:
+	var root := SentrySDK.start_span("test.explicit_root", {}, null, false)
+	var unrelated := SentrySDK.start_span("test.unrelated_scope")
+	var child := SentrySDK.start_span("test.explicit_child", {}, root)
+	unrelated.end()
+
+	var grandchild := SentrySDK.start_span("test.allowed_grandchild")
+	assert_array(grandchild.get_trace_headers()).is_not_empty()
+	grandchild.end()
+	child.end()
+	root.end()
+	assert_object(SentrySDK.get_active_span()).is_null()
