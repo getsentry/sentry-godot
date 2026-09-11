@@ -5,6 +5,15 @@ using System.Collections.Generic;
 
 namespace Sentry.Godot;
 
+/// <summary>
+/// Configures the Sentry SDK for Godot.
+/// </summary>
+/// <remarks>
+/// Regular expressions in <see cref="SentryOptions.TracePropagationTargets"/> sync to the native layer using only
+/// their pattern. Constructor-supplied <see cref="System.Text.RegularExpressions.RegexOptions"/> are not preserved.
+/// For case-insensitive matching in both layers, include <c>(?i)</c> in the pattern instead of using
+/// <see cref="System.Text.RegularExpressions.RegexOptions.IgnoreCase"/>.
+/// </remarks>
 public sealed class SentryGodotOptions : SentryOptions
 {
     public SentryGodotOptions()
