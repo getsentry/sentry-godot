@@ -33,8 +33,8 @@ TEST_SUITE("[.NET] Cross-layer trace sync") {
 
 		InitFixture fixture("Init"); // inits the SDK, closes at scope exit
 		Object *harness = fixture.get_harness();
-		REQUIRE(harness != nullptr);
-		REQUIRE(sentry::dotnet::is_managed_layer_registered());
+		REQUIRED_CHECK(harness != nullptr);
+		REQUIRED_CHECK(sentry::dotnet::is_managed_layer_registered());
 
 		// Baseline: .NET adopts native's session trace at init, so the layers start aligned.
 		const String session_trace = _native_trace_id();
@@ -62,8 +62,8 @@ TEST_SUITE("[.NET] Cross-layer trace sync") {
 
 		InitFixture fixture("Init"); // inits the SDK, closes at scope exit
 		Object *harness = fixture.get_harness();
-		REQUIRE(harness != nullptr);
-		REQUIRE(sentry::dotnet::is_managed_layer_registered());
+		REQUIRED_CHECK(harness != nullptr);
+		REQUIRED_CHECK(sentry::dotnet::is_managed_layer_registered());
 
 		const String session_trace = _native_trace_id();
 		CHECK_FALSE(session_trace.is_empty());
