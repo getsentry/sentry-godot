@@ -43,21 +43,21 @@ func test_breadcrumbs_order() -> void:
 
 	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
 
-	assert_json(json).describe("Breadcrumbs exist") \
-		.at("/breadcrumbs") \
-		.is_array() \
-		.with_objects() \
-		.at_least(2)
+	var breadcrumbs: Array = JSON.parse_string(json).get("breadcrumbs", [])
+	var ordered_breadcrumbs := breadcrumbs.filter(func(crumb: Dictionary) -> bool:
+		return crumb.get("message") in ["First breadcrumb", "Second breadcrumb"]
+	)
+	assert_array(ordered_breadcrumbs).has_size(2)
 
-	# NOTE: -1 is last, -2 is pre-last (element in JSON array)
-	assert_json(json).describe("Breadcrumbs are added in proper order") \
-		.at("/breadcrumbs/-1") \
-		.is_object() \
-		.must_contain("message", "Second breadcrumb") \
-		.verify()
-	assert_json(json).at("/breadcrumbs/-2") \
+	assert_json(ordered_breadcrumbs).describe("First breadcrumb precedes the second breadcrumb") \
+		.at("/0") \
 		.is_object() \
 		.must_contain("message", "First breadcrumb") \
+		.verify()
+	assert_json(ordered_breadcrumbs).describe("Second breadcrumb follows the first breadcrumb") \
+		.at("/1") \
+		.is_object() \
+		.must_contain("message", "Second breadcrumb") \
 		.verify()
 
 
@@ -71,13 +71,13 @@ func test_breadcrumbs_with_utf8() -> void:
 	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
 
 	assert_json(json).describe("Breadcrumb retains UTF-8 encoded data") \
-		.at("/breadcrumbs/-1") \
-		.is_object() \
-		.must_contain("message", "Hello 世界! 👋") \
+		.at("/breadcrumbs/") \
+		.with_objects() \
+		.containing("message", "Hello 世界! 👋") \
+		.containing("category", "Hello 世界! 👋") \
 		.must_contain("type", "Hello 世界! 👋") \
-		.must_contain("category", "Hello 世界! 👋") \
 		.must_contain("data", {"Hello, World! 👋": "Hello 世界! 👋"}) \
-		.verify()
+		.exactly(1)
 
 
 func test_breadcrumbs_with_complex_nested_data() -> void:
@@ -95,10 +95,9 @@ func test_breadcrumbs_with_complex_nested_data() -> void:
 	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
 
 	assert_json(json).describe("Breadcrumb retains complex nested data") \
-		.at("/breadcrumbs/-1") \
-		.is_object() \
-		.is_not_empty() \
-		.must_contain("message", "Player stats updated") \
+		.at("/breadcrumbs/") \
+		.with_objects() \
+		.containing("message", "Player stats updated") \
 		.must_contain("category", "gameplay") \
 		.must_contain("level", "debug") \
 		.must_contain("type", "info") \
@@ -107,4 +106,4 @@ func test_breadcrumbs_with_complex_nested_data() -> void:
 			"level_complete": false,
 			"experience_gained": 125.5,
 		}) \
-		.verify()
+		.exactly(1)
