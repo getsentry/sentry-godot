@@ -54,6 +54,30 @@ public partial class DotnetTestHarness : RefCounted
     private readonly Godot.Collections.Dictionary _receivedOptions = [];
     public Godot.Collections.Dictionary GetReceivedOptions() => _receivedOptions;
 
+    public void InitWithRegexTracePropagationTargets()
+    {
+        SentrySdk.Init(options =>
+        {
+            options.Debug = false;
+            options.AttachScreenshot = false;
+            options.TracePropagationTargets.Clear();
+            options.TracePropagationTargets.Add(@"^literal\.example\.com$");
+            options.TracePropagationTargets.Add(new Regex(@"^https://api\.example\.com/żółw$"));
+            options.TracePropagationTargets.Add("");
+            options.TracePropagationTargets.Add(new Regex(""));
+        });
+    }
+
+    public void InitWithEmptyTracePropagationTargets()
+    {
+        SentrySdk.Init(options =>
+        {
+            options.Debug = false;
+            options.AttachScreenshot = false;
+            options.TracePropagationTargets.Clear();
+        });
+    }
+
     public string[] GetCurrentTracePropagationTargets()
     {
         var optionsProperty = typeof(SentrySdk).GetProperty("CurrentOptions", BindingFlags.NonPublic | BindingFlags.Static);
@@ -62,12 +86,11 @@ public partial class DotnetTestHarness : RefCounted
             return [];
         }
 
-        var regexField = typeof(StringOrRegex).GetField("_regex", BindingFlags.NonPublic | BindingFlags.Instance);
         var targets = new string[options.TracePropagationTargets.Count];
         for (int i = 0; i < targets.Length; i++)
         {
             var target = options.TracePropagationTargets[i];
-            string type = regexField?.GetValue(target) is Regex ? "regex" : "string";
+            string type = target.IsRegex ? "regex" : "string";
             targets[i] = $"{type}:{target}";
         }
         return targets;

@@ -12,6 +12,7 @@
 #include <godot_cpp/classes/class_db_singleton.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/reg_ex.hpp>
+#include <godot_cpp/classes/reg_ex_match.hpp>
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/templates/local_vector.hpp>
 #include <godot_cpp/variant/callable_method_pointer.hpp>
@@ -168,7 +169,7 @@ TEST_SUITE("[.NET] Options interop") {
 			}
 		}
 
-		SUBCASE("Native regex propagation targets remain regexes in .NET") {
+		SUBCASE("Native regex propagation targets survive the managed roundtrip") {
 			if (!sentry::dotnet::godot_supports_dotnet()) {
 				MESSAGE("Skipping: managed runtime unavailable (non-mono Godot build).");
 				return;
@@ -179,7 +180,50 @@ TEST_SUITE("[.NET] Options interop") {
 			SentrySDK::get_singleton()->init(callable_mp_static(&_configure_regex_trace_propagation_target));
 			const PackedStringArray targets = harness->call("GetCurrentTracePropagationTargets");
 			CHECK(targets == PackedStringArray({ "string:literal.example.com", "regex:api\\.example\\.com" }));
+			const Array native_targets = SENTRY_OPTIONS()->get_trace_propagation_targets();
+			CHECK(native_targets.size() == 2);
+			if (native_targets.size() == 2) {
+				CHECK(native_targets[0] == Variant("literal.example.com"));
+				const Ref<RegEx> regex = native_targets[1];
+				CHECK(regex.is_valid());
+				if (regex.is_valid()) {
+					CHECK(regex->get_pattern() == "api\\.example\\.com");
+				}
+			}
 			SentrySDK::get_singleton()->close();
+		}
+
+		SUBCASE("Managed regex propagation targets retain their type and matching behavior in native") {
+			if (!sentry::dotnet::godot_supports_dotnet()) {
+				MESSAGE("Skipping: managed runtime unavailable (non-mono Godot build).");
+				return;
+			}
+
+			InitFixture fixture("InitWithRegexTracePropagationTargets");
+			REQUIRE(fixture.get_harness() != nullptr);
+			const Array targets = SENTRY_OPTIONS()->get_trace_propagation_targets();
+			REQUIRE(targets.size() == 3);
+			CHECK(targets[0] == Variant("^literal\\.example\\.com$"));
+			const Ref<RegEx> regex = targets[1];
+			REQUIRE(regex.is_valid());
+			CHECK(regex->get_pattern() == String::utf8("^https://api\\.example\\.com/żółw$"));
+			CHECK(regex->search(String::utf8("https://api.example.com/żółw")).is_valid());
+			CHECK(regex->search(String::utf8("https://apiXexample.com/żółw")).is_null());
+			const Ref<RegEx> empty_regex = targets[2];
+			REQUIRE(empty_regex.is_valid());
+			CHECK(empty_regex->is_valid());
+			CHECK(empty_regex->get_pattern().is_empty());
+		}
+
+		SUBCASE("Managed propagation targets can be cleared") {
+			if (!sentry::dotnet::godot_supports_dotnet()) {
+				MESSAGE("Skipping: managed runtime unavailable (non-mono Godot build).");
+				return;
+			}
+
+			InitFixture fixture("InitWithEmptyTracePropagationTargets");
+			REQUIRE(fixture.get_harness() != nullptr);
+			CHECK(SENTRY_OPTIONS()->get_trace_propagation_targets().is_empty());
 		}
 	}
 }

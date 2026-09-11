@@ -124,26 +124,34 @@ static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map)
 	return dict;
 }
 
-// Managed-owned string list for passing string arrays across P/Invoke.
+// Managed-owned trace propagation targets for passing across P/Invoke.
 // C# builds and pins this; native reads it synchronously during the call.
-// Buffer layout: all strings concatenated as UTF-16, with one length per entry.
-struct ManagedStringList {
+// Buffer layout: all patterns concatenated as UTF-16, with one length and regex flag per entry.
+struct ManagedTracePropagationTargets {
 	const char16_t *buffer;
 	const int32_t *lengths;
+	const uint8_t *is_regex;
 	int32_t count;
 };
 
-static PackedStringArray _managed_string_list_to_packed_array(const ManagedStringList &list) {
-	PackedStringArray result;
-	if (list.count <= 0 || list.buffer == nullptr || list.lengths == nullptr) {
+static Array _managed_trace_propagation_targets_to_array(const ManagedTracePropagationTargets &list) {
+	Array result;
+	if (list.count <= 0 || list.buffer == nullptr || list.lengths == nullptr || list.is_regex == nullptr) {
 		return result;
 	}
 	const char16_t *ptr = list.buffer;
-	result.resize(list.count);
 	for (int32_t i = 0; i < list.count; i++) {
 		const int32_t length = list.lengths[i];
-		result[i] = String::utf16(ptr, length);
+		const String pattern = String::utf16(ptr, length);
 		ptr += length;
+		if (list.is_regex[i]) {
+			Ref<RegEx> regex;
+			regex.instantiate();
+			ERR_CONTINUE_MSG(regex->compile(pattern) != OK, "Sentry: Ignoring a trace propagation target that Godot cannot compile.");
+			result.push_back(regex);
+		} else {
+			result.push_back(pattern);
+		}
 	}
 	return result;
 }
@@ -284,7 +292,7 @@ struct ManagedOptions {
 	// Trace propagation
 	const char16_t *org_id;
 	int32_t org_id_len;
-	ManagedStringList trace_propagation_targets;
+	ManagedTracePropagationTargets trace_propagation_targets;
 	uint8_t propagate_traceparent;
 };
 
@@ -327,7 +335,7 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->get_android()->set_anr_timeout_interval_ms(data.android_anr_timeout_interval_ms);
 	options->get_android()->set_attach_anr_thread_dump(data.android_attach_anr_thread_dump);
 	options->set_org_id(String::utf16(data.org_id, data.org_id_len));
-	options->set_trace_propagation_targets(_managed_string_list_to_packed_array(data.trace_propagation_targets));
+	options->set_trace_propagation_targets(_managed_trace_propagation_targets_to_array(data.trace_propagation_targets));
 	options->set_propagate_traceparent(data.propagate_traceparent);
 }
 
