@@ -96,8 +96,7 @@ String NativeEvent::get_platform() const {
 }
 
 void NativeEvent::set_level(sentry::Level p_level) {
-	sentry_value_set_by_key(native_event, "level",
-			sentry_value_new_string(sentry::native::level_to_cstring(p_level)));
+	sentry_event_set_level(native_event, sentry::native::level_to_native(p_level));
 }
 
 sentry::Level NativeEvent::get_level() const {
