@@ -191,6 +191,15 @@
 				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/tags/]Tags documentation[/url].
 			</description>
 		</method>
+		<method name="set_tags">
+			<return type="void" />
+			<param index="0" name="tags" type="Dictionary" />
+			<description>
+				Assigns multiple tags from the specified [param tags] dictionary. Tag keys and values must be strings. Existing tags with matching keys are overwritten, while other tags remain unchanged.
+				On Windows and Linux, this is more efficient than calling [method set_tag] repeatedly. Other platforms receive no batching performance benefit.
+				To learn more, visit [url=https://docs.sentry.io/platforms/godot/enriching-events/tags/]Tags documentation[/url].
+			</description>
+		</method>
 		<method name="set_user">
 			<return type="void" />
 			<param index="0" name="user" type="SentryUser" />

@@ -208,6 +208,10 @@ void NativeSDK::set_tag(const String &p_key, const String &p_value) {
 	sentry_set_tag(p_key.utf8(), p_value.utf8());
 }
 
+void NativeSDK::set_tags(const Dictionary &p_tags) {
+	sentry_set_tags(sentry::native::variant_to_sentry_value(p_tags));
+}
+
 void NativeSDK::remove_tag(const String &p_key) {
 	ERR_FAIL_COND(p_key.is_empty());
 	sentry_remove_tag(p_key.utf8());

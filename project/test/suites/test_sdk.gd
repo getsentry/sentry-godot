@@ -34,6 +34,28 @@ func test_set_tag() -> void:
 	await assert_signal(monitor).is_emitted("callback_processed")
 
 
+## SentrySDK.set_tags() should assign multiple tags to the event object.
+func test_set_tags() -> void:
+	SentrySDK._set_before_send(
+		func(ev: SentryEvent):
+			assert_str(ev.get_tag("custom-tag")).is_equal("updated-value")
+			assert_str(ev.get_tag("preserved-tag")).is_equal("preserved-value")
+			assert_str(ev.get_tag("utf8-test")).is_equal("Hello 世界! 👋")
+			callback_processed.emit()
+			return null)
+
+	SentrySDK.set_tag("custom-tag", "initial-value")
+	SentrySDK.set_tag("preserved-tag", "preserved-value")
+	SentrySDK.set_tags({
+		"custom-tag": "updated-value",
+		"utf8-test": "Hello 世界! 👋",
+	})
+
+	var monitor := monitor_signals(self, false)
+	SentrySDK.capture_message("test-tags")
+	await assert_signal(monitor).is_emitted("callback_processed")
+
+
 ## SentrySDK.remove_tag() should remove a tag from the event object.
 func test_remove_tag() -> void:
 	SentrySDK._set_before_send(

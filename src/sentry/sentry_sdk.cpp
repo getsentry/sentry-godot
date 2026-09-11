@@ -399,6 +399,30 @@ void SentrySDK::set_tag(const String &p_key, const String &p_value) {
 	}
 }
 
+void SentrySDK::set_tags(const Dictionary &p_tags) {
+	Dictionary tags;
+	for (const Variant &key : p_tags.keys()) {
+		const Variant &value = p_tags[key];
+		ERR_CONTINUE_MSG(key.get_type() != Variant::STRING, "Sentry: Tag keys must be strings.");
+		ERR_CONTINUE_MSG(value.get_type() != Variant::STRING, "Sentry: Tag values must be strings.");
+
+		const String tag_key = key;
+		ERR_CONTINUE_MSG(tag_key.is_empty(), "Sentry: Can't set tag with an empty key.");
+		tags[tag_key] = value;
+	}
+
+	if (tags.is_empty()) {
+		return;
+	}
+
+	internal_sdk->set_tags(tags);
+	for (const Variant &key : tags.keys()) {
+		for (const Ref<SentryScopeObserver> &observer : SENTRY_OPTIONS()->get_scope_observers()) {
+			observer->set_tag((String)key, (String)tags[key]);
+		}
+	}
+}
+
 void SentrySDK::remove_tag(const String &p_key) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't remove tag with an empty key.");
 	internal_sdk->remove_tag(p_key);
@@ -658,6 +682,7 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_last_event_id"), &SentrySDK::get_last_event_id);
 	ClassDB::bind_method(D_METHOD("set_context", "key", "value"), &SentrySDK::set_context);
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &SentrySDK::set_tag);
+	ClassDB::bind_method(D_METHOD("set_tags", "tags"), &SentrySDK::set_tags);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &SentrySDK::remove_tag);
 	ClassDB::bind_method(D_METHOD("set_user", "user"), &SentrySDK::set_user);
 	ClassDB::bind_method(D_METHOD("remove_user"), &SentrySDK::remove_user);
