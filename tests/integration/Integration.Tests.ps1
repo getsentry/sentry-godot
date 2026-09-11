@@ -840,7 +840,7 @@ Describe "Platform Integration Tests" {
         }
     }
 
-    Context "Spans" -Skip:$script:IsCocoa {
+    Context "Spans" {
         BeforeAll {
             $runResult = $script:spanRunResult
 
