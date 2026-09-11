@@ -36,9 +36,9 @@ TEST_SUITE("[.NET] Test options.Native.SetBeforeSend bridging") {
 		}
 
 		InitFixture fixture("InitWithNativeHooks"); // inits the SDK, closes at scope exit
-		REQUIRE(fixture.get_harness() != nullptr);
-		REQUIRE(sentry::dotnet::is_managed_layer_registered());
-		REQUIRE(sentry::dotnet::is_before_send_defined());
+		REQUIRED_CHECK(fixture.get_harness() != nullptr);
+		REQUIRED_CHECK(sentry::dotnet::is_managed_layer_registered());
+		REQUIRED_CHECK(sentry::dotnet::is_before_send_defined());
 
 		SUBCASE("Event passes through the callback") {
 			// Create event carrying know values.
@@ -52,7 +52,7 @@ TEST_SUITE("[.NET] Test options.Native.SetBeforeSend bridging") {
 			event->set_tag("before_send.remove_me", "remove-me");
 
 			Ref<SentryEvent> result = sentry::process_event(event);
-			REQUIRE(result.is_valid());
+			REQUIRED_CHECK(result.is_valid());
 
 			SUBCASE("Getters observe the values set on the event") {
 				Dictionary seen = fixture.get_harness()->call("GetSeenEventValues");
@@ -88,7 +88,7 @@ TEST_SUITE("[.NET] Test options.Native.SetBeforeSend bridging") {
 
 		SUBCASE("Managed event capture should never run the Native.SetBeforeSend hook directly") {
 			const int64_t calls_before = fixture.get_harness()->call("GetNativeBeforeSendCallCount");
-			REQUIRE(bool(fixture.get_harness()->call("CaptureManagedEvent")));
+			REQUIRED_CHECK(bool(fixture.get_harness()->call("CaptureManagedEvent")));
 			const int64_t calls_after = fixture.get_harness()->call("GetNativeBeforeSendCallCount");
 			CHECK(calls_after == calls_before);
 		}

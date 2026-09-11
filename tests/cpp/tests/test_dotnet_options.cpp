@@ -47,11 +47,8 @@ String option_name(const OptionCase &p_option) {
 	return path.substr(path.rfind(":") + 1);
 }
 
-void _configure_regex_trace_propagation_target(const Ref<SentryOptions> &p_options) {
-	Ref<RegEx> regex;
-	regex.instantiate();
-	REQUIRE(regex->compile("api\\.example\\.com") == OK);
-	p_options->set_trace_propagation_targets(Array({ "literal.example.com", regex }));
+void _configure_trace_propagation_targets(const Ref<SentryOptions> &p_options, const Array &p_targets) {
+	p_options->set_trace_propagation_targets(p_targets);
 }
 
 } // unnamed namespace
@@ -176,8 +173,12 @@ TEST_SUITE("[.NET] Options interop") {
 			}
 
 			Object *harness = sentry::tests::get_dotnet_harness();
-			REQUIRE(harness != nullptr);
-			SentrySDK::get_singleton()->init(callable_mp_static(&_configure_regex_trace_propagation_target));
+			REQUIRED_CHECK(harness != nullptr);
+			Ref<RegEx> configured_regex;
+			configured_regex.instantiate();
+			REQUIRED_CHECK(configured_regex->compile("api\\.example\\.com") == OK);
+			const Array configured_targets({ "literal.example.com", configured_regex });
+			SentrySDK::get_singleton()->init(callable_mp_static(&_configure_trace_propagation_targets).bind(configured_targets));
 			const PackedStringArray targets = harness->call("GetCurrentTracePropagationTargets");
 			CHECK(targets == PackedStringArray({ "string:literal.example.com", "regex:api\\.example\\.com" }));
 			const Array native_targets = SENTRY_OPTIONS()->get_trace_propagation_targets();
@@ -200,17 +201,17 @@ TEST_SUITE("[.NET] Options interop") {
 			}
 
 			InitFixture fixture("InitWithRegexTracePropagationTargets");
-			REQUIRE(fixture.get_harness() != nullptr);
+			REQUIRED_CHECK(fixture.get_harness() != nullptr);
 			const Array targets = SENTRY_OPTIONS()->get_trace_propagation_targets();
-			REQUIRE(targets.size() == 3);
+			REQUIRED_CHECK(targets.size() == 3);
 			CHECK(targets[0] == Variant("^literal\\.example\\.com$"));
 			const Ref<RegEx> regex = targets[1];
-			REQUIRE(regex.is_valid());
+			REQUIRED_CHECK(regex.is_valid());
 			CHECK(regex->get_pattern() == String::utf8("^https://api\\.example\\.com/żółw$"));
 			CHECK(regex->search(String::utf8("https://api.example.com/żółw")).is_valid());
 			CHECK(regex->search(String::utf8("https://apiXexample.com/żółw")).is_null());
 			const Ref<RegEx> empty_regex = targets[2];
-			REQUIRE(empty_regex.is_valid());
+			REQUIRED_CHECK(empty_regex.is_valid());
 			CHECK(empty_regex->is_valid());
 			CHECK(empty_regex->get_pattern().is_empty());
 		}
@@ -222,7 +223,7 @@ TEST_SUITE("[.NET] Options interop") {
 			}
 
 			InitFixture fixture("InitWithEmptyTracePropagationTargets");
-			REQUIRE(fixture.get_harness() != nullptr);
+			REQUIRED_CHECK(fixture.get_harness() != nullptr);
 			CHECK(SENTRY_OPTIONS()->get_trace_propagation_targets().is_empty());
 		}
 	}

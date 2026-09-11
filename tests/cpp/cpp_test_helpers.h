@@ -9,6 +9,14 @@
 #include <string_view>
 #include <vector>
 
+// Returns from the current void function; calling it in a helper does not exit the caller.
+#define REQUIRED_CHECK(...)        \
+	do {                           \
+		if (!CHECK(__VA_ARGS__)) { \
+			return;                \
+		}                          \
+	} while (false)
+
 namespace sentry::tests {
 
 // Wraps string_view so doctest renders \r \n \t as visible.

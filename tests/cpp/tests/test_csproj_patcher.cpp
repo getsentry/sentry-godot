@@ -148,25 +148,25 @@ TEST_SUITE("CsprojPatcher") {
 
 	TEST_CASE_FIXTURE(CsprojFixture, "Missing import gets patched") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITHOUT_IMPORT, IMPORT_PATH);
-		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
+		REQUIRED_CHECK(result.status == CsprojPatcher::Status::PATCHED);
 		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED);
 	}
 
 	TEST_CASE_FIXTURE(CsprojFixture, "CRLF line endings preserved") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITHOUT_IMPORT_CRLF, IMPORT_PATH);
-		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
+		REQUIRED_CHECK(result.status == CsprojPatcher::Status::PATCHED);
 		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED_CRLF);
 	}
 
 	TEST_CASE_FIXTURE(CsprojFixture, "Tab indentation preserved") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITHOUT_IMPORT_TABS, IMPORT_PATH);
-		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
+		REQUIRED_CHECK(result.status == CsprojPatcher::Status::PATCHED);
 		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED_TABS);
 	}
 
 	TEST_CASE_FIXTURE(CsprojFixture, "Commented-out import is ignored") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITH_COMMENTED_IMPORT, IMPORT_PATH);
-		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
+		REQUIRED_CHECK(result.status == CsprojPatcher::Status::PATCHED);
 		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED_FROM_COMMENTED);
 	}
 
@@ -187,7 +187,7 @@ TEST_SUITE("CsprojPatcher") {
 
 	TEST_CASE_FIXTURE(CsprojFixture, "UTF-8 BOM is preserved") {
 		auto result = CsprojPatcher::ensure_import(PROJECT_WITHOUT_IMPORT_BOM, IMPORT_PATH);
-		REQUIRE(result.status == CsprojPatcher::Status::PATCHED);
+		REQUIRED_CHECK(result.status == CsprojPatcher::Status::PATCHED);
 		CHECK_SNAPSHOT_EQ(as_view(result.patched_content), PROJECT_PATCHED_BOM);
 	}
 

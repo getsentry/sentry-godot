@@ -201,7 +201,8 @@ elif internal_sdk == SDK.JAVASCRIPT:
 if env["tests"]:
     env.Append(CPPDEFINES=[
         "TESTS_ENABLED",
-        "DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS" # godot-cpp is built with exceptions disabled
+        "DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS", # godot-cpp is built with exceptions disabled
+        "DOCTEST_CONFIG_ASSERTS_RETURN_VALUES"
     ])
     env.Append(CPPPATH=["tests/cpp", "modules/doctest/doctest"])
     sources += [File("tests/cpp/cpp_test_runner.cpp")]
