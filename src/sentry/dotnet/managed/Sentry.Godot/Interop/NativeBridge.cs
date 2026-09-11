@@ -232,7 +232,7 @@ internal static partial class NativeBridge
         public byte android_attach_anr_thread_dump;
         public char* org_id;
         public int org_id_len;
-        public ManagedStringList trace_propagation_targets;
+        public ManagedTracePropagationTargets trace_propagation_targets;
         public byte propagate_traceparent;
     }
 
@@ -255,14 +255,15 @@ internal static partial class NativeBridge
         public int PairCount;
     }
 
-    // Managed-owned string list for passing string arrays across P/Invoke.
-    // Buffer layout: all strings concatenated as UTF-16, with one length per entry.
-    // Must match layout of ManagedStringList in csharp_interop.cpp.
+    // Managed-owned trace propagation targets for passing across P/Invoke.
+    // Buffer layout: all patterns concatenated as UTF-16, with one length and regex flag per entry.
+    // Must match layout of ManagedTracePropagationTargets in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
-    private unsafe struct ManagedStringList
+    private unsafe struct ManagedTracePropagationTargets
     {
         public char* Buffer;
         public int* Lengths;
+        public byte* IsRegex;
         public int Count;
     }
 
@@ -322,7 +323,7 @@ internal static partial class NativeBridge
         }
     }
 
-    private static (char[] Buffer, int[] Lengths) MarshallStringList<T>(IList<T> values)
+    private static (char[] Buffer, int[] Lengths, byte[] IsRegex) MarshallTracePropagationTargets(IList<StringOrRegex> values)
     {
         int totalChars = 0;
         for (int i = 0; i < values.Count; i++)
@@ -331,6 +332,7 @@ internal static partial class NativeBridge
         }
 
         var lengths = new int[values.Count];
+        var isRegex = new byte[values.Count];
         var buffer = new char[Math.Max(totalChars, 1)];
 
         int position = 0;
@@ -338,10 +340,11 @@ internal static partial class NativeBridge
         {
             string value = values[i]?.ToString() ?? "";
             lengths[i] = value.Length;
+            isRegex[i] = (byte)(values[i]?.IsRegex == true ? 1 : 0);
             value.CopyTo(0, buffer, position, value.Length);
             position += value.Length;
         }
-        return (buffer, lengths);
+        return (buffer, lengths, isRegex);
     }
 
     // Must match ManagedFunctions struct in csharp_interop.cpp
@@ -908,10 +911,8 @@ internal static partial class NativeBridge
         var dist = opts.Distribution ?? "";
         var env = opts.Environment ?? "";
         var orgId = opts.OrgId ?? "";
-        // LIMITATION: sentry-dotnet does not expose whether StringOrRegex contains a regex,
-        // so managed targets cross as literals.
-        var (tracePropagationTargetsBuffer, tracePropagationTargetsLengths) =
-                MarshallStringList(opts.TracePropagationTargets);
+        var (tracePropagationTargetsBuffer, tracePropagationTargetsLengths, tracePropagationTargetsIsRegex) =
+                MarshallTracePropagationTargets(opts.TracePropagationTargets);
 
         fixed (char* dsnPtr = dsn)
         fixed (char* relPtr = release)
@@ -920,6 +921,7 @@ internal static partial class NativeBridge
         fixed (char* orgIdPtr = orgId)
         fixed (char* tracePropagationTargetsPtr = tracePropagationTargetsBuffer)
         fixed (int* tracePropagationTargetLengthsPtr = tracePropagationTargetsLengths)
+        fixed (byte* tracePropagationTargetsIsRegexPtr = tracePropagationTargetsIsRegex)
         {
             var managed = new ManagedOptions
             {
@@ -963,10 +965,11 @@ internal static partial class NativeBridge
                 android_attach_anr_thread_dump = (byte)(opts.Android.AttachAnrThreadDump ? 1 : 0),
                 org_id = orgIdPtr,
                 org_id_len = orgId.Length,
-                trace_propagation_targets = new ManagedStringList
+                trace_propagation_targets = new ManagedTracePropagationTargets
                 {
                     Buffer = tracePropagationTargetsPtr,
                     Lengths = tracePropagationTargetLengthsPtr,
+                    IsRegex = tracePropagationTargetsIsRegexPtr,
                     Count = tracePropagationTargetsLengths.Length,
                 },
                 propagate_traceparent = (byte)(opts.PropagateTraceparent ? 1 : 0),
