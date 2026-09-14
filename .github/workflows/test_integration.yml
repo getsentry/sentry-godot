@@ -67,7 +67,7 @@ jobs:
             godot-arch: universal
             test-executable: ./exports/ios/ios.ipa
             export-platform: ios
-            saucelabs-device: iPhone_17_*_real_sjc1
+            saucelabs-device: iPhone_(15|16|17|18|19)_.*_real_sjc1
 
           - test-platform: Web
             runner: ubuntu-latest
@@ -108,7 +108,7 @@ jobs:
             dotnet: true
             test-executable: ./exports/ios/ios.ipa
             export-platform: ios
-            saucelabs-device: iPhone_17_*_real_sjc1
+            saucelabs-device: iPhone_(15|16|17|18|19)_.*_real_sjc1
             test-script: tests/integration/Integration.Dotnet.Tests.ps1
 
     steps:
