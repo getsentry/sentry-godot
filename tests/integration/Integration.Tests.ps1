@@ -23,7 +23,6 @@ $ErrorActionPreference = "Stop"
 . $PSScriptRoot/Utils.ps1
 
 # Detect Apple target platform at discovery time (before BeforeAll runs).
-# Used to skip tests for features unsupported on Apple platforms (e.g., metrics).
 $script:IsCocoa = $env:SENTRY_TEST_PLATFORM -ieq "macOS" -or $env:SENTRY_TEST_PLATFORM -match "iOS" -or
     (($env:SENTRY_TEST_PLATFORM -ieq "Local" -or [string]::IsNullOrEmpty($env:SENTRY_TEST_PLATFORM)) -and $IsMacOS)
 $script:IsWeb = $env:SENTRY_TEST_PLATFORM -ieq "Web"
@@ -721,7 +720,7 @@ Describe "Platform Integration Tests" {
         }
     }
 
-    Context "Metrics Capture" -Skip:$script:IsCocoa {
+    Context "Metrics Capture" {
         BeforeAll {
             $runResult = $script:metricRunResult
 
