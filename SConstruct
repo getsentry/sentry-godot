@@ -7,7 +7,7 @@ from enum import Enum
 
 # *** Settings.
 
-VERSION = "2.1.1"
+VERSION = "2.2.0"
 # NOTE: When bumping this, update the godot-lib pin in android_lib/build.gradle.kts to match.
 COMPATIBILITY_MINIMUM = "4.5"
 IOS_MIN_VERSION = "15.0"
