@@ -8,6 +8,7 @@
 #include <godot_cpp/classes/script_backtrace.hpp>
 #include <mutex>
 #include <unordered_map>
+#include <vector>
 
 using namespace godot;
 

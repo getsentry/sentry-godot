@@ -10,7 +10,7 @@ namespace sentry::javascript {
 
 SentrySpanImpl *JavaScriptSpan::start_span(const String &p_name, const Dictionary &p_attributes, const JSObjectPtr &p_parent) {
 	String attr_value = attributes_to_json(p_attributes);
-	JSObjectPtr span_obj = js_bridge()->call("startSpan", p_name.utf8(), attr_value.utf8(), p_parent).as_object();
+	JSObjectPtr span_obj = js_bridge()->call("startSpan", p_name.utf8().get_data(), attr_value.utf8().get_data(), p_parent).as_object();
 	ERR_FAIL_COND_V_MSG(!span_obj, SentrySpanImpl::create_noop(), "Sentry: Failed to create span object.");
 	return memnew(JavaScriptSpan(span_obj));
 }
@@ -22,19 +22,19 @@ SentrySpanImpl *JavaScriptSpan::start_child(const String &p_name, const Dictiona
 void JavaScriptSpan::set_attribute(const String &p_key, const Variant &p_value) {
 	switch (p_value.get_type()) {
 		case Variant::Type::BOOL: {
-			js_obj->call("setAttribute", p_key.utf8(), p_value.operator bool());
+			js_obj->call("setAttribute", p_key.utf8().get_data(), p_value.operator bool());
 		} break;
 		case Variant::Type::INT: {
-			js_obj->call("setAttribute", p_key.utf8(), p_value.operator int64_t());
+			js_obj->call("setAttribute", p_key.utf8().get_data(), p_value.operator int64_t());
 		} break;
 		case Variant::Type::FLOAT: {
-			js_obj->call("setAttribute", p_key.utf8(), p_value.operator double());
+			js_obj->call("setAttribute", p_key.utf8().get_data(), p_value.operator double());
 		} break;
 		case Variant::Type::STRING: {
-			js_obj->call("setAttribute", p_key.utf8(), p_value.operator String().utf8());
+			js_obj->call("setAttribute", p_key.utf8().get_data(), p_value.operator String().utf8().get_data());
 		} break;
 		default: {
-			js_obj->call("setAttribute", p_key.utf8(), p_value.stringify().utf8());
+			js_obj->call("setAttribute", p_key.utf8().get_data(), p_value.stringify().utf8().get_data());
 		} break;
 	}
 }

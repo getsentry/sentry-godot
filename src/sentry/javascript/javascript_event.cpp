@@ -59,7 +59,7 @@ String JavaScriptEvent::get_id() const {
 
 void JavaScriptEvent::set_message(const String &p_message) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set_or_remove_string_property("message", p_message.utf8());
+	js_obj->set_or_remove_string_property("message", p_message.utf8().get_data());
 }
 
 String JavaScriptEvent::get_message() const {
@@ -110,7 +110,7 @@ String JavaScriptEvent::get_platform() const {
 
 void JavaScriptEvent::set_level(sentry::Level p_level) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set("level", level_as_cstring(p_level));
+	js_obj->set("level", level_as_cstring(p_level).get_data());
 }
 
 sentry::Level JavaScriptEvent::get_level() const {
@@ -121,7 +121,7 @@ sentry::Level JavaScriptEvent::get_level() const {
 
 void JavaScriptEvent::set_logger(const String &p_logger) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set_or_remove_string_property("logger", p_logger.utf8());
+	js_obj->set_or_remove_string_property("logger", p_logger.utf8().get_data());
 }
 
 String JavaScriptEvent::get_logger() const {
@@ -131,7 +131,7 @@ String JavaScriptEvent::get_logger() const {
 
 void JavaScriptEvent::set_release(const String &p_release) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set_or_remove_string_property("release", p_release.utf8());
+	js_obj->set_or_remove_string_property("release", p_release.utf8().get_data());
 }
 
 String JavaScriptEvent::get_release() const {
@@ -141,7 +141,7 @@ String JavaScriptEvent::get_release() const {
 
 void JavaScriptEvent::set_dist(const String &p_dist) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set_or_remove_string_property("dist", p_dist.utf8());
+	js_obj->set_or_remove_string_property("dist", p_dist.utf8().get_data());
 }
 
 String JavaScriptEvent::get_dist() const {
@@ -151,7 +151,7 @@ String JavaScriptEvent::get_dist() const {
 
 void JavaScriptEvent::set_environment(const String &p_environment) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set_or_remove_string_property("environment", p_environment.utf8());
+	js_obj->set_or_remove_string_property("environment", p_environment.utf8().get_data());
 }
 
 String JavaScriptEvent::get_environment() const {
@@ -163,7 +163,7 @@ void JavaScriptEvent::set_tag(const String &p_key, const String &p_value) {
 	ERR_FAIL_COND(!js_obj);
 	JSObjectPtr tags_obj = js_obj->get_or_create_object_property("tags");
 	if (tags_obj) {
-		tags_obj->set(p_key.utf8(), p_value.utf8());
+		tags_obj->set(p_key.utf8().get_data(), p_value.utf8().get_data());
 	}
 }
 
@@ -171,7 +171,7 @@ void JavaScriptEvent::remove_tag(const String &p_key) {
 	ERR_FAIL_COND(!js_obj);
 	JSObjectPtr tags_obj = js_obj->get("tags").as_object();
 	if (tags_obj) {
-		tags_obj->delete_property(p_key.utf8());
+		tags_obj->delete_property(p_key.utf8().get_data());
 	}
 }
 
@@ -179,7 +179,7 @@ String JavaScriptEvent::get_tag(const String &p_key) {
 	ERR_FAIL_COND_V(!js_obj, String());
 	JSObjectPtr tags_obj = js_obj->get("tags").as_object();
 	if (tags_obj) {
-		return tags_obj->get(p_key.utf8()).as_string();
+		return tags_obj->get(p_key.utf8().get_data()).as_string();
 	}
 	return String();
 }
@@ -194,10 +194,10 @@ void JavaScriptEvent::set_user(const Ref<SentryUser> &p_user) {
 
 	js_bridge()->call("eventSetUser",
 			js_obj,
-			p_user->get_id().utf8(),
-			p_user->get_username().utf8(),
-			p_user->get_email().utf8(),
-			p_user->get_ip_address().utf8());
+			p_user->get_id().utf8().get_data(),
+			p_user->get_username().utf8().get_data(),
+			p_user->get_email().utf8().get_data(),
+			p_user->get_ip_address().utf8().get_data());
 }
 
 void JavaScriptEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
@@ -208,7 +208,7 @@ void JavaScriptEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
 		return;
 	}
 
-	js_obj->set_property_from_json("fingerprint", JSON::stringify(p_fingerprint).utf8());
+	js_obj->set_property_from_json("fingerprint", JSON::stringify(p_fingerprint).utf8().get_data());
 }
 
 void JavaScriptEvent::set_context(const String &p_key, const Dictionary &p_value) {
@@ -216,7 +216,9 @@ void JavaScriptEvent::set_context(const String &p_key, const Dictionary &p_value
 	ERR_FAIL_COND(!js_obj);
 	JSObjectPtr all_contexts_jso = js_obj->get_or_create_object_property("contexts");
 	if (all_contexts_jso) {
-		all_contexts_jso->set_property_from_json(p_key.utf8(), JSON::stringify(p_value).utf8());
+		all_contexts_jso->set_property_from_json(
+				p_key.utf8().get_data(),
+				JSON::stringify(p_value).utf8().get_data());
 	}
 }
 
@@ -224,9 +226,9 @@ void JavaScriptEvent::merge_context(const String &p_key, const Dictionary &p_val
 	ERR_FAIL_COND(!js_obj);
 	JSObjectPtr all_contexts_jso = js_obj->get_or_create_object_property("contexts");
 	if (all_contexts_jso) {
-		JSObjectPtr context_jso = all_contexts_jso->get_or_create_object_property(p_key.utf8());
+		JSObjectPtr context_jso = all_contexts_jso->get_or_create_object_property(p_key.utf8().get_data());
 		if (context_jso) {
-			context_jso->merge_properties_from_json(JSON::stringify(p_value).utf8());
+			context_jso->merge_properties_from_json(JSON::stringify(p_value).utf8().get_data());
 		}
 	}
 }
@@ -252,7 +254,7 @@ void JavaScriptEvent::add_exception(const Exception &p_exception) {
 		if (threads_obj) {
 			JSObjectPtr threads_arr = threads_obj->get_or_create_array_property("values");
 			if (threads_arr) {
-				threads_arr->push_element_from_json(jw.get_string().utf8());
+				threads_arr->push_element_from_json(jw.get_string().utf8().get_data());
 			}
 		}
 	}
@@ -270,7 +272,7 @@ void JavaScriptEvent::add_exception(const Exception &p_exception) {
 	if (exception_obj) {
 		JSObjectPtr values_arr = exception_obj->get_or_create_array_property("values");
 		if (values_arr) {
-			values_arr->push_element_from_json(exc_jw.get_string().utf8());
+			values_arr->push_element_from_json(exc_jw.get_string().utf8().get_data());
 		}
 	}
 }
@@ -308,13 +310,13 @@ void JavaScriptEvent::set_exception_value(int p_index, const String &p_value) {
 		return;
 	}
 
-	JSObjectPtr exc_obj = values_arr->get(String::num_int64(p_index).ascii()).as_object();
+	JSObjectPtr exc_obj = values_arr->get(String::num_int64(p_index).ascii().get_data()).as_object();
 	if (!exc_obj) {
 		WARN_PRINT("Sentry: Expected exception object.");
 		return;
 	}
 
-	exc_obj->set("value", p_value.utf8());
+	exc_obj->set("value", p_value.utf8().get_data());
 }
 
 String JavaScriptEvent::get_exception_value(int p_index) const {
@@ -335,7 +337,7 @@ String JavaScriptEvent::get_exception_value(int p_index) const {
 		return String();
 	}
 
-	JSObjectPtr exc_obj = values_arr->get(String::num_int64(p_index).ascii()).as_object();
+	JSObjectPtr exc_obj = values_arr->get(String::num_int64(p_index).ascii().get_data()).as_object();
 	if (!exc_obj) {
 		return String();
 	}
@@ -363,7 +365,7 @@ JavaScriptEvent::JavaScriptEvent() {
 	// Capture current timestamp
 	js_obj->set("timestamp", Time::get_singleton()->get_unix_time_from_system());
 	// Pre-generate event-id
-	js_obj->set("event_id", sentry::uuid::make_uuid_no_dashes().ascii());
+	js_obj->set("event_id", sentry::uuid::make_uuid_no_dashes().ascii().get_data());
 }
 
 JavaScriptEvent::~JavaScriptEvent() {

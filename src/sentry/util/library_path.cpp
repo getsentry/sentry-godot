@@ -12,7 +12,7 @@ namespace sentry::util {
 godot::String get_loaded_gdextension_library_path() {
 #if defined(_WIN32)
 	// In the Windows editor, Godot loads a temporary "~"-prefixed copy of the library,
-	// while gdextension_interface_get_library_path() reports the original path.
+	// while gdextension_interface::get_library_path() reports the original path.
 	// Passing that path to C# DllImport resolver would load a second, uninitialized copy of the library
 	// (with a null SentrySDK singleton), so resolve the module that is actually loaded instead.
 	// See issue 761.
@@ -30,7 +30,7 @@ godot::String get_loaded_gdextension_library_path() {
 	return godot::String();
 #else
 	godot::String library_path;
-	godot::internal::gdextension_interface_get_library_path(godot::internal::library, library_path._native_ptr());
+	godot::gdextension_interface::get_library_path(godot::gdextension_interface::library, library_path._native_ptr());
 	return library_path;
 #endif
 }

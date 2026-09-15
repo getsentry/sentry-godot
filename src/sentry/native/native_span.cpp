@@ -21,7 +21,9 @@ void _append_header_line(const char *p_key, const char *p_value, void *p_userdat
 namespace sentry::native {
 
 SentrySpanImpl *NativeSpan::start_root(const String &p_name, const Dictionary &p_attributes) {
-	sentry_transaction_context_t *context = sentry_transaction_context_new(p_name.utf8(), _get_op(p_attributes));
+	sentry_transaction_context_t *context = sentry_transaction_context_new(
+			p_name.utf8().get_data(),
+			_get_op(p_attributes).get_data());
 	sentry_transaction_t *transaction = sentry_transaction_start(context, sentry_value_new_null());
 	if (!transaction) {
 		return SentrySpanImpl::create_noop();
@@ -31,8 +33,12 @@ SentrySpanImpl *NativeSpan::start_root(const String &p_name, const Dictionary &p
 
 SentrySpanImpl *NativeSpan::start_child(const String &p_name, const Dictionary &p_attributes) {
 	sentry_span_t *child = _transaction
-			? sentry_transaction_start_child(_transaction, _get_op(p_attributes), p_name.utf8())
-			: sentry_span_start_child(_span, _get_op(p_attributes), p_name.utf8());
+			? sentry_transaction_start_child(_transaction,
+					  _get_op(p_attributes).get_data(),
+					  p_name.utf8().get_data())
+			: sentry_span_start_child(_span,
+					  _get_op(p_attributes).get_data(),
+					  p_name.utf8().get_data());
 	if (!child) {
 		return SentrySpanImpl::create_noop();
 	}
@@ -41,9 +47,11 @@ SentrySpanImpl *NativeSpan::start_child(const String &p_name, const Dictionary &
 
 void NativeSpan::set_attribute(const String &p_key, const Variant &p_value) {
 	if (_transaction) {
-		sentry_transaction_set_data(_transaction, p_key.utf8(), variant_to_attribute_value(p_value));
+		sentry_transaction_set_data(_transaction, p_key.utf8().get_data(),
+				variant_to_attribute_value(p_value));
 	} else {
-		sentry_span_set_data(_span, p_key.utf8(), variant_to_attribute_value(p_value));
+		sentry_span_set_data(_span, p_key.utf8().get_data(),
+				variant_to_attribute_value(p_value));
 	}
 }
 

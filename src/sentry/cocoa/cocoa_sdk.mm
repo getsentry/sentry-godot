@@ -20,7 +20,6 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/reg_ex.hpp>
-#include <godot_cpp/core/mutex_lock.hpp>
 
 using namespace godot;
 
@@ -160,7 +159,7 @@ void CocoaSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, co
 			const Variant &key = keys[i];
 			String name = key.stringify();
 			ERR_CONTINUE_MSG(name.is_empty(), "Sentry: Can't set attribute with an empty name.");
-			const NSString *objc_key = [NSString stringWithUTF8String:name.utf8()];
+			const NSString *objc_key = [NSString stringWithUTF8String:name.utf8().get_data()];
 			const NSObject *objc_value = variant_to_scope_attribute(p_attributes[key]);
 			[mutable_attributes setObject:objc_value forKey:objc_key];
 		}
@@ -197,7 +196,7 @@ void CocoaSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, co
 }
 
 String CocoaSDK::get_last_event_id() {
-	MutexLock lock(*last_event_id_mutex.ptr());
+	MutexLock lock(_last_event_id_mutex);
 	return last_event_id;
 }
 
@@ -379,9 +378,8 @@ void CocoaSDK::init() {
 			if (unlikely(processed.is_null())) {
 				return nil;
 			} else {
-				last_event_id_mutex->lock();
+				MutexLock lock(_last_event_id_mutex);
 				last_event_id = string_from_objc(event.eventId.sentryIdString);
-				last_event_id_mutex->unlock();
 				return event;
 			}
 		};
@@ -422,10 +420,6 @@ void CocoaSDK::close() {
 
 bool CocoaSDK::is_enabled() const {
 	return [SentryObjCSDK isEnabled];
-}
-
-CocoaSDK::CocoaSDK() {
-	last_event_id_mutex.instantiate();
 }
 
 CocoaSDK::~CocoaSDK() {

@@ -19,7 +19,7 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 			return sentry_value_new_double((double)p_variant);
 		} break;
 		case Variant::Type::STRING: {
-			return sentry_value_new_string(((String)p_variant).utf8());
+			return sentry_value_new_string(((String)p_variant).utf8().get_data());
 		} break;
 		case Variant::Type::DICTIONARY: {
 			if (p_depth > VARIANT_CONVERSION_MAX_DEPTH) {
@@ -32,7 +32,9 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 			const Array &keys = dic.keys();
 			for (int i = 0; i < keys.size(); i++) {
 				const Variant &key = keys[i];
-				sentry_value_set_by_key(sentry_dic, key.stringify().utf8(), variant_to_sentry_value(dic[key], p_depth + 1));
+				sentry_value_set_by_key(sentry_dic,
+						key.stringify().utf8().get_data(),
+						variant_to_sentry_value(dic[key], p_depth + 1));
 			}
 			return sentry_dic;
 		} break;
@@ -65,7 +67,7 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 			return sentry_list;
 		} break;
 		default: {
-			return sentry_value_new_string(p_variant.stringify().utf8());
+			return sentry_value_new_string(p_variant.stringify().utf8().get_data());
 		} break;
 	}
 }
@@ -73,7 +75,7 @@ sentry_value_t variant_to_sentry_value(const Variant &p_variant, int p_depth) {
 sentry_value_t strings_to_sentry_list(const PackedStringArray &p_strings) {
 	sentry_value_t sentry_list = sentry_value_new_list();
 	for (int i = 0; i < p_strings.size(); i++) {
-		sentry_value_append(sentry_list, sentry_value_new_string(p_strings[i].utf8()));
+		sentry_value_append(sentry_list, sentry_value_new_string(p_strings[i].utf8().get_data()));
 	}
 	return sentry_list;
 }
@@ -142,15 +144,15 @@ CharString level_to_cstring(Level level) {
 }
 
 Level cstring_to_level(const CharString &p_cstring) {
-	if (strcmp(p_cstring, "debug") == 0) {
+	if (strcmp(p_cstring.get_data(), "debug") == 0) {
 		return Level::LEVEL_DEBUG;
-	} else if (strcmp(p_cstring, "info") == 0) {
+	} else if (strcmp(p_cstring.get_data(), "info") == 0) {
 		return Level::LEVEL_INFO;
-	} else if (strcmp(p_cstring, "warning") == 0) {
+	} else if (strcmp(p_cstring.get_data(), "warning") == 0) {
 		return Level::LEVEL_WARNING;
-	} else if (strcmp(p_cstring, "error") == 0) {
+	} else if (strcmp(p_cstring.get_data(), "error") == 0) {
 		return Level::LEVEL_ERROR;
-	} else if (strcmp(p_cstring, "fatal") == 0) {
+	} else if (strcmp(p_cstring.get_data(), "fatal") == 0) {
 		return Level::LEVEL_FATAL;
 	} else {
 		ERR_FAIL_V_MSG(Level::LEVEL_ERROR, "SentrySDK: Internal error - unexpected level value. Please open an issue.");
@@ -169,7 +171,7 @@ sentry_value_t variant_to_attribute_value(const Variant &p_value) {
 			return sentry_value_new_double((double)p_value);
 		} break;
 		default: {
-			return sentry_value_new_string(p_value.stringify().utf8());
+			return sentry_value_new_string(p_value.stringify().utf8().get_data());
 		} break;
 	}
 }
@@ -186,7 +188,7 @@ sentry_value_t dictionary_to_attributes(const Dictionary &p_attributes) {
 	for (const Variant &key : p_attributes.keys()) {
 		String name = key.stringify();
 		ERR_CONTINUE_MSG(name.is_empty(), "Sentry: Can't set attribute with an empty name.");
-		sentry_value_set_by_key(rv, name.utf8(),
+		sentry_value_set_by_key(rv, name.utf8().get_data(),
 				variant_to_attribute(p_attributes[key]));
 	}
 	return rv;
@@ -198,7 +200,7 @@ Variant sentry_value_get_attribute(sentry_value_t p_value, const String &p_name)
 		return Variant();
 	}
 
-	sentry_value_t attr = sentry_value_get_by_key(attributes, p_name.utf8());
+	sentry_value_t attr = sentry_value_get_by_key(attributes, p_name.utf8().get_data());
 	if (sentry_value_is_null(attr)) {
 		return Variant();
 	}
@@ -232,7 +234,9 @@ void sentry_value_set_attribute(sentry_value_t p_native, const String &p_name, c
 		sentry_value_set_by_key(p_native, "attributes", attributes);
 	}
 
-	sentry_value_set_by_key(attributes, p_name.utf8(), variant_to_attribute(p_value));
+	sentry_value_set_by_key(attributes,
+			p_name.utf8().get_data(),
+			variant_to_attribute(p_value));
 }
 
 void sentry_value_add_attributes(sentry_value_t p_native, const Dictionary &p_attributes) {
@@ -245,7 +249,9 @@ void sentry_value_add_attributes(sentry_value_t p_native, const Dictionary &p_at
 	const Array &keys = p_attributes.keys();
 	for (int i = 0; i < keys.size(); i++) {
 		const Variant &key = keys[i];
-		sentry_value_set_by_key(attributes, key.stringify().utf8(), variant_to_attribute(p_attributes[key]));
+		sentry_value_set_by_key(attributes,
+				key.stringify().utf8().get_data(),
+				variant_to_attribute(p_attributes[key]));
 	}
 }
 

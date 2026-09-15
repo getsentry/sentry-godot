@@ -53,7 +53,7 @@ Variant sentry_js_object_get_attribute(const JSObjectPtr &p_object, const String
 		return Variant();
 	}
 
-	JSValue attr_val = attributes_obj->get(p_name.utf8());
+	JSValue attr_val = attributes_obj->get(p_name.utf8().get_data());
 
 	// Attributes can be stored either as a typed object { value, type } or as a raw primitive.
 	JSObjectPtr attr_obj = attr_val.as_object();
@@ -90,19 +90,19 @@ void sentry_js_object_set_attribute(const JSObjectPtr &p_object, const String &p
 
 	switch (p_value.get_type()) {
 		case Variant::Type::BOOL: {
-			attr_obj->set(p_name.utf8(), p_value.operator bool());
+			attr_obj->set(p_name.utf8().get_data(), p_value.operator bool());
 		} break;
 		case Variant::Type::INT: {
-			attr_obj->set(p_name.utf8(), p_value.operator int64_t());
+			attr_obj->set(p_name.utf8().get_data(), p_value.operator int64_t());
 		} break;
 		case Variant::Type::FLOAT: {
-			attr_obj->set(p_name.utf8(), p_value.operator double());
+			attr_obj->set(p_name.utf8().get_data(), p_value.operator double());
 		} break;
 		case Variant::Type::STRING: {
-			attr_obj->set(p_name.utf8(), p_value.operator String().utf8());
+			attr_obj->set(p_name.utf8().get_data(), p_value.operator String().utf8().get_data());
 		} break;
 		default: {
-			attr_obj->set(p_name.utf8(), p_value.stringify().utf8());
+			attr_obj->set(p_name.utf8().get_data(), p_value.stringify().utf8().get_data());
 		}
 	}
 }

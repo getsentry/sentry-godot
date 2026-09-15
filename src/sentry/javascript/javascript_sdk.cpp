@@ -160,22 +160,22 @@ inline JSObjectPtr _get_scope_object(const Ref<SentryScope> &p_scope) {
 
 void JavaScriptSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(!js_bridge());
-	js_bridge()->call("setContext", p_key.utf8(), JSON::stringify(p_value).utf8());
+	js_bridge()->call("setContext", p_key.utf8().get_data(), JSON::stringify(p_value).utf8().get_data());
 }
 
 void JavaScriptSDK::remove_context(const String &p_key) {
 	ERR_FAIL_COND(!js_bridge());
-	js_bridge()->call("removeContext", p_key.utf8());
+	js_bridge()->call("removeContext", p_key.utf8().get_data());
 }
 
 void JavaScriptSDK::set_tag(const String &p_key, const String &p_value) {
 	ERR_FAIL_COND(!js_bridge());
-	js_bridge()->call("setTag", p_key.utf8(), p_value.utf8());
+	js_bridge()->call("setTag", p_key.utf8().get_data(), p_value.utf8().get_data());
 }
 
 void JavaScriptSDK::remove_tag(const String &p_key) {
 	ERR_FAIL_COND(!js_bridge());
-	js_bridge()->call("removeTag", p_key.utf8());
+	js_bridge()->call("removeTag", p_key.utf8().get_data());
 }
 
 void JavaScriptSDK::set_user(const Ref<SentryUser> &p_user) {
@@ -184,10 +184,10 @@ void JavaScriptSDK::set_user(const Ref<SentryUser> &p_user) {
 		js_bridge()->call("removeUser");
 	} else {
 		js_bridge()->call("setUser",
-				p_user->get_id().utf8(),
-				p_user->get_username().utf8(),
-				p_user->get_email().utf8(),
-				p_user->get_ip_address().ascii());
+				p_user->get_id().utf8().get_data(),
+				p_user->get_username().utf8().get_data(),
+				p_user->get_email().utf8().get_data(),
+				p_user->get_ip_address().ascii().get_data());
 	}
 }
 
@@ -218,22 +218,22 @@ void JavaScriptSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_leve
 
 	switch (p_level) {
 		case LOG_LEVEL_TRACE: {
-			js_bridge()->call("logTrace", p_body.utf8(), attr_value.utf8(), scope_obj);
+			js_bridge()->call("logTrace", p_body.utf8().get_data(), attr_value.utf8().get_data(), scope_obj);
 		} break;
 		case LOG_LEVEL_DEBUG: {
-			js_bridge()->call("logDebug", p_body.utf8(), attr_value.utf8(), scope_obj);
+			js_bridge()->call("logDebug", p_body.utf8().get_data(), attr_value.utf8().get_data(), scope_obj);
 		} break;
 		case LOG_LEVEL_INFO: {
-			js_bridge()->call("logInfo", p_body.utf8(), attr_value.utf8(), scope_obj);
+			js_bridge()->call("logInfo", p_body.utf8().get_data(), attr_value.utf8().get_data(), scope_obj);
 		} break;
 		case LOG_LEVEL_WARN: {
-			js_bridge()->call("logWarn", p_body.utf8(), attr_value.utf8(), scope_obj);
+			js_bridge()->call("logWarn", p_body.utf8().get_data(), attr_value.utf8().get_data(), scope_obj);
 		} break;
 		case LOG_LEVEL_ERROR: {
-			js_bridge()->call("logError", p_body.utf8(), attr_value.utf8(), scope_obj);
+			js_bridge()->call("logError", p_body.utf8().get_data(), attr_value.utf8().get_data(), scope_obj);
 		} break;
 		case LOG_LEVEL_FATAL: {
-			js_bridge()->call("logFatal", p_body.utf8(), attr_value.utf8(), scope_obj);
+			js_bridge()->call("logFatal", p_body.utf8().get_data(), attr_value.utf8().get_data(), scope_obj);
 		} break;
 	}
 }
@@ -262,10 +262,10 @@ void JavaScriptSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
 
 	js_bridge()->call("captureFeedback",
-			p_feedback->get_message().utf8(),
-			p_feedback->get_name().utf8(),
-			p_feedback->get_contact_email().utf8(),
-			p_feedback->get_associated_event_id().ascii(),
+			p_feedback->get_message().utf8().get_data(),
+			p_feedback->get_name().utf8().get_data(),
+			p_feedback->get_contact_email().utf8().get_data(),
+			p_feedback->get_associated_event_id().ascii().get_data(),
 			_get_scope_object(p_scope));
 }
 
@@ -276,18 +276,18 @@ void JavaScriptSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	if (!p_attachment->get_path().is_empty()) {
 		// The file is read when an event is captured, so it doesn't have to exist yet.
 		js_bridge()->call("addFileAttachment",
-				p_attachment->get_path().utf8(),
-				p_attachment->get_effective_filename().utf8(),
-				p_attachment->get_content_type().utf8(),
-				p_attachment->get_attachment_type().utf8());
+				p_attachment->get_path().utf8().get_data(),
+				p_attachment->get_effective_filename().utf8().get_data(),
+				p_attachment->get_content_type().utf8().get_data(),
+				p_attachment->get_attachment_type().utf8().get_data());
 	} else {
 		ERR_FAIL_COND_MSG(p_attachment->get_filename().is_empty(), "Sentry: Can't add bytes attachment without filename.");
 
 		js_bridge()->call("addBytesAttachment",
-				p_attachment->get_filename().utf8(),
+				p_attachment->get_filename().utf8().get_data(),
 				p_attachment->get_bytes(),
-				p_attachment->get_content_type_or_default().utf8(),
-				p_attachment->get_attachment_type().utf8());
+				p_attachment->get_content_type_or_default().utf8().get_data(),
+				p_attachment->get_attachment_type().utf8().get_data());
 	}
 }
 
@@ -307,45 +307,49 @@ void JavaScriptSDK::_add_default_attachments() {
 void JavaScriptSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(!js_bridge());
 	String attr_value = attributes_to_json(p_attributes);
-	js_bridge()->call("metricsAddCount", p_name.utf8(), p_value, attr_value.utf8(), _get_scope_object(p_scope));
+	js_bridge()->call("metricsAddCount", p_name.utf8().get_data(), p_value,
+			attr_value.utf8().get_data(), _get_scope_object(p_scope));
 }
 
 void JavaScriptSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(!js_bridge());
 	String attr_value = attributes_to_json(p_attributes);
-	js_bridge()->call("metricsAddGauge", p_name.utf8(), p_value, p_unit.utf8(), attr_value.utf8(), _get_scope_object(p_scope));
+	js_bridge()->call("metricsAddGauge", p_name.utf8().get_data(), p_value, p_unit.utf8().get_data(),
+			attr_value.utf8().get_data(), _get_scope_object(p_scope));
 }
 
 void JavaScriptSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
 	ERR_FAIL_COND(!js_bridge());
 	String attr_value = attributes_to_json(p_attributes);
-	js_bridge()->call("metricsAddDistribution", p_name.utf8(), p_value, p_unit.utf8(), attr_value.utf8(), _get_scope_object(p_scope));
+	js_bridge()->call("metricsAddDistribution", p_name.utf8().get_data(), p_value, p_unit.utf8().get_data(),
+			attr_value.utf8().get_data(), _get_scope_object(p_scope));
 }
 
 void JavaScriptSDK::set_attribute(const String &p_name, const Variant &p_value) {
 	ERR_FAIL_COND(!js_bridge());
 	switch (p_value.get_type()) {
 		case Variant::Type::BOOL: {
-			js_bridge()->call("setAttribute", p_name.utf8(), p_value.operator bool());
+			js_bridge()->call("setAttribute", p_name.utf8().get_data(), p_value.operator bool());
 		} break;
 		case Variant::Type::INT: {
-			js_bridge()->call("setAttribute", p_name.utf8(), p_value.operator int64_t());
+			js_bridge()->call("setAttribute", p_name.utf8().get_data(), p_value.operator int64_t());
 		} break;
 		case Variant::Type::FLOAT: {
-			js_bridge()->call("setAttribute", p_name.utf8(), p_value.operator double());
+			js_bridge()->call("setAttribute", p_name.utf8().get_data(), p_value.operator double());
 		} break;
 		case Variant::Type::STRING: {
-			js_bridge()->call("setAttribute", p_name.utf8(), p_value.operator String().utf8());
+			js_bridge()->call("setAttribute", p_name.utf8().get_data(),
+					p_value.operator String().utf8().get_data());
 		} break;
 		default: {
-			js_bridge()->call("setAttribute", p_name.utf8(), p_value.stringify().utf8());
+			js_bridge()->call("setAttribute", p_name.utf8().get_data(), p_value.stringify().utf8().get_data());
 		} break;
 	}
 }
 
 void JavaScriptSDK::remove_attribute(const String &p_name) {
 	ERR_FAIL_COND(!js_bridge());
-	js_bridge()->call("removeAttribute", p_name.utf8());
+	js_bridge()->call("removeAttribute", p_name.utf8().get_data());
 }
 
 SentryScopeImpl *JavaScriptSDK::create_scope() {
@@ -362,7 +366,7 @@ SentrySpanImpl *JavaScriptSDK::create_span(const String &p_name, const Dictionar
 
 void JavaScriptSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
 	ERR_FAIL_COND(!js_bridge());
-	js_bridge()->call("setTrace", p_trace_id.utf8(), p_parent_span_id.utf8());
+	js_bridge()->call("setTrace", p_trace_id.utf8().get_data(), p_parent_span_id.utf8().get_data());
 }
 
 void JavaScriptSDK::init() {
@@ -389,17 +393,17 @@ void JavaScriptSDK::init() {
 			before_send_log_callback,
 			before_send_metric_callback,
 			read_attachment_callback,
-			SENTRY_OPTIONS()->get_dsn().utf8(),
+			SENTRY_OPTIONS()->get_dsn().utf8().get_data(),
 			SENTRY_OPTIONS()->is_debug_enabled(),
-			SENTRY_OPTIONS()->get_release().utf8(),
-			SENTRY_OPTIONS()->get_dist().utf8(),
-			SENTRY_OPTIONS()->get_environment().utf8(),
+			SENTRY_OPTIONS()->get_release().utf8().get_data(),
+			SENTRY_OPTIONS()->get_dist().utf8().get_data(),
+			SENTRY_OPTIONS()->get_environment().utf8().get_data(),
 			SENTRY_OPTIONS()->get_sample_rate(),
 			SENTRY_OPTIONS()->get_traces_sample_rate(),
 			(int)SENTRY_OPTIONS()->get_trace_lifecycle(),
-			_serialize_trace_propagation_targets(SENTRY_OPTIONS()->get_trace_propagation_targets()).utf8(),
+			_serialize_trace_propagation_targets(SENTRY_OPTIONS()->get_trace_propagation_targets()).utf8().get_data(),
 			SENTRY_OPTIONS()->is_propagate_traceparent_enabled(),
-			SENTRY_OPTIONS()->get_org_id().utf8(),
+			SENTRY_OPTIONS()->get_org_id().utf8().get_data(),
 			SENTRY_OPTIONS()->get_max_breadcrumbs(),
 			SENTRY_OPTIONS()->is_send_default_pii_enabled(),
 			SENTRY_GODOT_SDK_VERSION);

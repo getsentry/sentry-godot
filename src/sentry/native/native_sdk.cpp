@@ -195,17 +195,17 @@ namespace sentry::native {
 
 void NativeSDK::set_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND(p_key.is_empty());
-	sentry_set_context(p_key.utf8(), sentry::native::variant_to_sentry_value(p_value));
+	sentry_set_context(p_key.utf8().get_data(), sentry::native::variant_to_sentry_value(p_value));
 }
 
 void NativeSDK::remove_context(const String &p_key) {
 	ERR_FAIL_COND(p_key.is_empty());
-	sentry_remove_context(p_key.utf8());
+	sentry_remove_context(p_key.utf8().get_data());
 }
 
 void NativeSDK::set_tag(const String &p_key, const String &p_value) {
 	ERR_FAIL_COND(p_key.is_empty());
-	sentry_set_tag(p_key.utf8(), p_value.utf8());
+	sentry_set_tag(p_key.utf8().get_data(), p_value.utf8().get_data());
 }
 
 void NativeSDK::set_tags(const Dictionary &p_tags) {
@@ -214,7 +214,7 @@ void NativeSDK::set_tags(const Dictionary &p_tags) {
 
 void NativeSDK::remove_tag(const String &p_key) {
 	ERR_FAIL_COND(p_key.is_empty());
-	sentry_remove_tag(p_key.utf8());
+	sentry_remove_tag(p_key.utf8().get_data());
 }
 
 void NativeSDK::set_user(const Ref<SentryUser> &p_user) {
@@ -247,15 +247,12 @@ void NativeSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, c
 	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
 
 	sentry_scope_capture_log(native_scope->get_native_scope(), _log_level_to_native(p_level),
-			p_body.utf8(), dictionary_to_attributes(p_attributes));
+			p_body.utf8().get_data(), dictionary_to_attributes(p_attributes));
 }
 
 String NativeSDK::get_last_event_id() {
-	last_uuid_mutex->lock();
-	String uuid_str = _uuid_as_string(last_uuid);
-	last_uuid_mutex->unlock();
-
-	return uuid_str;
+	MutexLock lock(_last_uuid_mutex);
+	return _uuid_as_string(last_uuid);
 }
 
 Ref<SentryEvent> NativeSDK::create_event() {
@@ -277,9 +274,10 @@ String NativeSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<Sentr
 
 	sentry_uuid_t uuid = sentry_scope_capture_event(native_scope->get_native_scope(), event);
 
-	last_uuid_mutex->lock();
-	last_uuid = uuid;
-	last_uuid_mutex->unlock();
+	{
+		MutexLock lock(_last_uuid_mutex);
+		last_uuid = uuid;
+	}
 
 	return _uuid_as_string(uuid);
 }
@@ -294,19 +292,19 @@ void NativeSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<Sent
 	sentry_value_t feedback = sentry_value_new_object();
 
 	sentry_value_set_by_key(feedback, "message",
-			sentry_value_new_string(p_feedback->get_message().utf8()));
+			sentry_value_new_string(p_feedback->get_message().utf8().get_data()));
 
 	if (!p_feedback->get_contact_email().is_empty()) {
 		sentry_value_set_by_key(feedback, "contact_email",
-				sentry_value_new_string(p_feedback->get_contact_email().utf8()));
+				sentry_value_new_string(p_feedback->get_contact_email().utf8().get_data()));
 	}
 	if (!p_feedback->get_name().is_empty()) {
 		sentry_value_set_by_key(feedback, "name",
-				sentry_value_new_string(p_feedback->get_name().utf8()));
+				sentry_value_new_string(p_feedback->get_name().utf8().get_data()));
 	}
 	if (!p_feedback->get_associated_event_id().is_empty()) {
 		sentry_value_set_by_key(feedback, "associated_event_id",
-				sentry_value_new_string(p_feedback->get_associated_event_id().ascii()));
+				sentry_value_new_string(p_feedback->get_associated_event_id().ascii().get_data()));
 	}
 
 	sentry_scope_capture_feedback(native_scope->get_native_scope(), feedback, nullptr);
@@ -324,11 +322,11 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 
 		sentry::logging::print_debug(vformat("attaching file: %s", absolute_path));
 
-		native_attachment = sentry_attach_file(absolute_path.utf8());
+		native_attachment = sentry_attach_file(absolute_path.utf8().get_data());
 		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach file: %s", absolute_path));
 
 		if (!p_attachment->get_filename().is_empty()) {
-			sentry_attachment_set_filename(native_attachment, p_attachment->get_filename().utf8());
+			sentry_attachment_set_filename(native_attachment, p_attachment->get_filename().utf8().get_data());
 		}
 	} else {
 		// Bytes attachment
@@ -340,12 +338,13 @@ void NativeSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		native_attachment = sentry_attach_bytes(
 				reinterpret_cast<const char *>(bytes.ptr()),
 				bytes.size(),
-				p_attachment->get_filename().utf8());
+				p_attachment->get_filename().utf8().get_data());
 		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach bytes with filename: %s", p_attachment->get_filename()));
 	}
 
 	if (!p_attachment->get_content_type().is_empty()) {
-		sentry_attachment_set_content_type(native_attachment, p_attachment->get_content_type().utf8());
+		sentry_attachment_set_content_type(native_attachment,
+				p_attachment->get_content_type().utf8().get_data());
 	}
 
 	user_attachments.push_back(native_attachment);
@@ -363,7 +362,8 @@ void NativeSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String 
 	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
 
 	sentry_scope_capture_metric(native_scope->get_native_scope(), SENTRY_METRIC_COUNT,
-			p_name.utf8(), sentry_value_new_int64(p_value), nullptr, dictionary_to_attributes(p_attributes));
+			p_name.utf8().get_data(), sentry_value_new_int64(p_value), nullptr,
+			dictionary_to_attributes(p_attributes));
 }
 
 void NativeSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
@@ -371,7 +371,8 @@ void NativeSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String 
 	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
 
 	sentry_scope_capture_metric(native_scope->get_native_scope(), SENTRY_METRIC_GAUGE,
-			p_name.utf8(), sentry_value_new_double(p_value), p_unit.utf8(), dictionary_to_attributes(p_attributes));
+			p_name.utf8().get_data(), sentry_value_new_double(p_value),
+			p_unit.utf8().get_data(), dictionary_to_attributes(p_attributes));
 }
 
 void NativeSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
@@ -379,15 +380,16 @@ void NativeSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const 
 	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
 
 	sentry_scope_capture_metric(native_scope->get_native_scope(), SENTRY_METRIC_DISTRIBUTION,
-			p_name.utf8(), sentry_value_new_double(p_value), p_unit.utf8(), dictionary_to_attributes(p_attributes));
+			p_name.utf8().get_data(), sentry_value_new_double(p_value),
+			p_unit.utf8().get_data(), dictionary_to_attributes(p_attributes));
 }
 
 void NativeSDK::set_attribute(const String &p_name, const Variant &p_value) {
-	sentry_set_attribute(p_name.utf8(), variant_to_attribute(p_value));
+	sentry_set_attribute(p_name.utf8().get_data(), variant_to_attribute(p_value));
 }
 
 void NativeSDK::remove_attribute(const String &p_name) {
-	sentry_remove_attribute(p_name.utf8());
+	sentry_remove_attribute(p_name.utf8().get_data());
 }
 
 SentryScopeImpl *NativeSDK::create_scope() {
@@ -401,9 +403,9 @@ SentrySpanImpl *NativeSDK::create_span(const String &p_name, const Dictionary &p
 void NativeSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
 	ERR_FAIL_COND(p_trace_id.is_empty());
 	if (p_parent_span_id.is_empty()) {
-		sentry_set_trace(p_trace_id.utf8(), NULL);
+		sentry_set_trace(p_trace_id.utf8().get_data(), NULL);
 	} else {
-		sentry_set_trace(p_trace_id.utf8(), p_parent_span_id.utf8());
+		sentry_set_trace(p_trace_id.utf8().get_data(), p_parent_span_id.utf8().get_data());
 	}
 }
 
@@ -413,17 +415,18 @@ void NativeSDK::init() {
 
 	sentry_options_t *options = sentry_options_new();
 
-	sentry_options_set_dsn(options, SENTRY_OPTIONS()->get_dsn().utf8());
-	sentry_options_set_database_path(options, (OS::get_singleton()->get_user_data_dir() + "/sentry").utf8());
+	sentry_options_set_dsn(options, SENTRY_OPTIONS()->get_dsn().utf8().get_data());
+	String db_path = OS::get_singleton()->get_user_data_dir() + "/sentry";
+	sentry_options_set_database_path(options, db_path.utf8().get_data());
 	sentry_options_set_debug(options, SENTRY_OPTIONS()->is_debug_enabled());
-	sentry_options_set_release(options, SENTRY_OPTIONS()->get_release().utf8());
-	sentry_options_set_dist(options, SENTRY_OPTIONS()->get_dist().utf8());
-	sentry_options_set_environment(options, SENTRY_OPTIONS()->get_environment().utf8());
+	sentry_options_set_release(options, SENTRY_OPTIONS()->get_release().utf8().get_data());
+	sentry_options_set_dist(options, SENTRY_OPTIONS()->get_dist().utf8().get_data());
+	sentry_options_set_environment(options, SENTRY_OPTIONS()->get_environment().utf8().get_data());
 	sentry_options_set_sample_rate(options, SENTRY_OPTIONS()->get_sample_rate());
 	sentry_options_set_traces_sample_rate(options, SENTRY_OPTIONS()->get_traces_sample_rate());
 	sentry_options_set_propagate_traceparent(options, SENTRY_OPTIONS()->is_propagate_traceparent_enabled());
 	if (!SENTRY_OPTIONS()->get_org_id().is_empty()) {
-		sentry_options_set_org_id(options, SENTRY_OPTIONS()->get_org_id().utf8());
+		sentry_options_set_org_id(options, SENTRY_OPTIONS()->get_org_id().utf8().get_data());
 	}
 	sentry_options_set_max_breadcrumbs(options, SENTRY_OPTIONS()->get_max_breadcrumbs());
 	sentry_options_set_shutdown_timeout(options, SENTRY_OPTIONS()->get_shutdown_timeout_ms());
@@ -455,7 +458,7 @@ void NativeSDK::init() {
 				addon_bin_dir.path_join(platform_dir).path_join(handler_fn));
 	}
 	if (FileAccess::file_exists(handler_path)) {
-		sentry_options_set_handler_path(options, handler_path.utf8());
+		sentry_options_set_handler_path(options, handler_path.utf8().get_data());
 	} else {
 		ERR_PRINT(vformat("Sentry: Failed to locate crash handler (crashpad) - backend disabled (%s)", handler_path));
 		sentry_options_set_backend(options, NULL);
@@ -465,9 +468,9 @@ void NativeSDK::init() {
 		String absolute_path = att->get_globalized_path();
 		sentry::logging::print_debug("adding attachment \"", absolute_path, "\"");
 		if (absolute_path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
-			sentry_options_add_view_hierarchy(options, absolute_path.utf8());
+			sentry_options_add_view_hierarchy(options, absolute_path.utf8().get_data());
 		} else {
-			sentry_options_add_attachment(options, absolute_path.utf8());
+			sentry_options_add_attachment(options, absolute_path.utf8().get_data());
 		}
 	}
 
@@ -522,7 +525,6 @@ bool NativeSDK::is_enabled() const {
 }
 
 NativeSDK::NativeSDK() {
-	last_uuid_mutex.instantiate();
 	last_uuid = sentry_uuid_nil();
 }
 

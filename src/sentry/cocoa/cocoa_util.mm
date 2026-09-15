@@ -21,7 +21,7 @@ NSObject *variant_to_scope_attribute(const Variant &p_value) {
 			return [NSNumber numberWithDouble:(double)p_value];
 		} break;
 		default: {
-			return [NSString stringWithUTF8String:p_value.stringify().utf8()];
+			return [NSString stringWithUTF8String:p_value.stringify().utf8().get_data()];
 		} break;
 	}
 }
@@ -106,7 +106,7 @@ NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 			const Array &keys = dict.keys();
 			for (int i = 0; i < keys.size(); i++) {
 				const Variant &key = keys[i];
-				const NSString *objc_key = [NSString stringWithUTF8String:key.stringify().utf8()];
+				const NSString *objc_key = [NSString stringWithUTF8String:key.stringify().utf8().get_data()];
 				const NSObject *objc_value = variant_to_objc(dict[key], p_depth + 1);
 				[objc_dict setObject:objc_value forKey:objc_key];
 			}
@@ -148,7 +148,7 @@ NSObject *variant_to_objc(const godot::Variant &p_value, int p_depth) {
 			return objc_array;
 		}
 		default: {
-			return [NSString stringWithUTF8String:String(p_value).utf8()];
+			return [NSString stringWithUTF8String:String(p_value).utf8().get_data()];
 		}
 	}
 }

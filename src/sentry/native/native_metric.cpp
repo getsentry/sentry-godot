@@ -11,7 +11,7 @@ String NativeMetric::get_name() const {
 
 void NativeMetric::set_name(const String &p_name) {
 	sentry_value_set_by_key(native_metric, "name",
-			sentry_value_new_string(p_name.utf8()));
+			sentry_value_new_string(p_name.utf8().get_data()));
 }
 
 NativeMetric::MetricType NativeMetric::get_type() const {
@@ -78,7 +78,7 @@ String NativeMetric::get_unit() const {
 
 void NativeMetric::set_unit(const String &p_unit) {
 	sentry_value_set_by_key(native_metric, "unit",
-			sentry_value_new_string(p_unit.utf8()));
+			sentry_value_new_string(p_unit.utf8().get_data()));
 }
 
 Variant NativeMetric::get_attribute(const String &p_name) const {
@@ -95,7 +95,7 @@ void NativeMetric::add_attributes(const Dictionary &p_attributes) {
 
 void NativeMetric::remove_attribute(const String &p_name) {
 	sentry_value_t attributes = sentry_value_get_by_key(native_metric, "attributes");
-	sentry_value_remove_by_key(attributes, p_name.utf8());
+	sentry_value_remove_by_key(attributes, p_name.utf8().get_data());
 }
 
 NativeMetric::NativeMetric() {

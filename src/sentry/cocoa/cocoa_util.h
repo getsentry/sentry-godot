@@ -44,11 +44,11 @@ _FORCE_INLINE_ sentry::Level sentry_level_from_objc(SentryObjCLevel p_level) {
 }
 
 _FORCE_INLINE_ NSString *string_to_objc(const godot::String &p_str) {
-	return [NSString stringWithUTF8String:p_str.utf8()];
+	return [NSString stringWithUTF8String:p_str.utf8().get_data()];
 }
 
 _FORCE_INLINE_ NSString *string_to_objc_or_nil_if_empty(const godot::String &p_str) {
-	return p_str.is_empty() ? nil : [NSString stringWithUTF8String:p_str.utf8()];
+	return p_str.is_empty() ? nil : [NSString stringWithUTF8String:p_str.utf8().get_data()];
 }
 
 _FORCE_INLINE_ godot::String string_from_objc(NSString *p_str) {
