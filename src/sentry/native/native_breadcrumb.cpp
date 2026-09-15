@@ -27,7 +27,7 @@ String NativeBreadcrumb::get_category() const {
 
 void NativeBreadcrumb::set_level(sentry::Level p_level) {
 	sentry_value_set_by_key(native_crumb, "level",
-			sentry_value_new_string(sentry::native::level_to_cstring(p_level)));
+			sentry_value_new_string(sentry::native::level_to_cstring(p_level).get_data()));
 }
 
 sentry::Level NativeBreadcrumb::get_level() const {

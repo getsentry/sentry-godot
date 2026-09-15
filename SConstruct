@@ -80,7 +80,7 @@ for key in custom_options.keys():
 # *** Build godot-cpp.
 
 print("Reading godot-cpp build configuration...")
-env = SConscript("modules/godot-cpp/SConstruct")
+env = SConscript("modules/godot-cpp/SConstruct", {"api_version": COMPATIBILITY_MINIMUM})
 
 platform = env["platform"]
 arch = env["arch"]

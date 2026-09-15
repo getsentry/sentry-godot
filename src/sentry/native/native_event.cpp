@@ -13,7 +13,7 @@ inline void _sentry_value_set_or_remove_string_by_key(sentry_value_t value, cons
 	if (v.is_empty()) {
 		sentry_value_remove_by_key(value, k);
 	} else {
-		sentry_value_set_by_key(value, k, sentry_value_new_string(v.utf8()));
+		sentry_value_set_by_key(value, k, sentry_value_new_string(v.utf8().get_data()));
 	}
 }
 
@@ -38,7 +38,8 @@ void sentry_event_merge_context(sentry_value_t p_event, const char *p_context_na
 		const Array &updated_keys = p_context.keys();
 		for (int i = 0; i < updated_keys.size(); i++) {
 			const Variant &key = updated_keys[i];
-			sentry_value_set_by_key(ctx, key.stringify().utf8(), sentry::native::variant_to_sentry_value(p_context[key]));
+			sentry_value_set_by_key(ctx, key.stringify().utf8().get_data(),
+					sentry::native::variant_to_sentry_value(p_context[key]));
 		}
 	} else {
 		// If context doesn't exist, add it.
@@ -64,7 +65,7 @@ void NativeEvent::set_message(const String &p_message) {
 			message = sentry_value_new_object();
 			sentry_value_set_by_key(native_event, "message", message);
 		}
-		sentry_value_set_by_key(message, "formatted", sentry_value_new_string(p_message.utf8()));
+		sentry_value_set_by_key(message, "formatted", sentry_value_new_string(p_message.utf8().get_data()));
 	}
 }
 
@@ -153,14 +154,14 @@ void NativeEvent::set_tag(const String &p_key, const String &p_value) {
 		tags = sentry_value_new_object();
 		sentry_value_set_by_key(native_event, "tags", tags);
 	}
-	sentry_value_set_by_key(tags, p_key.utf8(), sentry_value_new_string(p_value.utf8()));
+	sentry_value_set_by_key(tags, p_key.utf8().get_data(), sentry_value_new_string(p_value.utf8().get_data()));
 }
 
 void NativeEvent::remove_tag(const String &p_key) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't remove tag with an empty key.");
 	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
 	if (!sentry_value_is_null(tags)) {
-		sentry_value_remove_by_key(tags, p_key.utf8());
+		sentry_value_remove_by_key(tags, p_key.utf8().get_data());
 	}
 }
 
@@ -168,7 +169,7 @@ String NativeEvent::get_tag(const String &p_key) {
 	ERR_FAIL_COND_V_MSG(p_key.is_empty(), String(), "Sentry: Can't get tag with an empty key.");
 	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
 	if (!sentry_value_is_null(tags)) {
-		sentry_value_t value = sentry_value_get_by_key(tags, p_key.utf8());
+		sentry_value_t value = sentry_value_get_by_key(tags, p_key.utf8().get_data());
 		return String::utf8(sentry_value_as_string(value));
 	}
 	return String();
@@ -183,19 +184,19 @@ void NativeEvent::set_user(const Ref<SentryUser> &p_user) {
 	sentry_value_t user_data = sentry_value_new_object();
 	if (!p_user->get_id().is_empty()) {
 		sentry_value_set_by_key(user_data, "id",
-				sentry_value_new_string(p_user->get_id().utf8()));
+				sentry_value_new_string(p_user->get_id().utf8().get_data()));
 	}
 	if (!p_user->get_username().is_empty()) {
 		sentry_value_set_by_key(user_data, "username",
-				sentry_value_new_string(p_user->get_username().utf8()));
+				sentry_value_new_string(p_user->get_username().utf8().get_data()));
 	}
 	if (!p_user->get_email().is_empty()) {
 		sentry_value_set_by_key(user_data, "email",
-				sentry_value_new_string(p_user->get_email().utf8()));
+				sentry_value_new_string(p_user->get_email().utf8().get_data()));
 	}
 	if (!p_user->get_ip_address().is_empty()) {
 		sentry_value_set_by_key(user_data, "ip_address",
-				sentry_value_new_string(p_user->get_ip_address().utf8()));
+				sentry_value_new_string(p_user->get_ip_address().utf8().get_data()));
 	}
 	sentry_value_set_by_key(native_event, "user", user_data);
 }
@@ -215,12 +216,12 @@ void NativeEvent::set_context(const String &p_key, const Dictionary &p_value) {
 		contexts = sentry_value_new_object();
 		sentry_value_set_by_key(native_event, "contexts", contexts);
 	}
-	sentry_value_set_by_key(contexts, p_key.utf8(), sentry::native::variant_to_sentry_value(p_value));
+	sentry_value_set_by_key(contexts, p_key.utf8().get_data(), sentry::native::variant_to_sentry_value(p_value));
 }
 
 void NativeEvent::merge_context(const String &p_key, const Dictionary &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
-	sentry_event_merge_context(native_event, p_key.utf8(), p_value);
+	sentry_event_merge_context(native_event, p_key.utf8().get_data(), p_value);
 }
 
 void NativeEvent::add_exception(const Exception &p_exception) {
@@ -228,21 +229,30 @@ void NativeEvent::add_exception(const Exception &p_exception) {
 
 	for (const StackFrame &frame : p_exception.frames) {
 		sentry_value_t sentry_frame = sentry_value_new_object();
-		sentry_value_set_by_key(sentry_frame, "filename", sentry_value_new_string(frame.filename.utf8()));
-		sentry_value_set_by_key(sentry_frame, "function", sentry_value_new_string(frame.function.utf8()));
-		sentry_value_set_by_key(sentry_frame, "lineno", sentry_value_new_int32(frame.lineno));
-		sentry_value_set_by_key(sentry_frame, "in_app", sentry_value_new_bool(frame.in_app));
-		sentry_value_set_by_key(sentry_frame, "platform", sentry_value_new_string(frame.platform.utf8()));
+		sentry_value_set_by_key(sentry_frame, "filename",
+				sentry_value_new_string(frame.filename.utf8().get_data()));
+		sentry_value_set_by_key(sentry_frame, "function",
+				sentry_value_new_string(frame.function.utf8().get_data()));
+		sentry_value_set_by_key(sentry_frame, "lineno",
+				sentry_value_new_int32(frame.lineno));
+		sentry_value_set_by_key(sentry_frame, "in_app",
+				sentry_value_new_bool(frame.in_app));
+		sentry_value_set_by_key(sentry_frame, "platform",
+				sentry_value_new_string(frame.platform.utf8().get_data()));
 		if (!frame.context_line.is_empty()) {
-			sentry_value_set_by_key(sentry_frame, "context_line", sentry_value_new_string(frame.context_line.utf8()));
-			sentry_value_set_by_key(sentry_frame, "pre_context", sentry::native::strings_to_sentry_list(frame.pre_context));
-			sentry_value_set_by_key(sentry_frame, "post_context", sentry::native::strings_to_sentry_list(frame.post_context));
+			sentry_value_set_by_key(sentry_frame, "context_line",
+					sentry_value_new_string(frame.context_line.utf8().get_data()));
+			sentry_value_set_by_key(sentry_frame, "pre_context",
+					sentry::native::strings_to_sentry_list(frame.pre_context));
+			sentry_value_set_by_key(sentry_frame, "post_context",
+					sentry::native::strings_to_sentry_list(frame.post_context));
 		}
 		if (frame.vars.size() > 0) {
 			sentry_value_t vars = sentry_value_new_object();
 			sentry_value_set_by_key(sentry_frame, "vars", vars);
 			for (auto pair : frame.vars) {
-				sentry_value_set_by_key(vars, pair.first.utf8(), sentry::native::variant_to_sentry_value(pair.second));
+				sentry_value_set_by_key(vars, pair.first.utf8().get_data(),
+						sentry::native::variant_to_sentry_value(pair.second));
 			}
 		}
 		sentry_value_append(frames, sentry_frame);
@@ -263,7 +273,7 @@ void NativeEvent::add_exception(const Exception &p_exception) {
 	sentry_value_set_by_key(thread, "stacktrace", stack_trace);
 
 	sentry_value_t native_exception = sentry_value_new_exception(
-			p_exception.type.utf8(), p_exception.value.utf8());
+			p_exception.type.utf8().get_data(), p_exception.value.utf8().get_data());
 	sentry_value_set_by_key(native_exception, "thread_id", sentry_value_new_uint64(thread_id));
 
 	sentry_event_add_thread(native_event, thread);
@@ -287,7 +297,7 @@ void NativeEvent::set_exception_value(int p_index, const String &p_value) {
 		return;
 	}
 	sentry_value_t exc = sentry_value_get_by_index(values, p_index);
-	sentry_value_set_by_key(exc, "value", sentry_value_new_string(p_value.utf8()));
+	sentry_value_set_by_key(exc, "value", sentry_value_new_string(p_value.utf8().get_data()));
 }
 
 String NativeEvent::get_exception_value(int p_index) const {

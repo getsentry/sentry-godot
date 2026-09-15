@@ -5,6 +5,7 @@
 #include "sentry/sentry_user.h"
 
 #include <sentry.h>
+#include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/variant/char_string.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -34,7 +35,7 @@ _FORCE_INLINE_ void sentry_value_set_or_remove_string_by_key(sentry_value_t valu
 	if (v.is_empty()) {
 		sentry_value_remove_by_key(value, k);
 	} else {
-		sentry_value_set_by_key(value, k, sentry_value_new_string(v.utf8()));
+		sentry_value_set_by_key(value, k, sentry_value_new_string(v.utf8().get_data()));
 	}
 }
 

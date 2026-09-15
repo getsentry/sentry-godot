@@ -9,7 +9,7 @@ namespace sentry::javascript {
 
 void JavaScriptBreadcrumb::set_message(const String &p_message) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set_or_remove_string_property("message", p_message.utf8());
+	js_obj->set_or_remove_string_property("message", p_message.utf8().get_data());
 }
 
 String JavaScriptBreadcrumb::get_message() const {
@@ -19,7 +19,7 @@ String JavaScriptBreadcrumb::get_message() const {
 
 void JavaScriptBreadcrumb::set_category(const String &p_category) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set_or_remove_string_property("category", p_category.utf8());
+	js_obj->set_or_remove_string_property("category", p_category.utf8().get_data());
 }
 
 String JavaScriptBreadcrumb::get_category() const {
@@ -29,7 +29,7 @@ String JavaScriptBreadcrumb::get_category() const {
 
 void JavaScriptBreadcrumb::set_level(sentry::Level p_level) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set("level", level_as_cstring(p_level));
+	js_obj->set("level", level_as_cstring(p_level).get_data());
 }
 
 sentry::Level JavaScriptBreadcrumb::get_level() const {
@@ -52,7 +52,7 @@ sentry::Level JavaScriptBreadcrumb::get_level() const {
 
 void JavaScriptBreadcrumb::set_type(const String &p_type) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set_or_remove_string_property("type", p_type.utf8());
+	js_obj->set_or_remove_string_property("type", p_type.utf8().get_data());
 }
 
 String JavaScriptBreadcrumb::get_type() const {
@@ -66,7 +66,7 @@ void JavaScriptBreadcrumb::set_data(const Dictionary &p_data) {
 	if (!p_data.is_empty()) {
 		JSObjectPtr data_obj = JSObject::create("Object");
 		if (data_obj) {
-			data_obj->merge_properties_from_json(JSON::stringify(p_data).utf8());
+			data_obj->merge_properties_from_json(JSON::stringify(p_data).utf8().get_data());
 			js_obj->set("data", data_obj);
 		}
 	} else {

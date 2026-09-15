@@ -3,7 +3,7 @@
 #include "sentry/internal_sdk.h"
 
 #include <sentry.h>
-#include <godot_cpp/classes/mutex.hpp>
+#include <godot_cpp/templates/mutex.hpp>
 
 namespace sentry::native {
 
@@ -11,7 +11,7 @@ namespace sentry::native {
 class NativeSDK : public InternalSDK {
 private:
 	sentry_uuid_t last_uuid;
-	Ref<Mutex> last_uuid_mutex;
+	Mutex _last_uuid_mutex;
 	Vector<sentry_attachment_t *> user_attachments;
 
 public:

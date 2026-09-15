@@ -64,7 +64,7 @@ String NativeLog::get_body() const {
 }
 
 void NativeLog::set_body(const String &p_body) {
-	sentry_value_set_by_key(native_log, "body", sentry_value_new_string(p_body.utf8()));
+	sentry_value_set_by_key(native_log, "body", sentry_value_new_string(p_body.utf8().get_data()));
 }
 
 Variant NativeLog::get_attribute(const String &p_name) const {
@@ -81,7 +81,7 @@ void NativeLog::add_attributes(const Dictionary &p_attributes) {
 
 void NativeLog::remove_attribute(const String &p_name) {
 	sentry_value_t attributes = sentry_value_get_by_key(native_log, "attributes");
-	sentry_value_remove_by_key(attributes, p_name.utf8());
+	sentry_value_remove_by_key(attributes, p_name.utf8().get_data());
 }
 
 NativeLog::NativeLog() {

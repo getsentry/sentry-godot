@@ -13,11 +13,12 @@ namespace sentry::javascript {
 // NOTE: Bridge and js_obj are guaranteed to be valid: creation failures yield a DisabledScope instead.
 
 void JavaScriptScope::set_context(const String &p_key, const Dictionary &p_value) {
-	js_bridge()->call("scopeSetContext", js_obj, p_key.utf8(), JSON::stringify(p_value).utf8());
+	js_bridge()->call("scopeSetContext", js_obj, p_key.utf8().get_data(),
+			JSON::stringify(p_value).utf8().get_data());
 }
 
 void JavaScriptScope::set_tag(const String &p_key, const String &p_value) {
-	js_obj->call("setTag", p_key.utf8(), p_value.utf8());
+	js_obj->call("setTag", p_key.utf8().get_data(), p_value.utf8().get_data());
 }
 
 void JavaScriptScope::set_user(const Ref<SentryUser> &p_user) {
@@ -28,36 +29,36 @@ void JavaScriptScope::set_user(const Ref<SentryUser> &p_user) {
 
 	js_bridge()->call("scopeSetUser",
 			js_obj,
-			p_user->get_id().utf8(),
-			p_user->get_username().utf8(),
-			p_user->get_email().utf8(),
-			p_user->get_ip_address().utf8());
+			p_user->get_id().utf8().get_data(),
+			p_user->get_username().utf8().get_data(),
+			p_user->get_email().utf8().get_data(),
+			p_user->get_ip_address().utf8().get_data());
 }
 
 void JavaScriptScope::set_level(sentry::Level p_level) {
-	js_obj->call("setLevel", level_as_cstring(p_level));
+	js_obj->call("setLevel", level_as_cstring(p_level).get_data());
 }
 
 void JavaScriptScope::set_fingerprint(const PackedStringArray &p_fingerprint) {
-	js_bridge()->call("scopeSetFingerprint", js_obj, JSON::stringify(p_fingerprint).utf8());
+	js_bridge()->call("scopeSetFingerprint", js_obj, JSON::stringify(p_fingerprint).utf8().get_data());
 }
 
 void JavaScriptScope::set_attribute(const String &p_name, const Variant &p_value) {
 	switch (p_value.get_type()) {
 		case Variant::Type::BOOL: {
-			js_obj->call("setAttribute", p_name.utf8(), p_value.operator bool());
+			js_obj->call("setAttribute", p_name.utf8().get_data(), p_value.operator bool());
 		} break;
 		case Variant::Type::INT: {
-			js_obj->call("setAttribute", p_name.utf8(), p_value.operator int64_t());
+			js_obj->call("setAttribute", p_name.utf8().get_data(), p_value.operator int64_t());
 		} break;
 		case Variant::Type::FLOAT: {
-			js_obj->call("setAttribute", p_name.utf8(), p_value.operator double());
+			js_obj->call("setAttribute", p_name.utf8().get_data(), p_value.operator double());
 		} break;
 		case Variant::Type::STRING: {
-			js_obj->call("setAttribute", p_name.utf8(), p_value.operator String().utf8());
+			js_obj->call("setAttribute", p_name.utf8().get_data(), p_value.operator String().utf8().get_data());
 		} break;
 		default: {
-			js_obj->call("setAttribute", p_name.utf8(), p_value.stringify().utf8());
+			js_obj->call("setAttribute", p_name.utf8().get_data(), p_value.stringify().utf8().get_data());
 		} break;
 	}
 }
@@ -73,17 +74,17 @@ void JavaScriptScope::add_attachment(const Ref<SentryAttachment> &p_attachment) 
 	if (!p_attachment->get_path().is_empty()) {
 		js_bridge()->call("scopeAddFileAttachment",
 				js_obj,
-				p_attachment->get_path().utf8(),
-				p_attachment->get_effective_filename().utf8(),
-				p_attachment->get_content_type().utf8(),
-				p_attachment->get_attachment_type().utf8());
+				p_attachment->get_path().utf8().get_data(),
+				p_attachment->get_effective_filename().utf8().get_data(),
+				p_attachment->get_content_type().utf8().get_data(),
+				p_attachment->get_attachment_type().utf8().get_data());
 	} else {
 		js_bridge()->call("scopeAddBytesAttachment",
 				js_obj,
-				p_attachment->get_effective_filename().utf8(),
+				p_attachment->get_effective_filename().utf8().get_data(),
 				p_attachment->get_bytes(),
-				p_attachment->get_content_type_or_default().utf8(),
-				p_attachment->get_attachment_type().utf8());
+				p_attachment->get_content_type_or_default().utf8().get_data(),
+				p_attachment->get_attachment_type().utf8().get_data());
 	}
 }
 

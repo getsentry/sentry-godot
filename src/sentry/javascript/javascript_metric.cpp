@@ -11,7 +11,7 @@ String JavaScriptMetric::get_name() const {
 
 void JavaScriptMetric::set_name(const String &p_name) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set("name", p_name.utf8());
+	js_obj->set("name", p_name.utf8().get_data());
 }
 
 SentryMetric::MetricType JavaScriptMetric::get_type() const {
@@ -65,7 +65,7 @@ String JavaScriptMetric::get_unit() const {
 
 void JavaScriptMetric::set_unit(const String &p_unit) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set("unit", p_unit.utf8());
+	js_obj->set("unit", p_unit.utf8().get_data());
 }
 
 Variant JavaScriptMetric::get_attribute(const String &p_name) const {
@@ -91,7 +91,7 @@ void JavaScriptMetric::remove_attribute(const String &p_name) {
 
 	JSObjectPtr attr_obj = js_obj->get("attributes").as_object();
 	if (attr_obj) {
-		attr_obj->delete_property(p_name.utf8());
+		attr_obj->delete_property(p_name.utf8().get_data());
 	}
 }
 

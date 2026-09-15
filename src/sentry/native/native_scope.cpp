@@ -9,11 +9,11 @@ namespace sentry::native {
 // NOTE: Input validations are performed by Godot-facing SentryScope.
 
 void NativeScope::set_context(const String &p_key, const Dictionary &p_value) {
-	sentry_scope_set_context(_scope, p_key.utf8(), variant_to_sentry_value(p_value));
+	sentry_scope_set_context(_scope, p_key.utf8().get_data(), variant_to_sentry_value(p_value));
 }
 
 void NativeScope::set_tag(const String &p_key, const String &p_value) {
-	sentry_scope_set_tag(_scope, p_key.utf8(), p_value.utf8());
+	sentry_scope_set_tag(_scope, p_key.utf8().get_data(), p_value.utf8().get_data());
 }
 
 void NativeScope::set_user(const Ref<SentryUser> &p_user) {
@@ -29,7 +29,7 @@ void NativeScope::set_fingerprint(const PackedStringArray &p_fingerprint) {
 }
 
 void NativeScope::set_attribute(const String &p_name, const Variant &p_value) {
-	sentry_scope_set_attribute(_scope, p_name.utf8(), variant_to_attribute(p_value));
+	sentry_scope_set_attribute(_scope, p_name.utf8().get_data(), variant_to_attribute(p_value));
 }
 
 void NativeScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
@@ -46,11 +46,11 @@ void NativeScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 	if (!p_attachment->get_path().is_empty()) {
 		String absolute_path = p_attachment->get_globalized_path();
 
-		native_attachment = sentry_scope_attach_file(_scope, absolute_path.utf8());
+		native_attachment = sentry_scope_attach_file(_scope, absolute_path.utf8().get_data());
 		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach file: %s", absolute_path));
 
 		if (!p_attachment->get_filename().is_empty()) {
-			sentry_attachment_set_filename(native_attachment, p_attachment->get_filename().utf8());
+			sentry_attachment_set_filename(native_attachment, p_attachment->get_filename().utf8().get_data());
 		}
 	} else {
 		PackedByteArray bytes = p_attachment->get_bytes();
@@ -58,12 +58,13 @@ void NativeScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 		native_attachment = sentry_scope_attach_bytes(_scope,
 				reinterpret_cast<const char *>(bytes.ptr()),
 				bytes.size(),
-				p_attachment->get_filename().utf8());
+				p_attachment->get_filename().utf8().get_data());
 		ERR_FAIL_NULL_MSG(native_attachment, vformat("Sentry: Failed to attach bytes with filename: %s", p_attachment->get_filename()));
 	}
 
 	if (!p_attachment->get_content_type().is_empty()) {
-		sentry_attachment_set_content_type(native_attachment, p_attachment->get_content_type().utf8());
+		sentry_attachment_set_content_type(native_attachment,
+				p_attachment->get_content_type().utf8().get_data());
 	}
 }
 

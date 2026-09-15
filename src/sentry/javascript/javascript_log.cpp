@@ -14,7 +14,7 @@ LogLevel JavaScriptLog::get_level() const {
 void JavaScriptLog::set_level(LogLevel p_level) {
 	ERR_FAIL_COND(!js_obj);
 
-	js_obj->set("level", sentry::log_level_as_cstring(p_level));
+	js_obj->set("level", sentry::log_level_as_cstring(p_level).get_data());
 }
 
 String JavaScriptLog::get_body() const {
@@ -24,7 +24,7 @@ String JavaScriptLog::get_body() const {
 
 void JavaScriptLog::set_body(const String &p_body) {
 	ERR_FAIL_COND(!js_obj);
-	js_obj->set_or_remove_string_property("message", p_body.utf8());
+	js_obj->set_or_remove_string_property("message", p_body.utf8().get_data());
 }
 
 Variant JavaScriptLog::get_attribute(const String &p_name) const {
@@ -50,7 +50,7 @@ void JavaScriptLog::remove_attribute(const String &p_name) {
 
 	JSObjectPtr attr_obj = js_obj->get("attributes").as_object();
 	if (attr_obj) {
-		attr_obj->delete_property(p_name.utf8());
+		attr_obj->delete_property(p_name.utf8().get_data());
 	}
 }
 

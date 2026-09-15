@@ -22,7 +22,6 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/core/mutex_lock.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #ifdef SDK_NATIVE
