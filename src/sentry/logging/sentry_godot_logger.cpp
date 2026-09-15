@@ -208,9 +208,7 @@ std::size_t SentryGodotLogger::ErrorKeyHash::operator()(const ErrorKey &p_key) c
 }
 
 void SentryGodotLogger::_connect_process_frame() {
-	MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
-	ERR_FAIL_NULL_MSG(main_loop, "SentryGodotLogger: Failed to connect to \"process_frame\" signal - main loop is null.");
-	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
+	SceneTree *scene_tree = SceneTree::get_singleton();
 	ERR_FAIL_NULL_MSG(scene_tree, "SentryGodotLogger: Failed to connect to \"process_frame\" signal - expected SceneTree instance as main loop.");
 
 	Callable callable = callable_mp(this, &SentryGodotLogger::_process_frame);
@@ -220,7 +218,7 @@ void SentryGodotLogger::_connect_process_frame() {
 }
 
 void SentryGodotLogger::_disconnect_process_frame() {
-	SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+	SceneTree *scene_tree = SceneTree::get_singleton();
 	Callable callable = callable_mp(this, &SentryGodotLogger::_process_frame);
 	if (scene_tree && scene_tree->is_connected("process_frame", callable)) {
 		scene_tree->disconnect("process_frame", callable);
@@ -499,7 +497,7 @@ void SentryGodotLogger::_bind_methods() {
 void SentryGodotLogger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
-			SceneTree *scene_tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+			SceneTree *scene_tree = SceneTree::get_singleton();
 			if (scene_tree) {
 				_connect_process_frame();
 			} else {

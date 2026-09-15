@@ -1,7 +1,6 @@
 #include "view_hierarchy_builder.h"
 
 #include "sentry/engine_lifecycle/engine_lifecycle.h"
-#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -39,7 +38,7 @@ sentry::util::UTF8Buffer ViewHierarchyBuilder::build_json() {
 		return ::sentry::util::UTF8Buffer(0);
 	}
 
-	SceneTree *sml = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+	SceneTree *sml = SceneTree::get_singleton();
 	ERR_FAIL_NULL_V(sml, ::sentry::util::UTF8Buffer(0));
 
 	sentry::util::UTF8Buffer buffer{ size_t(estimated_buffer_size) };

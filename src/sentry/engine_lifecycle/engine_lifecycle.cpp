@@ -2,7 +2,6 @@
 
 #include "sentry/engine_lifecycle/sentry_scene_tree_watcher.h"
 
-#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/window.hpp>
 #include <godot_cpp/templates/local_vector.hpp>
@@ -34,7 +33,7 @@ void _scene_tree_shutting_down() {
 }
 
 void _add_scene_tree_watcher() {
-	SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+	SceneTree *tree = SceneTree::get_singleton();
 	ERR_FAIL_NULL_MSG(tree, "Sentry: Failed to initialize engine lifecycle tracking - SceneTree is unavailable.");
 	Window *root = tree->get_root();
 	ERR_FAIL_NULL_MSG(root, "Sentry: Failed to initialize engine lifecycle tracking - root window is unavailable.");
