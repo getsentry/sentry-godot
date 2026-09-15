@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.2.0
 
 > [!WARNING]
 > Exporting to macOS now requires macOS 12 Monterey or newer. Projects that support older macOS versions must use an earlier Sentry SDK release.
