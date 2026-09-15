@@ -58,6 +58,17 @@ jobs:
           name: Sentry .NET SDK
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
+  godot-cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@26f565c05d0dd49f703d238706b775883037d76b # v3
+        with:
+          path: modules/godot-cpp
+          name: godot-cpp
+          pattern: '^[0-9]+\.[0-9]+\.[0-9]+-stable$'
+          changelog-entry: false
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
+
   gdunit4:
     runs-on: ubuntu-latest
     steps:
