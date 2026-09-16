@@ -222,13 +222,15 @@ void SentryHTTPRequest::_request_completed(int64_t p_result, int64_t p_response_
 		}
 		_span->end();
 	}
-	_span.unref();
 
 	const Dictionary data = _request_data.as_breadcrumb_data();
 	sentry::Level level = p_response_code >= 400
 			? sentry::LEVEL_ERROR
 			: sentry::LEVEL_INFO;
 	_add_http_breadcrumb(level, data);
+
+	_span.unref();
+	_request_data = {};
 
 	emit_signal("request_completed", p_result, p_response_code, p_headers, p_body);
 }
