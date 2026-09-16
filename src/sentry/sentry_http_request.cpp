@@ -88,20 +88,14 @@ Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method
 	attributes["sentry.kind"] = "client";
 	attributes["http.request.method"] = method_name;
 	attributes["http.request.body.size"] = p_request_body_size;
-	// TODO: `url.full` SHOULD contain query and fragment if data collection options permit.
-	//       Data collection spec not implemented - emit redacted for now.
-	// 		 `url.query`, `url.fragment` also REQUIRE data collection options; not added for now.
+	// TODO: Add `url.query`, `url.fragment`, and unredacted `url.full` once data
+	//       collection options are implemented.
+	//       Omit them for now to avoid including potentially sensitive URL components.
 	attributes["url.full"] = redacted_url;
 	attributes["url.domain"] = p_url.host; // with IPv6 brackets?
 	attributes["server.address"] = server_address; // without IPv6 brackets?
 	if (p_url.port >= 0) {
 		attributes["server.port"] = p_url.port;
-	}
-	if (!p_url.query.is_empty()) {
-		attributes["url.query"] = p_url.query;
-	}
-	if (!p_url.fragment.is_empty()) {
-		attributes["url.fragment"] = p_url.fragment;
 	}
 
 	String span_name{ method_name };
