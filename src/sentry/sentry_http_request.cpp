@@ -35,6 +35,39 @@ const char *_http_method(HTTPClient::Method p_method) {
 	}
 }
 
+const char *_http_request_error(int64_t p_result) {
+	switch (p_result) {
+		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
+			return "chunked_body_size_mismatch";
+		case HTTPRequest::RESULT_CANT_CONNECT:
+			return "cant_connect";
+		case HTTPRequest::RESULT_CANT_RESOLVE:
+			return "cant_resolve";
+		case HTTPRequest::RESULT_CONNECTION_ERROR:
+			return "connection_error";
+		case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR:
+			return "tls_handshake_error";
+		case HTTPRequest::RESULT_NO_RESPONSE:
+			return "no_response";
+		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
+			return "body_size_limit_exceeded";
+		case HTTPRequest::RESULT_BODY_DECOMPRESS_FAILED:
+			return "body_decompress_failed";
+		case HTTPRequest::RESULT_REQUEST_FAILED:
+			return "request_failed";
+		case HTTPRequest::RESULT_DOWNLOAD_FILE_CANT_OPEN:
+			return "download_file_cant_open";
+		case HTTPRequest::RESULT_DOWNLOAD_FILE_WRITE_ERROR:
+			return "download_file_write_error";
+		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED:
+			return "redirect_limit_reached";
+		case HTTPRequest::RESULT_TIMEOUT:
+			return "timeout";
+		default:
+			return "unknown";
+	}
+}
+
 Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method p_method, int64_t p_request_body_size) {
 	const String redacted_url{ p_url.redacted() };
 	const String method_name{ _http_method(p_method) };
@@ -98,9 +131,38 @@ PackedStringArray _apply_headers(const Ref<SentrySpan> &p_span, const String &p_
 	return headers;
 }
 
+void _add_http_breadcrumb(const sentry::Level p_level, const Dictionary &p_data) {
+	SentrySDK *sdk = SentrySDK::get_singleton();
+	if (sdk == nullptr || !sdk->is_enabled()) {
+		return;
+	}
+	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create();
+	crumb->set_type("http");
+	crumb->set_category("http");
+	crumb->set_level(p_level);
+	crumb->set_data(p_data);
+	sdk->add_breadcrumb(crumb);
+}
+
 } // unnamed namespace
 
 namespace sentry {
+
+Dictionary SentryHTTPRequest::RequestData::as_breadcrumb_data() const {
+	Dictionary data;
+	data["url"] = parsed_url.redacted();
+	data["http.request.method"] = _http_method(method);
+	if (!parsed_url.query.is_empty()) {
+		data["http.query"] = parsed_url.query;
+	}
+	if (!parsed_url.fragment.is_empty()) {
+		data["http.fragment"] = parsed_url.fragment;
+	}
+	if (request_body_size > 0) {
+		data["http.request.body.size"] = request_body_size;
+	}
+	return data;
+}
 
 Error SentryHTTPRequest::request(const String &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, const String &p_request_data) {
 	const PackedByteArray raw_data = p_request_data.to_utf8_buffer();
@@ -124,6 +186,10 @@ Error SentryHTTPRequest::request_raw(const String &p_url, const PackedStringArra
 PackedStringArray SentryHTTPRequest::_instrument_request(const util::URLParts &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, int64_t p_request_body_size) {
 	_span = _start_http_span(p_url, p_method, p_request_body_size);
 
+	_request_data.request_body_size = p_request_body_size;
+	_request_data.method = p_method;
+	_request_data.parsed_url = p_url;
+
 	const PackedStringArray headers = _apply_headers(_span, p_url.redacted(), p_custom_headers);
 	return headers;
 }
@@ -131,20 +197,24 @@ PackedStringArray SentryHTTPRequest::_instrument_request(const util::URLParts &p
 void SentryHTTPRequest::cancel_request() {
 	_http_request->cancel_request();
 	// Q: Is this immediate?
-	_cancel_span();
+	_request_cancelled();
 	// TODO: add breadcrumb
 }
 
-void SentryHTTPRequest::_cancel_span() {
+void SentryHTTPRequest::_request_cancelled() {
 	if (_span.is_valid()) {
 		_span->set_attribute("error.type", "cancelled");
 		_span->set_status(SPAN_STATUS_ERROR);
 		_span->end();
 	}
 	_span.unref();
+
+	Dictionary data = _request_data.as_breadcrumb_data();
+	data["error.type"] = "cancelled";
+	_add_http_breadcrumb(sentry::LEVEL_WARNING, data);
 }
 
-void SentryHTTPRequest::_on_request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
+void SentryHTTPRequest::_request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
 	if (_span.is_valid()) {
 		_span->set_attribute("http.response.status_code", p_response_code);
 		if (p_result == HTTPRequest::RESULT_SUCCESS) {
@@ -156,14 +226,23 @@ void SentryHTTPRequest::_on_request_completed(int64_t p_result, int64_t p_respon
 			_span->set_attribute("http.response.body.size", _http_request->get_downloaded_bytes());
 #endif
 		}
-		_span->set_status(p_response_code >= 400
-						? SpanStatus::SPAN_STATUS_ERROR
-						: SpanStatus::SPAN_STATUS_OK);
+		if (p_result != RESULT_SUCCESS) {
+			_span->set_status(SpanStatus::SPAN_STATUS_ERROR);
+			_span->set_attribute("error.type", _http_request_error(p_result));
+		} else {
+			_span->set_status(p_response_code >= 400
+							? SpanStatus::SPAN_STATUS_ERROR
+							: SpanStatus::SPAN_STATUS_OK);
+		}
 		_span->end();
 	}
 	_span.unref();
 
-	// TODO: add breadcrumb
+	const Dictionary data = _request_data.as_breadcrumb_data();
+	sentry::Level level = p_response_code >= 400
+			? sentry::LEVEL_ERROR
+			: sentry::LEVEL_INFO;
+	_add_http_breadcrumb(level, data);
 
 	emit_signal("request_completed", p_result, p_response_code, p_headers, p_body);
 }
@@ -249,7 +328,7 @@ void SentryHTTPRequest::set_https_proxy(const String &p_host, int32_t p_port) {
 }
 
 void SentryHTTPRequest::_ready() {
-	_http_request->connect("request_completed", callable_mp(this, &SentryHTTPRequest::_on_request_completed));
+	_http_request->connect("request_completed", callable_mp(this, &SentryHTTPRequest::_request_completed));
 }
 
 void SentryHTTPRequest::_bind_methods() {
