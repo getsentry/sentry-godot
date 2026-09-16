@@ -132,16 +132,12 @@ PackedStringArray _apply_headers(const Ref<SentrySpan> &p_span, const String &p_
 }
 
 void _add_http_breadcrumb(const sentry::Level p_level, const Dictionary &p_data) {
-	SentrySDK *sdk = SentrySDK::get_singleton();
-	if (sdk == nullptr || !sdk->is_enabled()) {
-		return;
-	}
 	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create();
 	crumb->set_type("http");
 	crumb->set_category("http");
 	crumb->set_level(p_level);
 	crumb->set_data(p_data);
-	sdk->add_breadcrumb(crumb);
+	SentrySDK::get_singleton()->add_breadcrumb(crumb);
 }
 
 } // unnamed namespace
@@ -152,12 +148,8 @@ Dictionary SentryHTTPRequest::RequestData::as_breadcrumb_data() const {
 	Dictionary data;
 	data["url"] = parsed_url.redacted();
 	data["http.request.method"] = _http_method(method);
-	if (!parsed_url.query.is_empty()) {
-		data["http.query"] = parsed_url.query;
-	}
-	if (!parsed_url.fragment.is_empty()) {
-		data["http.fragment"] = parsed_url.fragment;
-	}
+	// TODO: Add `http.query` and `http.fragment` once data collection options are implemented.
+	//       Omit them for now to avoid including potentially sensitive URL components.
 	if (request_body_size > 0) {
 		data["http.request.body.size"] = request_body_size;
 	}
