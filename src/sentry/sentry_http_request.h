@@ -41,9 +41,17 @@ private:
 	HTTPRequest *_http_request = nullptr;
 	Ref<SentrySpan> _span;
 
+	struct RequestData {
+		util::URLParts parsed_url;
+		HTTPClient::Method method = HTTPClient::METHOD_GET;
+		int64_t request_body_size = 0;
+
+		Dictionary as_breadcrumb_data() const;
+	} _request_data;
+
 	PackedStringArray _instrument_request(const util::URLParts &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, int64_t p_request_body_size);
-	void _cancel_span();
-	void _on_request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
+	void _request_cancelled();
+	void _request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
 
 protected:
 	static void _bind_methods();
