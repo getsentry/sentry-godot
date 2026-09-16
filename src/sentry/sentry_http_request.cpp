@@ -198,7 +198,6 @@ void SentryHTTPRequest::cancel_request() {
 	_http_request->cancel_request();
 	// Q: Is this immediate?
 	_request_cancelled();
-	// TODO: add breadcrumb
 }
 
 void SentryHTTPRequest::_request_cancelled() {
@@ -206,12 +205,13 @@ void SentryHTTPRequest::_request_cancelled() {
 		_span->set_attribute("error.type", "cancelled");
 		_span->set_status(SPAN_STATUS_ERROR);
 		_span->end();
+
+		Dictionary data = _request_data.as_breadcrumb_data();
+		data["error.type"] = "cancelled";
+		_add_http_breadcrumb(sentry::LEVEL_WARNING, data);
 	}
 	_span.unref();
-
-	Dictionary data = _request_data.as_breadcrumb_data();
-	data["error.type"] = "cancelled";
-	_add_http_breadcrumb(sentry::LEVEL_WARNING, data);
+	_request_data = {};
 }
 
 void SentryHTTPRequest::_request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
