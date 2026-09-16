@@ -147,6 +147,15 @@ void SentryHTTPRequest::_cancel_span() {
 void SentryHTTPRequest::_on_request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
 	if (_span.is_valid()) {
 		_span->set_attribute("http.response.status_code", p_response_code);
+		if (p_result == HTTPRequest::RESULT_SUCCESS) {
+#ifdef WEB_ENABLED
+			// On Web, fetch exposes decoded response chunks, so Godot reports decoded bytes.
+			_span->set_attribute("http.response.body.decoded_size", _http_request->get_downloaded_bytes());
+#else
+			// On other platforms, Godot reports bytes downloaded before decompression.
+			_span->set_attribute("http.response.body.size", _http_request->get_downloaded_bytes());
+#endif
+		}
 		_span->set_status(p_response_code >= 400
 						? SpanStatus::SPAN_STATUS_ERROR
 						: SpanStatus::SPAN_STATUS_OK);
@@ -155,7 +164,6 @@ void SentryHTTPRequest::_on_request_completed(int64_t p_result, int64_t p_respon
 	_span.unref();
 
 	// TODO: add breadcrumb
-	// TODO: attributes: http.response.body.size, http.response.body.decoded_size
 
 	emit_signal("request_completed", p_result, p_response_code, p_headers, p_body);
 }
