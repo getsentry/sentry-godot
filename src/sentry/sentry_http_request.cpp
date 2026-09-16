@@ -1,25 +1,163 @@
 #include "sentry_http_request.h"
 
+#include "sentry/sentry_sdk.h"
+
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/callable_method_pointer.hpp>
 
-namespace sentry {
+using namespace sentry;
 
-void SentryHTTPRequest::_on_request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
-	emit_signal("request_completed", p_result, p_response_code, p_headers, p_body);
+namespace {
+
+const char *_http_method(HTTPClient::Method p_method) {
+	switch (p_method) {
+		case HTTPClient::METHOD_GET:
+			return "GET";
+		case HTTPClient::METHOD_HEAD:
+			return "HEAD";
+		case HTTPClient::METHOD_POST:
+			return "POST";
+		case HTTPClient::METHOD_PUT:
+			return "PUT";
+		case HTTPClient::METHOD_DELETE:
+			return "DELETE";
+		case HTTPClient::METHOD_OPTIONS:
+			return "OPTIONS";
+		case HTTPClient::METHOD_TRACE:
+			return "TRACE";
+		case HTTPClient::METHOD_CONNECT:
+			return "CONNECT";
+		case HTTPClient::METHOD_PATCH:
+			return "PATCH";
+		default:
+			return "UNKNOWN";
+	}
 }
 
+Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method p_method, int64_t p_request_body_size) {
+	const String redacted_url{ p_url.redacted() };
+	const String method_name{ _http_method(p_method) };
+
+	// IPv6 addresses are enclosed in square brackets
+	const String server_address = p_url.host.begins_with("[") && p_url.host.ends_with("]")
+			? p_url.host.substr(1, p_url.host.length() - 2)
+			: p_url.host;
+
+	// TODO: Pre-allocate literals.
+
+	// https://github.com/getsentry/sentry-conventions/tree/main/model/attributes
+	// https://develop.sentry.dev/sdk/telemetry/traces/span-data-conventions/#http
+	// https://opentelemetry.io/docs/specs/semconv/registry/attributes/url/
+	Dictionary attributes;
+	attributes["sentry.op"] = "http.client";
+	attributes["sentry.origin"] = "auto.http.godot";
+	attributes["sentry.kind"] = "client";
+	attributes["http.request.method"] = method_name;
+	attributes["http.request.body.size"] = p_request_body_size;
+	// TODO: `url.full` SHOULD contain query and fragment if data collection options permit.
+	//       Data collection spec not implemented - emit redacted for now.
+	// 		 `url.query`, `url.fragment` also REQUIRE data collection options; not added for now.
+	attributes["url.full"] = redacted_url;
+	attributes["url.domain"] = p_url.host; // with IPv6 brackets?
+	attributes["server.address"] = server_address; // without IPv6 brackets?
+	if (p_url.port >= 0) {
+		attributes["server.port"] = p_url.port;
+	}
+	if (!p_url.query.is_empty()) {
+		attributes["url.query"] = p_url.query;
+	}
+	if (!p_url.fragment.is_empty()) {
+		attributes["url.fragment"] = p_url.fragment;
+	}
+
+	String span_name{ method_name };
+	span_name += U' ';
+	span_name += redacted_url;
+
+	return SentrySDK::get_singleton()->start_span(span_name, attributes,
+			SentrySDK::get_singleton()->get_active_span());
+}
+
+PackedStringArray _apply_headers(const Ref<SentrySpan> &p_span, const String &p_redacted_url, const PackedStringArray &p_custom_headers) {
+	PackedStringArray headers = p_span->get_trace_headers(p_redacted_url);
+	for (const String &header : p_custom_headers) {
+		const String header_name = header.get_slice(":", 0).strip_edges().to_lower();
+		bool already_present = false;
+		for (const String &existing_header : headers) {
+			const String existing_header_name = existing_header.get_slice(":", 0).strip_edges().to_lower();
+			if (existing_header_name == header_name) {
+				already_present = true;
+				break;
+			}
+		}
+		if (!already_present) {
+			headers.push_back(header);
+		}
+	}
+	return headers;
+}
+
+} // unnamed namespace
+
+namespace sentry {
+
 Error SentryHTTPRequest::request(const String &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, const String &p_request_data) {
-	return _http_request->request(p_url, p_custom_headers, p_method, p_request_data);
+	const PackedByteArray raw_data = p_request_data.to_utf8_buffer();
+	return request_raw(p_url, p_custom_headers, p_method, raw_data);
 }
 
 Error SentryHTTPRequest::request_raw(const String &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, const PackedByteArray &p_request_data_raw) {
-	return _http_request->request_raw(p_url, p_custom_headers, p_method, p_request_data_raw);
+	util::URLParts parsed_url;
+	Error err;
+
+	err = util::parse_url(p_url, parsed_url);
+	if (err != OK) {
+		return err;
+	}
+
+	const PackedStringArray headers = _instrument_request(parsed_url, p_custom_headers, p_method, p_request_data_raw.size());
+	err = _http_request->request_raw(p_url, headers, p_method, p_request_data_raw);
+	return err;
+}
+
+PackedStringArray SentryHTTPRequest::_instrument_request(const util::URLParts &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, int64_t p_request_body_size) {
+	_span = _start_http_span(p_url, p_method, p_request_body_size);
+
+	const PackedStringArray headers = _apply_headers(_span, p_url.redacted(), p_custom_headers);
+	return headers;
 }
 
 void SentryHTTPRequest::cancel_request() {
 	_http_request->cancel_request();
+	// Q: Is this immediate?
+	_cancel_span();
+	// TODO: add breadcrumb
+}
+
+void SentryHTTPRequest::_cancel_span() {
+	if (_span.is_valid()) {
+		_span->set_attribute("error.type", "cancelled");
+		_span->set_status(SPAN_STATUS_ERROR);
+		_span->end();
+	}
+	_span.unref();
+}
+
+void SentryHTTPRequest::_on_request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
+	if (_span.is_valid()) {
+		_span->set_attribute("http.response.status_code", p_response_code);
+		_span->set_status(p_response_code >= 400
+						? SpanStatus::SPAN_STATUS_ERROR
+						: SpanStatus::SPAN_STATUS_OK);
+		_span->end();
+	}
+	_span.unref();
+
+	// TODO: add breadcrumb
+	// TODO: attributes: http.response.body.size, http.response.body.decoded_size
+
+	emit_signal("request_completed", p_result, p_response_code, p_headers, p_body);
 }
 
 void SentryHTTPRequest::set_tls_options(const Ref<TLSOptions> &p_client_options) {

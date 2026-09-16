@@ -1,5 +1,8 @@
 #pragma once
 
+#include "sentry/sentry_span.h"
+#include "sentry/util/url.h"
+
 #include <godot_cpp/classes/http_client.hpp>
 #include <godot_cpp/classes/http_request.hpp>
 #include <godot_cpp/classes/node.hpp>
@@ -36,7 +39,10 @@ public:
 
 private:
 	HTTPRequest *_http_request = nullptr;
+	Ref<SentrySpan> _span;
 
+	PackedStringArray _instrument_request(const util::URLParts &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, int64_t p_request_body_size);
+	void _cancel_span();
 	void _on_request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
 
 protected:
