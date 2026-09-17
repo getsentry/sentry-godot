@@ -478,7 +478,7 @@ bool AndroidSDK::is_enabled() const {
 }
 
 AndroidSDK::AndroidSDK() {
-	AndroidStringNames::create_singleton();
+	AndroidStringNames::create_once();
 
 	Object *android_plugin = Engine::get_singleton()->get_singleton("SentryAndroidGodotPlugin");
 	ERR_FAIL_NULL_MSG(android_plugin, "Sentry: Unable to locate SentryAndroidGodotPlugin singleton.");
@@ -501,7 +501,6 @@ AndroidSDK::AndroidSDK() {
 }
 
 AndroidSDK::~AndroidSDK() {
-	AndroidStringNames::destroy_singleton();
 	if (before_send_handler) {
 		memdelete(before_send_handler);
 	}
