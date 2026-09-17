@@ -38,19 +38,43 @@ public:
 	};
 
 private:
-	HTTPRequest *_http_request = nullptr;
-	Ref<SentrySpan> _span;
-
 	struct RequestData {
 		util::URLParts parsed_url;
 		HTTPClient::Method method = HTTPClient::METHOD_GET;
 		int64_t request_body_size = 0;
 
 		Dictionary as_breadcrumb_data() const;
-	} _request_data;
+	};
+
+	struct RequestOutcome {
+		enum class Kind {
+			CANCELLED,
+			STARTUP_FAILURE,
+			COMPLETED,
+		};
+
+		Kind kind;
+		Error startup_error = OK;
+		int64_t result = RESULT_SUCCESS;
+		int64_t response_code = -1;
+		int64_t response_body_size = -1;
+
+		static RequestOutcome cancelled() { return { Kind::CANCELLED }; }
+		static RequestOutcome startup_failure(Error p_error) { return { Kind::STARTUP_FAILURE, p_error }; }
+		static RequestOutcome completed(int64_t p_result, int64_t p_response_code, int64_t p_response_body_size) {
+			return { Kind::COMPLETED, OK, p_result,
+				p_response_code > 0 ? p_response_code : -1,
+				p_result == RESULT_SUCCESS ? p_response_body_size : -1 };
+		}
+	};
+
+	HTTPRequest *_http_request = nullptr;
+	Ref<SentrySpan> _span;
+	bool _request_in_progress = false;
+	RequestData _request_data;
 
 	PackedStringArray _instrument_request(const util::URLParts &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, int64_t p_request_body_size);
-	void _request_cancelled();
+	void _finalize_request(const RequestOutcome &p_outcome);
 	void _request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
 
 protected:
