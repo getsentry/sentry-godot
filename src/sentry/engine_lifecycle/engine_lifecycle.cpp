@@ -78,8 +78,8 @@ void add_module_termination_callback(const Callable &p_callback) {
 }
 
 void notify_module_terminating() {
-	for (const Callable &callback : _module_termination_callbacks) {
-		callback.call();
+	for (uint32_t i = _module_termination_callbacks.size(); i > 0; --i) {
+		_module_termination_callbacks[i - 1].call();
 	}
 
 	_module_termination_callbacks.clear();

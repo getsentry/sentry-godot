@@ -29,7 +29,7 @@ void remove_shutdown_callback(const Callable &p_callback);
 void add_module_termination_callback(const Callable &p_callback);
 
 // Called from register_types.cpp when the module is deinitialized.
-// Runs all registered module termination callbacks and then releases all callbacks.
+// Runs module termination callbacks in reverse registration order (LIFO), then releases all callbacks.
 void notify_module_terminating();
 
 } // namespace sentry::engine_lifecycle
