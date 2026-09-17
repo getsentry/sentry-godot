@@ -235,8 +235,12 @@ void SentryHTTPRequest::_request_completed(int64_t p_result, int64_t p_response_
 	emit_signal("request_completed", p_result, p_response_code, p_headers, p_body);
 }
 
-void SentryHTTPRequest::_ready() {
-	_http_request->connect("request_completed", callable_mp(this, &SentryHTTPRequest::_request_completed));
+void SentryHTTPRequest::_notification(int p_what) {
+	if (p_what == NOTIFICATION_READY) {
+		_http_request->connect("request_completed", callable_mp(this, &SentryHTTPRequest::_request_completed));
+	} else if (p_what == NOTIFICATION_EXIT_TREE) {
+		_request_cancelled();
+	}
 }
 
 void SentryHTTPRequest::_bind_methods() {

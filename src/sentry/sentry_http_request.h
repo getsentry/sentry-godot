@@ -55,10 +55,9 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
-	void _ready() override;
-
 	Error request(const String &p_url, const PackedStringArray &p_custom_headers = PackedStringArray(), HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = String());
 	Error request_raw(const String &p_url, const PackedStringArray &p_custom_headers = PackedStringArray(), HTTPClient::Method p_method = HTTPClient::METHOD_GET, const PackedByteArray &p_request_data_raw = PackedByteArray());
 	void cancel_request();
