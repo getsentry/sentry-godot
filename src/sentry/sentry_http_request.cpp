@@ -2,38 +2,80 @@
 
 #include "sentry/level.h"
 #include "sentry/sentry_sdk.h"
+#include "sentry/util/module_instance.h"
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/callable_method_pointer.hpp>
+#include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace sentry;
 
 namespace {
 
-const char *_http_method(HTTPClient::Method p_method) {
+struct HTTPRequestStringData {
+	const String sentry_op{ "sentry.op" };
+	const String sentry_origin{ "sentry.origin" };
+	const String sentry_kind{ "sentry.kind" };
+	const String http_request_method{ "http.request.method" };
+	const String http_request_body_size{ "http.request.body.size" };
+	const String http_response_status_code{ "http.response.status_code" };
+	const String http_response_body_size{ "http.response.body.size" };
+	const String http_response_body_decoded_size{ "http.response.body.decoded_size" };
+	const String url_full{ "url.full" };
+	const String url_domain{ "url.domain" };
+	const String server_address{ "server.address" };
+	const String server_port{ "server.port" };
+	const String error_type{ "error.type" };
+	const String url{ "url" };
+	const String status_code{ "status_code" };
+	const String http_client{ "http.client" };
+	const String auto_http_godot{ "auto.http.godot" };
+	const String client{ "client" };
+	const String http{ "http" };
+	const String cancelled{ "cancelled" };
+	const String open_bracket{ "[" };
+	const String close_bracket{ "]" };
+	const StringName request_completed{ "request_completed" };
+
+	const String method_get{ "GET" };
+	const String method_head{ "HEAD" };
+	const String method_post{ "POST" };
+	const String method_put{ "PUT" };
+	const String method_delete{ "DELETE" };
+	const String method_options{ "OPTIONS" };
+	const String method_trace{ "TRACE" };
+	const String method_connect{ "CONNECT" };
+	const String method_patch{ "PATCH" };
+	const String method_unknown{ "UNKNOWN" };
+};
+
+using HTTPRequestStrings = util::ModuleInstance<HTTPRequestStringData>;
+
+const String &_http_method(HTTPClient::Method p_method) {
+	const auto &strings = HTTPRequestStrings::get();
 	switch (p_method) {
 		case HTTPClient::METHOD_GET:
-			return "GET";
+			return strings.method_get;
 		case HTTPClient::METHOD_HEAD:
-			return "HEAD";
+			return strings.method_head;
 		case HTTPClient::METHOD_POST:
-			return "POST";
+			return strings.method_post;
 		case HTTPClient::METHOD_PUT:
-			return "PUT";
+			return strings.method_put;
 		case HTTPClient::METHOD_DELETE:
-			return "DELETE";
+			return strings.method_delete;
 		case HTTPClient::METHOD_OPTIONS:
-			return "OPTIONS";
+			return strings.method_options;
 		case HTTPClient::METHOD_TRACE:
-			return "TRACE";
+			return strings.method_trace;
 		case HTTPClient::METHOD_CONNECT:
-			return "CONNECT";
+			return strings.method_connect;
 		case HTTPClient::METHOD_PATCH:
-			return "PATCH";
+			return strings.method_patch;
 		default:
-			return "UNKNOWN";
+			return strings.method_unknown;
 	}
 }
 
@@ -71,33 +113,32 @@ const char *_http_request_error(int64_t p_result) {
 }
 
 Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method p_method, int64_t p_request_body_size) {
+	const auto &strings = HTTPRequestStrings::get();
 	const String redacted_url{ p_url.redacted() };
-	const String method_name{ _http_method(p_method) };
+	const String &method_name = _http_method(p_method);
 
 	// IPv6 addresses are enclosed in square brackets
-	const String server_address = p_url.host.begins_with("[") && p_url.host.ends_with("]")
+	const String server_address = p_url.host.begins_with(strings.open_bracket) && p_url.host.ends_with(strings.close_bracket)
 			? p_url.host.substr(1, p_url.host.length() - 2)
 			: p_url.host;
-
-	// TODO: Pre-allocate literals.
 
 	// https://github.com/getsentry/sentry-conventions/tree/main/model/attributes
 	// https://develop.sentry.dev/sdk/telemetry/traces/span-data-conventions/#http
 	// https://opentelemetry.io/docs/specs/semconv/registry/attributes/url/
 	Dictionary attributes;
-	attributes["sentry.op"] = "http.client";
-	attributes["sentry.origin"] = "auto.http.godot";
-	attributes["sentry.kind"] = "client";
-	attributes["http.request.method"] = method_name;
-	attributes["http.request.body.size"] = p_request_body_size;
+	attributes[strings.sentry_op] = strings.http_client;
+	attributes[strings.sentry_origin] = strings.auto_http_godot;
+	attributes[strings.sentry_kind] = strings.client;
+	attributes[strings.http_request_method] = method_name;
+	attributes[strings.http_request_body_size] = p_request_body_size;
 	// TODO: Add `url.query`, `url.fragment`, and unredacted `url.full` once data
 	//       collection options are implemented.
 	//       Omit them for now to avoid including potentially sensitive URL components.
-	attributes["url.full"] = redacted_url;
-	attributes["url.domain"] = p_url.host; // with IPv6 brackets?
-	attributes["server.address"] = server_address; // without IPv6 brackets?
+	attributes[strings.url_full] = redacted_url;
+	attributes[strings.url_domain] = p_url.host; // with IPv6 brackets?
+	attributes[strings.server_address] = server_address; // without IPv6 brackets?
 	if (p_url.port >= 0) {
-		attributes["server.port"] = p_url.port;
+		attributes[strings.server_port] = p_url.port;
 	}
 
 	String span_name{ method_name };
@@ -111,10 +152,10 @@ Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method
 PackedStringArray _apply_headers(const Ref<SentrySpan> &p_span, const String &p_redacted_url, const PackedStringArray &p_custom_headers) {
 	PackedStringArray headers = p_span->get_trace_headers(p_redacted_url);
 	for (const String &header : p_custom_headers) {
-		const String header_name = header.get_slice(":", 0).strip_edges().to_lower();
+		const String header_name = header.get_slicec(U':', 0).strip_edges().to_lower();
 		bool already_present = false;
 		for (const String &existing_header : headers) {
-			const String existing_header_name = existing_header.get_slice(":", 0).strip_edges().to_lower();
+			const String existing_header_name = existing_header.get_slicec(U':', 0).strip_edges().to_lower();
 			if (existing_header_name == header_name) {
 				already_present = true;
 				break;
@@ -128,9 +169,10 @@ PackedStringArray _apply_headers(const Ref<SentrySpan> &p_span, const String &p_
 }
 
 void _add_http_breadcrumb(const sentry::Level p_level, const Dictionary &p_data) {
+	const auto &strings = HTTPRequestStrings::get();
 	Ref<SentryBreadcrumb> crumb = SentryBreadcrumb::create();
-	crumb->set_type("http");
-	crumb->set_category("http");
+	crumb->set_type(strings.http);
+	crumb->set_category(strings.http);
 	crumb->set_level(p_level);
 	crumb->set_data(p_data);
 	SentrySDK::get_singleton()->add_breadcrumb(crumb);
@@ -141,13 +183,14 @@ void _add_http_breadcrumb(const sentry::Level p_level, const Dictionary &p_data)
 namespace sentry {
 
 Dictionary SentryHTTPRequest::RequestData::as_breadcrumb_data() const {
+	const auto &strings = HTTPRequestStrings::get();
 	Dictionary data;
-	data["url"] = parsed_url.redacted();
-	data["http.request.method"] = _http_method(method);
+	data[strings.url] = parsed_url.redacted();
+	data[strings.http_request_method] = _http_method(method);
 	// TODO: Add `http.query` and `http.fragment` once data collection options are implemented.
 	//       Omit them for now to avoid including potentially sensitive URL components.
 	if (request_body_size > 0) {
-		data["http.request.body.size"] = request_body_size;
+		data[strings.http_request_body_size] = request_body_size;
 	}
 	return data;
 }
@@ -185,7 +228,7 @@ void SentryHTTPRequest::cancel_request() {
 void SentryHTTPRequest::_request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
 	_finalize_request(RequestOutcome::completed(p_result, p_response_code, _http_request->get_downloaded_bytes()));
 
-	emit_signal("request_completed", p_result, p_response_code, p_headers, p_body);
+	emit_signal(HTTPRequestStrings::get().request_completed, p_result, p_response_code, p_headers, p_body);
 }
 
 PackedStringArray SentryHTTPRequest::_instrument_request(const util::URLParts &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, int64_t p_request_body_size) {
@@ -204,12 +247,13 @@ void SentryHTTPRequest::_finalize_request(const RequestOutcome &p_outcome) {
 		return;
 	}
 
+	const auto &strings = HTTPRequestStrings::get();
 	String error_type;
 	SpanStatus status = SPAN_STATUS_OK;
 	Level breadcrumb_level = LEVEL_INFO;
 	switch (p_outcome.kind) {
 		case RequestOutcome::Kind::CANCELLED: {
-			error_type = "cancelled";
+			error_type = strings.cancelled;
 			status = SPAN_STATUS_ERROR;
 			breadcrumb_level = LEVEL_WARNING;
 		} break;
@@ -232,18 +276,18 @@ void SentryHTTPRequest::_finalize_request(const RequestOutcome &p_outcome) {
 	if (_span.is_valid()) {
 		_span->set_status(status);
 		if (!error_type.is_empty()) {
-			_span->set_attribute("error.type", error_type);
+			_span->set_attribute(strings.error_type, error_type);
 		}
 		if (p_outcome.response_code >= 0) {
-			_span->set_attribute("http.response.status_code", p_outcome.response_code);
+			_span->set_attribute(strings.http_response_status_code, p_outcome.response_code);
 		}
 		if (p_outcome.response_body_size >= 0) {
 #ifdef WEB_ENABLED
 			// On Web, fetch exposes decoded response chunks, so Godot reports decoded bytes.
-			_span->set_attribute("http.response.body.decoded_size", p_outcome.response_body_size);
+			_span->set_attribute(strings.http_response_body_decoded_size, p_outcome.response_body_size);
 #else
 			// On other platforms, Godot reports bytes downloaded before decompression.
-			_span->set_attribute("http.response.body.size", p_outcome.response_body_size);
+			_span->set_attribute(strings.http_response_body_size, p_outcome.response_body_size);
 #endif
 		}
 		_span->end();
@@ -251,10 +295,10 @@ void SentryHTTPRequest::_finalize_request(const RequestOutcome &p_outcome) {
 
 	Dictionary breadcrumb_data = _request_data.as_breadcrumb_data();
 	if (!error_type.is_empty()) {
-		breadcrumb_data["error.type"] = error_type;
+		breadcrumb_data[strings.error_type] = error_type;
 	}
 	if (p_outcome.response_code > 0) {
-		breadcrumb_data["status_code"] = p_outcome.response_code;
+		breadcrumb_data[strings.status_code] = p_outcome.response_code;
 	}
 	_add_http_breadcrumb(breadcrumb_level, breadcrumb_data);
 
@@ -265,13 +309,15 @@ void SentryHTTPRequest::_finalize_request(const RequestOutcome &p_outcome) {
 
 void SentryHTTPRequest::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
-		_http_request->connect("request_completed", callable_mp(this, &SentryHTTPRequest::_request_completed));
+		_http_request->connect(HTTPRequestStrings::get().request_completed, callable_mp(this, &SentryHTTPRequest::_request_completed));
 	} else if (p_what == NOTIFICATION_EXIT_TREE) {
 		_finalize_request(RequestOutcome::cancelled());
 	}
 }
 
 void SentryHTTPRequest::_bind_methods() {
+	HTTPRequestStrings::create_once();
+
 	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "method", "request_data"), &SentryHTTPRequest::request, DEFVAL(PackedStringArray()), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "method", "request_data_raw"), &SentryHTTPRequest::request_raw, DEFVAL(PackedStringArray()), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(PackedByteArray()));
 	ClassDB::bind_method(D_METHOD("cancel_request"), &SentryHTTPRequest::cancel_request);
@@ -304,7 +350,7 @@ void SentryHTTPRequest::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redirects", PROPERTY_HINT_RANGE, "-1,64"), "set_max_redirects", "get_max_redirects");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "timeout", PROPERTY_HINT_RANGE, "0,3600,0.1,or_greater,suffix:s"), "set_timeout", "get_timeout");
 
-	ADD_SIGNAL(MethodInfo("request_completed", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "response_code"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "headers"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "body")));
+	ADD_SIGNAL(MethodInfo(HTTPRequestStrings::get().request_completed, PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "response_code"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "headers"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "body")));
 
 	BIND_ENUM_CONSTANT(RESULT_SUCCESS);
 	BIND_ENUM_CONSTANT(RESULT_CHUNKED_BODY_SIZE_MISMATCH);
