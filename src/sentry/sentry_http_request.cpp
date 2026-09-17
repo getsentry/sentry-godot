@@ -1,10 +1,12 @@
 #include "sentry_http_request.h"
 
+#include "sentry/level.h"
 #include "sentry/sentry_sdk.h"
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/callable_method_pointer.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace sentry;
 
@@ -156,17 +158,34 @@ Error SentryHTTPRequest::request(const String &p_url, const PackedStringArray &p
 }
 
 Error SentryHTTPRequest::request_raw(const String &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, const PackedByteArray &p_request_data_raw) {
-	util::URLParts parsed_url;
-	Error err;
+	ERR_FAIL_COND_V(!_http_request->is_inside_tree(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V_MSG(_request_in_progress, ERR_BUSY, "SentryHTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
 
-	err = util::parse_url(p_url, parsed_url);
+	util::URLParts parsed_url;
+	Error err = util::parse_url(p_url, parsed_url);
 	if (err != OK) {
 		return err;
 	}
 
+	_request_in_progress = true;
 	const PackedStringArray headers = _instrument_request(parsed_url, p_custom_headers, p_method, p_request_data_raw.size());
 	err = _http_request->request_raw(p_url, headers, p_method, p_request_data_raw);
+	// ERR_CANT_CONNECT still schedules request_completed in Godot.
+	if (err != OK && err != ERR_CANT_CONNECT) {
+		_finalize_request(RequestOutcome::startup_failure(err));
+	}
 	return err;
+}
+
+void SentryHTTPRequest::cancel_request() {
+	_http_request->cancel_request();
+	_finalize_request(RequestOutcome::cancelled());
+}
+
+void SentryHTTPRequest::_request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
+	_finalize_request(RequestOutcome::completed(p_result, p_response_code, _http_request->get_downloaded_bytes()));
+
+	emit_signal("request_completed", p_result, p_response_code, p_headers, p_body);
 }
 
 PackedStringArray SentryHTTPRequest::_instrument_request(const util::URLParts &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, int64_t p_request_body_size) {
@@ -180,66 +199,75 @@ PackedStringArray SentryHTTPRequest::_instrument_request(const util::URLParts &p
 	return headers;
 }
 
-void SentryHTTPRequest::cancel_request() {
-	_http_request->cancel_request();
-	// Q: Is this immediate?
-	_request_cancelled();
-}
-
-void SentryHTTPRequest::_request_cancelled() {
-	if (_span.is_valid()) {
-		_span->set_attribute("error.type", "cancelled");
-		_span->set_status(SPAN_STATUS_ERROR);
-		_span->end();
-
-		Dictionary data = _request_data.as_breadcrumb_data();
-		data["error.type"] = "cancelled";
-		_add_http_breadcrumb(sentry::LEVEL_WARNING, data);
+void SentryHTTPRequest::_finalize_request(const RequestOutcome &p_outcome) {
+	if (!_request_in_progress) {
+		return;
 	}
-	_span.unref();
-	_request_data = {};
-}
 
-void SentryHTTPRequest::_request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
+	String error_type;
+	SpanStatus status = SPAN_STATUS_OK;
+	Level breadcrumb_level = LEVEL_INFO;
+	switch (p_outcome.kind) {
+		case RequestOutcome::Kind::CANCELLED: {
+			error_type = "cancelled";
+			status = SPAN_STATUS_ERROR;
+			breadcrumb_level = LEVEL_WARNING;
+		} break;
+		case RequestOutcome::Kind::STARTUP_FAILURE: {
+			error_type = UtilityFunctions::error_string(p_outcome.startup_error);
+			status = SPAN_STATUS_ERROR;
+			breadcrumb_level = LEVEL_ERROR;
+		} break;
+		case RequestOutcome::Kind::COMPLETED: {
+			if (p_outcome.result != RESULT_SUCCESS) {
+				error_type = _http_request_error(p_outcome.result);
+			}
+			if (p_outcome.result != RESULT_SUCCESS || p_outcome.response_code >= 400) {
+				status = SPAN_STATUS_ERROR;
+				breadcrumb_level = LEVEL_ERROR;
+			}
+		} break;
+	}
+
 	if (_span.is_valid()) {
-		_span->set_attribute("http.response.status_code", p_response_code);
-		if (p_result == HTTPRequest::RESULT_SUCCESS) {
+		_span->set_status(status);
+		if (!error_type.is_empty()) {
+			_span->set_attribute("error.type", error_type);
+		}
+		if (p_outcome.response_code >= 0) {
+			_span->set_attribute("http.response.status_code", p_outcome.response_code);
+		}
+		if (p_outcome.response_body_size >= 0) {
 #ifdef WEB_ENABLED
 			// On Web, fetch exposes decoded response chunks, so Godot reports decoded bytes.
-			_span->set_attribute("http.response.body.decoded_size", _http_request->get_downloaded_bytes());
+			_span->set_attribute("http.response.body.decoded_size", p_outcome.response_body_size);
 #else
 			// On other platforms, Godot reports bytes downloaded before decompression.
-			_span->set_attribute("http.response.body.size", _http_request->get_downloaded_bytes());
+			_span->set_attribute("http.response.body.size", p_outcome.response_body_size);
 #endif
-		}
-		if (p_result != RESULT_SUCCESS) {
-			_span->set_status(SpanStatus::SPAN_STATUS_ERROR);
-			_span->set_attribute("error.type", _http_request_error(p_result));
-		} else {
-			_span->set_status(p_response_code >= 400
-							? SpanStatus::SPAN_STATUS_ERROR
-							: SpanStatus::SPAN_STATUS_OK);
 		}
 		_span->end();
 	}
 
-	const Dictionary data = _request_data.as_breadcrumb_data();
-	sentry::Level level = p_response_code >= 400
-			? sentry::LEVEL_ERROR
-			: sentry::LEVEL_INFO;
-	_add_http_breadcrumb(level, data);
+	Dictionary breadcrumb_data = _request_data.as_breadcrumb_data();
+	if (!error_type.is_empty()) {
+		breadcrumb_data["error.type"] = error_type;
+	}
+	if (p_outcome.response_code > 0) {
+		breadcrumb_data["status_code"] = p_outcome.response_code;
+	}
+	_add_http_breadcrumb(breadcrumb_level, breadcrumb_data);
 
 	_span.unref();
 	_request_data = {};
-
-	emit_signal("request_completed", p_result, p_response_code, p_headers, p_body);
+	_request_in_progress = false;
 }
 
 void SentryHTTPRequest::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		_http_request->connect("request_completed", callable_mp(this, &SentryHTTPRequest::_request_completed));
 	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		_request_cancelled();
+		_finalize_request(RequestOutcome::cancelled());
 	}
 }
 
