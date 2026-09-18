@@ -105,6 +105,10 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     private fun getBaseEvent(eventHandle: Int): SentryBaseEvent? {
+        // Accessors that are supported in transactions use this call.
+        // SentryTransaction is a sibling class of SentryEvent and does not expose message, level,
+        // logger, fingerprint, crash state, threads, exceptions, or a writable timestamp.
+        // Fingerprints affect error issue grouping and do not control transaction grouping.
         val event: SentryBaseEvent? = eventsByHandle.get()?.get(eventHandle)
         if (event == null) {
             Log.e(TAG, "Internal Error -- SentryBaseEvent not found: $eventHandle")
