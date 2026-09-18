@@ -123,6 +123,7 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(android::AndroidLog);
 	GDREGISTER_INTERNAL_CLASS(android::AndroidMetric);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendHandler);
+	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendTransactionHandler);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendFeedbackHandler);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendLogHandler);
 	GDREGISTER_INTERNAL_CLASS(android::SentryAndroidBeforeSendMetricHandler);
