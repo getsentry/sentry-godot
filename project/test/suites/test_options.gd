@@ -177,6 +177,7 @@ func test_level_properties(property: String, test_parameters := [
 @warning_ignore("unused_parameter")
 func test_callback_properties(property: String, test_parameters := [
 	["before_send"],
+	["before_send_transaction"],
 	["before_send_feedback"],
 	["before_capture_screenshot"]
 ]) -> void:
