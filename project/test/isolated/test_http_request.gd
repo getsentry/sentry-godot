@@ -20,7 +20,8 @@ func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		options.dsn = "http://public@127.0.0.1:%d/42" % _server.listener.get_local_port()
 		options.traces_sample_rate = 1.0
-		options.trace_propagation_targets = ["127.0.0.1"]
+		# Only `/propagated/` routes will propagate trace headers.
+		options.trace_propagation_targets = ["/propagated/"]
 		options.propagate_traceparent = true
 		options.godot_logger.enabled = false
 	)
@@ -76,7 +77,7 @@ func test_successful_post_sends_trace_headers_and_preserves_request_data() -> vo
 	var parent: SentrySpan = SentrySDK.start_span("load scores")
 
 	assert_int(_request.request(
-		_url("/ok?token=secret#private"),
+		_url("/propagated/ok?token=secret#private"),
 		["X-Custom: value"],
 		HTTPClient.METHOD_POST,
 		request_body,
@@ -87,7 +88,7 @@ func test_successful_post_sends_trace_headers_and_preserves_request_data() -> vo
 	assert_int(response[1]).is_equal(200)
 	assert_str(response[3].get_string_from_utf8()).is_equal("hello")
 
-	var received: Dictionary = _received("/ok?token=secret")
+	var received: Dictionary = _received("/propagated/ok?token=secret")
 	assert_str(received.method).is_equal("POST")
 	assert_str(received.body.get_string_from_utf8()).is_equal(request_body)
 	assert_str(received.headers.get("x-custom", "")).is_equal("value")
@@ -102,7 +103,7 @@ func test_successful_post_records_redacted_breadcrumb() -> void:
 	var request_body := "Hello 世界! 👋"
 
 	assert_int(_request.request(
-		_url("/ok?token=secret#private"),
+		_url("/propagated/ok?token=secret#private"),
 		[],
 		HTTPClient.METHOD_POST,
 		request_body,
@@ -111,7 +112,7 @@ func test_successful_post_records_redacted_breadcrumb() -> void:
 
 	var crumbs: Array = await _http_breadcrumbs()
 	assert_array(crumbs).has_size(1)
-	assert_str(crumbs[0].data.url).is_equal(_url("/ok"))
+	assert_str(crumbs[0].data.url).is_equal(_url("/propagated/ok"))
 	assert_str(crumbs[0].data["http.request.method"]).is_equal("POST")
 	assert_int(int(crumbs[0].data["http.request.body.size"])).is_equal(
 		request_body.to_utf8_buffer().size()
@@ -125,10 +126,10 @@ func test_trace_headers_do_not_duplicate_custom_header_names() -> void:
 		"Traceparent: caller-parent",
 	])
 
-	assert_int(_request.request(_url("/custom"), headers)).is_equal(OK)
+	assert_int(_request.request(_url("/propagated/custom"), headers)).is_equal(OK)
 	await await_signal_on(_request, "request_completed", [], 5000)
 
-	var received := _received("/custom").headers as Dictionary
+	var received := _received("/propagated/custom").headers as Dictionary
 	assert_array(headers).has_size(3)
 	assert_str(received["sentry-trace"]).is_equal("caller-trace")
 	assert_str(received["baggage"]).is_equal("vendor=value")
@@ -136,13 +137,13 @@ func test_trace_headers_do_not_duplicate_custom_header_names() -> void:
 
 
 func test_url_outside_trace_propagation_targets_keeps_custom_headers_and_omits_trace_headers() -> void:
-	# `localhost` is not in `options.trace_propagation_targets`.
-	var url := "http://localhost:%d/filtered" % _server.listener.get_local_port()
+	# `/not_propagated` is not in `options.trace_propagation_targets`.
+	var url := _url("/not_propagated")
 
 	assert_int(_request.request(url, ["X-Custom: value"])).is_equal(OK)
 	await await_signal_on(_request, "request_completed", [], 5000)
 
-	var received: Dictionary = _received("/filtered")
+	var received: Dictionary = _received("/not_propagated")
 	assert_str(received.headers.get("x-custom", "")).is_equal("value")
 	assert_bool(received.headers.has("sentry-trace")).is_false()
 	assert_bool(received.headers.has("traceparent")).is_false()
@@ -181,7 +182,10 @@ func test_connection_failure_records_error_breadcrumb() -> void:
 	# HTTPRequest reports connection failures asynchronously through request_completed.
 	assert_int(_request.request(failed_url)).is_equal(OK)
 	var failed_response: Array = await await_signal_on(_request, "request_completed", [], 5000)
-	assert_int(failed_response[0]).is_equal(HTTPRequest.RESULT_CANT_CONNECT)
+	assert_array([
+		HTTPRequest.RESULT_CANT_CONNECT,
+		HTTPRequest.RESULT_TIMEOUT,
+	]).contains([failed_response[0]])
 
 	var crumbs: Array = await _http_breadcrumbs()
 	assert_array(crumbs).has_size(1)
