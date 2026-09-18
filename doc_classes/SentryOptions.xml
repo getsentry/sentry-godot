@@ -96,6 +96,22 @@
 				return metric
 			[/codeblock]
 		</member>
+		<member name="before_send_transaction" type="Callable" setter="set_before_send_transaction" getter="get_before_send_transaction" default="Callable()">
+			If assigned, this callback runs before a transaction is sent to Sentry. It takes [SentryEvent] as a parameter and returns either the same transaction object, with or without modifications, or [code]null[/code] to skip sending the transaction. You can assign it in a configuration callback using manual initialization (see [method SentrySDK.init]). Transactions do not pass through [member before_send].
+			A transaction groups a root [SentrySpan] and its child spans into the performance event sent when the root span ends.
+			Use the [SentryEvent] parameter to modify the transaction event's tags, contexts, [member SentryEvent.release], and [member SentryEvent.environment], or inspect its complete payload with [method SentryEvent.to_json]. [member SentryEvent.message], [member SentryEvent.level], thread, and exception accessors are not available for transaction events.
+			[codeblock]
+			func _before_send_transaction(transaction: SentryEvent) -&gt; SentryEvent:
+			    if transaction.environment == "editor_dev_run":
+			        # Discard transaction if running from the editor.
+			        return null
+			    transaction.set_tag("game_mode", "ranked")
+			    return transaction
+			[/codeblock]
+			To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/filtering/]Filtering documentation[/url]. Also, check out [url=https://docs.sentry.io/platforms/godot/data-management/sensitive-data/]Scrubbing Sensitive Data[/url].
+			[b]On Web:[/b] This callback is supported only when [member trace_lifecycle] is set to [constant TRACE_LIFECYCLE_STATIC].
+			[b]Note:[/b] The borrowed transaction is valid only while the callback runs. Modify it in place and do not retain a reference to it.
+		</member>
 		<member name="debug" type="bool" setter="set_debug_enabled" getter="is_debug_enabled" default="true">
 			If [code]true[/code], the SDK will print useful debugging information to standard output. These messages do not appear in the Godot console but can be seen when launching Godot from a terminal.
 			You can control the verbosity using the [member diagnostic_level] option.

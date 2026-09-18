@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
 import { _INTERNAL_setSpanForScope, generateSpanId, getTraceData } from "@sentry/core";
-import type { Attachment, Metric } from "@sentry/core";
+import type { Attachment, Metric, TransactionEvent } from "@sentry/core";
 import { wasmIntegration } from "@sentry/wasm";
 
 // ID-based store for WASM/JS interop. Assigns auto-incrementing uint32 IDs (0 is reserved).
@@ -167,6 +167,7 @@ class SentryBridge {
 
   public init(
     beforeSendCallback: (event: Sentry.Event) => void,
+    beforeSendTransactionCallback: (transaction: TransactionEvent) => void,
     beforeSendFeedbackCallback: (event: Sentry.Event) => void,
     beforeSendLogCallback: ((log: Sentry.Log) => void) | null,
     beforeSendMetricCallback: ((metric: Metric) => void) | null,
@@ -254,6 +255,25 @@ class SentryBridge {
     } else {
       console.error(
         "Sentry: beforeSend callback is missing. Events will be sent without native-side processing; this is unexpected and likely indicates the bridge failed to initialize correctly.",
+      );
+    }
+
+    if (beforeSendTransactionCallback) {
+      options.beforeSendTransaction = (transaction: TransactionEvent) => {
+        if (!this.isEnabled()) {
+          return null;
+        }
+
+        beforeSendTransactionCallback(transaction);
+
+        const shouldDiscard: boolean = (transaction as any).shouldDiscard;
+        delete (transaction as any).shouldDiscard;
+
+        return shouldDiscard ? null : transaction;
+      };
+    } else {
+      console.error(
+        "Sentry: beforeSendTransaction callback is missing. Transactions will be sent without native-side processing; this is unexpected and likely indicates the bridge failed to initialize correctly.",
       );
     }
 

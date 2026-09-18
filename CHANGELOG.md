@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add `SentryOptions.before_send_transaction` callback to filter or enrich span transaction events before they are sent ([#973](https://github.com/getsentry/sentry-godot/pull/973))
+
 ### Fixes
 
 - Apple: Keep transactions out of the GDScript `before_send` callback ([#971](https://github.com/getsentry/sentry-godot/pull/971))

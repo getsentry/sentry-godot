@@ -21,6 +21,21 @@ protected:
 	static void _bind_methods();
 };
 
+class SentryAndroidBeforeSendTransactionHandler : public Object {
+	GDCLASS(SentryAndroidBeforeSendTransactionHandler, Object);
+	friend class AndroidSDK;
+
+private:
+	Object *android_plugin = nullptr;
+
+	void _initialize(Object *p_android_plugin) { android_plugin = p_android_plugin; }
+
+	void _before_send_transaction(int32_t p_event_handle);
+
+protected:
+	static void _bind_methods();
+};
+
 class SentryAndroidBeforeSendFeedbackHandler : public Object {
 	GDCLASS(SentryAndroidBeforeSendFeedbackHandler, Object);
 	friend class AndroidSDK;
@@ -71,6 +86,7 @@ class AndroidSDK : public InternalSDK {
 private:
 	uint64_t android_plugin_instance_id = 0;
 	SentryAndroidBeforeSendHandler *before_send_handler = nullptr;
+	SentryAndroidBeforeSendTransactionHandler *before_send_transaction_handler = nullptr;
 	SentryAndroidBeforeSendFeedbackHandler *before_send_feedback_handler = nullptr;
 	SentryAndroidBeforeSendLogHandler *before_send_log_handler = nullptr;
 	SentryAndroidBeforeSendMetricHandler *before_send_metric_handler = nullptr;
