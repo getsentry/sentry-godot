@@ -150,11 +150,11 @@ Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method
 }
 
 PackedStringArray _apply_headers(const Ref<SentrySpan> &p_span, const String &p_redacted_url, const PackedStringArray &p_custom_headers) {
-	PackedStringArray headers = p_span->get_trace_headers(p_redacted_url);
-	for (const String &header : p_custom_headers) {
+	PackedStringArray headers = p_custom_headers;
+	for (const String &header : p_span->get_trace_headers(p_redacted_url)) {
 		const String header_name = header.get_slicec(U':', 0).strip_edges().to_lower();
 		bool already_present = false;
-		for (const String &existing_header : headers) {
+		for (const String &existing_header : p_custom_headers) {
 			const String existing_header_name = existing_header.get_slicec(U':', 0).strip_edges().to_lower();
 			if (existing_header_name == header_name) {
 				already_present = true;
