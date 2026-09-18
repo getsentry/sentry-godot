@@ -98,7 +98,8 @@
 		</member>
 		<member name="before_send_transaction" type="Callable" setter="set_before_send_transaction" getter="get_before_send_transaction" default="Callable()">
 			If assigned, this callback runs before a transaction is sent to Sentry. It takes [SentryEvent] as a parameter and returns either the same transaction object, with or without modifications, or [code]null[/code] to skip sending the transaction. You can assign it in a configuration callback using manual initialization (see [method SentrySDK.init]). Transactions do not pass through [member before_send].
-			Use common event metadata such as tags, contexts, [member SentryEvent.release], and [member SentryEvent.environment]. You can inspect the complete transaction with [method SentryEvent.to_json]. Error-specific fields such as [member SentryEvent.message], [member SentryEvent.level], threads, and exceptions are not available for transactions.
+			A transaction groups a root [SentrySpan] and its child spans into the performance event sent when the root span ends.
+			Use the [SentryEvent] parameter to modify the transaction event's tags, contexts, [member SentryEvent.release], and [member SentryEvent.environment], or inspect its complete payload with [method SentryEvent.to_json]. [member SentryEvent.message], [member SentryEvent.level], thread, and exception accessors are not available for transaction events.
 			[codeblock]
 			func _before_send_transaction(transaction: SentryEvent) -&gt; SentryEvent:
 			    if transaction.environment == "editor_dev_run":
