@@ -14,6 +14,7 @@
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_log.h"
 #include "sentry/processing/process_metric.h"
+#include "sentry/processing/process_transaction.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_sdk.h"
 
@@ -373,7 +374,8 @@ void CocoaSDK::init() {
 
 		options.beforeSend = ^SentryObjCEvent *(SentryObjCEvent *event) {
 			if ([event.type isEqualToString:@"transaction"]) {
-				return event;
+				Ref<CocoaEvent> transaction_obj = memnew(CocoaEvent(event));
+				return sentry::process_transaction(transaction_obj).is_valid() ? event : nil;
 			}
 
 			Ref<CocoaEvent> event_obj = memnew(CocoaEvent(event));
