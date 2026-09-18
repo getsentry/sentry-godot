@@ -146,7 +146,7 @@ Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method
 	span_name += redacted_url;
 
 	return SentrySDK::get_singleton()->start_span(span_name, attributes,
-			SentrySDK::get_singleton()->get_active_span());
+			SentrySDK::get_singleton()->get_active_span(), false);
 }
 
 PackedStringArray _apply_headers(const Ref<SentrySpan> &p_span, const String &p_redacted_url, const PackedStringArray &p_custom_headers) {
