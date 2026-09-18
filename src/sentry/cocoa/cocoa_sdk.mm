@@ -372,6 +372,10 @@ void CocoaSDK::init() {
 		};
 
 		options.beforeSend = ^SentryObjCEvent *(SentryObjCEvent *event) {
+			if ([event.type isEqualToString:@"transaction"]) {
+				return event;
+			}
+
 			Ref<CocoaEvent> event_obj = memnew(CocoaEvent(event));
 			Ref<CocoaEvent> processed = sentry::process_event(event_obj);
 

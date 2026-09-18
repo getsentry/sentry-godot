@@ -40,6 +40,13 @@ func test_active_span_stamps_event() -> void:
 		.verify()
 
 
+func test_transaction_bypasses_before_send() -> void:
+	var span := SentrySDK.start_span("test.before_send")
+	span.end()
+
+	await assert_signal(self).wait_until(2000).is_not_emitted("event_captured")
+
+
 func test_events_under_one_span_share_span_id() -> void:
 	var span := SentrySDK.start_span("test.shared")
 	assert_object(SentrySDK.get_active_span()).is_same(span)
