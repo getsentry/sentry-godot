@@ -319,7 +319,7 @@ void CocoaSDK::set_trace(const String &p_trace_id, const String &p_parent_span_i
 			? [[SentryObjCSpanId alloc] init]
 			: [[SentryObjCSpanId alloc] initWithValue:string_to_objc(p_parent_span_id)];
 
-	[SentryObjCPrivateSDKOnly setTrace:trace_id spanId:span_id];
+	[SentryObjCSDK.internal setTrace:trace_id spanId:span_id];
 }
 
 void CocoaSDK::init() {
