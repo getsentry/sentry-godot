@@ -1,6 +1,7 @@
 extends SentryTestSuite
 ## Exercises SentryHTTPRequest end to end through its public API.
 ## Uses a local TCP server to verify wire requests, trace propagation, and serialized breadcrumbs.
+## Complements tests/cpp/tests/test_http_request.cpp, which covers internal lifecycle and span data.
 
 var _server: LocalHTTPServer
 var _request: SentryHTTPRequest
