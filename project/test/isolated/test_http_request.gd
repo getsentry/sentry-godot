@@ -1,4 +1,6 @@
 extends SentryTestSuite
+## Exercises SentryHTTPRequest end to end through its public API.
+## Uses a local TCP server to verify wire requests, trace propagation, and serialized breadcrumbs.
 
 var _server: LocalHTTPServer
 var _request: SentryHTTPRequest
