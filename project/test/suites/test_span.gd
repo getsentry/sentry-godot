@@ -44,7 +44,7 @@ func test_transaction_bypasses_before_send() -> void:
 	var span := SentrySDK.start_span("test.before_send")
 	span.end()
 
-	assert_array(captured_events).has_size(0)
+	await assert_signal(self).wait_until(2000).is_not_emitted("event_captured")
 
 
 func test_events_under_one_span_share_span_id() -> void:
