@@ -133,8 +133,15 @@ try {
 		const beforeSendFeedback = (event) => {
 			feedbackEvents.push(event);
 		};
+		const transactionEvents = [];
+		let discardNextTransaction = false;
+		const beforeSendTransaction = (transaction) => {
+			transactionEvents.push(transaction);
+			transaction.tags = { processed : "true" };
+			transaction.shouldDiscard = discardNextTransaction;
+		};
 		const initBridge = (traceLifecycle, propagateTraceparent = false, orgId = "", tracePropagationTargets = [ { pattern : ".*", is_regex : false } ]) => {
-			bridge.init(() => {}, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false,
+			bridge.init(() => {}, beforeSendTransaction, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false,
 					"1.0.0", "1", "production", 1.0, 1.0, traceLifecycle, JSON.stringify(tracePropagationTargets),
 					propagateTraceparent, orgId, 100, false,
 					"0.1.0");
@@ -613,6 +620,22 @@ try {
 					"init should preserve the static trace lifecycle");
 			assertEqual(client.getIntegrationByName("SpanStreaming"), undefined,
 					"init should not register span streaming in static mode");
+		});
+
+		runTest("beforeSendTransaction in static mode", () => {
+			const callback = bridge.createScope().getClient().getOptions().beforeSendTransaction;
+			const transaction = {};
+			assertEqual(callback(transaction), transaction, "the callback should keep a processed transaction");
+			assertEqual(transactionEvents[transactionEvents.length - 1], transaction,
+					"the native callback should receive the transaction");
+			assertEqual(transaction.tags.processed, "true", "callback changes should remain on the transaction");
+			assertEqual(transaction.shouldDiscard, undefined, "the internal discard marker should be removed");
+
+			discardNextTransaction = true;
+			const discarded = {};
+			assertEqual(callback(discarded), null, "the callback should discard a marked transaction");
+			assertEqual(discarded.shouldDiscard, undefined, "the internal discard marker should be removed after discard");
+			discardNextTransaction = false;
 		});
 
 		runTest("close()", () => {
