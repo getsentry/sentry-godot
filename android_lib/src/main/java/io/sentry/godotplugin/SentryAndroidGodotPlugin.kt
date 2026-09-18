@@ -17,6 +17,7 @@ import io.sentry.ScopeType
 import io.sentry.Scopes
 import io.sentry.Sentry
 import io.sentry.SentryAttributes
+import io.sentry.SentryBaseEvent
 import io.sentry.SentryEvent
 import io.sentry.SentryLevel
 import io.sentry.SentryLogEvent
@@ -40,6 +41,7 @@ import io.sentry.protocol.SentryId
 import io.sentry.protocol.SentryStackFrame
 import io.sentry.protocol.SentryStackTrace
 import io.sentry.protocol.SentryThread
+import io.sentry.protocol.SentryTransaction
 import io.sentry.protocol.User
 import io.sentry.util.TracingUtils
 import java.io.File
@@ -58,8 +60,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         private const val TAG = "sentry-godot"
     }
 
-    private val eventsByHandle = object : ThreadLocal<MutableMap<Int, SentryEvent>>() {
-        override fun initialValue(): MutableMap<Int, SentryEvent> {
+    private val eventsByHandle = object : ThreadLocal<MutableMap<Int, SentryBaseEvent>>() {
+        override fun initialValue(): MutableMap<Int, SentryBaseEvent> {
             return mutableMapOf()
         }
     }
@@ -102,12 +104,16 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         }
     }
 
-    private fun getEvent(eventHandle: Int): SentryEvent? {
-        val event: SentryEvent? = eventsByHandle.get()?.get(eventHandle)
+    private fun getBaseEvent(eventHandle: Int): SentryBaseEvent? {
+        val event: SentryBaseEvent? = eventsByHandle.get()?.get(eventHandle)
         if (event == null) {
-            Log.e(TAG, "Internal Error -- SentryEvent not found: $eventHandle")
+            Log.e(TAG, "Internal Error -- SentryBaseEvent not found: $eventHandle")
         }
         return event
+    }
+
+    private fun getEvent(eventHandle: Int): SentryEvent? {
+        return getBaseEvent(eventHandle) as? SentryEvent
     }
 
     private fun getBreadcrumb(breadcrumbHandle: Int): Breadcrumb? {
@@ -176,7 +182,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
         return combinedScopes(scopeHandle)?.logger() ?: Sentry.logger()
     }
 
-    private fun registerEvent(event: SentryEvent): Int {
+    private fun registerEvent(event: SentryBaseEvent): Int {
         val eventsMap = eventsByHandle.get() ?: run {
             Log.e(TAG, "Internal Error -- eventsByHandle is null")
             return 0
@@ -278,6 +284,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     fun init(
         optionsData: Dictionary,
         beforeSendHandlerId: Long,
+        beforeSendTransactionHandlerId: Long,
         beforeSendFeedbackHandlerId: Long,
         beforeSendLogHandlerId: Long,
         beforeSendMetricHandlerId: Long
@@ -332,13 +339,19 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                         Log.v(TAG, "beforeSend: ${event.eventId} isCrashed: ${event.isCrashed}")
                         val handle: Int = registerEvent(event)
                         Callable.call(beforeSendHandlerId, "before_send", handle)
-                        eventsByHandle.get()?.remove(handle) // Returns the event or null if it was discarded.
+                        eventsByHandle.get()?.remove(handle) as? SentryEvent
+                    }
+                options.beforeSendTransaction =
+                    SentryOptions.BeforeSendTransactionCallback { transaction: SentryTransaction, hint: Hint ->
+                        val handle: Int = registerEvent(transaction)
+                        Callable.call(beforeSendTransactionHandlerId, "before_send_transaction", handle)
+                        eventsByHandle.get()?.remove(handle) as? SentryTransaction
                     }
                 options.beforeSendFeedback =
                     SentryOptions.BeforeSendCallback { event: SentryEvent, hint: Hint ->
                         val handle: Int = registerEvent(event)
                         Callable.call(beforeSendFeedbackHandlerId, "before_send_feedback", handle)
-                        eventsByHandle.get()?.remove(handle) // Returns the event or null if it was discarded.
+                        eventsByHandle.get()?.remove(handle) as? SentryEvent
                     }
                 if (beforeSendLogHandlerId != 0L) {
                     options.logs.beforeSend =
@@ -591,7 +604,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventGetId(eventHandle: Int): String {
-        val id = getEvent(eventHandle)?.eventId ?: return ""
+        val id = getBaseEvent(eventHandle)?.eventId ?: return ""
         return id.toString()
     }
 
@@ -605,7 +618,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventGetMessage(eventHandle: Int): String {
-        return getEvent(eventHandle)?.message?.formatted ?: return ""
+        return getEvent(eventHandle)?.message?.formatted ?: ""
     }
 
     @UsedByGodot
@@ -622,7 +635,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventGetPlatform(eventHandle: Int): String {
-        return getEvent(eventHandle)?.platform ?: return ""
+        return getBaseEvent(eventHandle)?.platform ?: ""
     }
 
     @UsedByGodot
@@ -632,7 +645,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventGetLevel(eventHandle: Int): Int {
-        return getEvent(eventHandle)?.level?.toInt() ?: return SentryLevel.ERROR.toInt()
+        return getEvent(eventHandle)?.level?.toInt() ?: SentryLevel.ERROR.toInt()
     }
 
     @UsedByGodot
@@ -642,57 +655,57 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventGetLogger(eventHandle: Int): String {
-        return getEvent(eventHandle)?.logger ?: return ""
+        return getEvent(eventHandle)?.logger ?: ""
     }
 
     @UsedByGodot
     fun eventSetRelease(eventHandle: Int, release: String) {
-        getEvent(eventHandle)?.release = release
+        getBaseEvent(eventHandle)?.release = release
     }
 
     @UsedByGodot
     fun eventGetRelease(eventHandle: Int): String {
-        return getEvent(eventHandle)?.release ?: ""
+        return getBaseEvent(eventHandle)?.release ?: ""
     }
 
     @UsedByGodot
     fun eventSetDist(eventHandle: Int, dist: String) {
-        getEvent(eventHandle)?.dist = dist
+        getBaseEvent(eventHandle)?.dist = dist
     }
 
     @UsedByGodot
     fun eventGetDist(eventHandle: Int): String {
-        return getEvent(eventHandle)?.dist ?: ""
+        return getBaseEvent(eventHandle)?.dist ?: ""
     }
 
     @UsedByGodot
     fun eventSetEnvironment(eventHandle: Int, environment: String) {
-        getEvent(eventHandle)?.environment = environment
+        getBaseEvent(eventHandle)?.environment = environment
     }
 
     @UsedByGodot
     fun eventGetEnvironment(eventHandle: Int): String {
-        return getEvent(eventHandle)?.environment ?: ""
+        return getBaseEvent(eventHandle)?.environment ?: ""
     }
 
     @UsedByGodot
     fun eventSetTag(eventHandle: Int, key: String, value: String) {
-        getEvent(eventHandle)?.setTag(key, value)
+        getBaseEvent(eventHandle)?.setTag(key, value)
     }
 
     @UsedByGodot
     fun eventGetTag(eventHandle: Int, key: String): String {
-        return getEvent(eventHandle)?.getTag(key) ?: ""
+        return getBaseEvent(eventHandle)?.getTag(key) ?: ""
     }
 
     @UsedByGodot
     fun eventRemoveTag(eventHandle: Int, key: String) {
-        getEvent(eventHandle)?.removeTag(key)
+        getBaseEvent(eventHandle)?.removeTag(key)
     }
 
     @UsedByGodot
     fun eventSetUser(eventHandle: Int, id: String, userName: String, email: String, ipAddress: String) {
-        val event = getEvent(eventHandle) ?: return
+        val event = getBaseEvent(eventHandle) ?: return
         val user = User()
         if (id.isNotEmpty()) {
             user.id = id
@@ -711,7 +724,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventRemoveUser(eventHandle: Int) {
-        getEvent(eventHandle)?.user = null
+        getBaseEvent(eventHandle)?.user = null
     }
 
     @UsedByGodot
@@ -722,13 +735,13 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventSetContext(eventHandle: Int, key: String, value: Dictionary) {
-        val event = getEvent(eventHandle) ?: return
+        val event = getBaseEvent(eventHandle) ?: return
         event.contexts[key] = value
     }
 
     @UsedByGodot
     fun eventMergeContext(eventHandle: Int, key: String, value: Dictionary) {
-        val event = getEvent(eventHandle) ?: return
+        val event = getBaseEvent(eventHandle) ?: return
 
         val existingContext: Any? = event.contexts[key]
 
@@ -765,7 +778,7 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun eventToJson(eventHandle: Int): String {
-        val event = getEvent(eventHandle) ?: return ""
+        val event = getBaseEvent(eventHandle) ?: return ""
         val serializer: ISerializer = Sentry.getCurrentScopes().options.serializer
         val writer = StringWriter()
         serializer.serialize(event, writer)
