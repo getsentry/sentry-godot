@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Apple: Keep transactions out of the GDScript `before_send` callback ([#971](https://github.com/getsentry/sentry-godot/pull/971))
+
 ### Dependencies
 
 - Bump Sentry JavaScript from v10.74.0 to v10.75.0 ([#966](https://github.com/getsentry/sentry-godot/pull/966))
