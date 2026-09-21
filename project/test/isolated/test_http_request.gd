@@ -21,8 +21,8 @@ func init_sdk() -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		options.dsn = "http://public@127.0.0.1:%d/42" % _server.listener.get_local_port()
 		options.traces_sample_rate = 1.0
-		# Only `/propagated/` routes will propagate trace headers.
-		options.trace_propagation_targets = ["/propagated/"]
+		# Trace headers propagate for `/propagated/` routes or URLs containing the query marker.
+		options.trace_propagation_targets = ["/propagated/", "propagate=true"]
 		options.propagate_traceparent = true
 		options.godot_logger.enabled = false
 	)
@@ -149,6 +149,16 @@ func test_url_outside_trace_propagation_targets_keeps_custom_headers_and_omits_t
 	assert_bool(received.headers.has("sentry-trace")).is_false()
 	assert_bool(received.headers.has("traceparent")).is_false()
 	assert_bool(received.headers.has("baggage")).is_false()
+
+
+func test_query_matching_trace_propagation_target_adds_trace_headers() -> void:
+	assert_int(_request.request(_url("/not_propagated?propagate=true"))).is_equal(OK)
+	await await_signal_on(_request, "request_completed", [], 5000)
+
+	var received: Dictionary = _received("/not_propagated?propagate=true")
+	assert_str(received.headers.get("sentry-trace", "")).is_not_empty()
+	assert_str(received.headers.get("baggage", "")).contains("sentry-")
+	assert_str(received.headers.get("traceparent", "")).starts_with("00-")
 
 
 func test_raw_and_empty_request_bodies_keep_exact_byte_counts() -> void:

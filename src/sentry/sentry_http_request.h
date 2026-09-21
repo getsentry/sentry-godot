@@ -73,7 +73,7 @@ private:
 	bool _request_in_progress = false;
 	RequestData _request_data;
 
-	PackedStringArray _instrument_request(const util::URLParts &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, int64_t p_request_body_size);
+	PackedStringArray _instrument_request(const String &p_url, const util::URLParts &p_parsed_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, int64_t p_request_body_size);
 	void _finalize_request(const RequestOutcome &p_outcome);
 	void _request_completed(int64_t p_result, int64_t p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
 

@@ -149,9 +149,9 @@ Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method
 			SentrySDK::get_singleton()->get_active_span(), false);
 }
 
-PackedStringArray _apply_headers(const Ref<SentrySpan> &p_span, const String &p_redacted_url, const PackedStringArray &p_custom_headers) {
+PackedStringArray _apply_headers(const Ref<SentrySpan> &p_span, const String &p_url, const PackedStringArray &p_custom_headers) {
 	PackedStringArray headers = p_custom_headers;
-	for (const String &header : p_span->get_trace_headers(p_redacted_url)) {
+	for (const String &header : p_span->get_trace_headers(p_url)) {
 		const String header_name = header.get_slicec(U':', 0).strip_edges().to_lower();
 		bool already_present = false;
 		for (const String &existing_header : p_custom_headers) {
@@ -211,7 +211,7 @@ Error SentryHTTPRequest::request_raw(const String &p_url, const PackedStringArra
 	}
 
 	_request_in_progress = true;
-	const PackedStringArray headers = _instrument_request(parsed_url, p_custom_headers, p_method, p_request_data_raw.size());
+	const PackedStringArray headers = _instrument_request(p_url, parsed_url, p_custom_headers, p_method, p_request_data_raw.size());
 	err = _http_request->request_raw(p_url, headers, p_method, p_request_data_raw);
 	// ERR_CANT_CONNECT still schedules request_completed in Godot.
 	if (err != OK && err != ERR_CANT_CONNECT) {
@@ -231,14 +231,14 @@ void SentryHTTPRequest::_request_completed(int64_t p_result, int64_t p_response_
 	emit_signal(HTTPRequestStrings::get().request_completed, p_result, p_response_code, p_headers, p_body);
 }
 
-PackedStringArray SentryHTTPRequest::_instrument_request(const util::URLParts &p_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, int64_t p_request_body_size) {
-	_span = _start_http_span(p_url, p_method, p_request_body_size);
+PackedStringArray SentryHTTPRequest::_instrument_request(const String &p_url, const util::URLParts &p_parsed_url, const PackedStringArray &p_custom_headers, HTTPClient::Method p_method, int64_t p_request_body_size) {
+	_span = _start_http_span(p_parsed_url, p_method, p_request_body_size);
 
 	_request_data.request_body_size = p_request_body_size;
 	_request_data.method = p_method;
-	_request_data.parsed_url = p_url;
+	_request_data.parsed_url = p_parsed_url;
 
-	const PackedStringArray headers = _apply_headers(_span, p_url.redacted(), p_custom_headers);
+	const PackedStringArray headers = _apply_headers(_span, p_url, p_custom_headers);
 	return headers;
 }
 
