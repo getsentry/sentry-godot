@@ -283,7 +283,11 @@ void SentryHTTPRequest::_finalize_request(const RequestOutcome &p_outcome) {
 			}
 			if (p_outcome.result != RESULT_SUCCESS || p_outcome.response_code >= 400) {
 				status = SPAN_STATUS_ERROR;
+			}
+			if (p_outcome.result != RESULT_SUCCESS || p_outcome.response_code >= 500) {
 				breadcrumb_level = LEVEL_ERROR;
+			} else if (p_outcome.response_code >= 400) {
+				breadcrumb_level = LEVEL_WARNING;
 			}
 		} break;
 	}

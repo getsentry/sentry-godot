@@ -204,6 +204,17 @@ func test_connection_failure_records_error_breadcrumb() -> void:
 	assert_str(crumbs[0].level).is_equal("error")
 
 
+func test_4xx_records_warning_breadcrumb() -> void:
+	assert_int(_request.request(_url("/status/404"))).is_equal(OK)
+	var response: Array = await await_signal_on(_request, "request_completed", [], 5000)
+	assert_int(response[1]).is_equal(404)
+
+	var crumbs: Array = await _http_breadcrumbs()
+	assert_array(crumbs).has_size(1)
+	assert_int(int(crumbs[0].data.status_code)).is_equal(404)
+	assert_str(crumbs[0].level).is_equal("warning")
+
+
 func test_repeated_cancellation_records_one_warning_breadcrumb() -> void:
 	assert_int(_request.request(_url("/hold"))).is_equal(OK)
 	_request.cancel_request()
@@ -273,10 +284,16 @@ class LocalHTTPServer extends Node:
 			if path == "/hold":
 				continue
 
-			# Every other path returns the same small success response.
+			# `/status/<code>` responds with the requested HTTP status code.
+			var status_code: int = 200
+			if path.begins_with("/status/"):
+				status_code = path.get_slice("/", 2).to_int()
+
+			# Every path returns the same small response body.
 			var body: PackedByteArray = "hello".to_utf8_buffer()
 			var response_headers: PackedByteArray = (
-				"HTTP/1.1 200 OK\r\nContent-Length: %d\r\nConnection: close\r\n\r\n" % body.size()
+				"HTTP/1.1 %d Response\r\nContent-Length: %d\r\nConnection: close\r\n\r\n"
+				% [status_code, body.size()]
 			).to_utf8_buffer()
 			stream.put_data(response_headers)
 			stream.put_data(body)
