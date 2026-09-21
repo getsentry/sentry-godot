@@ -1,5 +1,6 @@
 #include "process_transaction.h"
 
+#include "sentry/dotnet/csharp_interop.h"
 #include "sentry/logging/print.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/util/recursion_guard.h"
@@ -20,6 +21,11 @@ Ref<SentryEvent> process_transaction(const Ref<SentryEvent> &p_transaction) {
 	}
 
 	Ref<SentryEvent> transaction = p_transaction;
+	if (!sentry::dotnet::process_transaction_in_managed_layer(transaction)) {
+		sentry::logging::print_debug("managed layer discarded transaction");
+		return nullptr;
+	}
+
 	if (const Callable &before_send_transaction = SENTRY_OPTIONS()->get_before_send_transaction(); before_send_transaction.is_valid()) {
 		transaction = before_send_transaction.call(transaction);
 
