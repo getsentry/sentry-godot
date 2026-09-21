@@ -61,7 +61,7 @@
 				Sends [param request_data] as a UTF-8 encoded request body, using [param method]. Each entry in [param custom_headers] must use the [code]Name: Value[/code] format. The SDK adds tracing headers for matching [member SentryOptions.trace_propagation_targets] unless [param custom_headers] already contains a header with the same name.
 				Returns [constant @GlobalScope.OK] when the request has started. This does not mean a response has arrived; connect to [signal request_completed] to receive the result.
 				Returns [constant @GlobalScope.ERR_UNCONFIGURED] if the node is outside the scene tree, [constant @GlobalScope.ERR_BUSY] if another request is in progress, [constant @GlobalScope.ERR_INVALID_DATA] if URL component parsing fails, or an error returned by [method HTTPRequest.request_raw]. An overlapping request leaves the existing request and its instrumentation intact.
-				[b]Note:[/b] A synchronous [constant @GlobalScope.ERR_CANT_CONNECT] return can still be followed by [signal request_completed]. Wait for that signal or cancel the request before starting another one.
+				[b]Note:[/b] When this method returns [constant @GlobalScope.ERR_CANT_CONNECT], Godot has already queued [signal request_completed]. Calling [method cancel_request] does not remove that queued signal. Wait for [signal request_completed] before starting another request.
 			</description>
 		</method>
 		<method name="request_raw">

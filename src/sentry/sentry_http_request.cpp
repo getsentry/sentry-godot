@@ -213,7 +213,8 @@ Error SentryHTTPRequest::request_raw(const String &p_url, const PackedStringArra
 	_request_in_progress = true;
 	const PackedStringArray headers = _instrument_request(p_url, parsed_url, p_custom_headers, p_method, p_request_data_raw.size());
 	err = _http_request->request_raw(p_url, headers, p_method, p_request_data_raw);
-	// ERR_CANT_CONNECT still schedules request_completed in Godot.
+	// Godot queues request_completed before returning ERR_CANT_CONNECT,
+	// so keep the request pending until the signal arrives.
 	if (err != OK && err != ERR_CANT_CONNECT) {
 		_finalize_request(RequestOutcome::startup_failure(err));
 	}
