@@ -130,7 +130,7 @@ func test_trace_headers_do_not_duplicate_custom_header_names() -> void:
 	assert_int(_request.request(_url("/propagated/custom"), headers)).is_equal(OK)
 	await await_signal_on(_request, "request_completed", [], 5000)
 
-	var received := _received("/propagated/custom").headers as Dictionary
+	var received: Dictionary = _received("/propagated/custom").headers
 	assert_array(headers).has_size(3)
 	assert_str(received["sentry-trace"]).is_equal("caller-trace")
 	assert_str(received["baggage"]).is_equal("vendor=value")
@@ -139,7 +139,7 @@ func test_trace_headers_do_not_duplicate_custom_header_names() -> void:
 
 func test_url_outside_trace_propagation_targets_keeps_custom_headers_and_omits_trace_headers() -> void:
 	# `/not_propagated` is not in `options.trace_propagation_targets`.
-	var url := _url("/not_propagated")
+	var url: String = _url("/not_propagated")
 
 	assert_int(_request.request(url, ["X-Custom: value"])).is_equal(OK)
 	await await_signal_on(_request, "request_completed", [], 5000)
