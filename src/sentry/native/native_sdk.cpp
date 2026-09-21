@@ -481,6 +481,7 @@ void NativeSDK::init() {
 	sentry_options_set_before_send_feedback(options, _handle_before_send_feedback, NULL);
 	sentry_options_set_on_crash(options, _handle_on_crash, NULL);
 	sentry_options_set_logger(options, _log_native_message, NULL);
+	sentry_options_set_initial_scope(options, [](sentry_scope_t *p_scope, void *) { sentry_scope_set_user(p_scope, user_to_sentry_value(SentryUser::create_default())); }, NULL);
 
 	const Callable &before_send_log = SENTRY_OPTIONS()->get_before_send_log();
 	if (before_send_log.is_valid()) {
@@ -504,9 +505,7 @@ void NativeSDK::init() {
 
 	int err = sentry_init(options);
 
-	if (is_enabled()) {
-		set_user(SentryUser::create_default());
-	} else {
+	if (!is_enabled()) {
 		ERR_PRINT("Sentry: Failed to initialize native SDK. Error code: " + itos(err));
 	}
 }
