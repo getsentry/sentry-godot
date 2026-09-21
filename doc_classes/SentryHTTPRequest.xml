@@ -8,6 +8,7 @@
 		Each request starts an [code]http.client[/code] span under the active [SentrySpan], if one exists. The SDK adds distributed tracing headers according to [member SentryOptions.trace_propagation_targets] and records HTTP breadcrumbs. Configure span sampling with [member SentryOptions.traces_sample_rate].
 		The span records the request method, host, request body size, response status, and response body size when available. Recorded URLs omit credentials, query strings, and fragments. Request and response body contents are not added to the span or breadcrumb.
 		Add the node to the scene tree before calling [method request] or [method request_raw]. Each instance handles one request at a time; use separate instances for concurrent requests. The span ends automatically when the request completes, is cancelled, or the node leaves the scene tree.
+		[b]Warning:[/b] Godot forwards tracing headers when following redirects, but propagation targets are checked only against the initial URL. See [member max_redirects] before requesting URLs that may redirect outside a trusted destination.
 		[codeblock]
 		func _ready() -&gt; void:
 			var scores_request := SentryHTTPRequest.new()
@@ -117,6 +118,7 @@
 		</member>
 		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
 			Maximum number of HTTP redirects to follow. A value of [code]-1[/code] disables the limit. Exceeding the limit produces [constant RESULT_REDIRECT_LIMIT_REACHED]. Redirects remain part of the same request span.
+			[b]Warning:[/b] Godot forwards custom headers, including tracing headers, when following redirects. [member SentryOptions.trace_propagation_targets] checks only the initial URL, not redirect destinations. If a request may redirect to an untrusted destination, set this property to [code]0[/code]. The [signal request_completed] signal then reports [constant RESULT_REDIRECT_LIMIT_REACHED] and includes the [code]Location[/code] response header. Validate that URL before starting a separate request.
 		</member>
 		<member name="timeout" type="float" setter="set_timeout" getter="get_timeout" default="0.0">
 			Request timeout in seconds, independent of [member Engine.time_scale]. A value of [code]0.0[/code] disables the timeout. An expired timeout produces [constant RESULT_TIMEOUT].
