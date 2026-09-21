@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryHTTPRequest" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Sends HTTP requests with automatic Sentry spans, trace propagation, and breadcrumbs.
+	</brief_description>
+	<description>
+		Use this node in place of [HTTPRequest] to instrument outgoing HTTP and HTTPS requests. It wraps an internal [HTTPRequest] and exposes its request methods, configuration properties, and completion signal. It inherits [Node], not [HTTPRequest].
+		Each request starts an [code]http.client[/code] span under the active [SentrySpan], if one exists. The SDK adds distributed tracing headers according to [member SentryOptions.trace_propagation_targets] and records HTTP breadcrumbs. Configure span sampling with [member SentryOptions.traces_sample_rate].
+		The span records the request method, host, request body size, response status, and response body size when available. Recorded URLs omit credentials, query strings, and fragments. Request and response body contents are not added to the span or breadcrumb.
+		Add the node to the scene tree before calling [method request] or [method request_raw]. Each instance handles one request at a time; use separate instances for concurrent requests. The span ends automatically when the request completes, is cancelled, or the node leaves the scene tree.
+		[codeblock]
+		func _ready() -&gt; void:
+			var scores_request := SentryHTTPRequest.new()
+			add_child(scores_request)
+			scores_request.request_completed.connect(_on_scores_received)
+			var error: Error = scores_request.request("https://example.com/scores")
+			if error != OK:
+				push_error("Could not start the scores request: %s" % error_string(error))
+		func _on_scores_received(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -&gt; void:
+			if result == SentryHTTPRequest.RESULT_SUCCESS and response_code == 200:
+				print(body.get_string_from_utf8())
+		[/codeblock]
+		[b]Note:[/b] Call this node's methods from the main thread, even when [member use_threads] is enabled.
+		[b]On Web:[/b] Requests follow the browser's CORS rules. Cross-origin servers must allow any tracing headers sent by the SDK. See [url=https://docs.sentry.io/platforms/godot/tracing/distributed-tracing/dealing-with-cors-issues/]Dealing with CORS Issues[/url].
+		To learn more, visit [url=https://docs.sentry.io/platforms/godot/tracing/]Tracing documentation[/url].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="cancel_request">
+			<return type="void" />
+			<description>
+				Cancels the current request, ends its span with an error status, and records a warning breadcrumb.
+			</description>
+		</method>
+		<method name="get_body_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the response body length in bytes reported by the underlying [HTTPRequest], or [code]-1[/code] when the length is unknown. Chunked responses and responses without a known content length return [code]-1[/code].
+			</description>
+		</method>
+		<method name="get_downloaded_bytes" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of response body bytes downloaded by the underlying [HTTPRequest].
+			</description>
+		</method>
+		<method name="get_http_client_status" qualifiers="const">
+			<return type="int" enum="HTTPClient.Status" />
+			<description>
+				Returns the connection status of the underlying [HTTPClient].
+			</description>
+		</method>
+		<method name="request">
+			<return type="int" enum="Error" />
+			<param index="0" name="url" type="String" />
+			<param index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="2" name="method" type="int" enum="HTTPClient.Method" default="0" />
+			<param index="3" name="request_data" type="String" default="&quot;&quot;" />
+			<description>
+				Sends [param request_data] as a UTF-8 encoded request body, using [param method]. Each entry in [param custom_headers] must use the [code]Name: Value[/code] format. The SDK adds tracing headers for matching [member SentryOptions.trace_propagation_targets] unless [param custom_headers] already contains a header with the same name.
+				Returns [constant @GlobalScope.OK] when the request has started. This does not mean a response has arrived; connect to [signal request_completed] to receive the result.
+				Returns [constant @GlobalScope.ERR_UNCONFIGURED] if the node is outside the scene tree, [constant @GlobalScope.ERR_BUSY] if another request is in progress, [constant @GlobalScope.ERR_INVALID_DATA] if URL component parsing fails, or an error returned by [method HTTPRequest.request_raw]. An overlapping request leaves the existing request and its instrumentation intact.
+				[b]Note:[/b] A synchronous [constant @GlobalScope.ERR_CANT_CONNECT] return can still be followed by [signal request_completed]. Wait for that signal or cancel the request before starting another one.
+			</description>
+		</method>
+		<method name="request_raw">
+			<return type="int" enum="Error" />
+			<param index="0" name="url" type="String" />
+			<param index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="2" name="method" type="int" enum="HTTPClient.Method" default="0" />
+			<param index="3" name="request_data_raw" type="PackedByteArray" default="PackedByteArray()" />
+			<description>
+				Sends an HTTP or HTTPS request using [param request_data_raw] as the request body without encoding conversion. Use this method for binary payloads or data that is already encoded.
+				Uses [param url], [param custom_headers], and [param method] as described in [method request]. It provides the same tracing behavior and emits [signal request_completed] when the request finishes. Returns [constant @GlobalScope.OK] when the request has started; other return values have the meanings described in [method request].
+			</description>
+		</method>
+		<method name="set_http_proxy">
+			<return type="void" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<description>
+				Sets the proxy server for HTTP requests. An empty [param host] or a [param port] of [code]-1[/code] disables the proxy. See [method HTTPRequest.set_http_proxy].
+			</description>
+		</method>
+		<method name="set_https_proxy">
+			<return type="void" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<description>
+				Sets the proxy server for HTTPS requests. An empty [param host] or a [param port] of [code]-1[/code] disables the proxy. See [method HTTPRequest.set_https_proxy].
+			</description>
+		</method>
+		<method name="set_tls_options">
+			<return type="void" />
+			<param index="0" name="client_options" type="TLSOptions" />
+			<description>
+				Configures [TLSOptions] for HTTPS connections. Create client options with [method TLSOptions.client]. See [method HTTPRequest.set_tls_options].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="accept_gzip" type="bool" setter="set_accept_gzip" getter="is_accepting_gzip" default="true">
+			If [code]true[/code], Godot adds [code]Accept-Encoding: gzip, deflate[/code] unless a custom [code]Accept-Encoding[/code] header is already present. Godot decompresses responses with [code]gzip[/code] or [code]deflate[/code] content encoding before delivering their bodies.
+			If [code]false[/code], Godot neither adds the header nor decompresses the body. See [member HTTPRequest.accept_gzip].
+			[b]Platform support:[/b] Web browsers manage content encoding and can decompress responses independently of this property.
+		</member>
+		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
+			Maximum response body size in bytes. A value of [code]-1[/code] disables the limit. The limit also applies to the decompressed body when [member accept_gzip] is enabled. Exceeding the limit produces [constant RESULT_BODY_SIZE_LIMIT_EXCEEDED].
+		</member>
+		<member name="download_chunk_size" type="int" setter="set_download_chunk_size" getter="get_download_chunk_size" default="65536">
+			Buffer size and maximum number of bytes read per network-processing iteration. Smaller values reduce buffer memory usage but can reduce download throughput. See [member HTTPRequest.download_chunk_size].
+		</member>
+		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file" default="&quot;&quot;">
+			Path to a file that receives the response body. If empty, the body is kept in memory and passed to [signal request_completed]. When downloading to a file, the signal's [code]body[/code] array is empty.
+			File-open and write failures produce [constant RESULT_DOWNLOAD_FILE_CANT_OPEN] and [constant RESULT_DOWNLOAD_FILE_WRITE_ERROR], respectively.
+		</member>
+		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
+			Maximum number of HTTP redirects to follow. A value of [code]-1[/code] disables the limit. Exceeding the limit produces [constant RESULT_REDIRECT_LIMIT_REACHED]. Redirects remain part of the same request span.
+		</member>
+		<member name="timeout" type="float" setter="set_timeout" getter="get_timeout" default="0.0">
+			Request timeout in seconds, independent of [member Engine.time_scale]. A value of [code]0.0[/code] disables the timeout. An expired timeout produces [constant RESULT_TIMEOUT].
+		</member>
+		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" default="false">
+			If [code]true[/code], the underlying [HTTPRequest] processes network activity on a worker thread. Request instrumentation and [signal request_completed] run on the main thread.
+		</member>
+	</members>
+	<signals>
+		<signal name="request_completed">
+			<param index="0" name="result" type="int" />
+			<param index="1" name="response_code" type="int" />
+			<param index="2" name="headers" type="PackedStringArray" />
+			<param index="3" name="body" type="PackedByteArray" />
+			<description>
+				Emitted when Godot completes the request, after its Sentry span and breadcrumb have been finalized. A handler can start another request on this node.
+				[param result] is a value from [enum Result] describing the transfer outcome. [param response_code] is the HTTP status code, or [code]0[/code] when no response was received. [param headers] contains response headers, and [param body] contains the response bytes unless [member download_file] is set.
+				[constant RESULT_SUCCESS] indicates that the transfer completed, not that the HTTP status is successful. Responses with a status code of [code]400[/code] or higher mark the span as an error.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="RESULT_SUCCESS" value="0" enum="Result">
+			The transfer completed. Check the HTTP response code separately to determine whether the server returned an error.
+		</constant>
+		<constant name="RESULT_CHUNKED_BODY_SIZE_MISMATCH" value="1" enum="Result">
+			The received body length did not match the expected length.
+		</constant>
+		<constant name="RESULT_CANT_CONNECT" value="2" enum="Result">
+			The connection to the server could not be established.
+		</constant>
+		<constant name="RESULT_CANT_RESOLVE" value="3" enum="Result">
+			The server's host name could not be resolved.
+		</constant>
+		<constant name="RESULT_CONNECTION_ERROR" value="4" enum="Result">
+			The connection failed while sending or receiving data.
+		</constant>
+		<constant name="RESULT_TLS_HANDSHAKE_ERROR" value="5" enum="Result">
+			The TLS handshake failed.
+		</constant>
+		<constant name="RESULT_NO_RESPONSE" value="6" enum="Result">
+			The server did not provide an HTTP response.
+		</constant>
+		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7" enum="Result">
+			The response body exceeded [member body_size_limit].
+		</constant>
+		<constant name="RESULT_BODY_DECOMPRESS_FAILED" value="8" enum="Result">
+			Godot could not decompress the response body.
+		</constant>
+		<constant name="RESULT_REQUEST_FAILED" value="9" enum="Result">
+			Reserved request-failure result. Unused by Godot 4.5.
+		</constant>
+		<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="10" enum="Result">
+			Godot could not open [member download_file] for writing.
+		</constant>
+		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="11" enum="Result">
+			Godot could not write the response body to [member download_file].
+		</constant>
+		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="12" enum="Result">
+			The request exceeded [member max_redirects].
+		</constant>
+		<constant name="RESULT_TIMEOUT" value="13" enum="Result">
+			The request exceeded [member timeout].
+		</constant>
+	</constants>
+</class>
