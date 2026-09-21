@@ -326,6 +326,8 @@ void SentryHTTPRequest::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		_http_request->connect(HTTPRequestStrings::get().request_completed, callable_mp(this, &SentryHTTPRequest::_request_completed));
 	} else if (p_what == NOTIFICATION_EXIT_TREE) {
+		// Child nodes exit first, and HTTPRequest cancels its active request on exit.
+		// Only the wrapper-owned telemetry remains to finalize here.
 		_finalize_request(RequestOutcome::cancelled());
 	}
 }
