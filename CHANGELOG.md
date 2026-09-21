@@ -5,6 +5,7 @@
 ### Features
 
 - Add `SentryOptions.before_send_transaction` callback to filter or enrich span transaction events before they are sent ([#973](https://github.com/getsentry/sentry-godot/pull/973))
+- .NET: Add `SentryNativeOptions.SetBeforeSendTransaction` callback to filter or enrich native transaction events from .NET ([#977](https://github.com/getsentry/sentry-godot/pull/977))
 
 ### Fixes
 
