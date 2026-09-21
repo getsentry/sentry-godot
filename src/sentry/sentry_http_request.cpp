@@ -112,6 +112,19 @@ const char *_http_request_error(int64_t p_result) {
 	}
 }
 
+int32_t _http_server_port(const util::URLParts &p_url) {
+	if (p_url.port >= 0) {
+		return p_url.port;
+	}
+	if (p_url.scheme == "http") {
+		return 80;
+	}
+	if (p_url.scheme == "https") {
+		return 443;
+	}
+	return -1;
+}
+
 Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method p_method, int64_t p_request_body_size) {
 	const auto &strings = HTTPRequestStrings::get();
 	const String redacted_url{ p_url.redacted() };
@@ -137,8 +150,9 @@ Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method
 	attributes[strings.url_full] = redacted_url;
 	attributes[strings.url_domain] = p_url.host;
 	attributes[strings.server_address] = server_address;
-	if (p_url.port >= 0) {
-		attributes[strings.server_port] = p_url.port;
+	const int32_t server_port = _http_server_port(p_url);
+	if (server_port >= 0) {
+		attributes[strings.server_port] = server_port;
 	}
 
 	String span_name{ method_name };

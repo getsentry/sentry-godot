@@ -168,6 +168,29 @@ TEST_SUITE("HTTP request lifecycle") {
 }
 
 TEST_SUITE("HTTP request instrumentation") {
+	TEST_CASE("HTTP spans record default ports when the URL omits them") {
+		struct DefaultPortCase {
+			const char *url;
+			int64_t port;
+		};
+		const DefaultPortCase cases[] = {
+			{ "http://127.0.0.1/default", 80 },
+			{ "https://127.0.0.1/default", 443 },
+		};
+
+		for (const DefaultPortCase &test_case : cases) {
+			InstrumentedRequestFixture fixture;
+			const String url = test_case.url;
+			CAPTURE(url);
+
+			REQUIRED_CHECK(fixture.request->request(url) == OK);
+			REQUIRED_CHECK(fixture.parent_record->children.size() == 1);
+			const std::shared_ptr<SpanRecord> span = fixture.parent_record->children.front();
+			CHECK(int64_t(span->attributes["server.port"]) == test_case.port);
+			CHECK(String(span->attributes["url.full"]) == url);
+		}
+	}
+
 	TEST_CASE("HTTP span records request and response facts with a redacted URL") {
 		InstrumentedRequestFixture fixture;
 		REQUIRED_CHECK(fixture.server->listen(0, "127.0.0.1") == OK);
