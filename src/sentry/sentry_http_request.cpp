@@ -117,7 +117,7 @@ Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method
 	const String redacted_url{ p_url.redacted() };
 	const String &method_name = _http_method(p_method);
 
-	// IPv6 addresses are enclosed in square brackets
+	// IPv6 brackets delimit the address in a URL and are not part of server.address.
 	const String server_address = p_url.host.begins_with(strings.open_bracket) && p_url.host.ends_with(strings.close_bracket)
 			? p_url.host.substr(1, p_url.host.length() - 2)
 			: p_url.host;
@@ -135,8 +135,8 @@ Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method
 	//       collection options are implemented.
 	//       Omit them for now to avoid including potentially sensitive URL components.
 	attributes[strings.url_full] = redacted_url;
-	attributes[strings.url_domain] = p_url.host; // with IPv6 brackets?
-	attributes[strings.server_address] = server_address; // without IPv6 brackets?
+	attributes[strings.url_domain] = p_url.host;
+	attributes[strings.server_address] = server_address;
 	if (p_url.port >= 0) {
 		attributes[strings.server_port] = p_url.port;
 	}
