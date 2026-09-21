@@ -27,6 +27,7 @@ public partial class DotnetTestHarness : RefCounted
             options.Debug = false;
             options.AttachScreenshot = false; // CI runs headless
             options.Native.SetBeforeSend(OnBeforeSend);
+            options.Native.SetBeforeSendTransaction(OnBeforeSendTransaction);
             options.SetBeforeSend((SentryEvent _) => null);
         });
     }
@@ -214,6 +215,12 @@ public partial class DotnetTestHarness : RefCounted
     private int _nativeBeforeSendCallCount;
     public int GetNativeBeforeSendCallCount() => _nativeBeforeSendCallCount;
 
+    private readonly Godot.Collections.Dictionary _seenTransactionValues = [];
+    public Godot.Collections.Dictionary GetSeenTransactionValues() => _seenTransactionValues;
+
+    private int _nativeBeforeSendTransactionCallCount;
+    public int GetNativeBeforeSendTransactionCallCount() => _nativeBeforeSendTransactionCallCount;
+
     /// <summary>
     /// Native before-send callback exercised by the CPP tests.
     /// Records the values it reads through the getters, then overrides them through the setters.
@@ -239,5 +246,27 @@ public partial class DotnetTestHarness : RefCounted
         ev.SetTag("before_send.added", "added 世界 👋");
         ev.UnsetTag("before_send.remove_me");
         return ev;
+    }
+
+    private SentryNativeEvent OnBeforeSendTransaction(SentryNativeEvent transaction)
+    {
+        _nativeBeforeSendTransactionCallCount++;
+
+        if (transaction.GetTag("before_send_transaction.drop") == "true")
+        {
+            return null;
+        }
+
+        _seenTransactionValues["release"] = transaction.Release;
+        _seenTransactionValues["distribution"] = transaction.Distribution;
+        _seenTransactionValues["environment"] = transaction.Environment;
+        _seenTransactionValues["tag"] = transaction.GetTag("before_send_transaction.read_me");
+
+        transaction.Release = "after-release@2.0.0";
+        transaction.Distribution = "after-distribution";
+        transaction.Environment = "after-environment";
+        transaction.SetTag("before_send_transaction.added", "added-value");
+        transaction.UnsetTag("before_send_transaction.remove_me");
+        return transaction;
     }
 }
