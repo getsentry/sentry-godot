@@ -41,12 +41,18 @@ void set_trace(const String &p_trace_id, const String &p_parent_span_id);
 // No-op returning true when the .NET layer or callback is unavailable.
 bool process_event_in_managed_layer(const Ref<SentryEvent> &p_event);
 
+// Forwards a native transaction to the options.Native.SetBeforeSendTransaction callback in the .NET layer.
+// Returns true to keep the transaction, false to discard it. Mutates the transaction in place.
+// No-op returning true when the .NET layer or callback is unavailable.
+bool process_transaction_in_managed_layer(const Ref<SentryEvent> &p_transaction);
+
 // Returns true once the managed layer has loaded and registered its native callbacks.
 bool is_managed_layer_registered();
 
 #ifdef TESTS_ENABLED
 
 bool is_before_send_defined();
+bool is_before_send_transaction_defined();
 
 #endif // TESTS_ENABLED
 

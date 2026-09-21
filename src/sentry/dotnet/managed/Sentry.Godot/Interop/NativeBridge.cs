@@ -126,6 +126,7 @@ internal static partial class NativeBridge
     {
         None = 0,
         BeforeSend = 1 << 0,
+        BeforeSendTransaction = 1 << 1,
     }
 
     private static ManagedDefinedHooks GetManagedDefinedHooks(SentryGodotOptions options)
@@ -134,6 +135,10 @@ internal static partial class NativeBridge
         if (options.Native.BeforeSend is not null)
         {
             hooks |= ManagedDefinedHooks.BeforeSend;
+        }
+        if (options.Native.BeforeSendTransaction is not null)
+        {
+            hooks |= ManagedDefinedHooks.BeforeSendTransaction;
         }
         return hooks;
     }
@@ -360,6 +365,7 @@ internal static partial class NativeBridge
         public delegate* unmanaged[Cdecl]<char*, int, char*, int, char*, int, char*, int, void> set_user;
         public delegate* unmanaged[Cdecl]<void> remove_user;
         public delegate* unmanaged[Cdecl]<IntPtr, byte> process_native_event;
+        public delegate* unmanaged[Cdecl]<IntPtr, byte> process_native_transaction;
         public delegate* unmanaged[Cdecl]<char*, int, char*, int, void> set_trace;
     }
 
@@ -400,6 +406,7 @@ internal static partial class NativeBridge
             set_user = &SetUserCallback,
             remove_user = &RemoveUserCallback,
             process_native_event = &ProcessNativeEventCallback,
+            process_native_transaction = &ProcessNativeTransactionCallback,
             set_trace = &SetTraceCallback,
         });
     }
@@ -605,6 +612,31 @@ internal static partial class NativeBridge
         catch (Exception ex)
         {
             GodotLog.Error($"Error in options.Native.SetBeforeSend callback: {ex}");
+            return 1;
+        }
+    }
+
+    /// <remarks>
+    /// Called by native for each native transaction.
+    /// Runs the options.Native.SetBeforeSendTransaction callback with a temporary event wrapper.
+    /// Returns 1 to keep the transaction, 0 to discard.
+    /// </remarks>
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+    private static byte ProcessNativeTransactionCallback(IntPtr eventHandle)
+    {
+        try
+        {
+            var callback = Sentry.Godot.SentrySdk.CurrentOptions?.Native.BeforeSendTransaction;
+            if (callback is null)
+            {
+                return 1;
+            }
+            var result = callback(new SentryNativeEvent(eventHandle));
+            return (byte)(result is null ? 0 : 1);
+        }
+        catch (Exception ex)
+        {
+            GodotLog.Error($"Error in options.Native.SetBeforeSendTransaction callback: {ex}");
             return 1;
         }
     }

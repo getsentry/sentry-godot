@@ -4,8 +4,8 @@ using Sentry.Godot.Interop;
 namespace Sentry.Godot;
 
 /// <summary>
-/// Represents a native Godot event passed to the before-send callback registered
-/// through <see cref="SentryNativeOptions.SetBeforeSend"/>.
+/// Represents a native Godot event passed to a callback registered through
+/// <see cref="SentryNativeOptions"/>.
 /// </summary>
 /// <remarks>
 /// This instance is valid only while the callback is running and must not be retained.

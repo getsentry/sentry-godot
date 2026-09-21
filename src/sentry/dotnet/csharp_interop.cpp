@@ -168,6 +168,7 @@ struct ManagedFunctions {
 	void (*set_user)(const char16_t *id, int32_t id_len, const char16_t *username, int32_t username_len, const char16_t *email, int32_t email_len, const char16_t *ip, int32_t ip_len);
 	void (*remove_user)();
 	uint8_t (*process_native_event)(void *event_handle); // Returns 1 to keep, 0 to discard.
+	uint8_t (*process_native_transaction)(void *event_handle); // Returns 1 to keep, 0 to discard.
 	void (*set_trace)(const char16_t *trace_id, int32_t trace_id_len, const char16_t *parent_span_id, int32_t parent_span_id_len);
 };
 
@@ -179,6 +180,7 @@ static ManagedFunctions s_managed_funcs = {};
 enum ManagedDefinedHooks {
 	DEFINED_NONE = 0,
 	DEFINED_BEFORE_SEND = 1 << 0, // options.Native.SetBeforeSend
+	DEFINED_BEFORE_SEND_TRANSACTION = 1 << 1, // options.Native.SetBeforeSendTransaction
 };
 
 static BitField<ManagedDefinedHooks> s_managed_defined_hooks = DEFINED_NONE;
@@ -849,6 +851,26 @@ bool process_event_in_managed_layer(const Ref<SentryEvent> &p_event) {
 	return keep;
 }
 
+bool process_transaction_in_managed_layer(const Ref<SentryEvent> &p_transaction) {
+	FAIL_COND_V_PRINT_ERROR(p_transaction.is_null(), true, "Internal error: options.Native.SetBeforeSendTransaction received a null native transaction.");
+
+	if (s_managed_funcs.process_native_transaction == nullptr || !s_managed_defined_hooks.has_flag(DEFINED_BEFORE_SEND_TRANSACTION)) {
+		// .NET layer unavailable, or no before-send-transaction callback registered.
+		return true;
+	}
+
+	static thread_local bool in_before_send_transaction = false;
+	if (in_before_send_transaction) {
+		return true;
+	}
+	in_before_send_transaction = true;
+
+	const bool keep = s_managed_funcs.process_native_transaction((void *)p_transaction.ptr()) != 0;
+
+	in_before_send_transaction = false;
+	return keep;
+}
+
 bool is_managed_layer_registered() {
 	return s_managed_funcs.init != nullptr;
 }
@@ -857,6 +879,10 @@ bool is_managed_layer_registered() {
 
 bool is_before_send_defined() {
 	return s_managed_defined_hooks.has_flag(DEFINED_BEFORE_SEND);
+}
+
+bool is_before_send_transaction_defined() {
+	return s_managed_defined_hooks.has_flag(DEFINED_BEFORE_SEND_TRANSACTION);
 }
 
 #endif // TESTS_ENABLED
