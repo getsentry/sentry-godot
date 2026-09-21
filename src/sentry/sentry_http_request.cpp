@@ -48,7 +48,8 @@ struct HTTPRequestStringData {
 	const String method_trace{ "TRACE" };
 	const String method_connect{ "CONNECT" };
 	const String method_patch{ "PATCH" };
-	const String method_unknown{ "UNKNOWN" };
+	const String method_other{ "_OTHER" };
+	const String method_other_span_name{ "HTTP" };
 };
 
 using HTTPRequestStrings = util::ModuleInstance<HTTPRequestStringData>;
@@ -75,7 +76,7 @@ const String &_http_method(HTTPClient::Method p_method) {
 		case HTTPClient::METHOD_PATCH:
 			return strings.method_patch;
 		default:
-			return strings.method_unknown;
+			return strings.method_other;
 	}
 }
 
@@ -155,7 +156,11 @@ Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method
 		attributes[strings.server_port] = server_port;
 	}
 
-	String span_name{ method_name };
+	// For an unrecognized method, OpenTelemetry uses `_OTHER` for the attribute
+	// but `HTTP` in the span name.
+	String span_name{ method_name == strings.method_other
+				? strings.method_other_span_name
+				: method_name };
 	span_name += U' ';
 	span_name += redacted_url;
 
