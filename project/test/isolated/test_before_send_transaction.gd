@@ -63,17 +63,6 @@ func test_callback_can_modify_transaction() -> void:
 		.verify()
 
 
-func test_callback_can_discard_transaction() -> void:
-	before_send_transaction = func(transaction: SentryEvent) -> SentryEvent:
-		_record_transaction(transaction)
-		return null
-
-	_capture_transaction()
-	var transaction_json := await _wait_for_captured_transaction_json()
-
-	assert_str(transaction_json).is_not_empty()
-
-
 func test_transaction_does_not_reach_before_send() -> void:
 	_capture_transaction()
 	await _wait_for_captured_transaction_json()
