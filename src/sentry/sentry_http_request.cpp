@@ -39,17 +39,17 @@ struct HTTPRequestStringData {
 	const String close_bracket{ "]" };
 	const StringName request_completed{ "request_completed" };
 
-	const String method_get{ "GET" };
-	const String method_head{ "HEAD" };
-	const String method_post{ "POST" };
-	const String method_put{ "PUT" };
-	const String method_delete{ "DELETE" };
-	const String method_options{ "OPTIONS" };
-	const String method_trace{ "TRACE" };
-	const String method_connect{ "CONNECT" };
-	const String method_patch{ "PATCH" };
-	const String method_other{ "_OTHER" };
-	const String method_other_span_name{ "HTTP" };
+	const String GET{ "GET" };
+	const String HEAD{ "HEAD" };
+	const String POST{ "POST" };
+	const String PUT{ "PUT" };
+	const String DELETE{ "DELETE" };
+	const String OPTIONS{ "OPTIONS" };
+	const String TRACE{ "TRACE" };
+	const String CONNECT{ "CONNECT" };
+	const String PATCH{ "PATCH" };
+	const String OTHER{ "_OTHER" };
+	const String HTTP{ "HTTP" };
 };
 
 using HTTPRequestStrings = util::ModuleInstance<HTTPRequestStringData>;
@@ -58,25 +58,25 @@ const String &_http_method(HTTPClient::Method p_method) {
 	const auto &strings = HTTPRequestStrings::get();
 	switch (p_method) {
 		case HTTPClient::METHOD_GET:
-			return strings.method_get;
+			return strings.GET;
 		case HTTPClient::METHOD_HEAD:
-			return strings.method_head;
+			return strings.HEAD;
 		case HTTPClient::METHOD_POST:
-			return strings.method_post;
+			return strings.POST;
 		case HTTPClient::METHOD_PUT:
-			return strings.method_put;
+			return strings.PUT;
 		case HTTPClient::METHOD_DELETE:
-			return strings.method_delete;
+			return strings.DELETE;
 		case HTTPClient::METHOD_OPTIONS:
-			return strings.method_options;
+			return strings.OPTIONS;
 		case HTTPClient::METHOD_TRACE:
-			return strings.method_trace;
+			return strings.TRACE;
 		case HTTPClient::METHOD_CONNECT:
-			return strings.method_connect;
+			return strings.CONNECT;
 		case HTTPClient::METHOD_PATCH:
-			return strings.method_patch;
+			return strings.PATCH;
 		default:
-			return strings.method_other;
+			return strings.OTHER;
 	}
 }
 
@@ -158,8 +158,8 @@ Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method
 
 	// For an unrecognized method, OpenTelemetry uses `_OTHER` for the attribute
 	// but `HTTP` in the span name.
-	String span_name{ method_name == strings.method_other
-				? strings.method_other_span_name
+	String span_name{ method_name == strings.OTHER
+				? strings.HTTP
 				: method_name };
 	span_name += U' ';
 	span_name += redacted_url;
