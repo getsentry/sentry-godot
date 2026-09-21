@@ -17,6 +17,7 @@ public partial class DotnetCliTriggers : RefCounted
             options.Release = "test-app@1.0.0";
             options.Environment = "integration-test";
             options.Distribution = "test-dist";
+            options.ShutdownTimeout = TimeSpan.FromSeconds(10);
             options.AttachLog = true;
             options.AttachSceneTree = true;
             options.AttachScreenshot = false; // CI runs headless

@@ -485,6 +485,7 @@ func _init_sentry(p_extra_config: Callable = Callable()) -> void:
 		options.release = "test-app@1.0.0"
 		options.environment = "integration-test"
 		options.dist = "test-dist"
+		options.shutdown_timeout_ms = 10_000
 		options.send_default_pii = false # PII test relies on this; see CommonTestCases.ps1
 		options.attach_screenshot = false # CI runs headless
 		if p_extra_config.is_valid():

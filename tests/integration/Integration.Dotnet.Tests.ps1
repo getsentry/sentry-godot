@@ -284,6 +284,7 @@ options/auto_init=true
 options/release="test-app@1.0.0"
 options/environment="integration-test"
 options/dist="test-dist"
+options/shutdown_timeout_ms=10000
 options/debug_printing=0
 options/attach_log=true
 options/attach_scene_tree=true
