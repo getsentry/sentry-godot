@@ -182,8 +182,8 @@ func test_raw_and_empty_request_bodies_keep_exact_byte_counts() -> void:
 		.has_size(2) \
 		.at("/0") \
 		.must_contain("data/http.request.body.size", body.size()) \
-		.at("/1") \
-		.must_not_contain("data/http.request.body.size") \
+		.at("/1/data/http.request.body.size") \
+		.must_be(0) \
 		.verify()
 
 

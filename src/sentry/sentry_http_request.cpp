@@ -213,9 +213,7 @@ Dictionary SentryHTTPRequest::RequestData::as_breadcrumb_data() const {
 	data[strings.http_request_method] = _http_method(method);
 	// TODO: Add `http.query` and `http.fragment` once data collection options are implemented.
 	//       Omit them for now to avoid including potentially sensitive URL components.
-	if (request_body_size > 0) {
-		data[strings.http_request_body_size] = request_body_size;
-	}
+	data[strings.http_request_body_size] = request_body_size;
 	return data;
 }
 
