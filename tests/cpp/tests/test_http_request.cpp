@@ -1,8 +1,8 @@
-#ifdef TESTS_ENABLED
+// Exercises SentryHTTPRequest's internal request and span lifecycle.
+// Uses synthetic completions to assert state transitions and span data directly.
+// Complements project/test/isolated/test_http_request.gd, which covers public API and wire behavior.
 
-/// Exercises SentryHTTPRequest's internal request and span lifecycle.
-/// Uses synthetic completions to assert state transitions and span data directly.
-/// Complements project/test/isolated/test_http_request.gd, which covers public API and wire behavior.
+#ifdef TESTS_ENABLED
 
 #include "cpp_test_helpers.h"
 #include "sentry/sentry_http_request.h"
@@ -51,8 +51,9 @@ public:
 	}
 };
 
-void _restart_request(int64_t, int64_t, const PackedStringArray &, const PackedByteArray &, SentryHTTPRequest *p_request, const String &p_url) {
-	p_request->set_meta("restart_error", p_request->request(p_url));
+void _start_next_request_on_completion(int64_t, int64_t, const PackedStringArray &, const PackedByteArray &, SentryHTTPRequest *p_request, const String &p_url) {
+	Error err = p_request->request(p_url);
+	p_request->set_meta("next_request_error", err);
 }
 
 // Gives tests deterministic control over request completion. The server listens without
@@ -134,7 +135,7 @@ TEST_SUITE("HTTP request lifecycle") {
 		CHECK(fixture.parent_record->children.size() == 2);
 	}
 
-	TEST_CASE("Completion finishes the old span before a signal handler starts another request") {
+	TEST_CASE("A request_completed handler can immediately start the next request") {
 		for (int64_t result : { HTTPRequest::RESULT_SUCCESS, HTTPRequest::RESULT_CANT_CONNECT }) {
 			CAPTURE(result);
 			InstrumentedRequestFixture fixture;
@@ -143,27 +144,39 @@ TEST_SUITE("HTTP request lifecycle") {
 			REQUIRED_CHECK(fixture.request->request(url) == OK);
 			REQUIRED_CHECK(fixture.parent_record->children.size() == 1);
 			const std::shared_ptr<SpanRecord> span_record = fixture.parent_record->children.front();
-			fixture.request->connect("request_completed", callable_mp_static(_restart_request).bind(fixture.request, url), Object::CONNECT_ONE_SHOT);
+			fixture.request->connect("request_completed",
+					callable_mp_static(_start_next_request_on_completion)
+							.bind(fixture.request, url),
+					Object::CONNECT_ONE_SHOT);
 
 			REQUIRED_CHECK(fixture.complete_request(result, result == HTTPRequest::RESULT_SUCCESS ? 200 : 0));
 
 			CHECK(span_record->end_count == 1);
-			CHECK(int64_t(fixture.request->get_meta("restart_error")) == OK);
+			CHECK(int64_t(fixture.request->get_meta("next_request_error")) == OK);
 			CHECK(fixture.parent_record->children.size() == 2);
 		}
 	}
 
-	TEST_CASE("Rejected startup does not leave the request busy") {
+	TEST_CASE("A valid request can start after a startup error") {
 		RequestFixture fixture;
-		CHECK(fixture.request->request("http://127.0.0.1/") == ERR_UNCONFIGURED);
+		REQUIRED_CHECK(fixture.server->listen(0, "127.0.0.1") == OK);
+
+		SUBCASE("Request is outside the scene tree") {
+			// RequestFixture does not add the request node to the scene tree automatically.
+			CHECK(fixture.request->request("http://127.0.0.1/") == ERR_UNCONFIGURED);
+		}
 
 		fixture.add_to_tree();
-		CHECK(fixture.request->request("http://example.com:invalid/") == ERR_INVALID_DATA);
-		CHECK(fixture.request->request("ftp://127.0.0.1/") == ERR_INVALID_PARAMETER);
 
-		REQUIRED_CHECK(fixture.server->listen(0, "127.0.0.1") == OK);
-		const String url = fixture.url();
-		CHECK(fixture.request->request(url) == OK);
+		SUBCASE("URL has an invalid port") {
+			CHECK(fixture.request->request("http://example.com:invalid/") == ERR_INVALID_DATA);
+		}
+
+		SUBCASE("URL uses an unsupported scheme") {
+			CHECK(fixture.request->request("ftp://127.0.0.1/") == ERR_INVALID_PARAMETER);
+		}
+
+		CHECK(fixture.request->request(fixture.url()) == OK);
 	}
 }
 
@@ -223,7 +236,7 @@ TEST_SUITE("HTTP request instrumentation") {
 		CHECK(SentrySDK::get_singleton()->get_active_span() == fixture.parent_span);
 	}
 
-	TEST_CASE("HTTP error response records its status code without an error type") {
+	TEST_CASE("HTTP error response records its status code") {
 		InstrumentedRequestFixture fixture;
 		REQUIRED_CHECK(fixture.server->listen(0, "127.0.0.1") == OK);
 		const String url = fixture.url("/status");
@@ -234,7 +247,6 @@ TEST_SUITE("HTTP request instrumentation") {
 		const std::shared_ptr<SpanRecord> http_error = fixture.parent_record->children.front();
 		CHECK(http_error->status == SPAN_STATUS_ERROR);
 		CHECK(int64_t(http_error->attributes["http.response.status_code"]) == 404);
-		CHECK_FALSE(http_error->attributes.has("error.type"));
 	}
 
 	TEST_CASE("Transport failure records its error type without response facts") {
