@@ -25,6 +25,9 @@
 - Bump Native SDK from v0.16.6 to v0.16.8 ([#975](https://github.com/getsentry/sentry-godot/pull/975))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0168)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.16.6...0.16.8)
+- Bump Sentry .NET SDK from v6.11.0 to v6.11.1 ([#981](https://github.com/getsentry/sentry-godot/pull/981))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6111)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.11.0...6.11.1)
 
 ## 2.2.0
 
