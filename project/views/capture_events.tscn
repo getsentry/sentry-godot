@@ -184,6 +184,38 @@ text = "Start metrics"
 [node name="MetricsTimer" type="Timer" parent="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton"]
 unique_name_in_owner = true
 
+[node name="HTTPRequestSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = &"SectionHeader"
+text = "HTTP Requests"
+vertical_alignment = 1
+
+[node name="EmpowerPlantProductsButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Trace existing Empower Plant page (200)"
+
+[node name="EmpowerPlantMissingButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Trace missing Empower Plant page (404)"
+
+[node name="EmpowerPlantRequest" type="SentryHTTPRequest" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
+unique_name_in_owner = true
+timeout = 60.0
+
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/CaptureEventsSection/VBoxContainer/CaptureButton" to="." method="_on_capture_button_pressed"]
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/UserFeedbackSection/VBoxContainer/UserFeedbackButton" to="." method="_on_user_feedback_button_pressed"]
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateErrorsSection/VBoxContainer/GenerateErrors/GenScriptError" to="." method="_on_gen_script_error_pressed"]
@@ -195,3 +227,6 @@ unique_name_in_owner = true
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes/CrashWithDivByZeroButton" to="." method="_on_crash_with_div_by_zero_button_pressed"]
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton" to="." method="_on_send_metrics_button_pressed"]
 [connection signal="timeout" from="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton/MetricsTimer" to="." method="_on_metrics_timer_timeout"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/EmpowerPlantProductsButton" to="." method="_on_empower_plant_products_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/EmpowerPlantMissingButton" to="." method="_on_empower_plant_missing_button_pressed"]
+[connection signal="request_completed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/EmpowerPlantRequest" to="." method="_on_empower_plant_request_completed"]

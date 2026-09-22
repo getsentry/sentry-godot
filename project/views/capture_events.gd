@@ -1,14 +1,20 @@
 extends VBoxContainer
 
 const SECTION_MINIMUM_WIDTH := 250.0
+const EMPOWER_PLANT_PRODUCTS_URL := "https://flask.empower-plant.com/products"
+const EMPOWER_PLANT_MISSING_URL := "https://flask.empower-plant.com/not-found"
 
 @onready var sections: HFlowContainer = %Sections
 @onready var message_edit: LineEdit = %MessageEdit
 @onready var level_choice: MenuButton = %LevelChoice
+@onready var empower_plant_request: SentryHTTPRequest = %EmpowerPlantRequest
+@onready var empower_plant_products_button: Button = %EmpowerPlantProductsButton
+@onready var empower_plant_missing_button: Button = %EmpowerPlantMissingButton
 
 var _event_level: SentrySDK.Level
 var _user_feedback_gui: Control
 var _sending_metrics := false
+var _empower_plant_page: String
 
 
 func _ready() -> void:
@@ -134,3 +140,48 @@ func _on_crash_with_abort_button_pressed() -> void:
 func _on_crash_with_div_by_zero_button_pressed() -> void:
 	DemoOutput.print_info("Crashing app with division by zero...")
 	SentrySDK.bad_code.crash_with_division_by_zero()
+
+
+func _on_empower_plant_products_button_pressed() -> void:
+	_request_empower_plant_page("products", EMPOWER_PLANT_PRODUCTS_URL)
+
+
+func _on_empower_plant_missing_button_pressed() -> void:
+	_request_empower_plant_page("missing", EMPOWER_PLANT_MISSING_URL)
+
+
+func _request_empower_plant_page(page: String, url: String) -> void:
+	_empower_plant_page = page
+	empower_plant_products_button.disabled = true
+	empower_plant_missing_button.disabled = true
+	DemoOutput.print_info("Requesting the Empower Plant %s page..." % page)
+
+	var start_error: Error = empower_plant_request.request(url)
+	if start_error != OK and start_error != ERR_CANT_CONNECT:
+		empower_plant_products_button.disabled = false
+		empower_plant_missing_button.disabled = false
+		DemoOutput.print_err(
+			"Failed to start the Empower Plant %s request: %s"
+			% [page, error_string(start_error)]
+		)
+
+
+func _on_empower_plant_request_completed(
+		result: int,
+		response_code: int,
+		_headers: PackedStringArray,
+		body: PackedByteArray,
+) -> void:
+	empower_plant_products_button.disabled = false
+	empower_plant_missing_button.disabled = false
+	if result != SentryHTTPRequest.RESULT_SUCCESS:
+		DemoOutput.print_err(
+			"The Empower Plant %s request failed with result %d."
+			% [_empower_plant_page, result]
+		)
+		return
+
+	DemoOutput.print_info(
+		"The Empower Plant %s page responded with HTTP %d (%d bytes)."
+		% [_empower_plant_page, response_code, body.size()]
+	)
