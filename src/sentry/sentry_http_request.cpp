@@ -30,6 +30,7 @@ struct HTTPRequestStringData {
 	const String error_type{ "error.type" };
 	const String url{ "url" };
 	const String status_code{ "status_code" };
+	const String reason{ "reason" };
 	const String http_client{ "http.client" };
 	const String auto_http_godot{ "auto.http.godot" };
 	const String client{ "client" };
@@ -269,13 +270,16 @@ void SentryHTTPRequest::_finalize_request(const RequestOutcome &p_outcome) {
 
 	const auto &strings = HTTPRequestStrings::get();
 	String error_type;
+	String breadcrumb_reason;
 	SpanStatus status = SPAN_STATUS_OK;
+	bool set_span_status = true;
 	Level breadcrumb_level = LEVEL_INFO;
 	switch (p_outcome.kind) {
 		case RequestOutcome::Kind::CANCELLED: {
-			error_type = strings.cancelled;
-			status = SPAN_STATUS_ERROR;
-			breadcrumb_level = LEVEL_WARNING;
+			// OpenTelemetry treats caller-requested cancellation as non-error control flow.
+			// Keep the span unset and record cancellation as an informational breadcrumb.
+			breadcrumb_reason = strings.cancelled;
+			set_span_status = false;
 		} break;
 		case RequestOutcome::Kind::STARTUP_FAILURE: {
 			error_type = UtilityFunctions::error_string(p_outcome.startup_error);
@@ -298,7 +302,9 @@ void SentryHTTPRequest::_finalize_request(const RequestOutcome &p_outcome) {
 	}
 
 	if (_span.is_valid()) {
-		_span->set_status(status);
+		if (set_span_status) {
+			_span->set_status(status);
+		}
 		if (!error_type.is_empty()) {
 			_span->set_attribute(strings.error_type, error_type);
 		}
@@ -320,6 +326,9 @@ void SentryHTTPRequest::_finalize_request(const RequestOutcome &p_outcome) {
 	Dictionary breadcrumb_data = _request_data.as_breadcrumb_data();
 	if (!error_type.is_empty()) {
 		breadcrumb_data[strings.error_type] = error_type;
+	}
+	if (!breadcrumb_reason.is_empty()) {
+		breadcrumb_data[strings.reason] = breadcrumb_reason;
 	}
 	if (p_outcome.response_code > 0) {
 		breadcrumb_data[strings.status_code] = p_outcome.response_code;

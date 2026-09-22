@@ -26,6 +26,7 @@ struct SpanRecord {
 	String name;
 	Dictionary attributes;
 	SpanStatus status = SPAN_STATUS_OK;
+	bool status_was_set = false;
 	int end_count = 0;
 	std::vector<std::shared_ptr<SpanRecord>> children;
 };
@@ -38,7 +39,10 @@ public:
 			_record(p_record) {}
 
 	void set_attribute(const String &p_key, const Variant &p_value) override { _record->attributes[p_key] = p_value; }
-	void set_status(SpanStatus p_status) override { _record->status = p_status; }
+	void set_status(SpanStatus p_status) override {
+		_record->status = p_status;
+		_record->status_was_set = true;
+	}
 	void end() override { ++_record->end_count; }
 	PackedStringArray get_trace_headers() override { return {}; }
 
@@ -264,18 +268,31 @@ TEST_SUITE("HTTP request instrumentation") {
 		CHECK_FALSE(transport_error->attributes.has("http.response.body.size"));
 	}
 
-	TEST_CASE("Cancellation finalizes each span only once") {
+	TEST_CASE("Cancellation ends the span without marking it as an error") {
 		InstrumentedRequestFixture fixture;
 		REQUIRED_CHECK(fixture.server->listen(0, "127.0.0.1") == OK);
 		const String url = fixture.url("/pending");
 
 		REQUIRED_CHECK(fixture.request->request(url) == OK);
 		fixture.request->cancel_request();
-		fixture.request->cancel_request();
 		REQUIRED_CHECK(fixture.parent_record->children.size() == 1);
 		const std::shared_ptr<SpanRecord> cancelled = fixture.parent_record->children[0];
-		CHECK(cancelled->status == SPAN_STATUS_ERROR);
-		CHECK(String(cancelled->attributes["error.type"]) == "cancelled");
+		CHECK_FALSE(cancelled->status_was_set);
+		CHECK_FALSE(cancelled->attributes.has("error.type"));
+		CHECK(cancelled->end_count == 1);
+	}
+
+	TEST_CASE("Repeated cancellation ends the span once") {
+		InstrumentedRequestFixture fixture;
+		REQUIRED_CHECK(fixture.server->listen(0, "127.0.0.1") == OK);
+		const String url = fixture.url("/pending");
+
+		REQUIRED_CHECK(fixture.request->request(url) == OK);
+		REQUIRED_CHECK(fixture.parent_record->children.size() == 1);
+		const std::shared_ptr<SpanRecord> cancelled = fixture.parent_record->children[0];
+		fixture.request->cancel_request();
+		fixture.request->cancel_request();
+
 		CHECK(cancelled->end_count == 1);
 	}
 }

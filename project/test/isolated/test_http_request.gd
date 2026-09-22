@@ -215,15 +215,24 @@ func test_4xx_records_warning_breadcrumb() -> void:
 	assert_str(crumbs[0].level).is_equal("warning")
 
 
-func test_repeated_cancellation_records_one_warning_breadcrumb() -> void:
+func test_cancellation_records_info_breadcrumb() -> void:
+	assert_int(_request.request(_url("/hold"))).is_equal(OK)
+	_request.cancel_request()
+
+	var crumbs: Array = await _http_breadcrumbs()
+	assert_array(crumbs).has_size(1)
+	assert_str(crumbs[0].data.reason).is_equal("cancelled")
+	assert_bool(crumbs[0].data.has("error.type")).is_false()
+	assert_str(crumbs[0].level).is_equal("info")
+
+
+func test_repeated_cancellation_records_one_breadcrumb() -> void:
 	assert_int(_request.request(_url("/hold"))).is_equal(OK)
 	_request.cancel_request()
 	_request.cancel_request()
 
 	var crumbs: Array = await _http_breadcrumbs()
 	assert_array(crumbs).has_size(1)
-	assert_str(crumbs[0].data["error.type"]).is_equal("cancelled")
-	assert_str(crumbs[0].level).is_equal("warning")
 
 
 class LocalHTTPServer extends Node:

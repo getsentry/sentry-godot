@@ -31,7 +31,7 @@
 		<method name="cancel_request">
 			<return type="void" />
 			<description>
-				Cancels the current request, ends its span with an error status, and records a warning breadcrumb.
+				Cancels the current request, ends its span without assigning an error status or error type, and records an informational breadcrumb.
 			</description>
 		</method>
 		<method name="get_body_size" qualifiers="const">
