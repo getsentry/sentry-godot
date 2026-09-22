@@ -35,6 +35,7 @@ struct HTTPRequestStringData {
 	const String auto_http_godot{ "auto.http.godot" };
 	const String client{ "client" };
 	const String http{ "http" };
+	const String https{ "https" };
 	const String cancelled{ "cancelled" };
 	const String open_bracket{ "[" };
 	const String close_bracket{ "]" };
@@ -118,10 +119,11 @@ int32_t _http_server_port(const util::URLParts &p_url) {
 	if (p_url.port >= 0) {
 		return p_url.port;
 	}
-	if (p_url.scheme == "http") {
+	const auto &strings = HTTPRequestStrings::get();
+	if (p_url.scheme == strings.http) {
 		return 80;
 	}
-	if (p_url.scheme == "https") {
+	if (p_url.scheme == strings.https) {
 		return 443;
 	}
 	return -1;
