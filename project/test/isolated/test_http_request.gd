@@ -112,12 +112,12 @@ func test_successful_post_records_redacted_breadcrumb() -> void:
 	await await_signal_on(_request, "request_completed", [], 5000)
 
 	var crumbs: Array = await _http_breadcrumbs()
-	assert_array(crumbs).has_size(1)
-	assert_str(crumbs[0].data.url).is_equal(_url("/propagated/ok"))
-	assert_str(crumbs[0].data["http.request.method"]).is_equal("POST")
-	assert_int(int(crumbs[0].data["http.request.body.size"])).is_equal(
-		request_body.to_utf8_buffer().size()
-	)
+	assert_json(crumbs).describe("Successful POST records one redacted HTTP breadcrumb") \
+		.with_objects() \
+		.must_contain("data/url", _url("/propagated/ok")) \
+		.must_contain("data/http.request.method", "POST") \
+		.must_contain("data/http.request.body.size", request_body.to_utf8_buffer().size()) \
+		.exactly(1)
 
 
 func test_trace_headers_do_not_duplicate_custom_header_names() -> void:
@@ -178,9 +178,13 @@ func test_raw_and_empty_request_bodies_keep_exact_byte_counts() -> void:
 	assert_that(received.body).is_equal(PackedByteArray())
 
 	var crumbs: Array = await _http_breadcrumbs()
-	assert_array(crumbs).has_size(2)
-	assert_int(int(crumbs[0].data["http.request.body.size"])).is_equal(body.size())
-	assert_bool(crumbs[1].data.has("http.request.body.size")).is_false()
+	assert_json(crumbs).describe("Raw and empty bodies record their respective byte counts") \
+		.has_size(2) \
+		.at("/0") \
+		.must_contain("data/http.request.body.size", body.size()) \
+		.at("/1") \
+		.must_not_contain("data/http.request.body.size") \
+		.verify()
 
 
 func test_connection_failure_records_error_breadcrumb() -> void:
@@ -199,9 +203,14 @@ func test_connection_failure_records_error_breadcrumb() -> void:
 	]).contains([failed_response[0]])
 
 	var crumbs: Array = await _http_breadcrumbs()
-	assert_array(crumbs).has_size(1)
-	assert_str(crumbs[0].data["error.type"]).is_not_empty()
-	assert_str(crumbs[0].level).is_equal("error")
+	assert_json(crumbs).describe("Connection failure records one error breadcrumb") \
+		.has_size(1) \
+		.at("/0") \
+		.must_contain("level", "error") \
+		.at("/0/data/error.type") \
+		.is_string() \
+		.is_not_empty() \
+		.verify()
 
 
 func test_4xx_records_warning_breadcrumb() -> void:
@@ -210,9 +219,11 @@ func test_4xx_records_warning_breadcrumb() -> void:
 	assert_int(response[1]).is_equal(404)
 
 	var crumbs: Array = await _http_breadcrumbs()
-	assert_array(crumbs).has_size(1)
-	assert_int(int(crumbs[0].data.status_code)).is_equal(404)
-	assert_str(crumbs[0].level).is_equal("warning")
+	assert_json(crumbs).describe("HTTP 404 records one warning breadcrumb") \
+		.with_objects() \
+		.must_contain("data/status_code", 404) \
+		.must_contain("level", "warning") \
+		.exactly(1)
 
 
 func test_cancellation_records_info_breadcrumb() -> void:
@@ -220,10 +231,12 @@ func test_cancellation_records_info_breadcrumb() -> void:
 	_request.cancel_request()
 
 	var crumbs: Array = await _http_breadcrumbs()
-	assert_array(crumbs).has_size(1)
-	assert_str(crumbs[0].data.reason).is_equal("cancelled")
-	assert_bool(crumbs[0].data.has("error.type")).is_false()
-	assert_str(crumbs[0].level).is_equal("info")
+	assert_json(crumbs).describe("Cancellation records one non-error breadcrumb") \
+		.with_objects() \
+		.must_contain("data/reason", "cancelled") \
+		.must_not_contain("data/error.type") \
+		.must_contain("level", "info") \
+		.exactly(1)
 
 
 func test_repeated_cancellation_records_one_breadcrumb() -> void:
@@ -232,7 +245,9 @@ func test_repeated_cancellation_records_one_breadcrumb() -> void:
 	_request.cancel_request()
 
 	var crumbs: Array = await _http_breadcrumbs()
-	assert_array(crumbs).has_size(1)
+	assert_json(crumbs).describe("Repeated cancellation records one HTTP breadcrumb") \
+		.with_objects() \
+		.exactly(1)
 
 
 class LocalHTTPServer extends Node:
