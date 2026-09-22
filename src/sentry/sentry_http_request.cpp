@@ -167,6 +167,8 @@ Ref<SentrySpan> _start_http_span(const util::URLParts &p_url, HTTPClient::Method
 	span_name += U' ';
 	span_name += redacted_url;
 
+	// Keep the HTTP span inactive so the telemetry recorded while the
+	// request is pending does not become its child.
 	return SentrySDK::get_singleton()->start_span(span_name, attributes,
 			SentrySDK::get_singleton()->get_active_span(), false);
 }
