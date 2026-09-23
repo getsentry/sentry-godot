@@ -289,13 +289,13 @@ void SentryHTTPRequest::_finalize_request(const RequestOutcome &p_outcome) {
 			breadcrumb_level = LEVEL_ERROR;
 		} break;
 		case RequestOutcome::Kind::COMPLETED: {
-			if (p_outcome.result != RESULT_SUCCESS) {
+			if (p_outcome.result != HTTPRequest::RESULT_SUCCESS) {
 				error_type = _http_request_error(p_outcome.result);
 			}
-			if (p_outcome.result != RESULT_SUCCESS || p_outcome.response_code >= 400) {
+			if (p_outcome.result != HTTPRequest::RESULT_SUCCESS || p_outcome.response_code >= 400) {
 				status = SPAN_STATUS_ERROR;
 			}
-			if (p_outcome.result != RESULT_SUCCESS || p_outcome.response_code >= 500) {
+			if (p_outcome.result != HTTPRequest::RESULT_SUCCESS || p_outcome.response_code >= 500) {
 				breadcrumb_level = LEVEL_ERROR;
 			} else if (p_outcome.response_code >= 400) {
 				breadcrumb_level = LEVEL_WARNING;
@@ -393,21 +393,6 @@ void SentryHTTPRequest::_bind_methods() {
 			PropertyInfo(Variant::INT, "response_code"),
 			PropertyInfo(Variant::PACKED_STRING_ARRAY, "headers"),
 			PropertyInfo(Variant::PACKED_BYTE_ARRAY, "body")));
-
-	BIND_ENUM_CONSTANT(RESULT_SUCCESS);
-	BIND_ENUM_CONSTANT(RESULT_CHUNKED_BODY_SIZE_MISMATCH);
-	BIND_ENUM_CONSTANT(RESULT_CANT_CONNECT);
-	BIND_ENUM_CONSTANT(RESULT_CANT_RESOLVE);
-	BIND_ENUM_CONSTANT(RESULT_CONNECTION_ERROR);
-	BIND_ENUM_CONSTANT(RESULT_TLS_HANDSHAKE_ERROR);
-	BIND_ENUM_CONSTANT(RESULT_NO_RESPONSE);
-	BIND_ENUM_CONSTANT(RESULT_BODY_SIZE_LIMIT_EXCEEDED);
-	BIND_ENUM_CONSTANT(RESULT_BODY_DECOMPRESS_FAILED);
-	BIND_ENUM_CONSTANT(RESULT_REQUEST_FAILED);
-	BIND_ENUM_CONSTANT(RESULT_DOWNLOAD_FILE_CANT_OPEN);
-	BIND_ENUM_CONSTANT(RESULT_DOWNLOAD_FILE_WRITE_ERROR);
-	BIND_ENUM_CONSTANT(RESULT_REDIRECT_LIMIT_REACHED);
-	BIND_ENUM_CONSTANT(RESULT_TIMEOUT);
 }
 
 SentryHTTPRequest::SentryHTTPRequest() {

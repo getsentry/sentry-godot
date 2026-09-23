@@ -18,7 +18,7 @@
 			if error != OK:
 				push_error("Could not start the scores request: %s" % error_string(error))
 		func _on_scores_received(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -&gt; void:
-			if result == SentryHTTPRequest.RESULT_SUCCESS and response_code == 200:
+			if result == HTTPRequest.RESULT_SUCCESS and response_code == 200:
 				print(body.get_string_from_utf8())
 		[/codeblock]
 		[b]Note:[/b] Call this node's methods from the main thread, even when [member use_threads] is enabled.
@@ -107,21 +107,21 @@
 			[b]Platform support:[/b] Web browsers manage content encoding and can decompress responses independently of this property.
 		</member>
 		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
-			Maximum response body size in bytes. A value of [code]-1[/code] disables the limit. The limit also applies to the decompressed body when [member accept_gzip] is enabled. Exceeding the limit produces [constant RESULT_BODY_SIZE_LIMIT_EXCEEDED].
+			Maximum response body size in bytes. A value of [code]-1[/code] disables the limit. The limit also applies to the decompressed body when [member accept_gzip] is enabled. Exceeding the limit produces [constant HTTPRequest.RESULT_BODY_SIZE_LIMIT_EXCEEDED].
 		</member>
 		<member name="download_chunk_size" type="int" setter="set_download_chunk_size" getter="get_download_chunk_size" default="65536">
 			Buffer size and maximum number of bytes read per network-processing iteration. Smaller values reduce buffer memory usage but can reduce download throughput. See [member HTTPRequest.download_chunk_size].
 		</member>
 		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file" default="&quot;&quot;">
 			Path to a file that receives the response body. If empty, the body is kept in memory and passed to [signal request_completed]. When downloading to a file, the signal's [code]body[/code] array is empty.
-			File-open and write failures produce [constant RESULT_DOWNLOAD_FILE_CANT_OPEN] and [constant RESULT_DOWNLOAD_FILE_WRITE_ERROR], respectively.
+			File-open and write failures produce [constant HTTPRequest.RESULT_DOWNLOAD_FILE_CANT_OPEN] and [constant HTTPRequest.RESULT_DOWNLOAD_FILE_WRITE_ERROR], respectively.
 		</member>
 		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
-			Maximum number of HTTP redirects to follow. A value of [code]-1[/code] disables the limit. Exceeding the limit produces [constant RESULT_REDIRECT_LIMIT_REACHED]. Redirects remain part of the same request span.
-			[b]Warning:[/b] Godot forwards custom headers, including tracing headers, when following redirects. [member SentryOptions.trace_propagation_targets] checks only the initial URL, not redirect destinations. If a request may redirect to an untrusted destination, set this property to [code]0[/code]. The [signal request_completed] signal then reports [constant RESULT_REDIRECT_LIMIT_REACHED] and includes the [code]Location[/code] response header. Validate that URL before starting a separate request.
+			Maximum number of HTTP redirects to follow. A value of [code]-1[/code] disables the limit. Exceeding the limit produces [constant HTTPRequest.RESULT_REDIRECT_LIMIT_REACHED]. Redirects remain part of the same request span.
+			[b]Warning:[/b] Godot forwards custom headers, including tracing headers, when following redirects. [member SentryOptions.trace_propagation_targets] checks only the initial URL, not redirect destinations. If a request may redirect to an untrusted destination, set this property to [code]0[/code]. The [signal request_completed] signal then reports [constant HTTPRequest.RESULT_REDIRECT_LIMIT_REACHED] and includes the [code]Location[/code] response header. Validate that URL before starting a separate request.
 		</member>
 		<member name="timeout" type="float" setter="set_timeout" getter="get_timeout" default="0.0">
-			Request timeout in seconds, independent of [member Engine.time_scale]. A value of [code]0.0[/code] disables the timeout. An expired timeout produces [constant RESULT_TIMEOUT].
+			Request timeout in seconds, independent of [member Engine.time_scale]. A value of [code]0.0[/code] disables the timeout. An expired timeout produces [constant HTTPRequest.RESULT_TIMEOUT].
 		</member>
 		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" default="false">
 			If [code]true[/code], the underlying [HTTPRequest] processes network activity on a worker thread. Request instrumentation and [signal request_completed] run on the main thread.
@@ -135,53 +135,9 @@
 			<param index="3" name="body" type="PackedByteArray" />
 			<description>
 				Emitted when Godot completes the request, after its Sentry span and breadcrumb have been finalized. A handler can start another request on this node.
-				[param result] is a value from [enum Result] describing the transfer outcome. [param response_code] is the HTTP status code, or [code]0[/code] when no response was received. [param headers] contains response headers, and [param body] contains the response bytes unless [member download_file] is set.
-				[constant RESULT_SUCCESS] indicates that the transfer completed, not that the HTTP status is successful. Responses with a status code of [code]400[/code] or higher mark the span as an error.
+				[param result] is a value from [enum HTTPRequest.Result] describing the transfer outcome. [param response_code] is the HTTP status code, or [code]0[/code] when no response was received. [param headers] contains response headers, and [param body] contains the response bytes unless [member download_file] is set.
+				[constant HTTPRequest.RESULT_SUCCESS] indicates that the transfer completed, not that the HTTP status is successful. Responses with a status code of [code]400[/code] or higher mark the span as an error.
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="RESULT_SUCCESS" value="0" enum="Result">
-			The transfer completed. Check the HTTP response code separately to determine whether the server returned an error.
-		</constant>
-		<constant name="RESULT_CHUNKED_BODY_SIZE_MISMATCH" value="1" enum="Result">
-			The received body length did not match the expected length.
-		</constant>
-		<constant name="RESULT_CANT_CONNECT" value="2" enum="Result">
-			The connection to the server could not be established.
-		</constant>
-		<constant name="RESULT_CANT_RESOLVE" value="3" enum="Result">
-			The server's host name could not be resolved.
-		</constant>
-		<constant name="RESULT_CONNECTION_ERROR" value="4" enum="Result">
-			The connection failed while sending or receiving data.
-		</constant>
-		<constant name="RESULT_TLS_HANDSHAKE_ERROR" value="5" enum="Result">
-			The TLS handshake failed.
-		</constant>
-		<constant name="RESULT_NO_RESPONSE" value="6" enum="Result">
-			The server did not provide an HTTP response.
-		</constant>
-		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7" enum="Result">
-			The response body exceeded [member body_size_limit].
-		</constant>
-		<constant name="RESULT_BODY_DECOMPRESS_FAILED" value="8" enum="Result">
-			Godot could not decompress the response body.
-		</constant>
-		<constant name="RESULT_REQUEST_FAILED" value="9" enum="Result">
-			Reserved request-failure result. Unused by Godot 4.5.
-		</constant>
-		<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="10" enum="Result">
-			Godot could not open [member download_file] for writing.
-		</constant>
-		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="11" enum="Result">
-			Godot could not write the response body to [member download_file].
-		</constant>
-		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="12" enum="Result">
-			The request exceeded [member max_redirects].
-		</constant>
-		<constant name="RESULT_TIMEOUT" value="13" enum="Result">
-			The request exceeded [member timeout].
-		</constant>
-	</constants>
 </class>

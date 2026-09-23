@@ -19,24 +19,6 @@ namespace sentry {
 class SentryHTTPRequest : public Node {
 	GDCLASS(SentryHTTPRequest, Node);
 
-public:
-	enum Result {
-		RESULT_SUCCESS = HTTPRequest::RESULT_SUCCESS,
-		RESULT_CHUNKED_BODY_SIZE_MISMATCH = HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH,
-		RESULT_CANT_CONNECT = HTTPRequest::RESULT_CANT_CONNECT,
-		RESULT_CANT_RESOLVE = HTTPRequest::RESULT_CANT_RESOLVE,
-		RESULT_CONNECTION_ERROR = HTTPRequest::RESULT_CONNECTION_ERROR,
-		RESULT_TLS_HANDSHAKE_ERROR = HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR,
-		RESULT_NO_RESPONSE = HTTPRequest::RESULT_NO_RESPONSE,
-		RESULT_BODY_SIZE_LIMIT_EXCEEDED = HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED,
-		RESULT_BODY_DECOMPRESS_FAILED = HTTPRequest::RESULT_BODY_DECOMPRESS_FAILED,
-		RESULT_REQUEST_FAILED = HTTPRequest::RESULT_REQUEST_FAILED,
-		RESULT_DOWNLOAD_FILE_CANT_OPEN = HTTPRequest::RESULT_DOWNLOAD_FILE_CANT_OPEN,
-		RESULT_DOWNLOAD_FILE_WRITE_ERROR = HTTPRequest::RESULT_DOWNLOAD_FILE_WRITE_ERROR,
-		RESULT_REDIRECT_LIMIT_REACHED = HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED,
-		RESULT_TIMEOUT = HTTPRequest::RESULT_TIMEOUT,
-	};
-
 private:
 	struct RequestData {
 		util::URLParts parsed_url;
@@ -55,7 +37,7 @@ private:
 
 		Kind kind;
 		Error startup_error = OK;
-		int64_t result = RESULT_SUCCESS;
+		int64_t result = HTTPRequest::RESULT_SUCCESS;
 		int64_t response_code = -1;
 		int64_t response_body_size = -1;
 
@@ -64,7 +46,7 @@ private:
 		static RequestOutcome completed(int64_t p_result, int64_t p_response_code, int64_t p_response_body_size) {
 			return { Kind::COMPLETED, OK, p_result,
 				p_response_code > 0 ? p_response_code : -1,
-				p_result == RESULT_SUCCESS ? p_response_body_size : -1 };
+				p_result == HTTPRequest::RESULT_SUCCESS ? p_response_body_size : -1 };
 		}
 	};
 
@@ -111,5 +93,3 @@ public:
 };
 
 } //namespace sentry
-
-VARIANT_ENUM_CAST(sentry::SentryHTTPRequest::Result);
