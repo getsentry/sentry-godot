@@ -29,4 +29,3 @@ func _select_tab(index: int) -> void:
 		var button: Button = _tab_buttons[button_index]
 		var selected := button_index == index
 		button.set_pressed_no_signal(selected)
-		button.z_index = 1 if selected else 0
