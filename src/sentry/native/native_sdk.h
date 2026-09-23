@@ -12,7 +12,7 @@ class NativeSDK : public InternalSDK {
 private:
 	sentry_uuid_t last_uuid;
 	Mutex _last_uuid_mutex;
-	Vector<sentry_attachment_t *> user_attachments;
+	Vector<sentry_uuid_t> user_attachments;
 
 public:
 	virtual void set_context(const String &p_key, const Dictionary &p_value) override;
