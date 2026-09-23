@@ -5,11 +5,26 @@
 #include <doctest.h>
 
 #include <godot_cpp/core/defs.hpp>
+#include <godot_cpp/variant/string.hpp>
 #include <ostream>
 #include <string_view>
 #include <vector>
 
+namespace doctest {
+
+// Prints Godot strings as UTF-8 in assertion diagnostics instead of {?}.
+template <>
+struct StringMaker<godot::String> {
+	static String convert(const godot::String &p_string) {
+		const godot::CharString utf8 = p_string.utf8();
+		return String(utf8.get_data());
+	}
+};
+
+} // namespace doctest
+
 // Returns from the current void function; calling it in a helper does not exit the caller.
+// Use this macro instead of REQUIRE().
 #define REQUIRED_CHECK(...)        \
 	do {                           \
 		if (!CHECK(__VA_ARGS__)) { \
