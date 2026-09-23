@@ -26,9 +26,6 @@ func _initialize() -> void:
 		options.debug = true
 		options.release = "sentry-godot-demo@" + ProjectSettings.get_setting("application/config/version")
 		options.environment = "demo"
-		# Continue the Tools demo trace into the Empower Plant backend.
-		options.trace_propagation_targets = ["flask.empower-plant.com"]
-		options.propagate_traceparent = true
 
 		# Set up event callbacks
 		options.before_send = _on_before_send_to_sentry

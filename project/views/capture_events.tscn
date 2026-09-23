@@ -200,19 +200,19 @@ theme_type_variation = &"SectionHeader"
 text = "HTTP Requests"
 vertical_alignment = 1
 
-[node name="EmpowerPlantProductsButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
+[node name="RequestExistingPageButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Trace existing Empower Plant page (200)"
+text = "Request existing page (200)"
 
-[node name="EmpowerPlantMissingButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
+[node name="RequestMissingPageButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Trace missing Empower Plant page (404)"
+text = "Request missing page (404)"
 
-[node name="EmpowerPlantRequest" type="SentryHTTPRequest" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
+[node name="SentryHTTPRequest" type="SentryHTTPRequest" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
 unique_name_in_owner = true
 timeout = 60.0
 
@@ -227,6 +227,6 @@ timeout = 60.0
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes/CrashWithDivByZeroButton" to="." method="_on_crash_with_div_by_zero_button_pressed"]
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton" to="." method="_on_send_metrics_button_pressed"]
 [connection signal="timeout" from="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton/MetricsTimer" to="." method="_on_metrics_timer_timeout"]
-[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/EmpowerPlantProductsButton" to="." method="_on_empower_plant_products_button_pressed"]
-[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/EmpowerPlantMissingButton" to="." method="_on_empower_plant_missing_button_pressed"]
-[connection signal="request_completed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/EmpowerPlantRequest" to="." method="_on_empower_plant_request_completed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/RequestExistingPageButton" to="." method="_on_request_existing_page_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/RequestMissingPageButton" to="." method="_on_request_missing_page_button_pressed"]
+[connection signal="request_completed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/SentryHTTPRequest" to="." method="_on_http_request_completed"]
