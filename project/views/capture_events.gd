@@ -174,7 +174,7 @@ func _on_http_request_completed(
 ) -> void:
 	request_existing_page_button.disabled = false
 	request_missing_page_button.disabled = false
-	if result != SentryHTTPRequest.RESULT_SUCCESS:
+	if result != HTTPRequest.RESULT_SUCCESS:
 		DemoOutput.print_err(
 			"The request to %s failed with result %d."
 			% [_requested_url, result]
