@@ -12,7 +12,7 @@ func _ready() -> void:
 
 	# Add .NET actions if editor has support for .NET
 	if ClassDB.class_exists("CSharpScript"):
-		%Tools.add_dotnet_actions()
+		%Capture.add_dotnet_actions()
 
 
 func _on_output_button_toggled(button_pressed: bool) -> void:

@@ -36,11 +36,11 @@ tab_focus_mode = 0
 layout_mode = 2
 
 [node name="Capture" parent="Workspace/WorkspaceContent/TabContainer" instance=ExtResource("2_qcmjx")]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
 [node name="Tools" parent="Workspace/WorkspaceContent/TabContainer" instance=ExtResource("3_qcmjx")]
-unique_name_in_owner = true
 visible = false
 layout_mode = 2
 

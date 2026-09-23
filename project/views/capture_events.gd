@@ -1,5 +1,8 @@
 extends VBoxContainer
 
+const SECTION_MINIMUM_WIDTH := 250.0
+
+@onready var sections: HFlowContainer = %Sections
 @onready var message_edit: LineEdit = %MessageEdit
 @onready var level_choice: MenuButton = %LevelChoice
 
@@ -11,6 +14,17 @@ var _sending_metrics := false
 func _ready() -> void:
 	_init_user_feedback_gui()
 	_init_level_choice_popup()
+
+
+func add_dotnet_actions() -> void:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size.x = SECTION_MINIMUM_WIDTH
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.theme_type_variation = &"SectionPanel"
+	var dotnet_scene: PackedScene = load("res://views/dotnet_actions.tscn")
+	panel.add_child(dotnet_scene.instantiate())
+	sections.add_child(panel)
+	sections.move_child(panel, 0)
 
 
 ## Initialize User Feedback UI

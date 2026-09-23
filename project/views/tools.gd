@@ -1,10 +1,6 @@
 extends VBoxContainer
 ## A collection of dev tools accessible through buttons in the demo project.
 
-const SECTION_MINIMUM_WIDTH := 250.0
-
-@onready var sections: HFlowContainer = %Sections
-
 var _isolated_test_files: PackedStringArray
 var _dots_timer: Timer
 var _dot_count: int
@@ -13,15 +9,6 @@ var _dot_count: int
 func _ready() -> void:
 	%RunTestsButton.visible = DirAccess.dir_exists_absolute("res://test/suites/")
 	_setup_isolated_tests_menu()
-
-
-func add_dotnet_actions() -> void:
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size.x = SECTION_MINIMUM_WIDTH
-	panel.theme_type_variation = &"SectionPanel"
-	var dotnet_scene: PackedScene = load("res://views/dotnet_actions.tscn")
-	panel.add_child(dotnet_scene.instantiate())
-	sections.add_child(panel)
 
 
 func _setup_isolated_tests_menu() -> void:

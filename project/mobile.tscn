@@ -48,10 +48,10 @@ visible = false
 layout_mode = 2
 
 [node name="Capture" parent="VBoxContainer/Workspace/TabContainer" instance=ExtResource("2_xux57")]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="Tools" parent="VBoxContainer/Workspace/TabContainer" instance=ExtResource("4_p64qd")]
-unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
