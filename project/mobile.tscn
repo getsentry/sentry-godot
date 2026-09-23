@@ -5,9 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://dyoaec2d7uung" path="res://views/enrich_events.tscn" id="3_p64qd"]
 [ext_resource type="PackedScene" uid="uid://cywnvytpa2bec" path="res://views/tools.tscn" id="4_p64qd"]
 [ext_resource type="PackedScene" uid="uid://dllqhtd731wtc" path="res://views/output_pane.tscn" id="4_xux57"]
-
-[sub_resource type="Theme" id="Theme_bj8h8"]
-BoxContainer/constants/separation = 8
+[ext_resource type="PackedScene" path="res://views/segmented_tabs.tscn" id="5_segmented"]
 
 [node name="Mobile" type="CanvasLayer"]
 script = ExtResource("1_bj8h8")
@@ -20,45 +18,56 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme = SubResource("Theme_bj8h8")
+theme_override_constants/separation = 8
 metadata/_edit_lock_ = true
 metadata/_edit_use_anchors_ = true
 
-[node name="Spacer" type="Control" parent="VBoxContainer"]
+[node name="TopSpacer" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+[node name="Workspace" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="TabContainer" type="TabContainer" parent="VBoxContainer/VBoxContainer"]
+[node name="SegmentedTabs" parent="VBoxContainer/Workspace" instance=ExtResource("5_segmented")]
+layout_mode = 2
+
+[node name="TabContainer" type="TabContainer" parent="VBoxContainer/Workspace"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-size_flags_stretch_ratio = 1.4
 current_tab = 1
+tabs_visible = false
 tab_focus_mode = 0
 
-[node name="Enrich Events" parent="VBoxContainer/VBoxContainer/TabContainer" instance=ExtResource("3_p64qd")]
+[node name="Enrich" parent="VBoxContainer/Workspace/TabContainer" instance=ExtResource("3_p64qd")]
 visible = false
 layout_mode = 2
-metadata/_tab_index = 0
 
-[node name="Capture Events" parent="VBoxContainer/VBoxContainer/TabContainer" instance=ExtResource("2_xux57")]
+[node name="Capture" parent="VBoxContainer/Workspace/TabContainer" instance=ExtResource("2_xux57")]
 layout_mode = 2
-metadata/_tab_index = 1
 
-[node name="Tools" parent="VBoxContainer/VBoxContainer/TabContainer" instance=ExtResource("4_p64qd")]
+[node name="Tools" parent="VBoxContainer/Workspace/TabContainer" instance=ExtResource("4_p64qd")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[node name="OutputPane" parent="VBoxContainer/VBoxContainer" instance=ExtResource("4_xux57")]
+[node name="OutputButton" type="Button" parent="VBoxContainer/Workspace"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+text = "OUTPUT ▲"
+
+[node name="OutputPane" parent="VBoxContainer/Workspace" instance=ExtResource("4_xux57")]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
 
-[node name="Spacer2" type="Control" parent="VBoxContainer"]
+[node name="BottomSpacer" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+
+[connection signal="toggled" from="VBoxContainer/Workspace/OutputButton" to="." method="_on_output_button_toggled"]

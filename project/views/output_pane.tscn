@@ -12,8 +12,8 @@ size_flags_vertical = 3
 [node name="Header - Output" type="Label" parent="."]
 custom_minimum_size = Vector2(0, 40.505)
 layout_mode = 2
-text = "OUTPUT"
-horizontal_alignment = 1
+theme_type_variation = &"SectionHeader"
+text = "Output"
 vertical_alignment = 2
 
 [node name="PanelContainer" type="PanelContainer" parent="Header - Output"]
@@ -37,6 +37,7 @@ size_flags_vertical = 4
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+focus_mode = 2
 text = "WARNING"
 flat = false
 
@@ -57,6 +58,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_type_variation = &"OutputPanel"
 
 [node name="MsgCopied" type="PanelContainer" parent="DemoOutput"]
 unique_name_in_owner = true

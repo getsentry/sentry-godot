@@ -1,53 +1,49 @@
-[gd_scene load_steps=6 format=3 uid="uid://uwd7dms6675q"]
+[gd_scene load_steps=7 format=3 uid="uid://uwd7dms6675q"]
 
 [ext_resource type="Script" uid="uid://cnd2grpqvq7u" path="res://desktop.gd" id="1_ed6rk"]
 [ext_resource type="PackedScene" uid="uid://dyoaec2d7uung" path="res://views/enrich_events.tscn" id="1_uh226"]
 [ext_resource type="PackedScene" uid="uid://bxi26vu5tlqas" path="res://views/capture_events.tscn" id="2_qcmjx"]
 [ext_resource type="PackedScene" uid="uid://cywnvytpa2bec" path="res://views/tools.tscn" id="3_qcmjx"]
 [ext_resource type="PackedScene" uid="uid://dllqhtd731wtc" path="res://views/output_pane.tscn" id="3_uh226"]
+[ext_resource type="PackedScene" path="res://views/segmented_tabs.tscn" id="4_segmented"]
 
 [node name="Desktop" type="CanvasLayer"]
 script = ExtResource("1_ed6rk")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="Workspace" type="VSplitContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+split_offset = 180
 
-[node name="Columns" type="HBoxContainer" parent="VBoxContainer"]
+[node name="WorkspaceContent" type="VBoxContainer" parent="Workspace"]
 layout_mode = 2
-theme_override_constants/separation = 0
+size_flags_vertical = 3
 
-[node name="Spacer" type="Control" parent="VBoxContainer/Columns"]
-custom_minimum_size = Vector2(64, 0)
-layout_mode = 2
-
-[node name="EnrichEvents" parent="VBoxContainer/Columns" instance=ExtResource("1_uh226")]
+[node name="SegmentedTabs" parent="Workspace/WorkspaceContent" instance=ExtResource("4_segmented")]
 layout_mode = 2
 
-[node name="Spacer2" type="Control" parent="VBoxContainer/Columns"]
-custom_minimum_size = Vector2(64, 0)
+[node name="TabContainer" type="TabContainer" parent="Workspace/WorkspaceContent"]
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+tabs_visible = false
+tab_focus_mode = 0
+
+[node name="Enrich" parent="Workspace/WorkspaceContent/TabContainer" instance=ExtResource("1_uh226")]
 layout_mode = 2
 
-[node name="CaptureEvents" parent="VBoxContainer/Columns" instance=ExtResource("2_qcmjx")]
+[node name="Capture" parent="Workspace/WorkspaceContent/TabContainer" instance=ExtResource("2_qcmjx")]
+visible = false
 layout_mode = 2
 
-[node name="Spacer3" type="Control" parent="VBoxContainer/Columns"]
-custom_minimum_size = Vector2(64, 0)
-layout_mode = 2
-
-[node name="MoreActions" type="VBoxContainer" parent="VBoxContainer/Columns"]
+[node name="Tools" parent="Workspace/WorkspaceContent/TabContainer" instance=ExtResource("3_qcmjx")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 
-[node name="Tools" parent="VBoxContainer/Columns/MoreActions" instance=ExtResource("3_qcmjx")]
-layout_mode = 2
-
-[node name="Spacer4" type="Control" parent="VBoxContainer/Columns"]
-custom_minimum_size = Vector2(64, 0)
-layout_mode = 2
-
-[node name="OutputPane" parent="VBoxContainer" instance=ExtResource("3_uh226")]
+[node name="OutputPane" parent="Workspace" instance=ExtResource("3_uh226")]
+custom_minimum_size = Vector2(0, 180)
 layout_mode = 2

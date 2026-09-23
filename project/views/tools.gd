@@ -1,16 +1,27 @@
 extends VBoxContainer
 ## A collection of dev tools accessible through buttons in the demo project.
 
+const SECTION_MINIMUM_WIDTH := 250.0
+
+@onready var sections: HFlowContainer = %Sections
 
 var _isolated_test_files: PackedStringArray
 var _dots_timer: Timer
 var _dot_count: int
-var _sending_metrics: bool = false
 
 
 func _ready() -> void:
 	%RunTestsButton.visible = DirAccess.dir_exists_absolute("res://test/suites/")
 	_setup_isolated_tests_menu()
+
+
+func add_dotnet_actions() -> void:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size.x = SECTION_MINIMUM_WIDTH
+	panel.theme_type_variation = &"SectionPanel"
+	var dotnet_scene: PackedScene = load("res://views/dotnet_actions.tscn")
+	panel.add_child(dotnet_scene.instantiate())
+	sections.add_child(panel)
 
 
 func _setup_isolated_tests_menu() -> void:
@@ -55,23 +66,6 @@ func _stop_dots_animation(button: MenuButton) -> void:
 		_dots_timer.queue_free()
 		_dots_timer = null
 	button.text = "Run isolated test..."
-
-
-func _on_send_metrics_button_pressed() -> void:
-	_sending_metrics = !_sending_metrics
-	if _sending_metrics:
-		%SendMetricsButton.text = "Stop metrics"
-		DemoOutput.print_info("Started sending metrics.")
-		%MetricsTimer.start(1.0)
-		_on_metrics_timer_timeout()
-	else:
-		%SendMetricsButton.text = "Start metrics"
-		DemoOutput.print_info("Stopped sending metrics.")
-		%MetricsTimer.stop()
-
-
-func _on_metrics_timer_timeout() -> void:
-	SentrySDK.metrics.gauge("static_memory_usage", OS.get_static_memory_usage(), "byte")
 
 
 func _on_run_tests_button_pressed() -> void:

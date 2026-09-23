@@ -2,20 +2,15 @@ extends VBoxContainer
 
 @onready var message_edit: LineEdit = %MessageEdit
 @onready var level_choice: MenuButton = %LevelChoice
-@onready var user_id: LineEdit = %UserID
-@onready var username: LineEdit = %Username
-@onready var email: LineEdit = %Email
-@onready var infer_ip: CheckBox = %InferIP
 
 var _event_level: SentrySDK.Level
-
 var _user_feedback_gui: Control
+var _sending_metrics := false
 
 
 func _ready() -> void:
 	_init_user_feedback_gui()
 	_init_level_choice_popup()
-	_init_user_info()
 
 
 ## Initialize User Feedback UI
@@ -38,15 +33,6 @@ func _init_level_choice_popup() -> void:
 	_on_level_choice_id_pressed(SentrySDK.LEVEL_INFO)
 
 
-func _init_user_info() -> void:
-	var user := SentryUser.create_default()
-	SentrySDK.set_user(user)
-
-	username.text = user.username
-	email.text = user.email
-	user_id.text = user.id
-
-
 func _on_level_choice_id_pressed(id: int) -> void:
 	_event_level = id as SentrySDK.Level
 	match _event_level:
@@ -65,18 +51,6 @@ func _on_level_choice_id_pressed(id: int) -> void:
 func _on_capture_button_pressed() -> void:
 	var event_id := SentrySDK.capture_message(message_edit.text, _event_level)
 	DemoOutput.print_info("Captured message event. Event ID: " + event_id)
-
-
-func _on_set_user_button_pressed() -> void:
-	DemoOutput.print_info("Setting user info...")
-	var user := SentryUser.new()
-	user.id = user_id.text
-	user.username = username.text
-	user.email = email.text
-	if infer_ip.button_pressed:
-		user.infer_ip_address()
-	SentrySDK.set_user(user)
-	DemoOutput.print_extra(str(user))
 
 
 func _on_gen_script_error_pressed() -> void:
@@ -109,6 +83,23 @@ func _generate_native_error() -> void:
 
 func _on_user_feedback_button_pressed() -> void:
 	_user_feedback_gui.show()
+
+
+func _on_send_metrics_button_pressed() -> void:
+	_sending_metrics = !_sending_metrics
+	if _sending_metrics:
+		%SendMetricsButton.text = "Stop metrics"
+		DemoOutput.print_info("Started sending metrics.")
+		%MetricsTimer.start(1.0)
+		_on_metrics_timer_timeout()
+	else:
+		%SendMetricsButton.text = "Start metrics"
+		DemoOutput.print_info("Stopped sending metrics.")
+		%MetricsTimer.stop()
+
+
+func _on_metrics_timer_timeout() -> void:
+	SentrySDK.metrics.gauge("static_memory_usage", OS.get_static_memory_usage(), "byte")
 
 
 func _on_crash_with_null_dereference_button_pressed() -> void:

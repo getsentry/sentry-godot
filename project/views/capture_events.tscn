@@ -1,161 +1,196 @@
-[gd_scene format=3 uid="uid://bxi26vu5tlqas"]
+[gd_scene load_steps=2 format=3 uid="uid://bxi26vu5tlqas"]
 
 [ext_resource type="Script" uid="uid://kjyxrvgox014" path="res://views/capture_events.gd" id="1_ldmgx"]
 
-[node name="CaptureEvents" type="VBoxContainer" unique_id=1737353851]
+[node name="CaptureEvents" type="VBoxContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -765.0
-offset_bottom = -625.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("1_ldmgx")
-metadata/_tab_index = 0
+metadata/_tab_index = 1
 
-[node name="Header - User Info" type="Label" parent="." unique_id=1714086838]
-custom_minimum_size = Vector2(0, 40.505)
-layout_mode = 2
-text = "USER INFO"
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="User info" type="HBoxContainer" parent="." unique_id=1903641773]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="User info" unique_id=2103305956]
-layout_mode = 2
-text = "User ID: "
-
-[node name="UserID" type="LineEdit" parent="User info" unique_id=511249781]
-unique_name_in_owner = true
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "ID"
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
-[node name="InferIP" type="CheckBox" parent="User info" unique_id=1549270712]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Infer IP"
-
-[node name="User info (continued)" type="HBoxContainer" parent="." unique_id=1555838471]
-layout_mode = 2
-
-[node name="Username" type="LineEdit" parent="User info (continued)" unique_id=810343024]
-unique_name_in_owner = true
+[node name="MarginContainer" type="MarginContainer" parent="ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "Username"
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
 
-[node name="Email" type="LineEdit" parent="User info (continued)" unique_id=447304647]
-unique_name_in_owner = true
+[node name="Sections" type="HFlowContainer" parent="ScrollContainer/MarginContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "Email"
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
 
-[node name="SetUserButton" type="Button" parent="." unique_id=1517860827]
-layout_mode = 2
-text = "Set User"
-
-[node name="Header - Generate Errors" type="Label" parent="." unique_id=2024969049]
-custom_minimum_size = Vector2(0, 40.505)
-layout_mode = 2
-text = "GENERATE ERRORS"
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="GenerateErrors" type="HBoxContainer" parent="." unique_id=58584500]
-layout_mode = 2
-
-[node name="GenScriptError" type="Button" parent="GenerateErrors" unique_id=1616799821]
-layout_mode = 2
-text = "GDScript error"
-
-[node name="GenScriptErrorFromThread" type="Button" parent="GenerateErrors" unique_id=509246838]
-layout_mode = 2
-text = "GDScript error from thread"
-
-[node name="GenNativeError" type="Button" parent="GenerateErrors" unique_id=1222936885]
-layout_mode = 2
-text = "C++ error"
-
-[node name="Header - Generate Crashes" type="Label" parent="." unique_id=1135154084]
-custom_minimum_size = Vector2(0, 40.505)
-layout_mode = 2
-text = "GENERATE CRASHES"
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="GenerateCrashes" type="HFlowContainer" parent="." unique_id=1092125422]
-layout_mode = 2
-
-[node name="CrashWithNullDereferenceButton" type="Button" parent="GenerateCrashes" unique_id=346573043]
-layout_mode = 2
-text = "NULL DEREFERENCE"
-
-[node name="CrashWithStackOverflowButton" type="Button" parent="GenerateCrashes" unique_id=255689501]
-layout_mode = 2
-text = "STACK OVERFLOW"
-
-[node name="CrashWithAbortButton" type="Button" parent="GenerateCrashes" unique_id=1379694065]
-layout_mode = 2
-text = "ABORT"
-
-[node name="CrashWithDivByZeroButton" type="Button" parent="GenerateCrashes" unique_id=1429534935]
-layout_mode = 2
-text = "DIV BY ZERO"
-
-[node name="Header - Capture" type="Label" parent="." unique_id=783736141]
-custom_minimum_size = Vector2(0, 40.505)
-layout_mode = 2
-text = "CAPTURE EVENTS"
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="UserFeedback" type="HBoxContainer" parent="." unique_id=1118227952]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="UserFeedback" unique_id=1664370003]
-layout_mode = 2
-text = "User feedback:"
-
-[node name="UserFeedbackButton" type="Button" parent="UserFeedback" unique_id=1465731614]
+[node name="CaptureEventsSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections"]
+custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Show User Feedback Form"
+theme_type_variation = &"SectionPanel"
 
-[node name="MessageEvent" type="HBoxContainer" parent="." unique_id=1342184205]
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/CaptureEventsSection"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="MessageEvent" unique_id=587830529]
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/CaptureEventsSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
-text = "Message: "
+theme_type_variation = &"SectionHeader"
+text = "Capture Events"
+vertical_alignment = 1
 
-[node name="MessageEdit" type="LineEdit" parent="MessageEvent" unique_id=503159704]
+[node name="MessageEvent" type="HFlowContainer" parent="ScrollContainer/MarginContainer/Sections/CaptureEventsSection/VBoxContainer"]
+layout_mode = 2
+
+[node name="MessageEdit" type="LineEdit" parent="ScrollContainer/MarginContainer/Sections/CaptureEventsSection/VBoxContainer/MessageEvent"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Enter message"
 
-[node name="LevelChoice" type="MenuButton" parent="MessageEvent" unique_id=860208883]
+[node name="LevelChoice" type="MenuButton" parent="ScrollContainer/MarginContainer/Sections/CaptureEventsSection/VBoxContainer/MessageEvent"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
+focus_mode = 2
 text = "WARNING"
 flat = false
 
-[node name="CaptureButton" type="Button" parent="MessageEvent" unique_id=1593586317]
+[node name="CaptureButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/CaptureEventsSection/VBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Capture Event"
 
-[connection signal="pressed" from="SetUserButton" to="." method="_on_set_user_button_pressed"]
-[connection signal="pressed" from="GenerateErrors/GenScriptError" to="." method="_on_gen_script_error_pressed"]
-[connection signal="pressed" from="GenerateErrors/GenScriptErrorFromThread" to="." method="_on_gen_script_error_from_thread_pressed"]
-[connection signal="pressed" from="GenerateErrors/GenNativeError" to="." method="_on_gen_native_error_pressed"]
-[connection signal="pressed" from="GenerateCrashes/CrashWithNullDereferenceButton" to="." method="_on_crash_with_null_dereference_button_pressed"]
-[connection signal="pressed" from="GenerateCrashes/CrashWithStackOverflowButton" to="." method="_on_crash_with_stack_overflow_button_pressed"]
-[connection signal="pressed" from="GenerateCrashes/CrashWithAbortButton" to="." method="_on_crash_with_abort_button_pressed"]
-[connection signal="pressed" from="GenerateCrashes/CrashWithDivByZeroButton" to="." method="_on_crash_with_div_by_zero_button_pressed"]
-[connection signal="pressed" from="UserFeedback/UserFeedbackButton" to="." method="_on_user_feedback_button_pressed"]
-[connection signal="pressed" from="MessageEvent/CaptureButton" to="." method="_on_capture_button_pressed"]
+[node name="UserFeedbackSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/UserFeedbackSection"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/UserFeedbackSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = &"SectionHeader"
+text = "User Feedback"
+vertical_alignment = 1
+
+[node name="UserFeedbackButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/UserFeedbackSection/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Show User Feedback Form"
+
+[node name="GenerateErrorsSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/GenerateErrorsSection"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/GenerateErrorsSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = &"SectionHeader"
+text = "Generate Errors"
+vertical_alignment = 1
+
+[node name="GenerateErrors" type="HFlowContainer" parent="ScrollContainer/MarginContainer/Sections/GenerateErrorsSection/VBoxContainer"]
+layout_mode = 2
+
+[node name="GenScriptError" type="Button" parent="ScrollContainer/MarginContainer/Sections/GenerateErrorsSection/VBoxContainer/GenerateErrors"]
+layout_mode = 2
+text = "GDScript error"
+
+[node name="GenScriptErrorFromThread" type="Button" parent="ScrollContainer/MarginContainer/Sections/GenerateErrorsSection/VBoxContainer/GenerateErrors"]
+layout_mode = 2
+text = "GDScript error from thread"
+
+[node name="GenNativeError" type="Button" parent="ScrollContainer/MarginContainer/Sections/GenerateErrorsSection/VBoxContainer/GenerateErrors"]
+layout_mode = 2
+text = "C++ error"
+
+[node name="GenerateCrashesSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = &"SectionHeader"
+text = "Generate Crashes"
+vertical_alignment = 1
+
+[node name="GenerateCrashes" type="HFlowContainer" parent="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer"]
+layout_mode = 2
+
+[node name="CrashWithNullDereferenceButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes"]
+layout_mode = 2
+text = "NULL DEREFERENCE"
+
+[node name="CrashWithStackOverflowButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes"]
+layout_mode = 2
+text = "STACK OVERFLOW"
+
+[node name="CrashWithAbortButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes"]
+layout_mode = 2
+text = "ABORT"
+
+[node name="CrashWithDivByZeroButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes"]
+layout_mode = 2
+text = "DIV BY ZERO"
+
+[node name="MetricsSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/MetricsSection"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = &"SectionHeader"
+text = "Metrics"
+vertical_alignment = 1
+
+[node name="SendMetricsButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Start metrics"
+
+[node name="MetricsTimer" type="Timer" parent="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton"]
+unique_name_in_owner = true
+
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/CaptureEventsSection/VBoxContainer/CaptureButton" to="." method="_on_capture_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/UserFeedbackSection/VBoxContainer/UserFeedbackButton" to="." method="_on_user_feedback_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateErrorsSection/VBoxContainer/GenerateErrors/GenScriptError" to="." method="_on_gen_script_error_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateErrorsSection/VBoxContainer/GenerateErrors/GenScriptErrorFromThread" to="." method="_on_gen_script_error_from_thread_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateErrorsSection/VBoxContainer/GenerateErrors/GenNativeError" to="." method="_on_gen_native_error_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes/CrashWithNullDereferenceButton" to="." method="_on_crash_with_null_dereference_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes/CrashWithStackOverflowButton" to="." method="_on_crash_with_stack_overflow_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes/CrashWithAbortButton" to="." method="_on_crash_with_abort_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes/CrashWithDivByZeroButton" to="." method="_on_crash_with_div_by_zero_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton" to="." method="_on_send_metrics_button_pressed"]
+[connection signal="timeout" from="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton/MetricsTimer" to="." method="_on_metrics_timer_timeout"]

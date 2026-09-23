@@ -3,41 +3,84 @@
 [ext_resource type="Script" uid="uid://5i2jwygne6je" path="res://views/tools.gd" id="1_wuhpo"]
 
 [node name="Tools" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("1_wuhpo")
 metadata/_tab_index = 2
 
-[node name="Header - Actions" type="Label" parent="."]
-custom_minimum_size = Vector2(0, 40.505)
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
 layout_mode = 2
-text = "ACTIONS"
-horizontal_alignment = 1
-vertical_alignment = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
-[node name="RunTestsButton" type="Button" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Sections" type="HFlowContainer" parent="ScrollContainer/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="TestsSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/TestsSection"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/TestsSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = &"SectionHeader"
+text = "Tests"
+vertical_alignment = 1
+
+[node name="RunTestsButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/TestsSection/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Run unit tests"
 
-[node name="IsolatedTestsMenu" type="MenuButton" parent="."]
+[node name="IsolatedTestsMenu" type="MenuButton" parent="ScrollContainer/MarginContainer/Sections/TestsSection/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 2
 text = "Run isolated test..."
 flat = false
 
-[node name="SendMetricsButton" type="Button" parent="."]
-unique_name_in_owner = true
+[node name="MiscellaneousSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections"]
+custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-text = "Start metrics"
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
 
-[node name="MetricsTimer" type="Timer" parent="SendMetricsButton"]
-unique_name_in_owner = true
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/MiscellaneousSection"]
+layout_mode = 2
 
-[node name="TestDiverseContextButton" type="Button" parent="."]
-unique_name_in_owner = true
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/MiscellaneousSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = &"SectionHeader"
+text = "Miscellaneous"
+vertical_alignment = 1
+
+[node name="TestDiverseContextButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/MiscellaneousSection/VBoxContainer"]
 layout_mode = 2
 text = "Test diverse context"
 
-[connection signal="pressed" from="RunTestsButton" to="." method="_on_run_tests_button_pressed"]
-[connection signal="pressed" from="SendMetricsButton" to="." method="_on_send_metrics_button_pressed"]
-[connection signal="timeout" from="SendMetricsButton/MetricsTimer" to="." method="_on_metrics_timer_timeout"]
-[connection signal="pressed" from="TestDiverseContextButton" to="." method="_on_test_diverse_context_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/TestsSection/VBoxContainer/RunTestsButton" to="." method="_on_run_tests_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/MiscellaneousSection/VBoxContainer/TestDiverseContextButton" to="." method="_on_test_diverse_context_button_pressed"]
