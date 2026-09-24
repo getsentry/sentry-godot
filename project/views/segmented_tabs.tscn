@@ -1,0 +1,61 @@
+[gd_scene load_steps=4 format=3 uid="uid://d1mxoq6vwai6k"]
+
+[ext_resource type="Script" uid="uid://75l1kpdsnuud" path="res://views/segmented_tabs.gd" id="1_segmented"]
+[ext_resource type="Texture2D" uid="uid://d0o3nt85ac67i" path="res://addons/sentry/user_feedback/logo.svg" id="2_logo"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_tabs"]
+
+[node name="SegmentedTabs" type="MarginContainer"]
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+script = ExtResource("1_segmented")
+
+[node name="Header" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="Header"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_constants/separation = -1
+
+[node name="EnrichTab" type="Button" parent="Header/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SegmentedFirst"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_tabs")
+text = "Enrich"
+
+[node name="CaptureTab" type="Button" parent="Header/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SegmentedMiddle"
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("ButtonGroup_tabs")
+text = "Capture"
+
+[node name="ToolsTab" type="Button" parent="Header/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SegmentedLast"
+toggle_mode = true
+button_group = SubResource("ButtonGroup_tabs")
+text = "Tools"
+
+[node name="Spacer" type="Control" parent="Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Logo" type="TextureRect" parent="Header"]
+texture_filter = 3
+custom_minimum_size = Vector2(32, 30)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("2_logo")
+expand_mode = 1
+stretch_mode = 5

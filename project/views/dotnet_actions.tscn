@@ -8,11 +8,11 @@ offset_bottom = 250.0
 script = ExtResource("1_166lo")
 
 [node name="Header - _NET" type="Label" parent="."]
-custom_minimum_size = Vector2(0, 40.505)
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
+theme_type_variation = &"SectionHeader"
 text = ".NET"
-horizontal_alignment = 1
-vertical_alignment = 2
+vertical_alignment = 1
 
 [node name="TriggerException" type="Button" parent="."]
 layout_mode = 2

@@ -3,98 +3,226 @@
 [ext_resource type="Script" uid="uid://olue16oihup3" path="res://views/enrich_events.gd" id="1_makeg"]
 
 [node name="EnrichEvents" type="VBoxContainer"]
-offset_right = 490.0
-offset_bottom = 453.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("1_makeg")
-metadata/_tab_index = 1
+metadata/_tab_index = 0
 
-[node name="Header - Enrich" type="Label" parent="."]
-custom_minimum_size = Vector2(0, 40.505)
-layout_mode = 2
-text = "ENRICH EVENTS"
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="Breadcrumb" type="HBoxContainer" parent="."]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Breadcrumb"]
-layout_mode = 2
-text = "Breadcrumb: "
-
-[node name="BreadcrumbMessage" type="LineEdit" parent="Breadcrumb"]
-unique_name_in_owner = true
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "Message"
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
-[node name="BreadcrumbCategory" type="LineEdit" parent="Breadcrumb"]
-unique_name_in_owner = true
+[node name="MarginContainer" type="MarginContainer" parent="ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "Category"
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
 
-[node name="AddBreadcrumbButton" type="Button" parent="Breadcrumb"]
+[node name="Sections" type="VBoxContainer" parent="ScrollContainer/MarginContainer"]
 layout_mode = 2
-text = "Add Breadcrumb"
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
 
-[node name="Tags" type="HBoxContainer" parent="."]
+[node name="MetadataSections" type="HFlowContainer" parent="ScrollContainer/MarginContainer/Sections"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="TagsSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/TagsSection"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Tags"]
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/TagsSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
-text = "Tag:"
+theme_type_variation = &"SectionHeader"
+text = "Tags"
+vertical_alignment = 1
 
-[node name="TagKey" type="LineEdit" parent="Tags"]
+[node name="Controls" type="HFlowContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/TagsSection/VBoxContainer"]
+layout_mode = 2
+
+[node name="TagKey" type="LineEdit" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/TagsSection/VBoxContainer/Controls"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Key"
 
-[node name="TagValue" type="LineEdit" parent="Tags"]
+[node name="TagValue" type="LineEdit" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/TagsSection/VBoxContainer/Controls"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Value"
 
-[node name="AddTagButton" type="Button" parent="Tags"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Add Tag"
-
-[node name="Attachment" type="HBoxContainer" parent="."]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Attachment"]
-layout_mode = 2
-text = "Attach:"
-
-[node name="AttachmentContent" type="LineEdit" parent="Attachment"]
-unique_name_in_owner = true
+[node name="AddTagButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/TagsSection/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+text = "Add Tag"
+
+[node name="BreadcrumbSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/BreadcrumbSection"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/BreadcrumbSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = &"SectionHeader"
+text = "Breadcrumbs"
+vertical_alignment = 1
+
+[node name="Controls" type="HFlowContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/BreadcrumbSection/VBoxContainer"]
+layout_mode = 2
+
+[node name="BreadcrumbMessage" type="LineEdit" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/BreadcrumbSection/VBoxContainer/Controls"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Message"
+
+[node name="BreadcrumbCategory" type="LineEdit" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/BreadcrumbSection/VBoxContainer/Controls"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Category"
+
+[node name="AddBreadcrumbButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/BreadcrumbSection/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Add Breadcrumb"
+
+[node name="AttachmentSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/AttachmentSection"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/AttachmentSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = &"SectionHeader"
+text = "Attachments"
+vertical_alignment = 1
+
+[node name="AttachmentContent" type="TextEdit" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/AttachmentSection/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 text = "Hello, World!"
 placeholder_text = "Content"
+wrap_mode = 1
 
-[node name="AttachButton" type="Button" parent="Attachment"]
+[node name="AttachButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/AttachmentSection/VBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Attach hello.txt"
 
-[node name="Context" type="VBoxContainer" parent="."]
+[node name="UserInfoSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/UserInfoSection"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Context"]
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/UserInfoSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
+theme_type_variation = &"SectionHeader"
+text = "User Info"
+vertical_alignment = 1
+
+[node name="UserIdRow" type="HFlowContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/UserInfoSection/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/UserInfoSection/VBoxContainer/UserIdRow"]
+layout_mode = 2
+text = "ID:"
+
+[node name="UserID" type="LineEdit" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/UserInfoSection/VBoxContainer/UserIdRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "ID"
+
+[node name="InferIP" type="CheckBox" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/UserInfoSection/VBoxContainer/UserIdRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Infer IP"
+
+[node name="UserDetailsRow" type="HFlowContainer" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/UserInfoSection/VBoxContainer"]
+layout_mode = 2
+
+[node name="Username" type="LineEdit" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/UserInfoSection/VBoxContainer/UserDetailsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Username"
+
+[node name="Email" type="LineEdit" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/UserInfoSection/VBoxContainer/UserDetailsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Email"
+
+[node name="SetUserButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/MetadataSections/UserInfoSection/VBoxContainer"]
+layout_mode = 2
+text = "Set User"
+
+[node name="ContextSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/ContextSection"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/ContextSection/VBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = &"SectionHeader"
 text = "Context"
+vertical_alignment = 1
 
-[node name="ContextName" type="LineEdit" parent="Context"]
+[node name="ContextName" type="LineEdit" parent="ScrollContainer/MarginContainer/Sections/ContextSection/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "ship"
 placeholder_text = "Enter name for the context"
 
-[node name="ContextExpression" type="CodeEdit" parent="Context"]
+[node name="ContextExpression" type="CodeEdit" parent="ScrollContainer/MarginContainer/Sections/ContextSection/VBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 210)
 layout_mode = 2
@@ -109,11 +237,12 @@ text = "# custom context expressed as a dictionary
 wrap_mode = 1
 indent_wrapped_lines = true
 
-[node name="SetContext" type="Button" parent="Context"]
+[node name="SetContext" type="Button" parent="ScrollContainer/MarginContainer/Sections/ContextSection/VBoxContainer"]
 layout_mode = 2
-text = "Add context"
+text = "Add Context"
 
-[connection signal="pressed" from="Breadcrumb/AddBreadcrumbButton" to="." method="_on_add_breadcrumb_button_pressed"]
-[connection signal="pressed" from="Tags/AddTagButton" to="." method="_on_add_tag_button_pressed"]
-[connection signal="pressed" from="Attachment/AttachButton" to="." method="_on_attach_button_pressed"]
-[connection signal="pressed" from="Context/SetContext" to="." method="_on_set_context_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/MetadataSections/TagsSection/VBoxContainer/AddTagButton" to="." method="_on_add_tag_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/MetadataSections/BreadcrumbSection/VBoxContainer/AddBreadcrumbButton" to="." method="_on_add_breadcrumb_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/MetadataSections/AttachmentSection/VBoxContainer/AttachButton" to="." method="_on_attach_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/MetadataSections/UserInfoSection/VBoxContainer/SetUserButton" to="." method="_on_set_user_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/ContextSection/VBoxContainer/SetContext" to="." method="_on_set_context_pressed"]

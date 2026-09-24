@@ -6,10 +6,35 @@ extends VBoxContainer
 @onready var tag_value: LineEdit = %TagValue
 @onready var context_name: LineEdit = %ContextName
 @onready var context_expression: CodeEdit = %ContextExpression
+@onready var user_id: LineEdit = %UserID
+@onready var username: LineEdit = %Username
+@onready var email: LineEdit = %Email
+@onready var infer_ip: CheckBox = %InferIP
 
 
 func _ready() -> void:
-	pass
+	_init_user_info()
+
+
+func _init_user_info() -> void:
+	var user := SentryUser.create_default()
+	SentrySDK.set_user(user)
+
+	username.text = user.username
+	email.text = user.email
+	user_id.text = user.id
+
+
+func _on_set_user_button_pressed() -> void:
+	DemoOutput.print_info("Setting user info...")
+	var user := SentryUser.new()
+	user.id = user_id.text
+	user.username = username.text
+	user.email = email.text
+	if infer_ip.button_pressed:
+		user.infer_ip_address()
+	SentrySDK.set_user(user)
+	DemoOutput.print_extra(str(user))
 
 
 func _on_add_breadcrumb_button_pressed() -> void:
