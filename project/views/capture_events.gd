@@ -8,7 +8,8 @@ const EMPOWER_PLANT_MISSING_PAGE_URL := "https://flask.empower-plant.com/not-fou
 @onready var sections: HFlowContainer = %Sections
 @onready var message_edit: LineEdit = %MessageEdit
 @onready var level_choice: MenuButton = %LevelChoice
-@onready var send_sample_span_tree_button: Button = %SendSampleSpanTreeButton
+@onready var send_successful_span_tree_button: Button = %SendSuccessfulSpanTreeButton
+@onready var send_failed_span_tree_button: Button = %SendFailedSpanTreeButton
 @onready var http_request: SentryHTTPRequest = %SentryHTTPRequest
 @onready var request_existing_page_button: Button = %RequestExistingPageButton
 @onready var request_missing_page_button: Button = %RequestMissingPageButton
@@ -144,15 +145,36 @@ func _on_crash_with_div_by_zero_button_pressed() -> void:
 	SentrySDK.bad_code.crash_with_division_by_zero()
 
 
+func _on_send_successful_span_tree_button_pressed() -> void:
+	send_successful_span_tree_button.disabled = true
+	send_failed_span_tree_button.disabled = true
+	send_successful_span_tree_button.text = "Simulating..."
+
+	await _send_sample_span_tree(false)
+
+	send_successful_span_tree_button.text = "Send successful span tree"
+	send_successful_span_tree_button.disabled = false
+	send_failed_span_tree_button.disabled = false
+
+
+func _on_send_failed_span_tree_button_pressed() -> void:
+	send_successful_span_tree_button.disabled = true
+	send_failed_span_tree_button.disabled = true
+	send_failed_span_tree_button.text = "Simulating..."
+
+	await _send_sample_span_tree(true)
+
+	send_failed_span_tree_button.text = "Send failed span tree"
+	send_successful_span_tree_button.disabled = false
+	send_failed_span_tree_button.disabled = false
+
+
 ## Sends a sample level-loading span tree:
 ## - Load level
 ##   - Load level data
-##     - Parse level data
-##   - Spawn level entities
-func _on_send_sample_span_tree_button_pressed() -> void:
-	send_sample_span_tree_button.disabled = true
-	send_sample_span_tree_button.text = "Simulating..."
-
+##     - Parse level data (fails in the error example)
+##   - Spawn level entities (success only)
+func _send_sample_span_tree(simulate_parse_error: bool) -> void:
 	# Passing null starts a new trace instead of attaching to an active span.
 	var level_load_span: SentrySpan = SentrySDK.start_span(
 		"Load level",
@@ -177,8 +199,22 @@ func _on_send_sample_span_tree_button_pressed() -> void:
 		{"sentry.op": "data.parse"},
 	)
 
-	# Simulating: Level data would be parsed here.
-	await get_tree().create_timer(SIMULATED_SPAN_WORK_SECONDS).timeout
+	var parse_error: Error = await _simulate_parse_level_data(simulate_parse_error)
+
+	if parse_error != OK:
+		parse_data_span.set_attribute("error.type", "LevelDataParseError")
+		parse_data_span.set_status(SentrySpan.SPAN_STATUS_ERROR)
+		# The error is associated with the active span's trace.
+		push_error("Failed to parse level data: %s" % error_string(parse_error))
+		# End failed spans from the leaves inward before leaving the operation.
+		parse_data_span.end()
+		load_data_span.set_status(SentrySpan.SPAN_STATUS_ERROR)
+		load_data_span.end()
+		level_load_span.set_status(SentrySpan.SPAN_STATUS_ERROR)
+		level_load_span.end()
+
+		DemoOutput.print_info("Sent simulated failed level-loading span tree.")
+		return
 
 	# End spans from the leaves inward. Ending an active span restores its parent.
 	parse_data_span.set_status(SentrySpan.SPAN_STATUS_OK)
@@ -206,9 +242,13 @@ func _on_send_sample_span_tree_button_pressed() -> void:
 	level_load_span.set_status(SentrySpan.SPAN_STATUS_OK)
 	level_load_span.end()
 
-	send_sample_span_tree_button.text = "Send sample span tree"
-	send_sample_span_tree_button.disabled = false
-	DemoOutput.print_info("Sent simulated level-loading span tree.")
+	DemoOutput.print_info("Sent simulated successful level-loading span tree.")
+
+
+func _simulate_parse_level_data(should_fail: bool) -> Error:
+	# Level data would be parsed here.
+	await get_tree().create_timer(SIMULATED_SPAN_WORK_SECONDS).timeout
+	return ERR_PARSE_ERROR if should_fail else OK
 
 
 func _on_request_existing_page_button_pressed() -> void:

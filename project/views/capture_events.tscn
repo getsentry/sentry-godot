@@ -200,11 +200,17 @@ theme_type_variation = &"SectionHeader"
 text = "Spans"
 vertical_alignment = 1
 
-[node name="SendSampleSpanTreeButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer"]
+[node name="SendSuccessfulSpanTreeButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Send sample span tree"
+text = "Send successful span tree"
+
+[node name="SendFailedSpanTreeButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Send failed span tree"
 
 [node name="RequestExistingPageButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer"]
 unique_name_in_owner = true
@@ -233,7 +239,8 @@ timeout = 60.0
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes/CrashWithDivByZeroButton" to="." method="_on_crash_with_div_by_zero_button_pressed"]
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton" to="." method="_on_send_metrics_button_pressed"]
 [connection signal="timeout" from="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton/MetricsTimer" to="." method="_on_metrics_timer_timeout"]
-[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/SendSampleSpanTreeButton" to="." method="_on_send_sample_span_tree_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/SendSuccessfulSpanTreeButton" to="." method="_on_send_successful_span_tree_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/SendFailedSpanTreeButton" to="." method="_on_send_failed_span_tree_button_pressed"]
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/RequestExistingPageButton" to="." method="_on_request_existing_page_button_pressed"]
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/RequestMissingPageButton" to="." method="_on_request_missing_page_button_pressed"]
 [connection signal="request_completed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/SentryHTTPRequest" to="." method="_on_http_request_completed"]
