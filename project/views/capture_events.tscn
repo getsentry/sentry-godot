@@ -184,35 +184,41 @@ text = "Start metrics"
 [node name="MetricsTimer" type="Timer" parent="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton"]
 unique_name_in_owner = true
 
-[node name="HTTPRequestSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections"]
+[node name="SpansSection" type="PanelContainer" parent="ScrollContainer/MarginContainer/Sections"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"SectionPanel"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection"]
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/Sections/SpansSection"]
 layout_mode = 2
 
-[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
+[node name="Header" type="Label" parent="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer"]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 theme_type_variation = &"SectionHeader"
-text = "HTTP Requests"
+text = "Spans"
 vertical_alignment = 1
 
-[node name="RequestExistingPageButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
+[node name="SendSampleSpanTreeButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Request existing page (200)"
+text = "Send sample span tree"
 
-[node name="RequestMissingPageButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
+[node name="RequestExistingPageButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Request missing page (404)"
+text = "Request existing page (HTTP 200)"
 
-[node name="SentryHTTPRequest" type="SentryHTTPRequest" parent="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer"]
+[node name="RequestMissingPageButton" type="Button" parent="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Request missing page (HTTP 404)"
+
+[node name="SentryHTTPRequest" type="SentryHTTPRequest" parent="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer"]
 unique_name_in_owner = true
 timeout = 60.0
 
@@ -227,6 +233,7 @@ timeout = 60.0
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/GenerateCrashesSection/VBoxContainer/GenerateCrashes/CrashWithDivByZeroButton" to="." method="_on_crash_with_div_by_zero_button_pressed"]
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton" to="." method="_on_send_metrics_button_pressed"]
 [connection signal="timeout" from="ScrollContainer/MarginContainer/Sections/MetricsSection/VBoxContainer/SendMetricsButton/MetricsTimer" to="." method="_on_metrics_timer_timeout"]
-[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/RequestExistingPageButton" to="." method="_on_request_existing_page_button_pressed"]
-[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/RequestMissingPageButton" to="." method="_on_request_missing_page_button_pressed"]
-[connection signal="request_completed" from="ScrollContainer/MarginContainer/Sections/HTTPRequestSection/VBoxContainer/SentryHTTPRequest" to="." method="_on_http_request_completed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/SendSampleSpanTreeButton" to="." method="_on_send_sample_span_tree_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/RequestExistingPageButton" to="." method="_on_request_existing_page_button_pressed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/RequestMissingPageButton" to="." method="_on_request_missing_page_button_pressed"]
+[connection signal="request_completed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/SentryHTTPRequest" to="." method="_on_http_request_completed"]

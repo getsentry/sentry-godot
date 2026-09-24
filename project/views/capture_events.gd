@@ -1,12 +1,14 @@
 extends VBoxContainer
 
 const SECTION_MINIMUM_WIDTH := 250.0
+const SIMULATED_SPAN_WORK_SECONDS := 0.2
 const EMPOWER_PLANT_EXISTING_PAGE_URL := "https://flask.empower-plant.com/products"
 const EMPOWER_PLANT_MISSING_PAGE_URL := "https://flask.empower-plant.com/not-found"
 
 @onready var sections: HFlowContainer = %Sections
 @onready var message_edit: LineEdit = %MessageEdit
 @onready var level_choice: MenuButton = %LevelChoice
+@onready var send_sample_span_tree_button: Button = %SendSampleSpanTreeButton
 @onready var http_request: SentryHTTPRequest = %SentryHTTPRequest
 @onready var request_existing_page_button: Button = %RequestExistingPageButton
 @onready var request_missing_page_button: Button = %RequestMissingPageButton
@@ -140,6 +142,73 @@ func _on_crash_with_abort_button_pressed() -> void:
 func _on_crash_with_div_by_zero_button_pressed() -> void:
 	DemoOutput.print_info("Crashing app with division by zero...")
 	SentrySDK.bad_code.crash_with_division_by_zero()
+
+
+## Sends a sample level-loading span tree:
+## - Load level
+##   - Load level data
+##     - Parse level data
+##   - Spawn level entities
+func _on_send_sample_span_tree_button_pressed() -> void:
+	send_sample_span_tree_button.disabled = true
+	send_sample_span_tree_button.text = "Simulating..."
+
+	# Passing null starts a new trace instead of attaching to an active span.
+	var level_load_span: SentrySpan = SentrySDK.start_span(
+		"Load level",
+		{
+			"sentry.op": "level.load",
+			"level.name": "forest",
+		},
+		null,
+	)
+
+	# A new span automatically becomes a child of the active span.
+	var load_data_span: SentrySpan = SentrySDK.start_span(
+		"Load level data",
+		{"sentry.op": "file.read"},
+	)
+
+	# Simulating: Level data would be loaded here.
+	await get_tree().create_timer(SIMULATED_SPAN_WORK_SECONDS).timeout
+
+	var parse_data_span: SentrySpan = SentrySDK.start_span(
+		"Parse level data",
+		{"sentry.op": "data.parse"},
+	)
+
+	# Simulating: Level data would be parsed here.
+	await get_tree().create_timer(SIMULATED_SPAN_WORK_SECONDS).timeout
+
+	# End spans from the leaves inward. Ending an active span restores its parent.
+	parse_data_span.set_status(SentrySpan.SPAN_STATUS_OK)
+	parse_data_span.end()
+	load_data_span.set_status(SentrySpan.SPAN_STATUS_OK)
+	load_data_span.end()
+
+	# The level-loading span is active again, so this becomes its second child
+	# (a sibling of the "Load level data" span).
+	var spawn_entities_span: SentrySpan = SentrySDK.start_span(
+		"Spawn level entities",
+		{
+			"sentry.op": "entity.spawn",
+			"entity.count": 12,
+		},
+	)
+
+	# Simulating: Level entities would be spawned here.
+	await get_tree().create_timer(SIMULATED_SPAN_WORK_SECONDS).timeout
+
+	spawn_entities_span.set_status(SentrySpan.SPAN_STATUS_OK)
+	spawn_entities_span.end()
+
+	# Ending the root finalizes and queues the complete tree for sending.
+	level_load_span.set_status(SentrySpan.SPAN_STATUS_OK)
+	level_load_span.end()
+
+	send_sample_span_tree_button.text = "Send sample span tree"
+	send_sample_span_tree_button.disabled = false
+	DemoOutput.print_info("Sent simulated level-loading span tree.")
 
 
 func _on_request_existing_page_button_pressed() -> void:
