@@ -15,6 +15,7 @@
 ### Other changes
 
 - Demo: Refreshed the interface with responsive sections and a Sentry theme ([#988](https://github.com/getsentry/sentry-godot/pull/988))
+- Demo: Add tracing examples for successful and failed span trees and instrumented HTTP requests ([#984](https://github.com/getsentry/sentry-godot/pull/984))
 
 ### Dependencies
 

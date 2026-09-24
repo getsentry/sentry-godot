@@ -1,10 +1,18 @@
 extends VBoxContainer
 
 const SECTION_MINIMUM_WIDTH := 250.0
+const SIMULATED_SPAN_WORK_SECONDS := 0.2
+const EMPOWER_PLANT_EXISTING_PAGE_URL := "https://flask.empower-plant.com/products"
+const EMPOWER_PLANT_MISSING_PAGE_URL := "https://flask.empower-plant.com/not-found"
 
 @onready var sections: HFlowContainer = %Sections
 @onready var message_edit: LineEdit = %MessageEdit
 @onready var level_choice: MenuButton = %LevelChoice
+@onready var send_successful_span_tree_button: Button = %SendSuccessfulSpanTreeButton
+@onready var send_failed_span_tree_button: Button = %SendFailedSpanTreeButton
+@onready var http_request: SentryHTTPRequest = %SentryHTTPRequest
+@onready var request_existing_page_button: Button = %RequestExistingPageButton
+@onready var request_missing_page_button: Button = %RequestMissingPageButton
 
 var _event_level: SentrySDK.Level
 var _user_feedback_gui: Control
@@ -134,3 +142,161 @@ func _on_crash_with_abort_button_pressed() -> void:
 func _on_crash_with_div_by_zero_button_pressed() -> void:
 	DemoOutput.print_info("Crashing app with division by zero...")
 	SentrySDK.bad_code.crash_with_division_by_zero()
+
+
+func _on_send_successful_span_tree_button_pressed() -> void:
+	send_successful_span_tree_button.disabled = true
+	send_failed_span_tree_button.disabled = true
+	send_successful_span_tree_button.text = "Simulating..."
+
+	await _send_sample_span_tree(false)
+
+	send_successful_span_tree_button.text = "Send successful span tree"
+	send_successful_span_tree_button.disabled = false
+	send_failed_span_tree_button.disabled = false
+
+
+func _on_send_failed_span_tree_button_pressed() -> void:
+	send_successful_span_tree_button.disabled = true
+	send_failed_span_tree_button.disabled = true
+	send_failed_span_tree_button.text = "Simulating..."
+
+	await _send_sample_span_tree(true)
+
+	send_failed_span_tree_button.text = "Send failed span tree"
+	send_successful_span_tree_button.disabled = false
+	send_failed_span_tree_button.disabled = false
+
+
+## Sends a sample level-loading span tree:
+## - Load level
+##   - Load level data
+##     - Parse level data (fails in the error example)
+##   - Spawn level entities (success only)
+func _send_sample_span_tree(simulate_parse_error: bool) -> void:
+	# Passing null starts a new root span instead of attaching to an active span.
+	var level_load_span: SentrySpan = SentrySDK.start_span(
+		"Load level",
+		{
+			"sentry.op": "level.load",
+			"level.name": "forest",
+		},
+		null,
+	)
+
+	# A new span automatically becomes a child of the active span.
+	var load_data_span: SentrySpan = SentrySDK.start_span(
+		"Load level data",
+		{"sentry.op": "file.read"},
+	)
+
+	# Simulating: Level data would be loaded here.
+	await get_tree().create_timer(SIMULATED_SPAN_WORK_SECONDS).timeout
+
+	var parse_data_span: SentrySpan = SentrySDK.start_span(
+		"Parse level data",
+		{"sentry.op": "data.parse"},
+	)
+
+	var parse_error: Error = await _simulate_parse_level_data(simulate_parse_error)
+
+	if parse_error != OK:
+		parse_data_span.set_attribute("error.type", "LevelDataParseError")
+		parse_data_span.set_status(SentrySpan.SPAN_STATUS_ERROR)
+		# The error is associated with the active span's trace.
+		push_error("Failed to parse level data: %s" % error_string(parse_error))
+		# End failed spans from the leaves inward before leaving the operation.
+		parse_data_span.end()
+		load_data_span.set_status(SentrySpan.SPAN_STATUS_ERROR)
+		load_data_span.end()
+		level_load_span.set_status(SentrySpan.SPAN_STATUS_ERROR)
+		level_load_span.end()
+
+		DemoOutput.print_info("Sent simulated failed level-loading span tree.")
+		return
+
+	# End spans from the leaves inward. Ending an active span restores its parent.
+	parse_data_span.set_status(SentrySpan.SPAN_STATUS_OK)
+	parse_data_span.end()
+	load_data_span.set_status(SentrySpan.SPAN_STATUS_OK)
+	load_data_span.end()
+
+	# The level-loading span is active again, so this becomes its second child
+	# (a sibling of the "Load level data" span).
+	var spawn_entities_span: SentrySpan = SentrySDK.start_span(
+		"Spawn level entities",
+		{
+			"sentry.op": "entity.spawn",
+			"entity.count": 12,
+		},
+	)
+
+	# Simulating: Level entities would be spawned here.
+	await get_tree().create_timer(SIMULATED_SPAN_WORK_SECONDS).timeout
+
+	spawn_entities_span.set_status(SentrySpan.SPAN_STATUS_OK)
+	spawn_entities_span.end()
+
+	# Ending the root finalizes and queues the complete tree for sending.
+	level_load_span.set_status(SentrySpan.SPAN_STATUS_OK)
+	level_load_span.end()
+
+	DemoOutput.print_info("Sent simulated successful level-loading span tree.")
+
+
+func _simulate_parse_level_data(should_fail: bool) -> Error:
+	# Level data would be parsed here.
+	await get_tree().create_timer(SIMULATED_SPAN_WORK_SECONDS).timeout
+	return ERR_PARSE_ERROR if should_fail else OK
+
+
+func _on_request_existing_page_button_pressed() -> void:
+	request_existing_page_button.disabled = true
+	request_missing_page_button.disabled = true
+	request_existing_page_button.text = "Waiting for response..."
+
+	await _request_web_page(EMPOWER_PLANT_EXISTING_PAGE_URL)
+
+	request_existing_page_button.text = "Request existing page (HTTP 200)"
+	request_existing_page_button.disabled = false
+	request_missing_page_button.disabled = false
+
+
+func _on_request_missing_page_button_pressed() -> void:
+	request_existing_page_button.disabled = true
+	request_missing_page_button.disabled = true
+	request_missing_page_button.text = "Waiting for response..."
+
+	await _request_web_page(EMPOWER_PLANT_MISSING_PAGE_URL)
+
+	request_missing_page_button.text = "Request missing page (HTTP 404)"
+	request_existing_page_button.disabled = false
+	request_missing_page_button.disabled = false
+
+
+func _request_web_page(url: String) -> void:
+	DemoOutput.print_info("Requesting %s..." % url)
+
+	var start_error: Error = http_request.request(url)
+	if start_error != OK and start_error != ERR_CANT_CONNECT:
+		DemoOutput.print_err(
+			"Failed to start the request to %s: %s"
+			% [url, error_string(start_error)]
+		)
+		return
+
+	var response: Array = await http_request.request_completed
+	var result: int = response[0]
+	var response_code: int = response[1]
+	var body: PackedByteArray = response[3]
+	if result != HTTPRequest.RESULT_SUCCESS:
+		DemoOutput.print_err(
+			"The request to %s failed with result %d."
+			% [url, result]
+		)
+		return
+
+	DemoOutput.print_info(
+		"The request to %s responded with HTTP %d (%d bytes)."
+		% [url, response_code, body.size()]
+	)
