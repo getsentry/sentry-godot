@@ -174,7 +174,7 @@ func _on_send_failed_span_tree_button_pressed() -> void:
 ##     - Parse level data (fails in the error example)
 ##   - Spawn level entities (success only)
 func _send_sample_span_tree(simulate_parse_error: bool) -> void:
-	# Passing null starts a new trace instead of attaching to an active span.
+	# Passing null starts a new root span instead of attaching to an active span.
 	var level_load_span: SentrySpan = SentrySDK.start_span(
 		"Load level",
 		{
