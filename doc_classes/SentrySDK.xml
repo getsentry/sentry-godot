@@ -70,6 +70,7 @@
 			<return type="void" />
 			<description>
 				Closes the SDK and flushes any pending events to ensure all queued data is sent to Sentry before shutdown. Called automatically when the application exits.
+				[b]Note:[/b] The SDK does not end in-progress spans. End them before calling this method.
 			</description>
 		</method>
 		<method name="create_event" qualifiers="const">

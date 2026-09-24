@@ -6,6 +6,7 @@
 
 - Add `SentryOptions.before_send_transaction` callback to filter or enrich span transaction events before they are sent ([#973](https://github.com/getsentry/sentry-godot/pull/973))
 - .NET: Add `SentryNativeOptions.SetBeforeSendTransaction` callback to filter or enrich native transaction events from .NET ([#977](https://github.com/getsentry/sentry-godot/pull/977))
+- Add `SentryHTTPRequest`, an instrumented wrapper around Godot's `HTTPRequest` that automatically creates HTTP client spans, propagates trace headers, and records HTTP breadcrumbs ([#963](https://github.com/getsentry/sentry-godot/pull/963))
 
 ### Fixes
 

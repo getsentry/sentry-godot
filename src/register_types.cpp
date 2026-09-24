@@ -14,6 +14,7 @@
 #include "sentry/sentry_breadcrumb.h"
 #include "sentry/sentry_event.h"
 #include "sentry/sentry_feedback.h"
+#include "sentry/sentry_http_request.h"
 #include "sentry/sentry_log.h"
 #include "sentry/sentry_logger.h"
 #include "sentry/sentry_metric.h"
@@ -92,6 +93,7 @@ void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryBadCode);
 	GDREGISTER_CLASS(SentryUnit);
 	GDREGISTER_CLASS(SentryFeedback);
+	GDREGISTER_CLASS(SentryHTTPRequest);
 	GDREGISTER_ABSTRACT_CLASS(SentrySpan);
 	GDREGISTER_CLASS(SentrySDK);
 	GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
