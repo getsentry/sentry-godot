@@ -243,4 +243,3 @@ timeout = 60.0
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/SendFailedSpanTreeButton" to="." method="_on_send_failed_span_tree_button_pressed"]
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/RequestExistingPageButton" to="." method="_on_request_existing_page_button_pressed"]
 [connection signal="pressed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/RequestMissingPageButton" to="." method="_on_request_missing_page_button_pressed"]
-[connection signal="request_completed" from="ScrollContainer/MarginContainer/Sections/SpansSection/VBoxContainer/SentryHTTPRequest" to="." method="_on_http_request_completed"]

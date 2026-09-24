@@ -17,7 +17,6 @@ const EMPOWER_PLANT_MISSING_PAGE_URL := "https://flask.empower-plant.com/not-fou
 var _event_level: SentrySDK.Level
 var _user_feedback_gui: Control
 var _sending_metrics := false
-var _requested_url: String
 
 
 func _ready() -> void:
@@ -252,45 +251,52 @@ func _simulate_parse_level_data(should_fail: bool) -> Error:
 
 
 func _on_request_existing_page_button_pressed() -> void:
-	_request_web_page(EMPOWER_PLANT_EXISTING_PAGE_URL)
+	request_existing_page_button.disabled = true
+	request_missing_page_button.disabled = true
+	request_existing_page_button.text = "Waiting for response..."
+
+	await _request_web_page(EMPOWER_PLANT_EXISTING_PAGE_URL)
+
+	request_existing_page_button.text = "Request existing page (HTTP 200)"
+	request_existing_page_button.disabled = false
+	request_missing_page_button.disabled = false
 
 
 func _on_request_missing_page_button_pressed() -> void:
-	_request_web_page(EMPOWER_PLANT_MISSING_PAGE_URL)
+	request_existing_page_button.disabled = true
+	request_missing_page_button.disabled = true
+	request_missing_page_button.text = "Waiting for response..."
+
+	await _request_web_page(EMPOWER_PLANT_MISSING_PAGE_URL)
+
+	request_missing_page_button.text = "Request missing page (HTTP 404)"
+	request_existing_page_button.disabled = false
+	request_missing_page_button.disabled = false
 
 
 func _request_web_page(url: String) -> void:
-	_requested_url = url
-	request_existing_page_button.disabled = true
-	request_missing_page_button.disabled = true
 	DemoOutput.print_info("Requesting %s..." % url)
 
 	var start_error: Error = http_request.request(url)
 	if start_error != OK and start_error != ERR_CANT_CONNECT:
-		request_existing_page_button.disabled = false
-		request_missing_page_button.disabled = false
 		DemoOutput.print_err(
 			"Failed to start the request to %s: %s"
 			% [url, error_string(start_error)]
 		)
+		return
 
-
-func _on_http_request_completed(
-		result: int,
-		response_code: int,
-		_headers: PackedStringArray,
-		body: PackedByteArray,
-) -> void:
-	request_existing_page_button.disabled = false
-	request_missing_page_button.disabled = false
+	var response: Array = await http_request.request_completed
+	var result: int = response[0]
+	var response_code: int = response[1]
+	var body: PackedByteArray = response[3]
 	if result != HTTPRequest.RESULT_SUCCESS:
 		DemoOutput.print_err(
 			"The request to %s failed with result %d."
-			% [_requested_url, result]
+			% [url, result]
 		)
 		return
 
 	DemoOutput.print_info(
 		"The request to %s responded with HTTP %d (%d bytes)."
-		% [_requested_url, response_code, body.size()]
+		% [url, response_code, body.size()]
 	)
