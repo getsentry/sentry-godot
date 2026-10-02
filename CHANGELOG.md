@@ -10,6 +10,9 @@
 - Bump Sentry .NET SDK from v6.11.1 to v6.12.0 ([#999](https://github.com/getsentry/sentry-godot/pull/999))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6120)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.11.1...6.12.0)
+- Bump Sentry Android from v8.58.0 to v8.59.0 ([#1000](https://github.com/getsentry/sentry-godot/pull/1000))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8590)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.58.0...8.59.0)
 
 ## 2.3.0
 
