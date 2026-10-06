@@ -129,11 +129,15 @@ function makeUser(id: string, username: string, email: string, ip: string): User
   return user;
 }
 
-function disableAllCollection(): DataCollection {
+function disablePiiCollection(): DataCollection {
   return {
     userInfo: false,
     cookies: false,
-    httpHeaders: false,
+    httpHeaders: {
+      // Retain User-Agent to preserve browser and OS metadata, as sendDefaultPii=false did in v10.
+      request: { allow: ["User-Agent"] },
+      response: false,
+    },
     httpBodies: [],
     urlQueryParams: false,
     genAI: { inputs: false, outputs: false },
@@ -233,7 +237,7 @@ class SentryBridge {
       propagateTraceparent,
       ...(orgId && { orgId }),
       maxBreadcrumbs,
-      dataCollection: sendDefaultPii ? undefined : disableAllCollection(),
+      dataCollection: sendDefaultPii ? undefined : disablePiiCollection(),
       _metadata: {
         sdk: {
           name: "sentry.javascript.godot",
