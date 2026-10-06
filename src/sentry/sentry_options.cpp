@@ -110,6 +110,19 @@ void SentryAndroidOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, attach_anr_thread_dump);
 }
 
+// *** SentryAutoMetricsOptions
+
+void SentryAutoMetricsOptions::_bind_methods() {
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_frame_metrics);
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, frame_metrics_interval_sec);
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_rendering_metrics);
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, rendering_metrics_interval_sec);
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_memory_metrics);
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, memory_metrics_interval_sec);
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_network_metrics);
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, network_metrics_interval_sec);
+}
+
 // *** SentryOptions
 
 void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options) {
@@ -143,6 +156,16 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/app_hang/timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), p_options->app_hang_timeout_ms, false);
+
+	Ref<SentryAutoMetricsOptions> auto_metrics = p_options->get_auto_metrics();
+	_define_setting("sentry/auto_metrics/frame_metrics/enabled", auto_metrics->get_enable_frame_metrics());
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/frame_metrics/interval_sec"), auto_metrics->get_frame_metrics_interval_sec());
+	_define_setting("sentry/auto_metrics/rendering_metrics/enabled", auto_metrics->get_enable_rendering_metrics());
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/rendering_metrics/interval_sec"), auto_metrics->get_rendering_metrics_interval_sec());
+	_define_setting("sentry/auto_metrics/memory_metrics/enabled", auto_metrics->get_enable_memory_metrics());
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/memory_metrics/interval_sec"), auto_metrics->get_memory_metrics_interval_sec());
+	_define_setting("sentry/auto_metrics/network_metrics/enabled", auto_metrics->get_enable_network_metrics());
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/network_metrics/interval_sec"), auto_metrics->get_network_metrics_interval_sec());
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
 	_define_setting("sentry/godot_logger/enabled", logger_options->get_enabled());
@@ -238,6 +261,16 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->enable_app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking);
 	p_options->app_hang_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_ms", p_options->app_hang_timeout_ms);
+
+	Ref<SentryAutoMetricsOptions> auto_metrics = p_options->get_auto_metrics();
+	auto_metrics->set_enable_frame_metrics(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/frame_metrics/enabled", auto_metrics->get_enable_frame_metrics()));
+	auto_metrics->set_frame_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/frame_metrics/interval_sec", auto_metrics->get_frame_metrics_interval_sec()));
+	auto_metrics->set_enable_rendering_metrics(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/rendering_metrics/enabled", auto_metrics->get_enable_rendering_metrics()));
+	auto_metrics->set_rendering_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/rendering_metrics/interval_sec", auto_metrics->get_rendering_metrics_interval_sec()));
+	auto_metrics->set_enable_memory_metrics(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/memory_metrics/enabled", auto_metrics->get_enable_memory_metrics()));
+	auto_metrics->set_memory_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/memory_metrics/interval_sec", auto_metrics->get_memory_metrics_interval_sec()));
+	auto_metrics->set_enable_network_metrics(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/network_metrics/enabled", auto_metrics->get_enable_network_metrics()));
+	auto_metrics->set_network_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/network_metrics/interval_sec", auto_metrics->get_network_metrics_interval_sec()));
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
 	logger_options->set_enabled(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/enabled", logger_options->get_enabled()));
@@ -460,6 +493,7 @@ void SentryOptions::_bind_methods() {
 
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "android", PROPERTY_HINT_TYPE_STRING, "SentryAndroidOptions", PROPERTY_USAGE_NONE), get_android);
+	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "auto_metrics", PROPERTY_HINT_TYPE_STRING, "SentryAutoMetricsOptions", PROPERTY_USAGE_NONE), get_auto_metrics);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "godot_logger", PROPERTY_HINT_TYPE_STRING, "SentryGodotLoggerOptions", PROPERTY_USAGE_NONE), get_godot_logger);
 
 	BIND_ENUM_CONSTANT(TRACE_LIFECYCLE_STATIC);
@@ -498,6 +532,7 @@ SentryOptions::SentryOptions() {
 	experimental.instantiate();
 	experimental->owner = this;
 	android.instantiate();
+	auto_metrics.instantiate();
 	godot_logger.instantiate();
 
 	_init_debug_option(DEBUG_DEFAULT);
