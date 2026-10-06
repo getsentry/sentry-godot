@@ -290,25 +290,25 @@ class SentryBridge {
       );
     }
 
-		if (traceLifecycle === TraceLifecycle.Static) {
-	    if (beforeSendTransactionCallback) {
-	      options.beforeSendTransaction = (transaction: TransactionEvent) => {
-	        if (!this.isEnabled()) {
-	          return null;
-	        }
+    if (traceLifecycle === TraceLifecycle.Static) {
+      if (beforeSendTransactionCallback) {
+        options.beforeSendTransaction = (transaction: TransactionEvent) => {
+          if (!this.isEnabled()) {
+            return null;
+          }
 
-	        beforeSendTransactionCallback(transaction);
+          beforeSendTransactionCallback(transaction);
 
-	        const shouldDiscard: boolean = (transaction as any).shouldDiscard;
-	        delete (transaction as any).shouldDiscard;
+          const shouldDiscard: boolean = (transaction as any).shouldDiscard;
+          delete (transaction as any).shouldDiscard;
 
-	        return shouldDiscard ? null : transaction;
-	      };
-	    } else {
-	      console.error(
-	        "Sentry: beforeSendTransaction callback is missing. Transactions will be sent without native-side processing; this is unexpected and likely indicates the bridge failed to initialize correctly.",
-	      );
-	    }
+          return shouldDiscard ? null : transaction;
+        };
+      } else {
+        console.error(
+          "Sentry: beforeSendTransaction callback is missing. Transactions will be sent without native-side processing; this is unexpected and likely indicates the bridge failed to initialize correctly.",
+        );
+      }
     }
 
     // beforeSendLogCallback may be null when no user-provided callback is configured.
