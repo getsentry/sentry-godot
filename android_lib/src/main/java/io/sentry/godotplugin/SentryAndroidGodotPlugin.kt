@@ -326,8 +326,6 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.maxBreadcrumbs = maxBreadcrumbs
                 options.sdkVersion?.name = "sentry.java.android.godot"
                 options.nativeSdkName = "sentry.native.android.godot"
-                // sentry-android disables logs by default, unlike metrics.
-                options.logs.isEnabled = true
                 options.isAnrEnabled = enableAnrDetection
                 options.anrTimeoutIntervalMillis = anrTimeoutIntervalMs
                 options.isAttachAnrThreadDump = attachAnrThreadDump
