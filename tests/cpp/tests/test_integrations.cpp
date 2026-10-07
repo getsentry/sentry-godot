@@ -1,130 +1,200 @@
 #if defined(TESTS_ENABLED) && defined(SDK_NATIVE)
 
 #include "cpp_test_helpers.h"
-#include "sentry/integrations/godot_logger/godot_logger_integration.h"
 #include "sentry/sentry_sdk.h"
 
-#include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/core/object.hpp>
 #include <godot_cpp/variant/callable_method_pointer.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
 
 #include <vector>
 
 using namespace godot;
 using namespace sentry;
 
+namespace sentry {
+
+class IntegrationTestAccess {
+public:
+	static void add(SentrySDK *p_sdk, SentryIntegration *p_integration) {
+		p_sdk->_add_integration(p_integration, p_sdk->get_options());
+	}
+};
+
+} //namespace sentry
+
 namespace {
 
-std::vector<String> captured_events;
+struct IntegrationObserver {
+	std::vector<String> calls;
+	Ref<SentryOptions> setup_options;
+	bool backend_enabled_during_teardown = true;
+};
 
-Ref<SentryEvent> _capture_event(const Ref<SentryEvent> &p_event) {
-	if (!p_event->is_crash()) {
-		captured_events.push_back(p_event->to_json());
+class SpyIntegration final : public SentryIntegration {
+	SENTRY_CASTABLE(SpyIntegration, SentryIntegration);
+
+private:
+	IntegrationObserver &_observer;
+	const char *_name;
+	bool _setup_result;
+
+public:
+	SpyIntegration(IntegrationObserver &p_observer, const char *p_name, bool p_setup_result = true) :
+			_observer(p_observer), _name(p_name), _setup_result(p_setup_result) {}
+
+	const char *get_name() const override { return _name; }
+
+	bool setup(const Ref<SentryOptions> &p_options) override {
+		_observer.calls.push_back(String("setup: ") + _name);
+		_observer.setup_options = p_options;
+		return _setup_result;
 	}
+
+	void teardown() override {
+		_observer.calls.push_back(String("teardown: ") + _name);
+		_observer.backend_enabled_during_teardown &= SentrySDK::get_singleton()->is_enabled();
+	}
+
+	~SpyIntegration() override {
+		_observer.calls.push_back(String("destroy: ") + _name);
+	}
+};
+
+Ref<SentryEvent> _discard_event(const Ref<SentryEvent> &) {
 	return {};
 }
 
-void _configure_logger(const Ref<SentryOptions> &p_options, bool p_enabled) {
+void _configure_sdk(const Ref<SentryOptions> &p_options) {
 	p_options->set_dsn("https://public@127.0.0.1/1");
 	p_options->set_debug_enabled(false);
 	p_options->set_attach_log(false);
 	p_options->set_attach_screenshot(false);
 	p_options->set_shutdown_timeout_ms(0);
-	p_options->set_before_send(callable_mp_static(&_capture_event));
-	p_options->get_godot_logger()->set_enabled(p_enabled);
-	p_options->get_godot_logger()->set_event_mask(MASK_ERROR);
-	p_options->get_godot_logger()->set_breadcrumb_mask(MASK_NONE);
-	p_options->get_godot_logger()->set_log_mask(MASK_NONE);
-	p_options->get_godot_logger()->get_limits()->set_repeated_error_window_ms(60000);
+	p_options->set_before_send(callable_mp_static(&_discard_event));
+	p_options->get_godot_logger()->set_enabled(false);
 }
 
-SentrySDK *_init_with_logger_enabled(bool p_logger_enabled) {
-	SentrySDK *sdk = SentrySDK::get_singleton();
-	sdk->close();
-	sdk->init(callable_mp_static(&_configure_logger).bind(p_logger_enabled));
-	return sdk;
-}
+class InitFixture {
+private:
+	SentrySDK *_sdk = SentrySDK::get_singleton();
 
-std::vector<uint64_t> _get_logger_ids() {
-	std::vector<uint64_t> ids;
-	const TypedArray<Dictionary> connections = SceneTree::get_singleton()->get_signal_connection_list("process_frame");
-	for (int i = 0; i < connections.size(); ++i) {
-		const Dictionary connection = connections[i];
-		const Callable callback = connection["callable"];
-		Object *target = ObjectDB::get_instance(callback.get_object_id());
-		if (Object::cast_to<logging::SentryGodotLogger>(target)) {
-			ids.push_back(target->get_instance_id());
-		}
+public:
+	InitFixture() {
+		_sdk->init(callable_mp_static(&_configure_sdk));
 	}
-	return ids;
-}
 
-void _emit_logger_error() {
-	UtilityFunctions::push_error("integration logger test error");
-}
+	~InitFixture() { _sdk->close(); }
+
+	SentrySDK *get_sdk() const { return _sdk; }
+};
 
 } //namespace
 
-TEST_SUITE("Godot logger integration") {
-	TEST_CASE("Disabled Godot logger declines installation") {
-		captured_events.clear();
-		SentrySDK *sdk = _init_with_logger_enabled(false);
+TEST_SUITE("Integration lifecycle") {
+	TEST_CASE("Close tears down integrations in reverse order before closing the backend") {
+		IntegrationObserver observer;
+		InitFixture fixture;
+		SentrySDK *sdk = fixture.get_sdk();
 		REQUIRED_CHECK(sdk->is_enabled());
+		IntegrationTestAccess::add(sdk, memnew(SpyIntegration(observer, "first")));
+		IntegrationTestAccess::add(sdk, memnew(SpyIntegration(observer, "second")));
+		CHECK(observer.setup_options == sdk->get_options());
+		CHECK(observer.calls == std::vector<String>({ "setup: first", "setup: second" }));
 
-		GodotLoggerIntegration integration;
-		CHECK_FALSE(integration.setup(sdk->get_options()));
-		integration.teardown();
-		CHECK(_get_logger_ids().empty());
-		_emit_logger_error();
-		CHECK(captured_events.empty());
 		sdk->close();
+		const std::vector<String> expected = {
+			"setup: first",
+			"setup: second",
+			"teardown: second",
+			"destroy: second",
+			"teardown: first",
+			"destroy: first",
+		};
+		CHECK(observer.calls == expected);
+		CHECK(observer.backend_enabled_during_teardown);
+		CHECK_FALSE(sdk->is_enabled());
+
+		sdk->close();
+		CHECK(observer.calls == expected);
 	}
 
-	TEST_CASE("SDK close removes and destroys the Godot logger") {
-		captured_events.clear();
-		SentrySDK *sdk = _init_with_logger_enabled(true);
+	TEST_CASE("Failed setup tears down and destroys the integration immediately") {
+		IntegrationObserver observer;
+		InitFixture fixture;
+		SentrySDK *sdk = fixture.get_sdk();
 		REQUIRED_CHECK(sdk->is_enabled());
-		const std::vector<uint64_t> logger_ids = _get_logger_ids();
-		REQUIRED_CHECK(logger_ids.size() == 1);
-
-		_emit_logger_error();
-		REQUIRED_CHECK(captured_events.size() == 1);
-		CHECK(captured_events.front().contains("integration logger test error"));
-		CHECK(captured_events.front().contains("SentryGodotLogger"));
+		IntegrationTestAccess::add(sdk, memnew(SpyIntegration(observer, "failed", false)));
+		const std::vector<String> expected = { "setup: failed", "teardown: failed", "destroy: failed" };
+		CHECK(observer.calls == expected);
+		CHECK(observer.setup_options == sdk->get_options());
+		CHECK(observer.backend_enabled_during_teardown);
+		CHECK(sdk->is_enabled());
 
 		sdk->close();
-		CHECK(_get_logger_ids().empty());
-		CHECK(ObjectDB::get_instance(logger_ids.front()) == nullptr);
-		_emit_logger_error();
-		CHECK(captured_events.size() == 1);
+		CHECK(observer.calls == expected);
 	}
 
-	TEST_CASE("SDK reinitialization creates fresh Godot logger state") {
-		captured_events.clear();
-		SentrySDK *sdk = _init_with_logger_enabled(true);
+	TEST_CASE("Failed setup preserves other installed integrations") {
+		IntegrationObserver observer;
+		InitFixture fixture;
+		SentrySDK *sdk = fixture.get_sdk();
 		REQUIRED_CHECK(sdk->is_enabled());
-		const std::vector<uint64_t> first_ids = _get_logger_ids();
-		REQUIRED_CHECK(first_ids.size() == 1);
-		_emit_logger_error();
-		REQUIRED_CHECK(captured_events.size() == 1);
-		sdk->close();
+		IntegrationTestAccess::add(sdk, memnew(SpyIntegration(observer, "first")));
+		IntegrationTestAccess::add(sdk, memnew(SpyIntegration(observer, "failed", false)));
+		IntegrationTestAccess::add(sdk, memnew(SpyIntegration(observer, "second")));
+		const std::vector<String> after_setup = {
+			"setup: first",
+			"setup: failed",
+			"teardown: failed",
+			"destroy: failed",
+			"setup: second",
+		};
+		CHECK(observer.calls == after_setup);
 
-		_init_with_logger_enabled(false);
-		REQUIRED_CHECK(sdk->is_enabled());
-		CHECK(_get_logger_ids().empty());
-		_emit_logger_error();
-		CHECK(captured_events.size() == 1);
 		sdk->close();
+		const std::vector<String> after_close = {
+			"setup: first",
+			"setup: failed",
+			"teardown: failed",
+			"destroy: failed",
+			"setup: second",
+			"teardown: second",
+			"destroy: second",
+			"teardown: first",
+			"destroy: first",
+		};
+		CHECK(observer.calls == after_close);
+		CHECK(observer.backend_enabled_during_teardown);
+	}
 
-		_init_with_logger_enabled(true);
-		REQUIRED_CHECK(sdk->is_enabled());
-		const std::vector<uint64_t> second_ids = _get_logger_ids();
-		REQUIRED_CHECK(second_ids.size() == 1);
-		CHECK(second_ids.front() != first_ids.front());
-		_emit_logger_error();
-		CHECK(captured_events.size() == 2);
-		sdk->close();
+	TEST_CASE("Reinitialized SDK manages a new integration cycle with fresh options") {
+		IntegrationObserver observer;
+		Ref<SentryOptions> first_options;
+		{
+			InitFixture fixture;
+			SentrySDK *sdk = fixture.get_sdk();
+			REQUIRED_CHECK(sdk->is_enabled());
+			IntegrationTestAccess::add(sdk, memnew(SpyIntegration(observer, "first")));
+			first_options = observer.setup_options;
+		}
+
+		{
+			InitFixture fixture;
+			SentrySDK *sdk = fixture.get_sdk();
+			REQUIRED_CHECK(sdk->is_enabled());
+			IntegrationTestAccess::add(sdk, memnew(SpyIntegration(observer, "second")));
+			CHECK(observer.setup_options == sdk->get_options());
+			CHECK(observer.setup_options != first_options);
+		}
+
+		const std::vector<String> expected = {
+			"setup: first",
+			"teardown: first",
+			"destroy: first",
+			"setup: second",
+			"teardown: second",
+			"destroy: second",
+		};
+		CHECK(observer.calls == expected);
 	}
 }
 

@@ -41,6 +41,10 @@ public:
 	};
 
 private:
+#ifdef TESTS_ENABLED
+	friend class IntegrationTestAccess;
+#endif
+
 	static SentrySDK *singleton;
 
 	// Scopes are thread-local. _fork_scope() scopes are removed by _pop_scope(),
@@ -71,6 +75,7 @@ private:
 	void _auto_initialize();
 	void _on_engine_shutdown();
 	void _init_integrations(const Ref<SentryOptions> &p_options);
+	void _add_integration(SentryIntegration *p_integration, const Ref<SentryOptions> &p_options);
 	void _teardown_integrations();
 
 	// Marks every thread's scope stack as stale.

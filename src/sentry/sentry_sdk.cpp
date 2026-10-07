@@ -330,18 +330,18 @@ void SentrySDK::close() {
 }
 
 void SentrySDK::_init_integrations(const Ref<SentryOptions> &p_options) {
-	const auto _add_integration = [this, &p_options](SentryIntegration *p_integration) {
-		if (p_integration->setup(p_options)) {
-			_integrations.push_back(p_integration);
-			sentry::logging::print_debug("Added integration: ", p_integration->get_name(), ".");
-		} else {
-			sentry::logging::print_debug("Skipped integration: ", p_integration->get_name(), ".");
-			p_integration->teardown();
-			memdelete(p_integration);
-		}
-	};
+	_add_integration(memnew(GodotLoggerIntegration), p_options);
+}
 
-	_add_integration(memnew(GodotLoggerIntegration));
+void SentrySDK::_add_integration(SentryIntegration *p_integration, const Ref<SentryOptions> &p_options) {
+	if (p_integration->setup(p_options)) {
+		_integrations.push_back(p_integration);
+		sentry::logging::print_debug("Added integration: ", p_integration->get_name(), ".");
+	} else {
+		sentry::logging::print_debug("Skipped integration: ", p_integration->get_name(), ".");
+		p_integration->teardown();
+		memdelete(p_integration);
+	}
 }
 
 void SentrySDK::_teardown_integrations() {
