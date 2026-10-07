@@ -74,7 +74,9 @@ private:
 	Vector<Ref<SentryAttachment>> _get_default_attachments();
 	void _auto_initialize();
 	void _on_engine_shutdown();
+
 	void _init_integrations(const Ref<SentryOptions> &p_options);
+	// Takes ownership of p_integration, including when setup fails.
 	void _add_integration(SentryIntegration *p_integration, const Ref<SentryOptions> &p_options);
 	void _teardown_integrations();
 
