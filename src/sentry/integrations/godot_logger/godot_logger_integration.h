@@ -5,7 +5,7 @@
 
 namespace sentry {
 
-class GodotLoggerIntegration : public SentryIntegration {
+class GodotLoggerIntegration final : public SentryIntegration {
 	SENTRY_CASTABLE(GodotLoggerIntegration, SentryIntegration);
 
 private:
