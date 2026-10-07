@@ -1,8 +1,8 @@
 #pragma once
 
+#include "sentry/integrations/sentry_integration.h"
 #include "sentry/internal_sdk.h"
 #include "sentry/level.h"
-#include "sentry/logging/sentry_godot_logger.h"
 #include "sentry/runtime_config.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_bad_code.h"
@@ -16,6 +16,7 @@
 
 #include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/core/object.hpp>
+#include <godot_cpp/templates/local_vector.hpp>
 #include <godot_cpp/templates/safe_refcount.hpp>
 #include <memory>
 
@@ -53,7 +54,7 @@ private:
 	Ref<SentryOptions> options;
 	std::unique_ptr<sentry::InternalSDK> internal_sdk;
 	Ref<RuntimeConfig> runtime_config;
-	Ref<sentry::logging::SentryGodotLogger> godot_logger;
+	LocalVector<SentryIntegration *> _integrations;
 	bool is_auto_initializing = false;
 	bool is_configuring = false;
 
@@ -69,6 +70,8 @@ private:
 	Vector<Ref<SentryAttachment>> _get_default_attachments();
 	void _auto_initialize();
 	void _on_engine_shutdown();
+	void _init_integrations(const Ref<SentryOptions> &p_options);
+	void _teardown_integrations();
 
 	// Marks every thread's scope stack as stale.
 	void _invalidate_scopes();
