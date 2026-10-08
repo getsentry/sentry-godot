@@ -102,6 +102,11 @@ class SentryAutoMetricsOptions : public RefCounted {
 
 protected:
 	static void _bind_methods();
+
+public:
+	_FORCE_INLINE_ bool is_any_enabled() const {
+		return enable_frame_metrics || enable_rendering_metrics || enable_memory_metrics || enable_network_metrics;
+	}
 };
 
 // Main Sentry options.
