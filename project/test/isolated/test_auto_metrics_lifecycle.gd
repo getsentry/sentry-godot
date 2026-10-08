@@ -52,6 +52,17 @@ func _metric_names(start_index: int = 0) -> Array[String]:
 	return names
 
 
+func _wait_for_frame_metrics(start_index: int = 0) -> void:
+	while not _metric_names(start_index).has("game.perf.fps"):
+		await get_tree().process_frame
+
+
+func _wait_real_time(duration_sec: float) -> void:
+	var deadline_usec: int = Time.get_ticks_usec() + int(duration_sec * 1000000.0)
+	while Time.get_ticks_usec() < deadline_usec:
+		await get_tree().process_frame
+
+
 ## Checks that records from start_index onward include frame time and FPS with
 ## their expected metric types and units.
 func _assert_frame_metrics(start_index: int = 0) -> void:
@@ -84,19 +95,19 @@ func _assert_one_collecting_stream() -> void:
 
 func test_enabled_frame_metrics_are_emitted() -> void:
 	_init_sdk()
-	await get_tree().create_timer(0.2).timeout
+	await _wait_for_frame_metrics()
 	_assert_frame_metrics()
 
 
 func test_reinit_respects_disabled_auto_metrics() -> void:
 	_init_sdk()
-	await get_tree().create_timer(0.2).timeout
+	await _wait_for_frame_metrics()
 	_assert_frame_metrics()
 	var metric_count: int = _metrics.size()
 	await _close_sdk()
 
 	_init_sdk(false)
-	await get_tree().create_timer(0.2).timeout
+	await _wait_real_time(0.2)
 	assert_int(_metrics.size()).is_equal(metric_count)
 
 	# Sanity check
@@ -128,7 +139,7 @@ func test_application_pause_stops_frame_metrics_until_resume() -> void:
 
 	var metric_count_before_pause: int = _metrics.size()
 	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_PAUSED)
-	await get_tree().create_timer(0.2).timeout
+	await _wait_real_time(0.2)
 	assert_int(_metrics.size()).is_equal(metric_count_before_pause)
 	assert_bool(SentrySDK.is_enabled()).is_true()
 	SentrySDK.metrics.gauge("test.manual", 1.0)
@@ -140,19 +151,17 @@ func test_application_pause_stops_frame_metrics_until_resume() -> void:
 
 func test_application_resume_starts_a_fresh_reporting_window() -> void:
 	_init_sdk()
-	while not _metric_names().has("game.perf.fps"):
-		await get_tree().process_frame
+	await _wait_for_frame_metrics()
 	await get_tree().process_frame
 	var metric_count_before_pause: int = _metrics.size()
 
 	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_PAUSED)
-	await get_tree().create_timer(0.2).timeout
+	await _wait_real_time(0.2)
 	assert_int(_metrics.size()).is_equal(metric_count_before_pause)
 
 	var resumed_at_usec: int = Time.get_ticks_usec()
 	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_RESUMED)
-	while not _metric_names(metric_count_before_pause).has("game.perf.fps"):
-		await get_tree().process_frame
+	await _wait_for_frame_metrics(metric_count_before_pause)
 	_assert_frame_metrics(metric_count_before_pause)
 	for metric: Dictionary in _metrics.slice(metric_count_before_pause):
 		# 50000 microseconds is the default reporting interval used by _init_sdk(): 0.05 seconds.
