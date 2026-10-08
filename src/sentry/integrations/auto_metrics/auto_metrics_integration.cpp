@@ -26,7 +26,6 @@ void start_collection(uint64_t p_runner_id) {
 	Window *root = tree->get_root();
 	ERR_FAIL_NULL_MSG(root, "Sentry: Failed to enable auto metrics - root window not available.");
 	root->add_child(runner, false, Node::INTERNAL_MODE_BACK);
-	runner->start_collection();
 }
 
 } //namespace
@@ -49,8 +48,8 @@ void AutoMetricsIntegration::teardown() {
 		return;
 	}
 
-	runner->stop_collection();
 	if (runner->is_inside_tree()) {
+		runner->get_parent()->remove_child(runner);
 		runner->queue_free();
 	} else {
 		memdelete(runner);

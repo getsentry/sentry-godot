@@ -14,6 +14,11 @@ class SentryAutoMetrics : public Node {
 
 private:
 	FrameMetricsCollector frame_metrics_collector;
+	bool _app_focused = true;
+	bool _app_paused = false;
+
+	void _start_collection_if_app_is_active();
+	void _stop_collection();
 
 	void _process_collectors();
 
@@ -22,9 +27,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void start_collection();
-	void stop_collection();
-
 	SentryAutoMetrics();
 };
 

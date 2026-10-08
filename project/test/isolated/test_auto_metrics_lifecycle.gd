@@ -11,6 +11,7 @@ func before_test() -> void:
 func after_test() -> void:
 	await _close_sdk()
 	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_RESUMED)
+	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN)
 
 
 func _init_sdk(enabled: bool = true, interval_sec: float = 0.05) -> void:
@@ -166,3 +167,58 @@ func test_application_resume_starts_a_fresh_reporting_window() -> void:
 	for metric: Dictionary in _metrics.slice(metric_count_before_pause):
 		# 50000 microseconds is the default reporting interval used by _init_sdk(): 0.05 seconds.
 		assert_int(metric.emitted_at_usec - resumed_at_usec).is_greater_equal(50000)
+
+
+func test_focus_loss_stops_frame_metrics_until_focus_returns() -> void:
+	_init_sdk(true, 0.000001)
+	await _assert_one_collecting_stream()
+
+	var metric_count_before_focus_loss: int = _metrics.size()
+	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	await _wait_real_time(0.2)
+	assert_int(_metrics.size()).is_equal(metric_count_before_focus_loss)
+
+	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN)
+	await _assert_one_collecting_stream()
+
+
+func test_focus_return_starts_a_fresh_reporting_window() -> void:
+	const interval_sec: float = 0.05
+	_init_sdk(true, interval_sec)
+	await _wait_for_frame_metrics()
+	await get_tree().process_frame
+	var metric_count_before_focus_loss: int = _metrics.size()
+
+	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	await _wait_real_time(0.2)
+	assert_int(_metrics.size()).is_equal(metric_count_before_focus_loss)
+
+	var focus_returned_at_usec: int = Time.get_ticks_usec()
+	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN)
+	await _wait_for_frame_metrics(metric_count_before_focus_loss)
+	_assert_frame_metrics(metric_count_before_focus_loss)
+	var interval_usec: int = int(interval_sec * 1000000.0)
+	for metric: Dictionary in _metrics.slice(metric_count_before_focus_loss):
+		assert_int(metric.emitted_at_usec - focus_returned_at_usec).is_greater_equal(interval_usec)
+
+
+func test_collection_requires_both_focus_and_application_resume() -> void:
+	_init_sdk(true, 0.000001)
+	await _assert_one_collecting_stream()
+
+	var restore_orders: Array[Array] = [
+		[MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN, MainLoop.NOTIFICATION_APPLICATION_RESUMED],
+		[MainLoop.NOTIFICATION_APPLICATION_RESUMED, MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN],
+	]
+	for notification_order: Array in restore_orders:
+		var metric_count_before_background: int = _metrics.size()
+		get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT)
+		get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_PAUSED)
+		# Repeated restoration must not clear the other suspension reason.
+		get_tree().notification(notification_order[0])
+		get_tree().notification(notification_order[0])
+		await _wait_real_time(0.2)
+		assert_int(_metrics.size()).is_equal(metric_count_before_background)
+
+		get_tree().notification(notification_order[1])
+		await _assert_one_collecting_stream()
