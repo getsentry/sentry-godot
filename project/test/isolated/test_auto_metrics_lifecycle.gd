@@ -10,6 +10,7 @@ func before_test() -> void:
 
 func after_test() -> void:
 	await _close_sdk()
+	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_RESUMED)
 
 
 func _init_sdk(enabled: bool = true, interval_sec: float = 0.05) -> void:
@@ -38,6 +39,7 @@ func _before_send_metric(metric: SentryMetric) -> SentryMetric:
 		"type": metric.type,
 		"unit": metric.unit,
 		"frame": Engine.get_process_frames(),
+		"emitted_at_usec": Time.get_ticks_usec(),
 	})
 	return null
 
@@ -118,3 +120,40 @@ func test_immediate_reinit_does_not_duplicate_metrics() -> void:
 	assert_array(_metrics).is_empty()
 	_init_sdk(true, 0.000001)
 	await _assert_one_collecting_stream()
+
+
+func test_application_pause_stops_frame_metrics_until_resume() -> void:
+	_init_sdk(true, 0.000001)
+	await _assert_one_collecting_stream()
+
+	var metric_count_before_pause: int = _metrics.size()
+	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_PAUSED)
+	await get_tree().create_timer(0.2).timeout
+	assert_int(_metrics.size()).is_equal(metric_count_before_pause)
+	assert_bool(SentrySDK.is_enabled()).is_true()
+	SentrySDK.metrics.gauge("test.manual", 1.0)
+	assert_array(_metric_names(metric_count_before_pause)).contains_exactly("test.manual")
+
+	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_RESUMED)
+	await _assert_one_collecting_stream()
+
+
+func test_application_resume_starts_a_fresh_reporting_window() -> void:
+	_init_sdk()
+	while not _metric_names().has("game.perf.fps"):
+		await get_tree().process_frame
+	await get_tree().process_frame
+	var metric_count_before_pause: int = _metrics.size()
+
+	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_PAUSED)
+	await get_tree().create_timer(0.2).timeout
+	assert_int(_metrics.size()).is_equal(metric_count_before_pause)
+
+	var resumed_at_usec: int = Time.get_ticks_usec()
+	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_RESUMED)
+	while not _metric_names(metric_count_before_pause).has("game.perf.fps"):
+		await get_tree().process_frame
+	_assert_frame_metrics(metric_count_before_pause)
+	for metric: Dictionary in _metrics.slice(metric_count_before_pause):
+		# 50000 microseconds is the default reporting interval used by _init_sdk(): 0.05 seconds.
+		assert_int(metric.emitted_at_usec - resumed_at_usec).is_greater_equal(50000)
