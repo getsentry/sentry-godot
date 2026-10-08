@@ -107,6 +107,11 @@ TEST_SUITE("[.NET] Options interop") {
 				crossed.insert(option_name(option));
 			}
 			const HashSet<String> not_crossed = {
+				// Auto-metrics options are synchronized in a follow-up PR.
+				"enable_frame_metrics", "frame_metrics_interval_sec",
+				"enable_rendering_metrics", "rendering_metrics_interval_sec",
+				"enable_memory_metrics", "memory_metrics_interval_sec",
+				"enable_network_metrics", "network_metrics_interval_sec",
 				// Only affects the JavaScript SDK on Web.
 				"trace_lifecycle",
 				// Deprecated no-ops.
@@ -117,7 +122,7 @@ TEST_SUITE("[.NET] Options interop") {
 				"logger_event_mask", "logger_breadcrumb_mask", "logger_log_mask"
 			};
 
-			for (const char *class_name : { "SentryOptions", "SentryGodotLoggerOptions", "SentryLoggerLimits", "SentryAndroidOptions" }) {
+			for (const char *class_name : { "SentryOptions", "SentryAutoMetricsOptions", "SentryGodotLoggerOptions", "SentryLoggerLimits", "SentryAndroidOptions" }) {
 				const TypedArray<Dictionary> properties = ClassDBSingleton::get_singleton()->class_get_property_list(class_name, true);
 				for (int i = 0; i < properties.size(); i++) {
 					const Dictionary property = properties[i];
