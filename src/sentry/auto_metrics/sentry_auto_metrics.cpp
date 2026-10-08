@@ -12,7 +12,7 @@ void SentryAutoMetrics::_process_collectors() {
 }
 
 void SentryAutoMetrics::start_collection() {
-	if (!is_processing_internal()) {
+	if (!is_queued_for_deletion() && !is_processing_internal()) {
 		frame_metrics_collector.set_enabled(SENTRY_OPTIONS()->get_auto_metrics()->get_enable_frame_metrics());
 		frame_metrics_collector.reset();
 		set_process_internal(true);
@@ -22,16 +22,23 @@ void SentryAutoMetrics::start_collection() {
 void SentryAutoMetrics::stop_collection() {
 	if (is_processing_internal()) {
 		set_process_internal(false);
+		frame_metrics_collector.reset();
 	}
 }
 
 void SentryAutoMetrics::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			_process_collectors();
+		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			stop_collection();
 		} break;
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			_process_collectors();
+		case NOTIFICATION_APPLICATION_PAUSED: {
+			stop_collection();
+		} break;
+		case NOTIFICATION_APPLICATION_RESUMED: {
+			start_collection();
 		} break;
 	}
 }
