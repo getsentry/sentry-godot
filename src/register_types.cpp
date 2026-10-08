@@ -1,4 +1,5 @@
 #include "editor/sentry_editor_plugin.h"
+#include "sentry/auto_metrics/sentry_auto_metrics.h"
 #include "sentry/disabled/disabled_event.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/engine_lifecycle/engine_lifecycle.h"
@@ -87,6 +88,7 @@ void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryGodotLoggerOptions);
 	GDREGISTER_CLASS(SentryOptions);
 	GDREGISTER_INTERNAL_CLASS(RuntimeConfig);
+	GDREGISTER_INTERNAL_CLASS(SentryAutoMetrics);
 	GDREGISTER_CLASS(SentryUser);
 	GDREGISTER_CLASS(SentryTimestamp);
 	GDREGISTER_CLASS(SentryLogger);

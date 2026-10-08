@@ -1,6 +1,7 @@
 #include "sentry_auto_metrics.h"
 
 #include "sentry/sentry_sdk.h"
+
 #include <godot_cpp/classes/time.hpp>
 
 namespace sentry {
@@ -11,16 +12,24 @@ void SentryAutoMetrics::_process_collectors() {
 }
 
 void SentryAutoMetrics::start_collection() {
-	frame_metrics_collector.set_enabled(SENTRY_OPTIONS()->get_auto_metrics()->get_enable_frame_metrics());
-	frame_metrics_collector.reset();
+	if (!is_processing_internal()) {
+		frame_metrics_collector.set_enabled(SENTRY_OPTIONS()->get_auto_metrics()->get_enable_frame_metrics());
+		frame_metrics_collector.reset();
+		set_process_internal(true);
+	}
 }
 
 void SentryAutoMetrics::stop_collection() {
-	frame_metrics_collector.set_enabled(false);
+	if (is_processing_internal()) {
+		set_process_internal(false);
+	}
 }
 
 void SentryAutoMetrics::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_EXIT_TREE: {
+			stop_collection();
+		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			_process_collectors();
 		} break;
@@ -28,7 +37,7 @@ void SentryAutoMetrics::_notification(int p_what) {
 }
 
 SentryAutoMetrics::SentryAutoMetrics() {
-	set_process_internal(true);
+	set_process_internal(false);
 	set_process_mode(PROCESS_MODE_ALWAYS);
 }
 
