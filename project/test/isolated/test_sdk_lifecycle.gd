@@ -73,14 +73,30 @@ func test_reinit_clears_global_data() -> void:
 		options.shutdown_timeout_ms = 2000
 	)
 
+	var user := SentryUser.new()
+	user.id = "first-session-user"
+	SentrySDK.set_user(user)
 	SentrySDK.set_tag("session", "first")
+	SentrySDK.set_context("session", {"name": "first"})
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("first session breadcrumb"))
 	SentrySDK.capture_message("message from the first session")
 	var first_json: String = await wait_for_captured_event_json()
 
+	assert_json(first_json).describe("First session event carries its user") \
+		.must_contain("/user/id", "first-session-user") \
+		.verify()
+
 	assert_json(first_json).describe("First session event carries its tag") \
 		.must_contain("/tags/session", "first") \
 		.verify()
+
+	assert_json(first_json).describe("First session event carries its context") \
+		.must_contain("/contexts/session/name", "first") \
+		.verify()
+
+	var first_event: Dictionary = JSON.parse_string(first_json)
+	var first_trace_id: String = first_event.get("contexts", {}).get("trace", {}).get("trace_id", "")
+	assert_str(first_trace_id).is_not_empty()
 
 	assert_json(first_json).describe("First session event carries its breadcrumb") \
 		.at("/breadcrumbs/") \
@@ -102,10 +118,22 @@ func test_reinit_clears_global_data() -> void:
 	SentrySDK.capture_message("message from the second session")
 	var second_json: String = await wait_for_captured_event_json()
 
+	assert_json(second_json).describe("Second session drops the first session's user") \
+		.must_not_contain("/user/id", "first-session-user") \
+		.verify()
+
 	assert_json(second_json).describe("Second session drops the first session's tag") \
 		.must_not_contain("/tags/session") \
 		.verify()
 
+	assert_json(second_json).describe("Second session drops the first session's context") \
+		.must_not_contain("/contexts/session") \
+		.verify()
+
 	assert_str(second_json).not_contains("first session breadcrumb")
+
+	var second_event: Dictionary = JSON.parse_string(second_json)
+	var second_trace_id: String = second_event.get("contexts", {}).get("trace", {}).get("trace_id", "")
+	assert_str(second_trace_id).is_not_empty().is_not_equal(first_trace_id)
 
 	SentrySDK.close()

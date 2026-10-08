@@ -2,6 +2,7 @@
 
 // Mock DOM environment
 global.window = {};
+global.fetch = async () => new Response(null, { status : 200 });
 
 console.log("🔍 Testing Final Sentry Bridge Bundle...\n");
 
@@ -36,7 +37,7 @@ function runTest(name, testFn) {
 try {
 	require("./dist/sentry-bundle.js");
 
-	const { spanToStreamedSpanJSON, getCurrentScope, propagationContextFromHeaders } = require("@sentry/core");
+	const { spanToJSON, getActiveSpan, getCurrentScope, getIsolationScope, propagationContextFromHeaders } = require("@sentry/core");
 
 	console.log("✅ Bundle loaded successfully\n");
 
@@ -163,6 +164,18 @@ try {
 			assertEqual(targets[0], "api\\.example\\.com", "string targets should remain literal strings");
 			assert(targets[1] instanceof RegExp, "regular expression targets should become RegExp values");
 			assertEqual(targets[1].source, "api\\.example\\.com", "regular expression patterns should be preserved");
+		});
+
+		runTest("console output does not produce breadcrumbs", () => {
+			getIsolationScope().clearBreadcrumbs();
+			let event;
+			bridge.createScope().getClient().on("beforeSendEvent", (captured) => { event = captured; });
+			bridge.addBreadcrumb({ message : "explicit breadcrumb" });
+			console.log("Console breadcrumb probe");
+			bridge.captureEvent({ message : "console breadcrumb test" });
+			assert(event, "the client should capture an event");
+			assertEqual(event.breadcrumbs.length, 1, "only the explicit breadcrumb should reach the event");
+			assertEqual(event.breadcrumbs[0].message, "explicit breadcrumb", "explicit breadcrumbs should still work");
 		});
 
 		// Observes what actually goes out with an event. The bridge registers its own handler during
@@ -415,12 +428,12 @@ try {
 
 		runTest("startSpan()", () => {
 			const span = bridge.startSpan("load-level", '{"sentry.op":"asset.load","chunks":7}');
-			const json = spanToStreamedSpanJSON(span);
+			const json = spanToJSON(span);
 			assertEqual(json.name, "load-level", "startSpan should name the span");
 			assertEqual(json.attributes["sentry.op"], "asset.load", "startSpan should carry the op through as an attribute");
 			assertEqual(json.attributes.chunks, 7, "startSpan should apply the attributes");
 			span.setAttribute("biome", "forest");
-			assertEqual(spanToStreamedSpanJSON(span).attributes.biome, "forest", "the started span should record attributes");
+			assertEqual(spanToJSON(span).attributes.biome, "forest", "the started span should record attributes");
 			span.end();
 		});
 
@@ -429,11 +442,11 @@ try {
 			const child = bridge.startSpan("decompress", "", parent);
 			assertEqual(child.spanContext().traceId, parent.spanContext().traceId,
 					"a child span should stay on the parent's trace");
-			assertEqual(spanToStreamedSpanJSON(child).parent_span_id, parent.spanContext().spanId,
+			assertEqual(spanToJSON(child).parent_span_id, parent.spanContext().spanId,
 					"a child span should point at the parent");
-			assertEqual(spanToStreamedSpanJSON(child).is_segment, false,
+			assertEqual(spanToJSON(child).is_segment, false,
 					"a child span should not be a segment");
-			assertEqual(spanToStreamedSpanJSON(bridge.startSpan("unrelated", "")).is_segment, true,
+			assertEqual(spanToJSON(bridge.startSpan("unrelated", "")).is_segment, true,
 					"a span started without a parent should be a segment");
 			child.end();
 			parent.end();
@@ -442,9 +455,9 @@ try {
 		runTest("spanSetStatus()", () => {
 			const span = bridge.startSpan("load-level", "");
 			bridge.spanSetStatus(span, 1);
-			assertEqual(spanToStreamedSpanJSON(span).status, "error", "SPAN_STATUS_ERROR should stream as error");
+			assertEqual(spanToJSON(span).status, "error", "SPAN_STATUS_ERROR should stream as error");
 			bridge.spanSetStatus(span, 0);
-			assertEqual(spanToStreamedSpanJSON(span).status, "ok", "SPAN_STATUS_OK should stream as ok");
+			assertEqual(spanToJSON(span).status, "ok", "SPAN_STATUS_OK should stream as ok");
 			span.end();
 		});
 
@@ -465,12 +478,12 @@ try {
 			const scope = bridge.createScope();
 			const span = bridge.startSpan("load-level", "");
 			bridge.scopeSetSpan(scope, span);
-			assertEqual(scope.getScopeData().span, span, "scopeSetSpan should bind the span to the scope");
-			assertEqual(scope.clone().getScopeData().span, span, "a forked scope should inherit the bound span");
-			assertEqual(bridge.scopeClear(scope).getScopeData().span, undefined, "scopeClear should drop the bound span");
+			assertEqual(getActiveSpan(scope), span, "scopeSetSpan should bind the span to the scope");
+			assertEqual(getActiveSpan(scope.clone()), span, "a forked scope should inherit the bound span");
+			assertEqual(getActiveSpan(bridge.scopeClear(scope)), undefined, "scopeClear should drop the bound span");
 			bridge.scopeSetSpan(scope, span);
 			bridge.scopeSetSpan(scope);
-			assertEqual(scope.getScopeData().span, undefined, "scopeSetSpan without a span should unbind");
+			assertEqual(getActiveSpan(scope), undefined, "scopeSetSpan without a span should unbind");
 			span.end();
 		});
 

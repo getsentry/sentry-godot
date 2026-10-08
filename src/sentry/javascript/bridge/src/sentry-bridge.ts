@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/browser";
 import type { Breadcrumb, User } from "@sentry/browser";
-import { _INTERNAL_setSpanForScope, generateSpanId, getTraceData } from "@sentry/core";
-import type { Attachment, Metric, TransactionEvent } from "@sentry/core";
+import { _INTERNAL_setSpanForScope, generateSpanId, getMainCarrier, getTraceData } from "@sentry/core";
+import type { Attachment, DataCollection, Metric, TransactionEvent } from "@sentry/core";
 import { wasmIntegration } from "@sentry/wasm";
 
 // ID-based store for WASM/JS interop. Assigns auto-incrementing uint32 IDs (0 is reserved).
@@ -129,6 +129,39 @@ function makeUser(id: string, username: string, email: string, ip: string): User
   return user;
 }
 
+function disablePiiCollection(): DataCollection {
+  return {
+    userInfo: false,
+    cookies: false,
+    httpHeaders: {
+      // Retain User-Agent to preserve browser and OS metadata, as sendDefaultPii=false did in v10.
+      request: { allow: ["User-Agent"] },
+      response: false,
+    },
+    httpBodies: [],
+    urlQueryParams: false,
+    genAI: { inputs: false, outputs: false },
+    databaseQueryData: false,
+    queues: false,
+    graphQL: { document: false, variables: false },
+    stackFrameVariables: false,
+    frameContextLines: 0,
+  };
+}
+
+function resetBrowserScopes(): void {
+  // Sentry.init() reuses existing scopes, so SDK re-init would retain user
+  // data, tags, breadcrumbs, attachments, and trace state from the previous
+  // session. v11 also removed Scope.clear() without giving an alternative.
+  // WORKAROUND: Reset the scopes and their stack, leaving the rest of the
+  // registry intact.
+  const registry = getMainCarrier().__SENTRY__![Sentry.SDK_VERSION]!;
+  registry.defaultCurrentScope = new Sentry.Scope();
+  registry.defaultIsolationScope = new Sentry.Scope();
+  registry.globalScope = new Sentry.Scope();
+  registry.stack = undefined;
+}
+
 // *** SentryBridge
 
 class SentryBridge {
@@ -182,7 +215,7 @@ class SentryBridge {
     traceLifecycle: TraceLifecycle,
     tracePropagationTargetsJson: string,
     propagateTraceparent: boolean,
-    orgId: string,
+    orgId: "" | `${number}`,
     maxBreadcrumbs: number,
     sendDefaultPii: boolean,
     sdkVersion: string,
@@ -191,7 +224,7 @@ class SentryBridge {
       console.log("Initializing Sentry via bridge...");
     }
 
-    const options: any = {
+    const options: Sentry.BrowserOptions = {
       dsn,
       debug,
       release,
@@ -204,7 +237,7 @@ class SentryBridge {
       propagateTraceparent,
       ...(orgId && { orgId }),
       maxBreadcrumbs,
-      sendDefaultPii,
+      dataCollection: sendDefaultPii ? undefined : disablePiiCollection(),
       _metadata: {
         sdk: {
           name: "sentry.javascript.godot",
@@ -216,6 +249,7 @@ class SentryBridge {
         const excludedIntegrations = [
           "Dedupe", // prevents the same message event from being sent twice in a row; since we don't include stacktraces with messages yet, different call sites can look identical and be dropped
           "Breadcrumbs", // added later with custom settings
+          "Console", // very noisy in the Godot SDK
         ];
         const filtered = integrations.filter(function (integration: { name: string }) {
           return !excludedIntegrations.includes(integration.name);
@@ -226,7 +260,6 @@ class SentryBridge {
         }
         filtered.push(
           Sentry.breadcrumbsIntegration({
-            console: false, // very noisy in Godot SDK
             dom: false, // dom clicks are not informative in games
             fetch: true,
             history: true,
@@ -239,9 +272,8 @@ class SentryBridge {
     };
 
     if (beforeSendCallback) {
-      options.beforeSend = (event: Sentry.Event) => {
+      options.beforeSend = (event) => {
         if (!this.isEnabled()) {
-          // SDK is disabled, skip processing.
           return null;
         }
 
@@ -258,23 +290,25 @@ class SentryBridge {
       );
     }
 
-    if (beforeSendTransactionCallback) {
-      options.beforeSendTransaction = (transaction: TransactionEvent) => {
-        if (!this.isEnabled()) {
-          return null;
-        }
+    if (traceLifecycle === TraceLifecycle.Static) {
+      if (beforeSendTransactionCallback) {
+        options.beforeSendTransaction = (transaction: TransactionEvent) => {
+          if (!this.isEnabled()) {
+            return null;
+          }
 
-        beforeSendTransactionCallback(transaction);
+          beforeSendTransactionCallback(transaction);
 
-        const shouldDiscard: boolean = (transaction as any).shouldDiscard;
-        delete (transaction as any).shouldDiscard;
+          const shouldDiscard: boolean = (transaction as any).shouldDiscard;
+          delete (transaction as any).shouldDiscard;
 
-        return shouldDiscard ? null : transaction;
-      };
-    } else {
-      console.error(
-        "Sentry: beforeSendTransaction callback is missing. Transactions will be sent without native-side processing; this is unexpected and likely indicates the bridge failed to initialize correctly.",
-      );
+          return shouldDiscard ? null : transaction;
+        };
+      } else {
+        console.error(
+          "Sentry: beforeSendTransaction callback is missing. Transactions will be sent without native-side processing; this is unexpected and likely indicates the bridge failed to initialize correctly.",
+        );
+      }
     }
 
     // beforeSendLogCallback may be null when no user-provided callback is configured.
@@ -304,14 +338,7 @@ class SentryBridge {
       console.debug("Sentry: beforeSendMetric callback not provided.");
     }
 
-    // The scopes outlive Sentry.close(), so without this a previous session's data would leak into
-    // this one: tags, breadcrumbs and attachments from the isolation scope, attributes from the
-    // global one, and the trace that captures and forked scopes inherit from the current one.
-    // Clearing here is safe even if a close() flush is still in flight: scope data and attachments are
-    // merged into the event synchronously at capture time, so nothing already captured reads a scope again.
-    Sentry.getIsolationScope().clear();
-    Sentry.getGlobalScope().clear();
-    Sentry.getCurrentScope().clear();
+    resetBrowserScopes();
 
     Sentry.init(options);
 
