@@ -3,7 +3,7 @@
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/engine_lifecycle/sentry_scene_tree_watcher.h"
-#include "sentry/logging/sentry_godot_logger.h"
+#include "sentry/integrations/godot_logger/sentry_godot_logger.h"
 #include "sentry/processing/enrichment_processor.h"
 #include "sentry/processing/screenshot_processor.h"
 #include "sentry/processing/sentry_event_processor.h"
