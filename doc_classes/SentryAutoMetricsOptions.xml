@@ -4,7 +4,7 @@
 		Options for automatic performance metrics.
 	</brief_description>
 	<description>
-		Configures performance metrics collected automatically by the SDK. Access these options through [member SentryOptions.auto_metrics] or Project Settings under [code]sentry/auto_metrics/frame_metrics[/code].
+		Configures performance metrics collected automatically by the SDK. Access these options through [member SentryOptions.auto_metrics] or Project Settings under [b]Sentry &gt; Auto Metrics &gt; Frame Metrics[/b].
 		Automatic collection is disabled by default and does not affect metrics sent manually through [member SentrySDK.metrics].
 		[codeblock]
 		SentrySDK.init(func(options: SentryOptions) -&gt; void:
