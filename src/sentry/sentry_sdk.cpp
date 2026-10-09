@@ -7,6 +7,7 @@
 #include "sentry/dotnet/csharp_interop.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/engine_lifecycle/engine_lifecycle.h"
+#include "sentry/integrations/auto_metrics/auto_metrics_integration.h"
 #include "sentry/integrations/godot_logger/godot_logger_integration.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/enrichment_processor.h"
@@ -331,6 +332,7 @@ void SentrySDK::close() {
 
 void SentrySDK::_init_integrations(const Ref<SentryOptions> &p_options) {
 	_add_integration(memnew(GodotLoggerIntegration), p_options);
+	_add_integration(memnew(AutoMetricsIntegration), p_options);
 }
 
 void SentrySDK::_add_integration(SentryIntegration *p_integration, const Ref<SentryOptions> &p_options) {

@@ -7,8 +7,18 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/reg_ex.hpp>
+#include <godot_cpp/core/math.hpp>
 
 namespace {
+
+uint64_t normalize_metrics_interval_usec(double p_interval_sec) {
+	if (!Math::is_finite(p_interval_sec)) {
+		return 1'000'000;
+	}
+	constexpr double one_day = 86'400.0;
+	p_interval_sec = CLAMP(p_interval_sec, 1.0, one_day);
+	return static_cast<uint64_t>(p_interval_sec * 1'000'000.0);
+}
 
 void _define_setting(const String &p_setting, const Variant &p_default, bool p_basic = true) {
 	if (!ProjectSettings::get_singleton()->has_setting(p_setting)) {
@@ -110,6 +120,17 @@ void SentryAndroidOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, attach_anr_thread_dump);
 }
 
+// *** SentryAutoMetricsOptions
+
+uint64_t SentryAutoMetricsOptions::get_normalized_frame_metrics_interval_usec() const {
+	return normalize_metrics_interval_usec(frame_metrics_interval_sec);
+}
+
+void SentryAutoMetricsOptions::_bind_methods() {
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_frame_metrics);
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, frame_metrics_interval_sec);
+}
+
 // *** SentryOptions
 
 void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options) {
@@ -143,6 +164,10 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	_define_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/app_hang/timeout_ms", PROPERTY_HINT_RANGE, "1000,10000,1"), p_options->app_hang_timeout_ms, false);
+
+	Ref<SentryAutoMetricsOptions> auto_metrics = p_options->get_auto_metrics();
+	_define_setting("sentry/auto_metrics/frame_metrics/enabled", auto_metrics->get_enable_frame_metrics());
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/frame_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,60,0.1,or_greater"), auto_metrics->get_frame_metrics_interval_sec());
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
 	_define_setting("sentry/godot_logger/enabled", logger_options->get_enabled());
@@ -238,6 +263,10 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 
 	p_options->enable_app_hang_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/tracking", p_options->enable_app_hang_tracking);
 	p_options->app_hang_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/app_hang/timeout_ms", p_options->app_hang_timeout_ms);
+
+	Ref<SentryAutoMetricsOptions> auto_metrics = p_options->get_auto_metrics();
+	auto_metrics->set_enable_frame_metrics(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/frame_metrics/enabled", auto_metrics->get_enable_frame_metrics()));
+	auto_metrics->set_frame_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/frame_metrics/interval_sec", auto_metrics->get_frame_metrics_interval_sec()));
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
 	logger_options->set_enabled(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/enabled", logger_options->get_enabled()));
@@ -460,6 +489,7 @@ void SentryOptions::_bind_methods() {
 
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "android", PROPERTY_HINT_TYPE_STRING, "SentryAndroidOptions", PROPERTY_USAGE_NONE), get_android);
+	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "auto_metrics", PROPERTY_HINT_TYPE_STRING, "SentryAutoMetricsOptions", PROPERTY_USAGE_NONE), get_auto_metrics);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "godot_logger", PROPERTY_HINT_TYPE_STRING, "SentryGodotLoggerOptions", PROPERTY_USAGE_NONE), get_godot_logger);
 
 	BIND_ENUM_CONSTANT(TRACE_LIFECYCLE_STATIC);
@@ -498,6 +528,7 @@ SentryOptions::SentryOptions() {
 	experimental.instantiate();
 	experimental->owner = this;
 	android.instantiate();
+	auto_metrics.instantiate();
 	godot_logger.instantiate();
 
 	_init_debug_option(DEBUG_DEFAULT);
