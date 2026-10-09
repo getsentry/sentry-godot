@@ -7,8 +7,17 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/reg_ex.hpp>
+#include <godot_cpp/core/math.hpp>
 
 namespace {
+
+uint64_t normalize_metrics_interval_usec(double p_interval_sec) {
+	if (!Math::is_finite(p_interval_sec)) {
+		return 1'000'000;
+	}
+	p_interval_sec = MAX(p_interval_sec, 1.0);
+	return static_cast<uint64_t>(p_interval_sec * 1'000'000.0);
+}
 
 void _define_setting(const String &p_setting, const Variant &p_default, bool p_basic = true) {
 	if (!ProjectSettings::get_singleton()->has_setting(p_setting)) {
@@ -112,6 +121,22 @@ void SentryAndroidOptions::_bind_methods() {
 
 // *** SentryAutoMetricsOptions
 
+uint64_t SentryAutoMetricsOptions::get_normalized_frame_metrics_interval_usec() const {
+	return normalize_metrics_interval_usec(frame_metrics_interval_sec);
+}
+
+uint64_t SentryAutoMetricsOptions::get_normalized_rendering_metrics_interval_usec() const {
+	return normalize_metrics_interval_usec(rendering_metrics_interval_sec);
+}
+
+uint64_t SentryAutoMetricsOptions::get_normalized_memory_metrics_interval_usec() const {
+	return normalize_metrics_interval_usec(memory_metrics_interval_sec);
+}
+
+uint64_t SentryAutoMetricsOptions::get_normalized_network_metrics_interval_usec() const {
+	return normalize_metrics_interval_usec(network_metrics_interval_sec);
+}
+
 void SentryAutoMetricsOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_frame_metrics);
 	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, frame_metrics_interval_sec);
@@ -159,13 +184,13 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 
 	Ref<SentryAutoMetricsOptions> auto_metrics = p_options->get_auto_metrics();
 	_define_setting("sentry/auto_metrics/frame_metrics/enabled", auto_metrics->get_enable_frame_metrics());
-	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/frame_metrics/interval_sec"), auto_metrics->get_frame_metrics_interval_sec());
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/frame_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,60,0.1,or_greater"), auto_metrics->get_frame_metrics_interval_sec());
 	_define_setting("sentry/auto_metrics/rendering_metrics/enabled", auto_metrics->get_enable_rendering_metrics());
-	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/rendering_metrics/interval_sec"), auto_metrics->get_rendering_metrics_interval_sec());
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/rendering_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,60,0.1,or_greater"), auto_metrics->get_rendering_metrics_interval_sec());
 	_define_setting("sentry/auto_metrics/memory_metrics/enabled", auto_metrics->get_enable_memory_metrics());
-	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/memory_metrics/interval_sec"), auto_metrics->get_memory_metrics_interval_sec());
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/memory_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,60,0.1,or_greater"), auto_metrics->get_memory_metrics_interval_sec());
 	_define_setting("sentry/auto_metrics/network_metrics/enabled", auto_metrics->get_enable_network_metrics());
-	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/network_metrics/interval_sec"), auto_metrics->get_network_metrics_interval_sec());
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/network_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,60,0.1,or_greater"), auto_metrics->get_network_metrics_interval_sec());
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
 	_define_setting("sentry/godot_logger/enabled", logger_options->get_enabled());

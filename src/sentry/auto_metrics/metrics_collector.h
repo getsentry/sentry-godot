@@ -15,9 +15,7 @@ protected:
 	virtual void _process(uint64_t p_now_usec) = 0;
 
 public:
-	_FORCE_INLINE_ void set_enabled(bool p_enabled) {
-		_enabled = p_enabled;
-	}
+	_FORCE_INLINE_ void set_enabled(bool p_enabled) { _enabled = p_enabled; }
 
 	_FORCE_INLINE_ void process(uint64_t p_now_usec) {
 		if (_enabled) {
