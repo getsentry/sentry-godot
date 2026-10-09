@@ -100,9 +100,7 @@ protected:
 public:
 	uint64_t get_normalized_frame_metrics_interval_usec() const;
 
-	_FORCE_INLINE_ bool is_any_enabled() const {
-		return enable_frame_metrics;
-	}
+	_FORCE_INLINE_ bool is_any_enabled() const { return enable_frame_metrics; }
 };
 
 // Main Sentry options.
