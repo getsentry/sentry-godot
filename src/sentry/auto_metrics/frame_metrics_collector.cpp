@@ -15,6 +15,8 @@ void FrameMetricsCollector::_process(uint64_t p_now_usec) {
 	} else {
 		++_num_frames;
 
+		// Sample frames equally so percentiles across clients don't favor longer frames
+		// or frames at particular points in the reporting window.
 		// See https://en.wikipedia.org/wiki/Reservoir_sampling
 		std::uniform_int_distribution<uint64_t> dist{ 1, _num_frames };
 		if (dist(_rng) == 1) {
