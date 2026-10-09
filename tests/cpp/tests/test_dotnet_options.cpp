@@ -109,9 +109,6 @@ TEST_SUITE("[.NET] Options interop") {
 			const HashSet<String> not_crossed = {
 				// Auto-metrics options are synchronized in a follow-up PR.
 				"enable_frame_metrics", "frame_metrics_interval_sec",
-				"enable_rendering_metrics", "rendering_metrics_interval_sec",
-				"enable_memory_metrics", "memory_metrics_interval_sec",
-				"enable_network_metrics", "network_metrics_interval_sec",
 				// Only affects the JavaScript SDK on Web.
 				"trace_lifecycle",
 				// Deprecated no-ops.

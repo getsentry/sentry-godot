@@ -125,27 +125,9 @@ uint64_t SentryAutoMetricsOptions::get_normalized_frame_metrics_interval_usec() 
 	return normalize_metrics_interval_usec(frame_metrics_interval_sec);
 }
 
-uint64_t SentryAutoMetricsOptions::get_normalized_rendering_metrics_interval_usec() const {
-	return normalize_metrics_interval_usec(rendering_metrics_interval_sec);
-}
-
-uint64_t SentryAutoMetricsOptions::get_normalized_memory_metrics_interval_usec() const {
-	return normalize_metrics_interval_usec(memory_metrics_interval_sec);
-}
-
-uint64_t SentryAutoMetricsOptions::get_normalized_network_metrics_interval_usec() const {
-	return normalize_metrics_interval_usec(network_metrics_interval_sec);
-}
-
 void SentryAutoMetricsOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_frame_metrics);
 	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, frame_metrics_interval_sec);
-	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_rendering_metrics);
-	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, rendering_metrics_interval_sec);
-	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_memory_metrics);
-	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, memory_metrics_interval_sec);
-	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_network_metrics);
-	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, network_metrics_interval_sec);
 }
 
 // *** SentryOptions
@@ -185,12 +167,6 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	Ref<SentryAutoMetricsOptions> auto_metrics = p_options->get_auto_metrics();
 	_define_setting("sentry/auto_metrics/frame_metrics/enabled", auto_metrics->get_enable_frame_metrics());
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/frame_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,60,0.1,or_greater"), auto_metrics->get_frame_metrics_interval_sec());
-	_define_setting("sentry/auto_metrics/rendering_metrics/enabled", auto_metrics->get_enable_rendering_metrics());
-	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/rendering_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,60,0.1,or_greater"), auto_metrics->get_rendering_metrics_interval_sec());
-	_define_setting("sentry/auto_metrics/memory_metrics/enabled", auto_metrics->get_enable_memory_metrics());
-	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/memory_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,60,0.1,or_greater"), auto_metrics->get_memory_metrics_interval_sec());
-	_define_setting("sentry/auto_metrics/network_metrics/enabled", auto_metrics->get_enable_network_metrics());
-	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/network_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,60,0.1,or_greater"), auto_metrics->get_network_metrics_interval_sec());
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
 	_define_setting("sentry/godot_logger/enabled", logger_options->get_enabled());
@@ -290,12 +266,6 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	Ref<SentryAutoMetricsOptions> auto_metrics = p_options->get_auto_metrics();
 	auto_metrics->set_enable_frame_metrics(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/frame_metrics/enabled", auto_metrics->get_enable_frame_metrics()));
 	auto_metrics->set_frame_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/frame_metrics/interval_sec", auto_metrics->get_frame_metrics_interval_sec()));
-	auto_metrics->set_enable_rendering_metrics(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/rendering_metrics/enabled", auto_metrics->get_enable_rendering_metrics()));
-	auto_metrics->set_rendering_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/rendering_metrics/interval_sec", auto_metrics->get_rendering_metrics_interval_sec()));
-	auto_metrics->set_enable_memory_metrics(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/memory_metrics/enabled", auto_metrics->get_enable_memory_metrics()));
-	auto_metrics->set_memory_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/memory_metrics/interval_sec", auto_metrics->get_memory_metrics_interval_sec()));
-	auto_metrics->set_enable_network_metrics(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/network_metrics/enabled", auto_metrics->get_enable_network_metrics()));
-	auto_metrics->set_network_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/network_metrics/interval_sec", auto_metrics->get_network_metrics_interval_sec()));
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
 	logger_options->set_enabled(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/enabled", logger_options->get_enabled()));

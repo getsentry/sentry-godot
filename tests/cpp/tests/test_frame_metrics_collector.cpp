@@ -32,9 +32,6 @@ void _configure_sdk(const Ref<SentryOptions> &p_options, double p_interval_sec) 
 	p_options->get_godot_logger()->set_enabled(false);
 	p_options->set_before_send_metric(callable_mp_static(&_capture_metric));
 	p_options->get_auto_metrics()->set_enable_frame_metrics(false); // collector instantiated manually
-	p_options->get_auto_metrics()->set_enable_rendering_metrics(false);
-	p_options->get_auto_metrics()->set_enable_memory_metrics(false);
-	p_options->get_auto_metrics()->set_enable_network_metrics(false);
 	p_options->get_auto_metrics()->set_frame_metrics_interval_sec(p_interval_sec);
 }
 
