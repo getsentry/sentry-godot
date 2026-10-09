@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add opt-in automatic frame time and FPS metrics, configurable through `SentryOptions.auto_metrics` and Project Settings ([#1013](https://github.com/getsentry/sentry-godot/pull/1013))
+
 ### Improvements
 
 - Remove unnecessary Cocoa SDK headers and module metadata from the addon package ([#1016](https://github.com/getsentry/sentry-godot/pull/1016))
