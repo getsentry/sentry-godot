@@ -3,7 +3,6 @@
 #include "sentry/sentry_sdk.h"
 
 #include <godot_cpp/classes/performance.hpp>
-#include <godot_cpp/classes/random_number_generator.hpp>
 
 #include <random>
 
@@ -12,8 +11,7 @@ namespace sentry {
 void FrameMetricsCollector::_process(uint64_t p_now_usec) {
 	const bool baseline = _deadline == 0;
 	if (unlikely(baseline)) {
-		_deadline = p_now_usec +
-				static_cast<uint64_t>(SENTRY_OPTIONS()->get_auto_metrics()->get_frame_metrics_interval_sec() * 1'000'000.0);
+		_deadline = p_now_usec + SENTRY_OPTIONS()->get_auto_metrics()->get_normalized_frame_metrics_interval_usec();
 	} else {
 		++_num_frames;
 
@@ -25,8 +23,7 @@ void FrameMetricsCollector::_process(uint64_t p_now_usec) {
 
 		if (p_now_usec >= _deadline) {
 			_num_frames = 0;
-			_deadline = p_now_usec +
-					static_cast<uint64_t>(SENTRY_OPTIONS()->get_auto_metrics()->get_frame_metrics_interval_sec() * 1'000'000.0);
+			_deadline = p_now_usec + SENTRY_OPTIONS()->get_auto_metrics()->get_normalized_frame_metrics_interval_usec();
 			SentrySDK::get_singleton()->get_metrics()->distribution(
 					"game.perf.frame_time", _sampled_frametime, "millisecond");
 			SentrySDK::get_singleton()->get_metrics()->gauge(

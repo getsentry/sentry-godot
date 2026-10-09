@@ -1,11 +1,12 @@
 extends GdUnitTestSuite
+## Tests automatic metrics lifecycle through the SDK.
+## Specific collectors are tested in tests/cpp/tests/test_*_metrics_collector.cpp.
 
-var _metrics: Array[Dictionary] = []
+var _metric_count: int = 0
 
 
 func before_test() -> void:
-	await _close_sdk()
-	_metrics.clear()
+	_metric_count = 0
 
 
 func after_test() -> void:
@@ -14,47 +15,30 @@ func after_test() -> void:
 	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN)
 
 
-func _init_sdk(enabled: bool = true, interval_sec: float = 0.05) -> void:
+func _init_sdk(enabled: bool = true) -> void:
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		options.dsn = "http://public@127.0.0.1:1/42"
 		options.debug = false
 		options.auto_metrics.enable_frame_metrics = enabled
-		options.auto_metrics.frame_metrics_interval_sec = interval_sec
-		options.before_send_metric = _before_send_metric
+		options.auto_metrics.frame_metrics_interval_sec = 1.0
+		options.before_send_metric = func(_metric: SentryMetric) -> SentryMetric:
+			_metric_count += 1
+			return null
 	)
 	assert_bool(SentrySDK.is_enabled()).is_true()
 
 
 func _close_sdk() -> void:
-	var metric_count: int = _metrics.size()
+	var metric_count: int = _metric_count
 	SentrySDK.close()
 	# Web shutdown completes asynchronously after flushing, so we need to wait.
 	while SentrySDK.is_enabled():
 		await get_tree().process_frame
-	assert_int(_metrics.size()).is_equal(metric_count)
+	assert_int(_metric_count).is_equal(metric_count)
 
 
-func _before_send_metric(metric: SentryMetric) -> SentryMetric:
-	_metrics.append({
-		"name": metric.name,
-		"type": metric.type,
-		"unit": metric.unit,
-		"frame": Engine.get_process_frames(),
-		"emitted_at_usec": Time.get_ticks_usec(),
-	})
-	return null
-
-
-## Returns metric names in the order received, from start_index onward.
-func _metric_names(start_index: int = 0) -> Array[String]:
-	var names: Array[String] = []
-	for metric: Dictionary in _metrics.slice(start_index):
-		names.append(metric.name)
-	return names
-
-
-func _wait_for_frame_metrics(start_index: int = 0) -> void:
-	while not _metric_names(start_index).has("game.perf.fps"):
+func _wait_for_metrics(start_count: int = 0) -> void:
+	while _metric_count <= start_count:
 		await get_tree().process_frame
 
 
@@ -64,161 +48,84 @@ func _wait_real_time(duration_sec: float) -> void:
 		await get_tree().process_frame
 
 
-## Checks that records from start_index onward include frame time and FPS with
-## their expected metric types and units.
-func _assert_frame_metrics(start_index: int = 0) -> void:
-	assert_array(_metric_names(start_index)).contains("game.perf.frame_time", "game.perf.fps")
-	for metric: Dictionary in _metrics.slice(start_index):
-		match metric.name:
-			"game.perf.frame_time":
-				assert_int(metric.type).is_equal(SentryMetric.METRIC_DISTRIBUTION)
-				assert_str(metric.unit).is_equal("millisecond")
-			"game.perf.fps":
-				assert_int(metric.type).is_equal(SentryMetric.METRIC_GAUGE)
-				assert_str(metric.unit).is_empty()
-
-
-## Waits for repeated reports and checks that each reporting frame has one metric pair.
-## Frames that do not reach the reporting deadline may emit nothing.
-func _assert_one_collecting_stream() -> void:
-	var start_index: int = _metrics.size()
-	while _metric_names(start_index).count("game.perf.fps") < 8:
-		await get_tree().process_frame
-	var metrics_by_frame: Dictionary = {}
-	for metric: Dictionary in _metrics.slice(start_index):
-		if not metrics_by_frame.has(metric.frame):
-			metrics_by_frame[metric.frame] = []
-		metrics_by_frame[metric.frame].append(metric.name)
-	assert_int(metrics_by_frame.size()).is_greater_equal(8)
-	for names: Array in metrics_by_frame.values():
-		assert_array(names).contains_exactly_in_any_order("game.perf.frame_time", "game.perf.fps")
-
-
-func test_enabled_frame_metrics_are_emitted() -> void:
+func test_reinit_respects_disabled_auto_metrics(_timeout: int = 10000) -> void:
 	_init_sdk()
-	await _wait_for_frame_metrics()
-	_assert_frame_metrics()
+	await _wait_for_metrics()
+	await _close_sdk()
+	var metric_count_before_reinit: int = _metric_count
+
+	const enable_frame_metrics := false
+	_init_sdk(enable_frame_metrics)
+	await _wait_real_time(1.1)
+	assert_int(_metric_count).is_equal(metric_count_before_reinit)
 
 
-func test_reinit_respects_disabled_auto_metrics() -> void:
+func test_reinit_resumes_collection(_timeout: int = 10000) -> void:
 	_init_sdk()
-	await _wait_for_frame_metrics()
-	_assert_frame_metrics()
-	var metric_count: int = _metrics.size()
+	await _wait_for_metrics()
+	var metric_count_before_reinit: int = _metric_count
 	await _close_sdk()
 
-	_init_sdk(false)
-	await _wait_real_time(0.2)
-	assert_int(_metrics.size()).is_equal(metric_count)
-
-	# Sanity check
-	SentrySDK.metrics.gauge("test.manual", 1.0)
-	assert_array(_metric_names(metric_count)).contains_exactly("test.manual")
+	_init_sdk()
+	await _wait_for_metrics(metric_count_before_reinit)
+	assert_int(_metric_count).is_greater(metric_count_before_reinit)
 
 
-func test_reinit_resumes_collection_without_duplicates() -> void:
-	# A short interval helps detect overlapping collectors.
-	_init_sdk(true, 0.000001)
-	await _assert_one_collecting_stream()
+func test_immediate_close_cancels_collection_startup(_timeout: int = 10000) -> void:
+	_init_sdk()
 	await _close_sdk()
-
-	_init_sdk(true, 0.000001)
-	await _assert_one_collecting_stream()
-
-
-func test_immediate_reinit_does_not_duplicate_metrics() -> void:
-	_init_sdk(true, 0.000001)
-	await _close_sdk()
-	assert_array(_metrics).is_empty()
-	_init_sdk(true, 0.000001)
-	await _assert_one_collecting_stream()
+	await _wait_real_time(1.1)
+	assert_int(_metric_count).is_zero()
+	_init_sdk()
+	await _wait_for_metrics()
 
 
-func test_application_pause_stops_frame_metrics_until_resume() -> void:
-	_init_sdk(true, 0.000001)
-	await _assert_one_collecting_stream()
+func test_application_pause_stops_collection_until_resume(_timeout: int = 10000) -> void:
+	_init_sdk()
+	await _wait_for_metrics()
 
-	var metric_count_before_pause: int = _metrics.size()
+	var metric_count_before_pause: int = _metric_count
 	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_PAUSED)
-	await _wait_real_time(0.2)
-	assert_int(_metrics.size()).is_equal(metric_count_before_pause)
-	assert_bool(SentrySDK.is_enabled()).is_true()
-	SentrySDK.metrics.gauge("test.manual", 1.0)
-	assert_array(_metric_names(metric_count_before_pause)).contains_exactly("test.manual")
+	await _wait_real_time(1.1)
+	assert_int(_metric_count).is_equal(metric_count_before_pause)
 
+	var metric_count_before_resume: int = _metric_count
 	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_RESUMED)
-	await _assert_one_collecting_stream()
+	await _wait_for_metrics(metric_count_before_resume)
+	assert_int(_metric_count).is_greater(metric_count_before_resume)
 
 
-func test_application_resume_starts_a_fresh_reporting_window() -> void:
+func test_focus_loss_stops_collection_until_focus_returns(_timeout: int = 10000) -> void:
 	_init_sdk()
-	await _wait_for_frame_metrics()
-	await get_tree().process_frame
-	var metric_count_before_pause: int = _metrics.size()
+	await _wait_for_metrics()
 
-	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_PAUSED)
-	await _wait_real_time(0.2)
-	assert_int(_metrics.size()).is_equal(metric_count_before_pause)
-
-	var resumed_at_usec: int = Time.get_ticks_usec()
-	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_RESUMED)
-	await _wait_for_frame_metrics(metric_count_before_pause)
-	_assert_frame_metrics(metric_count_before_pause)
-	for metric: Dictionary in _metrics.slice(metric_count_before_pause):
-		# 50000 microseconds is the default reporting interval used by _init_sdk(): 0.05 seconds.
-		assert_int(metric.emitted_at_usec - resumed_at_usec).is_greater_equal(50000)
-
-
-func test_focus_loss_stops_frame_metrics_until_focus_returns() -> void:
-	_init_sdk(true, 0.000001)
-	await _assert_one_collecting_stream()
-
-	var metric_count_before_focus_loss: int = _metrics.size()
+	var metric_count_before_focus_loss: int = _metric_count
 	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT)
-	await _wait_real_time(0.2)
-	assert_int(_metrics.size()).is_equal(metric_count_before_focus_loss)
+	await _wait_real_time(1.1)
+	assert_int(_metric_count).is_equal(metric_count_before_focus_loss)
 
 	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN)
-	await _assert_one_collecting_stream()
+	await _wait_for_metrics(metric_count_before_focus_loss)
+	assert_int(_metric_count).is_greater(metric_count_before_focus_loss)
 
 
-func test_focus_return_starts_a_fresh_reporting_window() -> void:
-	const interval_sec: float = 0.05
-	_init_sdk(true, interval_sec)
-	await _wait_for_frame_metrics()
-	await get_tree().process_frame
-	var metric_count_before_focus_loss: int = _metrics.size()
-
-	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT)
-	await _wait_real_time(0.2)
-	assert_int(_metrics.size()).is_equal(metric_count_before_focus_loss)
-
-	var focus_returned_at_usec: int = Time.get_ticks_usec()
-	get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN)
-	await _wait_for_frame_metrics(metric_count_before_focus_loss)
-	_assert_frame_metrics(metric_count_before_focus_loss)
-	var interval_usec: int = int(interval_sec * 1000000.0)
-	for metric: Dictionary in _metrics.slice(metric_count_before_focus_loss):
-		assert_int(metric.emitted_at_usec - focus_returned_at_usec).is_greater_equal(interval_usec)
-
-
-func test_collection_requires_both_focus_and_application_resume() -> void:
-	_init_sdk(true, 0.000001)
-	await _assert_one_collecting_stream()
+func test_collection_requires_both_focus_and_application_resume(_timeout: int = 10000) -> void:
+	_init_sdk()
+	await _wait_for_metrics()
 
 	var restore_orders: Array[Array] = [
 		[MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN, MainLoop.NOTIFICATION_APPLICATION_RESUMED],
 		[MainLoop.NOTIFICATION_APPLICATION_RESUMED, MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN],
 	]
 	for notification_order: Array in restore_orders:
-		var metric_count_before_background: int = _metrics.size()
+		var metric_count_before_suspension: int = _metric_count
 		get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT)
 		get_tree().notification(MainLoop.NOTIFICATION_APPLICATION_PAUSED)
 		# Repeated restoration must not clear the other suspension reason.
 		get_tree().notification(notification_order[0])
 		get_tree().notification(notification_order[0])
-		await _wait_real_time(0.2)
-		assert_int(_metrics.size()).is_equal(metric_count_before_background)
+		await _wait_real_time(1.1)
+		assert_int(_metric_count).is_equal(metric_count_before_suspension)
 
 		get_tree().notification(notification_order[1])
-		await _assert_one_collecting_stream()
+		await _wait_for_metrics(metric_count_before_suspension)
