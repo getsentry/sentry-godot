@@ -11,7 +11,7 @@ using namespace godot;
 using namespace sentry;
 
 TEST_SUITE("Automatic metrics options") {
-	TEST_CASE("Normalized collection intervals have a one-second minimum and return microseconds") {
+	TEST_CASE("Normalized collection intervals are clamped and converted to microseconds") {
 		Ref<SentryAutoMetricsOptions> options;
 		options.instantiate();
 		const struct {
@@ -23,6 +23,9 @@ TEST_SUITE("Automatic metrics options") {
 			{ 0.5, 1'000'000 },
 			{ 1.0, 1'000'000 },
 			{ 1.25, 1'250'000 },
+			{ 86'400.0, 86'400'000'000 },
+			{ 86'401.0, 86'400'000'000 },
+			{ 1e308, 86'400'000'000 },
 			{ Math::NaN, 1'000'000 },
 			{ Math::INF, 1'000'000 },
 			{ -Math::INF, 1'000'000 },

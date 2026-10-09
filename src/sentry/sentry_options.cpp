@@ -15,7 +15,8 @@ uint64_t normalize_metrics_interval_usec(double p_interval_sec) {
 	if (!Math::is_finite(p_interval_sec)) {
 		return 1'000'000;
 	}
-	p_interval_sec = MAX(p_interval_sec, 1.0);
+	constexpr double one_day = 86'400.0;
+	p_interval_sec = CLAMP(p_interval_sec, 1.0, one_day);
 	return static_cast<uint64_t>(p_interval_sec * 1'000'000.0);
 }
 
