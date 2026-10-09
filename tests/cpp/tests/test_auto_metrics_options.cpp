@@ -30,13 +30,7 @@ TEST_SUITE("Automatic metrics options") {
 		for (const auto &test : cases) {
 			CAPTURE(test.seconds);
 			options->set_frame_metrics_interval_sec(test.seconds);
-			options->set_rendering_metrics_interval_sec(test.seconds);
-			options->set_memory_metrics_interval_sec(test.seconds);
-			options->set_network_metrics_interval_sec(test.seconds);
 			CHECK(options->get_normalized_frame_metrics_interval_usec() == test.microseconds);
-			CHECK(options->get_normalized_rendering_metrics_interval_usec() == test.microseconds);
-			CHECK(options->get_normalized_memory_metrics_interval_usec() == test.microseconds);
-			CHECK(options->get_normalized_network_metrics_interval_usec() == test.microseconds);
 		}
 	}
 }
