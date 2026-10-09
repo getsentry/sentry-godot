@@ -14,6 +14,9 @@ class SentryAutoMetrics : public Node {
 
 private:
 	FrameMetricsCollector frame_metrics_collector;
+
+	// Assume focused and unpaused at startup; Godot cannot reliably tell us these states.
+	// We only track notifications after this node enters the tree.
 	bool _app_focused = true;
 	bool _app_paused = false;
 
