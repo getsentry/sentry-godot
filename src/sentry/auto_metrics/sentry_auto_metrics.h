@@ -1,5 +1,6 @@
 #pragma once
 
+#include "auto_metrics_attributes.h"
 #include "frame_metrics_collector.h"
 
 #include <godot_cpp/classes/node.hpp>
@@ -13,6 +14,7 @@ class SentryAutoMetrics : public Node {
 	GDCLASS(SentryAutoMetrics, Node);
 
 private:
+	AutoMetricsAttributes _attributes;
 	FrameMetricsCollector frame_metrics_collector;
 
 	// Assume focused and unpaused at startup; Godot cannot reliably tell us these states.

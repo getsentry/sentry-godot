@@ -33,6 +33,7 @@ void SentryAutoMetrics::_notification(int p_what) {
 			_process_collectors();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
+			_attributes.initialize();
 			_start_collection_if_app_is_active();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -57,7 +58,8 @@ void SentryAutoMetrics::_notification(int p_what) {
 	}
 }
 
-SentryAutoMetrics::SentryAutoMetrics() {
+SentryAutoMetrics::SentryAutoMetrics() :
+		frame_metrics_collector(_attributes) {
 	set_process_internal(false);
 	set_process_mode(PROCESS_MODE_ALWAYS);
 }

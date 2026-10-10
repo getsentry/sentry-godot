@@ -4,6 +4,7 @@
 #if defined(TESTS_ENABLED) && defined(SDK_NATIVE)
 
 #include "cpp_test_helpers.h"
+#include "sentry/auto_metrics/auto_metrics_attributes.h"
 #include "sentry/auto_metrics/frame_metrics_collector.h"
 #include "sentry/sentry_metric.h"
 #include "sentry/sentry_sdk.h"
@@ -37,9 +38,12 @@ void _configure_sdk(const Ref<SentryOptions> &p_options, double p_interval_sec) 
 
 class InitFixture {
 public:
+	AutoMetricsAttributes attributes;
+
 	explicit InitFixture(double p_interval_sec) {
 		captured_metrics.clear();
 		SentrySDK::get_singleton()->init(callable_mp_static(&_configure_sdk).bind(p_interval_sec));
+		attributes.initialize();
 	}
 
 	~InitFixture() {
@@ -55,7 +59,7 @@ TEST_SUITE("Frame metrics collector") {
 		constexpr double interval = 1.0;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
-		FrameMetricsCollector collector;
+		FrameMetricsCollector collector(fixture.attributes);
 		collector.process(1'000'000);
 		collector.process(2'000'000);
 		CHECK(captured_metrics.empty());
@@ -70,7 +74,7 @@ TEST_SUITE("Frame metrics collector") {
 		constexpr double interval = 1.0;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
-		FrameMetricsCollector collector;
+		FrameMetricsCollector collector(fixture.attributes);
 		collector.set_enabled(true);
 		collector.process(1'000'000); // establishes a baseline
 		collector.process(2'500'000); // 1500 ms passed
@@ -89,7 +93,7 @@ TEST_SUITE("Frame metrics collector") {
 	TEST_CASE("Emits metrics only when the configured interval has elapsed") {
 		InitFixture fixture(1.25);
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
-		FrameMetricsCollector collector;
+		FrameMetricsCollector collector(fixture.attributes);
 		collector.set_enabled(true);
 		collector.process(1'000'000); // baseline
 		collector.process(2'249'999); // 1.24999s passed
@@ -106,7 +110,7 @@ TEST_SUITE("Frame metrics collector") {
 		constexpr double interval = 1.0;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
-		FrameMetricsCollector collector;
+		FrameMetricsCollector collector(fixture.attributes);
 		collector.set_enabled(true);
 		collector.process(1'000'000); // baseline
 		collector.process(121'000'000); // stall
@@ -122,7 +126,7 @@ TEST_SUITE("Frame metrics collector") {
 		constexpr double interval = 1.0;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
-		FrameMetricsCollector collector;
+		FrameMetricsCollector collector(fixture.attributes);
 		collector.set_enabled(true);
 		collector.process(1'000'000);
 		collector.process(1'250'000);

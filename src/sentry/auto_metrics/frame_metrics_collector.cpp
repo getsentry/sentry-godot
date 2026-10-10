@@ -1,5 +1,6 @@
 #include "frame_metrics_collector.h"
 
+#include "auto_metrics_attributes.h"
 #include "sentry/sentry_sdk.h"
 
 #include <godot_cpp/classes/performance.hpp>
@@ -26,11 +27,12 @@ void FrameMetricsCollector::_process(uint64_t p_now_usec) {
 		if (p_now_usec >= _deadline) {
 			_num_frames = 0;
 			_deadline = p_now_usec + SENTRY_OPTIONS()->get_auto_metrics()->get_normalized_frame_metrics_interval_usec();
+			const Dictionary &attributes = _attributes.get_current();
 			SentrySDK::get_singleton()->get_metrics()->distribution(
-					"game.perf.frame_time", _sampled_frametime, "millisecond");
+					"game.perf.frame_time", _sampled_frametime, "millisecond", attributes);
 			SentrySDK::get_singleton()->get_metrics()->gauge(
 					"game.perf.fps",
-					Performance::get_singleton()->get_monitor(Performance::Monitor::TIME_FPS));
+					Performance::get_singleton()->get_monitor(Performance::Monitor::TIME_FPS), String(), attributes);
 		}
 	}
 	_last_usec = p_now_usec;
