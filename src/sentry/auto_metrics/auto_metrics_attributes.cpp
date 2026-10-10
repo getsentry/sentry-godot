@@ -46,7 +46,7 @@ const Dictionary &AutoMetricsAttributes::get_current() {
 	Node *scene = tree->get_current_scene();
 	if (scene != nullptr) {
 		String path = scene->get_scene_file_path();
-		_attributes["scene"] = path.is_empty() ? String(scene->get_name()) : path.get_file().get_basename();
+		_attributes["scene"] = path.is_empty() ? String(scene->get_name()) : path;
 	} else {
 		_attributes.erase("scene");
 	}
