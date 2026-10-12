@@ -4,7 +4,7 @@
 
 ### Improvements
 
-- iOS: Remove unnecessary Cocoa SDK headers and module metadata from the prebuilt addon ([#1016](https://github.com/getsentry/sentry-godot/pull/1016))
+- Remove unnecessary Cocoa SDK headers and module metadata from the addon package, eliminating over 13,000 lines of bundled development files ([#1016](https://github.com/getsentry/sentry-godot/pull/1016))
 
 ### Dependencies
 
