@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Improvements
+
+- iOS: Remove unnecessary Cocoa SDK headers and module metadata from the prebuilt addon ([#1016](https://github.com/getsentry/sentry-godot/pull/1016))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.29.2 to v9.30.1 ([#998](https://github.com/getsentry/sentry-godot/pull/998), [#1009](https://github.com/getsentry/sentry-godot/pull/1009))
