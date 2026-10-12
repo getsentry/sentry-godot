@@ -354,6 +354,11 @@ def CreateXCFrameworkFromSlices(self, target_path, slice_dirs):
             print(result.stderr)
             return 1
 
+        # The prebuilt addon needs neither headers nor module maps at runtime.
+        for framework in Path(target_path).glob("*/*.framework"):
+            for directory in ("Headers", "PrivateHeaders", "Modules"):
+                remove_if_exists(framework / directory)
+
         print(f"Successfully created xcframework: {target_path}")
         return 0
 
