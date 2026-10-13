@@ -47,6 +47,7 @@ public:
 	}
 
 	~InitFixture() {
+		attributes.shutdown();
 		SentrySDK::get_singleton()->close();
 		captured_metrics.clear();
 	}

@@ -1,6 +1,9 @@
 #include "auto_metrics_attributes.h"
 
+#include "sentry/util/callable_cpp.h"
+
 #include <godot_cpp/classes/display_server.hpp>
+#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -11,6 +14,7 @@ namespace sentry {
 
 void AutoMetricsAttributes::initialize() {
 	_attributes.clear();
+	_scene_id = ObjectID();
 	if (DisplayServer::get_singleton()->get_name() != "headless") {
 		String gpu_name = RenderingServer::get_singleton()->get_video_adapter_name();
 		if (!gpu_name.is_empty()) {
@@ -29,27 +33,55 @@ void AutoMetricsAttributes::initialize() {
 		// Memory is reported as physical minus reserved by kernel and drivers.
 		_attributes["ram.gb"] = Math::snapped(physical_memory / (1024.0 * 1024.0 * 1024.0), 0.01);
 	}
+
+	SceneTree *tree = SceneTree::get_singleton();
+	Window *window = tree != nullptr ? tree->get_root() : nullptr;
+	if (window) {
+		window->connect("size_changed", callable_cpp(this, &AutoMetricsAttributes::_update_resolution));
+	}
+	_update_resolution();
 }
 
-const Dictionary &AutoMetricsAttributes::get_current() {
-	SceneTree *tree = SceneTree::get_singleton();
-	if (tree == nullptr) {
-		return _attributes;
-	}
-
+void AutoMetricsAttributes::_update_resolution() {
 	if (DisplayServer::get_singleton()->get_name() != "headless") {
-		Vector2i size = tree->get_root()->get_size();
+		Vector2i size = DisplayServer::get_singleton()->window_get_size();
 		_attributes["res.x"] = size.x;
 		_attributes["res.y"] = size.y;
 	}
+}
 
-	Node *scene = tree->get_current_scene();
-	if (scene != nullptr) {
-		String path = scene->get_scene_file_path();
-		_attributes["scene"] = path.is_empty() ? String(scene->get_name()) : path;
-	} else {
-		_attributes.erase("scene");
+void AutoMetricsAttributes::shutdown() {
+	SceneTree *tree = SceneTree::get_singleton();
+	Window *window = tree != nullptr ? tree->get_root() : nullptr;
+	if (window) {
+		Callable callback = callable_cpp(this, &AutoMetricsAttributes::_update_resolution);
+		if (window->is_connected("size_changed", callback)) {
+			window->disconnect("size_changed", callback);
+		}
 	}
+}
+
+void AutoMetricsAttributes::_update_scene() {
+	SceneTree *tree = SceneTree::get_singleton();
+	if (tree) {
+		// SceneTree::set_current_scene() unfortunately doesn't emit scene_changed,
+		// so we poll it just in case. Quick scene id check keeps it fast enough.
+		Node *scene = tree->get_current_scene();
+		ObjectID scene_id = scene != nullptr ? ObjectID(scene->get_instance_id()) : ObjectID();
+		if (scene_id != _scene_id) {
+			_scene_id = scene_id;
+			if (scene != nullptr) {
+				String path = scene->get_scene_file_path();
+				_attributes["scene"] = path.is_empty() ? String(scene->get_name()) : path;
+			} else {
+				_attributes.erase("scene");
+			}
+		}
+	}
+}
+
+const Dictionary &AutoMetricsAttributes::get_current() {
+	_update_scene();
 	return _attributes;
 }
 

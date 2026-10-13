@@ -38,6 +38,7 @@ void SentryAutoMetrics::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			_stop_collection();
+			_attributes.shutdown();
 		} break;
 		case NOTIFICATION_APPLICATION_PAUSED: {
 			_app_paused = true;
