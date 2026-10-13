@@ -12,6 +12,33 @@
 
 namespace sentry {
 
+void AutoMetricsAttributes::_update_resolution() {
+	if (DisplayServer::get_singleton()->get_name() != "headless") {
+		Vector2i size = DisplayServer::get_singleton()->window_get_size();
+		_attributes["res.x"] = size.x;
+		_attributes["res.y"] = size.y;
+	}
+}
+
+void AutoMetricsAttributes::_update_scene() {
+	SceneTree *tree = SceneTree::get_singleton();
+	if (tree) {
+		// SceneTree::set_current_scene() unfortunately doesn't emit scene_changed,
+		// so we poll it just in case. Quick scene id check keeps it fast enough.
+		Node *scene = tree->get_current_scene();
+		ObjectID scene_id = scene != nullptr ? ObjectID(scene->get_instance_id()) : ObjectID();
+		if (scene_id != _scene_id) {
+			_scene_id = scene_id;
+			if (scene != nullptr) {
+				String path = scene->get_scene_file_path();
+				_attributes["scene"] = path.is_empty() ? String(scene->get_name()) : path;
+			} else {
+				_attributes.erase("scene");
+			}
+		}
+	}
+}
+
 void AutoMetricsAttributes::initialize() {
 	_attributes.clear();
 	_scene_id = ObjectID();
@@ -42,14 +69,6 @@ void AutoMetricsAttributes::initialize() {
 	_update_resolution();
 }
 
-void AutoMetricsAttributes::_update_resolution() {
-	if (DisplayServer::get_singleton()->get_name() != "headless") {
-		Vector2i size = DisplayServer::get_singleton()->window_get_size();
-		_attributes["res.x"] = size.x;
-		_attributes["res.y"] = size.y;
-	}
-}
-
 void AutoMetricsAttributes::shutdown() {
 	SceneTree *tree = SceneTree::get_singleton();
 	Window *window = tree != nullptr ? tree->get_root() : nullptr;
@@ -57,25 +76,6 @@ void AutoMetricsAttributes::shutdown() {
 		Callable callback = callable_cpp(this, &AutoMetricsAttributes::_update_resolution);
 		if (window->is_connected("size_changed", callback)) {
 			window->disconnect("size_changed", callback);
-		}
-	}
-}
-
-void AutoMetricsAttributes::_update_scene() {
-	SceneTree *tree = SceneTree::get_singleton();
-	if (tree) {
-		// SceneTree::set_current_scene() unfortunately doesn't emit scene_changed,
-		// so we poll it just in case. Quick scene id check keeps it fast enough.
-		Node *scene = tree->get_current_scene();
-		ObjectID scene_id = scene != nullptr ? ObjectID(scene->get_instance_id()) : ObjectID();
-		if (scene_id != _scene_id) {
-			_scene_id = scene_id;
-			if (scene != nullptr) {
-				String path = scene->get_scene_file_path();
-				_attributes["scene"] = path.is_empty() ? String(scene->get_name()) : path;
-			} else {
-				_attributes.erase("scene");
-			}
 		}
 	}
 }
