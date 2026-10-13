@@ -88,6 +88,21 @@ protected:
 	static void _bind_methods();
 };
 
+class SentryAutoMetricsOptions : public RefCounted {
+	GDCLASS(SentryAutoMetricsOptions, RefCounted);
+
+	SIMPLE_PROPERTY(bool, enable_frame_metrics, false);
+	SIMPLE_PROPERTY(double, frame_metrics_interval_sec, 1.0);
+
+protected:
+	static void _bind_methods();
+
+public:
+	uint64_t get_normalized_frame_metrics_interval_usec() const;
+
+	_FORCE_INLINE_ bool is_any_enabled() const { return enable_frame_metrics; }
+};
+
 // Main Sentry options.
 class SentryOptions : public RefCounted {
 	GDCLASS(SentryOptions, RefCounted);
@@ -141,6 +156,7 @@ private:
 
 	Ref<SentryExperimental> experimental;
 	Ref<SentryAndroidOptions> android;
+	Ref<SentryAutoMetricsOptions> auto_metrics;
 	Ref<SentryGodotLoggerOptions> godot_logger;
 
 	Callable before_send;
@@ -255,6 +271,7 @@ public:
 
 	_FORCE_INLINE_ Ref<SentryExperimental> get_experimental() const { return experimental; }
 	_FORCE_INLINE_ Ref<SentryAndroidOptions> get_android() const { return android; }
+	_FORCE_INLINE_ Ref<SentryAutoMetricsOptions> get_auto_metrics() const { return auto_metrics; }
 	_FORCE_INLINE_ Ref<SentryGodotLoggerOptions> get_godot_logger() const { return godot_logger; }
 
 	_FORCE_INLINE_ bool should_capture_event(GodotErrorType p_error_type) { return godot_logger->get_event_mask().has_flag(sentry::godot_error_type_as_mask(p_error_type)); }

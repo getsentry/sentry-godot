@@ -177,11 +177,13 @@ sources += Glob("src/editor/*.cpp")
 sources += Glob("src/sentry/*.cpp")
 sources += Glob("src/sentry/engine_lifecycle/*.cpp")
 sources += Glob("src/sentry/integrations/*.cpp")
+sources += Glob("src/sentry/integrations/auto_metrics/*.cpp")
 sources += Glob("src/sentry/integrations/godot_logger/*.cpp")
 sources += Glob("src/sentry/logging/*.cpp")
 sources += Glob("src/sentry/processing/*.cpp")
 sources += Glob("src/sentry/util/*.cpp")
 sources += Glob("src/sentry/dotnet/*.cpp")
+sources += Glob("src/sentry/auto_metrics/*.cpp")
 
 # Backend-specific sources.
 if internal_sdk == SDK.NATIVE:

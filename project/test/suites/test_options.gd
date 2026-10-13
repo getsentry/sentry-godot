@@ -47,6 +47,21 @@ func test_deprecated_enable_project_settings_are_removed(setting: String, test_p
 	assert_bool(ProjectSettings.has_setting(setting)).is_false()
 
 
+func test_auto_metrics_defaults() -> void:
+	assert_bool(options.auto_metrics.enable_frame_metrics).is_false()
+	assert_float(options.auto_metrics.frame_metrics_interval_sec).is_equal(1.0)
+
+
+@warning_ignore("unused_parameter")
+func test_auto_metrics_options(enable_property: String, interval_property: String, test_parameters := [
+		["enable_frame_metrics", "frame_metrics_interval_sec"],
+]) -> void:
+	options.auto_metrics.set(enable_property, true)
+	options.auto_metrics.set(interval_property, 12.5)
+	assert_bool(options.auto_metrics.get(enable_property)).is_true()
+	assert_float(options.auto_metrics.get(interval_property)).is_equal(12.5)
+
+
 ## Test simple bool properties on godot_logger options.
 @warning_ignore("unused_parameter")
 func test_godot_logger_bool_properties(property: String, test_parameters := [

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryAutoMetricsOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Options for automatic performance metrics.
+	</brief_description>
+	<description>
+		Configures performance metrics collected automatically by the SDK. Access these options through [member SentryOptions.auto_metrics] or Project Settings under [b]Sentry &gt; Auto Metrics &gt; Frame Metrics[/b].
+		Automatic collection is disabled by default and does not affect metrics sent manually through [member SentrySDK.metrics].
+		[codeblock]
+		SentrySDK.init(func(options: SentryOptions) -&gt; void:
+		    options.auto_metrics.enable_frame_metrics = true
+		    options.auto_metrics.frame_metrics_interval_sec = 2.0
+		)
+		[/codeblock]
+		[b]Note:[/b] Collection pauses while the application is unfocused or paused by the operating system. [member SceneTree.paused] and [member Engine.time_scale] do not affect collection.
+		To learn more, visit [url=https://docs.sentry.io/platforms/godot/metrics/]Metrics documentation[/url].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="enable_frame_metrics" type="bool" setter="set_enable_frame_metrics" getter="get_enable_frame_metrics" default="false">
+			If [code]true[/code], sends [code]game.perf.frame_time[/code] as a distribution in milliseconds and [code]game.perf.fps[/code] as a gauge.
+			Frame time measures elapsed time between process callbacks, including VSync and frame limiting. The collector randomly samples one frame per [member frame_metrics_interval_sec] interval. As more clients send frame samples, aggregate percentiles become more reliable, though sampling can miss rare hitches.
+		</member>
+		<member name="frame_metrics_interval_sec" type="float" setter="set_frame_metrics_interval_sec" getter="get_frame_metrics_interval_sec" default="1.0">
+			Controls how often frame metrics are sent, in seconds. Ignored when [member enable_frame_metrics] is [code]false[/code].
+		</member>
+	</members>
+</class>
