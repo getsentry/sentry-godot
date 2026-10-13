@@ -7,6 +7,7 @@
 #include "sentry/dotnet/csharp_interop.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/engine_lifecycle/engine_lifecycle.h"
+#include "sentry/integrations/godot_logger/godot_logger_integration.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/enrichment_processor.h"
 #include "sentry/processing/screenshot_processor.h"
@@ -306,12 +307,7 @@ void SentrySDK::init(const Callable &p_configuration_callback) {
 			_init_contexts();
 		}
 
-		if (options->get_godot_logger()->get_enabled()) {
-			if (godot_logger.is_null()) {
-				godot_logger.instantiate();
-			}
-			OS::get_singleton()->add_logger(godot_logger);
-		}
+		_init_integrations(options);
 
 		// Signal .NET layer to initialize.
 		sentry::dotnet::init();
@@ -327,13 +323,35 @@ void SentrySDK::close() {
 
 		sentry::dotnet::close();
 
-		if (godot_logger.is_valid()) {
-			OS::get_singleton()->remove_logger(godot_logger);
-			godot_logger.unref();
-		}
+		_teardown_integrations();
 		internal_sdk->close();
 		_invalidate_scopes();
 	}
+}
+
+void SentrySDK::_init_integrations(const Ref<SentryOptions> &p_options) {
+	_add_integration(memnew(GodotLoggerIntegration), p_options);
+}
+
+void SentrySDK::_add_integration(SentryIntegration *p_integration, const Ref<SentryOptions> &p_options) {
+	if (p_integration->setup(p_options)) {
+		_integrations.push_back(p_integration);
+		sentry::logging::print_debug("Added integration: ", p_integration->get_name(), ".");
+	} else {
+		sentry::logging::print_debug("Skipped integration: ", p_integration->get_name(), ".");
+		p_integration->teardown();
+		memdelete(p_integration);
+	}
+}
+
+void SentrySDK::_teardown_integrations() {
+	for (uint32_t i = _integrations.size(); i > 0; --i) {
+		SentryIntegration *integration = _integrations[i - 1];
+		integration->teardown();
+		sentry::logging::print_debug("Removed integration: ", integration->get_name(), ".");
+		memdelete(integration);
+	}
+	_integrations.clear();
 }
 
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
@@ -657,10 +675,7 @@ void SentrySDK::_notification(int p_what) {
 			sentry::engine_lifecycle::remove_shutdown_callback(
 					callable_mp(this, &SentrySDK::_on_engine_shutdown));
 			// Fallback in case _on_engine_shutdown() did not run.
-			if (godot_logger.is_valid()) {
-				OS::get_singleton()->remove_logger(godot_logger);
-				godot_logger.unref();
-			}
+			_teardown_integrations();
 			_invalidate_scopes();
 		} break;
 	}
