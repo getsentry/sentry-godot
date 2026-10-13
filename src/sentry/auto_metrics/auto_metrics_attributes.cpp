@@ -1,6 +1,7 @@
 #include "auto_metrics_attributes.h"
 
 #include "sentry/util/callable_cpp.h"
+#include "sentry/util/memory_info.h"
 
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/node.hpp>
@@ -54,11 +55,13 @@ void AutoMetricsAttributes::setup() {
 		_attributes["cpu.cores"] = cpu_cores;
 	}
 
-	Dictionary memory_info = OS::get_singleton()->get_memory_info();
-	int64_t physical_memory = memory_info.get("physical", -1);
-	if (physical_memory > 0) {
-		// Memory is reported as physical minus reserved by kernel and drivers.
-		_attributes["ram.gb"] = Math::snapped(physical_memory / (1024.0 * 1024.0 * 1024.0), 0.01);
+	if (util::safe_to_query_memory_info()) {
+		Dictionary memory_info = OS::get_singleton()->get_memory_info();
+		int64_t physical_memory = memory_info.get("physical", -1);
+		if (physical_memory > 0) {
+			// Memory is reported as physical minus reserved by kernel and drivers.
+			_attributes["ram.gb"] = Math::snapped(physical_memory / (1024.0 * 1024.0 * 1024.0), 0.01);
+		}
 	}
 
 	SceneTree *tree = SceneTree::get_singleton();
