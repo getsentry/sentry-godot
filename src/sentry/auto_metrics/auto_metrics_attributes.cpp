@@ -39,7 +39,7 @@ void AutoMetricsAttributes::_update_scene() {
 	}
 }
 
-void AutoMetricsAttributes::initialize() {
+void AutoMetricsAttributes::setup() {
 	_attributes.clear();
 	_scene_id = ObjectID();
 	if (DisplayServer::get_singleton()->get_name() != "headless") {
@@ -69,7 +69,7 @@ void AutoMetricsAttributes::initialize() {
 	_update_resolution();
 }
 
-void AutoMetricsAttributes::shutdown() {
+void AutoMetricsAttributes::teardown() {
 	SceneTree *tree = SceneTree::get_singleton();
 	Window *window = tree != nullptr ? tree->get_root() : nullptr;
 	if (window) {

@@ -33,12 +33,12 @@ void SentryAutoMetrics::_notification(int p_what) {
 			_process_collectors();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-			_attributes.initialize();
+			_attributes.setup();
 			_start_collection_if_app_is_active();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			_stop_collection();
-			_attributes.shutdown();
+			_attributes.teardown();
 		} break;
 		case NOTIFICATION_APPLICATION_PAUSED: {
 			_app_paused = true;

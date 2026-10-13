@@ -43,11 +43,11 @@ public:
 	explicit InitFixture(double p_interval_sec) {
 		captured_metrics.clear();
 		SentrySDK::get_singleton()->init(callable_mp_static(&_configure_sdk).bind(p_interval_sec));
-		attributes.initialize();
+		attributes.setup();
 	}
 
 	~InitFixture() {
-		attributes.shutdown();
+		attributes.teardown();
 		SentrySDK::get_singleton()->close();
 		captured_metrics.clear();
 	}

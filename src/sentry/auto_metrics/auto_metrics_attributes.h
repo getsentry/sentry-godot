@@ -20,8 +20,8 @@ private:
 	void _update_scene();
 
 public:
-	void initialize();
-	void shutdown();
+	void setup();
+	void teardown();
 	const Dictionary &get_current();
 };
 
