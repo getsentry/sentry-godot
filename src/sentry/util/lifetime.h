@@ -7,6 +7,11 @@
 
 namespace sentry::util {
 
+namespace detail {
+template <typename T, typename M>
+class CallableCpp;
+}
+
 template <typename T>
 class WeakRef;
 
@@ -15,6 +20,8 @@ class WeakRef;
 class Lifetime {
 	template <typename T>
 	friend class WeakRef;
+	template <typename T, typename M>
+	friend class detail::CallableCpp;
 
 	struct State {
 		::godot::SafeRefCount refcount;
@@ -32,7 +39,7 @@ class Lifetime {
 
 	static void _release_state(State *p_state) {
 		if (p_state && p_state->refcount.unref()) {
-			godot::memdelete(p_state);
+			::godot::memdelete(p_state);
 		}
 	}
 
@@ -99,6 +106,8 @@ private:                                                    \
 	::sentry::util::Lifetime _lifetime;                     \
 	template <typename>                                     \
 	friend class ::sentry::util::WeakRef;                   \
+	template <typename, typename>                           \
+	friend class ::sentry::util::detail::CallableCpp;       \
                                                             \
 protected:                                                  \
 	void _invalidate_lifetime() { _lifetime.invalidate(); } \
