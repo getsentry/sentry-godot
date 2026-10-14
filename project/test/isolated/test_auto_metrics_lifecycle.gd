@@ -20,6 +20,7 @@ func _init_sdk(enabled: bool = true) -> void:
 		options.dsn = "http://public@127.0.0.1:1/42"
 		options.debug = false
 		options.auto_metrics.enable_frame_metrics = enabled
+		options.auto_metrics.enable_rendering_metrics = enabled
 		options.auto_metrics.frame_metrics_interval_sec = 1.0
 		options.before_send_metric = func(_metric: SentryMetric) -> SentryMetric:
 			_metric_count += 1
