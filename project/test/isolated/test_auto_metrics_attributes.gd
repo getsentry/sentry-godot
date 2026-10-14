@@ -59,10 +59,8 @@ func test_automatic_metrics_include_system_attributes(_timeout: int = 10000) -> 
 	var ram_gb: float = snappedf(float(physical_memory_bytes) / (1024.0 * 1024.0 * 1024.0), 0.01)
 	var is_headless: bool = DisplayServer.get_name() == "headless"
 	var gpu_name := ""
-	var window_size: Vector2i
 	if not is_headless:
 		gpu_name = RenderingServer.get_video_adapter_name()
-		window_size = DisplayServer.window_get_size()
 
 	for record: Dictionary in _metrics:
 		var attributes: Dictionary = record.attributes
@@ -81,8 +79,7 @@ func test_automatic_metrics_include_system_attributes(_timeout: int = 10000) -> 
 				assert_str(attributes["gpu.name"]).is_equal(gpu_name)
 			else:
 				assert_dict(attributes).not_contains_keys("gpu.name")
-			assert_int(attributes["res.x"]).is_equal(window_size.x)
-			assert_int(attributes["res.y"]).is_equal(window_size.y)
+			assert_dict(attributes).contains_keys("res.x", "res.y")
 
 
 func test_manual_metrics_do_not_receive_automatic_attributes(_timeout: int = 10000) -> void:

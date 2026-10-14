@@ -15,9 +15,15 @@ namespace sentry {
 
 void AutoMetricsAttributes::_update_resolution() {
 	if (DisplayServer::get_singleton()->get_name() != "headless") {
-		Vector2i size = DisplayServer::get_singleton()->window_get_size();
-		_attributes["res.x"] = size.x;
-		_attributes["res.y"] = size.y;
+		SceneTree *tree = SceneTree::get_singleton();
+		Window *window = tree != nullptr ? tree->get_root() : nullptr;
+		if (window) {
+			// Godot doesn't expose the root viewport's pixel size directly, so we recover it from the window.
+			Vector2 pixel_size = window->get_visible_rect().size * window->get_stretch_transform().get_scale();
+			Vector2i size(pixel_size.round());
+			_attributes["res.x"] = size.x;
+			_attributes["res.y"] = size.y;
+		}
 	}
 }
 
