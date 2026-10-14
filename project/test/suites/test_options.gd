@@ -50,11 +50,14 @@ func test_deprecated_enable_project_settings_are_removed(setting: String, test_p
 func test_auto_metrics_defaults() -> void:
 	assert_bool(options.auto_metrics.enable_frame_metrics).is_false()
 	assert_float(options.auto_metrics.frame_metrics_interval_sec).is_equal(1.0)
+	assert_bool(options.auto_metrics.enable_rendering_metrics).is_false()
+	assert_float(options.auto_metrics.rendering_metrics_interval_sec).is_equal(1.0)
 
 
 @warning_ignore("unused_parameter")
-func test_auto_metrics_options(enable_property: String, interval_property: String, test_parameters := [
+func test_auto_metrics_options_retain_assigned_values(enable_property: String, interval_property: String, test_parameters := [
 		["enable_frame_metrics", "frame_metrics_interval_sec"],
+		["enable_rendering_metrics", "rendering_metrics_interval_sec"],
 ]) -> void:
 	options.auto_metrics.set(enable_property, true)
 	options.auto_metrics.set(interval_property, 12.5)
