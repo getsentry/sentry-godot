@@ -6,6 +6,7 @@
 	<description>
 		Configures performance metrics collected automatically by the SDK. Access these options through [member SentryOptions.auto_metrics] or Project Settings under [b]Sentry &gt; Auto Metrics &gt; Frame Metrics[/b].
 		Automatic collection is disabled by default and does not affect metrics sent manually through [member SentrySDK.metrics].
+		Attributes added to automatic metrics include [code]gpu.name[/code], [code]cpu.cores[/code], [code]ram.gb[/code], [code]res.x[/code], [code]res.y[/code], and [code]scene[/code] when available. Resolution describes the root viewport's target size in pixels, before window stretching and after 3D scaling.
 		[codeblock]
 		SentrySDK.init(func(options: SentryOptions) -&gt; void:
 		    options.auto_metrics.enable_frame_metrics = true
