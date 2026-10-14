@@ -23,6 +23,11 @@
 			If [code]true[/code], sends [code]game.perf.frame_time[/code] as a distribution in milliseconds and [code]game.perf.fps[/code] as a gauge.
 			Frame time measures elapsed time between process callbacks, including VSync and frame limiting. The collector randomly samples one frame per [member frame_metrics_interval_sec] interval. As more clients send frame samples, aggregate percentiles become more reliable, though sampling can miss rare hitches.
 		</member>
+		<member name="enable_memory_metrics" type="bool" setter="set_enable_memory_metrics" getter="get_enable_memory_metrics" default="false">
+			If [code]true[/code], sends the following metrics from [Performance]:
+			[code]game.perf.object_count[/code]: Number of instantiated objects, including nodes. See [constant Performance.OBJECT_COUNT].
+			[code]game.perf.node_count[/code]: Number of nodes in the scene tree, including its root. See [constant Performance.OBJECT_NODE_COUNT].
+		</member>
 		<member name="enable_rendering_metrics" type="bool" setter="set_enable_rendering_metrics" getter="get_enable_rendering_metrics" default="false">
 			If [code]true[/code], sends the following gauges from [Performance]:
 			[code]game.perf.render.draw_calls[/code]: Draw calls in the last rendered frame. See [constant Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME].
@@ -33,6 +38,9 @@
 		</member>
 		<member name="frame_metrics_interval_sec" type="float" setter="set_frame_metrics_interval_sec" getter="get_frame_metrics_interval_sec" default="1.0">
 			Controls how often frame metrics are sent, in seconds. Ignored when [member enable_frame_metrics] is [code]false[/code].
+		</member>
+		<member name="memory_metrics_interval_sec" type="float" setter="set_memory_metrics_interval_sec" getter="get_memory_metrics_interval_sec" default="60.0">
+			Controls how often memory metrics are sent, in seconds. Ignored when [member enable_memory_metrics] is [code]false[/code].
 		</member>
 		<member name="rendering_metrics_interval_sec" type="float" setter="set_rendering_metrics_interval_sec" getter="get_rendering_metrics_interval_sec" default="1.0">
 			Controls how often rendering metrics are sent, in seconds. Ignored when [member enable_rendering_metrics] is [code]false[/code].
