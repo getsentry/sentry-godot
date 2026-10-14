@@ -2,6 +2,7 @@
 
 #include "auto_metrics_attributes.h"
 #include "frame_metrics_collector.h"
+#include "memory_metrics_collector.h"
 #include "rendering_metrics_collector.h"
 
 #include <godot_cpp/classes/node.hpp>
@@ -18,6 +19,7 @@ private:
 	AutoMetricsAttributes _attributes;
 	FrameMetricsCollector frame_metrics_collector;
 	RenderingMetricsCollector rendering_metrics_collector;
+	MemoryMetricsCollector memory_metrics_collector;
 
 	// Assume focused and unpaused at startup; Godot cannot reliably tell us these states.
 	// We only track notifications after this node enters the tree.
