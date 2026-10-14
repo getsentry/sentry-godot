@@ -4,7 +4,7 @@
 		Options for automatic performance metrics.
 	</brief_description>
 	<description>
-		Configures performance metrics collected automatically by the SDK. Access these options through [member SentryOptions.auto_metrics] or Project Settings under [b]Sentry &gt; Auto Metrics &gt; Frame Metrics[/b].
+		Configures performance metrics collected automatically by the SDK. Access these options through [member SentryOptions.auto_metrics] or Project Settings under [b]Sentry &gt; Auto Metrics[/b].
 		Automatic collection is disabled by default and does not affect metrics sent manually through [member SentrySDK.metrics].
 		Attributes added to automatic metrics include [code]gpu.name[/code], [code]cpu.cores[/code], [code]ram.gb[/code], [code]res.x[/code], [code]res.y[/code], and [code]scene[/code] when available. Resolution describes the root viewport's target size in pixels, before window stretching and after 3D scaling.
 		[codeblock]
@@ -23,8 +23,19 @@
 			If [code]true[/code], sends [code]game.perf.frame_time[/code] as a distribution in milliseconds and [code]game.perf.fps[/code] as a gauge.
 			Frame time measures elapsed time between process callbacks, including VSync and frame limiting. The collector randomly samples one frame per [member frame_metrics_interval_sec] interval. As more clients send frame samples, aggregate percentiles become more reliable, though sampling can miss rare hitches.
 		</member>
+		<member name="enable_rendering_metrics" type="bool" setter="set_enable_rendering_metrics" getter="get_enable_rendering_metrics" default="false">
+			If [code]true[/code], sends the following gauges from [Performance]:
+			[code]game.perf.render.draw_calls[/code]: Draw calls in the last rendered frame. See [constant Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME].
+			[code]game.perf.render.primitives[/code]: Vertices or indices rendered in the last frame, including depth and shadow passes. See [constant Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME].
+			[code]game.perf.render.video_mem_used[/code]: Total video memory used, including texture, buffer, and other allocations, in bytes. See [constant Performance.RENDER_VIDEO_MEM_USED].
+			[code]game.perf.render.texture_mem_used[/code]: Texture memory used, in bytes. See [constant Performance.RENDER_TEXTURE_MEM_USED].
+			[code]game.perf.render.buffer_mem_used[/code]: Render buffer memory used, in bytes. See [constant Performance.RENDER_BUFFER_MEM_USED].
+		</member>
 		<member name="frame_metrics_interval_sec" type="float" setter="set_frame_metrics_interval_sec" getter="get_frame_metrics_interval_sec" default="1.0">
 			Controls how often frame metrics are sent, in seconds. Ignored when [member enable_frame_metrics] is [code]false[/code].
+		</member>
+		<member name="rendering_metrics_interval_sec" type="float" setter="set_rendering_metrics_interval_sec" getter="get_rendering_metrics_interval_sec" default="1.0">
+			Controls how often rendering metrics are sent, in seconds. Ignored when [member enable_rendering_metrics] is [code]false[/code].
 		</member>
 	</members>
 </class>
