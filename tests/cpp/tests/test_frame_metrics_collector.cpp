@@ -91,8 +91,26 @@ TEST_SUITE("Frame metrics collector") {
 		CHECK(captured_metrics[1]->get_value() == fps);
 	}
 
+	TEST_CASE("Attaches the shared attributes to every frame metric") {
+		constexpr double interval = 1.0;
+		InitFixture fixture(interval);
+		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
+		FrameMetricsCollector collector(fixture.attributes);
+		collector.set_enabled(true);
+		collector.process(1'000'000);
+		collector.process(2'000'000);
+		REQUIRED_CHECK(captured_metrics.size() == 2);
+		const Dictionary &attributes = fixture.attributes.get_current();
+		REQUIRED_CHECK(attributes.has("cpu.cores"));
+		for (const auto &metric : captured_metrics) {
+			CAPTURE(metric->get_name());
+			CHECK(metric->get_attribute("cpu.cores") == attributes["cpu.cores"]);
+		}
+	}
+
 	TEST_CASE("Emits metrics only when the configured interval has elapsed") {
-		InitFixture fixture(1.25);
+		constexpr double interval = 1.25;
+		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
 		FrameMetricsCollector collector(fixture.attributes);
 		collector.set_enabled(true);
@@ -107,7 +125,7 @@ TEST_SUITE("Frame metrics collector") {
 		CHECK(captured_metrics.size() == 4);
 	}
 
-	TEST_CASE("A long frame stall emits only once and schedules the next window from the current time point") {
+	TEST_CASE("A long stall emits once and starts a new reporting window") {
 		constexpr double interval = 1.0;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
@@ -123,7 +141,7 @@ TEST_SUITE("Frame metrics collector") {
 		CHECK(captured_metrics.size() == 4);
 	}
 
-	TEST_CASE("Reset discards the partial window and starts a fresh baseline") {
+	TEST_CASE("Reset starts a new reporting interval") {
 		constexpr double interval = 1.0;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());

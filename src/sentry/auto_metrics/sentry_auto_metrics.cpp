@@ -9,14 +9,18 @@ namespace sentry {
 void SentryAutoMetrics::_process_collectors() {
 	uint64_t now = Time::get_singleton()->get_ticks_usec();
 	frame_metrics_collector.process(now);
+	rendering_metrics_collector.process(now);
 }
 
 void SentryAutoMetrics::_start_collection_if_app_is_active() {
 	if (_app_paused || !_app_focused || is_processing_internal() || is_queued_for_deletion()) {
 		return;
 	}
-	frame_metrics_collector.set_enabled(SENTRY_OPTIONS()->get_auto_metrics()->get_enable_frame_metrics());
+	const Ref<SentryAutoMetricsOptions> &opts = SENTRY_OPTIONS()->get_auto_metrics();
+	frame_metrics_collector.set_enabled(opts->get_enable_frame_metrics());
 	frame_metrics_collector.reset();
+	rendering_metrics_collector.set_enabled(opts->get_enable_rendering_metrics());
+	rendering_metrics_collector.reset();
 	set_process_internal(true);
 }
 
@@ -24,6 +28,7 @@ void SentryAutoMetrics::_stop_collection() {
 	if (is_processing_internal()) {
 		set_process_internal(false);
 		frame_metrics_collector.reset();
+		rendering_metrics_collector.reset();
 	}
 }
 
@@ -60,7 +65,7 @@ void SentryAutoMetrics::_notification(int p_what) {
 }
 
 SentryAutoMetrics::SentryAutoMetrics() :
-		frame_metrics_collector(_attributes) {
+		frame_metrics_collector(_attributes), rendering_metrics_collector(_attributes) {
 	set_process_internal(false);
 	set_process_mode(PROCESS_MODE_ALWAYS);
 }
