@@ -19,9 +19,27 @@ using namespace sentry;
 namespace {
 
 std::vector<Ref<SentryMetric>> captured_metrics;
+uint64_t resident_bytes = 0;
+int resident_memory_reads = 0;
+bool resident_memory_available = false;
+
+bool read_resident_memory(uint64_t &r_bytes) {
+	++resident_memory_reads;
+	r_bytes = resident_bytes;
+	return resident_memory_available;
+}
 
 Ref<SentryMetric> record_metric(const Ref<SentryMetric> &p_metric) {
 	captured_metrics.push_back(p_metric);
+	return {};
+}
+
+Ref<SentryMetric> find_metric(const String &p_name) {
+	for (const auto &metric : captured_metrics) {
+		if (metric->get_name() == p_name) {
+			return metric;
+		}
+	}
 	return {};
 }
 
@@ -40,6 +58,9 @@ public:
 
 	explicit InitFixture(double p_interval_sec) {
 		captured_metrics.clear();
+		resident_bytes = 0;
+		resident_memory_reads = 0;
+		resident_memory_available = false;
 		SentrySDK::get_singleton()->init(callable_mp_static(&configure_sdk).bind(p_interval_sec));
 		attributes.setup();
 	}
@@ -58,22 +79,25 @@ TEST_SUITE("Memory metrics collector") {
 		constexpr double interval = 1.0;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
-		MemoryMetricsCollector collector(fixture.attributes);
+		MemoryMetricsCollector collector(fixture.attributes, &read_resident_memory);
 		collector.process(1'000'000);
 		collector.process(2'000'000);
 		CHECK(captured_metrics.empty());
+		CHECK(resident_memory_reads == 0);
 		collector.set_enabled(true);
 		collector.process(3'000'000); // establishes a baseline at 3 seconds
 		CHECK(captured_metrics.empty());
+		CHECK(resident_memory_reads == 0);
 		collector.process(4'000'000); // 1s passed since baseline
 		CHECK(captured_metrics.size() == 2);
+		CHECK(resident_memory_reads == 1);
 	}
 
 	TEST_CASE("Emits object and node counts with the expected names, types, values, and units") {
 		constexpr double interval = 1.0;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
-		MemoryMetricsCollector collector(fixture.attributes);
+		MemoryMetricsCollector collector(fixture.attributes, &read_resident_memory);
 		collector.set_enabled(true);
 		collector.process(1'000'000); // baseline
 		Performance *performance = Performance::get_singleton();
@@ -81,25 +105,63 @@ TEST_SUITE("Memory metrics collector") {
 		const double node_count = performance->get_monitor(Performance::OBJECT_NODE_COUNT);
 		collector.process(2'000'000); // 1s passed since baseline
 		REQUIRED_CHECK(captured_metrics.size() == 2);
-		CHECK(captured_metrics[0]->get_name() == "game.perf.object_count");
-		CHECK(captured_metrics[0]->get_type() == SentryMetric::METRIC_GAUGE);
-		CHECK(captured_metrics[0]->get_unit().is_empty());
-		CHECK(captured_metrics[0]->get_value() == object_count);
-		CHECK(captured_metrics[1]->get_name() == "game.perf.node_count");
-		CHECK(captured_metrics[1]->get_type() == SentryMetric::METRIC_GAUGE);
-		CHECK(captured_metrics[1]->get_unit().is_empty());
-		CHECK(captured_metrics[1]->get_value() == node_count);
+		Ref<SentryMetric> object_metric = find_metric("game.perf.object_count");
+		REQUIRED_CHECK(object_metric.is_valid());
+		CHECK(object_metric->get_type() == SentryMetric::METRIC_GAUGE);
+		CHECK(object_metric->get_unit().is_empty());
+		CHECK(object_metric->get_value() == object_count);
+		Ref<SentryMetric> node_metric = find_metric("game.perf.node_count");
+		REQUIRED_CHECK(node_metric.is_valid());
+		CHECK(node_metric->get_type() == SentryMetric::METRIC_GAUGE);
+		CHECK(node_metric->get_unit().is_empty());
+		CHECK(node_metric->get_value() == node_count);
+	}
+
+	TEST_CASE("Emits positive process resident memory as a byte gauge and skips zero") {
+		constexpr double interval = 1.0;
+		InitFixture fixture{ interval };
+		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
+		resident_memory_available = true;
+		MemoryMetricsCollector collector(fixture.attributes, &read_resident_memory);
+		collector.set_enabled(true);
+
+		SUBCASE("Values larger than 32 bits retain their byte value") {
+			resident_bytes = 8'000'000'000;
+			collector.process(1'000'000); // baseline
+			collector.process(2'000'000); // 1s passed since baseline
+			CHECK(resident_memory_reads == 1);
+			CHECK(find_metric("game.perf.object_count").is_valid());
+			CHECK(find_metric("game.perf.node_count").is_valid());
+			CHECK(captured_metrics.size() == 3);
+			Ref<SentryMetric> metric = find_metric("game.perf.used_memory");
+			REQUIRED_CHECK(metric.is_valid());
+			CHECK(metric->get_type() == SentryMetric::METRIC_GAUGE);
+			CHECK(metric->get_value() == static_cast<double>(resident_bytes));
+			CHECK(metric->get_unit() == "byte");
+		}
+		SUBCASE("Zero is skipped") {
+			resident_bytes = 0;
+			collector.process(1'000'000); // baseline
+			collector.process(2'000'000); // 1s passed since baseline
+			CHECK(resident_memory_reads == 1);
+			CHECK(find_metric("game.perf.used_memory").is_null());
+			CHECK(captured_metrics.size() == 2);
+			CHECK(find_metric("game.perf.object_count").is_valid());
+			CHECK(find_metric("game.perf.node_count").is_valid());
+		}
 	}
 
 	TEST_CASE("Attaches the shared attributes to every memory metric") {
 		constexpr double interval = 1.0;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
-		MemoryMetricsCollector collector(fixture.attributes);
+		resident_memory_available = true;
+		resident_bytes = 123'456;
+		MemoryMetricsCollector collector(fixture.attributes, &read_resident_memory);
 		collector.set_enabled(true);
 		collector.process(1'000'000); // baseline
 		collector.process(2'000'000); // 1s passed since baseline
-		REQUIRED_CHECK(captured_metrics.size() == 2);
+		REQUIRED_CHECK(captured_metrics.size() == 3);
 		const Dictionary &attributes = fixture.attributes.get_current();
 		REQUIRED_CHECK(attributes.has("cpu.cores"));
 		for (const auto &metric : captured_metrics) {
@@ -112,24 +174,28 @@ TEST_SUITE("Memory metrics collector") {
 		constexpr double interval = 1.25;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
-		MemoryMetricsCollector collector(fixture.attributes);
+		MemoryMetricsCollector collector(fixture.attributes, &read_resident_memory);
 		collector.set_enabled(true);
 		collector.process(1'000'000); // baseline
 		collector.process(2'249'999); // just before the reporting deadline
 		CHECK(captured_metrics.empty());
+		CHECK(resident_memory_reads == 0);
 		collector.process(2'250'000); // 1.25s passed since baseline
 		CHECK(captured_metrics.size() == 2);
+		CHECK(resident_memory_reads == 1);
 		collector.process(3'499'999); // just before the next reporting deadline
 		CHECK(captured_metrics.size() == 2);
+		CHECK(resident_memory_reads == 1);
 		collector.process(3'500'000); // 1.25s since last collection
 		CHECK(captured_metrics.size() == 4);
+		CHECK(resident_memory_reads == 2);
 	}
 
 	TEST_CASE("A long stall emits once and starts a new reporting window") {
 		constexpr double interval = 1.0;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
-		MemoryMetricsCollector collector(fixture.attributes);
+		MemoryMetricsCollector collector(fixture.attributes, &read_resident_memory);
 		collector.set_enabled(true);
 		collector.process(1'000'000); // baseline
 		collector.process(121'000'000); // 120s stall
@@ -144,7 +210,7 @@ TEST_SUITE("Memory metrics collector") {
 		constexpr double interval = 1.0;
 		InitFixture fixture{ interval };
 		REQUIRED_CHECK(SentrySDK::get_singleton()->is_enabled());
-		MemoryMetricsCollector collector(fixture.attributes);
+		MemoryMetricsCollector collector(fixture.attributes, &read_resident_memory);
 		collector.set_enabled(true);
 		collector.process(1'000'000); // baseline
 		collector.process(1'250'000); // 0.25s passed since baseline
