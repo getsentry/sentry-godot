@@ -37,6 +37,8 @@ TEST_SUITE("Automatic metrics options") {
 			CHECK(options->get_normalized_frame_metrics_interval_usec() == test.microseconds);
 			options->set_rendering_metrics_interval_sec(test.seconds);
 			CHECK(options->get_normalized_rendering_metrics_interval_usec() == test.microseconds);
+			options->set_memory_metrics_interval_sec(test.seconds);
+			CHECK(options->get_normalized_memory_metrics_interval_usec() == test.microseconds);
 		}
 	}
 
@@ -45,8 +47,10 @@ TEST_SUITE("Automatic metrics options") {
 		options.instantiate();
 		options->set_frame_metrics_interval_sec(2.0);
 		options->set_rendering_metrics_interval_sec(1.25);
+		options->set_memory_metrics_interval_sec(12.5);
 		CHECK(options->get_normalized_frame_metrics_interval_usec() == 2'000'000);
 		CHECK(options->get_normalized_rendering_metrics_interval_usec() == 1'250'000);
+		CHECK(options->get_normalized_memory_metrics_interval_usec() == 12'500'000);
 	}
 }
 

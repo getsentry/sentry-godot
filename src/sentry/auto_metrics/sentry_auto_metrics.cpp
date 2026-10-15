@@ -10,6 +10,7 @@ void SentryAutoMetrics::_process_collectors() {
 	uint64_t now = Time::get_singleton()->get_ticks_usec();
 	frame_metrics_collector.process(now);
 	rendering_metrics_collector.process(now);
+	memory_metrics_collector.process(now);
 }
 
 void SentryAutoMetrics::_start_collection_if_app_is_active() {
@@ -21,6 +22,8 @@ void SentryAutoMetrics::_start_collection_if_app_is_active() {
 	frame_metrics_collector.reset();
 	rendering_metrics_collector.set_enabled(opts->get_enable_rendering_metrics());
 	rendering_metrics_collector.reset();
+	memory_metrics_collector.set_enabled(opts->get_enable_memory_metrics());
+	memory_metrics_collector.reset();
 	set_process_internal(true);
 }
 
@@ -29,6 +32,7 @@ void SentryAutoMetrics::_stop_collection() {
 		set_process_internal(false);
 		frame_metrics_collector.reset();
 		rendering_metrics_collector.reset();
+		memory_metrics_collector.reset();
 	}
 }
 
@@ -65,7 +69,7 @@ void SentryAutoMetrics::_notification(int p_what) {
 }
 
 SentryAutoMetrics::SentryAutoMetrics() :
-		frame_metrics_collector(_attributes), rendering_metrics_collector(_attributes) {
+		frame_metrics_collector(_attributes), rendering_metrics_collector(_attributes), memory_metrics_collector(_attributes) {
 	set_process_internal(false);
 	set_process_mode(PROCESS_MODE_ALWAYS);
 }

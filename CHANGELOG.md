@@ -7,6 +7,7 @@
 - Add opt-in automatic frame time and FPS metrics, configurable through `SentryOptions.auto_metrics` and Project Settings ([#1013](https://github.com/getsentry/sentry-godot/pull/1013))
 - Add GPU name, CPU core count, RAM size, resolution, and current scene attributes to automatic performance metrics ([#1018](https://github.com/getsentry/sentry-godot/pull/1018))
 - Add opt-in automatic rendering metrics for draw calls, primitives, and video, texture, and buffer memory usage, configurable through `SentryOptions.auto_metrics` and Project Settings ([#1021](https://github.com/getsentry/sentry-godot/pull/1021))
+- Add opt-in automatic memory metrics for process resident memory, object count, and node count, configurable through `SentryOptions.auto_metrics` and Project Settings ([#1024](https://github.com/getsentry/sentry-godot/pull/1024))
 
 ### Improvements
 

@@ -1,7 +1,7 @@
 // Tests the frame metrics collector directly.
 // SDK integration is tested in project/test/isolated/test_auto_metrics_lifecycle.gd.
 
-#if defined(TESTS_ENABLED) && defined(SDK_NATIVE)
+#ifdef TESTS_ENABLED
 
 #include "cpp_test_helpers.h"
 #include "sentry/auto_metrics/auto_metrics_attributes.h"
@@ -160,4 +160,4 @@ TEST_SUITE("Frame metrics collector") {
 	}
 }
 
-#endif // TESTS_ENABLED && SDK_NATIVE
+#endif // TESTS_ENABLED
