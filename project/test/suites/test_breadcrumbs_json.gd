@@ -80,6 +80,43 @@ func test_breadcrumbs_with_utf8() -> void:
 		.exactly(1)
 
 
+func test_breadcrumb_data_is_replaced() -> void:
+	var crumb := SentryBreadcrumb.create("Replaced breadcrumb data")
+	crumb.set_data({"biome": "forest", "time_of_day": 0.42})
+	crumb.set_data({"biome": "desert", "weather": "sunny"})
+	SentrySDK.add_breadcrumb(crumb)
+
+	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json).describe("Breadcrumb data is replaced, removing stale keys") \
+		.at("/breadcrumbs/") \
+		.with_objects() \
+		.containing("message", "Replaced breadcrumb data") \
+		.must_contain("data", {"biome": "desert", "weather": "sunny"}) \
+		.exactly(1)
+
+
+func test_breadcrumb_data_can_be_cleared() -> void:
+	var crumb := SentryBreadcrumb.create("Cleared breadcrumb data")
+	crumb.set_data({"biome": "forest", "time_of_day": 0.42})
+	crumb.set_data({})
+	SentrySDK.add_breadcrumb(crumb)
+
+	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+
+	assert_json(json).describe("Empty dictionary clears breadcrumb data") \
+		.at("/breadcrumbs/") \
+		.with_objects() \
+		.containing("message", "Cleared breadcrumb data") \
+		.either() \
+			.must_not_contain("data") \
+		.or_else() \
+			.at("data") \
+			.is_equal({}) \
+		.end() \
+		.exactly(1)
+
+
 func test_breadcrumbs_with_complex_nested_data() -> void:
 	var crumb := SentryBreadcrumb.create("Player stats updated")
 	crumb.category = "gameplay"
