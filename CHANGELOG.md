@@ -13,9 +13,9 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v9.29.2 to v9.30.1 ([#998](https://github.com/getsentry/sentry-godot/pull/998), [#1009](https://github.com/getsentry/sentry-godot/pull/1009))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9301)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.29.2...9.30.1)
+- Bump Cocoa SDK from v9.29.2 to v9.30.2 ([#998](https://github.com/getsentry/sentry-godot/pull/998), [#1009](https://github.com/getsentry/sentry-godot/pull/1009), [#1022](https://github.com/getsentry/sentry-godot/pull/1022))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9302)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.29.2...9.30.2)
 - Bump Sentry .NET SDK from v6.11.1 to v6.12.1 ([#999](https://github.com/getsentry/sentry-godot/pull/999), [#1020](https://github.com/getsentry/sentry-godot/pull/1020))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6121)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.11.1...6.12.1)
