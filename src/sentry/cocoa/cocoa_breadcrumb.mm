@@ -38,7 +38,15 @@ String CocoaBreadcrumb::get_type() const {
 }
 
 void CocoaBreadcrumb::set_data(const Dictionary &p_data) {
-	cocoa_breadcrumb.data = dictionary_to_objc(p_data);
+	for (NSString *key in cocoa_breadcrumb.data) {
+		[cocoa_breadcrumb setDataValue:nil forKey:key];
+	}
+	const Array keys = p_data.keys();
+	for (int i = 0; i < keys.size(); i++) {
+		const Variant &key = keys[i];
+		[cocoa_breadcrumb setDataValue:variant_to_objc(p_data[key], 1)
+								forKey:string_to_objc(key.stringify())];
+	}
 }
 
 Ref<SentryTimestamp> CocoaBreadcrumb::get_timestamp() {
