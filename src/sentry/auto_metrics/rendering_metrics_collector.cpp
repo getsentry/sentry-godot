@@ -1,6 +1,7 @@
 #include "rendering_metrics_collector.h"
 
 #include "auto_metrics_attributes.h"
+#include "sentry/logging/print.h"
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_unit.h"
 
@@ -20,9 +21,16 @@ inline bool _is_valid_reading(double p_value) {
 
 bool RenderingMetricsCollector::_read_performance_monitors(Snapshot &p_snapshot) {
 	if (DisplayServer::get_singleton()->get_name() == "headless") {
+		SENTRY_PRINT_ONCE(sentry::LEVEL_DEBUG,
+				"Headless display server detected. Rendering metrics will not be collected.");
 		return false;
 	}
 	Performance *performance = Performance::get_singleton();
+	if (performance == nullptr) {
+		SENTRY_PRINT_ONCE(sentry::LEVEL_WARNING,
+				"Performance singleton is not available. Rendering metrics will not be collected.");
+		return false;
+	}
 	p_snapshot.draw_calls = performance->get_monitor(Performance::RENDER_TOTAL_DRAW_CALLS_IN_FRAME);
 	p_snapshot.primitives = performance->get_monitor(Performance::RENDER_TOTAL_PRIMITIVES_IN_FRAME);
 	p_snapshot.video_mem_used = performance->get_monitor(Performance::RENDER_VIDEO_MEM_USED);
