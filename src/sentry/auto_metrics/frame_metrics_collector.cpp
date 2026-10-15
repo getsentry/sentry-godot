@@ -1,7 +1,9 @@
 #include "frame_metrics_collector.h"
 
 #include "auto_metrics_attributes.h"
+#include "sentry/logging/print.h"
 #include "sentry/sentry_sdk.h"
+#include "sentry/sentry_unit.h"
 
 #include <godot_cpp/classes/performance.hpp>
 
@@ -28,11 +30,17 @@ void FrameMetricsCollector::_process(uint64_t p_now_usec) {
 			_num_frames = 0;
 			_deadline = p_now_usec + SENTRY_OPTIONS()->get_auto_metrics()->get_normalized_frame_metrics_interval_usec();
 			const Dictionary &attributes = _attributes.get_current();
-			SentrySDK::get_singleton()->get_metrics()->distribution(
-					"game.perf.frame_time", _sampled_frametime, "millisecond", attributes);
-			SentrySDK::get_singleton()->get_metrics()->gauge(
-					"game.perf.fps",
-					Performance::get_singleton()->get_monitor(Performance::Monitor::TIME_FPS), String(), attributes);
+			SentrySDK::get_singleton()->get_metrics()->distribution("game.perf.frame_time",
+					_sampled_frametime, SentryUnit::get_singleton()->get_millisecond(), attributes);
+
+			Performance *performance = Performance::get_singleton();
+			if (performance == nullptr) {
+				SENTRY_PRINT_ONCE(sentry::LEVEL_WARNING,
+						"Performance singleton is not available. FPS metrics will not be collected.");
+			} else {
+				SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.fps",
+						performance->get_monitor(Performance::Monitor::TIME_FPS), String(), attributes);
+			}
 		}
 	}
 	_last_usec = p_now_usec;
