@@ -185,6 +185,17 @@ sources += Glob("src/sentry/util/*.cpp")
 sources += Glob("src/sentry/dotnet/*.cpp")
 sources += Glob("src/sentry/auto_metrics/*.cpp")
 
+# Platform-specific sources.
+platform_directory = {
+    "windows": "windows",
+    "linux": "linux",
+    "android": "linux",
+    "macos": "apple",
+    "ios": "apple",
+}.get(platform, "unsupported")
+sources += Glob("src/sentry/platform/*.cpp")
+sources += Glob(f"src/sentry/platform/{platform_directory}/*.cpp")
+
 # Backend-specific sources.
 if internal_sdk == SDK.NATIVE:
     sources += Glob("src/sentry/native/*.cpp")
