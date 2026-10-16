@@ -113,6 +113,8 @@ TEST_SUITE("[.NET] Options interop") {
 				crossed.insert(option_name(option));
 			}
 			const HashSet<String> not_crossed = {
+				// Network auto-metrics options are synchronized in a follow-up PR.
+				"enable_network_metrics", "network_metrics_interval_sec",
 				// Only affects the JavaScript SDK on Web.
 				"trace_lifecycle",
 				// Deprecated no-ops.
