@@ -147,6 +147,7 @@ public partial class DotnetTestHarness : RefCounted
             _receivedOptions["enable_anr_detection"] = options.Android.EnableAnrDetection;
             _receivedOptions["anr_timeout_interval_ms"] = (int)options.Android.AnrTimeoutInterval.TotalMilliseconds;
             _receivedOptions["attach_anr_thread_dump"] = options.Android.AttachAnrThreadDump;
+            _receivedOptions["enable_metrickit"] = options.Apple.EnableMetricKit;
 
             // Init sends these back through ManagedOptions. Every value differs from the one above,
             // so a value can only reach the native layer by actually crossing the boundary.
@@ -185,6 +186,7 @@ public partial class DotnetTestHarness : RefCounted
             options.Android.EnableAnrDetection = true;
             options.Android.AnrTimeoutInterval = TimeSpan.FromMilliseconds(2400);
             options.Android.AttachAnrThreadDump = false;
+            options.Apple.EnableMetricKit = false;
         });
     }
 

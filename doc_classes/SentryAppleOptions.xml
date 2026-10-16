@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryAppleOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Apple-specific options for Sentry SDK.
+	</brief_description>
+	<description>
+		Contains configuration options that apply only when the project runs on Apple platforms (iOS and macOS), such as the MetricKit integration. Access this configuration through [member SentryOptions.apple].
+		See also [SentryOptions].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="enable_metrickit" type="bool" setter="set_enable_metrickit" getter="get_enable_metrickit" default="false">
+			If [code]true[/code], enables the MetricKit integration, which reports hang, CPU exception, and disk write exception diagnostics collected by the operating system as Sentry events.
+			MetricKit is the recommended replacement for [member SentryOptions.enable_app_hang_tracking], which can report false positives. The two options are independent, so disable app hang tracking to rely on MetricKit alone. The operating system delivers MetricKit diagnostics in batches, typically at most once per day on a later launch, so they don't arrive in real time. Diagnostics are only collected on physical devices.
+			To learn more, visit [url=https://docs.sentry.io/platforms/apple/configuration/metric-kit/]MetricKit documentation[/url].
+		</member>
+	</members>
+</class>

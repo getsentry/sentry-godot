@@ -241,6 +241,9 @@ struct NativeOptions {
 	int32_t android_anr_timeout_interval_ms;
 	uint8_t android_attach_anr_thread_dump;
 
+	// Apple
+	uint8_t apple_enable_metrickit;
+
 	// Trace propagation
 	GodotStringHandle org_id;
 	NativeArray trace_propagation_targets;
@@ -291,6 +294,8 @@ struct ManagedOptions {
 	int32_t android_anr_timeout_interval_ms;
 	uint8_t android_attach_anr_thread_dump;
 
+	uint8_t apple_enable_metrickit;
+
 	// Trace propagation
 	const char16_t *org_id;
 	int32_t org_id_len;
@@ -336,6 +341,7 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->get_android()->set_enable_anr_detection(data.android_enable_anr_detection);
 	options->get_android()->set_anr_timeout_interval_ms(data.android_anr_timeout_interval_ms);
 	options->get_android()->set_attach_anr_thread_dump(data.android_attach_anr_thread_dump);
+	options->get_apple()->set_enable_metrickit(data.apple_enable_metrickit);
 	options->set_org_id(String::utf16(data.org_id, data.org_id_len));
 	options->set_trace_propagation_targets(_managed_trace_propagation_targets_to_array(data.trace_propagation_targets));
 	options->set_propagate_traceparent(data.propagate_traceparent);
@@ -376,6 +382,7 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.android_enable_anr_detection = options->get_android()->get_enable_anr_detection();
 	r_data.android_anr_timeout_interval_ms = options->get_android()->get_anr_timeout_interval_ms();
 	r_data.android_attach_anr_thread_dump = options->get_android()->get_attach_anr_thread_dump();
+	r_data.apple_enable_metrickit = options->get_apple()->get_enable_metrickit();
 	r_data.org_id = _make_handle(options->get_org_id());
 	r_data.trace_propagation_targets = _make_trace_propagation_targets(options->get_trace_propagation_targets());
 	r_data.propagate_traceparent = options->is_propagate_traceparent_enabled();
