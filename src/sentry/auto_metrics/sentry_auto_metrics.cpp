@@ -2,6 +2,7 @@
 
 #include "sentry/sentry_sdk.h"
 
+#include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/time.hpp>
 
 namespace sentry {
@@ -46,6 +47,7 @@ void SentryAutoMetrics::_notification(int p_what) {
 			_process_collectors();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
+			_is_headless = DisplayServer::get_singleton()->get_name() == "headless";
 			_attributes.setup();
 			_start_collection_if_app_is_active();
 		} break;
@@ -62,12 +64,16 @@ void SentryAutoMetrics::_notification(int p_what) {
 			_start_collection_if_app_is_active();
 		} break;
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			_app_focused = false;
-			_stop_collection();
+			if (!_is_headless) {
+				_app_focused = false;
+				_stop_collection();
+			}
 		} break;
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
-			_app_focused = true;
-			_start_collection_if_app_is_active();
+			if (!_is_headless) {
+				_app_focused = true;
+				_start_collection_if_app_is_active();
+			}
 		} break;
 	}
 }
