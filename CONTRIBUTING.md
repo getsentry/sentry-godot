@@ -9,7 +9,7 @@ Sentry SDK for Godot Engine can be built for Windows x86_64, Linux x86_64, macOS
 - C/C++ compiler
 - SCons build tool and Python
 - CMake -- to build sentry-native SDK
-- clang-format & pre-commit -- for style checks
+- [prek](https://prek.j178.dev/installation/) -- for style checks
 - Android Studio -- to build supporting library for Android
 - .NET SDK 8.0 or later -- to build the .NET layer
 
@@ -186,9 +186,17 @@ flowchart LR
 
 ## Formatting Code
 
-Please run `clang-format` before submitting a PR to adhere to our code style. C# files are formatted with `dotnet format` instead. Both run via [pre-commit](https://pre-commit.com/) hooks for automatic formatting on commit:
+Run `clang-format` before submitting a PR to adhere to our code style. C# files are formatted with `dotnet format` instead. Both run via [prek](https://prek.j178.dev/) hooks using `.pre-commit-config.yaml`. Install the hooks and prepare their environments:
+
 ```sh
-pre-commit install
+prek install
+prek prepare-hooks
+```
+
+To check all files, as CI does:
+
+```sh
+prek run --all-files
 ```
 
 ## Documentation
