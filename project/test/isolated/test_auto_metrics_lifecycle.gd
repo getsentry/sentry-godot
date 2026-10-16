@@ -22,6 +22,7 @@ func _init_sdk(enabled: bool = true) -> void:
 		options.auto_metrics.enable_frame_metrics = enabled
 		options.auto_metrics.enable_rendering_metrics = enabled
 		options.auto_metrics.enable_memory_metrics = enabled
+		options.auto_metrics.enable_network_metrics = enabled
 		options.auto_metrics.frame_metrics_interval_sec = 1.0
 		options.auto_metrics.memory_metrics_interval_sec = 1.0
 		options.before_send_metric = func(_metric: SentryMetric) -> SentryMetric:
