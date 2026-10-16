@@ -96,6 +96,7 @@ TEST_SUITE("[.NET] Options interop") {
 			{ "sentry/android/application_not_responding/enable_detection",    "android:enable_anr_detection",                 false,                          true },
 			{ "sentry/android/application_not_responding/timeout_interval_ms", "android:anr_timeout_interval_ms",              1300,                           2400 },
 			{ "sentry/android/application_not_responding/attach_thread_dump",  "android:attach_anr_thread_dump",               true,                           false },
+			{ "sentry/apple/metrickit/enabled",                                "apple:enable_metrickit",                       true,                           false },
 			// clang-format on
 		};
 
@@ -121,7 +122,7 @@ TEST_SUITE("[.NET] Options interop") {
 				"logger_event_mask", "logger_breadcrumb_mask", "logger_log_mask"
 			};
 
-			for (const char *class_name : { "SentryOptions", "SentryAutoMetricsOptions", "SentryGodotLoggerOptions", "SentryLoggerLimits", "SentryAndroidOptions" }) {
+			for (const char *class_name : { "SentryOptions", "SentryAutoMetricsOptions", "SentryGodotLoggerOptions", "SentryLoggerLimits", "SentryAndroidOptions", "SentryAppleOptions" }) {
 				const TypedArray<Dictionary> properties = ClassDBSingleton::get_singleton()->class_get_property_list(class_name, true);
 				for (int i = 0; i < properties.size(); i++) {
 					const Dictionary property = properties[i];
