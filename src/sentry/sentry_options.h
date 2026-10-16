@@ -97,6 +97,8 @@ class SentryAutoMetricsOptions : public RefCounted {
 	SIMPLE_PROPERTY(double, rendering_metrics_interval_sec, 1.0);
 	SIMPLE_PROPERTY(bool, enable_memory_metrics, false);
 	SIMPLE_PROPERTY(double, memory_metrics_interval_sec, 60.0);
+	SIMPLE_PROPERTY(bool, enable_network_metrics, false);
+	SIMPLE_PROPERTY(double, network_metrics_interval_sec, 10.0);
 
 protected:
 	static void _bind_methods();
@@ -105,8 +107,9 @@ public:
 	uint64_t get_normalized_frame_metrics_interval_usec() const;
 	uint64_t get_normalized_rendering_metrics_interval_usec() const;
 	uint64_t get_normalized_memory_metrics_interval_usec() const;
+	uint64_t get_normalized_network_metrics_interval_usec() const;
 
-	_FORCE_INLINE_ bool is_any_enabled() const { return enable_frame_metrics || enable_rendering_metrics || enable_memory_metrics; }
+	_FORCE_INLINE_ bool is_any_enabled() const { return enable_frame_metrics || enable_rendering_metrics || enable_memory_metrics || enable_network_metrics; }
 };
 
 // Main Sentry options.
