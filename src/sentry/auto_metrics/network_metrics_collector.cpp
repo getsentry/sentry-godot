@@ -8,20 +8,31 @@
 #include <godot_cpp/classes/e_net_multiplayer_peer.hpp>
 #include <godot_cpp/classes/e_net_packet_peer.hpp>
 #include <godot_cpp/classes/multiplayer_api.hpp>
+#include <godot_cpp/classes/offline_multiplayer_peer.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/core/math.hpp>
 
 namespace sentry {
 
+namespace {
+
+inline void _read_enet_peer_ping(const Ref<ENetPacketPeer> &p_peer, NetworkMetricsCollector::Snapshot &p_snapshot) {
+	if (p_peer.is_valid() && p_peer->get_state() == ENetPacketPeer::STATE_CONNECTED) {
+		p_snapshot.add_ping(p_peer->get_statistic(ENetPacketPeer::PEER_ROUND_TRIP_TIME));
+	}
+}
+
+} // namespace
+
 void NetworkMetricsCollector::Snapshot::add_ping(double p_ping_msec) {
-	++num_peers;
+	++num_ping_readings;
 	total_ping_msec += p_ping_msec;
 	max_ping_msec = MAX(max_ping_msec, p_ping_msec);
 }
 
-bool NetworkMetricsCollector::_read_enet_statistics(Snapshot &p_snapshot) {
+bool NetworkMetricsCollector::_read_network_stats(Snapshot &p_snapshot) {
 	SceneTree *tree = SceneTree::get_singleton();
-	if (tree == nullptr) {
+	if (unlikely(tree == nullptr)) {
 		SENTRY_PRINT_ONCE(sentry::LEVEL_WARNING, "SceneTree is not available. Network metrics will not be collected.");
 		return false;
 	}
@@ -29,12 +40,14 @@ bool NetworkMetricsCollector::_read_enet_statistics(Snapshot &p_snapshot) {
 	if (multiplayer.is_null()) {
 		return false;
 	}
-	Ref<ENetMultiplayerPeer> enet = multiplayer->get_multiplayer_peer();
-	if (enet.is_null() || enet->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED) {
+	Ref<MultiplayerPeer> multiplayer_peer = multiplayer->get_multiplayer_peer();
+	if (multiplayer_peer.is_null() ||
+			Object::cast_to<OfflineMultiplayerPeer>(multiplayer_peer.ptr()) ||
+			multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED) {
 		return false;
 	}
 
-	if (!enet->is_server_relay_supported()) {
+	if (!multiplayer_peer->is_server_relay_supported()) {
 		p_snapshot.topology = Topology::MESH;
 	} else if (multiplayer->is_server()) {
 		p_snapshot.topology = Topology::SERVER;
@@ -42,17 +55,21 @@ bool NetworkMetricsCollector::_read_enet_statistics(Snapshot &p_snapshot) {
 		p_snapshot.topology = Topology::CLIENT;
 	}
 
-	for (int32_t peer_id : multiplayer->get_peers()) {
-		if (p_snapshot.topology == Topology::CLIENT && peer_id != MultiplayerPeer::TARGET_PEER_SERVER) {
-			// If client, we are only interested in server.
-			continue;
+	Ref<ENetMultiplayerPeer> enet = multiplayer_peer;
+	if (p_snapshot.topology == Topology::CLIENT) {
+		if (enet.is_valid()) {
+			_read_enet_peer_ping(enet->get_peer(MultiplayerPeer::TARGET_PEER_SERVER), p_snapshot);
 		}
-
-		Ref<ENetPacketPeer> peer = enet->get_peer(peer_id);
-		if (peer.is_valid() && peer->get_state() == ENetPacketPeer::STATE_CONNECTED) {
-			p_snapshot.add_ping(peer->get_statistic(ENetPacketPeer::PEER_ROUND_TRIP_TIME));
+	} else {
+		const PackedInt32Array peers = multiplayer->get_peers();
+		p_snapshot.num_peers = peers.size();
+		if (enet.is_valid()) {
+			for (int32_t peer_id : peers) {
+				_read_enet_peer_ping(enet->get_peer(peer_id), p_snapshot);
+			}
 		}
 	}
+
 	return true;
 }
 
@@ -67,22 +84,31 @@ void NetworkMetricsCollector::_process(uint64_t p_now_usec) {
 	_deadline = p_now_usec + SENTRY_OPTIONS()->get_auto_metrics()->get_normalized_network_metrics_interval_usec();
 
 	Snapshot snapshot;
-	if (!_snapshot_reader(snapshot) || snapshot.num_peers == 0) {
+	if (!_snapshot_reader(snapshot)) {
 		return;
 	}
 
 	const Dictionary &attributes = _attributes.get_current();
-	const String &unit = SentryUnit::get_singleton()->get_millisecond();
-	const double mean_ping_msec = snapshot.total_ping_msec / snapshot.num_peers;
-	switch (snapshot.topology) {
-		case Topology::CLIENT: {
-			SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.ping", mean_ping_msec, unit, attributes);
-		} break;
-		case Topology::SERVER:
-		case Topology::MESH: {
-			SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.ping_peer_avg", mean_ping_msec, unit, attributes);
-			SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.ping_peer_max", snapshot.max_ping_msec, unit, attributes);
-		} break;
+	if (snapshot.topology != Topology::CLIENT) {
+		SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.num_peers", snapshot.num_peers, String(), attributes);
+	}
+
+	if (snapshot.num_ping_readings > 0) {
+		const String &unit = SentryUnit::get_singleton()->get_millisecond();
+		const double mean_ping_msec = snapshot.total_ping_msec / snapshot.num_ping_readings;
+		switch (snapshot.topology) {
+			case Topology::CLIENT: {
+				SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.ping",
+						mean_ping_msec, unit, attributes);
+			} break;
+			case Topology::SERVER:
+			case Topology::MESH: {
+				SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.ping_peer_avg",
+						mean_ping_msec, unit, attributes);
+				SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.ping_peer_max",
+						snapshot.max_ping_msec, unit, attributes);
+			} break;
+		}
 	}
 }
 
