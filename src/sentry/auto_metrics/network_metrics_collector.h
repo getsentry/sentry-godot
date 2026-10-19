@@ -21,6 +21,8 @@ public:
 		godot::ObjectID host_id;
 		double bytes_received = 0.0;
 		double bytes_sent = 0.0;
+		double packets_received = 0.0;
+		double packets_sent = 0.0;
 		double total_ping_msec = 0.0;
 		double max_ping_msec = 0.0;
 		uint32_t num_peers = 0;

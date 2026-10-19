@@ -69,6 +69,8 @@ bool NetworkMetricsCollector::_read_network_stats(Snapshot &p_snapshot) {
 				p_snapshot.host_id = ObjectID(host->get_instance_id());
 				p_snapshot.bytes_received = host->pop_statistic(ENetConnection::HOST_TOTAL_RECEIVED_DATA);
 				p_snapshot.bytes_sent = host->pop_statistic(ENetConnection::HOST_TOTAL_SENT_DATA);
+				p_snapshot.packets_received = host->pop_statistic(ENetConnection::HOST_TOTAL_RECEIVED_PACKETS);
+				p_snapshot.packets_sent = host->pop_statistic(ENetConnection::HOST_TOTAL_SENT_PACKETS);
 			}
 		}
 
@@ -141,6 +143,10 @@ void NetworkMetricsCollector::_process(uint64_t p_now_usec) {
 					Math::round(snapshot.bytes_received / elapsed_sec), unit, attributes);
 			SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.out_rate",
 					Math::round(snapshot.bytes_sent / elapsed_sec), unit, attributes);
+			SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.in_packets",
+					snapshot.packets_received / elapsed_sec, String(), attributes);
+			SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.out_packets",
+					snapshot.packets_sent / elapsed_sec, String(), attributes);
 		}
 		_last_traffic_host_id = snapshot.host_id;
 		_last_traffic_usec = p_now_usec;
