@@ -5,6 +5,7 @@
 #include "sentry/sentry_sdk.h"
 #include "sentry/sentry_unit.h"
 
+#include <godot_cpp/classes/e_net_connection.hpp>
 #include <godot_cpp/classes/e_net_multiplayer_peer.hpp>
 #include <godot_cpp/classes/e_net_packet_peer.hpp>
 #include <godot_cpp/classes/multiplayer_api.hpp>
@@ -55,16 +56,26 @@ bool NetworkMetricsCollector::_read_network_stats(Snapshot &p_snapshot) {
 		p_snapshot.topology = Topology::CLIENT;
 	}
 
+	if (p_snapshot.topology != Topology::CLIENT) {
+		p_snapshot.num_peers = multiplayer->get_peers().size();
+	}
+
 	Ref<ENetMultiplayerPeer> enet = multiplayer_peer;
-	if (p_snapshot.topology == Topology::CLIENT) {
-		if (enet.is_valid()) {
-			_read_enet_peer_ping(enet->get_peer(MultiplayerPeer::TARGET_PEER_SERVER), p_snapshot);
+	if (enet.is_valid()) {
+		if (p_snapshot.topology != Topology::MESH) {
+			// Client-server
+			Ref<ENetConnection> host = enet->get_host();
+			if (host.is_valid()) {
+				p_snapshot.host_id = ObjectID(host->get_instance_id());
+				p_snapshot.bytes_received = host->pop_statistic(ENetConnection::HOST_TOTAL_RECEIVED_DATA);
+				p_snapshot.bytes_sent = host->pop_statistic(ENetConnection::HOST_TOTAL_SENT_DATA);
+			}
 		}
-	} else {
-		const PackedInt32Array peers = multiplayer->get_peers();
-		p_snapshot.num_peers = peers.size();
-		if (enet.is_valid()) {
-			for (int32_t peer_id : peers) {
+
+		if (p_snapshot.topology == Topology::CLIENT) {
+			_read_enet_peer_ping(enet->get_peer(MultiplayerPeer::TARGET_PEER_SERVER), p_snapshot);
+		} else {
+			for (int32_t peer_id : multiplayer->get_peers()) {
 				_read_enet_peer_ping(enet->get_peer(peer_id), p_snapshot);
 			}
 		}
@@ -85,15 +96,19 @@ void NetworkMetricsCollector::_process(uint64_t p_now_usec) {
 
 	Snapshot snapshot;
 	if (!_snapshot_reader(snapshot)) {
+		_last_traffic_host_id = ObjectID();
 		return;
 	}
 
 	const Dictionary &attributes = _attributes.get_current();
+
+	// Num peers
 	if (snapshot.topology != Topology::CLIENT) {
 		SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.num_peers",
 				snapshot.num_peers, String(), attributes);
 	}
 
+	// Ping
 	if (snapshot.num_ping_readings > 0) {
 		const String &unit = SentryUnit::get_singleton()->get_millisecond();
 		const double mean_ping_msec = snapshot.total_ping_msec / snapshot.num_ping_readings;
@@ -111,10 +126,31 @@ void NetworkMetricsCollector::_process(uint64_t p_now_usec) {
 			} break;
 		}
 	}
+
+	// Traffic
+	if (snapshot.topology != Topology::MESH) {
+		// Host instance ID is used to identify the baseline.
+		// Same host: divide the bytes read by elapsed time to produce rates.
+		// New host or no previous baseline: discard the counters and start a new baseline.
+		// No valid host: clear the baseline until a valid host appears.
+		// Otherwise, we’d divide the new connection’s accumulated traffic by the old connection’s elapsed time.
+		if (snapshot.host_id.is_valid() && snapshot.host_id == _last_traffic_host_id) {
+			const double elapsed_sec = (p_now_usec - _last_traffic_usec) * 0.000001;
+			const String &unit = SentryUnit::get_singleton()->get_byte();
+			SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.in_rate",
+					snapshot.bytes_received / elapsed_sec, unit, attributes);
+			SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.out_rate",
+					snapshot.bytes_sent / elapsed_sec, unit, attributes);
+		}
+		_last_traffic_host_id = snapshot.host_id;
+		_last_traffic_usec = p_now_usec;
+	}
 }
 
 void NetworkMetricsCollector::reset() {
 	_deadline = 0;
+	_last_traffic_host_id = ObjectID();
+	_last_traffic_usec = 0;
 }
 
 } // namespace sentry

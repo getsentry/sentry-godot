@@ -2,11 +2,13 @@
 
 #include "metrics_collector.h"
 
+#include <godot_cpp/core/object_id.hpp>
+
 namespace sentry {
 
 class AutoMetricsAttributes;
 
-// Collects remote peer counts and cached ENet round-trip times.
+// Collects remote peer counts, cached ENet round-trip times, and ENet traffic rates.
 class NetworkMetricsCollector final : public MetricsCollector {
 public:
 	enum class Topology {
@@ -16,6 +18,9 @@ public:
 	};
 
 	struct Snapshot {
+		godot::ObjectID host_id;
+		double bytes_received = 0.0;
+		double bytes_sent = 0.0;
 		double total_ping_msec = 0.0;
 		double max_ping_msec = 0.0;
 		uint32_t num_peers = 0;
@@ -30,6 +35,8 @@ public:
 private:
 	AutoMetricsAttributes &_attributes;
 	uint64_t _deadline = 0;
+	godot::ObjectID _last_traffic_host_id;
+	uint64_t _last_traffic_usec = 0;
 	SnapshotReader _snapshot_reader;
 
 	static bool _read_network_stats(Snapshot &p_snapshot);
