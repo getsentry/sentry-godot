@@ -27,9 +27,9 @@
 - Bump Sentry JavaScript from v10.75.2 to v11.8.0 ([#991](https://github.com/getsentry/sentry-godot/pull/991), [#1015](https://github.com/getsentry/sentry-godot/pull/1015), [#1029](https://github.com/getsentry/sentry-godot/pull/1029))
   - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#1180)
   - [diff](https://github.com/getsentry/sentry-javascript/compare/10.75.2...11.8.0)
-- Bump Native SDK from v0.17.1 to v0.17.3 ([#1006](https://github.com/getsentry/sentry-godot/pull/1006))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0173)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.1...0.17.3)
+- Bump Native SDK from v0.17.1 to v0.17.4 ([#1006](https://github.com/getsentry/sentry-godot/pull/1006), [#1031](https://github.com/getsentry/sentry-godot/pull/1031))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0174)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.1...0.17.4)
 
 ## 2.3.0
 
