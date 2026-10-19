@@ -138,9 +138,9 @@ void NetworkMetricsCollector::_process(uint64_t p_now_usec) {
 			const double elapsed_sec = (p_now_usec - _last_traffic_usec) * 0.000001;
 			const String &unit = SentryUnit::get_singleton()->get_byte();
 			SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.in_rate",
-					snapshot.bytes_received / elapsed_sec, unit, attributes);
+					Math::round(snapshot.bytes_received / elapsed_sec), unit, attributes);
 			SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.out_rate",
-					snapshot.bytes_sent / elapsed_sec, unit, attributes);
+					Math::round(snapshot.bytes_sent / elapsed_sec), unit, attributes);
 		}
 		_last_traffic_host_id = snapshot.host_id;
 		_last_traffic_usec = p_now_usec;
