@@ -90,7 +90,8 @@ void NetworkMetricsCollector::_process(uint64_t p_now_usec) {
 
 	const Dictionary &attributes = _attributes.get_current();
 	if (snapshot.topology != Topology::CLIENT) {
-		SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.num_peers", snapshot.num_peers, String(), attributes);
+		SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.num_peers",
+				snapshot.num_peers, String(), attributes);
 	}
 
 	if (snapshot.num_ping_readings > 0) {
