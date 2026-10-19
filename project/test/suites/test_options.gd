@@ -54,6 +54,8 @@ func test_auto_metrics_defaults() -> void:
 	assert_float(options.auto_metrics.rendering_metrics_interval_sec).is_equal(1.0)
 	assert_bool(options.auto_metrics.enable_memory_metrics).is_false()
 	assert_float(options.auto_metrics.memory_metrics_interval_sec).is_equal(60.0)
+	assert_bool(options.auto_metrics.enable_network_metrics).is_false()
+	assert_float(options.auto_metrics.network_metrics_interval_sec).is_equal(10.0)
 
 
 @warning_ignore("unused_parameter")
@@ -61,6 +63,7 @@ func test_auto_metrics_options_retain_assigned_values(enable_property: String, i
 		["enable_frame_metrics", "frame_metrics_interval_sec"],
 		["enable_rendering_metrics", "rendering_metrics_interval_sec"],
 		["enable_memory_metrics", "memory_metrics_interval_sec"],
+		["enable_network_metrics", "network_metrics_interval_sec"],
 ]) -> void:
 	options.auto_metrics.set(enable_property, true)
 	options.auto_metrics.set(interval_property, 12.5)

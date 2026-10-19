@@ -2,6 +2,7 @@
 
 #include "sentry/sentry_sdk.h"
 
+#include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/time.hpp>
 
 namespace sentry {
@@ -11,6 +12,7 @@ void SentryAutoMetrics::_process_collectors() {
 	frame_metrics_collector.process(now);
 	rendering_metrics_collector.process(now);
 	memory_metrics_collector.process(now);
+	network_metrics_collector.process(now);
 }
 
 void SentryAutoMetrics::_start_collection_if_app_is_active() {
@@ -24,6 +26,8 @@ void SentryAutoMetrics::_start_collection_if_app_is_active() {
 	rendering_metrics_collector.reset();
 	memory_metrics_collector.set_enabled(opts->get_enable_memory_metrics());
 	memory_metrics_collector.reset();
+	network_metrics_collector.set_enabled(opts->get_enable_network_metrics());
+	network_metrics_collector.reset();
 	set_process_internal(true);
 }
 
@@ -33,6 +37,7 @@ void SentryAutoMetrics::_stop_collection() {
 		frame_metrics_collector.reset();
 		rendering_metrics_collector.reset();
 		memory_metrics_collector.reset();
+		network_metrics_collector.reset();
 	}
 }
 
@@ -42,6 +47,7 @@ void SentryAutoMetrics::_notification(int p_what) {
 			_process_collectors();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
+			_is_headless = DisplayServer::get_singleton()->get_name() == "headless";
 			_attributes.setup();
 			_start_collection_if_app_is_active();
 		} break;
@@ -58,18 +64,22 @@ void SentryAutoMetrics::_notification(int p_what) {
 			_start_collection_if_app_is_active();
 		} break;
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			_app_focused = false;
-			_stop_collection();
+			if (!_is_headless) {
+				_app_focused = false;
+				_stop_collection();
+			}
 		} break;
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
-			_app_focused = true;
-			_start_collection_if_app_is_active();
+			if (!_is_headless) {
+				_app_focused = true;
+				_start_collection_if_app_is_active();
+			}
 		} break;
 	}
 }
 
 SentryAutoMetrics::SentryAutoMetrics() :
-		frame_metrics_collector(_attributes), rendering_metrics_collector(_attributes), memory_metrics_collector(_attributes) {
+		frame_metrics_collector(_attributes), rendering_metrics_collector(_attributes), memory_metrics_collector(_attributes), network_metrics_collector(_attributes) {
 	set_process_internal(false);
 	set_process_mode(PROCESS_MODE_ALWAYS);
 }
