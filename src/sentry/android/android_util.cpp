@@ -9,7 +9,7 @@ namespace sentry::android {
 
 void detail::print_missing_plugin_error(const char *p_function, const char *p_file, int p_line) {
 	sentry::logging::print_error("Skipped ", p_function, " (", String(p_file).get_file(), ":", p_line,
-			"): the Android plugin is unavailable. Godot may destroy it before scene tree is destroyed. Avoid using Sentry objects during scene tree teardown. This may also indicate an SDK lifecycle issue.");
+			"): the Android plugin is unavailable. Godot may destroy it before scene tree cleanup. Avoid using Sentry objects during teardown. This may also indicate an SDK lifecycle issue.");
 }
 
 Variant sanitize_variant(const Variant &p_value, int p_depth) {
