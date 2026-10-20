@@ -1,4 +1,7 @@
 extends GdUnitTestSuite
+## We attach a script to the JNI plugin to shut down Sentry before the plugin is destroyed.
+## Godot destroys JNI singletons before scene-tree cleanup, so waiting for that cleanup is too late.
+## This test sends the notification without freeing the plugin and verifies SDK, scope, and callback cleanup.
 
 
 func before(_do_skip = not OS.has_feature("android"),
@@ -6,9 +9,6 @@ func before(_do_skip = not OS.has_feature("android"),
 	pass
 
 
-# We attach a script to the JNI plugin to shut down Sentry before the plugin is destroyed.
-# Godot destroys JNI singletons before scene-tree cleanup, so waiting for that cleanup is too late.
-# This test sends the notification without freeing the plugin and verifies SDK, scope, and callback cleanup.
 func test_plugin_predelete_runs_full_sdk_shutdown() -> void:
 	var plugin: Object = Engine.get_singleton("SentryAndroidGodotPlugin")
 	var configured_options: Array[SentryOptions] = []
