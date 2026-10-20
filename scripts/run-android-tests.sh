@@ -427,6 +427,11 @@ run_tests() {
         fi
     fi
 
+    # Discard evidence after verified success.
+    if [ "$exit_code" -eq 0 ]; then
+        rm -rf -- "$attempt_dir"
+    fi
+
     msg "Test run finished with code: $exit_code"
 
     return $exit_code
