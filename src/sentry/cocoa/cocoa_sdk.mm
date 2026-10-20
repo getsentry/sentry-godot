@@ -349,7 +349,9 @@ void CocoaSDK::init() {
 
 		options.enableAppHangTracking = SENTRY_OPTIONS()->is_app_hang_tracking_enabled();
 		options.appHangTimeoutInterval = SENTRY_OPTIONS()->get_app_hang_timeout_ms() / 1000.0;
+#if __has_include(<MetricKit/MetricKit.h>) && !TARGET_OS_TV
 		options.enableMetricKit = SENTRY_OPTIONS()->get_apple()->get_enable_metrickit();
+#endif
 		options.shutdownTimeInterval = SENTRY_OPTIONS()->get_shutdown_timeout_ms() / 1000.0;
 
 		// NOTE: This only works for captureMessage(), unfortunately.

@@ -210,7 +210,7 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_interval_ms"), p_options->get_android()->get_anr_timeout_interval_ms(), false);
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/attach_thread_dump"), p_options->get_android()->get_attach_anr_thread_dump(), false);
 
-	_define_setting("sentry/apple/metrickit/enabled", p_options->get_apple()->get_enable_metrickit(), false);
+	_define_setting(PropertyInfo(Variant::BOOL, "sentry/apple/metrickit/enabled"), p_options->get_apple()->get_enable_metrickit(), false);
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/experimental/screenshot_level"), p_options->screenshot_level, false);

@@ -16,9 +16,6 @@
 		<member name="android" type="SentryAndroidOptions" setter="" getter="get_android">
 			Configures Android-specific options, such as ANR (Application Not Responding) detection.
 		</member>
-		<member name="apple" type="SentryAppleOptions" setter="" getter="get_apple">
-			Configures options specific to Apple platforms (iOS and macOS), such as the MetricKit integration.
-		</member>
 		<member name="app_hang_timeout_ms" type="int" setter="set_app_hang_timeout_ms" getter="get_app_hang_timeout_ms" default="5000">
 			Specifies the timeout duration in milliseconds after which the application is considered to have hanged. When [member enable_app_hang_tracking] is enabled, if the main thread is blocked for longer than this duration, it will be reported as an application hang event to Sentry.
 		</member>
@@ -27,6 +24,9 @@
 		</member>
 		<member name="app_hang_tracking" type="bool" setter="deprecated_set_app_hang_tracking" getter="deprecated_get_app_hang_tracking" default="true" deprecated="Use [member enable_app_hang_tracking] instead.">
 			If [code]true[/code], enables automatic detection and reporting of application hangs.
+		</member>
+		<member name="apple" type="SentryAppleOptions" setter="" getter="get_apple">
+			Configures options specific to Apple platforms (iOS and macOS), such as the MetricKit integration.
 		</member>
 		<member name="attach_log" type="bool" setter="set_attach_log" getter="is_attach_log_enabled" default="true">
 			If [code]true[/code], the SDK will attach the Godot log file to the event.
