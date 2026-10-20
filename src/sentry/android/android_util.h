@@ -15,17 +15,17 @@ void print_missing_plugin_error(const char *p_function, const char *p_file, int 
 
 } // namespace sentry::android
 
-// These declare a local from _android_plugin; use inside a braced block.
-#define ENSURE_ANDROID_PLUGIN(m_plugin)                                                          \
-	::godot::Object *m_plugin = _android_plugin.get();                                           \
+// These declare a local; use inside a braced block.
+#define ENSURE_ANDROID_PLUGIN(m_plugin, m_handle)                                                \
+	::godot::Object *m_plugin = (m_handle).get();                                                \
 	if (unlikely(m_plugin == nullptr)) {                                                         \
 		::sentry::android::detail::print_missing_plugin_error(FUNCTION_STR, __FILE__, __LINE__); \
 		return;                                                                                  \
 	} else                                                                                       \
 		((void)0)
 
-#define ENSURE_ANDROID_PLUGIN_V(m_plugin, m_retval)                                              \
-	::godot::Object *m_plugin = _android_plugin.get();                                           \
+#define ENSURE_ANDROID_PLUGIN_V(m_plugin, m_handle, m_retval)                                    \
+	::godot::Object *m_plugin = (m_handle).get();                                                \
 	if (unlikely(m_plugin == nullptr)) {                                                         \
 		::sentry::android::detail::print_missing_plugin_error(FUNCTION_STR, __FILE__, __LINE__); \
 		return m_retval;                                                                         \

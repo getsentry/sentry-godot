@@ -10,17 +10,17 @@
 namespace sentry::android {
 
 void AndroidScope::set_context(const String &p_key, const Dictionary &p_value) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(scopeSetContext), handle, p_key, sanitize_variant(p_value));
 }
 
 void AndroidScope::set_tag(const String &p_key, const String &p_value) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(scopeSetTag), handle, p_key, p_value);
 }
 
 void AndroidScope::set_user(const Ref<SentryUser> &p_user) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	if (p_user.is_valid()) {
 		plugin->call(ANDROID_SN(scopeSetUser), handle,
@@ -34,17 +34,17 @@ void AndroidScope::set_user(const Ref<SentryUser> &p_user) {
 }
 
 void AndroidScope::set_level(sentry::Level p_level) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(scopeSetLevel), handle, p_level);
 }
 
 void AndroidScope::set_fingerprint(const PackedStringArray &p_fingerprint) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(scopeSetFingerprint), handle, p_fingerprint);
 }
 
 void AndroidScope::set_attribute(const String &p_name, const Variant &p_value) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	// Use a type-specific call path because Godot bindings don't natively support
 	// passing arbitrary object/any values.
@@ -68,14 +68,14 @@ void AndroidScope::set_attribute(const String &p_name, const Variant &p_value) {
 }
 
 void AndroidScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	Ref<AndroidBreadcrumb> crumb = p_breadcrumb;
 	ERR_FAIL_COND(crumb.is_null());
 	plugin->call(ANDROID_SN(scopeAddBreadcrumb), handle, crumb->get_handle());
 }
 
 void AndroidScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	if (!p_attachment->get_path().is_empty()) {
 		String absolute_path = p_attachment->get_globalized_path();
@@ -94,18 +94,18 @@ void AndroidScope::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 }
 
 void AndroidScope::set_span(SentrySpanImpl *p_span) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	AndroidSpan *android_span = Castable::cast_to<AndroidSpan>(p_span);
 	plugin->call(ANDROID_SN(scopeSetSpan), handle, android_span ? android_span->get_handle() : 0);
 }
 
 void AndroidScope::clear() {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(scopeClear), handle);
 }
 
 SentryScopeImpl *AndroidScope::clone() const {
-	ENSURE_ANDROID_PLUGIN_V(plugin, memnew(AndroidScope()));
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, memnew(AndroidScope()));
 	int32_t new_handle = plugin->call(ANDROID_SN(cloneScope), handle);
 	return memnew(AndroidScope(_android_plugin, new_handle));
 }

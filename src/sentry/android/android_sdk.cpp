@@ -75,7 +75,7 @@ void SentryAndroidBeforeSendHandler::_initialize(util::ObjectHandle<Object> p_an
 }
 
 void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	sentry::logging::print_debug("handling before_send: ", p_event_handle);
 
@@ -85,7 +85,7 @@ void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
 	Ref<AndroidEvent> processed = sentry::process_event(event_obj);
 
 	if (processed.is_null()) {
-		ENSURE_ANDROID_PLUGIN(release_plugin);
+		ENSURE_ANDROID_PLUGIN(release_plugin, _android_plugin);
 		// Discard event.
 		release_plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
 	}
@@ -98,7 +98,7 @@ void SentryAndroidBeforeSendHandler::_bind_methods() {
 // *** SentryAndroidBeforeSendTransactionHandler
 
 void SentryAndroidBeforeSendTransactionHandler::_before_send_transaction(int32_t p_event_handle) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	Ref<AndroidEvent> transaction_obj = memnew(AndroidEvent(_android_plugin, p_event_handle));
 	transaction_obj->set_as_borrowed();
@@ -106,7 +106,7 @@ void SentryAndroidBeforeSendTransactionHandler::_before_send_transaction(int32_t
 	Ref<AndroidEvent> processed = sentry::process_transaction(transaction_obj);
 
 	if (processed.is_null()) {
-		ENSURE_ANDROID_PLUGIN(release_plugin);
+		ENSURE_ANDROID_PLUGIN(release_plugin, _android_plugin);
 		release_plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
 	}
 }
@@ -118,7 +118,7 @@ void SentryAndroidBeforeSendTransactionHandler::_bind_methods() {
 // *** SentryAndroidBeforeSendFeedbackHandler
 
 void SentryAndroidBeforeSendFeedbackHandler::_before_send_feedback(int32_t p_event_handle) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	Ref<AndroidEvent> event_obj = memnew(AndroidEvent(_android_plugin, p_event_handle));
 	event_obj->set_as_borrowed();
@@ -126,7 +126,7 @@ void SentryAndroidBeforeSendFeedbackHandler::_before_send_feedback(int32_t p_eve
 	Ref<AndroidEvent> processed = sentry::process_feedback(event_obj);
 
 	if (processed.is_null()) {
-		ENSURE_ANDROID_PLUGIN(release_plugin);
+		ENSURE_ANDROID_PLUGIN(release_plugin, _android_plugin);
 		// Discard feedback.
 		release_plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
 	}
@@ -143,7 +143,7 @@ void SentryAndroidBeforeSendLogHandler::_initialize(util::ObjectHandle<Object> p
 }
 
 void SentryAndroidBeforeSendLogHandler::_before_send_log(int32_t p_handle) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	Ref<AndroidLog> log_obj = memnew(AndroidLog(_android_plugin, p_handle));
 	log_obj->set_as_borrowed();
@@ -151,7 +151,7 @@ void SentryAndroidBeforeSendLogHandler::_before_send_log(int32_t p_handle) {
 	Ref<AndroidLog> processed = sentry::process_log(log_obj);
 
 	if (processed.is_null()) {
-		ENSURE_ANDROID_PLUGIN(release_plugin);
+		ENSURE_ANDROID_PLUGIN(release_plugin, _android_plugin);
 		// Discard log.
 		release_plugin->call(ANDROID_SN(releaseLog), p_handle);
 	}
@@ -164,7 +164,7 @@ void SentryAndroidBeforeSendLogHandler::_bind_methods() {
 // ** SentryAndroidBeforeSendMetricHandler
 
 void SentryAndroidBeforeSendMetricHandler::_before_send_metric(int32_t p_metric_handle) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	Ref<AndroidMetric> metric_obj = memnew(AndroidMetric(_android_plugin, p_metric_handle));
 	metric_obj->set_as_borrowed();
@@ -172,7 +172,7 @@ void SentryAndroidBeforeSendMetricHandler::_before_send_metric(int32_t p_metric_
 	Ref<AndroidMetric> processed = sentry::process_metric(metric_obj);
 
 	if (processed.is_null()) {
-		ENSURE_ANDROID_PLUGIN(release_plugin);
+		ENSURE_ANDROID_PLUGIN(release_plugin, _android_plugin);
 		// Discard metric.
 		release_plugin->call(ANDROID_SN(releaseMetric), p_metric_handle);
 	}
@@ -185,27 +185,27 @@ void SentryAndroidBeforeSendMetricHandler::_bind_methods() {
 // *** AndroidSDK
 
 void AndroidSDK::set_context(const String &p_key, const Dictionary &p_value) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(setContext), p_key, sanitize_variant(p_value));
 }
 
 void AndroidSDK::remove_context(const String &p_key) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(removeContext), p_key);
 }
 
 void AndroidSDK::set_tag(const String &p_key, const String &p_value) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(setTag), p_key, p_value);
 }
 
 void AndroidSDK::remove_tag(const String &p_key) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(removeTag), p_key);
 }
 
 void AndroidSDK::set_user(const Ref<SentryUser> &p_user) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	if (p_user.is_valid()) {
 		plugin->call(ANDROID_SN(setUser),
@@ -219,26 +219,26 @@ void AndroidSDK::set_user(const Ref<SentryUser> &p_user) {
 }
 
 void AndroidSDK::remove_user() {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(removeUser));
 }
 
 Ref<SentryBreadcrumb> AndroidSDK::create_breadcrumb() {
-	ENSURE_ANDROID_PLUGIN_V(plugin, nullptr);
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, nullptr);
 	int32_t handle = plugin->call(ANDROID_SN(createBreadcrumb));
 	Ref<AndroidBreadcrumb> crumb = memnew(AndroidBreadcrumb(_android_plugin, handle));
 	return crumb;
 }
 
 void AndroidSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	Ref<AndroidBreadcrumb> crumb = p_breadcrumb;
 	ERR_FAIL_COND(crumb.is_null());
 	plugin->call(ANDROID_SN(addBreadcrumb), crumb->get_handle());
 }
 
 void AndroidSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, const String &p_body, const Dictionary &p_attributes) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	if (p_body.is_empty()) {
 		return;
@@ -253,19 +253,19 @@ void AndroidSDK::capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, 
 }
 
 String AndroidSDK::get_last_event_id() {
-	ENSURE_ANDROID_PLUGIN_V(plugin, String());
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, String());
 	return plugin->call(ANDROID_SN(getLastEventId));
 }
 
 Ref<SentryEvent> AndroidSDK::create_event() {
-	ENSURE_ANDROID_PLUGIN_V(plugin, nullptr);
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, nullptr);
 	int32_t event_handle = plugin->call(ANDROID_SN(createEvent));
 	Ref<AndroidEvent> event = memnew(AndroidEvent(_android_plugin, event_handle));
 	return event;
 }
 
 String AndroidSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<SentryEvent> &p_event) {
-	ENSURE_ANDROID_PLUGIN_V(plugin, String());
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, String());
 
 	Ref<AndroidEvent> android_event = p_event;
 	ERR_FAIL_COND_V(android_event.is_null(), String());
@@ -279,7 +279,7 @@ String AndroidSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<Sent
 }
 
 void AndroidSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<SentryFeedback> &p_feedback) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	ERR_FAIL_COND_MSG(p_feedback.is_null(), "Sentry: Can't capture feedback - feedback object is null.");
 	ERR_FAIL_COND_MSG(p_feedback->get_message().is_empty(), "Sentry: Can't capture feedback - feedback message is empty.");
@@ -296,7 +296,7 @@ void AndroidSDK::capture_feedback(const Ref<SentryScope> &p_scope, const Ref<Sen
 }
 
 void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	ERR_FAIL_COND(p_attachment.is_null());
 
 	if (!p_attachment->get_path().is_empty()) {
@@ -321,7 +321,7 @@ void AndroidSDK::add_attachment(const Ref<SentryAttachment> &p_attachment) {
 }
 
 void AndroidSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String &p_name, int64_t p_value, const Dictionary &p_attributes) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	ERR_FAIL_COND(p_scope.is_null());
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
@@ -332,7 +332,7 @@ void AndroidSDK::metrics_add_count(const Ref<SentryScope> &p_scope, const String
 }
 
 void AndroidSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	ERR_FAIL_COND(p_scope.is_null());
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
@@ -343,7 +343,7 @@ void AndroidSDK::metrics_add_gauge(const Ref<SentryScope> &p_scope, const String
 }
 
 void AndroidSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const String &p_name, double p_value, const String &p_unit, const Dictionary &p_attributes) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	ERR_FAIL_COND(p_scope.is_null());
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());
@@ -354,7 +354,7 @@ void AndroidSDK::metrics_add_distribution(const Ref<SentryScope> &p_scope, const
 }
 
 void AndroidSDK::set_attribute(const String &p_name, const Variant &p_value) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	switch (p_value.get_type()) {
 		case Variant::Type::BOOL: {
@@ -376,13 +376,13 @@ void AndroidSDK::set_attribute(const String &p_name, const Variant &p_value) {
 }
 
 void AndroidSDK::remove_attribute(const String &p_name) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	plugin->call(ANDROID_SN(removeAttribute), p_name);
 }
 
 SentryScopeImpl *AndroidSDK::create_scope() {
-	ENSURE_ANDROID_PLUGIN_V(plugin, memnew(AndroidScope()));
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, memnew(AndroidScope()));
 	int32_t handle = plugin->call(ANDROID_SN(createScope));
 	return memnew(AndroidScope(_android_plugin, handle));
 }
@@ -394,13 +394,13 @@ SentrySpanImpl *AndroidSDK::create_span(const String &p_name, const Dictionary &
 void AndroidSDK::set_trace(const String &p_trace_id, const String &p_parent_span_id) {
 	ERR_FAIL_COND(p_trace_id.is_empty());
 
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	plugin->call(ANDROID_SN(setTrace), p_trace_id, p_parent_span_id);
 }
 
 void AndroidSDK::_add_default_attachments() {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
 		plugin->call(ANDROID_SN(addFileAttachment),
@@ -412,14 +412,14 @@ void AndroidSDK::_add_default_attachments() {
 }
 
 void AndroidSDK::clear_attachments() {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	plugin->call(ANDROID_SN(clearAttachments));
 	_add_default_attachments();
 }
 
 void AndroidSDK::init() {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	_add_default_attachments();
 

@@ -6,17 +6,17 @@
 namespace sentry::android {
 
 String AndroidMetric::get_name() const {
-	ENSURE_ANDROID_PLUGIN_V(plugin, String());
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, String());
 	return plugin->call(ANDROID_SN(metricGetName), handle);
 }
 
 void AndroidMetric::set_name(const String &p_name) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(metricSetName), handle, p_name);
 }
 
 SentryMetric::MetricType AndroidMetric::get_type() const {
-	ENSURE_ANDROID_PLUGIN_V(plugin, MetricType::METRIC_COUNTER);
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, MetricType::METRIC_COUNTER);
 
 	String result = plugin->call(ANDROID_SN(metricGetType), handle);
 	if (result == "counter") {
@@ -32,7 +32,7 @@ SentryMetric::MetricType AndroidMetric::get_type() const {
 }
 
 void AndroidMetric::set_type(MetricType p_type) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	String type = "";
 	switch (p_type) {
 		case MetricType::METRIC_COUNTER: {
@@ -53,33 +53,33 @@ void AndroidMetric::set_type(MetricType p_type) {
 }
 
 double AndroidMetric::get_value() const {
-	ENSURE_ANDROID_PLUGIN_V(plugin, 0.0);
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, 0.0);
 	return plugin->call(ANDROID_SN(metricGetValue), handle);
 }
 
 void AndroidMetric::set_value(double p_value) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(metricSetValue), handle, p_value);
 }
 
 String AndroidMetric::get_unit() const {
-	ENSURE_ANDROID_PLUGIN_V(plugin, String());
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, String());
 	return plugin->call(ANDROID_SN(metricGetUnit), handle);
 }
 
 void AndroidMetric::set_unit(const String &p_unit) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(metricSetUnit), handle, p_unit);
 }
 
 Variant AndroidMetric::get_attribute(const String &p_name) const {
-	ENSURE_ANDROID_PLUGIN_V(plugin, Variant());
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, Variant());
 	Dictionary result = plugin->call(ANDROID_SN(metricGetAttribute), handle, p_name);
 	return result["value"];
 }
 
 void AndroidMetric::set_attribute(const String &p_name, const Variant &p_value) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	Dictionary attr_data;
 	attr_data["name"] = p_name;
@@ -107,12 +107,12 @@ void AndroidMetric::set_attribute(const String &p_name, const Variant &p_value) 
 }
 
 void AndroidMetric::add_attributes(const Dictionary &p_attributes) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(metricAddAttributes), handle, p_attributes);
 }
 
 void AndroidMetric::remove_attribute(const String &p_name) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(metricRemoveAttribute), handle, p_name);
 }
 

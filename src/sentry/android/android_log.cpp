@@ -6,35 +6,35 @@
 namespace sentry::android {
 
 LogLevel AndroidLog::get_level() const {
-	ENSURE_ANDROID_PLUGIN_V(plugin, LOG_LEVEL_INFO);
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, LOG_LEVEL_INFO);
 	Variant result = plugin->call(ANDROID_SN(logGetLevel), handle);
 	ERR_FAIL_COND_V(result.get_type() != Variant::INT, LOG_LEVEL_INFO);
 	return (LogLevel)(int)result;
 }
 
 void AndroidLog::set_level(LogLevel p_level) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(logSetLevel), handle, p_level);
 }
 
 String AndroidLog::get_body() const {
-	ENSURE_ANDROID_PLUGIN_V(plugin, String());
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, String());
 	return plugin->call(ANDROID_SN(logGetBody), handle);
 }
 
 void AndroidLog::set_body(const String &p_body) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(logSetBody), handle, p_body);
 }
 
 Variant AndroidLog::get_attribute(const String &p_name) const {
-	ENSURE_ANDROID_PLUGIN_V(plugin, Variant());
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, Variant());
 	Dictionary result = plugin->call(ANDROID_SN(logGetAttribute), handle, p_name);
 	return result["value"];
 }
 
 void AndroidLog::set_attribute(const String &p_name, const Variant &p_value) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	Dictionary attr_data;
 	attr_data["name"] = p_name;
@@ -62,12 +62,12 @@ void AndroidLog::set_attribute(const String &p_name, const Variant &p_value) {
 }
 
 void AndroidLog::add_attributes(const Dictionary &p_attributes) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(logAddAttributes), handle, p_attributes);
 }
 
 void AndroidLog::remove_attribute(const String &p_name) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(logRemoveAttribute), handle, p_name);
 }
 

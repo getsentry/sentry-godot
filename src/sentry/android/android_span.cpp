@@ -19,11 +19,7 @@ inline String _get_op(const Dictionary &p_attributes) {
 namespace sentry::android {
 
 SentrySpanImpl *AndroidSpan::start_root(util::ObjectHandle<Object> p_android_plugin, const String &p_name, const Dictionary &p_attributes) {
-	Object *plugin = p_android_plugin.get();
-	if (!plugin) {
-		detail::print_missing_plugin_error(FUNCTION_STR, __FILE__, __LINE__);
-		return SentrySpanImpl::create_noop();
-	}
+	ENSURE_ANDROID_PLUGIN_V(plugin, p_android_plugin, SentrySpanImpl::create_noop());
 
 	int32_t new_handle = plugin->call(ANDROID_SN(startSpan), p_name, _get_op(p_attributes));
 	if (new_handle == 0) {
@@ -33,7 +29,7 @@ SentrySpanImpl *AndroidSpan::start_root(util::ObjectHandle<Object> p_android_plu
 }
 
 SentrySpanImpl *AndroidSpan::start_child(const String &p_name, const Dictionary &p_attributes) {
-	ENSURE_ANDROID_PLUGIN_V(plugin, SentrySpanImpl::create_noop());
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, SentrySpanImpl::create_noop());
 
 	int32_t child_handle = plugin->call(ANDROID_SN(spanStartChild), _handle, p_name, _get_op(p_attributes));
 	if (child_handle == 0) {
@@ -43,7 +39,7 @@ SentrySpanImpl *AndroidSpan::start_child(const String &p_name, const Dictionary 
 }
 
 void AndroidSpan::set_attribute(const String &p_key, const Variant &p_value) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	// Type-specific call paths, because Godot bindings can't pass an arbitrary object value.
 	switch (p_value.get_type()) {
@@ -66,19 +62,19 @@ void AndroidSpan::set_attribute(const String &p_key, const Variant &p_value) {
 }
 
 void AndroidSpan::set_status(SpanStatus p_status) {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	plugin->call(ANDROID_SN(spanSetStatus), _handle, p_status);
 }
 
 void AndroidSpan::end() {
-	ENSURE_ANDROID_PLUGIN(plugin);
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
 	plugin->call(ANDROID_SN(spanEnd), _handle);
 }
 
 PackedStringArray AndroidSpan::get_trace_headers() {
-	ENSURE_ANDROID_PLUGIN_V(plugin, PackedStringArray());
+	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, PackedStringArray());
 
 	return plugin->call(ANDROID_SN(spanGetTraceHeaders), _handle);
 }
