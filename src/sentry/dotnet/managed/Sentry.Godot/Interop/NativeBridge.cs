@@ -194,6 +194,7 @@ internal static partial class NativeBridge
         public byte android_enable_anr_detection;
         public int android_anr_timeout_interval_ms;
         public byte android_attach_anr_thread_dump;
+        public byte apple_enable_metrickit;
         public GodotStringHandle org_id;
         public NativeArray trace_propagation_targets;
         public byte propagate_traceparent;
@@ -235,6 +236,7 @@ internal static partial class NativeBridge
         public byte android_enable_anr_detection;
         public int android_anr_timeout_interval_ms;
         public byte android_attach_anr_thread_dump;
+        public byte apple_enable_metrickit;
         public char* org_id;
         public int org_id_len;
         public ManagedTracePropagationTargets trace_propagation_targets;
@@ -682,6 +684,7 @@ internal static partial class NativeBridge
         opts.Android.EnableAnrDetection = data.android_enable_anr_detection != 0;
         opts.Android.AnrTimeoutInterval = TimeSpan.FromMilliseconds(data.android_anr_timeout_interval_ms);
         opts.Android.AttachAnrThreadDump = data.android_attach_anr_thread_dump != 0;
+        opts.Apple.EnableMetricKit = data.apple_enable_metrickit != 0;
         opts.OrgId = data.org_id.TakeString();
         opts.TracePropagationTargets.Clear();
         foreach (StringOrRegex target in TakeTracePropagationTargets(data.trace_propagation_targets))
@@ -995,6 +998,7 @@ internal static partial class NativeBridge
                 android_enable_anr_detection = (byte)(opts.Android.EnableAnrDetection ? 1 : 0),
                 android_anr_timeout_interval_ms = (int)opts.Android.AnrTimeoutInterval.TotalMilliseconds,
                 android_attach_anr_thread_dump = (byte)(opts.Android.AttachAnrThreadDump ? 1 : 0),
+                apple_enable_metrickit = (byte)(opts.Apple.EnableMetricKit ? 1 : 0),
                 org_id = orgIdPtr,
                 org_id_len = orgId.Length,
                 trace_propagation_targets = new ManagedTracePropagationTargets

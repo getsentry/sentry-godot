@@ -25,6 +25,9 @@
 		<member name="app_hang_tracking" type="bool" setter="deprecated_set_app_hang_tracking" getter="deprecated_get_app_hang_tracking" default="true" deprecated="Use [member enable_app_hang_tracking] instead.">
 			If [code]true[/code], enables automatic detection and reporting of application hangs.
 		</member>
+		<member name="apple" type="SentryAppleOptions" setter="" getter="get_apple">
+			Configures options specific to Apple platforms (iOS and macOS), such as the MetricKit integration.
+		</member>
 		<member name="attach_log" type="bool" setter="set_attach_log" getter="is_attach_log_enabled" default="true">
 			If [code]true[/code], the SDK will attach the Godot log file to the event.
 		</member>
@@ -131,6 +134,7 @@
 		<member name="enable_app_hang_tracking" type="bool" setter="set_app_hang_tracking_enabled" getter="is_app_hang_tracking_enabled" default="true">
 			If [code]true[/code], enables automatic detection and reporting of application hangs. The SDK will monitor the main thread and report hang events when it becomes unresponsive for longer than the duration specified in [member app_hang_timeout_ms]. This helps identify performance issues where the application becomes frozen or unresponsive.
 			[b]Note:[/b] This feature applies to iOS and macOS only. On Android, [member android] configures ANR (Application Not Responding) detection instead.
+			[b]Note:[/b] The Cocoa SDK deprecated this app hang tracker because it can report false positives, and will remove it in its next major version. Use [member SentryAppleOptions.enable_metrickit] for hang diagnostics provided by the operating system instead.
 		</member>
 		<member name="enable_logs" type="bool" setter="set_enable_logs" getter="get_enable_logs" default="true" deprecated="Has no effect and will be removed in v3. Use [member SentrySDK.logger] or [member SentryGodotLoggerOptions.log_mask] to send logs.">
 			This compatibility property always returns [code]true[/code], and assigning it has no effect. Log entries are sent when you use [member SentrySDK.logger], and Godot logger events listed in [member SentryGodotLoggerOptions.log_mask] are automatically captured as Sentry Logs. [member SentryGodotLoggerOptions.log_mask] is empty by default, so no events are auto-captured.

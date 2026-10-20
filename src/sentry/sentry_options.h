@@ -88,6 +88,15 @@ protected:
 	static void _bind_methods();
 };
 
+class SentryAppleOptions : public RefCounted {
+	GDCLASS(SentryAppleOptions, RefCounted);
+
+	SIMPLE_PROPERTY(bool, enable_metrickit, false);
+
+protected:
+	static void _bind_methods();
+};
+
 class SentryAutoMetricsOptions : public RefCounted {
 	GDCLASS(SentryAutoMetricsOptions, RefCounted);
 
@@ -162,6 +171,7 @@ private:
 
 	Ref<SentryExperimental> experimental;
 	Ref<SentryAndroidOptions> android;
+	Ref<SentryAppleOptions> apple;
 	Ref<SentryAutoMetricsOptions> auto_metrics;
 	Ref<SentryGodotLoggerOptions> godot_logger;
 
@@ -277,6 +287,7 @@ public:
 
 	_FORCE_INLINE_ Ref<SentryExperimental> get_experimental() const { return experimental; }
 	_FORCE_INLINE_ Ref<SentryAndroidOptions> get_android() const { return android; }
+	_FORCE_INLINE_ Ref<SentryAppleOptions> get_apple() const { return apple; }
 	_FORCE_INLINE_ Ref<SentryAutoMetricsOptions> get_auto_metrics() const { return auto_metrics; }
 	_FORCE_INLINE_ Ref<SentryGodotLoggerOptions> get_godot_logger() const { return godot_logger; }
 

@@ -67,6 +67,9 @@ public sealed class SentryGodotOptions : SentryOptions
     /// <remarks>
     /// This feature applies to iOS and macOS only. On Android, <see cref="Android"/> configures
     /// ANR (Application Not Responding) detection instead.
+    /// The Cocoa SDK deprecated this app hang tracker because it can report false positives, and will remove it in
+    /// its next major version. Use <see cref="SentryAppleOptions.EnableMetricKit"/> for hang diagnostics provided by
+    /// the operating system instead.
     /// </remarks>
     public bool EnableAppHangTracking { get; set; } = true;
 
@@ -85,6 +88,11 @@ public sealed class SentryGodotOptions : SentryOptions
     /// Configures Android-specific options, such as ANR (Application Not Responding) detection.
     /// </summary>
     public SentryAndroidOptions Android { get; set; } = new SentryAndroidOptions();
+
+    /// <summary>
+    /// Configures options specific to Apple platforms (iOS and macOS), such as the MetricKit integration.
+    /// </summary>
+    public SentryAppleOptions Apple { get; set; } = new SentryAppleOptions();
 
     private readonly List<SentryAttachment> _defaultAttachments = [];
 
@@ -319,4 +327,25 @@ public sealed class SentryAndroidOptions
     /// 11 and later.
     /// </remarks>
     public bool AttachAnrThreadDump { get; set; } = false;
+}
+
+/// <summary>
+/// Contains configuration options that apply only when the project runs on Apple platforms (iOS and macOS), such as
+/// the MetricKit integration. Access this configuration through <see cref="SentryGodotOptions.Apple"/>.
+/// </summary>
+/// <seealso cref="SentryGodotOptions"/>
+public sealed class SentryAppleOptions
+{
+    /// <summary>
+    /// Enables the MetricKit integration, which reports hang, CPU exception, and disk write exception diagnostics
+    /// collected by the operating system as Sentry events.
+    /// </summary>
+    /// <remarks>
+    /// MetricKit is the recommended replacement for <see cref="SentryGodotOptions.EnableAppHangTracking"/>, which can
+    /// report false positives. The two options are independent, so disable app hang tracking to rely on MetricKit
+    /// alone. The operating system delivers MetricKit diagnostics in batches, typically at most once per day on a later
+    /// launch, so they don't arrive in real time. Diagnostics are only collected on physical devices.
+    /// To learn more, visit <see href="https://docs.sentry.io/platforms/apple/configuration/metric-kit/">MetricKit documentation</see>.
+    /// </remarks>
+    public bool EnableMetricKit { get; set; } = false;
 }
