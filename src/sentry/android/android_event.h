@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sentry/sentry_event.h"
+#include "sentry/util/object_handle.h"
 
 using namespace godot;
 
@@ -11,7 +12,7 @@ class AndroidEvent : public SentryEvent {
 	GDCLASS(AndroidEvent, SentryEvent);
 
 private:
-	Object *android_plugin = nullptr;
+	util::ObjectHandle<Object> _android_plugin;
 	int32_t event_handle;
 	bool is_borrowed = false;
 
@@ -70,7 +71,7 @@ public:
 	void set_as_borrowed() { is_borrowed = true; }
 
 	AndroidEvent() {}
-	AndroidEvent(Object *android_plugin, int32_t p_event_handle);
+	AndroidEvent(util::ObjectHandle<Object> p_android_plugin, int32_t p_event_handle);
 	virtual ~AndroidEvent() override;
 };
 

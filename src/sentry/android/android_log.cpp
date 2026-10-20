@@ -5,35 +5,53 @@
 namespace sentry::android {
 
 LogLevel AndroidLog::get_level() const {
-	ERR_FAIL_NULL_V(android_plugin, LOG_LEVEL_INFO);
-	Variant result = android_plugin->call(ANDROID_SN(logGetLevel), handle);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return LOG_LEVEL_INFO;
+	}
+	Variant result = plugin->call(ANDROID_SN(logGetLevel), handle);
 	ERR_FAIL_COND_V(result.get_type() != Variant::INT, LOG_LEVEL_INFO);
 	return (LogLevel)(int)result;
 }
 
 void AndroidLog::set_level(LogLevel p_level) {
-	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(logSetLevel), handle, p_level);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+	plugin->call(ANDROID_SN(logSetLevel), handle, p_level);
 }
 
 String AndroidLog::get_body() const {
-	ERR_FAIL_NULL_V(android_plugin, String());
-	return android_plugin->call(ANDROID_SN(logGetBody), handle);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return String();
+	}
+	return plugin->call(ANDROID_SN(logGetBody), handle);
 }
 
 void AndroidLog::set_body(const String &p_body) {
-	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(logSetBody), handle, p_body);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+	plugin->call(ANDROID_SN(logSetBody), handle, p_body);
 }
 
 Variant AndroidLog::get_attribute(const String &p_name) const {
-	ERR_FAIL_NULL_V(android_plugin, Variant());
-	Dictionary result = android_plugin->call(ANDROID_SN(logGetAttribute), handle, p_name);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return Variant();
+	}
+	Dictionary result = plugin->call(ANDROID_SN(logGetAttribute), handle, p_name);
 	return result["value"];
 }
 
 void AndroidLog::set_attribute(const String &p_name, const Variant &p_value) {
-	ERR_FAIL_NULL(android_plugin);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
 
 	Dictionary attr_data;
 	attr_data["name"] = p_name;
@@ -57,17 +75,23 @@ void AndroidLog::set_attribute(const String &p_name, const Variant &p_value) {
 		} break;
 	}
 
-	android_plugin->call(ANDROID_SN(logSetAttribute), handle, attr_data);
+	plugin->call(ANDROID_SN(logSetAttribute), handle, attr_data);
 }
 
 void AndroidLog::add_attributes(const Dictionary &p_attributes) {
-	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(logAddAttributes), handle, p_attributes);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+	plugin->call(ANDROID_SN(logAddAttributes), handle, p_attributes);
 }
 
 void AndroidLog::remove_attribute(const String &p_name) {
-	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(logRemoveAttribute), handle, p_name);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+	plugin->call(ANDROID_SN(logRemoveAttribute), handle, p_name);
 }
 
 AndroidLog::AndroidLog() {
@@ -75,13 +99,13 @@ AndroidLog::AndroidLog() {
 	ERR_PRINT("This constructor is not intended for runtime use.");
 }
 
-AndroidLog::AndroidLog(Object *p_android_plugin, int32_t p_handle) :
-		android_plugin(p_android_plugin), handle(p_handle) {
+AndroidLog::AndroidLog(util::ObjectHandle<Object> p_android_plugin, int32_t p_handle) :
+		_android_plugin(p_android_plugin), handle(p_handle) {
 }
 
 AndroidLog::~AndroidLog() {
-	if (android_plugin && !is_borrowed) {
-		android_plugin->call(ANDROID_SN(releaseLog), handle);
+	if (Object *plugin = _android_plugin.get(); plugin && !is_borrowed) {
+		plugin->call(ANDROID_SN(releaseLog), handle);
 	}
 }
 

@@ -17,9 +17,13 @@ inline String _get_op(const Dictionary &p_attributes) {
 
 namespace sentry::android {
 
-SentrySpanImpl *AndroidSpan::start_root(Object *p_android_plugin, const String &p_name, const Dictionary &p_attributes) {
-	ERR_FAIL_NULL_V(p_android_plugin, SentrySpanImpl::create_noop());
-	int32_t new_handle = p_android_plugin->call(ANDROID_SN(startSpan), p_name, _get_op(p_attributes));
+SentrySpanImpl *AndroidSpan::start_root(util::ObjectHandle<Object> p_android_plugin, const String &p_name, const Dictionary &p_attributes) {
+	Object *plugin = p_android_plugin.get();
+	if (!plugin) {
+		return SentrySpanImpl::create_noop();
+	}
+
+	int32_t new_handle = plugin->call(ANDROID_SN(startSpan), p_name, _get_op(p_attributes));
 	if (new_handle == 0) {
 		return SentrySpanImpl::create_noop();
 	}
@@ -27,7 +31,12 @@ SentrySpanImpl *AndroidSpan::start_root(Object *p_android_plugin, const String &
 }
 
 SentrySpanImpl *AndroidSpan::start_child(const String &p_name, const Dictionary &p_attributes) {
-	int32_t child_handle = _android_plugin->call(ANDROID_SN(spanStartChild), _handle, p_name, _get_op(p_attributes));
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return SentrySpanImpl::create_noop();
+	}
+
+	int32_t child_handle = plugin->call(ANDROID_SN(spanStartChild), _handle, p_name, _get_op(p_attributes));
 	if (child_handle == 0) {
 		return SentrySpanImpl::create_noop();
 	}
@@ -35,36 +44,56 @@ SentrySpanImpl *AndroidSpan::start_child(const String &p_name, const Dictionary 
 }
 
 void AndroidSpan::set_attribute(const String &p_key, const Variant &p_value) {
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+
 	// Type-specific call paths, because Godot bindings can't pass an arbitrary object value.
 	switch (p_value.get_type()) {
 		case Variant::Type::BOOL: {
-			_android_plugin->call(ANDROID_SN(spanSetAttributeBool), _handle, p_key, p_value);
+			plugin->call(ANDROID_SN(spanSetAttributeBool), _handle, p_key, p_value);
 		} break;
 		case Variant::Type::INT: {
-			_android_plugin->call(ANDROID_SN(spanSetAttributeLong), _handle, p_key, p_value);
+			plugin->call(ANDROID_SN(spanSetAttributeLong), _handle, p_key, p_value);
 		} break;
 		case Variant::Type::FLOAT: {
-			_android_plugin->call(ANDROID_SN(spanSetAttributeDouble), _handle, p_key, p_value);
+			plugin->call(ANDROID_SN(spanSetAttributeDouble), _handle, p_key, p_value);
 		} break;
 		case Variant::Type::STRING: {
-			_android_plugin->call(ANDROID_SN(spanSetAttributeString), _handle, p_key, p_value);
+			plugin->call(ANDROID_SN(spanSetAttributeString), _handle, p_key, p_value);
 		} break;
 		default: {
-			_android_plugin->call(ANDROID_SN(spanSetAttributeString), _handle, p_key, p_value.stringify());
+			plugin->call(ANDROID_SN(spanSetAttributeString), _handle, p_key, p_value.stringify());
 		} break;
 	}
 }
 
 void AndroidSpan::set_status(SpanStatus p_status) {
-	_android_plugin->call(ANDROID_SN(spanSetStatus), _handle, p_status);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+
+	plugin->call(ANDROID_SN(spanSetStatus), _handle, p_status);
 }
 
 void AndroidSpan::end() {
-	_android_plugin->call(ANDROID_SN(spanEnd), _handle);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+
+	plugin->call(ANDROID_SN(spanEnd), _handle);
 }
 
 PackedStringArray AndroidSpan::get_trace_headers() {
-	return _android_plugin->call(ANDROID_SN(spanGetTraceHeaders), _handle);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return PackedStringArray();
+	}
+
+	return plugin->call(ANDROID_SN(spanGetTraceHeaders), _handle);
 }
 
 void AndroidSpan::_apply_attributes(const Dictionary &p_attributes) {
@@ -77,13 +106,15 @@ void AndroidSpan::_apply_attributes(const Dictionary &p_attributes) {
 	}
 }
 
-AndroidSpan::AndroidSpan(Object *p_android_plugin, int32_t p_handle, const Dictionary &p_attributes) :
+AndroidSpan::AndroidSpan(util::ObjectHandle<Object> p_android_plugin, int32_t p_handle, const Dictionary &p_attributes) :
 		_android_plugin(p_android_plugin), _handle(p_handle) {
 	_apply_attributes(p_attributes);
 }
 
 AndroidSpan::~AndroidSpan() {
-	_android_plugin->call(ANDROID_SN(releaseSpan), _handle);
+	if (Object *plugin = _android_plugin.get()) {
+		plugin->call(ANDROID_SN(releaseSpan), _handle);
+	}
 }
 
 } //namespace sentry::android

@@ -5,19 +5,28 @@
 namespace sentry::android {
 
 String AndroidMetric::get_name() const {
-	ERR_FAIL_NULL_V(android_plugin, String());
-	return android_plugin->call(ANDROID_SN(metricGetName), handle);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return String();
+	}
+	return plugin->call(ANDROID_SN(metricGetName), handle);
 }
 
 void AndroidMetric::set_name(const String &p_name) {
-	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(metricSetName), handle, p_name);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+	plugin->call(ANDROID_SN(metricSetName), handle, p_name);
 }
 
 SentryMetric::MetricType AndroidMetric::get_type() const {
-	ERR_FAIL_NULL_V(android_plugin, MetricType::METRIC_COUNTER);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return MetricType::METRIC_COUNTER;
+	}
 
-	String result = android_plugin->call(ANDROID_SN(metricGetType), handle);
+	String result = plugin->call(ANDROID_SN(metricGetType), handle);
 	if (result == "counter") {
 		return MetricType::METRIC_COUNTER;
 	} else if (result == "gauge") {
@@ -31,7 +40,10 @@ SentryMetric::MetricType AndroidMetric::get_type() const {
 }
 
 void AndroidMetric::set_type(MetricType p_type) {
-	ERR_FAIL_NULL(android_plugin);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
 	String type = "";
 	switch (p_type) {
 		case MetricType::METRIC_COUNTER: {
@@ -48,37 +60,55 @@ void AndroidMetric::set_type(MetricType p_type) {
 			return;
 		}
 	}
-	android_plugin->call(ANDROID_SN(metricSetType), handle, type);
+	plugin->call(ANDROID_SN(metricSetType), handle, type);
 }
 
 double AndroidMetric::get_value() const {
-	ERR_FAIL_NULL_V(android_plugin, 0.0);
-	return android_plugin->call(ANDROID_SN(metricGetValue), handle);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return 0.0;
+	}
+	return plugin->call(ANDROID_SN(metricGetValue), handle);
 }
 
 void AndroidMetric::set_value(double p_value) {
-	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(metricSetValue), handle, p_value);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+	plugin->call(ANDROID_SN(metricSetValue), handle, p_value);
 }
 
 String AndroidMetric::get_unit() const {
-	ERR_FAIL_NULL_V(android_plugin, "");
-	return android_plugin->call(ANDROID_SN(metricGetUnit), handle);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return String();
+	}
+	return plugin->call(ANDROID_SN(metricGetUnit), handle);
 }
 
 void AndroidMetric::set_unit(const String &p_unit) {
-	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(metricSetUnit), handle, p_unit);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+	plugin->call(ANDROID_SN(metricSetUnit), handle, p_unit);
 }
 
 Variant AndroidMetric::get_attribute(const String &p_name) const {
-	ERR_FAIL_NULL_V(android_plugin, Variant());
-	Dictionary result = android_plugin->call(ANDROID_SN(metricGetAttribute), handle, p_name);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return Variant();
+	}
+	Dictionary result = plugin->call(ANDROID_SN(metricGetAttribute), handle, p_name);
 	return result["value"];
 }
 
 void AndroidMetric::set_attribute(const String &p_name, const Variant &p_value) {
-	ERR_FAIL_NULL(android_plugin);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
 
 	Dictionary attr_data;
 	attr_data["name"] = p_name;
@@ -102,17 +132,23 @@ void AndroidMetric::set_attribute(const String &p_name, const Variant &p_value) 
 		} break;
 	}
 
-	android_plugin->call(ANDROID_SN(metricSetAttribute), handle, attr_data);
+	plugin->call(ANDROID_SN(metricSetAttribute), handle, attr_data);
 }
 
 void AndroidMetric::add_attributes(const Dictionary &p_attributes) {
-	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(metricAddAttributes), handle, p_attributes);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+	plugin->call(ANDROID_SN(metricAddAttributes), handle, p_attributes);
 }
 
 void AndroidMetric::remove_attribute(const String &p_name) {
-	ERR_FAIL_NULL(android_plugin);
-	android_plugin->call(ANDROID_SN(metricRemoveAttribute), handle, p_name);
+	Object *plugin = _android_plugin.get();
+	if (!plugin) {
+		return;
+	}
+	plugin->call(ANDROID_SN(metricRemoveAttribute), handle, p_name);
 }
 
 AndroidMetric::AndroidMetric() {
@@ -120,13 +156,13 @@ AndroidMetric::AndroidMetric() {
 	ERR_PRINT("This constructor is not intended for runtime use.");
 }
 
-AndroidMetric::AndroidMetric(Object *p_android_plugin, int32_t p_handle) :
-		android_plugin(p_android_plugin), handle(p_handle) {
+AndroidMetric::AndroidMetric(util::ObjectHandle<Object> p_android_plugin, int32_t p_handle) :
+		_android_plugin(p_android_plugin), handle(p_handle) {
 }
 
 AndroidMetric::~AndroidMetric() {
-	if (android_plugin && !is_borrowed) {
-		android_plugin->call(ANDROID_SN(releaseMetric), handle);
+	if (Object *plugin = _android_plugin.get(); plugin && !is_borrowed) {
+		plugin->call(ANDROID_SN(releaseMetric), handle);
 	}
 }
 
