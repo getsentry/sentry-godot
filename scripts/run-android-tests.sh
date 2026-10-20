@@ -10,6 +10,7 @@ PID_RETRIES=10
 EXIT_INFO_RETRIES=5
 CRASH_DRAIN_SECONDS=5
 LOGCAT_PIDS=()
+LOG_STREAM_PID=""
 LOGCAT_FILTERS="Godot,godot,sentry-godot,sentry-native"
 EXPORT_PRESET="Android Tests"
 
@@ -175,6 +176,10 @@ stop_logcat() {
         wait "$collector" 2>/dev/null || true
     done
     LOGCAT_PIDS=()
+    if [ -n "$LOG_STREAM_PID" ]; then
+        wait "$LOG_STREAM_PID" 2>/dev/null || true
+        LOG_STREAM_PID=""
+    fi
 }
 trap stop_logcat EXIT
 trap 'exit 130' INT
@@ -337,36 +342,14 @@ run_tests() {
 
     # Stream app logs and monitor process termination.
     highlight "Reading logs..."
-    local exit_code=1  # Default to general failure
-    local terminating=false
-    local completed=false
-    read_logs() {
-        local line
-        [ -n "$pid" ] || return 0
-        while IFS= read -r line <&3; do
-            [[ "$line" =~ ^[^[:space:]]+[[:space:]]+[^[:space:]]+[[:space:]]+$pid[[:space:]] ]] || continue
-            echo "$line"
-            case "$line" in
-                # Check for test run completion
-                *">>> Test run complete with code:"*)
-                    if [[ "$line" =~ code:\ ([0-9]{1,3})[[:space:]]*$ ]] && [ "$((10#${BASH_REMATCH[1]}))" -le 255 ]; then
-                        exit_code=$((10#${BASH_REMATCH[1]}))
-                        completed=true
-                    fi
-                    # Not quitting yet -- waiting for Godot to terminate.
-                    ;;
-                # Check Godot exit condition
-                *"OnGodotTerminating"*)
-                    terminating=true
-                    ;;
-            esac
-        done
-    }
+    if [ -n "$pid" ]; then
+        tail -n +1 -f --pid="${LOGCAT_PIDS[0]}" "$attempt_dir/app.log" |
+            awk -v pid="$pid" '$3 == pid { print; fflush() }' &
+        LOG_STREAM_PID=$!
+    fi
 
-    exec 3< "$attempt_dir/app.log"
     local timed_out=false current_pid
     while [ -n "$pid" ]; do
-        read_logs
         current_pid=$(adb shell pidof "$PACKAGE" 2>/dev/null | tr -d '\r')
         [[ " $current_pid " == *" $pid "* ]] || break
         if [ "$SECONDS" -ge "$deadline" ]; then
@@ -387,8 +370,26 @@ run_tests() {
     fi
     sleep "$CRASH_DRAIN_SECONDS"
     stop_logcat
-    read_logs
-    exec 3<&-
+
+    local exit_code=1  # Default to general failure
+    local terminating=false
+    local completed=false line
+    while [ -n "$pid" ] && IFS= read -r line; do
+        [[ "$line" =~ ^[^[:space:]]+[[:space:]]+[^[:space:]]+[[:space:]]+$pid[[:space:]] ]] || continue
+        case "$line" in
+            # Check for test run completion
+            *">>> Test run complete with code:"*)
+                if [[ "$line" =~ code:\ ([0-9]{1,3})[[:space:]]*$ ]] && [ "$((10#${BASH_REMATCH[1]}))" -le 255 ]; then
+                    exit_code=$((10#${BASH_REMATCH[1]}))
+                    completed=true
+                fi
+                ;;
+            # Check Godot exit condition
+            *"OnGodotTerminating"*)
+                terminating=true
+                ;;
+        esac
+    done < "$attempt_dir/app.log"
     filter_crash_log "$attempt_dir/crash.log" "$pid" > "$attempt_dir/crash-matched.log"
 
     local reason=unknown status=unknown signal_name=none reason_name="unverified exit (missing or ambiguous record)"
