@@ -1,57 +1,40 @@
 #include "android_log.h"
 
 #include "android_string_names.h"
+#include "android_util.h"
 
 namespace sentry::android {
 
 LogLevel AndroidLog::get_level() const {
-	Object *plugin = _android_plugin.get();
-	if (!plugin) {
-		return LOG_LEVEL_INFO;
-	}
+	ENSURE_ANDROID_PLUGIN_V(plugin, LOG_LEVEL_INFO);
 	Variant result = plugin->call(ANDROID_SN(logGetLevel), handle);
 	ERR_FAIL_COND_V(result.get_type() != Variant::INT, LOG_LEVEL_INFO);
 	return (LogLevel)(int)result;
 }
 
 void AndroidLog::set_level(LogLevel p_level) {
-	Object *plugin = _android_plugin.get();
-	if (!plugin) {
-		return;
-	}
+	ENSURE_ANDROID_PLUGIN(plugin);
 	plugin->call(ANDROID_SN(logSetLevel), handle, p_level);
 }
 
 String AndroidLog::get_body() const {
-	Object *plugin = _android_plugin.get();
-	if (!plugin) {
-		return String();
-	}
+	ENSURE_ANDROID_PLUGIN_V(plugin, String());
 	return plugin->call(ANDROID_SN(logGetBody), handle);
 }
 
 void AndroidLog::set_body(const String &p_body) {
-	Object *plugin = _android_plugin.get();
-	if (!plugin) {
-		return;
-	}
+	ENSURE_ANDROID_PLUGIN(plugin);
 	plugin->call(ANDROID_SN(logSetBody), handle, p_body);
 }
 
 Variant AndroidLog::get_attribute(const String &p_name) const {
-	Object *plugin = _android_plugin.get();
-	if (!plugin) {
-		return Variant();
-	}
+	ENSURE_ANDROID_PLUGIN_V(plugin, Variant());
 	Dictionary result = plugin->call(ANDROID_SN(logGetAttribute), handle, p_name);
 	return result["value"];
 }
 
 void AndroidLog::set_attribute(const String &p_name, const Variant &p_value) {
-	Object *plugin = _android_plugin.get();
-	if (!plugin) {
-		return;
-	}
+	ENSURE_ANDROID_PLUGIN(plugin);
 
 	Dictionary attr_data;
 	attr_data["name"] = p_name;
@@ -79,18 +62,12 @@ void AndroidLog::set_attribute(const String &p_name, const Variant &p_value) {
 }
 
 void AndroidLog::add_attributes(const Dictionary &p_attributes) {
-	Object *plugin = _android_plugin.get();
-	if (!plugin) {
-		return;
-	}
+	ENSURE_ANDROID_PLUGIN(plugin);
 	plugin->call(ANDROID_SN(logAddAttributes), handle, p_attributes);
 }
 
 void AndroidLog::remove_attribute(const String &p_name) {
-	Object *plugin = _android_plugin.get();
-	if (!plugin) {
-		return;
-	}
+	ENSURE_ANDROID_PLUGIN(plugin);
 	plugin->call(ANDROID_SN(logRemoveAttribute), handle, p_name);
 }
 
