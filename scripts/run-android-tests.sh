@@ -421,7 +421,7 @@ run_tests() {
         msg "Test completion: $completed; OnGodotTerminating: $terminating"
         printf '%s\n' "$exit_info"
         if [ -s "$attempt_dir/crash-matched.log" ]; then
-            cat "$attempt_dir/crash-matched.log"
+            warning "$(cat "$attempt_dir/crash-matched.log")"
         else
             warning "No matching crash backtrace available in adb logcat -b crash."
         fi
