@@ -492,8 +492,8 @@ for test_path in "${TEST_PATHS[@]}"; do
         PASSED_TESTS+=("$godot_path")
         success "✓ PASSED: $godot_path"
     else
-        FAILED_TESTS+=("$godot_path ($(exit_code_reason "$test_exit_code"); exit code $test_exit_code)")
-        error "✗ FAILED: $godot_path (exit code: $test_exit_code)"
+        FAILED_TESTS+=("$godot_path ($(exit_code_reason "$test_exit_code"))")
+        error "✗ FAILED: $godot_path ($(exit_code_reason "$test_exit_code"))"
         if [ "$test_exit_code" -eq "$EXIT_UNIT_TEST_RUN_CRASHED" ]; then
             OVERALL_EXIT_CODE=$EXIT_UNIT_TEST_RUN_CRASHED
         elif [[ "$test_exit_code" -eq "$EXIT_PROCESS_STILL_RUNNING_AFTER_TESTS" && "$OVERALL_EXIT_CODE" -ne "$EXIT_UNIT_TEST_RUN_CRASHED" ]]; then
