@@ -85,9 +85,8 @@ void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
 	Ref<AndroidEvent> processed = sentry::process_event(event_obj);
 
 	if (processed.is_null()) {
-		ENSURE_ANDROID_PLUGIN(release_plugin, _android_plugin);
 		// Discard event.
-		release_plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
+		plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
 	}
 }
 
@@ -106,8 +105,7 @@ void SentryAndroidBeforeSendTransactionHandler::_before_send_transaction(int32_t
 	Ref<AndroidEvent> processed = sentry::process_transaction(transaction_obj);
 
 	if (processed.is_null()) {
-		ENSURE_ANDROID_PLUGIN(release_plugin, _android_plugin);
-		release_plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
+		plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
 	}
 }
 
@@ -126,9 +124,8 @@ void SentryAndroidBeforeSendFeedbackHandler::_before_send_feedback(int32_t p_eve
 	Ref<AndroidEvent> processed = sentry::process_feedback(event_obj);
 
 	if (processed.is_null()) {
-		ENSURE_ANDROID_PLUGIN(release_plugin, _android_plugin);
 		// Discard feedback.
-		release_plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
+		plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
 	}
 }
 
@@ -151,9 +148,8 @@ void SentryAndroidBeforeSendLogHandler::_before_send_log(int32_t p_handle) {
 	Ref<AndroidLog> processed = sentry::process_log(log_obj);
 
 	if (processed.is_null()) {
-		ENSURE_ANDROID_PLUGIN(release_plugin, _android_plugin);
 		// Discard log.
-		release_plugin->call(ANDROID_SN(releaseLog), p_handle);
+		plugin->call(ANDROID_SN(releaseLog), p_handle);
 	}
 }
 
@@ -172,9 +168,8 @@ void SentryAndroidBeforeSendMetricHandler::_before_send_metric(int32_t p_metric_
 	Ref<AndroidMetric> processed = sentry::process_metric(metric_obj);
 
 	if (processed.is_null()) {
-		ENSURE_ANDROID_PLUGIN(release_plugin, _android_plugin);
 		// Discard metric.
-		release_plugin->call(ANDROID_SN(releaseMetric), p_metric_handle);
+		plugin->call(ANDROID_SN(releaseMetric), p_metric_handle);
 	}
 }
 
