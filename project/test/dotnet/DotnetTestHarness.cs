@@ -134,6 +134,12 @@ public partial class DotnetTestHarness : RefCounted
             _receivedOptions["screenshot_level"] = (int)options.ScreenshotLevel;
             _receivedOptions["enable_app_hang_tracking"] = options.EnableAppHangTracking;
             _receivedOptions["app_hang_timeout_ms"] = (int)options.AppHangTimeout.TotalMilliseconds;
+            _receivedOptions["enable_frame_metrics"] = options.AutoMetrics.EnableFrameMetrics;
+            _receivedOptions["frame_metrics_interval_sec"] = options.AutoMetrics.FrameMetricsIntervalSec;
+            _receivedOptions["enable_rendering_metrics"] = options.AutoMetrics.EnableRenderingMetrics;
+            _receivedOptions["rendering_metrics_interval_sec"] = options.AutoMetrics.RenderingMetricsIntervalSec;
+            _receivedOptions["enable_memory_metrics"] = options.AutoMetrics.EnableMemoryMetrics;
+            _receivedOptions["memory_metrics_interval_sec"] = options.AutoMetrics.MemoryMetricsIntervalSec;
             _receivedOptions["enabled"] = options.GodotLogger.Enabled;
             _receivedOptions["include_source_context"] = options.GodotLogger.IncludeSourceContext;
             _receivedOptions["include_variables"] = options.GodotLogger.IncludeVariables;
@@ -172,6 +178,12 @@ public partial class DotnetTestHarness : RefCounted
             options.ScreenshotLevel = SentryLevel.Warning;
             options.EnableAppHangTracking = true;
             options.AppHangTimeout = TimeSpan.FromMilliseconds(2300);
+            options.AutoMetrics.EnableFrameMetrics = false;
+            options.AutoMetrics.FrameMetricsIntervalSec = 2.0;
+            options.AutoMetrics.EnableRenderingMetrics = false;
+            options.AutoMetrics.RenderingMetricsIntervalSec = 3.0;
+            options.AutoMetrics.EnableMemoryMetrics = false;
+            options.AutoMetrics.MemoryMetricsIntervalSec = 45.0;
             options.GodotLogger.Enabled = true;
             options.GodotLogger.IncludeSourceContext = true;
             options.GodotLogger.IncludeVariables = false;

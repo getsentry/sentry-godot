@@ -83,6 +83,12 @@ TEST_SUITE("[.NET] Options interop") {
 			{ "sentry/experimental/screenshot_level",                          "screenshot_level",                             LEVEL_ERROR,                    LEVEL_WARNING },
 			{ "sentry/options/app_hang/tracking",                              "enable_app_hang_tracking",                     false,                          true },
 			{ "sentry/options/app_hang/timeout_ms",                            "app_hang_timeout_ms",                          1200,                           2300 },
+			{ "sentry/auto_metrics/frame_metrics/enabled",                     "auto_metrics:enable_frame_metrics",            true,                           false },
+			{ "sentry/auto_metrics/frame_metrics/interval_sec",                "auto_metrics:frame_metrics_interval_sec",       1.5,                            2.0 },
+			{ "sentry/auto_metrics/rendering_metrics/enabled",                 "auto_metrics:enable_rendering_metrics",        true,                           false },
+			{ "sentry/auto_metrics/rendering_metrics/interval_sec",            "auto_metrics:rendering_metrics_interval_sec",   2.5,                            3.0 },
+			{ "sentry/auto_metrics/memory_metrics/enabled",                    "auto_metrics:enable_memory_metrics",           true,                           false },
+			{ "sentry/auto_metrics/memory_metrics/interval_sec",               "auto_metrics:memory_metrics_interval_sec",      30.0,                           45.0 },
 			{ "sentry/godot_logger/enabled",                                   "godot_logger:enabled",                         false,                          true },
 			{ "sentry/godot_logger/include_source_context",                    "godot_logger:include_source_context",          false,                          true },
 			{ "sentry/godot_logger/include_variables",                         "godot_logger:include_variables",               true,                           false },
@@ -107,10 +113,6 @@ TEST_SUITE("[.NET] Options interop") {
 				crossed.insert(option_name(option));
 			}
 			const HashSet<String> not_crossed = {
-				// Auto-metrics options are synchronized in a follow-up PR.
-				"enable_frame_metrics", "frame_metrics_interval_sec",
-				"enable_rendering_metrics", "rendering_metrics_interval_sec",
-				"enable_memory_metrics", "memory_metrics_interval_sec",
 				// Only affects the JavaScript SDK on Web.
 				"trace_lifecycle",
 				// Deprecated no-ops.
