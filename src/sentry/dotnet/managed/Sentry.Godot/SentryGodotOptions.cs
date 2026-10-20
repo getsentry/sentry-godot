@@ -86,6 +86,11 @@ public sealed class SentryGodotOptions : SentryOptions
     /// </summary>
     public SentryAndroidOptions Android { get; set; } = new SentryAndroidOptions();
 
+    /// <summary>
+    /// Configures automatic collection of frame, rendering, and memory metrics.
+    /// </summary>
+    public SentryAutoMetricsOptions AutoMetrics { get; set; } = new SentryAutoMetricsOptions();
+
     private readonly List<SentryAttachment> _defaultAttachments = [];
 
     internal IReadOnlyList<SentryAttachment> DefaultAttachments => _defaultAttachments;
@@ -143,6 +148,78 @@ public sealed class SentryGodotOptions : SentryOptions
             }
         }
     }
+}
+
+/// <summary>
+/// Contains configuration options for automatic performance metrics. Access this configuration through
+/// <see cref="SentryGodotOptions.AutoMetrics"/> or Project Settings under Sentry &gt; Auto Metrics.
+/// </summary>
+/// <remarks>
+/// Automatic collection is disabled by default and does not affect metrics sent manually.
+/// Attributes include <c>gpu.name</c>, <c>cpu.cores</c>, <c>ram.gb</c>, <c>res.x</c>, <c>res.y</c>,
+/// and <c>scene</c> when available. Resolution describes the root viewport's target size in pixels,
+/// before window stretching and after 3D scaling.
+/// Collection pauses while the application is unfocused or paused by the operating system.
+/// <c>SceneTree.Paused</c> and <c>Engine.TimeScale</c> do not affect collection.
+/// To learn more, visit <see href="https://docs.sentry.io/platforms/godot/metrics/">Metrics documentation</see>.
+/// </remarks>
+/// <seealso cref="SentryGodotOptions"/>
+public sealed class SentryAutoMetricsOptions
+{
+    /// <summary>
+    /// If enabled, the SDK sends <c>game.perf.frame_time</c> as a distribution in milliseconds
+    /// and <c>game.perf.fps</c> as a gauge.
+    /// </summary>
+    /// <remarks>
+    /// Frame time measures elapsed time between process callbacks, including VSync and frame limiting.
+    /// The collector randomly samples one frame per <see cref="FrameMetricsIntervalSec"/> interval.
+    /// As more clients send frame samples, aggregate percentiles become more reliable,
+    /// though sampling can miss rare hitches.
+    /// </remarks>
+    public bool EnableFrameMetrics { get; set; }
+
+    /// <summary>
+    /// If enabled, the SDK sends gauges for draw calls, rendered primitives, and video memory usage
+    /// from Godot's <c>Performance</c> monitors.
+    /// </summary>
+    /// <remarks>
+    /// <c>game.perf.render.draw_calls</c> counts draw calls in the last rendered frame.
+    /// <c>game.perf.render.primitives</c> counts vertices or indices rendered in the last frame,
+    /// including depth and shadow passes.
+    /// <c>game.perf.render.video_mem_used</c> reports total video memory used, including texture,
+    /// buffer, and other allocations, in bytes.
+    /// <c>game.perf.render.texture_mem_used</c> reports texture memory used, in bytes.
+    /// <c>game.perf.render.buffer_mem_used</c> reports render buffer memory used, in bytes.
+    /// </remarks>
+    public bool EnableRenderingMetrics { get; set; }
+
+    /// <summary>
+    /// If enabled, the SDK sends <c>game.perf.used_memory</c> for RAM used by the game process, in bytes,
+    /// <c>game.perf.object_count</c> for instantiated objects, including nodes, and
+    /// <c>game.perf.node_count</c> for nodes in the scene tree, including its root.
+    /// </summary>
+    /// <remarks>
+    /// RAM usage is collected on Windows, Linux, Android, macOS, and iOS. Skipped on other platforms.
+    /// </remarks>
+    public bool EnableMemoryMetrics { get; set; }
+
+    /// <summary>
+    /// Controls how often frame metrics are sent, in seconds.
+    /// Ignored when <see cref="EnableFrameMetrics"/> is disabled.
+    /// </summary>
+    public double FrameMetricsIntervalSec { get; set; } = 1.0;
+
+    /// <summary>
+    /// Controls how often rendering metrics are sent, in seconds.
+    /// Ignored when <see cref="EnableRenderingMetrics"/> is disabled.
+    /// </summary>
+    public double RenderingMetricsIntervalSec { get; set; } = 1.0;
+
+    /// <summary>
+    /// Controls how often memory metrics are sent, in seconds.
+    /// Ignored when <see cref="EnableMemoryMetrics"/> is disabled.
+    /// </summary>
+    public double MemoryMetricsIntervalSec { get; set; } = 60.0;
 }
 
 /// <summary>

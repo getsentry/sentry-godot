@@ -143,6 +143,18 @@ internal static partial class NativeBridge
         return hooks;
     }
 
+    // Must match layout of AutoMetricsOptionsData in csharp_interop.cpp.
+    [StructLayout(LayoutKind.Sequential)]
+    private struct AutoMetricsOptionsData
+    {
+        public byte enable_frame_metrics;
+        public byte enable_rendering_metrics;
+        public byte enable_memory_metrics;
+        public double frame_metrics_interval_sec;
+        public double rendering_metrics_interval_sec;
+        public double memory_metrics_interval_sec;
+    }
+
     // Must match layout of LoggerLimitsData in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
     private struct LoggerLimitsData
@@ -167,6 +179,7 @@ internal static partial class NativeBridge
     [StructLayout(LayoutKind.Sequential)]
     private struct NativeOptions
     {
+        public AutoMetricsOptionsData auto_metrics;
         public LoggerLimitsData logger_limits;
         public GodotStringHandle dsn;
         public GodotStringHandle release;
@@ -203,6 +216,7 @@ internal static partial class NativeBridge
     [StructLayout(LayoutKind.Sequential)]
     private unsafe struct ManagedOptions
     {
+        public AutoMetricsOptionsData auto_metrics;
         public LoggerLimitsData logger_limits;
         public char* dsn;
         public int dsn_len;
@@ -649,6 +663,12 @@ internal static partial class NativeBridge
 
     private static void ApplyNativeOptions(NativeOptions data, SentryGodotOptions opts)
     {
+        opts.AutoMetrics.EnableFrameMetrics = data.auto_metrics.enable_frame_metrics != 0;
+        opts.AutoMetrics.EnableRenderingMetrics = data.auto_metrics.enable_rendering_metrics != 0;
+        opts.AutoMetrics.EnableMemoryMetrics = data.auto_metrics.enable_memory_metrics != 0;
+        opts.AutoMetrics.FrameMetricsIntervalSec = data.auto_metrics.frame_metrics_interval_sec;
+        opts.AutoMetrics.RenderingMetricsIntervalSec = data.auto_metrics.rendering_metrics_interval_sec;
+        opts.AutoMetrics.MemoryMetricsIntervalSec = data.auto_metrics.memory_metrics_interval_sec;
         opts.GodotLogger.Limits = new SentryLoggerLimits
         {
             EventsPerFrame = data.logger_limits.events_per_frame,
@@ -957,6 +977,15 @@ internal static partial class NativeBridge
         {
             var managed = new ManagedOptions
             {
+                auto_metrics = new AutoMetricsOptionsData
+                {
+                    enable_frame_metrics = (byte)(opts.AutoMetrics.EnableFrameMetrics ? 1 : 0),
+                    enable_rendering_metrics = (byte)(opts.AutoMetrics.EnableRenderingMetrics ? 1 : 0),
+                    enable_memory_metrics = (byte)(opts.AutoMetrics.EnableMemoryMetrics ? 1 : 0),
+                    frame_metrics_interval_sec = opts.AutoMetrics.FrameMetricsIntervalSec,
+                    rendering_metrics_interval_sec = opts.AutoMetrics.RenderingMetricsIntervalSec,
+                    memory_metrics_interval_sec = opts.AutoMetrics.MemoryMetricsIntervalSec,
+                },
                 logger_limits = new LoggerLimitsData
                 {
                     events_per_frame = opts.GodotLogger.Limits.EventsPerFrame,

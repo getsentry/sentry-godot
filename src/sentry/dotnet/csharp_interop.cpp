@@ -185,6 +185,16 @@ enum ManagedDefinedHooks {
 
 static BitField<ManagedDefinedHooks> s_managed_defined_hooks = DEFINED_NONE;
 
+// Must match layout of AutoMetricsOptionsData in NativeBridge.cs.
+struct AutoMetricsOptionsData {
+	uint8_t enable_frame_metrics;
+	uint8_t enable_rendering_metrics;
+	uint8_t enable_memory_metrics;
+	double frame_metrics_interval_sec;
+	double rendering_metrics_interval_sec;
+	double memory_metrics_interval_sec;
+};
+
 // Must match layout of LoggerLimitsData in NativeBridge.cs.
 struct LoggerLimitsData {
 	int32_t events_per_frame;
@@ -203,6 +213,7 @@ struct AttachmentMeta {
 
 // Must match layout of NativeOptions in NativeBridge.cs.
 struct NativeOptions {
+	AutoMetricsOptionsData auto_metrics;
 	LoggerLimitsData logger_limits;
 
 	// NOTE: Strings are native-owned, but C# should "take" all strings or it will leak.
@@ -251,6 +262,7 @@ struct NativeOptions {
 // C# pins strings; native reads synchronously. No free needed.
 // Must match layout of ManagedOptions in NativeBridge.cs.
 struct ManagedOptions {
+	AutoMetricsOptionsData auto_metrics;
 	LoggerLimitsData logger_limits;
 
 	const char16_t *dsn;
@@ -304,6 +316,14 @@ struct NativeTraceContext {
 };
 
 static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions> options) {
+	Ref<SentryAutoMetricsOptions> auto_metrics = options->get_auto_metrics();
+	auto_metrics->set_enable_frame_metrics(data.auto_metrics.enable_frame_metrics);
+	auto_metrics->set_enable_rendering_metrics(data.auto_metrics.enable_rendering_metrics);
+	auto_metrics->set_enable_memory_metrics(data.auto_metrics.enable_memory_metrics);
+	auto_metrics->set_frame_metrics_interval_sec(data.auto_metrics.frame_metrics_interval_sec);
+	auto_metrics->set_rendering_metrics_interval_sec(data.auto_metrics.rendering_metrics_interval_sec);
+	auto_metrics->set_memory_metrics_interval_sec(data.auto_metrics.memory_metrics_interval_sec);
+
 	Ref<SentryLoggerLimits> logger_limits = options->get_godot_logger()->get_limits();
 	logger_limits->set_events_per_frame(data.logger_limits.events_per_frame);
 	logger_limits->set_repeated_error_window_ms(data.logger_limits.repeated_error_window_ms);
@@ -343,6 +363,14 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 
 void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &options) {
 	r_data = {};
+
+	Ref<SentryAutoMetricsOptions> auto_metrics = options->get_auto_metrics();
+	r_data.auto_metrics.enable_frame_metrics = auto_metrics->get_enable_frame_metrics();
+	r_data.auto_metrics.enable_rendering_metrics = auto_metrics->get_enable_rendering_metrics();
+	r_data.auto_metrics.enable_memory_metrics = auto_metrics->get_enable_memory_metrics();
+	r_data.auto_metrics.frame_metrics_interval_sec = auto_metrics->get_frame_metrics_interval_sec();
+	r_data.auto_metrics.rendering_metrics_interval_sec = auto_metrics->get_rendering_metrics_interval_sec();
+	r_data.auto_metrics.memory_metrics_interval_sec = auto_metrics->get_memory_metrics_interval_sec();
 
 	Ref<SentryLoggerLimits> limits = options->get_godot_logger()->get_limits();
 	r_data.logger_limits.events_per_frame = limits->get_events_per_frame();
