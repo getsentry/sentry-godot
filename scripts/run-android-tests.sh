@@ -72,6 +72,20 @@ abort() {
     fi
 }
 
+exit_code_reason() {
+    case "$1" in
+        1) echo "runner error" ;;
+        "$EXIT_PROCESS_STILL_RUNNING_AFTER_TESTS") echo "process still running after timeout" ;;
+        "$EXIT_UNIT_TEST_RUN_CRASHED") echo "crash or unclean exit" ;;
+        100) echo "test failures" ;;
+        101) echo "test warnings" ;;
+        104) echo "no tests found" ;;
+        105) echo "tests did not run" ;;
+        106) echo "script errors" ;;
+        *) echo "unknown failure" ;;
+    esac
+}
+
 # Parse command line options
 verbose=false
 
@@ -478,7 +492,7 @@ for test_path in "${TEST_PATHS[@]}"; do
         PASSED_TESTS+=("$godot_path")
         success "✓ PASSED: $godot_path"
     else
-        FAILED_TESTS+=("$godot_path")
+        FAILED_TESTS+=("$godot_path ($(exit_code_reason "$test_exit_code"); exit code $test_exit_code)")
         error "✗ FAILED: $godot_path (exit code: $test_exit_code)"
         if [ "$test_exit_code" -eq "$EXIT_UNIT_TEST_RUN_CRASHED" ]; then
             OVERALL_EXIT_CODE=$EXIT_UNIT_TEST_RUN_CRASHED
