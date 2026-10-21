@@ -12,6 +12,7 @@
 ### Fixes
 
 - Android: Fix a crash when quitting the game or when the activity is destroyed ([#1034](https://github.com/getsentry/sentry-godot/pull/1034))
+- Android: Flush pending data and shut down Sentry cleanly when the game exits, before Godot destroys the Android plugin ([#1037](https://github.com/getsentry/sentry-godot/pull/1037))
 
 ### Improvements
 

@@ -8,7 +8,7 @@
 #include "android_span.h"
 #include "android_string_names.h"
 #include "android_util.h"
-#include "sentry/common_defs.h"
+#include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/logging/print.h"
 #include "sentry/processing/process_event.h"
 #include "sentry/processing/process_feedback.h"
@@ -26,6 +26,17 @@
 using namespace godot;
 
 namespace {
+
+void _watch_android_plugin(uint64_t p_instance_id) {
+	Object *plugin = ObjectDB::get_instance(p_instance_id);
+	// Godot destroys JNI singletons before scene-tree cleanup, so shut down
+	// Sentry while the bridge plugin and JNI are still callable.
+	Error error = sentry::engine_lifecycle::attach_predelete_script(plugin,
+			callable_mp_static(&sentry::engine_lifecycle::notify_engine_shutting_down));
+	if (error != OK) {
+		sentry::logging::print_error("Failed to watch Android plugin shutdown (error ", int(error), ").");
+	}
+}
 
 inline Variant _as_attribute(const Variant &p_value) {
 	Variant::Type type = p_value.get_type();
@@ -469,6 +480,8 @@ AndroidSDK::AndroidSDK() {
 	Object *plugin = Engine::get_singleton()->get_singleton("SentryAndroidGodotPlugin");
 	ERR_FAIL_NULL_MSG(plugin, "Sentry: Unable to locate SentryAndroidGodotPlugin singleton.");
 	_android_plugin = util::ObjectHandle<Object>(plugin);
+	// GDScript is not initialized yet during extension registration.
+	callable_mp_static(&_watch_android_plugin).bind(plugin->get_instance_id()).call_deferred();
 
 	before_send_handler = memnew(SentryAndroidBeforeSendHandler);
 	before_send_handler->_initialize(_android_plugin);
