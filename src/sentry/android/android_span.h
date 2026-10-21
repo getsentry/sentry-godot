@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sentry/sentry_span_impl.h"
+#include "sentry/util/object_handle.h"
 
 namespace sentry::android {
 
@@ -10,15 +11,15 @@ class AndroidSpan : public SentrySpanImpl {
 	SENTRY_CASTABLE(AndroidSpan, SentrySpanImpl);
 
 private:
-	Object *_android_plugin = nullptr;
+	util::ObjectHandle<Object> _android_plugin;
 	int32_t _handle = 0;
 
 	void _apply_attributes(const Dictionary &p_attributes);
 
-	AndroidSpan(Object *p_android_plugin, int32_t p_handle, const Dictionary &p_attributes);
+	AndroidSpan(util::ObjectHandle<Object> p_android_plugin, int32_t p_handle, const Dictionary &p_attributes);
 
 public:
-	static SentrySpanImpl *start_root(Object *p_android_plugin, const String &p_name, const Dictionary &p_attributes);
+	static SentrySpanImpl *start_root(util::ObjectHandle<Object> p_android_plugin, const String &p_name, const Dictionary &p_attributes);
 
 	virtual SentrySpanImpl *start_child(const String &p_name, const Dictionary &p_attributes) override;
 

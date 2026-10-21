@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sentry/internal_sdk.h"
+#include "sentry/util/object_handle.h"
 
 using namespace godot;
 
@@ -11,9 +12,9 @@ class SentryAndroidBeforeSendHandler : public Object {
 	friend class AndroidSDK;
 
 private:
-	Object *android_plugin = nullptr;
+	util::ObjectHandle<Object> _android_plugin;
 
-	void _initialize(Object *p_android_plugin);
+	void _initialize(util::ObjectHandle<Object> p_android_plugin);
 
 	void _before_send(int32_t p_event_handle);
 
@@ -26,9 +27,9 @@ class SentryAndroidBeforeSendTransactionHandler : public Object {
 	friend class AndroidSDK;
 
 private:
-	Object *android_plugin = nullptr;
+	util::ObjectHandle<Object> _android_plugin;
 
-	void _initialize(Object *p_android_plugin) { android_plugin = p_android_plugin; }
+	void _initialize(util::ObjectHandle<Object> p_android_plugin) { _android_plugin = p_android_plugin; }
 
 	void _before_send_transaction(int32_t p_event_handle);
 
@@ -41,9 +42,9 @@ class SentryAndroidBeforeSendFeedbackHandler : public Object {
 	friend class AndroidSDK;
 
 private:
-	Object *android_plugin = nullptr;
+	util::ObjectHandle<Object> _android_plugin;
 
-	void _initialize(Object *p_android_plugin) { android_plugin = p_android_plugin; }
+	void _initialize(util::ObjectHandle<Object> p_android_plugin) { _android_plugin = p_android_plugin; }
 
 	void _before_send_feedback(int32_t p_event_handle);
 
@@ -56,9 +57,9 @@ class SentryAndroidBeforeSendLogHandler : public Object {
 	friend class AndroidSDK;
 
 private:
-	Object *android_plugin = nullptr;
+	util::ObjectHandle<Object> _android_plugin;
 
-	void _initialize(Object *p_android_plugin);
+	void _initialize(util::ObjectHandle<Object> p_android_plugin);
 
 	void _before_send_log(int32_t p_log_handle);
 
@@ -71,9 +72,9 @@ class SentryAndroidBeforeSendMetricHandler : public Object {
 	friend class AndroidSDK;
 
 private:
-	Object *android_plugin = nullptr;
+	util::ObjectHandle<Object> _android_plugin;
 
-	void _initialize(Object *p_android_plugin) { android_plugin = p_android_plugin; }
+	void _initialize(util::ObjectHandle<Object> p_android_plugin) { _android_plugin = p_android_plugin; }
 
 	void _before_send_metric(int32_t p_metric_handle);
 
@@ -84,14 +85,12 @@ protected:
 // Internal SDK utilizing Sentry Android (sentry-java repo).
 class AndroidSDK : public InternalSDK {
 private:
-	uint64_t android_plugin_instance_id = 0;
+	util::ObjectHandle<Object> _android_plugin;
 	SentryAndroidBeforeSendHandler *before_send_handler = nullptr;
 	SentryAndroidBeforeSendTransactionHandler *before_send_transaction_handler = nullptr;
 	SentryAndroidBeforeSendFeedbackHandler *before_send_feedback_handler = nullptr;
 	SentryAndroidBeforeSendLogHandler *before_send_log_handler = nullptr;
 	SentryAndroidBeforeSendMetricHandler *before_send_metric_handler = nullptr;
-
-	_FORCE_INLINE_ Object *_get_android_plugin() const { return ObjectDB::get_instance(android_plugin_instance_id); }
 
 	void _add_default_attachments();
 
@@ -138,7 +137,7 @@ public:
 	virtual void close() override;
 	virtual bool is_enabled() const override;
 
-	bool has_android_plugin() const { return _get_android_plugin() != nullptr; }
+	bool has_android_plugin() const { return _android_plugin.get() != nullptr; }
 
 	AndroidSDK();
 	virtual ~AndroidSDK() override;
