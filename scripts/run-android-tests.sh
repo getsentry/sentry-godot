@@ -378,12 +378,17 @@ run_tests() {
         for retry in $(seq 1 $EXIT_INFO_RETRIES); do
             adb shell dumpsys activity exit-info "$PACKAGE" > "$attempt_dir/exit-history.txt"
             exit_info=$(find_exit_info "$attempt_dir/exit-history.txt" "$since" "$pid")
-            [ -n "$exit_info" ] && break
+            # Stop on a nonzero reason; 0 (UNKNOWN) may still be provisional.
+            [[ "$exit_info" =~ [[:space:]]reason=[1-9][0-9]*[[:space:]] ]] && break
             sleep 1
         done
     fi
     sleep "$CRASH_DRAIN_SECONDS"
     stop_logcat
+    if [ "$timed_out" = false ]; then
+        adb shell dumpsys activity exit-info "$PACKAGE" > "$attempt_dir/exit-history.txt"
+        exit_info=$(find_exit_info "$attempt_dir/exit-history.txt" "$since" "$pid")
+    fi
 
     local exit_code=1  # Default to general failure
     local terminating=false
