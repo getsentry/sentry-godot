@@ -20,6 +20,8 @@ Options:
                       (auto-detected from RUNNER_OS or uname when omitted)
   --arch <arch>       x86_32 | x86_64 | arm64 | universal
                       (auto-detected from RUNNER_ARCH or uname when omitted)
+                      macOS: universal selects the host arch since 4.8;
+                      older versions always use the universal archive
   --mono              Download the .NET (mono) build of the engine
   --dest <dir>        Directory to extract into (default: ./godot)
 
@@ -71,10 +73,18 @@ if [[ -z "$PLATFORM" ]]; then
     fi
 fi
 
-if [[ -z "$ARCH" ]]; then
-    if [[ "$PLATFORM" == "macos" ]]; then
+if [[ "$PLATFORM" == "macos" ]]; then
+    IFS=. read -r version_major version_minor _ <<< "${VERSION%%-*}"
+    # Architecture-specific macOS downloads started with 4.8-beta1.
+    if (( version_major == 4 && version_minor < 8 )) || [[ "$VERSION" == 4.8-dev* ]]; then
         ARCH="universal"
-    elif [[ -n "${RUNNER_ARCH:-}" ]]; then
+    elif [[ "$ARCH" == "universal" ]]; then
+        ARCH=""
+    fi
+fi
+
+if [[ -z "$ARCH" ]]; then
+    if [[ -n "${RUNNER_ARCH:-}" ]]; then
         case "$RUNNER_ARCH" in
             X86)   ARCH="x86_32" ;;
             X64)   ARCH="x86_64" ;;
@@ -92,6 +102,13 @@ if [[ -z "$ARCH" ]]; then
 fi
 
 # --- Compute archive suffix and in-archive binary path ---
+
+if [[ "$PLATFORM" == "macos" ]]; then
+    case "$ARCH" in
+        universal|x86_64|arm64) ;;
+        *) echo "Unsupported macOS arch: $ARCH" >&2; exit 1;;
+    esac
+fi
 
 if $MONO; then
     case "$PLATFORM" in
@@ -112,10 +129,7 @@ if $MONO; then
             inner_bin="Godot_v${VERSION}_${suffix}/Godot_v${VERSION}_mono_linux.${ARCH}"
             ;;
         macos)
-            if [[ "$ARCH" != "universal" ]]; then
-                echo "Unsupported macOS arch: $ARCH" >&2; exit 1
-            fi
-            suffix="mono_macos.universal"
+            suffix="mono_macos.${ARCH}"
             inner_bin="Godot_mono.app/Contents/MacOS/Godot"
             ;;
         *) echo "Unsupported platform: $PLATFORM" >&2; exit 1;;
@@ -139,10 +153,7 @@ else
             inner_bin="Godot_v${VERSION}_${suffix}"
             ;;
         macos)
-            if [[ "$ARCH" != "universal" ]]; then
-                echo "Unsupported macOS arch: $ARCH" >&2; exit 1
-            fi
-            suffix="macos.universal"
+            suffix="macos.${ARCH}"
             inner_bin="Godot.app/Contents/MacOS/Godot"
             ;;
         *) echo "Unsupported platform: $PLATFORM" >&2; exit 1;;
