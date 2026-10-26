@@ -204,20 +204,20 @@ public sealed class SentryAutoMetricsOptions
     public bool EnableMemoryMetrics { get; set; }
 
     /// <summary>
-    /// Controls how often frame metrics are sent, in seconds.
-    /// Ignored when <see cref="EnableFrameMetrics"/> is disabled.
+    /// Interval between frame metric collections, in seconds.
+    /// Used only when <see cref="EnableFrameMetrics"/> is enabled.
     /// </summary>
     public double FrameMetricsIntervalSec { get; set; } = 1.0;
 
     /// <summary>
-    /// Controls how often rendering metrics are sent, in seconds.
-    /// Ignored when <see cref="EnableRenderingMetrics"/> is disabled.
+    /// Interval between rendering metric collections, in seconds.
+    /// Used only when <see cref="EnableRenderingMetrics"/> is enabled.
     /// </summary>
     public double RenderingMetricsIntervalSec { get; set; } = 1.0;
 
     /// <summary>
-    /// Controls how often memory metrics are sent, in seconds.
-    /// Ignored when <see cref="EnableMemoryMetrics"/> is disabled.
+    /// Interval between memory metric collections, in seconds.
+    /// Used only when <see cref="EnableMemoryMetrics"/> is enabled.
     /// </summary>
     public double MemoryMetricsIntervalSec { get; set; } = 60.0;
 }
