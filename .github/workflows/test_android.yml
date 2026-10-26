@@ -17,6 +17,7 @@ jobs:
           - 4.5.1-stable
           - 4.6.3-stable
           - 4.7.1-stable
+          - 4.8-beta1
     steps:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
