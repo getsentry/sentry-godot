@@ -35,9 +35,10 @@
 			[code]game.perf.net.num_peers[/code]: Connected remote peers, excluding this instance. Servers and mesh peers only.
 			[code]game.perf.net.ping[/code]: Client's round-trip time to the server, in milliseconds.
 			[code]game.perf.net.ping_peer_avg[/code], [code]game.perf.net.ping_peer_max[/code]: Average and highest peer round-trip times, in milliseconds. Servers and mesh peers only.
+			[code]game.perf.net.packet_loss_ratio[/code]: Client's smoothed outgoing packet-loss estimate toward the server, based on reliable-transmission timeouts. Reads [constant ENetPacketPeer.PEER_PACKET_LOSS] and converts it to a ratio.
 			[code]game.perf.net.in_rate[/code], [code]game.perf.net.out_rate[/code]: Bytes received and sent per second, including ENet protocol traffic and retransmissions.
 			[code]game.perf.net.in_packets[/code], [code]game.perf.net.out_packets[/code]: UDP datagrams received and sent per second, rather than RPC or game-message counts.
-			[b]Backend support:[/b] Peer counts are supported with all transports. Ping and traffic rates are supported only with ENet.
+			[b]Backend support:[/b] Peer counts are supported with all transports. Ping, packet loss, and traffic rates are supported only with ENet.
 			[b]Note:[/b] Ping includes Godot's network-processing delays. It describes the latency the game experiences, but cannot isolate network delay from processing delay.
 			[b]Note:[/b] Traffic collection resets ENet's shared byte and packet counters. Other code reading those counters affects these measurements, and vice versa.
 		</member>
