@@ -190,9 +190,11 @@ struct AutoMetricsOptionsData {
 	uint8_t enable_frame_metrics;
 	uint8_t enable_rendering_metrics;
 	uint8_t enable_memory_metrics;
+	uint8_t enable_network_metrics;
 	double frame_metrics_interval_sec;
 	double rendering_metrics_interval_sec;
 	double memory_metrics_interval_sec;
+	double network_metrics_interval_sec;
 };
 
 // Must match layout of LoggerLimitsData in NativeBridge.cs.
@@ -320,9 +322,11 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	auto_metrics->set_enable_frame_metrics(data.auto_metrics.enable_frame_metrics);
 	auto_metrics->set_enable_rendering_metrics(data.auto_metrics.enable_rendering_metrics);
 	auto_metrics->set_enable_memory_metrics(data.auto_metrics.enable_memory_metrics);
+	auto_metrics->set_enable_network_metrics(data.auto_metrics.enable_network_metrics);
 	auto_metrics->set_frame_metrics_interval_sec(data.auto_metrics.frame_metrics_interval_sec);
 	auto_metrics->set_rendering_metrics_interval_sec(data.auto_metrics.rendering_metrics_interval_sec);
 	auto_metrics->set_memory_metrics_interval_sec(data.auto_metrics.memory_metrics_interval_sec);
+	auto_metrics->set_network_metrics_interval_sec(data.auto_metrics.network_metrics_interval_sec);
 
 	Ref<SentryLoggerLimits> logger_limits = options->get_godot_logger()->get_limits();
 	logger_limits->set_events_per_frame(data.logger_limits.events_per_frame);
@@ -368,9 +372,11 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.auto_metrics.enable_frame_metrics = auto_metrics->get_enable_frame_metrics();
 	r_data.auto_metrics.enable_rendering_metrics = auto_metrics->get_enable_rendering_metrics();
 	r_data.auto_metrics.enable_memory_metrics = auto_metrics->get_enable_memory_metrics();
+	r_data.auto_metrics.enable_network_metrics = auto_metrics->get_enable_network_metrics();
 	r_data.auto_metrics.frame_metrics_interval_sec = auto_metrics->get_frame_metrics_interval_sec();
 	r_data.auto_metrics.rendering_metrics_interval_sec = auto_metrics->get_rendering_metrics_interval_sec();
 	r_data.auto_metrics.memory_metrics_interval_sec = auto_metrics->get_memory_metrics_interval_sec();
+	r_data.auto_metrics.network_metrics_interval_sec = auto_metrics->get_network_metrics_interval_sec();
 
 	Ref<SentryLoggerLimits> limits = options->get_godot_logger()->get_limits();
 	r_data.logger_limits.events_per_frame = limits->get_events_per_frame();

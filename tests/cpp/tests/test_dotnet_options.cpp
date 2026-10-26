@@ -89,6 +89,8 @@ TEST_SUITE("[.NET] Options interop") {
 			{ "sentry/auto_metrics/rendering_metrics/interval_sec",            "auto_metrics:rendering_metrics_interval_sec",   2.5,                            3.0 },
 			{ "sentry/auto_metrics/memory_metrics/enabled",                    "auto_metrics:enable_memory_metrics",           true,                           false },
 			{ "sentry/auto_metrics/memory_metrics/interval_sec",               "auto_metrics:memory_metrics_interval_sec",      30.0,                           45.0 },
+			{ "sentry/auto_metrics/network_metrics/enabled",                   "auto_metrics:enable_network_metrics",          true,                           false },
+			{ "sentry/auto_metrics/network_metrics/interval_sec",              "auto_metrics:network_metrics_interval_sec",     12.5,                           15.0 },
 			{ "sentry/godot_logger/enabled",                                   "godot_logger:enabled",                         false,                          true },
 			{ "sentry/godot_logger/include_source_context",                    "godot_logger:include_source_context",          false,                          true },
 			{ "sentry/godot_logger/include_variables",                         "godot_logger:include_variables",               true,                           false },
@@ -113,8 +115,6 @@ TEST_SUITE("[.NET] Options interop") {
 				crossed.insert(option_name(option));
 			}
 			const HashSet<String> not_crossed = {
-				// Network auto-metrics options are synchronized in a follow-up PR.
-				"enable_network_metrics", "network_metrics_interval_sec",
 				// Only affects the JavaScript SDK on Web.
 				"trace_lifecycle",
 				// Deprecated no-ops.

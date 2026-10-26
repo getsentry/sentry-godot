@@ -150,9 +150,11 @@ internal static partial class NativeBridge
         public byte enable_frame_metrics;
         public byte enable_rendering_metrics;
         public byte enable_memory_metrics;
+        public byte enable_network_metrics;
         public double frame_metrics_interval_sec;
         public double rendering_metrics_interval_sec;
         public double memory_metrics_interval_sec;
+        public double network_metrics_interval_sec;
     }
 
     // Must match layout of LoggerLimitsData in csharp_interop.cpp.
@@ -666,9 +668,11 @@ internal static partial class NativeBridge
         opts.AutoMetrics.EnableFrameMetrics = data.auto_metrics.enable_frame_metrics != 0;
         opts.AutoMetrics.EnableRenderingMetrics = data.auto_metrics.enable_rendering_metrics != 0;
         opts.AutoMetrics.EnableMemoryMetrics = data.auto_metrics.enable_memory_metrics != 0;
+        opts.AutoMetrics.EnableNetworkMetrics = data.auto_metrics.enable_network_metrics != 0;
         opts.AutoMetrics.FrameMetricsIntervalSec = data.auto_metrics.frame_metrics_interval_sec;
         opts.AutoMetrics.RenderingMetricsIntervalSec = data.auto_metrics.rendering_metrics_interval_sec;
         opts.AutoMetrics.MemoryMetricsIntervalSec = data.auto_metrics.memory_metrics_interval_sec;
+        opts.AutoMetrics.NetworkMetricsIntervalSec = data.auto_metrics.network_metrics_interval_sec;
         opts.GodotLogger.Limits = new SentryLoggerLimits
         {
             EventsPerFrame = data.logger_limits.events_per_frame,
@@ -982,9 +986,11 @@ internal static partial class NativeBridge
                     enable_frame_metrics = (byte)(opts.AutoMetrics.EnableFrameMetrics ? 1 : 0),
                     enable_rendering_metrics = (byte)(opts.AutoMetrics.EnableRenderingMetrics ? 1 : 0),
                     enable_memory_metrics = (byte)(opts.AutoMetrics.EnableMemoryMetrics ? 1 : 0),
+                    enable_network_metrics = (byte)(opts.AutoMetrics.EnableNetworkMetrics ? 1 : 0),
                     frame_metrics_interval_sec = opts.AutoMetrics.FrameMetricsIntervalSec,
                     rendering_metrics_interval_sec = opts.AutoMetrics.RenderingMetricsIntervalSec,
                     memory_metrics_interval_sec = opts.AutoMetrics.MemoryMetricsIntervalSec,
+                    network_metrics_interval_sec = opts.AutoMetrics.NetworkMetricsIntervalSec,
                 },
                 logger_limits = new LoggerLimitsData
                 {
