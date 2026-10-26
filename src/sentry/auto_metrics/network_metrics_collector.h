@@ -8,7 +8,7 @@ namespace sentry {
 
 class AutoMetricsAttributes;
 
-// Collects remote peer counts, cached ENet round-trip times, and ENet traffic rates.
+// Collects remote peer counts, cached ENet statistics, and ENet traffic rates.
 class NetworkMetricsCollector final : public MetricsCollector {
 public:
 	enum class Topology {
@@ -23,6 +23,8 @@ public:
 		double bytes_sent = 0.0;
 		double packets_received = 0.0;
 		double packets_sent = 0.0;
+		// Negative means unavailable.
+		double packet_loss = -1.0;
 		double total_ping_msec = 0.0;
 		double max_ping_msec = 0.0;
 		uint32_t num_peers = 0;

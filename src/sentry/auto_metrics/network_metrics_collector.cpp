@@ -15,16 +15,6 @@
 
 namespace sentry {
 
-namespace {
-
-inline void _read_enet_peer_ping(const Ref<ENetPacketPeer> &p_peer, NetworkMetricsCollector::Snapshot &p_snapshot) {
-	if (p_peer.is_valid() && p_peer->get_state() == ENetPacketPeer::STATE_CONNECTED) {
-		p_snapshot.add_ping(p_peer->get_statistic(ENetPacketPeer::PEER_ROUND_TRIP_TIME));
-	}
-}
-
-} // namespace
-
 void NetworkMetricsCollector::Snapshot::add_ping(double p_ping_msec) {
 	++num_ping_readings;
 	total_ping_msec += p_ping_msec;
@@ -75,10 +65,17 @@ bool NetworkMetricsCollector::_read_network_stats(Snapshot &p_snapshot) {
 		}
 
 		if (p_snapshot.topology == Topology::CLIENT) {
-			_read_enet_peer_ping(enet->get_peer(MultiplayerPeer::TARGET_PEER_SERVER), p_snapshot);
-		} else {
+			Ref<ENetPacketPeer> peer = enet->get_peer(MultiplayerPeer::TARGET_PEER_SERVER);
+			if (peer.is_valid() && peer->get_state() == ENetPacketPeer::STATE_CONNECTED) {
+				p_snapshot.add_ping(peer->get_statistic(ENetPacketPeer::PEER_ROUND_TRIP_TIME));
+				p_snapshot.packet_loss = peer->get_statistic(ENetPacketPeer::PEER_PACKET_LOSS);
+			}
+		} else { // SERVER or MESH
 			for (int32_t peer_id : multiplayer->get_peers()) {
-				_read_enet_peer_ping(enet->get_peer(peer_id), p_snapshot);
+				Ref<ENetPacketPeer> peer = enet->get_peer(peer_id);
+				if (peer.is_valid() && peer->get_state() == ENetPacketPeer::STATE_CONNECTED) {
+					p_snapshot.add_ping(peer->get_statistic(ENetPacketPeer::PEER_ROUND_TRIP_TIME));
+				}
 			}
 		}
 	}
@@ -127,6 +124,11 @@ void NetworkMetricsCollector::_process(uint64_t p_now_usec) {
 						snapshot.max_ping_msec, unit, attributes);
 			} break;
 		}
+	}
+
+	if (snapshot.topology == Topology::CLIENT && snapshot.packet_loss >= 0.0) {
+		SentrySDK::get_singleton()->get_metrics()->gauge("game.perf.net.packet_loss_ratio",
+				snapshot.packet_loss / ENetPacketPeer::PACKET_LOSS_SCALE, SentryUnit::get_singleton()->get_ratio(), attributes);
 	}
 
 	// Traffic
