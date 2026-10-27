@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Ignore focus loss for automatic metrics in headless mode ([#1049](https://github.com/getsentry/sentry-godot/pull/1049))
+
 ### Dependencies
 
 - Bump Sentry Android from v8.61.0 to v8.61.1 ([#1044](https://github.com/getsentry/sentry-godot/pull/1044))
