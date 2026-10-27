@@ -21,6 +21,8 @@ private:
 	RenderingMetricsCollector rendering_metrics_collector;
 	MemoryMetricsCollector memory_metrics_collector;
 
+	bool _is_headless = false;
+
 	// Assume focused and unpaused at startup; Godot cannot reliably tell us these states.
 	// We only track notifications after this node enters the tree.
 	bool _app_focused = true;
