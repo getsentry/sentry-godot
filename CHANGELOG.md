@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Add opt-in automatic network metrics for peer counts, ping, packet loss, and traffic rates, configurable through `SentryOptions.auto_metrics` and Project Settings ([#1033](https://github.com/getsentry/sentry-godot/pull/1033))
+
 ### Fixes
 
 - Ignore focus loss for automatic metrics in headless mode ([#1049](https://github.com/getsentry/sentry-godot/pull/1049))
