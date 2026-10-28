@@ -14,6 +14,9 @@
 - Bump Sentry JavaScript from v11.8.0 to v11.9.0 ([#1046](https://github.com/getsentry/sentry-godot/pull/1046))
   - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#1190)
   - [diff](https://github.com/getsentry/sentry-javascript/compare/11.8.0...11.9.0)
+- Bump Cocoa SDK from v9.30.2 to v9.31.0 ([#1042](https://github.com/getsentry/sentry-godot/pull/1042))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9310)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.30.2...9.31.0)
 
 ## 2.4.0
 
