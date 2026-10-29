@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryWebOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Web-specific options for the Sentry SDK.
+	</brief_description>
+	<description>
+		Contains configuration options that apply only when the project runs on Web, such as tunneling. Access this configuration through [member SentryOptions.web].
+		See also [SentryOptions].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="enable_tunnel" type="bool" setter="set_enable_tunnel" getter="get_enable_tunnel" default="false">
+			If [code]true[/code], sends uploads through a managed tunnel configured by [member tunnel_path], [member tunnel_base_path], and [member tunnel_trailing_slash]. If [code]false[/code], sends directly to Sentry and ignores these options.
+			Configure a server on the game's origin to handle the tunnel path and forward envelopes to Sentry. The [member SentryOptions.dsn] is still required.
+		</member>
+		<member name="tunnel_base_path" type="String" setter="set_tunnel_base_path" getter="get_tunnel_base_path" default="&quot;&quot;">
+			Prefixes the tunnel path, including an explicit [member tunnel_path]. For example, [code]"/game"[/code] with [code]"/events"[/code] sends uploads to [code]"/game/events"[/code]. An empty string adds no prefix.
+		</member>
+		<member name="tunnel_path" type="String" setter="set_tunnel_path" getter="get_tunnel_path" default="&quot;&quot;">
+			Sets the tunnel path on the game's origin, such as [code]"/events"[/code]. An empty string derives a stable path from [member SentryOptions.dsn].
+		</member>
+		<member name="tunnel_trailing_slash" type="bool" setter="set_tunnel_trailing_slash" getter="get_tunnel_trailing_slash" default="false">
+			If [code]true[/code], appends [code]/[/code] to the tunnel path. Use this when the server requires a trailing slash, including for a DSN-derived path.
+		</member>
+	</members>
+</class>
