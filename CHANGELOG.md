@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- Web: Avoid unsupported syscall warnings when querying memory information ([#1058](https://github.com/getsentry/sentry-godot/pull/1058))
 - Ignore focus loss for automatic metrics in headless mode ([#1049](https://github.com/getsentry/sentry-godot/pull/1049))
 
 ### Dependencies
