@@ -140,6 +140,8 @@ public partial class DotnetTestHarness : RefCounted
             _receivedOptions["rendering_metrics_interval_sec"] = options.AutoMetrics.RenderingMetricsIntervalSec;
             _receivedOptions["enable_memory_metrics"] = options.AutoMetrics.EnableMemoryMetrics;
             _receivedOptions["memory_metrics_interval_sec"] = options.AutoMetrics.MemoryMetricsIntervalSec;
+            _receivedOptions["enable_network_metrics"] = options.AutoMetrics.EnableNetworkMetrics;
+            _receivedOptions["network_metrics_interval_sec"] = options.AutoMetrics.NetworkMetricsIntervalSec;
             _receivedOptions["enabled"] = options.GodotLogger.Enabled;
             _receivedOptions["include_source_context"] = options.GodotLogger.IncludeSourceContext;
             _receivedOptions["include_variables"] = options.GodotLogger.IncludeVariables;
@@ -184,6 +186,8 @@ public partial class DotnetTestHarness : RefCounted
             options.AutoMetrics.RenderingMetricsIntervalSec = 3.0;
             options.AutoMetrics.EnableMemoryMetrics = false;
             options.AutoMetrics.MemoryMetricsIntervalSec = 45.0;
+            options.AutoMetrics.EnableNetworkMetrics = false;
+            options.AutoMetrics.NetworkMetricsIntervalSec = 15.0;
             options.GodotLogger.Enabled = true;
             options.GodotLogger.IncludeSourceContext = true;
             options.GodotLogger.IncludeVariables = false;
