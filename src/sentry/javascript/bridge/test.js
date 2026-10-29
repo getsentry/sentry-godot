@@ -145,7 +145,7 @@ try {
 			bridge.init(() => {}, beforeSendTransaction, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false,
 					"1.0.0", "1", "production", 1.0, 1.0, traceLifecycle, JSON.stringify(tracePropagationTargets),
 					propagateTraceparent, orgId, 100, false,
-					"0.1.0");
+					"0.1.0", false, "", "", false);
 		};
 
 		runTest("init()", () => {

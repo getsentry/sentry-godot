@@ -125,6 +125,7 @@ TEST_SUITE("[.NET] Options interop") {
 				"logger_event_mask", "logger_breadcrumb_mask", "logger_log_mask"
 			};
 
+			// NOTE: Excluded SentryWebOptions because Godot does not support .NET Web exports.
 			for (const char *class_name : { "SentryOptions", "SentryAutoMetricsOptions", "SentryGodotLoggerOptions", "SentryLoggerLimits", "SentryAndroidOptions" }) {
 				const TypedArray<Dictionary> properties = ClassDBSingleton::get_singleton()->class_get_property_list(class_name, true);
 				for (int i = 0; i < properties.size(); i++) {

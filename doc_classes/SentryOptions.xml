@@ -221,6 +221,9 @@
 			The sampling decision is made randomly per trace, so either all spans in a trace are sent or none of them are. See [method SentrySDK.start_span] for information on recording spans.
 			To learn more, visit [url=https://docs.sentry.io/concepts/key-terms/tracing/]Tracing documentation[/url].
 		</member>
+		<member name="web" type="SentryWebOptions" setter="" getter="get_web">
+			Configures Web-specific options. See [SentryWebOptions].
+		</member>
 	</members>
 	<constants>
 		<constant name="TRACE_LIFECYCLE_STATIC" value="0" enum="TraceLifecycle">

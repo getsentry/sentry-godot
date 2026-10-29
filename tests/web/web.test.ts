@@ -1,6 +1,7 @@
 import { test, expect, Page } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
+import { installTunnelProbe } from "./helpers/tunnel";
 
 const COMPLETION_MARKER = ">>> Test run complete with code: ";
 const PROJECT_DIR = path.resolve(import.meta.dirname, "../../project");
@@ -24,6 +25,10 @@ function discoverTestPaths(): string[] {
 // Returns the exit code from the test runner.
 async function runGodotTests(page: Page, testPath: string): Promise<number> {
   const { promise: completionPromise, resolve: completionResolve } = Promise.withResolvers<number>();
+
+  if (testPath.endsWith("/test_web_tunnel.gd")) {
+    await installTunnelProbe(page);
+  }
 
   page.on("console", (msg) => {
     const text = msg.text();
