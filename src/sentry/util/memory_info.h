@@ -8,7 +8,10 @@ namespace sentry::util {
 // Godot 4.5 queries unsupported sysctl keys on iOS (https://github.com/godotengine/godot/pull/109112)
 // producing an error.
 inline bool safe_to_query_memory_info() {
-#ifdef IOS_ENABLED
+#ifdef WEB_ENABLED
+	// Querying Web memory info emits an unsupported syscall warning.
+	return false;
+#elif defined(IOS_ENABLED)
 	const auto &version = ::godot::gdextension_interface::godot_version;
 	if (version.major == 4 && version.minor == 5) {
 		return false;
