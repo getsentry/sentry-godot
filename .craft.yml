@@ -1,3 +1,4 @@
+minVersion: '3.7.0'
 changelogPolicy: auto
 preReleaseCommand: pwsh scripts/bump-version.ps1
 postReleaseBump:
