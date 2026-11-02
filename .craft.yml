@@ -1,5 +1,8 @@
 minVersion: '3.7.0'
-changelogPolicy: auto
+changelog:
+  policy: auto
+versioning:
+  policy: auto
 preReleaseCommand: pwsh scripts/bump-version.ps1
 postReleaseBump:
   version: '{{version}}-dev'
