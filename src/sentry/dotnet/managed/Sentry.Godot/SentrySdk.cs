@@ -118,7 +118,19 @@ public static partial class SentrySdk
 
         ConfigureAssemblyReader(godotOptions);
         ConfigureCocoaDebugImagesOnIOS(godotOptions);
-        Sentry.SentrySdk.Init(godotOptions);
+
+        // Native layer owns sessions; .NET-side tracking would double-count.
+        var autoSessionTracking = godotOptions.AutoSessionTracking;
+        godotOptions.AutoSessionTracking = false;
+        try
+        {
+            Sentry.SentrySdk.Init(godotOptions);
+        }
+        finally
+        {
+            godotOptions.AutoSessionTracking = autoSessionTracking;
+        }
+
         InitFirstChanceExceptionHandler();
     }
 

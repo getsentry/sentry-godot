@@ -18,6 +18,7 @@ func test_bool_properties(property: String, test_parameters := [
 		["attach_screenshot"],
 		["attach_scene_tree"],
 		["send_default_pii"],
+		["auto_session_tracking"],
 ]) -> void:
 	options.set(property, true)
 	assert_bool(options.get(property)).is_true()
@@ -63,6 +64,13 @@ func test_web_options_retain_assigned_values(property: String, value: Variant, t
 ]) -> void:
 	options.web.set(property, value)
 	assert_that(options.web.get(property)).is_equal(value)
+
+
+func test_session_tracking_defaults() -> void:
+	assert_bool(options.auto_session_tracking).is_true()
+	assert_int(options.session_tracking_interval_ms).is_equal(30000)
+	assert_bool(ProjectSettings.get_setting("sentry/options/auto_session_tracking")).is_true()
+	assert_int(ProjectSettings.get_setting("sentry/options/session_tracking_interval_ms")).is_equal(30000)
 
 
 func test_auto_metrics_defaults() -> void:
@@ -114,6 +122,17 @@ func test_string_properties(property: String, test_parameters := [
 	assert_str(options.get(property)).is_equal("test-value")
 
 
+## Test simple int properties.
+@warning_ignore("unused_parameter")
+func test_int_properties(property: String, value: int, test_parameters := [
+		["max_breadcrumbs", 42],
+		["shutdown_timeout_ms", 5000],
+		["session_tracking_interval_ms", 45000],
+]) -> void:
+	options.set(property, value)
+	assert_int(options.get(property)).is_equal(value)
+
+
 ## SentryOptions.sample_rate should be set to the specified value.
 func test_sample_rate() -> void:
 	options.sample_rate = 0.5
@@ -141,18 +160,6 @@ func test_invalid_trace_propagation_targets_are_filtered_out() -> void:
 func test_empty_trace_propagation_targets_are_filtered_out() -> void:
 	options.trace_propagation_targets = ["valid.example.com", ""]
 	assert_array(options.trace_propagation_targets).contains_exactly(["valid.example.com"])
-
-
-## SentryOptions.max_breadcrumbs should be set to the specified value.
-func test_max_breadcrumbs() -> void:
-	options.max_breadcrumbs = 42
-	assert_int(options.max_breadcrumbs).is_equal(42)
-
-
-## SentryOptions.shutdown_timeout_ms should be set to the specified value.
-func test_shutdown_timeout_ms() -> void:
-	options.shutdown_timeout_ms = 5000
-	assert_int(options.shutdown_timeout_ms).is_equal(5000)
 
 
 ## Test mask properties on godot_logger options.

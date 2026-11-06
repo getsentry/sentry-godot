@@ -9,6 +9,7 @@ namespace Sentry.Godot;
 /// Configures the Sentry SDK for Godot.
 /// </summary>
 /// <remarks>
+/// <see cref="SentryOptions.AutoSessionTrackingInterval"/> applies to Android, iOS, and macOS only.
 /// Regular expressions in <see cref="SentryOptions.TracePropagationTargets"/> sync to the native layer using only
 /// their pattern. Constructor-supplied <see cref="System.Text.RegularExpressions.RegexOptions"/> are not preserved.
 /// For case-insensitive matching in both layers, include <c>(?i)</c> in the pattern instead of using
@@ -21,9 +22,6 @@ public sealed class SentryGodotOptions : SentryOptions
         IsGlobalModeEnabled = true;
         EnableScopeSync = true;
         ScopeObserver = new GodotScopeObserver();
-
-        // Native layer owns sessions; .NET-side tracking would double-count.
-        AutoSessionTracking = false;
 
         AddInAppExclude("Godot");
         AddIntegration(new GodotSdkIntegration());

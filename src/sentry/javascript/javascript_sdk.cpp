@@ -420,6 +420,7 @@ void JavaScriptSDK::init() {
 			SENTRY_OPTIONS()->is_propagate_traceparent_enabled(),
 			SENTRY_OPTIONS()->get_org_id().utf8().get_data(),
 			SENTRY_OPTIONS()->get_max_breadcrumbs(),
+			SENTRY_OPTIONS()->is_auto_session_tracking_enabled(),
 			SENTRY_OPTIONS()->is_send_default_pii_enabled(),
 			SENTRY_GODOT_SDK_VERSION,
 			SENTRY_OPTIONS()->get_web()->get_enable_tunnel(),
