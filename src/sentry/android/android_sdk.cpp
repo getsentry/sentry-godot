@@ -442,6 +442,8 @@ void AndroidSDK::init() {
 	optionsData["propagate_traceparent"] = SENTRY_OPTIONS()->is_propagate_traceparent_enabled();
 	optionsData["org_id"] = SENTRY_OPTIONS()->get_org_id();
 	optionsData["max_breadcrumbs"] = SENTRY_OPTIONS()->get_max_breadcrumbs();
+	optionsData["auto_session_tracking"] = SENTRY_OPTIONS()->is_auto_session_tracking_enabled();
+	optionsData["session_tracking_interval_ms"] = SENTRY_OPTIONS()->get_session_tracking_interval_ms();
 	optionsData["enable_anr_detection"] = SENTRY_OPTIONS()->get_android()->get_enable_anr_detection();
 	optionsData["anr_timeout_interval_ms"] = SENTRY_OPTIONS()->get_android()->get_anr_timeout_interval_ms();
 	optionsData["attach_anr_thread_dump"] = SENTRY_OPTIONS()->get_android()->get_attach_anr_thread_dump();

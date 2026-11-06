@@ -217,6 +217,7 @@ class SentryBridge {
     propagateTraceparent: boolean,
     orgId: "" | `${number}`,
     maxBreadcrumbs: number,
+    autoSessionTracking: boolean,
     sendDefaultPii: boolean,
     sdkVersion: string,
     enableTunnel: boolean,
@@ -256,7 +257,7 @@ class SentryBridge {
           "Console", // very noisy in the Godot SDK
         ];
         const filtered = integrations.filter(function (integration: { name: string }) {
-          return !excludedIntegrations.includes(integration.name);
+          return !excludedIntegrations.includes(integration.name) && (autoSessionTracking || integration.name !== "BrowserSession");
         });
         filtered.push(wasmIntegration());
         if (traceLifecycle === TraceLifecycle.Stream) {

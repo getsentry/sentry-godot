@@ -307,6 +307,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
             val propagateTraceparent = optionsData["propagate_traceparent"] as Boolean
             val orgId = optionsData["org_id"] as String
             val maxBreadcrumbs = optionsData["max_breadcrumbs"].toIntOrThrow()
+            val autoSessionTracking = optionsData["auto_session_tracking"] as Boolean
+            val sessionTrackingIntervalMs = optionsData["session_tracking_interval_ms"].toLongOrThrow()
             val enableAnrDetection = optionsData["enable_anr_detection"] as Boolean
             val anrTimeoutIntervalMs = optionsData["anr_timeout_interval_ms"].toLongOrThrow()
             val attachAnrThreadDump = optionsData["attach_anr_thread_dump"] as Boolean
@@ -324,6 +326,8 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
                 options.isPropagateTraceparent = propagateTraceparent
                 options.orgId = orgId.ifEmpty { null }
                 options.maxBreadcrumbs = maxBreadcrumbs
+                options.isEnableAutoSessionTracking = autoSessionTracking
+                options.sessionTrackingIntervalMillis = sessionTrackingIntervalMs
                 options.sdkVersion?.name = "sentry.java.android.godot"
                 options.nativeSdkName = "sentry.native.android.godot"
                 options.isAnrEnabled = enableAnrDetection

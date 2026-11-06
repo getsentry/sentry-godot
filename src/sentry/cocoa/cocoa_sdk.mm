@@ -335,6 +335,8 @@ void CocoaSDK::init() {
 		options.sampleRate = double_to_objc(SENTRY_OPTIONS()->get_sample_rate());
 		options.tracesSampleRate = double_to_objc(SENTRY_OPTIONS()->get_traces_sample_rate());
 		options.maxBreadcrumbs = (NSUInteger)SENTRY_OPTIONS()->get_max_breadcrumbs();
+		options.enableAutoSessionTracking = SENTRY_OPTIONS()->is_auto_session_tracking_enabled();
+		options.sessionTrackingIntervalMillis = SENTRY_OPTIONS()->get_session_tracking_interval_ms();
 		options.sendDefaultPii = SENTRY_OPTIONS()->is_send_default_pii_enabled();
 		options.diagnosticLevel = sentry_level_to_objc(SENTRY_OPTIONS()->get_diagnostic_level());
 		options.orgId = string_to_objc_or_nil_if_empty(SENTRY_OPTIONS()->get_org_id());

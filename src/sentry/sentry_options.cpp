@@ -179,6 +179,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/max_breadcrumbs", PROPERTY_HINT_RANGE, "0, 500"), p_options->max_breadcrumbs, false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/options/shutdown_timeout_ms", PROPERTY_HINT_RANGE, "0,30000"), p_options->shutdown_timeout_ms, false);
 	_define_setting("sentry/options/send_default_pii", p_options->send_default_pii);
+	_define_setting("sentry/options/auto_session_tracking", p_options->auto_session_tracking, false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/options/session_tracking_interval_ms", PROPERTY_HINT_RANGE, "0,120000,1,or_greater"), p_options->session_tracking_interval_ms, false);
 
 	_define_setting("sentry/options/attach_log", p_options->attach_log, false);
 	_define_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
@@ -296,6 +298,8 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	p_options->max_breadcrumbs = ProjectSettings::get_singleton()->get_setting("sentry/options/max_breadcrumbs", p_options->max_breadcrumbs);
 	p_options->shutdown_timeout_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/shutdown_timeout_ms", p_options->shutdown_timeout_ms);
 	p_options->send_default_pii = ProjectSettings::get_singleton()->get_setting("sentry/options/send_default_pii", p_options->send_default_pii);
+	p_options->auto_session_tracking = ProjectSettings::get_singleton()->get_setting("sentry/options/auto_session_tracking", p_options->auto_session_tracking);
+	p_options->session_tracking_interval_ms = ProjectSettings::get_singleton()->get_setting("sentry/options/session_tracking_interval_ms", p_options->session_tracking_interval_ms);
 
 	p_options->attach_log = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_log", p_options->attach_log);
 	p_options->attach_scene_tree = ProjectSettings::get_singleton()->get_setting("sentry/options/attach_scene_tree", p_options->attach_scene_tree);
@@ -520,6 +524,8 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::STRING, "org_id"), set_org_id, get_org_id);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "max_breadcrumbs"), set_max_breadcrumbs, get_max_breadcrumbs);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "shutdown_timeout_ms", PROPERTY_HINT_RANGE, "0,30000"), set_shutdown_timeout_ms, get_shutdown_timeout_ms);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "auto_session_tracking"), set_auto_session_tracking, is_auto_session_tracking_enabled);
+	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::INT, "session_tracking_interval_ms", PROPERTY_HINT_RANGE, "0,120000,1,or_greater"), set_session_tracking_interval_ms, get_session_tracking_interval_ms);
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "send_default_pii"), set_send_default_pii, is_send_default_pii_enabled);
 
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::BOOL, "attach_log"), set_attach_log, is_attach_log_enabled);
