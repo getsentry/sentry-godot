@@ -64,6 +64,9 @@ public:
 
 	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) = 0;
 
+	virtual void start_session() = 0;
+	virtual void end_session() = 0;
+
 	virtual void init() = 0;
 	virtual void close() = 0;
 	virtual bool is_enabled() const = 0;

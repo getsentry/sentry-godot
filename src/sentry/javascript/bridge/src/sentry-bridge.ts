@@ -426,6 +426,17 @@ class SentryBridge {
     }
   }
 
+  public startSession(): void {
+    Sentry.startSession();
+    // Unlike the other SDKs, JS does not send the initial update when starting a session,
+    // so we do it manually here.
+    Sentry.captureSession();
+  }
+
+  public endSession(): void {
+    Sentry.endSession();
+  }
+
   public close(timeout: number): void {
     Sentry.close(timeout);
   }
