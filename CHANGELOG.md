@@ -5,6 +5,7 @@
 ### Features
 
 - Add `auto_session_tracking` to control automatic session tracking and `session_tracking_interval_ms` to configure its background timeout ([#1069](https://github.com/getsentry/sentry-godot/pull/1069))
+- Add `SentrySDK.start_session()` and `SentrySDK.end_session()` to control session boundaries manually ([#1070](https://github.com/getsentry/sentry-godot/pull/1070))
 
 ## 2.5.1
 
