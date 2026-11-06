@@ -125,6 +125,8 @@ public partial class DotnetTestHarness : RefCounted
             _receivedOptions["trace_propagation_targets"] = tracePropagationTargets;
             _receivedOptions["propagate_traceparent"] = options.PropagateTraceparent;
             _receivedOptions["org_id"] = options.OrgId;
+            _receivedOptions["auto_session_tracking"] = options.AutoSessionTracking;
+            _receivedOptions["session_tracking_interval_ms"] = (int)options.AutoSessionTrackingInterval.TotalMilliseconds;
             _receivedOptions["max_breadcrumbs"] = options.MaxBreadcrumbs;
             _receivedOptions["shutdown_timeout_ms"] = (int)options.ShutdownTimeout.TotalMilliseconds;
             _receivedOptions["send_default_pii"] = options.SendDefaultPii;
@@ -172,6 +174,8 @@ public partial class DotnetTestHarness : RefCounted
             options.TracePropagationTargets.Add("ddd");
             options.PropagateTraceparent = false;
             options.OrgId = "222";
+            options.AutoSessionTracking = true;
+            options.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(45000);
             options.MaxBreadcrumbs = 22;
             options.ShutdownTimeout = TimeSpan.FromMilliseconds(2200);
             options.SendDefaultPii = false;
