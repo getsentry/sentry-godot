@@ -193,6 +193,8 @@ internal static partial class NativeBridge
         public double traces_sample_rate;
         public int max_breadcrumbs;
         public double shutdown_timeout_ms;
+        public byte auto_session_tracking;
+        public int session_tracking_interval_ms;
         public byte send_default_pii;
         public byte attach_log;
         public byte attach_scene_tree;
@@ -235,6 +237,8 @@ internal static partial class NativeBridge
         public double traces_sample_rate;
         public int max_breadcrumbs;
         public double shutdown_timeout_ms;
+        public byte auto_session_tracking;
+        public int session_tracking_interval_ms;
         public byte send_default_pii;
         public byte attach_log;
         public byte attach_scene_tree;
@@ -692,6 +696,8 @@ internal static partial class NativeBridge
         opts.TracesSampleRate = data.traces_sample_rate;
         opts.MaxBreadcrumbs = data.max_breadcrumbs;
         opts.ShutdownTimeout = TimeSpan.FromMilliseconds(data.shutdown_timeout_ms);
+        opts.AutoSessionTracking = data.auto_session_tracking != 0;
+        opts.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(data.session_tracking_interval_ms);
         opts.SendDefaultPii = data.send_default_pii != 0;
         opts.AttachLog = data.attach_log != 0;
         opts.AttachSceneTree = data.attach_scene_tree != 0;
@@ -1016,6 +1022,8 @@ internal static partial class NativeBridge
                 traces_sample_rate = opts.TracesSampleRate ?? 0.0,
                 max_breadcrumbs = opts.MaxBreadcrumbs,
                 shutdown_timeout_ms = opts.ShutdownTimeout.TotalMilliseconds,
+                auto_session_tracking = (byte)(opts.AutoSessionTracking ? 1 : 0),
+                session_tracking_interval_ms = (int)opts.AutoSessionTrackingInterval.TotalMilliseconds,
                 send_default_pii = (byte)(opts.SendDefaultPii ? 1 : 0),
                 attach_log = (byte)(opts.AttachLog ? 1 : 0),
                 attach_scene_tree = (byte)(opts.AttachSceneTree ? 1 : 0),
