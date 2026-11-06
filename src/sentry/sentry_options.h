@@ -170,6 +170,8 @@ private:
 	String org_id = "";
 	int max_breadcrumbs = 100;
 	int shutdown_timeout_ms = 2000;
+	bool auto_session_tracking = true;
+	int session_tracking_interval_ms = 30000;
 	bool send_default_pii = false;
 
 	bool attach_log = true;
@@ -261,6 +263,12 @@ public:
 
 	_FORCE_INLINE_ int get_shutdown_timeout_ms() const { return shutdown_timeout_ms; }
 	_FORCE_INLINE_ void set_shutdown_timeout_ms(int p_shutdown_timeout_ms) { shutdown_timeout_ms = p_shutdown_timeout_ms; }
+
+	_FORCE_INLINE_ bool is_auto_session_tracking_enabled() const { return auto_session_tracking; }
+	_FORCE_INLINE_ void set_auto_session_tracking(bool p_enabled) { auto_session_tracking = p_enabled; }
+
+	_FORCE_INLINE_ int get_session_tracking_interval_ms() const { return session_tracking_interval_ms; }
+	_FORCE_INLINE_ void set_session_tracking_interval_ms(int p_interval_ms) { session_tracking_interval_ms = p_interval_ms; }
 
 	_FORCE_INLINE_ bool is_send_default_pii_enabled() const { return send_default_pii; }
 	_FORCE_INLINE_ void set_send_default_pii(bool p_enabled) { send_default_pii = p_enabled; }
