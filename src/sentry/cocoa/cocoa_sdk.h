@@ -53,6 +53,9 @@ public:
 
 	virtual void set_trace(const String &p_trace_id, const String &p_parent_span_id) override;
 
+	virtual void start_session() override;
+	virtual void end_session() override;
+
 	virtual void init() override;
 	virtual void close() override;
 	virtual bool is_enabled() const override;

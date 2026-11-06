@@ -436,6 +436,16 @@ void JavaScriptSDK::init() {
 	}
 }
 
+void JavaScriptSDK::start_session() {
+	ERR_FAIL_COND(!js_bridge());
+	js_bridge()->call("startSession");
+}
+
+void JavaScriptSDK::end_session() {
+	ERR_FAIL_COND(!js_bridge());
+	js_bridge()->call("endSession");
+}
+
 void JavaScriptSDK::close() {
 	ERR_FAIL_COND(!js_bridge());
 

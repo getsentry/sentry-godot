@@ -526,6 +526,14 @@ void NativeSDK::init() {
 	}
 }
 
+void NativeSDK::start_session() {
+	sentry_start_session();
+}
+
+void NativeSDK::end_session() {
+	sentry_end_session();
+}
+
 void NativeSDK::close() {
 	int err = sentry_close();
 	user_attachments.clear();

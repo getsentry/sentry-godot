@@ -383,6 +383,16 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun startSession() {
+        Sentry.startSession()
+    }
+
+    @UsedByGodot
+    fun endSession() {
+        Sentry.endSession()
+    }
+
+    @UsedByGodot
     fun close() {
         Sentry.close()
     }

@@ -467,6 +467,16 @@ void SentrySDK::remove_user() {
 	}
 }
 
+void SentrySDK::start_session() {
+	ERR_FAIL_COND_MSG(!is_enabled(), "Sentry: Can't start a session - SDK is not initialized.");
+	internal_sdk->start_session();
+}
+
+void SentrySDK::end_session() {
+	ERR_FAIL_COND_MSG(!is_enabled(), "Sentry: Can't end a session - SDK is not initialized.");
+	internal_sdk->end_session();
+}
+
 void SentrySDK::start_new_trace() {
 	set_trace(sentry::uuid::make_uuid_no_dashes(), String());
 }
@@ -712,6 +722,9 @@ void SentrySDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_attachments"), &SentrySDK::clear_attachments);
 	ClassDB::bind_method(D_METHOD("set_attribute", "name", "value"), &SentrySDK::set_attribute);
 	ClassDB::bind_method(D_METHOD("remove_attribute", "name"), &SentrySDK::remove_attribute);
+	ClassDB::bind_method(D_METHOD("start_session"), &SentrySDK::start_session);
+	ClassDB::bind_method(D_METHOD("end_session"), &SentrySDK::end_session);
+
 	ClassDB::bind_method(D_METHOD("start_new_trace"), &SentrySDK::start_new_trace);
 
 	ClassDB::bind_method(D_METHOD("get_current_scope"), &SentrySDK::get_current_scope);
