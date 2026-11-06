@@ -41,6 +41,9 @@
 		<member name="auto_metrics" type="SentryAutoMetricsOptions" setter="" getter="get_auto_metrics">
 			Configures automatic performance metric collection. See [SentryAutoMetricsOptions].
 		</member>
+		<member name="auto_session_tracking" type="bool" setter="set_auto_session_tracking" getter="is_auto_session_tracking_enabled" default="true">
+			If [code]true[/code], the SDK automatically tracks sessions for [url=https://docs.sentry.io/product/releases/health/]Release Health[/url].
+		</member>
 		<member name="before_capture_screenshot" type="Callable" setter="set_before_capture_screenshot" getter="get_before_capture_screenshot" default="Callable()">
 			If assigned, this callback runs before a screenshot is captured. It takes [SentryEvent] as a parameter and returns [code]false[/code] to skip capturing the screenshot, or [code]true[/code] to capture the screenshot.
 			[codeblock]
@@ -204,6 +207,10 @@
 		</member>
 		<member name="send_default_pii" type="bool" setter="set_send_default_pii" getter="is_send_default_pii_enabled" default="false">
 			If [code]true[/code], the SDK will include PII (Personally Identifiable Information) with the events.
+		</member>
+		<member name="session_tracking_interval_ms" type="int" setter="set_session_tracking_interval_ms" getter="get_session_tracking_interval_ms" default="30000">
+			How long the application can remain in the background before its session ends, in milliseconds. Defaults to [code]30000[/code] (30 seconds). Only applies when [member auto_session_tracking] is enabled.
+			[b]Platform support:[/b] Android, iOS, and macOS. Has no effect on Windows, Linux, or Web.
 		</member>
 		<member name="shutdown_timeout_ms" type="int" setter="set_shutdown_timeout_ms" getter="get_shutdown_timeout_ms" default="2000">
 			The maximum time in milliseconds the SDK will wait for pending events to be sent when [method SentrySDK.close] is called. If the timeout expires, the SDK will perform a forced shutdown and any unsent events may be lost.
