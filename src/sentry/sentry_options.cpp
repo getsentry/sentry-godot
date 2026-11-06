@@ -120,6 +120,15 @@ void SentryAndroidOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, attach_anr_thread_dump);
 }
 
+// *** SentryWebOptions
+
+void SentryWebOptions::_bind_methods() {
+	BIND_PROPERTY_SIMPLE(SentryWebOptions, Variant::BOOL, enable_tunnel);
+	BIND_PROPERTY_SIMPLE(SentryWebOptions, Variant::STRING, tunnel_path);
+	BIND_PROPERTY_SIMPLE(SentryWebOptions, Variant::STRING, tunnel_base_path);
+	BIND_PROPERTY_SIMPLE(SentryWebOptions, Variant::BOOL, tunnel_trailing_slash);
+}
+
 // *** SentryAutoMetricsOptions
 
 uint64_t SentryAutoMetricsOptions::get_normalized_frame_metrics_interval_usec() const {
@@ -211,6 +220,12 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/enable_detection"), p_options->get_android()->get_enable_anr_detection(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_interval_ms"), p_options->get_android()->get_anr_timeout_interval_ms(), false);
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/attach_thread_dump"), p_options->get_android()->get_attach_anr_thread_dump(), false);
+
+	Ref<SentryWebOptions> web = p_options->get_web();
+	_define_setting("sentry/web/tunnel/enabled", web->get_enable_tunnel());
+	_define_setting("sentry/web/tunnel/path", web->get_tunnel_path());
+	_define_setting("sentry/web/tunnel/base_path", web->get_tunnel_base_path());
+	_define_setting("sentry/web/tunnel/trailing_slash", web->get_tunnel_trailing_slash());
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/experimental/screenshot_level"), p_options->screenshot_level, false);
@@ -324,6 +339,12 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 			ProjectSettings::get_singleton()->get_setting(
 					"sentry/android/application_not_responding/attach_thread_dump",
 					p_options->android->get_attach_anr_thread_dump()));
+
+	Ref<SentryWebOptions> web = p_options->get_web();
+	web->set_enable_tunnel(ProjectSettings::get_singleton()->get_setting("sentry/web/tunnel/enabled", web->get_enable_tunnel()));
+	web->set_tunnel_path(ProjectSettings::get_singleton()->get_setting("sentry/web/tunnel/path", web->get_tunnel_path()));
+	web->set_tunnel_base_path(ProjectSettings::get_singleton()->get_setting("sentry/web/tunnel/base_path", web->get_tunnel_base_path()));
+	web->set_tunnel_trailing_slash(ProjectSettings::get_singleton()->get_setting("sentry/web/tunnel/trailing_slash", web->get_tunnel_trailing_slash()));
 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/experimental/screenshot_level", p_options->screenshot_level);
@@ -519,6 +540,7 @@ void SentryOptions::_bind_methods() {
 
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "android", PROPERTY_HINT_TYPE_STRING, "SentryAndroidOptions", PROPERTY_USAGE_NONE), get_android);
+	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "web", PROPERTY_HINT_TYPE_STRING, "SentryWebOptions", PROPERTY_USAGE_NONE), get_web);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "auto_metrics", PROPERTY_HINT_TYPE_STRING, "SentryAutoMetricsOptions", PROPERTY_USAGE_NONE), get_auto_metrics);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "godot_logger", PROPERTY_HINT_TYPE_STRING, "SentryGodotLoggerOptions", PROPERTY_USAGE_NONE), get_godot_logger);
 
@@ -558,6 +580,7 @@ SentryOptions::SentryOptions() {
 	experimental.instantiate();
 	experimental->owner = this;
 	android.instantiate();
+	web.instantiate();
 	auto_metrics.instantiate();
 	godot_logger.instantiate();
 

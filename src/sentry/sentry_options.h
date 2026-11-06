@@ -88,6 +88,18 @@ protected:
 	static void _bind_methods();
 };
 
+class SentryWebOptions : public RefCounted {
+	GDCLASS(SentryWebOptions, RefCounted);
+
+	SIMPLE_PROPERTY(bool, enable_tunnel, false);
+	SIMPLE_PROPERTY(String, tunnel_path, "");
+	SIMPLE_PROPERTY(String, tunnel_base_path, "");
+	SIMPLE_PROPERTY(bool, tunnel_trailing_slash, false);
+
+protected:
+	static void _bind_methods();
+};
+
 class SentryAutoMetricsOptions : public RefCounted {
 	GDCLASS(SentryAutoMetricsOptions, RefCounted);
 
@@ -165,6 +177,7 @@ private:
 
 	Ref<SentryExperimental> experimental;
 	Ref<SentryAndroidOptions> android;
+	Ref<SentryWebOptions> web;
 	Ref<SentryAutoMetricsOptions> auto_metrics;
 	Ref<SentryGodotLoggerOptions> godot_logger;
 
@@ -280,6 +293,7 @@ public:
 
 	_FORCE_INLINE_ Ref<SentryExperimental> get_experimental() const { return experimental; }
 	_FORCE_INLINE_ Ref<SentryAndroidOptions> get_android() const { return android; }
+	_FORCE_INLINE_ Ref<SentryWebOptions> get_web() const { return web; }
 	_FORCE_INLINE_ Ref<SentryAutoMetricsOptions> get_auto_metrics() const { return auto_metrics; }
 	_FORCE_INLINE_ Ref<SentryGodotLoggerOptions> get_godot_logger() const { return godot_logger; }
 

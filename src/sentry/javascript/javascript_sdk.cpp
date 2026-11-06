@@ -421,7 +421,11 @@ void JavaScriptSDK::init() {
 			SENTRY_OPTIONS()->get_org_id().utf8().get_data(),
 			SENTRY_OPTIONS()->get_max_breadcrumbs(),
 			SENTRY_OPTIONS()->is_send_default_pii_enabled(),
-			SENTRY_GODOT_SDK_VERSION);
+			SENTRY_GODOT_SDK_VERSION,
+			SENTRY_OPTIONS()->get_web()->get_enable_tunnel(),
+			SENTRY_OPTIONS()->get_web()->get_tunnel_path().utf8().get_data(),
+			SENTRY_OPTIONS()->get_web()->get_tunnel_base_path().utf8().get_data(),
+			SENTRY_OPTIONS()->get_web()->get_tunnel_trailing_slash());
 
 	if (is_enabled()) {
 		set_user(SentryUser::create_default());

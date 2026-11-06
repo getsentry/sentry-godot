@@ -47,6 +47,24 @@ func test_deprecated_enable_project_settings_are_removed(setting: String, test_p
 	assert_bool(ProjectSettings.has_setting(setting)).is_false()
 
 
+func test_web_defaults() -> void:
+	assert_bool(options.web.enable_tunnel).is_false()
+	assert_str(options.web.tunnel_path).is_empty()
+	assert_str(options.web.tunnel_base_path).is_empty()
+	assert_bool(options.web.tunnel_trailing_slash).is_false()
+
+
+@warning_ignore("unused_parameter")
+func test_web_options_retain_assigned_values(property: String, value: Variant, test_parameters := [
+		["enable_tunnel", true],
+		["tunnel_path", "/events"],
+		["tunnel_base_path", "/game"],
+		["tunnel_trailing_slash", true],
+]) -> void:
+	options.web.set(property, value)
+	assert_that(options.web.get(property)).is_equal(value)
+
+
 func test_auto_metrics_defaults() -> void:
 	assert_bool(options.auto_metrics.enable_frame_metrics).is_false()
 	assert_float(options.auto_metrics.frame_metrics_interval_sec).is_equal(1.0)
