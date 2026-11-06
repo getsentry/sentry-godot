@@ -419,6 +419,14 @@ void CocoaSDK::init() {
 	}
 }
 
+void CocoaSDK::start_session() {
+	[SentryObjCSDK startSession];
+}
+
+void CocoaSDK::end_session() {
+	[SentryObjCSDK endSession];
+}
+
 void CocoaSDK::close() {
 	[SentryObjCSDK close];
 }

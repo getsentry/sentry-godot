@@ -79,6 +79,12 @@
 				Creates a new [SentryEvent] object. You can capture the event with [method SentrySDK.capture_event].
 			</description>
 		</method>
+		<method name="end_session">
+			<return type="void" />
+			<description>
+				Ends the current session for Release Health. Does nothing if there is no active session. See [method start_session].
+			</description>
+		</method>
 		<method name="get_active_span" qualifiers="const">
 			<return type="SentrySpan" />
 			<description>
@@ -215,6 +221,22 @@
 				Use this to draw a clean trace boundary where one piece of work ends and unrelated work begins. Without it, everything captured in a session shares the trace the SDK starts at initialization.
 				[b]Note:[/b] A span started with [method SentrySDK.start_span] keeps the trace it began on, and so does the telemetry captured while that span is active. The new trace takes effect once that span ends.
 				To learn more, visit [url=https://docs.sentry.io/concepts/key-terms/tracing/]Tracing documentation[/url].
+			</description>
+		</method>
+		<method name="start_session">
+			<return type="void" />
+			<description>
+				Starts a session for Release Health, ending any existing session first.
+				Disable [member SentryOptions.auto_session_tracking] when your application controls session boundaries:
+				[codeblock]
+				SentrySDK.init(func(options: SentryOptions) -&gt; void:
+				    options.auto_session_tracking = false
+				)
+				SentrySDK.start_session()
+				# End the session when the play session finishes.
+				SentrySDK.end_session()
+				[/codeblock]
+				To learn more, visit [url=https://docs.sentry.io/product/releases/health/]Release Health documentation[/url].
 			</description>
 		</method>
 		<method name="start_span">
