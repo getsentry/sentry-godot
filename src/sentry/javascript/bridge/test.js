@@ -50,6 +50,8 @@ try {
 		const expectedMethods = [
 			"init",
 			"close",
+			"startSession",
+			"endSession",
 			"isEnabled",
 			"setContext",
 			"removeContext",
