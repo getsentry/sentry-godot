@@ -11,7 +11,7 @@ EXIT_INFO_RETRIES=5
 CRASH_DRAIN_SECONDS=5
 LOGCAT_PIDS=()
 LOG_STREAM_PID=""
-LOGCAT_FILTERS="Godot,godot,sentry-godot,sentry-native"
+LOGCAT_FILTERS="Godot,godot,sentry-godot,sentry-native,GodotActivity:V,ActivityTaskManager:I"
 EXPORT_PRESET="Android Tests"
 
 # Launch configuration
