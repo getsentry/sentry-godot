@@ -1,24 +1,16 @@
 extends GdUnitTestSuite
 
-var _server: LocalHTTPServer
+var _capture: HTTPRequestCapture
 var _items: Array[Dictionary] = []
-var _request_count: int = 0
-
-
-@warning_ignore("unused_parameter")
-func before(_do_skip = OS.has_feature("web"),
-		_skip_reason = "The HTTP fixture requires a local TCP listener, which Web exports do not support.") -> void:
-	pass
 
 
 func before_test() -> void:
 	_items.clear()
-	_request_count = 0
-	_server = LocalHTTPServer.new()
-	add_child(_server)
-	assert_int(_server.listener.listen(0, "127.0.0.1")).is_equal(OK)
+	_capture = HTTPRequestCapture.new()
+	add_child(_capture)
+	assert_int(_capture.start()).is_equal(OK)
 	SentrySDK.init(func(options: SentryOptions) -> void:
-		options.dsn = "http://public@127.0.0.1:%d/42" % _server.listener.get_local_port()
+		options.dsn = _capture.get_dsn()
 		options.release = "session-test"
 		options.auto_session_tracking = false
 		options.debug = false
@@ -36,7 +28,12 @@ func before_test() -> void:
 
 func after_test() -> void:
 	SentrySDK.close()
-	_server.free()
+	var deadline: int = Time.get_ticks_msec() + 5000
+	while SentrySDK.is_enabled() and Time.get_ticks_msec() < deadline:
+		await get_tree().process_frame
+	assert_bool(SentrySDK.is_enabled()).is_false()
+	_capture.stop()
+	_capture.free()
 
 
 func assert_json(value: Variant) -> JSONAssert:
@@ -44,9 +41,7 @@ func assert_json(value: Variant) -> JSONAssert:
 
 
 func _read_items(item_type: String, predicate: Callable = Callable()) -> Array[Dictionary]:
-	while _request_count < _server.requests.size():
-		var request: Dictionary = _server.requests[_request_count]
-		_request_count += 1
+	for request: Dictionary in _capture.take_requests():
 		var body: PackedByteArray = request.body
 		if request.headers.get("content-encoding", "") == "gzip":
 			body = body.decompress_dynamic(4 * 1024 * 1024, FileAccess.COMPRESSION_GZIP)

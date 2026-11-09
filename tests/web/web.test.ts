@@ -2,6 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 import { installTunnelProbe } from "./helpers/tunnel";
+import { installRequestCapture } from "./helpers/request-capture";
 
 const COMPLETION_MARKER = ">>> Test run complete with code: ";
 const PROJECT_DIR = path.resolve(import.meta.dirname, "../../project");
@@ -28,6 +29,10 @@ async function runGodotTests(page: Page, testPath: string): Promise<number> {
 
   if (testPath.endsWith("/test_web_tunnel.gd")) {
     await installTunnelProbe(page);
+  }
+
+  if (testPath.endsWith("/test_sessions.gd")) {
+    await installRequestCapture(page);
   }
 
   page.on("console", (msg) => {
