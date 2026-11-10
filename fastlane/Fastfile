@@ -15,7 +15,7 @@ platform :ios do
     )
   end
 
-  desc "Generate all provisioning profiles for development"
+  desc "Regenerate development and App Store provisioning profiles"
   lane :setup_code_signing do
     app_identifiers = [CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)]
     sync_code_signing(
