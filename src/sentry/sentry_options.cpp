@@ -126,6 +126,15 @@ void SentryAppleOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryAppleOptions, Variant::BOOL, enable_metrickit);
 }
 
+// *** SentryWebOptions
+
+void SentryWebOptions::_bind_methods() {
+	BIND_PROPERTY_SIMPLE(SentryWebOptions, Variant::BOOL, enable_tunnel);
+	BIND_PROPERTY_SIMPLE(SentryWebOptions, Variant::STRING, tunnel_path);
+	BIND_PROPERTY_SIMPLE(SentryWebOptions, Variant::STRING, tunnel_base_path);
+	BIND_PROPERTY_SIMPLE(SentryWebOptions, Variant::BOOL, tunnel_trailing_slash);
+}
+
 // *** SentryAutoMetricsOptions
 
 uint64_t SentryAutoMetricsOptions::get_normalized_frame_metrics_interval_usec() const {
@@ -140,6 +149,10 @@ uint64_t SentryAutoMetricsOptions::get_normalized_memory_metrics_interval_usec()
 	return normalize_metrics_interval_usec(memory_metrics_interval_sec);
 }
 
+uint64_t SentryAutoMetricsOptions::get_normalized_network_metrics_interval_usec() const {
+	return normalize_metrics_interval_usec(network_metrics_interval_sec);
+}
+
 void SentryAutoMetricsOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_frame_metrics);
 	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, frame_metrics_interval_sec);
@@ -147,6 +160,8 @@ void SentryAutoMetricsOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, rendering_metrics_interval_sec);
 	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_memory_metrics);
 	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, memory_metrics_interval_sec);
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::BOOL, enable_network_metrics);
+	BIND_PROPERTY_SIMPLE(SentryAutoMetricsOptions, Variant::FLOAT, network_metrics_interval_sec);
 }
 
 // *** SentryOptions
@@ -190,6 +205,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/rendering_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,60,0.1,or_greater"), auto_metrics->get_rendering_metrics_interval_sec());
 	_define_setting("sentry/auto_metrics/memory_metrics/enabled", auto_metrics->get_enable_memory_metrics());
 	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/memory_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,300,0.1,or_greater"), auto_metrics->get_memory_metrics_interval_sec());
+	_define_setting("sentry/auto_metrics/network_metrics/enabled", auto_metrics->get_enable_network_metrics());
+	_define_setting(PropertyInfo(Variant::FLOAT, "sentry/auto_metrics/network_metrics/interval_sec", PROPERTY_HINT_RANGE, "1,60,0.1,or_greater"), auto_metrics->get_network_metrics_interval_sec());
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
 	_define_setting("sentry/godot_logger/enabled", logger_options->get_enabled());
@@ -211,6 +228,12 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/attach_thread_dump"), p_options->get_android()->get_attach_anr_thread_dump(), false);
 
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/apple/metrickit/enabled"), p_options->get_apple()->get_enable_metrickit(), false);
+
+	Ref<SentryWebOptions> web = p_options->get_web();
+	_define_setting("sentry/web/tunnel/enabled", web->get_enable_tunnel());
+	_define_setting("sentry/web/tunnel/path", web->get_tunnel_path());
+	_define_setting("sentry/web/tunnel/base_path", web->get_tunnel_base_path());
+	_define_setting("sentry/web/tunnel/trailing_slash", web->get_tunnel_trailing_slash());
 
 	_define_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	_define_setting(sentry::make_level_enum_property("sentry/experimental/screenshot_level"), p_options->screenshot_level, false);
@@ -295,6 +318,8 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	auto_metrics->set_rendering_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/rendering_metrics/interval_sec", auto_metrics->get_rendering_metrics_interval_sec()));
 	auto_metrics->set_enable_memory_metrics(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/memory_metrics/enabled", auto_metrics->get_enable_memory_metrics()));
 	auto_metrics->set_memory_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/memory_metrics/interval_sec", auto_metrics->get_memory_metrics_interval_sec()));
+	auto_metrics->set_enable_network_metrics(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/network_metrics/enabled", auto_metrics->get_enable_network_metrics()));
+	auto_metrics->set_network_metrics_interval_sec(ProjectSettings::get_singleton()->get_setting("sentry/auto_metrics/network_metrics/interval_sec", auto_metrics->get_network_metrics_interval_sec()));
 
 	Ref<SentryGodotLoggerOptions> logger_options = p_options->get_godot_logger();
 	logger_options->set_enabled(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/enabled", logger_options->get_enabled()));
@@ -327,6 +352,12 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 			ProjectSettings::get_singleton()->get_setting(
 					"sentry/apple/metrickit/enabled",
 					p_options->apple->get_enable_metrickit()));
+
+	Ref<SentryWebOptions> web = p_options->get_web();
+	web->set_enable_tunnel(ProjectSettings::get_singleton()->get_setting("sentry/web/tunnel/enabled", web->get_enable_tunnel()));
+	web->set_tunnel_path(ProjectSettings::get_singleton()->get_setting("sentry/web/tunnel/path", web->get_tunnel_path()));
+	web->set_tunnel_base_path(ProjectSettings::get_singleton()->get_setting("sentry/web/tunnel/base_path", web->get_tunnel_base_path()));
+	web->set_tunnel_trailing_slash(ProjectSettings::get_singleton()->get_setting("sentry/web/tunnel/trailing_slash", web->get_tunnel_trailing_slash()));
 
 	p_options->attach_screenshot = ProjectSettings::get_singleton()->get_setting("sentry/experimental/attach_screenshot", p_options->attach_screenshot);
 	p_options->screenshot_level = (sentry::Level)(int)ProjectSettings::get_singleton()->get_setting("sentry/experimental/screenshot_level", p_options->screenshot_level);
@@ -523,6 +554,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "android", PROPERTY_HINT_TYPE_STRING, "SentryAndroidOptions", PROPERTY_USAGE_NONE), get_android);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "apple", PROPERTY_HINT_TYPE_STRING, "SentryAppleOptions", PROPERTY_USAGE_NONE), get_apple);
+	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "web", PROPERTY_HINT_TYPE_STRING, "SentryWebOptions", PROPERTY_USAGE_NONE), get_web);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "auto_metrics", PROPERTY_HINT_TYPE_STRING, "SentryAutoMetricsOptions", PROPERTY_USAGE_NONE), get_auto_metrics);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "godot_logger", PROPERTY_HINT_TYPE_STRING, "SentryGodotLoggerOptions", PROPERTY_USAGE_NONE), get_godot_logger);
 
@@ -563,6 +595,7 @@ SentryOptions::SentryOptions() {
 	experimental->owner = this;
 	android.instantiate();
 	apple.instantiate();
+	web.instantiate();
 	auto_metrics.instantiate();
 	godot_logger.instantiate();
 

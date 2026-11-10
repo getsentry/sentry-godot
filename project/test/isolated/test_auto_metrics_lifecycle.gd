@@ -22,6 +22,7 @@ func _init_sdk(enabled: bool = true) -> void:
 		options.auto_metrics.enable_frame_metrics = enabled
 		options.auto_metrics.enable_rendering_metrics = enabled
 		options.auto_metrics.enable_memory_metrics = enabled
+		options.auto_metrics.enable_network_metrics = enabled
 		options.auto_metrics.frame_metrics_interval_sec = 1.0
 		options.auto_metrics.memory_metrics_interval_sec = 1.0
 		options.before_send_metric = func(_metric: SentryMetric) -> SentryMetric:
@@ -98,7 +99,10 @@ func test_application_pause_stops_collection_until_resume(_timeout: int = 10000)
 	assert_int(_metric_count).is_greater(metric_count_before_resume)
 
 
-func test_focus_loss_stops_collection_until_focus_returns(_timeout: int = 10000) -> void:
+func test_focus_loss_stops_collection_until_focus_returns(
+	_do_skip: bool = DisplayServer.get_name() == "headless",
+	_timeout: int = 10000
+) -> void:
 	_init_sdk()
 	await _wait_for_metrics()
 
@@ -112,7 +116,10 @@ func test_focus_loss_stops_collection_until_focus_returns(_timeout: int = 10000)
 	assert_int(_metric_count).is_greater(metric_count_before_focus_loss)
 
 
-func test_collection_requires_both_focus_and_application_resume(_timeout: int = 10000) -> void:
+func test_collection_requires_both_focus_and_application_resume(
+	_do_skip: bool = DisplayServer.get_name() == "headless",
+	_timeout: int = 10000
+) -> void:
 	_init_sdk()
 	await _wait_for_metrics()
 

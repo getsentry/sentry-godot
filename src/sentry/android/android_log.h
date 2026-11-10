@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sentry/sentry_log.h"
+#include "sentry/util/object_handle.h"
 
 namespace sentry::android {
 
@@ -8,7 +9,7 @@ class AndroidLog : public SentryLog {
 	GDCLASS(AndroidLog, SentryLog);
 
 private:
-	Object *android_plugin = nullptr;
+	util::ObjectHandle<Object> _android_plugin;
 	int32_t handle = 0;
 	bool is_borrowed = false;
 
@@ -30,7 +31,7 @@ public:
 	void set_as_borrowed() { is_borrowed = true; }
 
 	AndroidLog();
-	AndroidLog(Object *p_android_plugin, int32_t p_handle);
+	AndroidLog(util::ObjectHandle<Object> p_android_plugin, int32_t p_handle);
 	virtual ~AndroidLog() override;
 };
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sentry/sentry_metric.h"
+#include "sentry/util/object_handle.h"
 
 namespace sentry::android {
 
@@ -8,7 +9,7 @@ class AndroidMetric : public SentryMetric {
 	GDCLASS(AndroidMetric, SentryMetric);
 
 private:
-	Object *android_plugin = nullptr;
+	util::ObjectHandle<Object> _android_plugin;
 	int32_t handle = 0;
 	bool is_borrowed = false;
 
@@ -36,7 +37,7 @@ public:
 	virtual void remove_attribute(const String &p_name) override;
 
 	AndroidMetric();
-	AndroidMetric(Object *p_android_plugin, int32_t p_handle);
+	AndroidMetric(util::ObjectHandle<Object> p_android_plugin, int32_t p_handle);
 	virtual ~AndroidMetric() override;
 };
 

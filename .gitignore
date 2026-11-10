@@ -16,6 +16,7 @@ exports/*
 !exports/export_presets.cfg
 
 tests/integration/results/
+tests/results/
 
 # Source tree
 src/gen/

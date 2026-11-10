@@ -1,6 +1,11 @@
-changelogPolicy: auto
+minVersion: '3.9.0'
+changelog:
+  policy: auto
+versioning:
+  policy: auto
 preReleaseCommand: pwsh scripts/bump-version.ps1
-postReleaseCommand: pwsh scripts/post-release.ps1
+postReleaseBump:
+  version: '{{version}}-dev'
 targets:
   - name: github
   - name: registry

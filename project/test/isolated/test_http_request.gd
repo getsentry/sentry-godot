@@ -199,6 +199,7 @@ func test_connection_failure_records_error_breadcrumb() -> void:
 	var failed_response: Array = await await_signal_on(_request, "request_completed", [], 5000)
 	assert_array([
 		HTTPRequest.RESULT_CANT_CONNECT,
+		HTTPRequest.RESULT_CONNECTION_ERROR,
 		HTTPRequest.RESULT_TIMEOUT,
 	]).contains([failed_response[0]])
 

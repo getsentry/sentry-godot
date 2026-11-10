@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sentry/sentry_scope_impl.h"
+#include "sentry/util/object_handle.h"
 
 namespace sentry::android {
 
@@ -8,7 +9,7 @@ class AndroidScope : public SentryScopeImpl {
 	SENTRY_CASTABLE(AndroidScope, SentryScopeImpl);
 
 private:
-	Object *android_plugin = nullptr;
+	util::ObjectHandle<Object> _android_plugin;
 	int32_t handle = 0;
 
 public:
@@ -27,7 +28,7 @@ public:
 	virtual SentryScopeImpl *clone() const override;
 
 	AndroidScope() = default;
-	AndroidScope(Object *p_android_plugin, int32_t p_handle);
+	AndroidScope(util::ObjectHandle<Object> p_android_plugin, int32_t p_handle);
 	virtual ~AndroidScope() override;
 };
 

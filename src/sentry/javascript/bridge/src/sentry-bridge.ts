@@ -219,6 +219,10 @@ class SentryBridge {
     maxBreadcrumbs: number,
     sendDefaultPii: boolean,
     sdkVersion: string,
+    enableTunnel: boolean,
+    tunnelPath: string,
+    tunnelBasePath: string,
+    tunnelTrailingSlash: boolean,
   ): void {
     if (debug) {
       console.log("Initializing Sentry via bridge...");
@@ -270,6 +274,14 @@ class SentryBridge {
         return filtered;
       },
     };
+
+    if (enableTunnel) {
+      options.tunnel = {
+        ...(tunnelPath && { path: tunnelPath }),
+        ...(tunnelBasePath && { basePath: tunnelBasePath }),
+        trailingSlash: tunnelTrailingSlash,
+      };
+    }
 
     if (beforeSendCallback) {
       options.beforeSend = (event) => {

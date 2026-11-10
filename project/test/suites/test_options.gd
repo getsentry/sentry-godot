@@ -47,6 +47,24 @@ func test_deprecated_enable_project_settings_are_removed(setting: String, test_p
 	assert_bool(ProjectSettings.has_setting(setting)).is_false()
 
 
+func test_web_defaults() -> void:
+	assert_bool(options.web.enable_tunnel).is_false()
+	assert_str(options.web.tunnel_path).is_empty()
+	assert_str(options.web.tunnel_base_path).is_empty()
+	assert_bool(options.web.tunnel_trailing_slash).is_false()
+
+
+@warning_ignore("unused_parameter")
+func test_web_options_retain_assigned_values(property: String, value: Variant, test_parameters := [
+		["enable_tunnel", true],
+		["tunnel_path", "/events"],
+		["tunnel_base_path", "/game"],
+		["tunnel_trailing_slash", true],
+]) -> void:
+	options.web.set(property, value)
+	assert_that(options.web.get(property)).is_equal(value)
+
+
 func test_auto_metrics_defaults() -> void:
 	assert_bool(options.auto_metrics.enable_frame_metrics).is_false()
 	assert_float(options.auto_metrics.frame_metrics_interval_sec).is_equal(1.0)
@@ -54,6 +72,8 @@ func test_auto_metrics_defaults() -> void:
 	assert_float(options.auto_metrics.rendering_metrics_interval_sec).is_equal(1.0)
 	assert_bool(options.auto_metrics.enable_memory_metrics).is_false()
 	assert_float(options.auto_metrics.memory_metrics_interval_sec).is_equal(60.0)
+	assert_bool(options.auto_metrics.enable_network_metrics).is_false()
+	assert_float(options.auto_metrics.network_metrics_interval_sec).is_equal(10.0)
 
 
 @warning_ignore("unused_parameter")
@@ -61,6 +81,7 @@ func test_auto_metrics_options_retain_assigned_values(enable_property: String, i
 		["enable_frame_metrics", "frame_metrics_interval_sec"],
 		["enable_rendering_metrics", "rendering_metrics_interval_sec"],
 		["enable_memory_metrics", "memory_metrics_interval_sec"],
+		["enable_network_metrics", "network_metrics_interval_sec"],
 ]) -> void:
 	options.auto_metrics.set(enable_property, true)
 	options.auto_metrics.set(interval_property, 12.5)

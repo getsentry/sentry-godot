@@ -4,11 +4,43 @@
 
 ### Features
 
+- Add opt-in automatic network metrics for peer counts, ping, packet loss, and traffic rates, configurable through `SentryOptions.auto_metrics` and Project Settings ([#1033](https://github.com/getsentry/sentry-godot/pull/1033))
+- Web: Add tunneling through your own server to help avoid ad blockers ([#1057](https://github.com/getsentry/sentry-godot/pull/1057))
+- Add opt-in MetricKit integration on iOS and macOS, configurable through `SentryOptions.apple.enable_metrickit` and Project Settings ([#1030](https://github.com/getsentry/sentry-godot/pull/1030))
+
+### Fixes
+
+- Web: Avoid unsupported syscall warnings when querying memory information ([#1058](https://github.com/getsentry/sentry-godot/pull/1058))
+- Ignore focus loss for automatic metrics in headless mode ([#1049](https://github.com/getsentry/sentry-godot/pull/1049))
+
+### Dependencies
+
+- Bump Sentry Android from v8.61.0 to v8.63.0 ([#1044](https://github.com/getsentry/sentry-godot/pull/1044), [#1052](https://github.com/getsentry/sentry-godot/pull/1052), [#1065](https://github.com/getsentry/sentry-godot/pull/1065))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8630)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.61.0...8.63.0)
+- Bump Sentry JavaScript from v11.8.0 to v11.11.0 ([#1046](https://github.com/getsentry/sentry-godot/pull/1046), [#1055](https://github.com/getsentry/sentry-godot/pull/1055), [#1066](https://github.com/getsentry/sentry-godot/pull/1066))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#11110)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/11.8.0...11.11.0)
+- Bump Cocoa SDK from v9.30.2 to v9.33.0 ([#1042](https://github.com/getsentry/sentry-godot/pull/1042), [#1060](https://github.com/getsentry/sentry-godot/pull/1060))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9330)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.30.2...9.33.0)
+- Bump Native SDK from v0.17.4 to v0.17.6 ([#1053](https://github.com/getsentry/sentry-godot/pull/1053), [#1064](https://github.com/getsentry/sentry-godot/pull/1064))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0176)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.4...0.17.6)
+
+## 2.4.0
+
+### Features
+
 - Add opt-in automatic frame time and FPS metrics, configurable through `SentryOptions.auto_metrics` and Project Settings ([#1013](https://github.com/getsentry/sentry-godot/pull/1013))
 - Add GPU name, CPU core count, RAM size, resolution, and current scene attributes to automatic performance metrics ([#1018](https://github.com/getsentry/sentry-godot/pull/1018))
 - Add opt-in automatic rendering metrics for draw calls, primitives, and video, texture, and buffer memory usage, configurable through `SentryOptions.auto_metrics` and Project Settings ([#1021](https://github.com/getsentry/sentry-godot/pull/1021))
 - Add opt-in automatic memory metrics for process resident memory, object count, and node count, configurable through `SentryOptions.auto_metrics` and Project Settings ([#1024](https://github.com/getsentry/sentry-godot/pull/1024))
-- Add opt-in MetricKit integration on iOS and macOS, configurable through `SentryOptions.apple.enable_metrickit` and Project Settings ([#1030](https://github.com/getsentry/sentry-godot/pull/1030))
+
+### Fixes
+
+- Android: Fix a crash when quitting the game or when the activity is destroyed ([#1034](https://github.com/getsentry/sentry-godot/pull/1034))
+- Android: Flush pending data and shut down Sentry cleanly when the game exits, before Godot destroys the Android plugin ([#1037](https://github.com/getsentry/sentry-godot/pull/1037))
 
 ### Improvements
 
@@ -28,9 +60,9 @@
 - Bump Sentry JavaScript from v10.75.2 to v11.8.0 ([#991](https://github.com/getsentry/sentry-godot/pull/991), [#1015](https://github.com/getsentry/sentry-godot/pull/1015), [#1029](https://github.com/getsentry/sentry-godot/pull/1029))
   - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#1180)
   - [diff](https://github.com/getsentry/sentry-javascript/compare/10.75.2...11.8.0)
-- Bump Native SDK from v0.17.1 to v0.17.3 ([#1006](https://github.com/getsentry/sentry-godot/pull/1006))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0173)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.1...0.17.3)
+- Bump Native SDK from v0.17.1 to v0.17.4 ([#1006](https://github.com/getsentry/sentry-godot/pull/1006), [#1031](https://github.com/getsentry/sentry-godot/pull/1031))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0174)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.1...0.17.4)
 
 ## 2.3.0
 

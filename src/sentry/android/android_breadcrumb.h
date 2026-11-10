@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sentry/sentry_breadcrumb.h"
+#include "sentry/util/object_handle.h"
 
 namespace sentry::android {
 
@@ -8,7 +9,7 @@ class AndroidBreadcrumb : public SentryBreadcrumb {
 	GDCLASS(AndroidBreadcrumb, SentryBreadcrumb);
 
 private:
-	Object *android_plugin = nullptr;
+	util::ObjectHandle<Object> _android_plugin;
 	int32_t handle = 0;
 
 protected:
@@ -34,7 +35,7 @@ public:
 	virtual Ref<SentryTimestamp> get_timestamp() override;
 
 	AndroidBreadcrumb() = default;
-	AndroidBreadcrumb(Object *p_android_plugin, int32_t p_breadcrumb_handle);
+	AndroidBreadcrumb(util::ObjectHandle<Object> p_android_plugin, int32_t p_breadcrumb_handle);
 	virtual ~AndroidBreadcrumb() override;
 };
 

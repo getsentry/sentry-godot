@@ -94,6 +94,11 @@ public sealed class SentryGodotOptions : SentryOptions
     /// </summary>
     public SentryAppleOptions Apple { get; set; } = new SentryAppleOptions();
 
+    /// <summary>
+    /// Configures automatic collection of frame, rendering, memory, and network metrics.
+    /// </summary>
+    public SentryAutoMetricsOptions AutoMetrics { get; set; } = new SentryAutoMetricsOptions();
+
     private readonly List<SentryAttachment> _defaultAttachments = [];
 
     internal IReadOnlyList<SentryAttachment> DefaultAttachments => _defaultAttachments;
@@ -151,6 +156,109 @@ public sealed class SentryGodotOptions : SentryOptions
             }
         }
     }
+}
+
+/// <summary>
+/// Contains configuration options for automatic performance metrics. Access this configuration through
+/// <see cref="SentryGodotOptions.AutoMetrics"/> or Project Settings under Sentry &gt; Auto Metrics.
+/// </summary>
+/// <remarks>
+/// Automatic collection is disabled by default and does not affect metrics sent manually.
+/// Attributes include <c>gpu.name</c>, <c>cpu.cores</c>, <c>ram.gb</c>, <c>res.x</c>, <c>res.y</c>,
+/// and <c>scene</c> when available. Resolution describes the root viewport's target size in pixels,
+/// before window stretching and after 3D scaling.
+/// Collection pauses while the application is unfocused or paused by the operating system.
+/// <c>SceneTree.Paused</c> and <c>Engine.TimeScale</c> do not affect collection.
+/// To learn more, visit <see href="https://docs.sentry.io/platforms/godot/metrics/">Metrics documentation</see>.
+/// </remarks>
+/// <seealso cref="SentryGodotOptions"/>
+public sealed class SentryAutoMetricsOptions
+{
+    /// <summary>
+    /// If enabled, the SDK sends <c>game.perf.frame_time</c> as a distribution in milliseconds
+    /// and <c>game.perf.fps</c> as a gauge.
+    /// </summary>
+    /// <remarks>
+    /// Frame time measures elapsed time between process callbacks, including VSync and frame limiting.
+    /// The collector randomly samples one frame per <see cref="FrameMetricsIntervalSec"/> interval.
+    /// As more clients send frame samples, aggregate percentiles become more reliable,
+    /// though sampling can miss rare hitches.
+    /// </remarks>
+    public bool EnableFrameMetrics { get; set; }
+
+    /// <summary>
+    /// If enabled, the SDK sends gauges for draw calls, rendered primitives, and video memory usage
+    /// from Godot's <c>Performance</c> monitors.
+    /// </summary>
+    /// <remarks>
+    /// <c>game.perf.render.draw_calls</c> counts draw calls in the last rendered frame.
+    /// <c>game.perf.render.primitives</c> counts vertices or indices rendered in the last frame,
+    /// including depth and shadow passes.
+    /// <c>game.perf.render.video_mem_used</c> reports total video memory used, including texture,
+    /// buffer, and other allocations, in bytes.
+    /// <c>game.perf.render.texture_mem_used</c> reports texture memory used, in bytes.
+    /// <c>game.perf.render.buffer_mem_used</c> reports render buffer memory used, in bytes.
+    /// </remarks>
+    public bool EnableRenderingMetrics { get; set; }
+
+    /// <summary>
+    /// If enabled, the SDK sends <c>game.perf.used_memory</c> for RAM used by the game process, in bytes,
+    /// <c>game.perf.object_count</c> for instantiated objects, including nodes, and
+    /// <c>game.perf.node_count</c> for nodes in the scene tree, including its root.
+    /// </summary>
+    /// <remarks>
+    /// RAM usage is collected on Windows, Linux, Android, macOS, and iOS. Skipped on other platforms.
+    /// </remarks>
+    public bool EnableMemoryMetrics { get; set; }
+
+    /// <summary>
+    /// If enabled, the SDK sends network gauges using the default <c>SceneTree</c> multiplayer API.
+    /// </summary>
+    /// <remarks>
+    /// <c>game.perf.net.num_peers</c> counts connected remote peers, excluding this instance.
+    /// Servers and mesh peers only.
+    /// <c>game.perf.net.ping</c> measures the client's round-trip time to the server, in milliseconds.
+    /// <c>game.perf.net.ping_peer_avg</c> and <c>game.perf.net.ping_peer_max</c> measure average and
+    /// highest peer round-trip times, in milliseconds. Servers and mesh peers only.
+    /// <c>game.perf.net.packet_loss_ratio</c> measures the client's smoothed outgoing packet-loss
+    /// estimate toward the server, based on reliable-transmission timeouts. Reads
+    /// <c>ENetPacketPeer.PEER_PACKET_LOSS</c> and converts it to a ratio.
+    /// <c>game.perf.net.in_rate</c> and <c>game.perf.net.out_rate</c> measure bytes received and sent
+    /// per second, including ENet protocol traffic and retransmissions.
+    /// <c>game.perf.net.in_packets</c> and <c>game.perf.net.out_packets</c> measure UDP datagrams
+    /// received and sent per second, rather than RPC or game-message counts.
+    /// Peer counts are supported with all transports. Ping, packet loss, and traffic rates
+    /// are supported only with ENet.
+    /// Ping includes Godot's network-processing delays. It describes the latency the game
+    /// experiences, but cannot isolate network delay from processing delay.
+    /// Traffic collection resets ENet's shared byte and packet counters. Other code reading
+    /// those counters affects these measurements, and vice versa.
+    /// </remarks>
+    public bool EnableNetworkMetrics { get; set; }
+
+    /// <summary>
+    /// Interval between frame metric collections, in seconds.
+    /// Used only when <see cref="EnableFrameMetrics"/> is enabled.
+    /// </summary>
+    public double FrameMetricsIntervalSec { get; set; } = 1.0;
+
+    /// <summary>
+    /// Interval between rendering metric collections, in seconds.
+    /// Used only when <see cref="EnableRenderingMetrics"/> is enabled.
+    /// </summary>
+    public double RenderingMetricsIntervalSec { get; set; } = 1.0;
+
+    /// <summary>
+    /// Interval between memory metric collections, in seconds.
+    /// Used only when <see cref="EnableMemoryMetrics"/> is enabled.
+    /// </summary>
+    public double MemoryMetricsIntervalSec { get; set; } = 60.0;
+
+    /// <summary>
+    /// Interval between network metric collections, in seconds.
+    /// Used only when <see cref="EnableNetworkMetrics"/> is enabled.
+    /// </summary>
+    public double NetworkMetricsIntervalSec { get; set; } = 10.0;
 }
 
 /// <summary>

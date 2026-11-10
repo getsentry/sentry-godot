@@ -24,6 +24,15 @@ void add_shutdown_callback(const Callable &p_callback);
 // Unregisters shutdown callback. Must be called from the main thread.
 void remove_shutdown_callback(const Callable &p_callback);
 
+// Runs shutdown callbacks once, including when another shutdown source fires during cleanup.
+void notify_engine_shutting_down();
+
+// Attaches an in-memory GDScript that calls p_callback synchronously on NOTIFICATION_PREDELETE,
+// before the native destructor runs. Returns ERR_ALREADY_IN_USE if the object already has a script.
+// Godot has no pre-delete signal, and Android JNI singletons are destroyed before scene-tree cleanup.
+// This lets us shut down while the bridge plugin and JNI are still callable.
+Error attach_predelete_script(Object *p_object, const Callable &p_callback);
+
 // Registers a callback to be invoked once when this extension is deinitialized.
 // Useful for releasing statics. Must be called from the main thread.
 void add_module_termination_callback(const Callable &p_callback);

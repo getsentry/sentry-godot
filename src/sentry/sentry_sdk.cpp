@@ -319,15 +319,18 @@ void SentrySDK::close() {
 	ERR_FAIL_COND_MSG(OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id(),
 			"Sentry: close() must be called from the main thread.");
 
-	if (internal_sdk->is_enabled()) {
+	const bool was_enabled = internal_sdk->is_enabled();
+	if (was_enabled) {
 		sentry::logging::print_debug("Shutting down Sentry SDK");
 
 		sentry::dotnet::close();
-
-		_teardown_integrations();
-		internal_sdk->close();
-		_invalidate_scopes();
 	}
+
+	_teardown_integrations();
+	if (was_enabled) {
+		internal_sdk->close();
+	}
+	_invalidate_scopes();
 }
 
 void SentrySDK::_init_integrations(const Ref<SentryOptions> &p_options) {
