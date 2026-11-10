@@ -120,6 +120,12 @@ void SentryAndroidOptions::_bind_methods() {
 	BIND_PROPERTY_SIMPLE(SentryAndroidOptions, Variant::BOOL, attach_anr_thread_dump);
 }
 
+// *** SentryAppleOptions
+
+void SentryAppleOptions::_bind_methods() {
+	BIND_PROPERTY_SIMPLE(SentryAppleOptions, Variant::BOOL, enable_metrickit);
+}
+
 // *** SentryWebOptions
 
 void SentryWebOptions::_bind_methods() {
@@ -220,6 +226,8 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/enable_detection"), p_options->get_android()->get_enable_anr_detection(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_interval_ms"), p_options->get_android()->get_anr_timeout_interval_ms(), false);
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/attach_thread_dump"), p_options->get_android()->get_attach_anr_thread_dump(), false);
+
+	_define_setting(PropertyInfo(Variant::BOOL, "sentry/apple/metrickit/enabled"), p_options->get_apple()->get_enable_metrickit(), false);
 
 	Ref<SentryWebOptions> web = p_options->get_web();
 	_define_setting("sentry/web/tunnel/enabled", web->get_enable_tunnel());
@@ -339,6 +347,11 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 			ProjectSettings::get_singleton()->get_setting(
 					"sentry/android/application_not_responding/attach_thread_dump",
 					p_options->android->get_attach_anr_thread_dump()));
+
+	p_options->apple->set_enable_metrickit(
+			ProjectSettings::get_singleton()->get_setting(
+					"sentry/apple/metrickit/enabled",
+					p_options->apple->get_enable_metrickit()));
 
 	Ref<SentryWebOptions> web = p_options->get_web();
 	web->set_enable_tunnel(ProjectSettings::get_singleton()->get_setting("sentry/web/tunnel/enabled", web->get_enable_tunnel()));
@@ -540,6 +553,7 @@ void SentryOptions::_bind_methods() {
 
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "android", PROPERTY_HINT_TYPE_STRING, "SentryAndroidOptions", PROPERTY_USAGE_NONE), get_android);
+	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "apple", PROPERTY_HINT_TYPE_STRING, "SentryAppleOptions", PROPERTY_USAGE_NONE), get_apple);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "web", PROPERTY_HINT_TYPE_STRING, "SentryWebOptions", PROPERTY_USAGE_NONE), get_web);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "auto_metrics", PROPERTY_HINT_TYPE_STRING, "SentryAutoMetricsOptions", PROPERTY_USAGE_NONE), get_auto_metrics);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "godot_logger", PROPERTY_HINT_TYPE_STRING, "SentryGodotLoggerOptions", PROPERTY_USAGE_NONE), get_godot_logger);
@@ -580,6 +594,7 @@ SentryOptions::SentryOptions() {
 	experimental.instantiate();
 	experimental->owner = this;
 	android.instantiate();
+	apple.instantiate();
 	web.instantiate();
 	auto_metrics.instantiate();
 	godot_logger.instantiate();

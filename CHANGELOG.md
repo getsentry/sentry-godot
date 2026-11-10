@@ -6,6 +6,7 @@
 
 - Add opt-in automatic network metrics for peer counts, ping, packet loss, and traffic rates, configurable through `SentryOptions.auto_metrics` and Project Settings ([#1033](https://github.com/getsentry/sentry-godot/pull/1033))
 - Web: Add tunneling through your own server to help avoid ad blockers ([#1057](https://github.com/getsentry/sentry-godot/pull/1057))
+- Add opt-in MetricKit integration on iOS and macOS, configurable through `SentryOptions.apple.enable_metrickit` and Project Settings ([#1030](https://github.com/getsentry/sentry-godot/pull/1030))
 
 ### Fixes
 
