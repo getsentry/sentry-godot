@@ -2,3 +2,4 @@
 # See docs at https://docs.fastlane.tools/advanced/#appfile
 
 app_identifier("io.sentry.SentryGodotProject")
+team_id("97JCY7859U")
