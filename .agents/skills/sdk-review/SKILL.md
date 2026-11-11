@@ -16,7 +16,7 @@ It delegates to one `InternalSDK` backend picked at build time:
 | Backend | Platforms | Code |
 |---------|-----------|------|
 | native (sentry-native) | Windows, Linux | `src/sentry/native/` |
-| cocoa (sentry-cocoa) | macOS, iOS | `src/sentry/cocoa/*.mm` |
+| cocoa (sentry-cocoa) | macOS, iOS | `src/sentry/cocoa/` |
 | android (sentry-java) | Android | `src/sentry/android/` calls `android_lib/**/SentryAndroidGodotPlugin.kt` by handle |
 | javascript (@sentry/browser) | Web | `src/sentry/javascript/` calls `src/sentry/javascript/bridge/src/sentry-bridge.ts` |
 | disabled | unsupported arch, Android editor | `src/sentry/disabled/` |
@@ -24,8 +24,12 @@ It delegates to one `InternalSDK` backend picked at build time:
 The .NET layer (`src/sentry/dotnet/`, managed code in `src/sentry/dotnet/managed/`)
 is compiled on every platform and active when the project uses C#. It runs
 sentry-dotnet beside the backend and syncs options, scope, and lifecycle across a
-C ABI. Read `references/repo-context.md` when a change touches
-backends, scopes, spans, lifecycle, interop, or project settings.
+C ABI.
+
+`references/repo-context.md` has one `##` section per topic: backend selection,
+Android bridge, Web bridge, .NET layer, scopes and threads, lifecycle, and
+public API and settings. When a change touches one of these, grep for that
+section's heading and read only that section.
 
 ## What To Report
 

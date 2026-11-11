@@ -1,7 +1,5 @@
 # sentry-godot Review Context
 
-Read the section that matches the change.
-
 ## Build-Time Backend Selection
 
 `SConstruct` picks one backend per build and defines `SDK_NATIVE`, `SDK_COCOA`,

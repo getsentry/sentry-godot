@@ -23,35 +23,17 @@ does not exist. Missing coverage on its own is not a finding.
 | `src/sentry/javascript/bridge/test.js` | Node | JS bridge bundle test (`npm test`). |
 
 Platform skips use `before(_do_skip = ...)` with `OS.has_feature()` or
-`OS.get_name()`. Unit tests run on Godot 4.5, 4.6, and 4.7 across Linux,
+`OS.get_name()`. Unit tests run on several supported Godot versions across Linux,
 Windows, and macOS, plus Android and Web jobs.
 
 ## What To Report
 
-### Tests that cannot fail
-- An assertion that compares against a value the code under test already has by
-  default, so the test passes even when the feature is not wired. Example: a
-  round-trip test that writes `false` into options whose default is `false`.
-- A test that covers options or fields that do not cross the boundary it claims
-  to test, such as deprecated no-op options in a native and managed round trip.
-- Asserting "nothing was captured" right after an action, before an
-  asynchronous capture could arrive. Cocoa and the .NET layer can capture on
-  another thread, so absence checks need a wait or a flush.
-
-### Wrong wiring
-- A test calls a harness method, signal, or helper by a name that does not
-  exist. Grep the harness or helper to confirm.
-- A wait helper that returns immediately because a signal was already emitted
-  earlier in the test, so the next assertion reads the previous event.
-- A shared test case (`CommonTestCases.ps1`) whose expected counts or output no
-  longer match a context that now captures more or fewer events.
-
-### Platform coverage
-- A skip removed or added so that a test now runs on a backend that does not
-  support the feature yet, or stops running on one that does. Check the backend
-  code under `src/sentry/<backend>/` before you decide.
-- Paths, line endings, or process handling in a runner that fail on one of the
-  CI operating systems.
+- Tests that cannot fail or pass for the wrong reason.
+- Tests wired to a harness method, helper, signal, or shared case that does not
+  match what they call or expect.
+- Assertions that race against asynchronous capture.
+- Skip changes that make a test run on a backend without the feature, or stop
+  running on one that has it.
 
 ## What Not To Report
 
