@@ -174,7 +174,7 @@ public partial class DotnetTestHarness : RefCounted
             options.TracePropagationTargets.Add("ddd");
             options.PropagateTraceparent = false;
             options.OrgId = "222";
-            options.AutoSessionTracking = true;
+            options.AutoSessionTracking = false;
             options.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(45000);
             options.MaxBreadcrumbs = 22;
             options.ShutdownTimeout = TimeSpan.FromMilliseconds(2200);
