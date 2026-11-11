@@ -129,7 +129,12 @@ github "::group::Export log"
 
 # Godot installs the build template only during an export. Export again after configuring its manifest.
 "$godot" --headless --path project --install-android-build-template --export-debug "$EXPORT_PRESET" ../exports/android.apk
-abort_on_error "Failed to install Android build template and export test APK"
+if [ $? -ne 0 ]; then
+    warning "Godot returned an error while installing the build template. Checking the manifest before continuing."
+fi
+if [ ! -f project/android/build/AndroidManifest.xml ]; then
+    abort "Android build template manifest was not created"
+fi
 
 # Configure the exported test APK to allow clear-text HTTP traffic to the local receiver at 127.0.0.1.
 mkdir -p project/android/build/res/xml
@@ -138,13 +143,15 @@ sed 's#<application$#<application android:networkSecurityConfig="@xml/test_netwo
     project/android/build/AndroidManifest.xml > project/android/build/AndroidManifest.xml.tmp
 mv project/android/build/AndroidManifest.xml.tmp project/android/build/AndroidManifest.xml
 
+# Require a fresh APK so a failed rebuild cannot reuse the unpatched export.
+rm -f exports/android.apk || abort "Failed to remove the unpatched test APK"
 "$godot" --verbose --headless --path project --export-debug "$EXPORT_PRESET" ../exports/android.apk
 export_err=$?
 
 github "::endgroup::"
 
 if [ $export_err -ne 0 ]; then
-    abort "Failed to export test APK with the local receiver configuration"
+    warning "Godot export process returned an error. Checking the APK before continuing."
 fi
 
 # Check if APK was exported successfully
