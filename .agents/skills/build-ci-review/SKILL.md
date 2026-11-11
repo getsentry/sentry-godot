@@ -1,12 +1,12 @@
 ---
 name: build-ci-review
-description: Finds bugs in sentry-godot build, packaging, release, and CI changes, including GitHub Actions workflows, PowerShell and shell test runners, SCons, Gradle, Craft, and dependency version pins. Use for pull request review of .github/, scripts/, SConstruct, site_scons/, modules/ build files, Gradle files, and the .gdextension manifest.
+description: Finds bugs in sentry-godot build, packaging, export, release, and CI changes, including GitHub Actions workflows, test runner scripts, SCons, Gradle, Craft, editor export plugins, and dependency version pins. Use for pull request review of .github/, scripts/, SConstruct, site_scons/, modules/ build files, Gradle files, src/editor/, and the .gdextension manifest.
 allowed-tools: Read Grep Glob
 ---
 
 You review build and CI changes for the Sentry SDK for Godot Engine. Report only
-changes that would break a build, a release, or a CI job, or make a job pass
-without testing what it claims to test.
+changes that would break a build, a release, a user's project export, or a CI
+job, or make a job pass without testing what it claims to test.
 
 ## Repo Layout
 
@@ -14,10 +14,8 @@ without testing what it claims to test.
   `unit_tests.yml`, `test_*.yml`, `package.yml`, `static_checks.yml`.
   `release.yml` and `.craft.yml` drive releases; `update-deps.yml` bumps
   dependencies with `scripts/*-version.ps1`.
-- Test runners: `scripts/run-desktop-tests.ps1`, `run-android-tests.sh`,
-  `run-android-integration-tests.ps1`, `run-web-tests.ps1`. They run on Linux,
-  macOS, and Windows runners, so paths, quoting, and process handling must work
-  on all three.
+- Test runner scripts live in `scripts/`. They run on Linux, macOS, and Windows
+  runners, so paths, quoting, and process handling must work on all three.
 - `SConstruct` and `site_scons/` build the GDExtension per platform and arch.
   `modules/*.SConscript` builds sentry-native and fetches sentry-cocoa;
   `modules/*.properties` pin downloaded versions.
@@ -25,29 +23,27 @@ without testing what it claims to test.
 - `src/manifest.gdextension` is the template SConstruct copies into the addon.
   It maps each platform, arch, and target to a library path under
   `res://addons/sentry/bin/`.
+- `src/editor/` holds the editor plugin and per-platform export plugins
+  (`sentry_editor_export_plugin_*.cpp`) that add libraries, dependencies, and
+  settings when users export their projects. Changes here often go with changes
+  to `src/manifest.gdextension` or `SConstruct`.
 
 ## What To Report
 
 ### Values that must stay in sync
-A change updates one copy and misses another. Grep for the old value.
-
-- `io.sentry:sentry-android` version in `android_lib/build.gradle.kts` and
-  `src/editor/sentry_editor_export_plugin_android.cpp`.
-- `COMPATIBILITY_MINIMUM` in `SConstruct` and the godot-lib pin in
-  `android_lib/build.gradle.kts`.
-- Matrix entries that describe the same target in several jobs or workflows,
-  such as Sauce Labs device patterns, Godot versions, runner labels, or artifact
-  names that one job uploads and another downloads.
-- Regex or glob patterns in `scripts/*-version.ps1` and `update-deps.yml` that
-  must match the file they rewrite or the tag format the upstream repo uses.
+A change updates one copy of a value and misses another, such as a version, a
+matrix entry, or an artifact name. Grep for the old value, and follow `NOTE:`
+comments that name other files to update.
 
 ### Dependency bumps
-When a PR bumps `@sentry/browser` (`src/sentry/javascript/bridge/package.json`),
+When a PR bumps `sentry-native` (`modules/sentry-native` submodule),
+`@sentry/browser` (`src/sentry/javascript/bridge/package.json`),
 `sentry-android`, `sentry-cocoa` (`modules/sentry-cocoa.properties`), or
 sentry-dotnet (`Sentry.Godot.Versions.props`) across a major version, grep this
-repo's calls into that SDK (`sentry-bridge.ts`, `SentryAndroidGodotPlugin.kt`,
-`src/sentry/cocoa/`, `src/sentry/dotnet/managed/`) for options or methods the
-new version removed or renamed. Report only removals that the PR, its changelog
+repo's calls into that SDK (`src/sentry/native/`, `sentry-bridge.ts`,
+`SentryAndroidGodotPlugin.kt`, `src/sentry/cocoa/`,
+`src/sentry/dotnet/managed/`) for options or methods the new version removed or
+renamed. Report only removals that the PR, its changelog
 link, or code in this repo shows. Past real case: the v11 Web SDK bump left
 `sendDefaultPii` and `scope.clear()` calls in the bridge.
 
@@ -71,8 +67,9 @@ link, or code in this repo shows. Past real case: the v11 Web SDK bump left
 - SCons options, defines, or source globs that leave a platform or arch without
   a backend, drop files from the package, or change output paths that
   `package.yml`, `src/manifest.gdextension`, or export plugins expect.
-- `src/manifest.gdextension` entries that drop a platform, arch, or target, or
-  name a library path SConstruct does not produce.
+- `src/manifest.gdextension` entries that don't agree with `SConstruct`. Some
+  platforms and architectures are unsupported on purpose, so removing an entry
+  is fine when the PR or commit explains it.
 
 ## What Not To Report
 
@@ -81,7 +78,6 @@ link, or code in this repo shows. Past real case: the v11 Web SDK bump left
   you cannot check. Every past finding of this kind here was wrong.
 - Claims that a pattern syntax is wrong (regex vs glob, Sauce Labs descriptors)
   unless the consuming code in this repo shows which syntax it expects.
-- Style, naming, step ordering preferences, or caching and speed suggestions.
 - Security issues in workflows (handled by `security-review`).
 - Logic in SDK source or tests (handled by `sdk-review` and `test-review`),
   except calls broken by a dependency bump in this PR.

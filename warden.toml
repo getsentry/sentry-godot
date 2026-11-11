@@ -23,7 +23,7 @@ ignorePaths = [
   "**/*.svg",
 ]
 
-# SDK correctness: all backends, the .NET layer, the Web bridge, and editor plugins.
+# SDK correctness: all backends, the .NET layer, and the Web bridge.
 [[skills]]
 name = "sdk-review"
 incremental = true
@@ -33,6 +33,7 @@ paths = [
   "project/addons/sentry/**",
 ]
 ignorePaths = [
+  "src/editor/**",
   "src/manifest.gdextension",
   "android_lib/src/main/AndroidManifest.xml",
   "android_lib/src/test/**",
@@ -49,7 +50,7 @@ ignorePaths = [
 type = "pull_request"
 actions = ["opened", "synchronize", "reopened"]
 
-# Build, packaging, release, CI, and dependency pins.
+# Build, packaging, export plugins, release, CI, and dependency pins.
 [[skills]]
 name = "build-ci-review"
 incremental = true
@@ -68,6 +69,8 @@ paths = [
   ".craft.yml",
   "exports/**",
   "fastlane/**",
+  "modules/sentry-native",
+  "src/editor/**",
   "src/manifest.gdextension",
   "android_lib/src/main/AndroidManifest.xml",
   "src/sentry/javascript/bridge/package.json",
