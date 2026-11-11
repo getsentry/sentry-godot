@@ -1,14 +1,14 @@
 #pragma once
 
 #include "sentry/javascript/javascript_interop.h"
-#include "sentry/sentry_event.h"
+#include "sentry/sentry_event_impl.h"
 
 namespace sentry::javascript {
 
 class JavaScriptSDK;
 
-class JavaScriptEvent : public SentryEvent {
-	GDCLASS(JavaScriptEvent, SentryEvent);
+class JavaScriptEvent : public SentryEventImpl {
+	SENTRY_CASTABLE(JavaScriptEvent, SentryEventImpl);
 
 	friend class JavaScriptSDK;
 
@@ -16,9 +16,6 @@ private:
 	JSObjectPtr js_obj;
 
 	_FORCE_INLINE_ JSObjectPtr get_js_object() const { return js_obj; }
-
-protected:
-	static void _bind_methods() {}
 
 public:
 	virtual String get_id() const override;

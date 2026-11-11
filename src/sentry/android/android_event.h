@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sentry/sentry_event.h"
+#include "sentry/sentry_event_impl.h"
 #include "sentry/util/object_handle.h"
 
 using namespace godot;
@@ -8,16 +8,13 @@ using namespace godot;
 namespace sentry::android {
 
 // Event class that is used with the AndroidSDK.
-class AndroidEvent : public SentryEvent {
-	GDCLASS(AndroidEvent, SentryEvent);
+class AndroidEvent : public SentryEventImpl {
+	SENTRY_CASTABLE(AndroidEvent, SentryEventImpl);
 
 private:
 	util::ObjectHandle<Object> _android_plugin;
 	int32_t event_handle;
 	bool is_borrowed = false;
-
-protected:
-	static void _bind_methods() {}
 
 public:
 	int32_t get_handle() { return event_handle; }
@@ -70,7 +67,6 @@ public:
 
 	void set_as_borrowed() { is_borrowed = true; }
 
-	AndroidEvent() {}
 	AndroidEvent(util::ObjectHandle<Object> p_android_plugin, int32_t p_event_handle);
 	virtual ~AndroidEvent() override;
 };

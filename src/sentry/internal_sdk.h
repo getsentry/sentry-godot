@@ -41,7 +41,7 @@ public:
 
 	virtual String get_last_event_id() = 0;
 
-	virtual Ref<SentryEvent> create_event() = 0;
+	virtual SentryEventImpl *create_event() = 0;
 
 	virtual String capture_event(const Ref<SentryScope> &p_scope, const Ref<SentryEvent> &p_event) = 0;
 

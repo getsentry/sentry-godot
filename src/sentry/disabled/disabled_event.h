@@ -1,12 +1,12 @@
 #pragma once
 
-#include "sentry/sentry_event.h"
+#include "sentry/sentry_event_impl.h"
 
 namespace sentry {
 
 // Event class that is used when the SDK is disabled.
-class DisabledEvent : public SentryEvent {
-	GDCLASS(DisabledEvent, SentryEvent);
+class DisabledEvent : public SentryEventImpl {
+	SENTRY_CASTABLE(DisabledEvent, SentryEventImpl);
 
 private:
 	String message;
@@ -16,9 +16,6 @@ private:
 	String release;
 	String dist;
 	String environment;
-
-protected:
-	static void _bind_methods() {}
 
 public:
 	virtual String get_id() const override { return ""; }

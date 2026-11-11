@@ -1,21 +1,18 @@
 #pragma once
 
-#include "sentry/sentry_event.h"
+#include "sentry/sentry_event_impl.h"
 
 #include <sentry.h>
 
 namespace sentry::native {
 
 // Event class that is used with the NativeSDK.
-class NativeEvent : public SentryEvent {
-	GDCLASS(NativeEvent, SentryEvent);
+class NativeEvent : public SentryEventImpl {
+	SENTRY_CASTABLE(NativeEvent, SentryEventImpl);
 
 private:
 	sentry_value_t native_event;
 	bool _is_crash = false;
-
-protected:
-	static void _bind_methods() {}
 
 public:
 	sentry_value_t get_native_value() const { return native_event; }

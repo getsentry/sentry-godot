@@ -123,7 +123,6 @@ String CocoaEvent::get_environment() const {
 
 void CocoaEvent::set_tag(const String &p_key, const String &p_value) {
 	ERR_FAIL_NULL(cocoa_event);
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set tag with an empty key.");
 
 	NSString *k = string_to_objc(p_key);
 	NSString *v = string_to_objc(p_value);
@@ -134,8 +133,6 @@ void CocoaEvent::set_tag(const String &p_key, const String &p_value) {
 }
 
 void CocoaEvent::remove_tag(const String &p_key) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't remove tag with an empty key.");
-
 	ERR_FAIL_NULL(cocoa_event);
 
 	if (cocoa_event.tags == nil) {
@@ -148,8 +145,6 @@ void CocoaEvent::remove_tag(const String &p_key) {
 }
 
 String CocoaEvent::get_tag(const String &p_key) {
-	ERR_FAIL_COND_V_MSG(p_key.is_empty(), String(), "Sentry: Can't get tag with an empty key.");
-
 	ERR_FAIL_NULL_V(cocoa_event, String());
 
 	if (cocoa_event.tags) {
@@ -187,7 +182,6 @@ void CocoaEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
 }
 
 void CocoaEvent::set_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	ERR_FAIL_NULL(cocoa_event);
 
 	NSMutableDictionary *mut_contexts = [cocoa_event.context mutableCopy] ?: [NSMutableDictionary dictionary];
@@ -196,8 +190,6 @@ void CocoaEvent::set_context(const String &p_key, const Dictionary &p_value) {
 }
 
 void CocoaEvent::merge_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
-
 	if (p_value.is_empty()) {
 		return;
 	}

@@ -375,7 +375,8 @@ void SentryGodotLogger::_log_error(const String &p_function, const String &p_fil
 			frames.append({ p_file, p_function, p_line, false, "native" });
 		}
 
-		Ref<SentryEvent> ev = SentrySDK::get_singleton()->create_event();
+		Ref<SentryEvent> ev;
+		ev.instantiate();
 		ev->set_level(sentry::get_sentry_level_for_godot_error_type((GodotErrorType)p_error_type));
 		SentryEvent::Exception exception = {
 			error_type,

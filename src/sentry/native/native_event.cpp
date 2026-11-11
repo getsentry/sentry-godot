@@ -19,7 +19,6 @@ inline void _sentry_value_set_or_remove_string_by_key(sentry_value_t value, cons
 
 void sentry_event_merge_context(sentry_value_t p_event, const char *p_context_name, const Dictionary &p_context) {
 	ERR_FAIL_COND(sentry_value_get_type(p_event) != SENTRY_VALUE_TYPE_OBJECT);
-	ERR_FAIL_COND(p_context_name == nullptr || strlen(p_context_name) == 0);
 
 	if (p_context.is_empty()) {
 		return;
@@ -148,7 +147,6 @@ String NativeEvent::get_environment() const {
 }
 
 void NativeEvent::set_tag(const String &p_key, const String &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set tag with an empty key.");
 	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
 	if (sentry_value_is_null(tags)) {
 		tags = sentry_value_new_object();
@@ -158,7 +156,6 @@ void NativeEvent::set_tag(const String &p_key, const String &p_value) {
 }
 
 void NativeEvent::remove_tag(const String &p_key) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't remove tag with an empty key.");
 	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
 	if (!sentry_value_is_null(tags)) {
 		sentry_value_remove_by_key(tags, p_key.utf8().get_data());
@@ -166,7 +163,6 @@ void NativeEvent::remove_tag(const String &p_key) {
 }
 
 String NativeEvent::get_tag(const String &p_key) {
-	ERR_FAIL_COND_V_MSG(p_key.is_empty(), String(), "Sentry: Can't get tag with an empty key.");
 	sentry_value_t tags = sentry_value_get_by_key(native_event, "tags");
 	if (!sentry_value_is_null(tags)) {
 		sentry_value_t value = sentry_value_get_by_key(tags, p_key.utf8().get_data());
@@ -210,7 +206,6 @@ void NativeEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
 }
 
 void NativeEvent::set_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	sentry_value_t contexts = sentry_value_get_by_key(native_event, "contexts");
 	if (sentry_value_is_null(contexts)) {
 		contexts = sentry_value_new_object();
@@ -220,7 +215,6 @@ void NativeEvent::set_context(const String &p_key, const Dictionary &p_value) {
 }
 
 void NativeEvent::merge_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
 	sentry_event_merge_context(native_event, p_key.utf8().get_data(), p_value);
 }
 

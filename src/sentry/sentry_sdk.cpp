@@ -360,7 +360,8 @@ void SentrySDK::_teardown_integrations() {
 }
 
 String SentrySDK::capture_message(const String &p_message, Level p_level) {
-	Ref<SentryEvent> event = internal_sdk->create_event();
+	Ref<SentryEvent> event;
+	event.instantiate();
 	event->set_message(p_message);
 	event->set_level(p_level);
 	return internal_sdk->capture_event(get_current_scope(), event);
@@ -379,7 +380,8 @@ String SentrySDK::get_last_event_id() const {
 }
 
 Ref<SentryEvent> SentrySDK::create_event() const {
-	return internal_sdk->create_event();
+	WARN_DEPRECATED_MSG("SentrySDK.create_event() is deprecated and will be removed in version 3.0. Use SentryEvent.new() instead.");
+	return memnew(SentryEvent);
 }
 
 String SentrySDK::capture_event(const Ref<SentryEvent> &p_event) {
