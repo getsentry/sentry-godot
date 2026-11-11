@@ -31,7 +31,7 @@ func test_threaded_event_capture(timeout := 10000) -> void:
 func _capture_event(message: String) ->  void:
 	SentrySDK._set_before_send(_before_send)
 
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	event.message = message
 	event.level = SentrySDK.LEVEL_DEBUG
 	event.logger = "custom-logger"

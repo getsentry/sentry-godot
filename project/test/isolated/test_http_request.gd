@@ -57,7 +57,7 @@ func _url(path: String) -> String:
 
 
 func _http_breadcrumbs() -> Array:
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 	var event: Dictionary = JSON.parse_string(json)
 	var breadcrumbs: Variant = event.get("breadcrumbs")
 	if not breadcrumbs is Array:

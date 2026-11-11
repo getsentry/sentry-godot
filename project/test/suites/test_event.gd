@@ -11,7 +11,7 @@ func test_string_properties_and_utf8(property: String, test_parameters := [
 		["dist"],
 		["environment"],
 ]) -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	event.set(property, "Hello, World!")
 	assert_str(event.get(property)).is_equal("Hello, World!")
 	event.set(property, "Hello 世界! 👋")
@@ -20,13 +20,13 @@ func test_string_properties_and_utf8(property: String, test_parameters := [
 
 ## SentryEvent.id should not be empty on event creation.
 func test_event_id_not_empty() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	assert_str(event.id).is_not_empty()
 
 
 ## SentryEvent.level should be set to the specified value.
 func test_event_level() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	for l in [SentrySDK.LEVEL_DEBUG, SentrySDK.LEVEL_INFO, SentrySDK.LEVEL_WARNING, SentrySDK.LEVEL_ERROR, SentrySDK.LEVEL_FATAL]:
 		event.level = l
 		assert_int(event.level).is_equal(l)
@@ -34,7 +34,7 @@ func test_event_level() -> void:
 
 ## SentryEvent.timestamp should not be empty on event creation, and setter should update it.
 func test_event_timestamp() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 
 	# Test that timestamp is not null on creation
 	assert_object(event.timestamp).is_not_null()
@@ -61,7 +61,7 @@ func test_event_timestamp() -> void:
 
 ## SentryEvent.set_tag() should set tag to the specified value, remove_tag() should unset it.
 func test_event_tags() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	assert_str(event.get_tag("test_tag")).is_empty()
 	event.set_tag("test_tag", "test_value")
 	assert_str(event.get_tag("test_tag")).is_equal("test_value")
@@ -73,7 +73,7 @@ func test_event_tags() -> void:
 
 ## SentryEvent.is_crash() should return false on a custom-created event.
 func test_event_is_crash() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	assert_bool(event.is_crash()).is_false()
 
 
@@ -82,7 +82,7 @@ func test_capture_event() -> void:
 	# Ensure events are not discarded.
 	SentrySDK._set_before_send(func(ev): return ev)
 
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	var event_id := SentrySDK.capture_event(event)
 
 	assert_str(event_id).is_not_empty()
@@ -97,9 +97,18 @@ func test_capture_event_discarded(
 		_skip_reason = "JS SDK returns a freshly generated ID before before_send runs") -> void:
 	SentrySDK._set_before_send(func(_ev): return null)
 
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	var event_id := SentrySDK.capture_event(event)
 
 	# The nil ID is dashed in the native layer and undashed on Android and Apple platforms.
 	assert_str(event_id.replace("-", "")).is_equal("00000000000000000000000000000000")
 	assert_str(event_id).is_not_equal(event.id)
+
+
+func test_deprecated_factory_compatibility() -> void:
+	var event: SentryEvent = SentrySDK.create_event()
+	assert_str(event.get_class()).is_equal("SentryEvent")
+	assert_str(event.id).is_not_empty()
+	event.message = "Created with the compatibility factory"
+	var json: String = await capture_event_and_get_json(event)
+	assert_str(json).contains(event.message)

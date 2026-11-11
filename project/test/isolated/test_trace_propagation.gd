@@ -75,7 +75,7 @@ func test_omitting_the_url_skips_the_allowlist() -> void:
 func test_traceparent_is_emitted_when_enabled() -> void:
 	var span := SentrySDK.start_span("test.traceparent")
 	var headers := span.get_trace_headers()
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 	span.end()
 
 	var data: Variant = JSON.parse_string(json)

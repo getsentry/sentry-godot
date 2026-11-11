@@ -8,10 +8,10 @@ func _trace_id(json: String) -> Variant:
 
 
 func test_scoped_event_shares_trace() -> void:
-	var json_outside: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_outside: String = await capture_event_and_get_json(SentryEvent.new())
 
 	SentrySDK.with_scope(func(_scope: SentryScope) -> void:
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	var json_in_scope: String = await wait_for_captured_event_json()
 
@@ -23,10 +23,10 @@ func test_scoped_event_shares_trace() -> void:
 
 func test_nested_with_scope_keeps_trace() -> void:
 	SentrySDK.with_scope(func(_outer: SentryScope) -> void:
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 
 		SentrySDK.with_scope(func(_inner: SentryScope) -> void:
-			SentrySDK.capture_event(SentrySDK.create_event())
+			SentrySDK.capture_event(SentryEvent.new())
 			)
 		)
 
@@ -40,11 +40,11 @@ func test_nested_with_scope_keeps_trace() -> void:
 
 
 func test_scope_clear_keeps_trace() -> void:
-	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_before: String = await capture_event_and_get_json(SentryEvent.new())
 
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.clear()
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	var json_after_clear: String = await wait_for_captured_event_json()
 
@@ -57,11 +57,11 @@ func test_scope_clear_keeps_trace() -> void:
 func test_start_new_trace_reaches_forked_scope() -> void:
 	SentrySDK.with_scope(func(_scope: SentryScope) -> void:
 		SentrySDK.start_new_trace()
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	var json_in_scope: String = await wait_for_captured_event_json()
 
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_in_scope).describe("an event captured in a forked scope after start_new_trace() is on the new trace") \
 		.at("/contexts/trace/trace_id") \
@@ -70,10 +70,10 @@ func test_start_new_trace_reaches_forked_scope() -> void:
 
 
 func test_start_new_trace_replaces_the_trace() -> void:
-	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_before: String = await capture_event_and_get_json(SentryEvent.new())
 
 	SentrySDK.start_new_trace()
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_after).describe("start_new_trace() moves later events onto another trace") \
 		.at("/contexts/trace/trace_id") \
@@ -84,8 +84,8 @@ func test_start_new_trace_replaces_the_trace() -> void:
 func test_events_after_start_new_trace_share_trace() -> void:
 	SentrySDK.start_new_trace()
 
-	var json_first: String = await capture_event_and_get_json(SentrySDK.create_event())
-	var json_second: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_first: String = await capture_event_and_get_json(SentryEvent.new())
+	var json_second: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_second).describe("events captured after start_new_trace() share one trace") \
 		.at("/contexts/trace/trace_id") \
