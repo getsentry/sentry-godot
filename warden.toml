@@ -33,6 +33,10 @@ paths = [
   "project/addons/sentry/**",
 ]
 ignorePaths = [
+  "src/manifest.gdextension",
+  "android_lib/src/main/AndroidManifest.xml",
+  "android_lib/src/test/**",
+  "src/sentry/javascript/bridge/test.js",
   "src/sentry/javascript/bridge/package.json",
   "src/sentry/javascript/bridge/*.config.js",
   "src/sentry/javascript/bridge/tsconfig.json",
@@ -64,6 +68,8 @@ paths = [
   ".craft.yml",
   "exports/**",
   "fastlane/**",
+  "src/manifest.gdextension",
+  "android_lib/src/main/AndroidManifest.xml",
   "src/sentry/javascript/bridge/package.json",
   "src/sentry/javascript/bridge/*.config.js",
   "src/sentry/javascript/bridge/tsconfig.json",
@@ -76,13 +82,16 @@ paths = [
 type = "pull_request"
 actions = ["opened", "synchronize", "reopened"]
 
-# Test quality: gdUnit4, doctest, Pester integration, Playwright, .NET tests.
+# Test quality: gdUnit4, doctest, Pester integration, Playwright, .NET,
+# Android JUnit, and JS bridge tests.
 [[skills]]
 name = "test-review"
 incremental = true
 paths = [
   "project/test/**",
   "tests/**",
+  "android_lib/src/test/**",
+  "src/sentry/javascript/bridge/test.js",
 ]
 ignorePaths = [
   "**/*.csproj",

@@ -1,6 +1,6 @@
 ---
 name: test-review
-description: Finds sentry-godot tests that cannot fail, pass for the wrong reason, race against asynchronous capture, or break on a supported platform. Use for pull request review of GDScript gdUnit4 tests, C++ doctest tests, Pester integration tests, web Playwright tests, and .NET tests.
+description: Finds sentry-godot tests that cannot fail, pass for the wrong reason, race against asynchronous capture, or break on a supported platform. Use for pull request review of GDScript gdUnit4 tests, C++ doctest tests, Pester integration tests, web Playwright tests, .NET tests, Android JUnit tests, and the JS bridge test.
 allowed-tools: Read Grep Glob
 ---
 
@@ -19,6 +19,8 @@ does not exist. Missing coverage on its own is not a finding.
 | `tests/cpp/tests/` | doctest | Built into the extension with `tests=yes`. |
 | `tests/integration/` | Pester | Runs exported apps on desktop, Android, iOS, and Sauce Labs; shared cases in `CommonTestCases.ps1`. |
 | `tests/web/` | Playwright | Web export tests. |
+| `android_lib/src/test/` | JUnit | Kotlin plugin unit tests, run by Gradle. |
+| `src/sentry/javascript/bridge/test.js` | Node | JS bridge bundle test (`npm test`). |
 
 Platform skips use `before(_do_skip = ...)` with `OS.has_feature()` or
 `OS.get_name()`. Unit tests run on Godot 4.5, 4.6, and 4.7 across Linux,

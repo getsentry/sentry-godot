@@ -1,6 +1,6 @@
 ---
 name: build-ci-review
-description: Finds bugs in sentry-godot build, packaging, release, and CI changes, including GitHub Actions workflows, PowerShell and shell test runners, SCons, Gradle, Craft, and dependency version pins. Use for pull request review of .github/, scripts/, SConstruct, site_scons/, modules/ build files, and Gradle files.
+description: Finds bugs in sentry-godot build, packaging, release, and CI changes, including GitHub Actions workflows, PowerShell and shell test runners, SCons, Gradle, Craft, and dependency version pins. Use for pull request review of .github/, scripts/, SConstruct, site_scons/, modules/ build files, Gradle files, and the .gdextension manifest.
 allowed-tools: Read Grep Glob
 ---
 
@@ -22,6 +22,9 @@ without testing what it claims to test.
   `modules/*.SConscript` builds sentry-native and fetches sentry-cocoa;
   `modules/*.properties` pin downloaded versions.
 - `android_lib/` (Gradle) builds the Android plugin AAR.
+- `src/manifest.gdextension` is the template SConstruct copies into the addon.
+  It maps each platform, arch, and target to a library path under
+  `res://addons/sentry/bin/`.
 
 ## What To Report
 
@@ -67,7 +70,9 @@ link, or code in this repo shows. Past real case: the v11 Web SDK bump left
 ### Build scripts
 - SCons options, defines, or source globs that leave a platform or arch without
   a backend, drop files from the package, or change output paths that
-  `package.yml`, `.gdextension` files, or export plugins expect.
+  `package.yml`, `src/manifest.gdextension`, or export plugins expect.
+- `src/manifest.gdextension` entries that drop a platform, arch, or target, or
+  name a library path SConstruct does not produce.
 
 ## What Not To Report
 
