@@ -127,8 +127,9 @@ fi
 
 github "::group::Export log"
 
-"$godot" --headless --path project --install-android-build-template --quit
-abort_on_error "Failed to install Android build template"
+# Godot installs the build template only during an export. Export again after configuring its manifest.
+"$godot" --headless --path project --install-android-build-template --export-debug "$EXPORT_PRESET" ../exports/android.apk
+abort_on_error "Failed to install Android build template and export test APK"
 
 # Configure the exported test APK to allow clear-text HTTP traffic to the local receiver at 127.0.0.1.
 mkdir -p project/android/build/res/xml
@@ -143,7 +144,7 @@ export_err=$?
 github "::endgroup::"
 
 if [ $export_err -ne 0 ]; then
-    warning "Godot export process returned an error. Proceeding anyway..."
+    abort "Failed to export test APK with the local receiver configuration"
 fi
 
 # Check if APK was exported successfully
