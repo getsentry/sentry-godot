@@ -9,6 +9,8 @@ internal static class TestSources
         namespace Sentry.Godot;
         public static class SentrySdk
         {
+            public static void StartSession() { }
+            public static void EndSession() { }
             public static Sentry.SentryId CaptureMessage(string message) => default;
         }
         """;

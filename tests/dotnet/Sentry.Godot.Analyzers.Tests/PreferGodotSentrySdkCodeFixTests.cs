@@ -69,4 +69,49 @@ public class PreferGodotSentrySdkCodeFixTests
                 void Bar() => global::Sentry.Godot.SentrySdk.CaptureMessage("hi");
             }
             """);
+
+    [Theory]
+    [InlineData("void", "PauseSession", "()")]
+    [InlineData("void", "ResumeSession", "()")]
+    [InlineData("void", "CaptureSession", "(default)")]
+    [InlineData("bool", "IsSessionActive", "")]
+    [InlineData("void", "EndSession", "(Sentry.SessionEndStatus.Exited)")]
+    [InlineData("void", "EndSession", "()")]
+    public Task ExcludedSessionApi_NoFix(string returnType, string member, string arguments)
+    {
+        var source = $$"""
+            class Foo
+            {
+                {{returnType}} Bar() => {|SENTRYGD1001:Sentry.SentrySdk.{{member}}|}{{arguments}};
+            }
+            """;
+        return RunAsync(source, source);
+    }
+
+    [Fact]
+    public Task StartSession_Rewritten() => RunAsync(
+        source: """
+            class Foo
+            {
+                void Bar() => {|SENTRYGD1001:Sentry.SentrySdk.StartSession|}();
+            }
+            """,
+        fixedSource: """
+            class Foo
+            {
+                void Bar() => Sentry.Godot.SentrySdk.StartSession();
+            }
+            """);
+
+    [Fact]
+    public Task ExcludedSessionMethodGroup_NoFix()
+    {
+        const string source = """
+            class Foo
+            {
+                System.Action<Sentry.SessionEndStatus> Bar() => {|SENTRYGD1001:Sentry.SentrySdk.EndSession|};
+            }
+            """;
+        return RunAsync(source, source);
+    }
 }
