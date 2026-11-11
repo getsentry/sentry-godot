@@ -127,7 +127,17 @@ fi
 
 github "::group::Export log"
 
-"$godot" --verbose --headless --path project --install-android-build-template --export-debug "$EXPORT_PRESET" ../exports/android.apk
+"$godot" --headless --path project --install-android-build-template --quit
+abort_on_error "Failed to install Android build template"
+
+# Configure the exported test APK to allow clear-text HTTP traffic to the local receiver at 127.0.0.1.
+mkdir -p project/android/build/res/xml
+cp tests/android/network_security_config.xml project/android/build/res/xml/test_network_security_config.xml
+sed 's#<application$#<application android:networkSecurityConfig="@xml/test_network_security_config"#' \
+    project/android/build/AndroidManifest.xml > project/android/build/AndroidManifest.xml.tmp
+mv project/android/build/AndroidManifest.xml.tmp project/android/build/AndroidManifest.xml
+
+"$godot" --verbose --headless --path project --export-debug "$EXPORT_PRESET" ../exports/android.apk
 export_err=$?
 
 github "::endgroup::"
