@@ -44,7 +44,6 @@ ignorePaths = [
 [[skills.triggers]]
 type = "pull_request"
 actions = ["opened", "synchronize", "reopened"]
-draft = false
 
 # Build, packaging, release, CI, and dependency pins.
 [[skills]]
@@ -76,7 +75,6 @@ paths = [
 [[skills.triggers]]
 type = "pull_request"
 actions = ["opened", "synchronize", "reopened"]
-draft = false
 
 # Test quality: gdUnit4, doctest, Pester integration, Playwright, .NET tests.
 [[skills]]
@@ -95,4 +93,3 @@ ignorePaths = [
 [[skills.triggers]]
 type = "pull_request"
 actions = ["opened", "synchronize", "reopened"]
-draft = false
