@@ -7,6 +7,10 @@
 - Add `auto_session_tracking` to control automatic session tracking and `session_tracking_interval_ms` to configure its background timeout ([#1069](https://github.com/getsentry/sentry-godot/pull/1069))
 - Add `SentrySDK.start_session()` and `SentrySDK.end_session()` to control session boundaries manually ([#1070](https://github.com/getsentry/sentry-godot/pull/1070))
 
+### Fixes
+
+- **Breaking**: Route C# `SentrySdk.StartSession()` and `EndSession()` through the same SDK backend as GDScript, replacing calls that controlled separate managed sessions. Remove unsupported `PauseSession()` and `ResumeSession()` methods, along with the explicit-status `EndSession` overload, `CaptureSession()`, and `IsSessionActive`.
+
 
 ### Improvements
 
