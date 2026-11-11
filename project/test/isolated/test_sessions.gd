@@ -1,5 +1,7 @@
 extends GdUnitTestSuite
 
+const NEWLINE_BYTE: int = 10
+
 var _capture: HTTPRequestCapture
 var _items: Array[Dictionary] = []
 
@@ -47,14 +49,16 @@ func _read_items(item_type: String, predicate: Callable = Callable()) -> Array[D
 		var body: PackedByteArray = request.body
 		if request.headers.get("content-encoding", "") == "gzip":
 			body = body.decompress_dynamic(4 * 1024 * 1024, FileAccess.COMPRESSION_GZIP)
-		var offset: int = body.find(10) + 1
+		# An envelope starts with a JSON header followed by a newline.
+		var offset: int = body.find(NEWLINE_BYTE) + 1
 		while offset > 0 and offset < body.size():
-			var header_end: int = body.find(10, offset)
+			# Each item starts with a JSON header followed by a newline, then its payload.
+			var header_end: int = body.find(NEWLINE_BYTE, offset)
 			if header_end < 0:
 				break
 			var header: Dictionary = JSON.parse_string(body.slice(offset, header_end).get_string_from_utf8())
 			offset = header_end + 1
-			var payload_end: int = offset + int(header.length) if header.has("length") else body.find(10, offset)
+			var payload_end: int = offset + int(header.length) if header.has("length") else body.find(NEWLINE_BYTE, offset)
 			if payload_end < 0:
 				payload_end = body.size()
 			if header.type in ["session", "event"]:
