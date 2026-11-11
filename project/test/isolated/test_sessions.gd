@@ -138,7 +138,10 @@ func test_errors_after_end_do_not_update_session() -> void:
 		.exactly(1)
 
 
-func test_start_replaces_session_without_carrying_over_errors() -> void:
+# Skipped: Cocoa's captureEvent does not increment session errors.
+# See https://github.com/getsentry/sentry-godot/issues/1077
+func test_start_replaces_session_without_carrying_over_errors(_do_skip = OS.get_name() in ["macOS", "iOS"],
+		_skip_reason = "Due to a bug, Godot errors do not increment session errors on Apple platforms.") -> void:
 	SentrySDK.start_session()
 	var started: Array[Dictionary] = await _wait_for_items("session", 1)
 	if started.is_empty():
