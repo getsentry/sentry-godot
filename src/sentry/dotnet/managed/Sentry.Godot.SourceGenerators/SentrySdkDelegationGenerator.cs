@@ -57,19 +57,22 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
             SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
             SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
-    // These managed-session APIs do not control Godot's platform sessions.
+    private static bool IsHandWritten(ISymbol member) =>
+        HandWrittenMembers.Contains(member.Name) ||
+        (member is IMethodSymbol method &&
+         HandWrittenOverloads.Contains(method.ToDisplayString(SignatureFormat)));
+
+    /// <summary>
+    /// Names of upstream SDK members deliberately omitted from the Godot API.
+    /// </summary>
     private static readonly HashSet<string> ExcludedMembers =
     [
+        // These managed-session APIs do not control Godot's platform sessions.
         "PauseSession",
         "ResumeSession",
         "CaptureSession",
         "IsSessionActive"
     ];
-
-    private static bool IsHandWritten(ISymbol member) =>
-        HandWrittenMembers.Contains(member.Name) ||
-        (member is IMethodSymbol method &&
-         HandWrittenOverloads.Contains(method.ToDisplayString(SignatureFormat)));
 
     private const string DiagnosticCategory = "Sentry.Godot.SourceGenerators";
 
