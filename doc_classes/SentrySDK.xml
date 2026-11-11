@@ -34,7 +34,7 @@
 			<return type="String" />
 			<param index="0" name="event" type="SentryEvent" />
 			<description>
-				Captures [param event] and sends it to Sentry, returning the event ID. You can create an event with [method SentrySDK.create_event].
+				Captures [param event] and sends it to Sentry, returning the event ID.
 			</description>
 		</method>
 		<method name="capture_feedback">
@@ -73,7 +73,7 @@
 				[b]Note:[/b] The SDK does not end in-progress spans. End them before calling this method.
 			</description>
 		</method>
-		<method name="create_event" qualifiers="const">
+		<method name="create_event" qualifiers="const" deprecated="Use [code]SentryEvent.new()[/code] instead. This method will be removed in version 3.0.">
 			<return type="SentryEvent" />
 			<description>
 				Creates a new [SentryEvent] object. You can capture the event with [method SentrySDK.capture_event].
