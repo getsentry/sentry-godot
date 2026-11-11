@@ -82,16 +82,6 @@ func _wait_for_items(item_type: String, count: int, predicate: Callable = Callab
 	return items
 
 
-func _finish_session(event_count: int = 1) -> Array[Dictionary]:
-	SentrySDK.end_session()
-	SentrySDK.end_session()
-	push_error("Error outside a session")
-	await _wait_for_items("event", event_count)
-	# Allow queued session updates to reach the receiver before asserting their total count.
-	await get_tree().create_timer(0.2).timeout
-	return _read_items("session")
-
-
 func test_disabled_auto_tracking_sends_no_sessions() -> void:
 	SentrySDK.capture_message("Automatic session tracking is disabled")
 	await _wait_for_items("event", 1)
@@ -99,7 +89,7 @@ func test_disabled_auto_tracking_sends_no_sessions() -> void:
 	assert_array(_read_items("session")).is_empty()
 
 
-func test_manual_session_ends_before_subsequent_errors() -> void:
+func test_manual_session_starts_and_ends() -> void:
 	SentrySDK.start_session()
 	var started: Array[Dictionary] = await _wait_for_items("session", 1)
 	if started.is_empty():
@@ -109,11 +99,38 @@ func test_manual_session_ends_before_subsequent_errors() -> void:
 		.must_contain("/status", "ok") \
 		.verify()
 	var sid: String = started[0].sid
-	var sessions: Array[Dictionary] = await _finish_session()
+
+	SentrySDK.end_session()
+	await _wait_for_items("session", 1,
+		func(session: Dictionary) -> bool: return session.status == "exited")
+
+	var sessions: Array[Dictionary] = _read_items("session")
 	assert_json(sessions) \
 		.with_objects() \
 		.must_contain("/sid", sid) \
 		.exactly(2)
+	assert_json(sessions) \
+		.with_objects() \
+		.containing("status", "exited") \
+		.must_contain("/errors", 0) \
+		.exactly(1)
+
+
+func test_errors_after_end_do_not_update_session() -> void:
+	SentrySDK.start_session()
+	await _wait_for_items("session", 1)
+	SentrySDK.end_session()
+	await _wait_for_items("session", 1,
+		func(session: Dictionary) -> bool: return session.status == "exited")
+	var sessions_before: int = _read_items("session").size()
+
+	push_error("Error outside a session")
+	await _wait_for_items("event", 1)
+	# Observe a short window for unexpected session updates caused by the error.
+	await get_tree().create_timer(0.2).timeout
+
+	var sessions: Array[Dictionary] = _read_items("session")
+	assert_int(sessions.size()).is_equal(sessions_before)
 	assert_json(sessions) \
 		.with_objects() \
 		.containing("status", "exited") \
@@ -130,6 +147,7 @@ func test_start_replaces_session_without_carrying_over_errors() -> void:
 	push_error("Error in the replaced session")
 	await _wait_for_items("event", 1)
 
+	# New session should replace the old one, and errors should be cleared.
 	SentrySDK.start_session()
 	var new_sessions: Array[Dictionary] = await _wait_for_items("session", 1,
 		func(session: Dictionary) -> bool: return session.sid != first_sid)
@@ -141,7 +159,11 @@ func test_start_replaces_session_without_carrying_over_errors() -> void:
 		.must_contain("/status", "ok") \
 		.verify()
 
-	var sessions: Array[Dictionary] = await _finish_session(2)
+	SentrySDK.end_session()
+	await _wait_for_items("session", 2,
+		func(session: Dictionary) -> bool: return session.status == "exited")
+
+	var sessions: Array[Dictionary] = _read_items("session")
 	assert_json(sessions) \
 		.with_objects() \
 		.containing("status", "exited") \
