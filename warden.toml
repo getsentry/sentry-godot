@@ -1,0 +1,95 @@
+# Warden configuration for sentry-godot.
+# https://github.com/getsentry/warden
+#
+# The org workflow layers this file on top of getsentry/.github/warden.toml,
+# which runs security-review. Repo skills inherit the org model, effort,
+# runtime, and incrementalApp, but not its reportOn, failOn, or ignorePaths,
+# so those are set here. The skills below use disjoint paths so each hunk is
+# reviewed by exactly one of them.
+
+version = 1
+
+[defaults]
+# Same thresholds as the org base config: comment on low and up, never fail.
+reportOn = "low"
+failOn = "off"
+# The org ignorePaths do not apply to repo skills. Tests stay visible here so
+# test-review can see them.
+ignorePaths = [
+  "**/*.md",
+  "**/*.uid",
+  "**/*.import",
+  "**/package-lock.json",
+  "**/*.svg",
+]
+
+# SDK correctness: all backends, the .NET layer, the Web bridge, and editor plugins.
+[[skills]]
+name = "sdk-review"
+incremental = true
+paths = [
+  "src/**",
+  "android_lib/src/**",
+  "project/addons/sentry/**",
+]
+ignorePaths = [
+  "src/sentry/javascript/bridge/package.json",
+  "src/sentry/javascript/bridge/*.config.js",
+  "src/sentry/javascript/bridge/tsconfig.json",
+  "**/*.csproj",
+  "**/*.props",
+  "**/*.targets",
+]
+
+[[skills.triggers]]
+type = "pull_request"
+actions = ["opened", "synchronize", "reopened"]
+
+# Build, packaging, release, CI, and dependency pins.
+[[skills]]
+name = "build-ci-review"
+incremental = true
+paths = [
+  ".github/workflows/**",
+  ".github/actions/**",
+  "scripts/**",
+  "SConstruct",
+  "site_scons/**",
+  "modules/*.SConscript",
+  "modules/*.properties",
+  "*.gradle.kts",
+  "android_lib/*.gradle.kts",
+  "gradle.properties",
+  "gradle/**",
+  ".craft.yml",
+  "exports/**",
+  "fastlane/**",
+  "src/sentry/javascript/bridge/package.json",
+  "src/sentry/javascript/bridge/*.config.js",
+  "src/sentry/javascript/bridge/tsconfig.json",
+  "**/*.csproj",
+  "**/*.props",
+  "**/*.targets",
+]
+
+[[skills.triggers]]
+type = "pull_request"
+actions = ["opened", "synchronize", "reopened"]
+
+# Test quality: gdUnit4, doctest, Pester integration, Playwright, .NET tests.
+[[skills]]
+name = "test-review"
+incremental = true
+paths = [
+  "project/test/**",
+  "tests/**",
+]
+ignorePaths = [
+  "**/*.csproj",
+  "**/*.props",
+  "**/*.targets",
+]
+
+[[skills.triggers]]
+type = "pull_request"
+actions = ["opened", "synchronize", "reopened"]
