@@ -132,7 +132,12 @@ github "::group::Export log"
 if [ $? -ne 0 ]; then
     warning "Godot returned an error while installing the build template. Checking the manifest before continuing."
 fi
-if [ ! -f project/android/build/AndroidManifest.xml ]; then
+# Godot 4.6 moved the manifest into the standard Gradle source layout.
+android_manifest=project/android/build/src/main/AndroidManifest.xml
+if [ ! -f "$android_manifest" ]; then
+    android_manifest=project/android/build/AndroidManifest.xml
+fi
+if [ ! -f "$android_manifest" ]; then
     abort "Android build template manifest was not created"
 fi
 
@@ -140,8 +145,8 @@ fi
 mkdir -p project/android/build/res/xml
 cp tests/android/network_security_config.xml project/android/build/res/xml/test_network_security_config.xml
 sed 's#<application$#<application android:networkSecurityConfig="@xml/test_network_security_config"#' \
-    project/android/build/AndroidManifest.xml > project/android/build/AndroidManifest.xml.tmp
-mv project/android/build/AndroidManifest.xml.tmp project/android/build/AndroidManifest.xml
+    "$android_manifest" > "$android_manifest.tmp"
+mv "$android_manifest.tmp" "$android_manifest"
 
 # Require a fresh APK so a failed rebuild cannot reuse the unpatched export.
 rm -f exports/android.apk || abort "Failed to remove the unpatched test APK"
