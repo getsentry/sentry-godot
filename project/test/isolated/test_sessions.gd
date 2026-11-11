@@ -183,3 +183,41 @@ func test_start_replaces_session_without_carrying_over_errors(_do_skip = OS.get_
 		.containing("sid", second_sid) \
 		.must_contain("/errors", 0) \
 		.exactly(1)
+
+
+func test_csharp_start_gdscript_end(_do_skip = not ClassDB.class_exists("CSharpScript"),
+		_skip_reason = "Requires the .NET runtime.") -> void:
+	var harness: RefCounted = load("res://test/dotnet/DotnetTestHarness.cs").new()
+	harness.call("StartSession")
+	var started: Array[Dictionary] = await _wait_for_items("session", 1)
+	if started.is_empty():
+		return
+	assert_bool(harness.call("IsManagedSessionActive")).is_false()
+
+	SentrySDK.end_session()
+	var ended: Array[Dictionary] = await _wait_for_items("session", 1,
+		func(session: Dictionary) -> bool: return session.status == "exited")
+	assert_json(ended) \
+		.with_objects() \
+		.must_contain("/sid", started[0].sid) \
+		.exactly(1)
+	assert_int(_read_items("session").size()).is_equal(2)
+
+
+func test_gdscript_start_csharp_end(_do_skip = not ClassDB.class_exists("CSharpScript"),
+		_skip_reason = "Requires the .NET runtime.") -> void:
+	var harness: RefCounted = load("res://test/dotnet/DotnetTestHarness.cs").new()
+	SentrySDK.start_session()
+	var started: Array[Dictionary] = await _wait_for_items("session", 1)
+	if started.is_empty():
+		return
+
+	harness.call("EndSession")
+	var ended: Array[Dictionary] = await _wait_for_items("session", 1,
+		func(session: Dictionary) -> bool: return session.status == "exited")
+	assert_json(ended) \
+		.with_objects() \
+		.must_contain("/sid", started[0].sid) \
+		.exactly(1)
+	assert_int(_read_items("session").size()).is_equal(2)
+	assert_bool(harness.call("IsManagedSessionActive")).is_false()

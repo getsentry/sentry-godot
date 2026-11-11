@@ -52,6 +52,14 @@ public partial class DotnetTestHarness : RefCounted
         SentrySdk.Close();
     }
 
+    public void StartSession() => SentrySdk.StartSession();
+
+    public void EndSession() => SentrySdk.EndSession();
+
+#pragma warning disable SENTRYGD1001 // Verify that Godot session control does not create a managed session.
+    public bool IsManagedSessionActive() => Sentry.SentrySdk.IsSessionActive;
+#pragma warning restore SENTRYGD1001
+
     private readonly Godot.Collections.Dictionary _receivedOptions = [];
     public Godot.Collections.Dictionary GetReceivedOptions() => _receivedOptions;
 
