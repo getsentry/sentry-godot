@@ -1066,6 +1066,16 @@ internal static partial class NativeBridge
     }
 
     [LibraryImport(Lib)]
+    private static partial void csharp_interop_sdk_start_session();
+
+    public static void StartSession() => csharp_interop_sdk_start_session();
+
+    [LibraryImport(Lib)]
+    private static partial void csharp_interop_sdk_end_session();
+
+    public static void EndSession() => csharp_interop_sdk_end_session();
+
+    [LibraryImport(Lib)]
     private static partial void csharp_interop_process_default_attachments(int level);
 
     public static void ProcessDefaultAttachments(SentryLevel level)

@@ -20,7 +20,9 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
     private static readonly HashSet<string> HandWrittenMembers =
     [
         "Init",
-        "Close"
+        "Close",
+        "StartSession",
+        "EndSession"
     ];
 
     /// <summary>
@@ -54,6 +56,15 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
         miscellaneousOptions:
             SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
             SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
+    // These managed-session APIs do not control Godot's platform sessions.
+    private static readonly HashSet<string> ExcludedMembers =
+    [
+        "PauseSession",
+        "ResumeSession",
+        "CaptureSession",
+        "IsSessionActive"
+    ];
 
     private static bool IsHandWritten(ISymbol member) =>
         HandWrittenMembers.Contains(member.Name) ||
@@ -145,7 +156,7 @@ public sealed class SentrySdkDelegationGenerator : IIncrementalGenerator
 
         foreach (var member in members)
         {
-            if (IsHandWritten(member))
+            if (IsHandWritten(member) || ExcludedMembers.Contains(member.Name))
             {
                 continue;
             }

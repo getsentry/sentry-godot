@@ -173,6 +173,21 @@ public static partial class SentrySdk
     }
 
     /// <summary>
+    /// Starts a session for Release Health, ending any existing session first.
+    /// </summary>
+    /// <remarks>
+    /// Controls the same platform session as GDScript. Disable
+    /// <see cref="SentryOptions.AutoSessionTracking"/> when managing session boundaries manually.
+    /// </remarks>
+    public static void StartSession() => NativeBridge.StartSession();
+
+    /// <summary>
+    /// Ends the current session for Release Health. Does nothing if there is no active session.
+    /// </summary>
+    /// <seealso cref="StartSession"/>
+    public static void EndSession() => NativeBridge.EndSession();
+
+    /// <summary>
     /// Flushes the events and disables the SDK.
     /// </summary>
     public static void Close()
