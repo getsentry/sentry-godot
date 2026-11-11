@@ -31,6 +31,7 @@ func after_test() -> void:
 	SentrySDK.close()
 	var deadline: int = Time.get_ticks_msec() + 5000
 	while SentrySDK.is_enabled() and Time.get_ticks_msec() < deadline:
+		# On Web, close() is async, so we need to wait.
 		await get_tree().process_frame
 	assert_bool(SentrySDK.is_enabled()).is_false()
 	_capture.stop()
