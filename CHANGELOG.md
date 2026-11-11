@@ -9,7 +9,7 @@
 
 ### Fixes
 
-- **Breaking**: Route C# `SentrySdk.StartSession()` and `EndSession()` through the same SDK backend as GDScript, replacing calls that controlled separate managed sessions. Remove unsupported `PauseSession()` and `ResumeSession()` methods, along with the explicit-status `EndSession` overload, `CaptureSession()`, and `IsSessionActive`.
+- **Breaking**: Route C# `SentrySdk.StartSession()` and `EndSession()` through the same SDK backend as GDScript, replacing calls that controlled separate managed sessions. Remove unsupported `PauseSession()` and `ResumeSession()` methods, along with the explicit-status `EndSession` overload, `CaptureSession()`, and `IsSessionActive` ([#1076](https://github.com/getsentry/sentry-godot/pull/1076)).
 
 
 ### Improvements
