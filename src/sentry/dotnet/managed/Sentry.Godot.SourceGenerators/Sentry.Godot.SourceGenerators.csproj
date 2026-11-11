@@ -10,4 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" PrivateAssets="all" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/SentrySdkMemberRules.cs" Link="Shared/SentrySdkMemberRules.cs" />
+  </ItemGroup>
 </Project>
