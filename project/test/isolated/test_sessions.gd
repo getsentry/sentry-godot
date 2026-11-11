@@ -6,9 +6,11 @@ var _items: Array[Dictionary] = []
 
 func before_test() -> void:
 	_items.clear()
+
 	_capture = HTTPRequestCapture.new()
 	add_child(_capture)
 	assert_int(_capture.start()).is_equal(OK)
+
 	SentrySDK.init(func(options: SentryOptions) -> void:
 		options.dsn = _capture.get_dsn()
 		options.release = "session-test"
@@ -20,7 +22,6 @@ func before_test() -> void:
 		options.godot_logger.log_mask = 0
 		options.godot_logger.breadcrumb_mask = 0
 		options.traces_sample_rate = 0.0
-		# The receiver runs on the main thread, which close() would otherwise block while flushing.
 		options.shutdown_timeout_ms = 0
 	)
 	assert_bool(SentrySDK.is_enabled()).is_true()
