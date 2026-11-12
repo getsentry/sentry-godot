@@ -3,6 +3,6 @@
 -->
 <Project>
   <PropertyGroup>
-    <SentryVersion>6.12.1</SentryVersion>
+    <SentryVersion>6.13.0</SentryVersion>
   </PropertyGroup>
 </Project>

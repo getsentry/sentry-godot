@@ -7,6 +7,9 @@
 - Bump Sentry JavaScript from v11.11.0 to v11.12.0 ([#1075](https://github.com/getsentry/sentry-godot/pull/1075))
   - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#11120)
   - [diff](https://github.com/getsentry/sentry-javascript/compare/11.11.0...11.12.0)
+- Bump Sentry .NET SDK from v6.12.1 to v6.13.0 ([#1082](https://github.com/getsentry/sentry-godot/pull/1082))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6130)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.12.1...6.13.0)
 
 ## 2.5.0
 
