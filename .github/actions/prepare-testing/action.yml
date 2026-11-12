@@ -113,7 +113,7 @@ runs:
     - name: Prepare project
       shell: bash
       run: |
-        find project/addons/sentry/bin/ -name "crashpad_handler" -exec chmod 755 "{}" \;
+        find project/addons/sentry/bin/ -name "sentry-crash" -exec chmod 755 "{}" \;
         echo "--- Rebuilding import cache"
         ${GODOT} --headless --path project/ --import --verbose
         echo "--- Finished rebuilding import cache"
