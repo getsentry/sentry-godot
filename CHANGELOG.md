@@ -7,6 +7,10 @@
 - Add `auto_session_tracking` to control automatic session tracking and `session_tracking_interval_ms` to configure its background timeout ([#1069](https://github.com/getsentry/sentry-godot/pull/1069))
 - Add `SentrySDK.start_session()` and `SentrySDK.end_session()` to control session boundaries manually ([#1070](https://github.com/getsentry/sentry-godot/pull/1070))
 
+### Improvements
+
+- Support creating events with `SentryEvent.new()` ([#1081](https://github.com/getsentry/sentry-godot/pull/1081))
+
 ### Fixes
 
 - Fix C# `SentrySdk.StartSession()` and `EndSession()` to control the sessions tracked by the SDK instead of separate .NET sessions that could double-count sessions ([#1076](https://github.com/getsentry/sentry-godot/pull/1076)).
@@ -14,14 +18,6 @@
 ### Deprecations
 
 - .NET: Deprecate `PauseSession()`, `ResumeSession()`, and `CaptureSession()` as no-ops, and `IsSessionActive` as always returning `false`. The deprecated `EndSession(status)` overload ends the session but ignores the status. These compatibility APIs warn once per member at runtime and will be removed in v3 ([#1076](https://github.com/getsentry/sentry-godot/pull/1076)).
-
-
-### Improvements
-
-- Support creating events with `SentryEvent.new()` ([#1081](https://github.com/getsentry/sentry-godot/pull/1081))
-
-### Deprecations
-
 - Deprecate `SentrySDK.create_event()` in favor of `SentryEvent.new()`. The factory remains available until version 3.0 ([#1081](https://github.com/getsentry/sentry-godot/pull/1081))
 
 ## 2.5.1
