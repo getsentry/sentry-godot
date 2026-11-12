@@ -1,14 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add `auto_session_tracking` to control automatic session tracking and `session_tracking_interval_ms` to configure its background timeout ([#1069](https://github.com/getsentry/sentry-godot/pull/1069))
+
 ## 2.5.1
 
 ### Fixes
 
 - Android: Prevent main-thread hangs and potential ANRs during startup or when returning to the foreground if Android is slow to register Sentry's network or telephony listeners ([sentry-java#6537](https://github.com/getsentry/sentry-java/pull/6537))
-
-### Features
-
-- Add `auto_session_tracking` to control automatic session tracking and `session_tracking_interval_ms` to configure its background timeout ([#1069](https://github.com/getsentry/sentry-godot/pull/1069))
 
 ### Dependencies
 
@@ -24,7 +26,6 @@
 - Bump Cocoa SDK from v9.33.0 to v9.34.0 ([#1086](https://github.com/getsentry/sentry-godot/pull/1086))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9340)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.33.0...9.34.0)
-
 
 ## 2.5.0
 
