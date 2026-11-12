@@ -1,18 +1,15 @@
 #pragma once
 
 #include "sentry/cocoa/cocoa_includes.h"
-#include "sentry/sentry_event.h"
+#include "sentry/sentry_event_impl.h"
 
 namespace sentry::cocoa {
 
-class CocoaEvent : public sentry::SentryEvent {
-	GDCLASS(CocoaEvent, sentry::SentryEvent);
+class CocoaEvent : public SentryEventImpl {
+	SENTRY_CASTABLE(CocoaEvent, SentryEventImpl);
 
 private:
 	SentryObjCEvent *cocoa_event = nullptr;
-
-protected:
-	static void _bind_methods() {}
 
 public:
 	_FORCE_INLINE_ SentryObjCEvent *get_cocoa_event() const { return cocoa_event; }
@@ -62,6 +59,8 @@ public:
 	virtual bool is_crash() const override;
 
 	virtual String to_json() const override;
+
+	static Ref<SentryEvent> wrap(SentryObjCEvent *p_cocoa_event);
 
 	CocoaEvent(SentryObjCEvent *p_cocoa_event);
 	CocoaEvent();

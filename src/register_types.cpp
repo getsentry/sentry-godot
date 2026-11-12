@@ -1,6 +1,5 @@
 #include "editor/sentry_editor_plugin.h"
 #include "sentry/auto_metrics/sentry_auto_metrics.h"
-#include "sentry/disabled/disabled_event.h"
 #include "sentry/dotnet/dotnet_scope_observer.h"
 #include "sentry/engine_lifecycle/engine_lifecycle.h"
 #include "sentry/engine_lifecycle/sentry_scene_tree_watcher.h"
@@ -34,14 +33,12 @@
 
 #ifdef SDK_NATIVE
 #include "sentry/native/native_breadcrumb.h"
-#include "sentry/native/native_event.h"
 #include "sentry/native/native_log.h"
 #include "sentry/native/native_metric.h"
 #endif // SDK_NATIVE
 
 #ifdef SDK_ANDROID
 #include "sentry/android/android_breadcrumb.h"
-#include "sentry/android/android_event.h"
 #include "sentry/android/android_log.h"
 #include "sentry/android/android_metric.h"
 #include "sentry/android/android_sdk.h"
@@ -49,14 +46,12 @@
 
 #ifdef SDK_COCOA
 #include "sentry/cocoa/cocoa_breadcrumb.h"
-#include "sentry/cocoa/cocoa_event.h"
 #include "sentry/cocoa/cocoa_log.h"
 #include "sentry/cocoa/cocoa_metric.h"
 #endif // SDK_COCOA
 
 #ifdef SDK_JAVASCRIPT
 #include "sentry/javascript/javascript_breadcrumb.h"
-#include "sentry/javascript/javascript_event.h"
 #include "sentry/javascript/javascript_log.h"
 #include "sentry/javascript/javascript_metric.h"
 #include "sentry/javascript/javascript_sdk.h"
@@ -102,12 +97,11 @@ void register_runtime_classes() {
 	GDREGISTER_ABSTRACT_CLASS(SentrySpan);
 	GDREGISTER_CLASS(SentrySDK);
 	GDREGISTER_ABSTRACT_CLASS(SentryAttachment);
-	GDREGISTER_ABSTRACT_CLASS(SentryEvent);
+	GDREGISTER_CLASS(SentryEvent);
 	GDREGISTER_ABSTRACT_CLASS(SentryBreadcrumb);
 	GDREGISTER_ABSTRACT_CLASS(SentryLog);
 	GDREGISTER_ABSTRACT_CLASS(SentryMetric);
 	GDREGISTER_ABSTRACT_CLASS(SentryScope);
-	GDREGISTER_INTERNAL_CLASS(DisabledEvent);
 	GDREGISTER_INTERNAL_CLASS(SentryEventProcessor);
 	GDREGISTER_INTERNAL_CLASS(EnrichmentProcessor);
 	GDREGISTER_INTERNAL_CLASS(ScreenshotProcessor);
@@ -118,14 +112,12 @@ void register_runtime_classes() {
 	GDREGISTER_INTERNAL_CLASS(sentry::engine_lifecycle::SentrySceneTreeWatcher);
 
 #ifdef SDK_NATIVE
-	GDREGISTER_INTERNAL_CLASS(native::NativeEvent);
 	GDREGISTER_INTERNAL_CLASS(native::NativeBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(native::NativeLog);
 	GDREGISTER_INTERNAL_CLASS(native::NativeMetric);
 #endif
 
 #ifdef SDK_ANDROID
-	GDREGISTER_INTERNAL_CLASS(android::AndroidEvent);
 	GDREGISTER_INTERNAL_CLASS(android::AndroidBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(android::AndroidLog);
 	GDREGISTER_INTERNAL_CLASS(android::AndroidMetric);
@@ -137,14 +129,12 @@ void register_runtime_classes() {
 #endif
 
 #ifdef SDK_COCOA
-	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaEvent);
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaLog);
 	GDREGISTER_INTERNAL_CLASS(cocoa::CocoaMetric);
 #endif
 
 #ifdef SDK_JAVASCRIPT
-	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptEvent);
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptBreadcrumb);
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptLog);
 	GDREGISTER_INTERNAL_CLASS(javascript::JavaScriptMetric);

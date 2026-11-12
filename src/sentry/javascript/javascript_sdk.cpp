@@ -66,8 +66,8 @@ static void before_send_wasm_callback(int32_t *p_ids, int32_t p_len) {
 	JSObjectPtr event_obj = JSObject::from_id(p_ids[0]);
 	ERR_FAIL_COND(!event_obj);
 
-	Ref<JavaScriptEvent> event = memnew(JavaScriptEvent(event_obj));
-	Ref<JavaScriptEvent> processed = sentry::process_event(event);
+	Ref<SentryEvent> event = JavaScriptEvent::wrap(event_obj);
+	Ref<SentryEvent> processed = sentry::process_event(event);
 
 	// NOTE: We cannot return a value from a callback, so we use the same
 	//       event object to communicate the result back.
@@ -80,8 +80,8 @@ static void before_send_transaction_wasm_callback(int32_t *p_ids, int32_t p_len)
 	JSObjectPtr transaction_obj = JSObject::from_id(p_ids[0]);
 	ERR_FAIL_COND(!transaction_obj);
 
-	Ref<JavaScriptEvent> transaction = memnew(JavaScriptEvent(transaction_obj));
-	Ref<JavaScriptEvent> processed = sentry::process_transaction(transaction);
+	Ref<SentryEvent> transaction = JavaScriptEvent::wrap(transaction_obj);
+	Ref<SentryEvent> processed = sentry::process_transaction(transaction);
 
 	transaction_obj->set("shouldDiscard", processed.is_null());
 }
@@ -92,8 +92,8 @@ static void before_send_feedback_wasm_callback(int32_t *p_ids, int32_t p_len) {
 	JSObjectPtr event_obj = JSObject::from_id(p_ids[0]);
 	ERR_FAIL_COND(!event_obj);
 
-	Ref<JavaScriptEvent> event = memnew(JavaScriptEvent(event_obj));
-	Ref<JavaScriptEvent> processed = sentry::process_feedback(event);
+	Ref<SentryEvent> event = JavaScriptEvent::wrap(event_obj);
+	Ref<SentryEvent> processed = sentry::process_feedback(event);
 
 	// We cannot return a value from a callback, so we use the same
 	// event object to communicate the result back.
@@ -256,14 +256,14 @@ String JavaScriptSDK::get_last_event_id() {
 	return js_bridge()->call("lastEventId").as_string();
 }
 
-Ref<SentryEvent> JavaScriptSDK::create_event() {
+SentryEventImpl *JavaScriptSDK::create_event() {
 	return memnew(JavaScriptEvent);
 }
 
 String JavaScriptSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_COND_V(!js_bridge(), String());
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Sentry: Can't capture event - event object is null.");
-	JavaScriptEvent *ev = Object::cast_to<JavaScriptEvent>(p_event.ptr());
+	JavaScriptEvent *ev = Castable::cast_to<JavaScriptEvent>(p_event->get_implementation());
 	ERR_FAIL_NULL_V(ev, String());
 
 	return js_bridge()->call("captureEvent", ev->get_js_object(), _get_scope_object(p_scope)).as_string();

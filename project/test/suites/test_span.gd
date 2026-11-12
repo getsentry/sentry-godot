@@ -18,16 +18,16 @@ func _trace_id(json: String) -> Variant:
 
 
 func test_active_span_stamps_event() -> void:
-	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_before: String = await capture_event_and_get_json(SentryEvent.new())
 	assert_object(SentrySDK.get_active_span()).is_null()
 
 	var span := SentrySDK.start_span("test.active")
 	assert_object(SentrySDK.get_active_span()).is_same(span)
-	var json_in_span: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_in_span: String = await capture_event_and_get_json(SentryEvent.new())
 
 	span.end()
 	assert_object(SentrySDK.get_active_span()).is_null()
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_in_span).describe("an active span stamps the event it encloses") \
 		.at("/contexts/trace/span_id") \
@@ -43,8 +43,8 @@ func test_active_span_stamps_event() -> void:
 func test_events_under_one_span_share_span_id() -> void:
 	var span := SentrySDK.start_span("test.shared")
 	assert_object(SentrySDK.get_active_span()).is_same(span)
-	var json_first: String = await capture_event_and_get_json(SentrySDK.create_event())
-	var json_second: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_first: String = await capture_event_and_get_json(SentryEvent.new())
+	var json_second: String = await capture_event_and_get_json(SentryEvent.new())
 	span.end()
 
 	assert_json(json_second).describe("events captured under the same span carry the same span_id") \
@@ -56,15 +56,15 @@ func test_events_under_one_span_share_span_id() -> void:
 func test_nested_span_stamps_and_restores_its_parent() -> void:
 	var parent := SentrySDK.start_span("test.parent")
 	assert_object(SentrySDK.get_active_span()).is_same(parent)
-	var json_in_parent: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_in_parent: String = await capture_event_and_get_json(SentryEvent.new())
 
 	var child := SentrySDK.start_span("test.child")
 	assert_object(SentrySDK.get_active_span()).is_same(child)
-	var json_in_child: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_in_child: String = await capture_event_and_get_json(SentryEvent.new())
 
 	child.end()
 	assert_object(SentrySDK.get_active_span()).is_same(parent)
-	var json_after_child: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after_child: String = await capture_event_and_get_json(SentryEvent.new())
 	parent.end()
 
 	assert_json(json_in_child).describe("the innermost active span stamps the event") \
@@ -79,11 +79,11 @@ func test_nested_span_stamps_and_restores_its_parent() -> void:
 
 
 func test_inactive_span_does_not_stamp() -> void:
-	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_before: String = await capture_event_and_get_json(SentryEvent.new())
 
 	var span := SentrySDK.start_span("test.inactive", {}, null, false)
 	assert_object(SentrySDK.get_active_span()).is_not_same(span)
-	var json_alongside: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_alongside: String = await capture_event_and_get_json(SentryEvent.new())
 	span.end()
 
 	assert_json(json_alongside).describe("a span started with active=false leaves events unstamped") \
@@ -94,11 +94,11 @@ func test_inactive_span_does_not_stamp() -> void:
 
 func test_forked_scope_inherits_active_span() -> void:
 	var span := SentrySDK.start_span("test.forked")
-	SentrySDK.capture_event(SentrySDK.create_event())
+	SentrySDK.capture_event(SentryEvent.new())
 
 	SentrySDK.with_scope(func(_scope: SentryScope) -> void:
 		assert_object(SentrySDK.get_active_span()).is_same(span)
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	span.end()
 
@@ -113,12 +113,12 @@ func test_forked_scope_inherits_active_span() -> void:
 
 func test_scope_forked_after_span_ended_is_not_stamped() -> void:
 	var span := SentrySDK.start_span("test.ended_before_fork")
-	SentrySDK.capture_event(SentrySDK.create_event())
+	SentrySDK.capture_event(SentryEvent.new())
 	span.end()
 
 	SentrySDK.with_scope(func(_scope: SentryScope) -> void:
 		assert_object(SentrySDK.get_active_span()).is_null()
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 
 	var json_in_span: String = await wait_for_captured_event_json()
@@ -134,7 +134,7 @@ func test_span_inherits_the_scope_it_started_from() -> void:
 	SentrySDK.get_current_scope().set_tag("before_span", "current")
 
 	var span := SentrySDK.start_span("test.inherits_scope")
-	var json_in_span: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_in_span: String = await capture_event_and_get_json(SentryEvent.new())
 	span.end()
 
 	assert_json(json_in_span).describe("a span carries scope data written before it started") \
@@ -146,11 +146,11 @@ func test_span_inherits_the_scope_it_started_from() -> void:
 func test_scope_write_inside_a_span_does_not_outlive_it() -> void:
 	var span := SentrySDK.start_span("test.scope_write")
 	SentrySDK.get_current_scope().set_tag("spanned", "in_span")
-	SentrySDK.capture_event(SentrySDK.create_event())
+	SentrySDK.capture_event(SentryEvent.new())
 	span.end()
 
 	var json_in_span: String = await wait_for_captured_event_json()
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_in_span).describe("set_tag() on the current scope reaches the event captured inside the span") \
 		.at("/tags") \
@@ -171,7 +171,7 @@ func test_ending_spans_leaves_the_scope_stack_where_it_started() -> void:
 		SentrySDK.get_current_scope().set_tag("span_" + str(i), "fork")
 		span.end()
 
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_after).describe("the scope in effect after a batch of spans is the one they started from") \
 		.at("/tags") \
@@ -191,7 +191,7 @@ func test_explicit_parent_inherits_the_parents_scope() -> void:
 	SentrySDK.get_current_scope().set_tag("unrelated_tag", "unrelated")
 
 	var child := SentrySDK.start_span("test.explicit_child", {}, parent)
-	SentrySDK.capture_event(SentrySDK.create_event())
+	SentrySDK.capture_event(SentryEvent.new())
 	child.end()
 	unrelated.end()
 	parent.end()
@@ -206,10 +206,10 @@ func test_explicit_parent_inherits_the_parents_scope() -> void:
 
 
 func test_ended_span_refuses_a_child() -> void:
-	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_before: String = await capture_event_and_get_json(SentryEvent.new())
 
 	var parent := SentrySDK.start_span("test.ended_parent")
-	var json_in_parent: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_in_parent: String = await capture_event_and_get_json(SentryEvent.new())
 	parent.end()
 
 	var orphan := SentrySDK.start_span("test.orphan", {}, parent)
@@ -221,7 +221,7 @@ func test_ended_span_refuses_a_child() -> void:
 		.override_failure_message("a no-op span must become active so its children inherit it") \
 		.is_same(orphan)
 
-	var json_in_orphan: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_in_orphan: String = await capture_event_and_get_json(SentryEvent.new())
 	orphan.end()
 
 	assert_json(json_in_orphan).describe("a no-op span leaves its events on the propagation context instead of the ended parent") \
@@ -238,14 +238,14 @@ func test_ended_span_refuses_a_child() -> void:
 
 func test_scope_clear_drops_the_span() -> void:
 	var span := SentrySDK.start_span("test.cleared")
-	SentrySDK.capture_event(SentrySDK.create_event())
+	SentrySDK.capture_event(SentryEvent.new())
 
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.clear()
 		assert_object(SentrySDK.get_active_span()) \
 			.override_failure_message("clear() must drop the active span") \
 			.is_null()
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	span.end()
 
@@ -259,13 +259,13 @@ func test_scope_clear_drops_the_span() -> void:
 
 
 func test_span_stays_on_the_current_trace() -> void:
-	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_before: String = await capture_event_and_get_json(SentryEvent.new())
 
 	var span := SentrySDK.start_span("test.trace")
-	var json_in_span: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_in_span: String = await capture_event_and_get_json(SentryEvent.new())
 
 	span.end()
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_in_span).describe("starting a span does not move events off the current trace") \
 		.at("/contexts/trace/trace_id") \
@@ -279,16 +279,16 @@ func test_span_stays_on_the_current_trace() -> void:
 
 
 func test_with_span_stamps_events_and_clears_the_slot() -> void:
-	var json_before: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_before: String = await capture_event_and_get_json(SentryEvent.new())
 
 	SentrySDK.with_span("test.with_span", func(span: SentrySpan) -> void:
 		assert_object(SentrySDK.get_active_span()).is_same(span)
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	assert_object(SentrySDK.get_active_span()).is_null()
 
 	var json_inside: String = await wait_for_captured_event_json()
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_inside).describe("events captured inside with_span carry its span") \
 		.at("/contexts/trace/span_id") \
@@ -310,7 +310,7 @@ func test_with_span_tolerates_the_callable_ending_the_span() -> void:
 			assert_object(SentrySDK.get_active_span()).is_null()
 			)
 
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 
 	var json_after: String = await wait_for_captured_event_json()
@@ -331,9 +331,9 @@ func test_with_span_returns_the_callable_result() -> void:
 
 func test_nested_with_span_stamps_with_the_inner_span() -> void:
 	SentrySDK.with_span("test.with_span_outer", func(outer: SentrySpan) -> void:
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		SentrySDK.with_span("test.with_span_inner", func(_inner: SentrySpan) -> void:
-			SentrySDK.capture_event(SentrySDK.create_event())
+			SentrySDK.capture_event(SentryEvent.new())
 			)
 		assert_object(SentrySDK.get_active_span()).is_same(outer)
 		)
@@ -349,14 +349,14 @@ func test_nested_with_span_stamps_with_the_inner_span() -> void:
 
 func test_with_span_inside_a_started_span_nests_under_it() -> void:
 	var span := SentrySDK.start_span("test.manual_parent")
-	SentrySDK.capture_event(SentrySDK.create_event())
+	SentrySDK.capture_event(SentryEvent.new())
 
 	SentrySDK.with_span("test.with_span_child", func(_child: SentrySpan) -> void:
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	assert_object(SentrySDK.get_active_span()).is_same(span)
 
-	SentrySDK.capture_event(SentrySDK.create_event())
+	SentrySDK.capture_event(SentryEvent.new())
 	span.end()
 
 	var json_in_parent: String = await wait_for_captured_event_json()
@@ -384,7 +384,7 @@ func _header_value(headers: PackedStringArray, name: String) -> String:
 func test_trace_headers_carry_the_spans_own_ids() -> void:
 	var span := SentrySDK.start_span("test.headers")
 	var headers := span.get_trace_headers()
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 	span.end()
 
 	assert_str(_header_value(headers, "sentry-trace")) \

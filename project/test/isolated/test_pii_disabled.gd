@@ -10,7 +10,7 @@ func init_sdk() -> void:
 
 ## User interface must not contain ip_adress if PII disabled.
 func test_pii_disabled_and_default_user_ip() -> void:
-	SentrySDK.capture_event(SentrySDK.create_event())
+	SentrySDK.capture_event(SentryEvent.new())
 
 	var json: String = await wait_for_captured_event_json()
 

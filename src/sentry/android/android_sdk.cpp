@@ -90,10 +90,9 @@ void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
 
 	sentry::logging::print_debug("handling before_send: ", p_event_handle);
 
-	Ref<AndroidEvent> event_obj = memnew(AndroidEvent(_android_plugin, p_event_handle));
-	event_obj->set_as_borrowed();
+	Ref<SentryEvent> event_obj = AndroidEvent::wrap_borrowed(_android_plugin, p_event_handle);
 
-	Ref<AndroidEvent> processed = sentry::process_event(event_obj);
+	Ref<SentryEvent> processed = sentry::process_event(event_obj);
 
 	if (processed.is_null()) {
 		// Discard event.
@@ -110,10 +109,9 @@ void SentryAndroidBeforeSendHandler::_bind_methods() {
 void SentryAndroidBeforeSendTransactionHandler::_before_send_transaction(int32_t p_event_handle) {
 	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
-	Ref<AndroidEvent> transaction_obj = memnew(AndroidEvent(_android_plugin, p_event_handle));
-	transaction_obj->set_as_borrowed();
+	Ref<SentryEvent> transaction_obj = AndroidEvent::wrap_borrowed(_android_plugin, p_event_handle);
 
-	Ref<AndroidEvent> processed = sentry::process_transaction(transaction_obj);
+	Ref<SentryEvent> processed = sentry::process_transaction(transaction_obj);
 
 	if (processed.is_null()) {
 		plugin->call(ANDROID_SN(releaseEvent), p_event_handle);
@@ -129,10 +127,9 @@ void SentryAndroidBeforeSendTransactionHandler::_bind_methods() {
 void SentryAndroidBeforeSendFeedbackHandler::_before_send_feedback(int32_t p_event_handle) {
 	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
-	Ref<AndroidEvent> event_obj = memnew(AndroidEvent(_android_plugin, p_event_handle));
-	event_obj->set_as_borrowed();
+	Ref<SentryEvent> event_obj = AndroidEvent::wrap_borrowed(_android_plugin, p_event_handle);
 
-	Ref<AndroidEvent> processed = sentry::process_feedback(event_obj);
+	Ref<SentryEvent> processed = sentry::process_feedback(event_obj);
 
 	if (processed.is_null()) {
 		// Discard feedback.
@@ -263,18 +260,18 @@ String AndroidSDK::get_last_event_id() {
 	return plugin->call(ANDROID_SN(getLastEventId));
 }
 
-Ref<SentryEvent> AndroidSDK::create_event() {
+SentryEventImpl *AndroidSDK::create_event() {
 	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, nullptr);
 	int32_t event_handle = plugin->call(ANDROID_SN(createEvent));
-	Ref<AndroidEvent> event = memnew(AndroidEvent(_android_plugin, event_handle));
-	return event;
+	return memnew(AndroidEvent(_android_plugin, event_handle));
 }
 
 String AndroidSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<SentryEvent> &p_event) {
 	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, String());
 
-	Ref<AndroidEvent> android_event = p_event;
-	ERR_FAIL_COND_V(android_event.is_null(), String());
+	ERR_FAIL_COND_V(p_event.is_null(), String());
+	AndroidEvent *android_event = Castable::cast_to<AndroidEvent>(p_event->get_implementation());
+	ERR_FAIL_NULL_V(android_event, String());
 
 	ERR_FAIL_COND_V(p_scope.is_null(), String());
 	AndroidScope *android_scope = static_cast<AndroidScope *>(p_scope->get_implementation());

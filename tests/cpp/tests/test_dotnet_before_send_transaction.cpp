@@ -23,7 +23,7 @@ namespace {
 // The pipeline receives transactions as SentryEvent: a regular event is sufficient
 // to test the managed bridge.
 Ref<SentryEvent> _make_dummy_event() {
-	return SentrySDK::get_singleton()->create_event();
+	return Ref<SentryEvent>(memnew(SentryEvent));
 }
 
 } // unnamed namespace
@@ -83,7 +83,7 @@ TEST_SUITE("[.NET] Test options.Native.SetBeforeSendTransaction bridging") {
 
 		SUBCASE("Event does not invoke the transaction callback") {
 			const int64_t calls_before = fixture.get_harness()->call("GetNativeBeforeSendTransactionCallCount");
-			sentry::process_event(SentrySDK::get_singleton()->create_event());
+			sentry::process_event(Ref<SentryEvent>(memnew(SentryEvent)));
 			const int64_t calls_after = fixture.get_harness()->call("GetNativeBeforeSendTransactionCallCount");
 			CHECK(calls_after == calls_before);
 		}

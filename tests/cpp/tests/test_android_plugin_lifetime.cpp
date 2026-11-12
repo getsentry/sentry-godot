@@ -77,7 +77,8 @@ TEST_SUITE("AndroidPluginLifetime") {
 			memdelete(child);
 			memdelete(span);
 
-			Ref<AndroidEvent> event = memnew(AndroidEvent(handle, 3));
+			AndroidEvent *event_impl = memnew(AndroidEvent(handle, 3));
+			Ref<SentryEvent> event = memnew(SentryEvent(event_impl));
 			Ref<AndroidBreadcrumb> breadcrumb = memnew(AndroidBreadcrumb(handle, 4));
 			Ref<AndroidLog> log = memnew(AndroidLog(handle, 5));
 			Ref<AndroidMetric> metric = memnew(AndroidMetric(handle, 6));
@@ -96,8 +97,7 @@ TEST_SUITE("AndroidPluginLifetime") {
 		REQUIRED_CHECK(plugin);
 		ObjectHandle<Object> handle(plugin);
 		{
-			Ref<AndroidEvent> event = memnew(AndroidEvent(handle, 1));
-			event->set_as_borrowed();
+			Ref<SentryEvent> event = AndroidEvent::wrap_borrowed(handle, 1);
 
 			Ref<AndroidLog> log = memnew(AndroidLog(handle, 2));
 			log->set_as_borrowed();
@@ -122,7 +122,8 @@ TEST_SUITE("AndroidPluginLifetime") {
 			SentrySpanImpl *span = AndroidSpan::start_root(handle, "root", Dictionary());
 			SentrySpanImpl *child = span->start_child("child", Dictionary());
 
-			Ref<AndroidEvent> event = memnew(AndroidEvent(handle, 3));
+			AndroidEvent *event_impl = memnew(AndroidEvent(handle, 3));
+			Ref<SentryEvent> event = memnew(SentryEvent(event_impl));
 			Ref<AndroidBreadcrumb> breadcrumb = memnew(AndroidBreadcrumb(handle, 4));
 			Ref<AndroidLog> log = memnew(AndroidLog(handle, 5));
 			Ref<AndroidMetric> metric = memnew(AndroidMetric(handle, 6));

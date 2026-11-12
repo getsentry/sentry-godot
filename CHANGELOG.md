@@ -7,6 +7,15 @@
 - Add `auto_session_tracking` to control automatic session tracking and `session_tracking_interval_ms` to configure its background timeout ([#1069](https://github.com/getsentry/sentry-godot/pull/1069))
 - Add `SentrySDK.start_session()` and `SentrySDK.end_session()` to control session boundaries manually ([#1070](https://github.com/getsentry/sentry-godot/pull/1070))
 
+
+### Improvements
+
+- Support creating events with `SentryEvent.new()` ([#1081](https://github.com/getsentry/sentry-godot/pull/1081))
+
+### Deprecations
+
+- Deprecate `SentrySDK.create_event()` in favor of `SentryEvent.new()`. The factory remains available until version 3.0 ([#1081](https://github.com/getsentry/sentry-godot/pull/1081))
+
 ## 2.5.1
 
 ### Fixes

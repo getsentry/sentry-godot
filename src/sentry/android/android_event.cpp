@@ -126,14 +126,12 @@ void AndroidEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
 }
 
 void AndroidEvent::set_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(eventSetContext),
 			event_handle, p_key, sanitize_variant(p_value));
 }
 
 void AndroidEvent::merge_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't merge context with an empty key.");
 	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	plugin->call(ANDROID_SN(eventMergeContext),
 			event_handle, p_key, sanitize_variant(p_value));
@@ -204,6 +202,12 @@ bool AndroidEvent::is_crash() const {
 String AndroidEvent::to_json() const {
 	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, String());
 	return plugin->call(ANDROID_SN(eventToJson), event_handle);
+}
+
+Ref<SentryEvent> AndroidEvent::wrap_borrowed(util::ObjectHandle<Object> p_android_plugin, int32_t p_event_handle) {
+	AndroidEvent *event = memnew(AndroidEvent(p_android_plugin, p_event_handle));
+	event->is_borrowed = true;
+	return Ref<SentryEvent>(memnew(SentryEvent(event)));
 }
 
 AndroidEvent::AndroidEvent(util::ObjectHandle<Object> p_android_plugin, int32_t p_event_handle) :

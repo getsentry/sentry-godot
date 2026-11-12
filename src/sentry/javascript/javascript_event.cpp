@@ -212,7 +212,6 @@ void JavaScriptEvent::set_fingerprint(const PackedStringArray &p_fingerprint) {
 }
 
 void JavaScriptEvent::set_context(const String &p_key, const Dictionary &p_value) {
-	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set context with an empty key.");
 	ERR_FAIL_COND(!js_obj);
 	JSObjectPtr all_contexts_jso = js_obj->get_or_create_object_property("contexts");
 	if (all_contexts_jso) {
@@ -352,6 +351,11 @@ bool JavaScriptEvent::is_crash() const {
 String JavaScriptEvent::to_json() const {
 	ERR_FAIL_COND_V(!js_obj, String());
 	return js_obj->to_json();
+}
+
+Ref<SentryEvent> JavaScriptEvent::wrap(const JSObjectPtr &p_js_event_object) {
+	JavaScriptEvent *impl = memnew(JavaScriptEvent(p_js_event_object));
+	return Ref<SentryEvent>(memnew(SentryEvent(impl)));
 }
 
 JavaScriptEvent::JavaScriptEvent(const JSObjectPtr &p_js_event_object) {

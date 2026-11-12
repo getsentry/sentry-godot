@@ -23,11 +23,11 @@ func after() -> void:
 
 ## Explicit release project setting should take precedence over SENTRY_RELEASE.
 func test_project_setting_overrides_env_var_release() -> void:
-	var json := await capture_event_and_get_json(SentrySDK.create_event())
+	var json := await capture_event_and_get_json(SentryEvent.new())
 	assert_json(json).at("release").must_be("settings-release@2.0").verify()
 
 
 ## Explicit environment project setting should take precedence over SENTRY_ENVIRONMENT.
 func test_project_setting_overrides_env_var_environment() -> void:
-	var json := await capture_event_and_get_json(SentrySDK.create_event())
+	var json := await capture_event_and_get_json(SentryEvent.new())
 	assert_json(json).at("environment").must_be("settings-env").verify()

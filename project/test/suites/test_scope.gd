@@ -5,11 +5,11 @@ extends SentryTestSuite
 func test_scoped_set_context() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_context("scene", {"name": "Dungeon", "depth": 3})
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	var json_in_scope: String = await wait_for_captured_event_json()
 
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_in_scope).describe("set_context() reaches the in-scope event") \
 		.at("/contexts/scene") \
@@ -27,11 +27,11 @@ func test_scoped_set_context() -> void:
 func test_scoped_set_tag() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_tag("scoped", "in_scope")
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	var json_in_scope: String = await wait_for_captured_event_json()
 
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_in_scope).describe("set_tag() reaches the in-scope event") \
 		.at("/tags") \
@@ -51,11 +51,11 @@ func test_scoped_set_user() -> void:
 
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_user(scoped_user)
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	var json_in_scope: String = await wait_for_captured_event_json()
 
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_in_scope).describe("set_user() reaches the in-scope event") \
 		.at("/user") \
@@ -73,11 +73,11 @@ func test_scoped_set_user() -> void:
 func test_scoped_set_level() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_level(SentrySDK.LEVEL_WARNING)
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	var json_in_scope: String = await wait_for_captured_event_json()
 
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_in_scope).describe("set_level() reaches the in-scope event") \
 		.at("/") \
@@ -93,11 +93,11 @@ func test_scoped_set_level() -> void:
 func test_scoped_set_fingerprint() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_fingerprint(PackedStringArray(["scope-group", "scope-key"]))
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	var json_in_scope: String = await wait_for_captured_event_json()
 
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_in_scope).describe("set_fingerprint() reaches the in-scope event") \
 		.at("/fingerprint") \
@@ -116,11 +116,11 @@ func test_scoped_set_fingerprint() -> void:
 func test_scoped_add_breadcrumb() -> void:
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.add_breadcrumb(SentryBreadcrumb.create("scoped crumb"))
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	var json_in_scope: String = await wait_for_captured_event_json()
 
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_in_scope).describe("add_breadcrumb() reaches the in-scope event") \
 		.at("/breadcrumbs/") \
@@ -160,7 +160,7 @@ func test_scope_clear() -> void:
 		scope.add_breadcrumb(SentryBreadcrumb.create("cleared crumb"))
 		scope.clear()
 		scope.set_tag("after_clear", "value")
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	var json: String = await wait_for_captured_event_json()
 
@@ -241,7 +241,7 @@ func test_with_scope_top_level_write() -> void:
 		SentrySDK.set_tag("global_inside", "inside")
 		)
 
-	var json_after: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_after: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_after).describe("top-level write from inside with_scope reaches the global scope") \
 		.at("/tags") \
@@ -265,10 +265,10 @@ func test_nested_with_scope() -> void:
 
 		SentrySDK.with_scope(func(inner: SentryScope) -> void:
 			inner.set_tag("inner_tag", "inner")
-			SentrySDK.capture_event(SentrySDK.create_event())
+			SentrySDK.capture_event(SentryEvent.new())
 			)
 
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 
 	var json_inner: String = await wait_for_captured_event_json()
@@ -340,8 +340,8 @@ func test_get_current_scope_is_thread_local() -> void:
 func test_get_current_scope_enriches_later_events() -> void:
 	SentrySDK.get_current_scope().set_tag("current_tag", "current")
 
-	var json_first: String = await capture_event_and_get_json(SentrySDK.create_event())
-	var json_second: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_first: String = await capture_event_and_get_json(SentryEvent.new())
+	var json_second: String = await capture_event_and_get_json(SentryEvent.new())
 
 	# The current scope outlives the test, so leave it as it was found.
 	SentrySDK.get_current_scope().clear()
@@ -366,7 +366,7 @@ func test_with_scope_on_thread_excludes_main_scope() -> void:
 		main_in_scope.wait()
 		SentrySDK.with_scope(func(scope: SentryScope) -> void:
 			scope.set_tag("worker_tag", "worker")
-			SentrySDK.capture_event(SentrySDK.create_event())
+			SentrySDK.capture_event(SentryEvent.new())
 			)
 		worker_captured.post()
 		)
@@ -403,7 +403,7 @@ func test_with_scope_on_main_excludes_thread_scope() -> void:
 	worker_in_scope.wait()
 	SentrySDK.with_scope(func(scope: SentryScope) -> void:
 		scope.set_tag("main_tag", "main")
-		SentrySDK.capture_event(SentrySDK.create_event())
+		SentrySDK.capture_event(SentryEvent.new())
 		)
 	main_captured.post()
 	thread.wait_to_finish()
@@ -424,7 +424,7 @@ func test_with_scope_on_thread_inherits_global() -> void:
 	thread.start(func() -> void:
 		SentrySDK.with_scope(func(scope: SentryScope) -> void:
 			scope.set_tag("worker_tag", "worker")
-			SentrySDK.capture_event(SentrySDK.create_event())
+			SentrySDK.capture_event(SentryEvent.new())
 			)
 		)
 	thread.wait_to_finish()
@@ -448,7 +448,7 @@ func test_with_scope_does_not_leak_while_parked() -> void:
 		await resume_parked_coroutine
 		)
 
-	var json_while_parked: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_while_parked: String = await capture_event_and_get_json(SentryEvent.new())
 
 	resume_parked_coroutine.emit()
 

@@ -21,7 +21,7 @@ using sentry::tests::InitFixture;
 namespace {
 
 Ref<SentryEvent> _make_message_event(const String &p_message) {
-	Ref<SentryEvent> event = SentrySDK::get_singleton()->create_event();
+	Ref<SentryEvent> event = Ref<SentryEvent>(memnew(SentryEvent));
 	event->set_message(p_message);
 	return event;
 }

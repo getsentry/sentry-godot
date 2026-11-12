@@ -29,13 +29,14 @@
 
 namespace {
 
+using sentry::SentryEvent;
 using NativeEvent = sentry::native::NativeEvent;
 using NativeLog = sentry::native::NativeLog;
 using NativeMetric = sentry::native::NativeMetric;
 
 sentry_value_t _handle_before_send(sentry_value_t event, sentry_hint_t *hint, void *closure) {
-	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, false));
-	Ref<NativeEvent> processed = sentry::process_event(event_obj);
+	Ref<SentryEvent> event_obj = NativeEvent::wrap(event, false);
+	Ref<SentryEvent> processed = sentry::process_event(event_obj);
 
 	if (unlikely(processed.is_null())) {
 		// Discard event.
@@ -47,8 +48,8 @@ sentry_value_t _handle_before_send(sentry_value_t event, sentry_hint_t *hint, vo
 }
 
 sentry_value_t _handle_before_send_transaction(sentry_value_t transaction, void *closure) {
-	Ref<NativeEvent> transaction_obj = memnew(NativeEvent(transaction, false));
-	Ref<NativeEvent> processed = sentry::process_transaction(transaction_obj);
+	Ref<SentryEvent> transaction_obj = NativeEvent::wrap(transaction, false);
+	Ref<SentryEvent> processed = sentry::process_transaction(transaction_obj);
 
 	if (unlikely(processed.is_null())) {
 		sentry_value_decref(transaction);
@@ -58,8 +59,8 @@ sentry_value_t _handle_before_send_transaction(sentry_value_t transaction, void 
 }
 
 sentry_value_t _handle_before_send_feedback(sentry_value_t p_feedback, sentry_hint_t *p_hint, void *p_user_data) {
-	Ref<NativeEvent> event_obj = memnew(NativeEvent(p_feedback, false));
-	Ref<NativeEvent> processed = sentry::process_feedback(event_obj);
+	Ref<SentryEvent> event_obj = NativeEvent::wrap(p_feedback, false);
+	Ref<SentryEvent> processed = sentry::process_feedback(event_obj);
 
 	if (unlikely(processed.is_null())) {
 		// Discard feedback.
@@ -97,8 +98,8 @@ sentry_value_t _handle_before_send_metric(sentry_value_t p_value, void *p_user_d
 }
 
 sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, sentry_hint_t *hint, void *closure) {
-	Ref<NativeEvent> event_obj = memnew(NativeEvent(event, true));
-	Ref<NativeEvent> processed = sentry::process_event(event_obj);
+	Ref<SentryEvent> event_obj = NativeEvent::wrap(event, true);
+	Ref<SentryEvent> processed = sentry::process_event(event_obj);
 
 	if (unlikely(processed.is_null())) {
 		// Discard event.
@@ -267,10 +268,8 @@ String NativeSDK::get_last_event_id() {
 	return _uuid_as_string(last_uuid);
 }
 
-Ref<SentryEvent> NativeSDK::create_event() {
-	sentry_value_t event_value = sentry_value_new_event();
-	Ref<SentryEvent> event = memnew(NativeEvent(event_value, false));
-	return event;
+SentryEventImpl *NativeSDK::create_event() {
+	return memnew(NativeEvent);
 }
 
 String NativeSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<SentryEvent> &p_event) {
@@ -279,7 +278,7 @@ String NativeSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<Sentr
 	ERR_FAIL_COND_V(p_scope.is_null(), _uuid_as_string(sentry_uuid_nil()));
 	NativeScope *native_scope = static_cast<NativeScope *>(p_scope->get_implementation());
 
-	NativeEvent *native_event = Object::cast_to<NativeEvent>(p_event.ptr());
+	NativeEvent *native_event = Castable::cast_to<NativeEvent>(p_event->get_implementation());
 	ERR_FAIL_NULL_V(native_event, _uuid_as_string(sentry_uuid_nil()));
 	sentry_value_t event = native_event->get_native_value();
 	sentry_value_incref(event); // Keep ownership.

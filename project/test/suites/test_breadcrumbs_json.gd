@@ -5,7 +5,7 @@ extends SentryTestSuite
 func test_breadcrumbs_with_minimal_breadcrumb() -> void:
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("Minimal breadcrumb"))
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Very minimal breadcrumb") \
 		.at("/breadcrumbs/") \
@@ -41,7 +41,7 @@ func test_breadcrumbs_order() -> void:
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("First breadcrumb"))
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("Second breadcrumb"))
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	var breadcrumbs: Array = JSON.parse_string(json).get("breadcrumbs", [])
 	var ordered_breadcrumbs := breadcrumbs.filter(func(crumb: Dictionary) -> bool:
@@ -68,7 +68,7 @@ func test_breadcrumbs_with_utf8() -> void:
 	crumb.set_data({"Hello, World! 👋": "Hello 世界! 👋"})
 	SentrySDK.add_breadcrumb(crumb)
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Breadcrumb retains UTF-8 encoded data") \
 		.at("/breadcrumbs/") \
@@ -86,7 +86,7 @@ func test_breadcrumb_data_is_replaced() -> void:
 	crumb.set_data({"biome": "desert", "weather": "sunny"})
 	SentrySDK.add_breadcrumb(crumb)
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Breadcrumb data is replaced, removing stale keys") \
 		.at("/breadcrumbs/") \
@@ -102,7 +102,7 @@ func test_breadcrumb_data_can_be_cleared() -> void:
 	crumb.set_data({})
 	SentrySDK.add_breadcrumb(crumb)
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Empty dictionary clears breadcrumb data") \
 		.at("/breadcrumbs/") \
@@ -129,7 +129,7 @@ func test_breadcrumbs_with_complex_nested_data() -> void:
 	})
 	SentrySDK.add_breadcrumb(crumb)
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Breadcrumb retains complex nested data") \
 		.at("/breadcrumbs/") \

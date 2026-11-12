@@ -201,14 +201,13 @@ String CocoaSDK::get_last_event_id() {
 	return last_event_id;
 }
 
-Ref<SentryEvent> CocoaSDK::create_event() {
-	SentryObjCEvent *cocoa_event = [[SentryObjCEvent alloc] init];
-	return memnew(CocoaEvent(cocoa_event));
+SentryEventImpl *CocoaSDK::create_event() {
+	return memnew(CocoaEvent);
 }
 
 String CocoaSDK::capture_event(const Ref<SentryScope> &p_scope, const Ref<SentryEvent> &p_event) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Sentry: Can't capture event - event object is null.");
-	CocoaEvent *typed_event = Object::cast_to<CocoaEvent>(p_event.ptr());
+	CocoaEvent *typed_event = Castable::cast_to<CocoaEvent>(p_event->get_implementation());
 	ERR_FAIL_NULL_V(typed_event, String());
 	SentryObjCEvent *cocoa_event = typed_event->get_cocoa_event();
 
@@ -374,12 +373,12 @@ void CocoaSDK::init() {
 
 		options.beforeSend = ^SentryObjCEvent *(SentryObjCEvent *event) {
 			if ([event.type isEqualToString:@"transaction"]) {
-				Ref<CocoaEvent> transaction_obj = memnew(CocoaEvent(event));
+				Ref<SentryEvent> transaction_obj = CocoaEvent::wrap(event);
 				return sentry::process_transaction(transaction_obj).is_valid() ? event : nil;
 			}
 
-			Ref<CocoaEvent> event_obj = memnew(CocoaEvent(event));
-			Ref<CocoaEvent> processed = sentry::process_event(event_obj);
+			Ref<SentryEvent> event_obj = CocoaEvent::wrap(event);
+			Ref<SentryEvent> processed = sentry::process_event(event_obj);
 
 			if (unlikely(processed.is_null())) {
 				return nil;

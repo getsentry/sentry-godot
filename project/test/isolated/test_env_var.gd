@@ -34,11 +34,11 @@ func test_env_var_dsn() -> void:
 
 ## SENTRY_RELEASE should be used as the release value.
 func test_env_var_release() -> void:
-	var json := await capture_event_and_get_json(SentrySDK.create_event())
+	var json := await capture_event_and_get_json(SentryEvent.new())
 	assert_json(json).at("release").must_be("env-release@1.0").verify()
 
 
 ## SENTRY_ENVIRONMENT should be used as the environment value.
 func test_env_var_environment() -> void:
-	var json := await capture_event_and_get_json(SentrySDK.create_event())
+	var json := await capture_event_and_get_json(SentryEvent.new())
 	assert_json(json).at("environment").must_be("env-testing").verify()

@@ -28,7 +28,7 @@ func test_default_environment() -> void:
 			).is_true()
 		return null
 
-	SentrySDK.capture_event(SentrySDK.create_event())
+	SentrySDK.capture_event(SentryEvent.new())
 
 
 func test_default_release() -> void:
@@ -40,4 +40,4 @@ func test_default_release() -> void:
 		assert_str(event.release).is_equal(expected)
 		return null
 
-	SentrySDK.capture_event(SentrySDK.create_event())
+	SentrySDK.capture_event(SentryEvent.new())

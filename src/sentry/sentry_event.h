@@ -13,7 +13,9 @@ using namespace godot;
 
 namespace sentry {
 
-// Base class for event objects in the public API.
+class SentryEventImpl;
+
+// Godot-facing event backed by a platform-specific implementation.
 class SentryEvent : public RefCounted {
 	GDCLASS(SentryEvent, RefCounted);
 
@@ -37,57 +39,66 @@ public:
 		Vector<StackFrame> frames;
 	};
 
+private:
+	SentryEventImpl *_impl = nullptr;
+
 protected:
 	static void _bind_methods();
 
 public:
-	virtual String get_id() const = 0;
+	String get_id() const;
 
-	virtual void set_message(const String &p_message) = 0;
-	virtual String get_message() const = 0;
+	void set_message(const String &p_message);
+	String get_message() const;
 
-	virtual void set_timestamp(const Ref<SentryTimestamp> &p_timestamp) = 0;
-	virtual Ref<SentryTimestamp> get_timestamp() const = 0;
+	void set_timestamp(const Ref<SentryTimestamp> &p_timestamp);
+	Ref<SentryTimestamp> get_timestamp() const;
 
-	virtual String get_platform() const = 0;
+	String get_platform() const;
 
-	virtual void set_level(sentry::Level p_level) = 0;
-	virtual sentry::Level get_level() const = 0;
+	void set_level(sentry::Level p_level);
+	sentry::Level get_level() const;
 
-	virtual void set_logger(const String &p_logger) = 0;
-	virtual String get_logger() const = 0;
+	void set_logger(const String &p_logger);
+	String get_logger() const;
 
-	virtual void set_release(const String &p_release) = 0;
-	virtual String get_release() const = 0;
+	void set_release(const String &p_release);
+	String get_release() const;
 
-	virtual void set_dist(const String &p_dist) = 0;
-	virtual String get_dist() const = 0;
+	void set_dist(const String &p_dist);
+	String get_dist() const;
 
-	virtual void set_environment(const String &p_environment) = 0;
-	virtual String get_environment() const = 0;
+	void set_environment(const String &p_environment);
+	String get_environment() const;
 
-	virtual void set_tag(const String &p_key, const String &p_value) = 0;
-	virtual void remove_tag(const String &p_key) = 0;
-	virtual String get_tag(const String &p_key) = 0;
+	void set_tag(const String &p_key, const String &p_value);
+	void remove_tag(const String &p_key);
+	String get_tag(const String &p_key);
 
-	virtual void set_user(const Ref<SentryUser> &p_user) = 0;
+	void set_user(const Ref<SentryUser> &p_user);
 
-	virtual void set_fingerprint(const PackedStringArray &p_fingerprint) = 0;
+	void set_fingerprint(const PackedStringArray &p_fingerprint);
 
-	virtual void set_context(const String &p_key, const Dictionary &p_value) = 0;
-	virtual void merge_context(const String &p_key, const Dictionary &p_value) = 0;
+	void set_context(const String &p_key, const Dictionary &p_value);
+	void merge_context(const String &p_key, const Dictionary &p_value);
 
-	virtual void add_exception(const Exception &p_exception) = 0;
+	void add_exception(const Exception &p_exception);
 
-	virtual int get_exception_count() const = 0;
-	virtual void set_exception_value(int p_index, const String &p_value) = 0;
-	virtual String get_exception_value(int p_index) const = 0;
+	int get_exception_count() const;
+	void set_exception_value(int p_index, const String &p_value);
+	String get_exception_value(int p_index) const;
 
-	virtual bool is_crash() const = 0;
+	bool is_crash() const;
 
-	virtual String to_json() const = 0;
+	String to_json() const;
 
-	virtual ~SentryEvent() = default;
+	static Ref<SentryEvent> create_noop();
+
+	_FORCE_INLINE_ SentryEventImpl *get_implementation() const { return _impl; }
+
+	SentryEvent();
+	SentryEvent(SentryEventImpl *p_impl);
+	~SentryEvent();
 };
 
 } // namespace sentry

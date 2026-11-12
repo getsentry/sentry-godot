@@ -18,7 +18,7 @@ func test_full_user_data_in_captured_events() -> void:
 	user.ip_address = "{{auto}}"
 	SentrySDK.set_user(user)
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("User structure should match set attributes") \
 		.at("/user") \
@@ -38,7 +38,7 @@ func test_user_data_with_utf8_encoding() -> void:
 	user.email = "桜🌸@例え.テスト"
 	SentrySDK.set_user(user)
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("User structure should preserve UTF-8 encoding") \
 		.at("/user") \
@@ -60,7 +60,7 @@ func test_user_data_after_remove() -> void:
 	SentrySDK.set_user(user)
 	SentrySDK.remove_user()
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("User structure contains only the automatic ID or nothing") \
 		.either() \
@@ -81,7 +81,7 @@ func test_user_transitions_and_minimal_data() -> void:
 	user_id_only.id = "id_only_user"
 	SentrySDK.set_user(user_id_only)
 
-	var json_with_id: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_with_id: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_with_id).describe("User with only ID should have clean structure") \
 		.at("/user") \
@@ -101,7 +101,7 @@ func test_user_transitions_and_minimal_data() -> void:
 	user1.ip_address = "192.168.1.1"
 	SentrySDK.set_user(user1)
 
-	var json_with_full: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_with_full: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_with_full).describe("Complete user should appear correctly") \
 		.at("/user") \
@@ -118,7 +118,7 @@ func test_user_transitions_and_minimal_data() -> void:
 	user_email_only.email = "email.only@game.com"
 	SentrySDK.set_user(user_email_only)
 
-	var json_with_email: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_with_email: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_with_email).describe("User with only email should have clean structure") \
 		.at("/user") \
@@ -135,7 +135,7 @@ func test_user_transitions_and_minimal_data() -> void:
 	user_username_only.username = "UsernameOnly"
 	SentrySDK.set_user(user_username_only)
 
-	var json_with_username: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json_with_username: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json_with_username).describe("User with only username should have clean structure") \
 		.at("/user") \
@@ -160,7 +160,7 @@ func test_user_persistence_across_events() -> void:
 	SentrySDK.capture_message("Test message")
 	var message_json: String = await wait_for_captured_event_json()
 
-	var custom_event := SentrySDK.create_event()
+	var custom_event := SentryEvent.new()
 	custom_event.message = "Test custom event"
 	var custom_json: String = await capture_event_and_get_json(custom_event)
 

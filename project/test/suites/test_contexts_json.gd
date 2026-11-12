@@ -9,7 +9,7 @@ func test_set_context_basic() -> void:
 		"players_remaining": 15
 	})
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Contexts section exists") \
 		.at("/").must_contain("contexts").verify()
@@ -33,7 +33,7 @@ func test_set_context_with_complex_data() -> void:
 		"inventory": ["sword", "potion", "magic_key"],
 	})
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Verify nested object structure") \
 		.at("/contexts/player_data/profile") \
@@ -56,7 +56,7 @@ func test_set_context_with_complex_data() -> void:
 func test_empty_context_is_captured() -> void:
 	SentrySDK.set_context("empty_context", {})
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Verify empty context is present") \
 		.at("/contexts/") \
@@ -79,7 +79,7 @@ func test_set_context_overwrite() -> void:
 		"score": 2500
 	})
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Context was overwritten with new data") \
 		.at("/contexts/game_state") \
@@ -97,7 +97,7 @@ func test_special_characters_in_context() -> void:
 		"array": ["🎮", "⚔️", "🏆", "世界"],
 	})
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Verify special characters in context data") \
 		.at("/contexts/special_chars") \
@@ -125,7 +125,7 @@ func test_edge_values_in_context() -> void:
 		"false_value": false
 	})
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Verify edge values in context data") \
 		.at("/contexts/edge_data") \
@@ -154,7 +154,7 @@ func test_multiple_contexts_in_single_event() -> void:
 		"language": "en"
 	})
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Verify gameplay context") \
 		.at("/contexts/gameplay") \
@@ -179,7 +179,7 @@ func test_multiple_contexts_in_single_event() -> void:
 
 
 func test_default_contexts_presence() -> void:
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Test standard contexts presence") \
 		.at("/") \
@@ -199,7 +199,7 @@ func test_default_contexts_presence() -> void:
 
 
 func test_app_context() -> void:
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("App context structure") \
 		.at("/contexts/app") \
@@ -211,7 +211,7 @@ func test_app_context() -> void:
 
 
 func test_device_context() -> void:
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Device context has device_type") \
 		.at("/contexts/device/device_type") \
@@ -222,7 +222,7 @@ func test_device_context() -> void:
 
 # On PC, manufacturer, model and family should be populated in device context.
 func test_device_context_on_pc(_do_skip = OS.get_name() not in ["Windows", "Linux"]) -> void:
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Device context has manufacturer") \
 		.at("/contexts/device/manufacturer") \
@@ -245,7 +245,7 @@ func test_device_context_on_pc(_do_skip = OS.get_name() not in ["Windows", "Linu
 
 # OS context is added later in processing on Web platform; so we have to skip this test.
 func test_os_context(_do_skip = OS.get_name() == "Web") -> void:
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("OS context structure") \
 		.at("/contexts/os") \

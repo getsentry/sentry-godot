@@ -3,7 +3,7 @@ extends SentryTestSuite
 
 
 func test_event_json_has_required_attributes() -> void:
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Required attributes exist") \
 		.at("/") \
@@ -14,7 +14,7 @@ func test_event_json_has_required_attributes() -> void:
 
 
 func test_event_json_has_proper_event_id() -> void:
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("event_id is 32-char hex") \
 		.at("/event_id") \
@@ -33,7 +33,7 @@ func test_event_json_has_proper_event_id() -> void:
 
 
 func test_event_json_has_proper_timestamp() -> void:
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	var rfc3339_regex := RegEx.create_from_string(
 		"^(?:[0-9]{4}-[0-9]{2}-[0-9]{2})T(?:[0-9]{2}:[0-9]{2}:[0-9]{2})(?:\\.[0-9]+)?(?:Z|[\\+\\-][0-9]{2}:[0-9]{2})$")
@@ -50,7 +50,7 @@ func test_event_json_has_proper_timestamp() -> void:
 
 
 func test_event_json_has_proper_platform() -> void:
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("event.platform is non-empty string") \
 		.at("/platform") \
@@ -80,7 +80,7 @@ func test_event_json_has_proper_platform() -> void:
 
 
 func test_event_json_optional_attributes() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	event.level = SentrySDK.LEVEL_WARNING
 	event.logger = "test-logger"
 	event.release = "my-game@1.0.0"
@@ -100,7 +100,7 @@ func test_event_json_optional_attributes() -> void:
 
 
 func test_event_json_message_interface() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	event.message = "Test event message"
 
 	var json: String = await capture_event_and_get_json(event)
@@ -135,7 +135,7 @@ func test_event_json_with_capture_message() -> void:
 
 
 func test_event_json_with_event_tags() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	event.set_tag("game_mode", "survival")
 	event.set_tag("level_type", "procedural")
 
@@ -155,7 +155,7 @@ func test_event_json_with_global_tags() -> void:
 	SentrySDK.set_tag("game_mode", "survival")
 	SentrySDK.set_tag("level_type", "procedural")
 
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("Contains proper tags structure") \
 		.at("/") \
@@ -169,7 +169,7 @@ func test_event_json_with_global_tags() -> void:
 
 ## SentryEvent.set_context() should attach the context to the event object.
 func test_event_json_with_event_context() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	event.set_context("character", {
 		"name": "Mighty Fighter",
 		"age": 19,
@@ -198,7 +198,7 @@ func test_event_json_with_event_context() -> void:
 
 ## SentryEvent.set_fingerprint() should set the grouping fingerprint on the event.
 func test_event_json_with_event_fingerprint() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	event.set_fingerprint(PackedStringArray(["my-grouping", "custom-key"]))
 
 	var json := event.to_json()
@@ -214,7 +214,7 @@ func test_event_json_with_event_fingerprint() -> void:
 
 ## SentryEvent.set_fingerprint() with an empty array should clear the fingerprint.
 func test_event_fingerprint_cleared_with_empty_array() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	event.set_fingerprint(PackedStringArray(["temporary"]))
 	event.set_fingerprint(PackedStringArray())
 
@@ -234,7 +234,7 @@ func test_event_json_with_event_user() -> void:
 	user.email = "testplayer@game.com"
 	user.ip_address = "{{auto}}"
 
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	event.set_user(user)
 
 	var json := event.to_json()
@@ -254,7 +254,7 @@ func test_event_user_removed_with_null() -> void:
 	var user := SentryUser.new()
 	user.id = "player_12345"
 
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	event.set_user(user)
 	event.set_user(null)
 
@@ -267,7 +267,7 @@ func test_event_user_removed_with_null() -> void:
 
 
 func test_event_json_attributes_with_utf8_encoding() -> void:
-	var event := SentrySDK.create_event()
+	var event := SentryEvent.new()
 	event.message = "Hello 世界! 👋"
 	event.logger = "Hello 世界! 👋"
 	event.release = "Hello 世界! 👋"
@@ -360,7 +360,7 @@ func test_event_json_level_attribute() -> void:
 
 # NOTE: JS SDK adds SDK info after beforeSend; therefore, skip this test in Web builds.
 func test_event_json_sdk_interface(_do_skip = OS.get_name() == "Web") -> void:
-	var json: String = await capture_event_and_get_json(SentrySDK.create_event())
+	var json: String = await capture_event_and_get_json(SentryEvent.new())
 
 	assert_json(json).describe("SDK metadata present") \
 		.at("/sdk").is_object().is_not_empty().verify()
