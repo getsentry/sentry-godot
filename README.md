@@ -2,7 +2,7 @@
 
 Sentry for Godot helps you monitor your game's health during QA and after release. It provides insights into crash reports, script errors, hardware information, user feedback, attachments and more through real-time alerting and an intuitive web dashboard. With automatic error reporting, release tracking, and AI-assisted analysis, you can quickly identify, prioritize, and resolve issues for a better player experience.
 
-**Architecture**: Built as a C++ GDExtension library using mature Sentry SDKs like [sentry-native](https://github.com/getsentry/sentry-native) as the foundation.
+**Architecture**: Built as a C++ GDExtension library using mature Sentry SDKs like [sentry-native](https://github.com/getsentry/sentry-native) as the foundation. On Linux and Windows, crash reporting uses the native backend and its bundled `sentry-crash` handler (`sentry-crash.exe` on Windows). Godot exports the handler alongside the game executable, together with `sentry-wer.dll` on Windows.
 
 ![issue-example](./.github/issue_example.png)
 
