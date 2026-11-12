@@ -464,6 +464,16 @@ void AndroidSDK::init() {
 	}
 }
 
+void AndroidSDK::start_session() {
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
+	plugin->call("startSession");
+}
+
+void AndroidSDK::end_session() {
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
+	plugin->call("endSession");
+}
+
 void AndroidSDK::close() {
 	Object *plugin = _android_plugin.get();
 	if (plugin != nullptr) {

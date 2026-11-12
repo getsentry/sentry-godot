@@ -127,13 +127,38 @@ fi
 
 github "::group::Export log"
 
-"$godot" --verbose --headless --path project --install-android-build-template --export-debug "$EXPORT_PRESET" ../exports/android.apk
+# Godot installs the build template only during an export. Export again after configuring its manifest.
+"$godot" --headless --path project --install-android-build-template --export-debug "$EXPORT_PRESET" ../exports/android.apk
+if [ $? -ne 0 ]; then
+    warning "Godot returned an error while installing the build template. Checking the manifest before continuing."
+fi
+# Godot 4.6 moved the manifest into the standard Gradle source layout.
+android_manifest=project/android/build/src/main/AndroidManifest.xml
+if [ ! -f "$android_manifest" ]; then
+    android_manifest=project/android/build/AndroidManifest.xml
+fi
+if [ ! -f "$android_manifest" ]; then
+    abort "Android build template manifest was not created"
+fi
+
+# Configure the exported test APK to allow clear-text HTTP traffic to the local receiver at 127.0.0.1.
+mkdir -p project/android/build/res/xml
+cp tests/android/network_security_config.xml project/android/build/res/xml/test_network_security_config.xml
+sed 's#<application$#<application android:networkSecurityConfig="@xml/test_network_security_config"#' \
+    "$android_manifest" > "$android_manifest.tmp" || abort "Failed to patch Android manifest"
+grep -Fq '<application android:networkSecurityConfig="@xml/test_network_security_config"' "$android_manifest.tmp" \
+    || abort "Android manifest application tag did not match the network security patch"
+mv "$android_manifest.tmp" "$android_manifest" || abort "Failed to replace Android manifest"
+
+# Require a fresh APK so a failed rebuild cannot reuse the unpatched export.
+rm -f exports/android.apk || abort "Failed to remove the unpatched test APK"
+"$godot" --verbose --headless --path project --export-debug "$EXPORT_PRESET" ../exports/android.apk
 export_err=$?
 
 github "::endgroup::"
 
 if [ $export_err -ne 0 ]; then
-    warning "Godot export process returned an error. Proceeding anyway..."
+    warning "Godot export process returned an error. Checking the APK before continuing."
 fi
 
 # Check if APK was exported successfully
