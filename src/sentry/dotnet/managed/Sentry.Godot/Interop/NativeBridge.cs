@@ -1097,6 +1097,17 @@ internal static partial class NativeBridge
     [LibraryImport(Lib)]
     private static unsafe partial void csharp_interop_log(int level, char* msg, int len);
 
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_push_warning(char* msg, int len);
+
+    public static unsafe void PushWarning(string message)
+    {
+        fixed (char* ptr = message)
+        {
+            csharp_interop_push_warning(ptr, message.Length);
+        }
+    }
+
     public static unsafe void Log(SentryLevel level, string message)
     {
         fixed (char* ptr = message)

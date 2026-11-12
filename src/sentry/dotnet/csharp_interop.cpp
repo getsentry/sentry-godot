@@ -697,6 +697,10 @@ CSHARP_EXPORT void csharp_interop_log(int32_t level, const char16_t *msg, int32_
 			String::utf16(msg, len));
 }
 
+CSHARP_EXPORT void csharp_interop_push_warning(const char16_t *msg, int32_t len) {
+	UtilityFunctions::push_warning(String::utf16(msg, len));
+}
+
 // *** Event accessors used by the options.Native.SetBeforeSend callback.
 
 // The handle is the SentryEvent* passed to the managed layer; it is valid only for the duration of that call.

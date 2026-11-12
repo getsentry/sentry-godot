@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Sentry.Godot.Interop;
 
 namespace Sentry.Godot;
 
@@ -69,8 +70,7 @@ public static partial class SentrySdk
     {
         if (Interlocked.Exchange(ref printed, 1) == 0)
         {
-            // These warnings must remain visible even when SDK debug logging is disabled.
-            Console.Error.WriteLine("Sentry: WARNING: " + message);
+            NativeBridge.PushWarning("Sentry: " + message);
         }
     }
 }
