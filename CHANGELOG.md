@@ -6,11 +6,6 @@
 
 - Add `auto_session_tracking` to control automatic session tracking and `session_tracking_interval_ms` to configure its background timeout ([#1069](https://github.com/getsentry/sentry-godot/pull/1069))
 
-## 2.5.1
-
-### Fixes
-
-- Android: Prevent main-thread hangs and potential ANRs during startup or when returning to the foreground if Android is slow to register Sentry's network or telephony listeners ([sentry-java#6537](https://github.com/getsentry/sentry-java/pull/6537))
 
 ### Improvements
 
@@ -19,6 +14,12 @@
 ### Deprecations
 
 - Deprecate `SentrySDK.create_event()` in favor of `SentryEvent.new()`. The factory remains available until version 3.0 ([#1081](https://github.com/getsentry/sentry-godot/pull/1081))
+
+## 2.5.1
+
+### Fixes
+
+- Android: Prevent main-thread hangs and potential ANRs during startup or when returning to the foreground if Android is slow to register Sentry's network or telephony listeners ([sentry-java#6537](https://github.com/getsentry/sentry-java/pull/6537))
 
 ### Dependencies
 
