@@ -503,16 +503,6 @@ void NativeSDK::init() {
 		sentry_options_set_before_send_metric(options, _handle_before_send_metric, NULL);
 	}
 
-#ifdef WINDOWS_ENABLED
-	// Enable crashpad stack capture adjustment for Wine/Proton compatibility.
-	// Under Wine, TEB stack bounds may be incorrect, causing oversized captures.
-	const auto &platform_info = sentry::native::detect_platform();
-	if (platform_info.is_wine) {
-		sentry::logging::print_debug("Enabling Crashpad stack capture limit for Wine/Proton compatibility");
-		sentry_options_set_crashpad_limit_stack_capture_to_sp(options, 1);
-	}
-#endif
-
 	int err = sentry_init(options);
 
 	if (!is_enabled()) {
