@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add `auto_session_tracking` to control automatic session tracking and `session_tracking_interval_ms` to configure its background timeout ([#1069](https://github.com/getsentry/sentry-godot/pull/1069))
+
 ## 2.5.1
 
 ### Fixes

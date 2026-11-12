@@ -141,10 +141,10 @@ try {
 			transaction.tags = { processed : "true" };
 			transaction.shouldDiscard = discardNextTransaction;
 		};
-		const initBridge = (traceLifecycle, propagateTraceparent = false, orgId = "", tracePropagationTargets = [ { pattern : ".*", is_regex : false } ]) => {
+		const initBridge = (traceLifecycle, propagateTraceparent = false, orgId = "", tracePropagationTargets = [ { pattern : ".*", is_regex : false } ], autoSessionTracking = true) => {
 			bridge.init(() => {}, beforeSendTransaction, beforeSendFeedback, null, null, readAttachment, "https://test@sentry.io/123", false,
 					"1.0.0", "1", "production", 1.0, 1.0, traceLifecycle, JSON.stringify(tracePropagationTargets),
-					propagateTraceparent, orgId, 100, false,
+					propagateTraceparent, orgId, 100, autoSessionTracking, false,
 					"0.1.0", false, "", "", false);
 		};
 
@@ -164,6 +164,18 @@ try {
 			assertEqual(targets[0], "api\\.example\\.com", "string targets should remain literal strings");
 			assert(targets[1] instanceof RegExp, "regular expression targets should become RegExp values");
 			assertEqual(targets[1].source, "api\\.example\\.com", "regular expression patterns should be preserved");
+		});
+
+		runTest("init() disables automatic session tracking", () => {
+			initBridge(bridge.TraceLifecycle.Stream, false, "", [], false);
+			const client = bridge.createScope().getClient();
+			assert(!client.getIntegrationByName("BrowserSession"), "BrowserSession should be excluded when disabled");
+		});
+
+		runTest("init() enables automatic session tracking", () => {
+			initBridge(bridge.TraceLifecycle.Stream);
+			const client = bridge.createScope().getClient();
+			assert(client.getIntegrationByName("BrowserSession"), "BrowserSession should be included by default");
 		});
 
 		runTest("console output does not produce breadcrumbs", () => {

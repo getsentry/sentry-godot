@@ -217,6 +217,7 @@ class SentryBridge {
     propagateTraceparent: boolean,
     orgId: "" | `${number}`,
     maxBreadcrumbs: number,
+    autoSessionTracking: boolean,
     sendDefaultPii: boolean,
     sdkVersion: string,
     enableTunnel: boolean,
@@ -255,6 +256,10 @@ class SentryBridge {
           "Breadcrumbs", // added later with custom settings
           "Console", // very noisy in the Godot SDK
         ];
+        // Disable the JS SDK's automatic sessions when auto session tracking is off.
+        if (!autoSessionTracking) {
+          excludedIntegrations.push("BrowserSession");
+        }
         const filtered = integrations.filter(function (integration: { name: string }) {
           return !excludedIntegrations.includes(integration.name);
         });

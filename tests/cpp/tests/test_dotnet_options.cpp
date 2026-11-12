@@ -74,6 +74,8 @@ TEST_SUITE("[.NET] Options interop") {
 			{ "sentry/options/tracing/trace_propagation_targets",              "trace_propagation_targets",                    Strings({ "aaa", "bbb" }),      Array({ "ccc", "ddd" }) },
 			{ "sentry/options/tracing/propagate_traceparent",                  "propagate_traceparent",                        true,                           false },
 			{ "sentry/options/tracing/org_id",                                 "org_id",                                       "111",                          "222" },
+			{ "sentry/options/auto_session_tracking",                          "auto_session_tracking",                        true,                           false },
+			{ "sentry/options/session_tracking_interval_ms",                  "session_tracking_interval_ms",                  15000,                          45000 },
 			{ "sentry/options/max_breadcrumbs",                                "max_breadcrumbs",                              11,                             22 },
 			{ "sentry/options/shutdown_timeout_ms",                            "shutdown_timeout_ms",                          1100,                           2200 },
 			{ "sentry/options/send_default_pii",                               "send_default_pii",                             true,                           false },

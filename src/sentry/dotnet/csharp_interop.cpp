@@ -231,6 +231,8 @@ struct NativeOptions {
 	double traces_sample_rate;
 	int32_t max_breadcrumbs;
 	double shutdown_timeout_ms;
+	uint8_t auto_session_tracking;
+	int32_t session_tracking_interval_ms;
 	uint8_t send_default_pii;
 
 	// Godot-specific
@@ -285,6 +287,8 @@ struct ManagedOptions {
 	double traces_sample_rate;
 	int32_t max_breadcrumbs;
 	double shutdown_timeout_ms;
+	uint8_t auto_session_tracking;
+	int32_t session_tracking_interval_ms;
 	uint8_t send_default_pii;
 
 	uint8_t attach_log;
@@ -349,6 +353,8 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->set_traces_sample_rate(data.traces_sample_rate);
 	options->set_max_breadcrumbs(data.max_breadcrumbs);
 	options->set_shutdown_timeout_ms(data.shutdown_timeout_ms);
+	options->set_auto_session_tracking(data.auto_session_tracking != 0);
+	options->set_session_tracking_interval_ms(data.session_tracking_interval_ms);
 	options->set_send_default_pii(data.send_default_pii);
 	options->set_attach_log(data.attach_log);
 	options->set_attach_scene_tree(data.attach_scene_tree);
@@ -400,6 +406,8 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.traces_sample_rate = options->get_traces_sample_rate();
 	r_data.max_breadcrumbs = options->get_max_breadcrumbs();
 	r_data.shutdown_timeout_ms = options->get_shutdown_timeout_ms();
+	r_data.auto_session_tracking = options->is_auto_session_tracking_enabled() ? 1 : 0;
+	r_data.session_tracking_interval_ms = options->get_session_tracking_interval_ms();
 	r_data.send_default_pii = options->is_send_default_pii_enabled();
 	r_data.attach_log = options->is_attach_log_enabled();
 	r_data.attach_scene_tree = options->is_attach_scene_tree_enabled();
