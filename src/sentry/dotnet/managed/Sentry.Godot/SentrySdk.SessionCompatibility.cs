@@ -19,30 +19,33 @@ public static partial class SentrySdk
     private static int _endSessionStatusWarningPrinted;
 
     /// <remarks>
-    /// Pausing and resuming sessions is unsupported. This method does nothing.
-    /// This API will be removed in v3.
+    /// Pausing sessions is unsupported and this method now does nothing.
+    /// Previously, it did not control the sessions tracked by the SDK.
+    /// This method will be removed in v3.
     /// </remarks>
     [Obsolete(PauseSessionWarning)]
     public static void PauseSession() => WarnUnsupportedSessionApiOnce(ref _pauseSessionWarningPrinted, PauseSessionWarning);
 
     /// <remarks>
-    /// Pausing and resuming sessions is unsupported. This method does nothing.
-    /// This API will be removed in v3.
+    /// Resuming sessions is unsupported and this method now does nothing.
+    /// Previously, it did not control the sessions tracked by the SDK.
+    /// This method will be removed in v3.
     /// </remarks>
     [Obsolete(ResumeSessionWarning)]
     public static void ResumeSession() => WarnUnsupportedSessionApiOnce(ref _resumeSessionWarningPrinted, ResumeSessionWarning);
 
     /// <remarks>
-    /// Sending managed session updates is unsupported. This method does nothing.
-    /// This API will be removed in v3.
+    /// This method now does nothing. Previously, it sent separate .NET session updates that could double-count sessions.
+    /// Use <see cref="StartSession()"/> and <see cref="EndSession()"/> instead.
+    /// This method will be removed in v3.
     /// </remarks>
     [Obsolete(CaptureSessionWarning)]
     public static void CaptureSession(SessionUpdate sessionUpdate) =>
         WarnUnsupportedSessionApiOnce(ref _captureSessionWarningPrinted, CaptureSessionWarning);
 
     /// <remarks>
-    /// Always returns false. This does not reflect whether the SDK has an active session.
-    /// This API will be removed in v3.
+    /// Always returns <see langword="false"/>. It never reported the sessions tracked by the SDK.
+    /// Remove checks against this property; it will be removed in v3.
     /// </remarks>
     [Obsolete(IsSessionActiveWarning)]
     public static bool IsSessionActive
@@ -55,9 +58,8 @@ public static partial class SentrySdk
     }
 
     /// <remarks>
-    /// Ends the current session, ignoring the supplied status.
-    /// This API will be removed in v3.
-    /// Use <see cref="EndSession()"/> instead.
+    /// Now ends the session tracked by the SDK and ignores the status argument.
+    /// Use <see cref="EndSession()"/> instead; this overload will be removed in v3.
     /// </remarks>
     [Obsolete(EndSessionStatusWarning)]
     public static void EndSession(SessionEndStatus status = SessionEndStatus.Exited)
