@@ -145,8 +145,10 @@ fi
 mkdir -p project/android/build/res/xml
 cp tests/android/network_security_config.xml project/android/build/res/xml/test_network_security_config.xml
 sed 's#<application$#<application android:networkSecurityConfig="@xml/test_network_security_config"#' \
-    "$android_manifest" > "$android_manifest.tmp"
-mv "$android_manifest.tmp" "$android_manifest"
+    "$android_manifest" > "$android_manifest.tmp" || abort "Failed to patch Android manifest"
+grep -Fq '<application android:networkSecurityConfig="@xml/test_network_security_config"' "$android_manifest.tmp" \
+    || abort "Android manifest application tag did not match the network security patch"
+mv "$android_manifest.tmp" "$android_manifest" || abort "Failed to replace Android manifest"
 
 # Require a fresh APK so a failed rebuild cannot reuse the unpatched export.
 rm -f exports/android.apk || abort "Failed to remove the unpatched test APK"
