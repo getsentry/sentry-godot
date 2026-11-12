@@ -42,30 +42,30 @@ web.release.threads.wasm32 = "res://addons/sentry/bin/web/libsentry.web.release.
 [dependencies]
 
 linux.x86_64 = {
-	"res://addons/sentry/bin/linux/x86_64/crashpad_handler" : ""
+	"res://addons/sentry/bin/linux/x86_64/sentry-crash" : ""
 }
 
 linux.x86_32 = {
-	"res://addons/sentry/bin/linux/x86_32/crashpad_handler" : ""
+	"res://addons/sentry/bin/linux/x86_32/sentry-crash" : ""
 }
 
 linux.arm64 = {
-	"res://addons/sentry/bin/linux/arm64/crashpad_handler" : ""
+	"res://addons/sentry/bin/linux/arm64/sentry-crash" : ""
 }
 
 windows.x86_64 = {
-	"res://addons/sentry/bin/windows/x86_64/crashpad_handler.exe" : "",
-	"res://addons/sentry/bin/windows/x86_64/crashpad_wer.dll": ""
+	"res://addons/sentry/bin/windows/x86_64/sentry-crash.exe" : "",
+	"res://addons/sentry/bin/windows/x86_64/sentry-wer.dll": ""
 }
 
 windows.x86_32 = {
-	"res://addons/sentry/bin/windows/x86_32/crashpad_handler.exe" : "",
-	"res://addons/sentry/bin/windows/x86_32/crashpad_wer.dll": ""
+	"res://addons/sentry/bin/windows/x86_32/sentry-crash.exe" : "",
+	"res://addons/sentry/bin/windows/x86_32/sentry-wer.dll": ""
 }
 
 windows.arm64 = {
-	"res://addons/sentry/bin/windows/arm64/crashpad_handler.exe" : "",
-	"res://addons/sentry/bin/windows/arm64/crashpad_wer.dll": ""
+	"res://addons/sentry/bin/windows/arm64/sentry-crash.exe" : "",
+	"res://addons/sentry/bin/windows/arm64/sentry-wer.dll": ""
 }
 
 macos.debug = {
