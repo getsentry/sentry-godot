@@ -23,7 +23,11 @@ internal static class SentrySdkMemberRules
         "Init",
         "Close",
         "StartSession",
-        "EndSession"
+        "EndSession",
+        "PauseSession",
+        "ResumeSession",
+        "CaptureSession",
+        "IsSessionActive"
     ];
 
     /// <summary>
@@ -49,6 +53,7 @@ internal static class SentrySdkMemberRules
 
     /// <summary>
     /// Upstream members omitted from generation and code-fix suggestions.
+    /// Deprecated compatibility shims may still be implemented manually.
     /// </summary>
     /// <remarks>
     /// Use this list to exclude every overload of a member; use

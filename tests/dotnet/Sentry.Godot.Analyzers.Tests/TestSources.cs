@@ -11,6 +11,11 @@ internal static class TestSources
         {
             public static void StartSession() { }
             public static void EndSession() { }
+            public static void EndSession(Sentry.SessionEndStatus status = Sentry.SessionEndStatus.Exited) { }
+            public static void PauseSession() { }
+            public static void ResumeSession() { }
+            public static void CaptureSession(Sentry.SessionUpdate sessionUpdate) { }
+            public static bool IsSessionActive => false;
             public static Sentry.SentryId CaptureMessage(string message) => default;
         }
         """;
