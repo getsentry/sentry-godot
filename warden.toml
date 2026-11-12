@@ -26,6 +26,9 @@ ignorePaths = [
 [defaults.agent]
 effort = "medium"
 
+[defaults.auxiliary]
+effort = "medium"
+
 # SDK correctness: all backends, the .NET layer, and the Web bridge.
 [[skills]]
 name = "sdk-review"
