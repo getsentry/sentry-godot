@@ -226,17 +226,16 @@ void AndroidSDK::remove_user() {
 	plugin->call(ANDROID_SN(removeUser));
 }
 
-Ref<SentryBreadcrumb> AndroidSDK::create_breadcrumb() {
+SentryBreadcrumbImpl *AndroidSDK::create_breadcrumb() {
 	ENSURE_ANDROID_PLUGIN_V(plugin, _android_plugin, nullptr);
 	int32_t handle = plugin->call(ANDROID_SN(createBreadcrumb));
-	Ref<AndroidBreadcrumb> crumb = memnew(AndroidBreadcrumb(_android_plugin, handle));
-	return crumb;
+	return memnew(AndroidBreadcrumb(_android_plugin, handle));
 }
 
 void AndroidSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
-	Ref<AndroidBreadcrumb> crumb = p_breadcrumb;
-	ERR_FAIL_COND(crumb.is_null());
+	AndroidBreadcrumb *crumb = Castable::cast_to<AndroidBreadcrumb>(p_breadcrumb->get_implementation());
+	ERR_FAIL_NULL(crumb);
 	plugin->call(ANDROID_SN(addBreadcrumb), crumb->get_handle());
 }
 

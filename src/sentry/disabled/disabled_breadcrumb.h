@@ -1,12 +1,12 @@
 #pragma once
 
 #include "sentry/level.h"
-#include "sentry/sentry_breadcrumb.h"
+#include "sentry/sentry_breadcrumb_impl.h"
 
 namespace sentry {
 
-class DisabledBreadcrumb : public SentryBreadcrumb {
-	GDCLASS(DisabledBreadcrumb, SentryBreadcrumb);
+class DisabledBreadcrumb : public SentryBreadcrumbImpl {
+	SENTRY_CASTABLE(DisabledBreadcrumb, SentryBreadcrumbImpl);
 
 private:
 	String message;
@@ -14,9 +14,6 @@ private:
 	sentry::Level level = sentry::Level::LEVEL_INFO;
 	String type;
 	Dictionary data;
-
-protected:
-	static void _bind_methods() {}
 
 public:
 	virtual void set_message(const String &p_message) override { message = p_message; }

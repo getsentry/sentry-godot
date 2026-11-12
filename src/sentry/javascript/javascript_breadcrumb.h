@@ -1,15 +1,15 @@
 #pragma once
 
 #include "sentry/javascript/javascript_interop.h"
-#include "sentry/sentry_breadcrumb.h"
+#include "sentry/sentry_breadcrumb_impl.h"
 
 namespace sentry::javascript {
 
 class JavaScriptSDK;
 class JavaScriptScope;
 
-class JavaScriptBreadcrumb : public SentryBreadcrumb {
-	GDCLASS(JavaScriptBreadcrumb, SentryBreadcrumb);
+class JavaScriptBreadcrumb : public SentryBreadcrumbImpl {
+	SENTRY_CASTABLE(JavaScriptBreadcrumb, SentryBreadcrumbImpl);
 
 	friend class JavaScriptSDK;
 	friend class JavaScriptScope;
@@ -18,9 +18,6 @@ private:
 	JSObjectPtr js_obj;
 
 	_FORCE_INLINE_ JSObjectPtr get_js_object() const { return js_obj; }
-
-protected:
-	static void _bind_methods() {}
 
 public:
 	virtual void set_message(const String &p_message) override;

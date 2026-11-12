@@ -33,8 +33,8 @@ void CocoaScope::set_attribute(const String &p_name, const Variant &p_value) {
 }
 
 void CocoaScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
-	Ref<CocoaBreadcrumb> crumb = p_breadcrumb;
-	ERR_FAIL_COND(crumb.is_null());
+	CocoaBreadcrumb *crumb = Castable::cast_to<CocoaBreadcrumb>(p_breadcrumb->get_implementation());
+	ERR_FAIL_NULL(crumb);
 	[_scope addBreadcrumb:crumb->get_cocoa_breadcrumb()];
 }
 

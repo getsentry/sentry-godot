@@ -79,7 +79,8 @@ TEST_SUITE("AndroidPluginLifetime") {
 
 			AndroidEvent *event_impl = memnew(AndroidEvent(handle, 3));
 			Ref<SentryEvent> event = memnew(SentryEvent(event_impl));
-			Ref<AndroidBreadcrumb> breadcrumb = memnew(AndroidBreadcrumb(handle, 4));
+			AndroidBreadcrumb *breadcrumb_impl = memnew(AndroidBreadcrumb(handle, 4));
+			Ref<SentryBreadcrumb> breadcrumb = memnew(SentryBreadcrumb(breadcrumb_impl));
 			Ref<AndroidLog> log = memnew(AndroidLog(handle, 5));
 			Ref<AndroidMetric> metric = memnew(AndroidMetric(handle, 6));
 		}
@@ -124,7 +125,8 @@ TEST_SUITE("AndroidPluginLifetime") {
 
 			AndroidEvent *event_impl = memnew(AndroidEvent(handle, 3));
 			Ref<SentryEvent> event = memnew(SentryEvent(event_impl));
-			Ref<AndroidBreadcrumb> breadcrumb = memnew(AndroidBreadcrumb(handle, 4));
+			AndroidBreadcrumb *breadcrumb_impl = memnew(AndroidBreadcrumb(handle, 4));
+			Ref<SentryBreadcrumb> breadcrumb = memnew(SentryBreadcrumb(breadcrumb_impl));
 			Ref<AndroidLog> log = memnew(AndroidLog(handle, 5));
 			Ref<AndroidMetric> metric = memnew(AndroidMetric(handle, 6));
 

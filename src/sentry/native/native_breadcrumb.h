@@ -1,19 +1,16 @@
 #pragma once
 
-#include "sentry/sentry_breadcrumb.h"
+#include "sentry/sentry_breadcrumb_impl.h"
 
 #include <sentry.h>
 
 namespace sentry::native {
 
-class NativeBreadcrumb : public SentryBreadcrumb {
-	GDCLASS(NativeBreadcrumb, SentryBreadcrumb);
+class NativeBreadcrumb : public SentryBreadcrumbImpl {
+	SENTRY_CASTABLE(NativeBreadcrumb, SentryBreadcrumbImpl);
 
 private:
 	sentry_value_t native_crumb;
-
-protected:
-	static void _bind_methods() {}
 
 public:
 	_FORCE_INLINE_ sentry_value_t get_native_breadcrumb() { return native_crumb; }

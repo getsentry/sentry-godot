@@ -9,9 +9,14 @@ using namespace godot;
 
 namespace sentry {
 
+class SentryBreadcrumbImpl;
+
 // Represents breadcrumbs in the public API.
 class SentryBreadcrumb : public RefCounted {
 	GDCLASS(SentryBreadcrumb, RefCounted);
+
+private:
+	SentryBreadcrumbImpl *_impl = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -19,23 +24,27 @@ protected:
 public:
 	static Ref<SentryBreadcrumb> create(const String &p_message = "");
 
-	virtual void set_message(const String &p_message) = 0;
-	virtual String get_message() const = 0;
+	void set_message(const String &p_message);
+	String get_message() const;
 
-	virtual void set_category(const String &p_category) = 0;
-	virtual String get_category() const = 0;
+	void set_category(const String &p_category);
+	String get_category() const;
 
-	virtual void set_level(sentry::Level p_level) = 0;
-	virtual sentry::Level get_level() const = 0;
+	void set_level(sentry::Level p_level);
+	sentry::Level get_level() const;
 
-	virtual void set_type(const String &p_type) = 0;
-	virtual String get_type() const = 0;
+	void set_type(const String &p_type);
+	String get_type() const;
 
-	virtual void set_data(const Dictionary &p_data) = 0;
+	void set_data(const Dictionary &p_data);
 
-	virtual Ref<SentryTimestamp> get_timestamp() = 0;
+	Ref<SentryTimestamp> get_timestamp();
 
-	virtual ~SentryBreadcrumb() = default;
+	SentryBreadcrumbImpl *get_implementation() const { return _impl; }
+
+	SentryBreadcrumb();
+	explicit SentryBreadcrumb(SentryBreadcrumbImpl *p_impl);
+	virtual ~SentryBreadcrumb() override;
 };
 
 } //namespace sentry
