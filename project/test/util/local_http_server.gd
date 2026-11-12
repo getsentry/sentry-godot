@@ -46,6 +46,7 @@ func _process(_delta: float) -> void:
 		var body_start: int = header_end + 4
 		var body_length := int(headers.get("content-length", "0"))
 		if peer.buffer.size() < body_start + body_length:
+			# Try again on the next frame.
 			continue
 
 		var request_line: String = header_lines[0]
@@ -61,10 +62,12 @@ func _process(_delta: float) -> void:
 		if path == "/hold":
 			continue
 
+		# `/status/<code>` responds with the requested HTTP status code.
 		var status_code: int = 200
 		if path.begins_with("/status/"):
 			status_code = path.get_slice("/", 2).to_int()
 
+		# Every path returns the same small response body.
 		var body: PackedByteArray = "hello".to_utf8_buffer()
 		var response_headers: PackedByteArray = (
 			"HTTP/1.1 %d Response\r\nContent-Length: %d\r\nConnection: close\r\n\r\n"
