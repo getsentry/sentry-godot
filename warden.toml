@@ -2,7 +2,7 @@
 # https://github.com/getsentry/warden
 #
 # The org workflow layers this file on top of getsentry/.github/warden.toml,
-# which runs security-review. Repo skills inherit the org model, effort,
+# which runs security-review. Repo skills inherit the org model,
 # runtime, and incrementalApp, but not its reportOn, failOn, or ignorePaths,
 # so those are set here. The skills below use disjoint paths so each hunk is
 # reviewed by exactly one of them.
@@ -23,10 +23,14 @@ ignorePaths = [
   "**/*.svg",
 ]
 
+[defaults.agent]
+effort = "medium"
+
 # SDK correctness: all backends, the .NET layer, and the Web bridge.
 [[skills]]
 name = "sdk-review"
 incremental = true
+maxTurns = 30
 paths = [
   "src/**",
   "android_lib/src/**",
@@ -54,6 +58,7 @@ actions = ["opened", "synchronize", "reopened"]
 [[skills]]
 name = "build-ci-review"
 incremental = true
+maxTurns = 30
 paths = [
   ".github/workflows/**",
   ".github/actions/**",
@@ -90,6 +95,7 @@ actions = ["opened", "synchronize", "reopened"]
 [[skills]]
 name = "test-review"
 incremental = true
+maxTurns = 30
 paths = [
   "project/test/**",
   "tests/**",
