@@ -60,6 +60,8 @@ public:
 
 	virtual String to_json() const override;
 
+	static Ref<SentryEvent> wrap(SentryObjCEvent *p_cocoa_event);
+
 	CocoaEvent(SentryObjCEvent *p_cocoa_event);
 	CocoaEvent();
 	virtual ~CocoaEvent() override;

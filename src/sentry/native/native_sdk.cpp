@@ -35,8 +35,7 @@ using NativeLog = sentry::native::NativeLog;
 using NativeMetric = sentry::native::NativeMetric;
 
 sentry_value_t _handle_before_send(sentry_value_t event, sentry_hint_t *hint, void *closure) {
-	NativeEvent *impl = memnew(NativeEvent(event, false));
-	Ref<SentryEvent> event_obj = memnew(SentryEvent(impl));
+	Ref<SentryEvent> event_obj = NativeEvent::wrap(event, false);
 	Ref<SentryEvent> processed = sentry::process_event(event_obj);
 
 	if (unlikely(processed.is_null())) {
@@ -49,8 +48,7 @@ sentry_value_t _handle_before_send(sentry_value_t event, sentry_hint_t *hint, vo
 }
 
 sentry_value_t _handle_before_send_transaction(sentry_value_t transaction, void *closure) {
-	NativeEvent *impl = memnew(NativeEvent(transaction, false));
-	Ref<SentryEvent> transaction_obj = memnew(SentryEvent(impl));
+	Ref<SentryEvent> transaction_obj = NativeEvent::wrap(transaction, false);
 	Ref<SentryEvent> processed = sentry::process_transaction(transaction_obj);
 
 	if (unlikely(processed.is_null())) {
@@ -61,8 +59,7 @@ sentry_value_t _handle_before_send_transaction(sentry_value_t transaction, void 
 }
 
 sentry_value_t _handle_before_send_feedback(sentry_value_t p_feedback, sentry_hint_t *p_hint, void *p_user_data) {
-	NativeEvent *impl = memnew(NativeEvent(p_feedback, false));
-	Ref<SentryEvent> event_obj = memnew(SentryEvent(impl));
+	Ref<SentryEvent> event_obj = NativeEvent::wrap(p_feedback, false);
 	Ref<SentryEvent> processed = sentry::process_feedback(event_obj);
 
 	if (unlikely(processed.is_null())) {
@@ -101,8 +98,7 @@ sentry_value_t _handle_before_send_metric(sentry_value_t p_value, void *p_user_d
 }
 
 sentry_value_t _handle_on_crash(const sentry_ucontext_t *uctx, sentry_value_t event, sentry_hint_t *hint, void *closure) {
-	NativeEvent *impl = memnew(NativeEvent(event, true));
-	Ref<SentryEvent> event_obj = memnew(SentryEvent(impl));
+	Ref<SentryEvent> event_obj = NativeEvent::wrap(event, true);
 	Ref<SentryEvent> processed = sentry::process_event(event_obj);
 
 	if (unlikely(processed.is_null())) {

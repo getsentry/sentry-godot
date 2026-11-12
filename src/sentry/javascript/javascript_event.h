@@ -64,6 +64,8 @@ public:
 
 	virtual String to_json() const override;
 
+	static Ref<SentryEvent> wrap(const JSObjectPtr &p_js_event_object);
+
 	JavaScriptEvent(const JSObjectPtr &p_js_event_object);
 	JavaScriptEvent();
 	virtual ~JavaScriptEvent() override;

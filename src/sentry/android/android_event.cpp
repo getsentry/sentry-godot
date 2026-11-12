@@ -204,10 +204,10 @@ String AndroidEvent::to_json() const {
 	return plugin->call(ANDROID_SN(eventToJson), event_handle);
 }
 
-AndroidEvent *AndroidEvent::create_borrowed(util::ObjectHandle<Object> p_android_plugin, int32_t p_event_handle) {
+Ref<SentryEvent> AndroidEvent::wrap_borrowed(util::ObjectHandle<Object> p_android_plugin, int32_t p_event_handle) {
 	AndroidEvent *event = memnew(AndroidEvent(p_android_plugin, p_event_handle));
 	event->is_borrowed = true;
-	return event;
+	return Ref<SentryEvent>(memnew(SentryEvent(event)));
 }
 
 AndroidEvent::AndroidEvent(util::ObjectHandle<Object> p_android_plugin, int32_t p_event_handle) :

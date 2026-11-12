@@ -63,6 +63,8 @@ public:
 
 	virtual String to_json() const override;
 
+	static Ref<SentryEvent> wrap(sentry_value_t p_event, bool p_is_crash);
+
 	NativeEvent(sentry_value_t p_event, bool p_is_crash);
 	NativeEvent();
 	virtual ~NativeEvent() override;

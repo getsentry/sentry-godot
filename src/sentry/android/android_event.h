@@ -65,7 +65,7 @@ public:
 
 	virtual String to_json() const override;
 
-	static AndroidEvent *create_borrowed(util::ObjectHandle<Object> p_android_plugin, int32_t p_event_handle);
+	static Ref<SentryEvent> wrap_borrowed(util::ObjectHandle<Object> p_android_plugin, int32_t p_event_handle);
 
 	AndroidEvent(util::ObjectHandle<Object> p_android_plugin, int32_t p_event_handle);
 	virtual ~AndroidEvent() override;

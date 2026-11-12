@@ -353,6 +353,11 @@ String JavaScriptEvent::to_json() const {
 	return js_obj->to_json();
 }
 
+Ref<SentryEvent> JavaScriptEvent::wrap(const JSObjectPtr &p_js_event_object) {
+	JavaScriptEvent *impl = memnew(JavaScriptEvent(p_js_event_object));
+	return Ref<SentryEvent>(memnew(SentryEvent(impl)));
+}
+
 JavaScriptEvent::JavaScriptEvent(const JSObjectPtr &p_js_event_object) {
 	js_obj = p_js_event_object;
 }

@@ -66,8 +66,7 @@ static void before_send_wasm_callback(int32_t *p_ids, int32_t p_len) {
 	JSObjectPtr event_obj = JSObject::from_id(p_ids[0]);
 	ERR_FAIL_COND(!event_obj);
 
-	JavaScriptEvent *impl = memnew(JavaScriptEvent(event_obj));
-	Ref<SentryEvent> event = memnew(SentryEvent(impl));
+	Ref<SentryEvent> event = JavaScriptEvent::wrap(event_obj);
 	Ref<SentryEvent> processed = sentry::process_event(event);
 
 	// NOTE: We cannot return a value from a callback, so we use the same
@@ -81,8 +80,7 @@ static void before_send_transaction_wasm_callback(int32_t *p_ids, int32_t p_len)
 	JSObjectPtr transaction_obj = JSObject::from_id(p_ids[0]);
 	ERR_FAIL_COND(!transaction_obj);
 
-	JavaScriptEvent *impl = memnew(JavaScriptEvent(transaction_obj));
-	Ref<SentryEvent> transaction = memnew(SentryEvent(impl));
+	Ref<SentryEvent> transaction = JavaScriptEvent::wrap(transaction_obj);
 	Ref<SentryEvent> processed = sentry::process_transaction(transaction);
 
 	transaction_obj->set("shouldDiscard", processed.is_null());
@@ -94,8 +92,7 @@ static void before_send_feedback_wasm_callback(int32_t *p_ids, int32_t p_len) {
 	JSObjectPtr event_obj = JSObject::from_id(p_ids[0]);
 	ERR_FAIL_COND(!event_obj);
 
-	JavaScriptEvent *impl = memnew(JavaScriptEvent(event_obj));
-	Ref<SentryEvent> event = memnew(SentryEvent(impl));
+	Ref<SentryEvent> event = JavaScriptEvent::wrap(event_obj);
 	Ref<SentryEvent> processed = sentry::process_feedback(event);
 
 	// We cannot return a value from a callback, so we use the same

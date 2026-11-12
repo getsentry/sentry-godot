@@ -325,6 +325,11 @@ String CocoaEvent::to_json() const {
 	return String::utf8((const char *)item.data.bytes, item.data.length);
 }
 
+Ref<SentryEvent> CocoaEvent::wrap(SentryObjCEvent *p_cocoa_event) {
+	CocoaEvent *impl = memnew(CocoaEvent(p_cocoa_event));
+	return Ref<SentryEvent>(memnew(SentryEvent(impl)));
+}
+
 CocoaEvent::CocoaEvent() :
 		cocoa_event([[SentryObjCEvent alloc] init]) {
 }

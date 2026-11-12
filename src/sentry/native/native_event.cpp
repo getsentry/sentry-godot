@@ -316,6 +316,11 @@ String NativeEvent::to_json() const {
 	return json_str;
 }
 
+Ref<SentryEvent> NativeEvent::wrap(sentry_value_t p_event, bool p_is_crash) {
+	NativeEvent *impl = memnew(NativeEvent(p_event, p_is_crash));
+	return Ref<SentryEvent>(memnew(SentryEvent(impl)));
+}
+
 NativeEvent::NativeEvent(sentry_value_t p_native_event, bool p_is_crash) :
 		_is_crash(p_is_crash) {
 	if (sentry_value_refcount(p_native_event) > 0) {

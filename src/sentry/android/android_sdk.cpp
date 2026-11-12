@@ -90,8 +90,7 @@ void SentryAndroidBeforeSendHandler::_before_send(int32_t p_event_handle) {
 
 	sentry::logging::print_debug("handling before_send: ", p_event_handle);
 
-	AndroidEvent *impl = AndroidEvent::create_borrowed(_android_plugin, p_event_handle);
-	Ref<SentryEvent> event_obj = memnew(SentryEvent(impl));
+	Ref<SentryEvent> event_obj = AndroidEvent::wrap_borrowed(_android_plugin, p_event_handle);
 
 	Ref<SentryEvent> processed = sentry::process_event(event_obj);
 
@@ -110,8 +109,7 @@ void SentryAndroidBeforeSendHandler::_bind_methods() {
 void SentryAndroidBeforeSendTransactionHandler::_before_send_transaction(int32_t p_event_handle) {
 	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
-	AndroidEvent *impl = AndroidEvent::create_borrowed(_android_plugin, p_event_handle);
-	Ref<SentryEvent> transaction_obj = memnew(SentryEvent(impl));
+	Ref<SentryEvent> transaction_obj = AndroidEvent::wrap_borrowed(_android_plugin, p_event_handle);
 
 	Ref<SentryEvent> processed = sentry::process_transaction(transaction_obj);
 
@@ -129,8 +127,7 @@ void SentryAndroidBeforeSendTransactionHandler::_bind_methods() {
 void SentryAndroidBeforeSendFeedbackHandler::_before_send_feedback(int32_t p_event_handle) {
 	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 
-	AndroidEvent *impl = AndroidEvent::create_borrowed(_android_plugin, p_event_handle);
-	Ref<SentryEvent> event_obj = memnew(SentryEvent(impl));
+	Ref<SentryEvent> event_obj = AndroidEvent::wrap_borrowed(_android_plugin, p_event_handle);
 
 	Ref<SentryEvent> processed = sentry::process_feedback(event_obj);
 
