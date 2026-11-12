@@ -9,7 +9,11 @@
 
 ### Fixes
 
-- **Breaking**: Fix C# `SentrySdk.StartSession()` and `EndSession()` to control the sessions tracked by the SDK. Previously, they controlled separate .NET sessions, which could double-count sessions alongside those already tracked by the SDK. Remove `PauseSession()`, `ResumeSession()`, `CaptureSession()`, and `IsSessionActive`, which did not control or report on the tracked sessions. `EndSession()` no longer accepts a status argument; the underlying SDK determines the final status ([#1076](https://github.com/getsentry/sentry-godot/pull/1076)).
+- Fix C# `SentrySdk.StartSession()` and `EndSession()` to control the sessions tracked by the SDK instead of separate .NET sessions that could double-count sessions ([#1076](https://github.com/getsentry/sentry-godot/pull/1076)).
+
+### Deprecations
+
+- .NET: Deprecate `PauseSession()`, `ResumeSession()`, and `CaptureSession()` as no-ops, and `IsSessionActive` as always returning `false`. The deprecated `EndSession(status)` overload ends the session but ignores the status. These compatibility APIs warn once per member at runtime and will be removed in v3 ([#1076](https://github.com/getsentry/sentry-godot/pull/1076)).
 
 
 ### Improvements
