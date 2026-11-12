@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Android: Prevent main-thread hangs and potential ANRs during startup or when returning to the foreground if Android is slow to register Sentry's network or telephony listeners ([sentry-java#6537](https://github.com/getsentry/sentry-java/pull/6537))
+
 ### Dependencies
 
 - Bump Sentry JavaScript from v11.11.0 to v11.12.0 ([#1075](https://github.com/getsentry/sentry-godot/pull/1075))
