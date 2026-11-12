@@ -97,8 +97,7 @@ TEST_SUITE("AndroidPluginLifetime") {
 		REQUIRED_CHECK(plugin);
 		ObjectHandle<Object> handle(plugin);
 		{
-			AndroidEvent *event_impl = memnew(AndroidEvent(handle, 1));
-			event_impl->set_as_borrowed();
+			AndroidEvent *event_impl = AndroidEvent::create_borrowed(handle, 1);
 			Ref<SentryEvent> event = memnew(SentryEvent(event_impl));
 
 			Ref<AndroidLog> log = memnew(AndroidLog(handle, 2));
