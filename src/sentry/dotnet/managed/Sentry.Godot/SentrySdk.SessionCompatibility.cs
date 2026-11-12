@@ -6,11 +6,11 @@ namespace Sentry.Godot;
 
 public static partial class SentrySdk
 {
-    private const string PauseSessionWarning = "PauseSession() is unsupported and does nothing. Remove this call. This API will be removed in v3.";
-    private const string ResumeSessionWarning = "ResumeSession() is unsupported and does nothing. Remove this call. This API will be removed in v3.";
-    private const string CaptureSessionWarning = "CaptureSession() is unsupported and does nothing. Use StartSession() and EndSession() to control sessions. This API will be removed in v3.";
-    private const string IsSessionActiveWarning = "IsSessionActive is unsupported and always returns false. Remove checks against this property; it does not report the actual session state. This API will be removed in v3.";
-    private const string EndSessionStatusWarning = "EndSession(status) ignores the status argument. Use EndSession() instead. This overload will be removed in v3.";
+    private const string PauseSessionWarning = "Sentry: PauseSession() is unsupported and now does nothing. Previously, it did not control the sessions tracked by the SDK. This method will be removed in v3.";
+    private const string ResumeSessionWarning = "Sentry: ResumeSession() is unsupported and now does nothing. Previously, it did not control the sessions tracked by the SDK. This method will be removed in v3.";
+    private const string CaptureSessionWarning = "Sentry: CaptureSession() now does nothing. Previously, it sent separate .NET session updates that could double-count sessions. Use StartSession() and EndSession() instead. This method will be removed in v3.";
+    private const string IsSessionActiveWarning = "Sentry: IsSessionActive always returns false. It never reported the sessions tracked by the SDK. Remove checks against this property; it will be removed in v3.";
+    private const string EndSessionStatusWarning = "Sentry: EndSession(status) now ends the session tracked by the SDK and ignores the status argument. Use EndSession() instead; this overload will be removed in v3.";
 
     private static int _pauseSessionWarningPrinted;
     private static int _resumeSessionWarningPrinted;
@@ -70,7 +70,7 @@ public static partial class SentrySdk
     {
         if (Interlocked.Exchange(ref printed, 1) == 0)
         {
-            NativeBridge.PushWarning("Sentry: " + message);
+            NativeBridge.PushWarning(message);
         }
     }
 }
