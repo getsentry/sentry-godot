@@ -249,6 +249,26 @@ public static partial class SentrySdk
     public static void UnsetTag(string key)
         => global::Sentry.SentrySdk.UnsetTag(key);
 
+    /// <inheritdoc cref="M:Sentry.SentrySdk.WithMonitor(System.String,System.Action,System.Action{Sentry.SentryMonitorOptions})"/>
+    [DebuggerStepThrough]
+    public static void WithMonitor(string monitorSlug, global::System.Action job, global::System.Action<global::Sentry.SentryMonitorOptions>? configureMonitorOptions = null)
+        => global::Sentry.SentrySdk.WithMonitor(monitorSlug, job, configureMonitorOptions);
+
+    /// <inheritdoc cref="M:Sentry.SentrySdk.WithMonitor``1(System.String,System.Func{``0},System.Action{Sentry.SentryMonitorOptions})"/>
+    [DebuggerStepThrough]
+    public static T WithMonitor<T>(string monitorSlug, global::System.Func<T> job, global::System.Action<global::Sentry.SentryMonitorOptions>? configureMonitorOptions = null)
+        => global::Sentry.SentrySdk.WithMonitor<T>(monitorSlug, job, configureMonitorOptions);
+
+    /// <inheritdoc cref="M:Sentry.SentrySdk.WithMonitorAsync(System.String,System.Func{System.Threading.Tasks.Task},System.Action{Sentry.SentryMonitorOptions})"/>
+    [DebuggerStepThrough]
+    public static global::System.Threading.Tasks.Task WithMonitorAsync(string monitorSlug, global::System.Func<global::System.Threading.Tasks.Task> job, global::System.Action<global::Sentry.SentryMonitorOptions>? configureMonitorOptions = null)
+        => global::Sentry.SentrySdk.WithMonitorAsync(monitorSlug, job, configureMonitorOptions);
+
+    /// <inheritdoc cref="M:Sentry.SentrySdk.WithMonitorAsync``1(System.String,System.Func{System.Threading.Tasks.Task{``0}},System.Action{Sentry.SentryMonitorOptions})"/>
+    [DebuggerStepThrough]
+    public static global::System.Threading.Tasks.Task<T> WithMonitorAsync<T>(string monitorSlug, global::System.Func<global::System.Threading.Tasks.Task<T>> job, global::System.Action<global::Sentry.SentryMonitorOptions>? configureMonitorOptions = null)
+        => global::Sentry.SentrySdk.WithMonitorAsync<T>(monitorSlug, job, configureMonitorOptions);
+
     /// <inheritdoc cref="P:Sentry.SentrySdk.IsEnabled"/>
     public static bool IsEnabled { [DebuggerStepThrough] get => global::Sentry.SentrySdk.IsEnabled; }
 
