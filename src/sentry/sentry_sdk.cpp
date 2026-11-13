@@ -672,14 +672,12 @@ void SentrySDK::prepare_and_auto_initialize() {
 	sentry::engine_lifecycle::start_lifecycle_watch();
 
 #if defined(LINUX_ENABLED) || defined(MACOS_ENABLED)
-	// Fix crashpad handler executable bit permissions on Unix platforms if the
+	// Fix native crash handler executable bit permissions on Unix platforms if the
 	// user extracts the distribution archive without preserving such permissions.
 	if (OS::get_singleton()->is_debug_build()) {
-		_fix_unix_executable_permissions("res://addons/sentry/bin/macos/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/x86_64/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/x86_32/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/arm64/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/arm32/crashpad_handler");
+		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/x86_64/sentry-crash");
+		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/x86_32/sentry-crash");
+		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/arm64/sentry-crash");
 	}
 #endif
 
