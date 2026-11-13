@@ -238,13 +238,12 @@ void NativeSDK::remove_user() {
 	sentry_remove_user();
 }
 
-Ref<SentryBreadcrumb> NativeSDK::create_breadcrumb() {
+SentryBreadcrumbImpl *NativeSDK::create_breadcrumb() {
 	return memnew(NativeBreadcrumb);
 }
 
 void NativeSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
-	ERR_FAIL_COND_MSG(p_breadcrumb.is_null(), "Sentry: Can't add breadcrumb - breadcrumb object is null.");
-	NativeBreadcrumb *crumb = Object::cast_to<NativeBreadcrumb>(p_breadcrumb.ptr());
+	NativeBreadcrumb *crumb = Castable::cast_to<NativeBreadcrumb>(p_breadcrumb->get_implementation());
 	ERR_FAIL_NULL(crumb);
 	sentry_value_t native_crumb = crumb->get_native_breadcrumb();
 	sentry_value_incref(native_crumb); // give ownership to native

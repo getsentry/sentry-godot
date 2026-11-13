@@ -69,8 +69,8 @@ void AndroidScope::set_attribute(const String &p_name, const Variant &p_value) {
 
 void AndroidScope::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
-	Ref<AndroidBreadcrumb> crumb = p_breadcrumb;
-	ERR_FAIL_COND(crumb.is_null());
+	AndroidBreadcrumb *crumb = Castable::cast_to<AndroidBreadcrumb>(p_breadcrumb->get_implementation());
+	ERR_FAIL_NULL(crumb);
 	plugin->call(ANDROID_SN(scopeAddBreadcrumb), handle, crumb->get_handle());
 }
 

@@ -1,19 +1,16 @@
 #pragma once
 
-#include "sentry/sentry_breadcrumb.h"
+#include "sentry/sentry_breadcrumb_impl.h"
 #include "sentry/util/object_handle.h"
 
 namespace sentry::android {
 
-class AndroidBreadcrumb : public SentryBreadcrumb {
-	GDCLASS(AndroidBreadcrumb, SentryBreadcrumb);
+class AndroidBreadcrumb : public SentryBreadcrumbImpl {
+	SENTRY_CASTABLE(AndroidBreadcrumb, SentryBreadcrumbImpl);
 
 private:
 	util::ObjectHandle<Object> _android_plugin;
 	int32_t handle = 0;
-
-protected:
-	static void _bind_methods() {}
 
 public:
 	int32_t get_handle() { return handle; }

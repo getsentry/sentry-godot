@@ -209,16 +209,13 @@ void JavaScriptSDK::remove_user() {
 	js_bridge()->call("removeUser");
 }
 
-Ref<SentryBreadcrumb> JavaScriptSDK::create_breadcrumb() {
+SentryBreadcrumbImpl *JavaScriptSDK::create_breadcrumb() {
 	return memnew(JavaScriptBreadcrumb);
 }
 
 void JavaScriptSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
 	ERR_FAIL_COND(!js_bridge());
-	if (p_breadcrumb.is_null()) {
-		return;
-	}
-	JavaScriptBreadcrumb *crumb = Object::cast_to<JavaScriptBreadcrumb>(p_breadcrumb.ptr());
+	JavaScriptBreadcrumb *crumb = Castable::cast_to<JavaScriptBreadcrumb>(p_breadcrumb->get_implementation());
 	ERR_FAIL_NULL(crumb);
 	js_bridge()->call("addBreadcrumb", crumb->get_js_object());
 }

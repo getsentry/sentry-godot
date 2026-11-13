@@ -134,15 +134,13 @@ void CocoaSDK::remove_user() {
 	[SentryObjCSDK setUser:nil];
 }
 
-Ref<SentryBreadcrumb> CocoaSDK::create_breadcrumb() {
+SentryBreadcrumbImpl *CocoaSDK::create_breadcrumb() {
 	return memnew(CocoaBreadcrumb);
 }
 
 void CocoaSDK::add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) {
-	ERR_FAIL_COND(p_breadcrumb.is_null());
-
-	Ref<CocoaBreadcrumb> crumb = p_breadcrumb;
-	ERR_FAIL_COND(crumb.is_null());
+	CocoaBreadcrumb *crumb = Castable::cast_to<CocoaBreadcrumb>(p_breadcrumb->get_implementation());
+	ERR_FAIL_NULL(crumb);
 	[SentryObjCSDK addBreadcrumb:crumb->get_cocoa_breadcrumb()];
 }
 

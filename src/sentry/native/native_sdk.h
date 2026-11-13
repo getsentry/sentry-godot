@@ -25,7 +25,7 @@ public:
 	virtual void set_user(const Ref<SentryUser> &p_user) override;
 	virtual void remove_user() override;
 
-	virtual Ref<SentryBreadcrumb> create_breadcrumb() override;
+	virtual SentryBreadcrumbImpl *create_breadcrumb() override;
 	virtual void add_breadcrumb(const Ref<SentryBreadcrumb> &p_breadcrumb) override;
 
 	virtual void capture_log(const Ref<SentryScope> &p_scope, LogLevel p_level, const String &p_body, const Dictionary &p_attributes = Dictionary()) override;

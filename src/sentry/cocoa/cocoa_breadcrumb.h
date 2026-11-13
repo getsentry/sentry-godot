@@ -1,18 +1,15 @@
 #pragma once
 
 #include "sentry/cocoa/cocoa_includes.h"
-#include "sentry/sentry_breadcrumb.h"
+#include "sentry/sentry_breadcrumb_impl.h"
 
 namespace sentry::cocoa {
 
-class CocoaBreadcrumb : public SentryBreadcrumb {
-	GDCLASS(CocoaBreadcrumb, SentryBreadcrumb);
+class CocoaBreadcrumb : public SentryBreadcrumbImpl {
+	SENTRY_CASTABLE(CocoaBreadcrumb, SentryBreadcrumbImpl);
 
 private:
 	SentryObjCBreadcrumb *cocoa_breadcrumb = nullptr;
-
-protected:
-	static void _bind_methods() {}
 
 public:
 	_FORCE_INLINE_ SentryObjCBreadcrumb *get_cocoa_breadcrumb() const { return cocoa_breadcrumb; }
