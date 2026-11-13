@@ -136,7 +136,7 @@ out_dir = f"project/addons/sentry/bin/{platform}"
 if internal_sdk == SDK.DISABLED:
     out_dir = "project/addons/sentry/bin/noop"
 elif internal_sdk == SDK.NATIVE:
-    # Separate arch dirs to avoid crashpad handler filename conflicts.
+    # Separate arch dirs to avoid native crash handler filename conflicts.
     out_dir += "/" + arch
 out_dir = Dir(out_dir)
 
@@ -146,14 +146,14 @@ out_dir = Dir(out_dir)
 if internal_sdk == SDK.NATIVE:
     env = SConscript("modules/sentry-native.SConscript", exports=["env"])
 
-    # Deploy crashpad handler to project directory.
-    deploy_crashpad_handler = env.CopyCrashpadHandler(out_dir)
-    Default(deploy_crashpad_handler)
+    # Deploy native crash handler to project directory.
+    deploy_crash_handler = env.CopyCrashHandler(out_dir)
+    Default(deploy_crash_handler)
 
     if env["separate_debug_symbols"] and platform == "linux":
-        handler_path = str(deploy_crashpad_handler[0])
-        symbols_path = f"{handler_path}.debug"
-        Default(env.SeparateDebugSymbols(File(symbols_path), File(handler_path)))
+        for handler in ["sentry-crash", "crashpad_handler"]:
+            handler_path = out_dir.File(handler)
+            Default(env.SeparateDebugSymbols(File(f"{handler_path}.debug"), handler_path))
 
 
 # *** Utilize sentry-cocoa.
