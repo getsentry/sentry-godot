@@ -1066,6 +1066,16 @@ internal static partial class NativeBridge
     }
 
     [LibraryImport(Lib)]
+    private static partial void csharp_interop_sdk_start_session();
+
+    public static void StartSession() => csharp_interop_sdk_start_session();
+
+    [LibraryImport(Lib)]
+    private static partial void csharp_interop_sdk_end_session();
+
+    public static void EndSession() => csharp_interop_sdk_end_session();
+
+    [LibraryImport(Lib)]
     private static partial void csharp_interop_process_default_attachments(int level);
 
     public static void ProcessDefaultAttachments(SentryLevel level)
@@ -1086,6 +1096,17 @@ internal static partial class NativeBridge
 
     [LibraryImport(Lib)]
     private static unsafe partial void csharp_interop_log(int level, char* msg, int len);
+
+    [LibraryImport(Lib)]
+    private static unsafe partial void csharp_interop_push_warning(char* msg, int len);
+
+    public static unsafe void PushWarning(string message)
+    {
+        fixed (char* ptr = message)
+        {
+            csharp_interop_push_warning(ptr, message.Length);
+        }
+    }
 
     public static unsafe void Log(SentryLevel level, string message)
     {

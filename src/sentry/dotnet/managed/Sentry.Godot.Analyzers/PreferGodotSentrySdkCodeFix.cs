@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Sentry.Godot.Shared;
 
 namespace Sentry.Godot.Analyzers;
 
@@ -21,7 +22,8 @@ public sealed class PreferGodotSentrySdkCodeFix : CodeFixProvider
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-        if (root is null)
+        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        if (root is null || semanticModel is null)
         {
             return;
         }
@@ -33,6 +35,12 @@ public sealed class PreferGodotSentrySdkCodeFix : CodeFixProvider
             // identifier targets (e.g. under 'using static Sentry.SentrySdk') have
             // no qualifier to swap — we skip offering a fix in that case.
             if (root.FindNode(diagnostic.Location.SourceSpan) is not MemberAccessExpressionSyntax memberAccess)
+            {
+                continue;
+            }
+
+            var member = semanticModel.GetSymbolInfo(memberAccess, context.CancellationToken).Symbol;
+            if (member is null || SentrySdkMemberRules.IsExcluded(member))
             {
                 continue;
             }

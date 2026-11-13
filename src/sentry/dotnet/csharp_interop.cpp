@@ -620,6 +620,14 @@ CSHARP_EXPORT void csharp_interop_sdk_close() {
 	SentrySDK::get_singleton()->close();
 }
 
+CSHARP_EXPORT void csharp_interop_sdk_start_session() {
+	SentrySDK::get_singleton()->start_session();
+}
+
+CSHARP_EXPORT void csharp_interop_sdk_end_session() {
+	SentrySDK::get_singleton()->end_session();
+}
+
 CSHARP_EXPORT void csharp_interop_process_default_attachments(int32_t level) {
 	sentry::dotnet::process_default_attachments(static_cast<sentry::Level>(level));
 }
@@ -687,6 +695,10 @@ CSHARP_EXPORT void csharp_interop_log(int32_t level, const char16_t *msg, int32_
 	sentry::logging::print(
 			static_cast<sentry::Level>(level),
 			String::utf16(msg, len));
+}
+
+CSHARP_EXPORT void csharp_interop_push_warning(const char16_t *msg, int32_t len) {
+	UtilityFunctions::push_warning(String::utf16(msg, len));
 }
 
 // *** Event accessors used by the options.Native.SetBeforeSend callback.

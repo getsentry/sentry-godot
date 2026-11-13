@@ -20,4 +20,7 @@
     <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
     <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Shared/SentrySdkMemberRules.cs" Link="Shared/SentrySdkMemberRules.cs" />
+  </ItemGroup>
 </Project>
