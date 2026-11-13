@@ -425,6 +425,14 @@ void NativeSDK::init() {
 	ERR_FAIL_NULL(OS::get_singleton());
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 
+	String backend = "native";
+	const String backend_file = "res://addons/sentry/native_backend.txt";
+	if (FileAccess::file_exists(backend_file)) {
+		backend = FileAccess::get_file_as_string(backend_file).strip_edges();
+	}
+	ERR_FAIL_COND_MSG(backend != "native" && backend != "crashpad", "Sentry: Unsupported crash backend: " + backend);
+	ERR_FAIL_COND_MSG(sentry_backend_preload(backend.utf8().get_data()) != 0, "Sentry: Failed to select crash backend: " + backend);
+
 	sentry_options_t *options = sentry_options_new();
 
 	sentry_options_set_dsn(options, SENTRY_OPTIONS()->get_dsn().utf8().get_data());
@@ -447,24 +455,18 @@ void NativeSDK::init() {
 	sentry_options_set_logger_enabled_when_crashed(options, false);
 
 	// Establish handler path.
-	String handler_fn;
+	String handler_fn = backend == "crashpad" ? "crashpad_handler" : "sentry-crash";
 	String platform_dir;
-	String export_subdir;
 #ifdef LINUX_ENABLED
-	handler_fn = "crashpad_handler";
 	platform_dir = "linux/" + Engine::get_singleton()->get_architecture_name();
-#elif MACOS_ENABLED
-	handler_fn = "crashpad_handler";
-	platform_dir = "macos";
-	export_subdir = "../Frameworks";
 #elif WINDOWS_ENABLED
-	handler_fn = "crashpad_handler.exe";
+	handler_fn += ".exe";
 	platform_dir = "windows/" + Engine::get_singleton()->get_architecture_name();
 #else
 	ERR_PRINT("Sentry: Internal Error: NativeSDK should not be initialized on an unsupported platform (this should not happen).");
 #endif
 	String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
-	String handler_path = exe_dir.path_join(export_subdir).path_join(handler_fn);
+	String handler_path = exe_dir.path_join(handler_fn);
 	if (!FileAccess::file_exists(handler_path)) {
 		const String addon_bin_dir = "res://addons/sentry/bin/";
 		handler_path = ProjectSettings::get_singleton()->globalize_path(
@@ -473,16 +475,14 @@ void NativeSDK::init() {
 	if (FileAccess::file_exists(handler_path)) {
 		sentry_options_set_handler_path(options, handler_path.utf8().get_data());
 	} else {
-		ERR_PRINT(vformat("Sentry: Failed to locate crash handler (crashpad) - backend disabled (%s)", handler_path));
+		ERR_PRINT(vformat("Sentry: Failed to locate native crash handler - backend disabled (%s)", handler_path));
 		sentry_options_set_backend(options, NULL);
 	}
 
 	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
 		String absolute_path = att->get_globalized_path();
 		sentry::logging::print_debug("adding attachment \"", absolute_path, "\"");
-		if (absolute_path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
-			sentry_options_add_view_hierarchy(options, absolute_path.utf8().get_data());
-		} else {
+		if (!absolute_path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
 			sentry_options_add_attachment(options, absolute_path.utf8().get_data());
 		}
 	}
@@ -495,7 +495,16 @@ void NativeSDK::init() {
 	sentry_options_set_before_send_feedback(options, _handle_before_send_feedback, NULL);
 	sentry_options_set_on_crash(options, _handle_on_crash, NULL);
 	sentry_options_set_logger(options, _log_native_message, NULL);
-	sentry_options_set_initial_scope(options, [](sentry_scope_t *p_scope, void *) { sentry_scope_set_user(p_scope, user_to_sentry_value(SentryUser::create_default())); }, NULL);
+	sentry_options_set_initial_scope(options, [](sentry_scope_t *p_scope, void *) {
+		sentry_scope_set_user(p_scope, user_to_sentry_value(SentryUser::create_default()));
+		for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
+			String path = att->get_globalized_path();
+			if (path.ends_with(SENTRY_VIEW_HIERARCHY_FN)) {
+				sentry_value_t attachment = sentry_attachment_from_file(path.utf8().get_data());
+				sentry_attachment_set_type(attachment, SENTRY_ATTACHMENT_TYPE_VIEW_HIERARCHY);
+				sentry_scope_add_attachment(p_scope, attachment);
+			}
+		} }, NULL);
 
 	const Callable &before_send_log = SENTRY_OPTIONS()->get_before_send_log();
 	if (before_send_log.is_valid()) {
@@ -508,11 +517,8 @@ void NativeSDK::init() {
 	}
 
 #ifdef WINDOWS_ENABLED
-	// Enable crashpad stack capture adjustment for Wine/Proton compatibility.
 	// Under Wine, TEB stack bounds may be incorrect, causing oversized captures.
-	const auto &platform_info = sentry::native::detect_platform();
-	if (platform_info.is_wine) {
-		sentry::logging::print_debug("Enabling Crashpad stack capture limit for Wine/Proton compatibility");
+	if (backend == "crashpad" && sentry::native::detect_platform().is_wine) {
 		sentry_options_set_crashpad_limit_stack_capture_to_sp(options, 1);
 	}
 #endif
