@@ -147,7 +147,7 @@ fi
 # Fix sentry-crash permissions;
 # workaround for https://github.com/actions/upload-artifact/issues/38
 if [[ -d "$SOURCE/addons/sentry/bin" ]]; then
-    find "$SOURCE/addons/sentry/bin/" -name "sentry-crash" -exec chmod 755 "{}" \;
+    find "$SOURCE/addons/sentry/bin/" \( -name "sentry-crash" -o -name "crashpad_handler" \) -exec chmod 755 "{}" \;
 fi
 
 # --- Debug symbols package ---

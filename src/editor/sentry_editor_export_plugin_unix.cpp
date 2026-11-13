@@ -52,7 +52,7 @@ void _find_and_fix_crash_handler(const String &p_path) {
 			if (da->current_is_dir() && file != "." && file != "..") {
 				// Add subdirectory to be processed
 				dirs_to_process.push_back(full_path);
-			} else if (file == "sentry-crash") {
+			} else if ((file == "sentry-crash" || file == "crashpad_handler")) {
 				_set_executable_permissions(full_path);
 			}
 
