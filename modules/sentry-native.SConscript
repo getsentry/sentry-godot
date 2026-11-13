@@ -77,11 +77,14 @@ if not shared and default_backend == "crashpad":
 env.Append(LIBS=static_libs)
 
 # Platform-specific libs
+if windows:
+    # Platform detection uses the registry independently of sentry-native linkage.
+    env.Append(LIBS=["advapi32"])
+
 if not shared:
     if windows:
         env.Append(LIBS=[
             "winhttp",
-            "advapi32",
             "DbgHelp",
             "Version",
             "synchronization",
