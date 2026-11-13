@@ -5,6 +5,7 @@
 #include "editor/sentry_editor_export_plugin_android.h"
 #include "editor/sentry_editor_export_plugin_ios.h"
 #include "editor/sentry_editor_export_plugin_macos.h"
+#include "editor/sentry_editor_export_plugin_native.h"
 #include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_export_plugin_web.h"
 #include "sentry/logging/print.h"
@@ -18,6 +19,11 @@ void SentryEditorPlugin::_notification(int p_what) {
 				android_export_plugin = Ref(memnew(SentryEditorExportPluginAndroid));
 			}
 			add_export_plugin(android_export_plugin);
+
+			if (native_export_plugin.is_null()) {
+				native_export_plugin = Ref(memnew(SentryEditorExportPluginNative));
+			}
+			add_export_plugin(native_export_plugin);
 
 #ifndef WINDOWS_ENABLED
 			if (unix_export_plugin.is_null()) {
@@ -43,6 +49,11 @@ void SentryEditorPlugin::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			if (native_export_plugin.is_valid()) {
+				remove_export_plugin(native_export_plugin);
+				native_export_plugin.unref();
+			}
+
 			if (android_export_plugin.is_valid()) {
 				remove_export_plugin(android_export_plugin);
 				android_export_plugin.unref();

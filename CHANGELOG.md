@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased (v3)
+
+### Features
+
+- Windows & Linux: Replace Crashpad with Sentry's native crash handler, which sends crash events with client-side stack traces and an attached minidump ([#1090](https://github.com/getsentry/sentry-godot/pull/1090))
+
 ## Unreleased
 
 ### Features

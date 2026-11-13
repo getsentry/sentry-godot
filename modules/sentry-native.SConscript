@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-## Purpose: Build sentry-native static library.
+## Purpose: Build sentry-native libraries and crash handlers.
 
 import os
 
@@ -38,193 +38,184 @@ if env.get("use_llvm") == True:
 
 # *** Chapter 1: Targets and variables
 
-build_targets = []
+shared = env.get("sentry_native_shared", False)
+windows = platform == "windows"
+root = Dir("sentry-native").abspath
+backend_option = env.get("sentry_native_backend", "both" if shared else "native")
+backends = ["native", "crashpad"] if backend_option == "both" else [backend_option]
+default_backend = backends[0]
 
-def add_lib_target(lib_name):
-    if platform == "windows":
-        build_targets.append(File(f"sentry-native/install/lib/{lib_name}.lib"))
-        build_targets.append(File(f"sentry-native/install/lib/{lib_name}.pdb"))
-    else:
-        build_targets.append(File(f"sentry-native/install/lib/lib{lib_name}.a"))
-    env.Append(LIBS=[lib_name])
+
+def backend_dirs(backend):
+    if not shared and backend == "native":
+        return "build", "install"
+    linkage = "shared" if shared else "static"
+    variant = f"{platform}-{arch}/{backend}"
+    return f"build-{linkage}/{variant}", f"install-{linkage}/{variant}"
+
+
+_, install_dir = backend_dirs(default_backend)
+library_name = "sentry.dll" if windows else "libsentry.so"
+library_dir = "bin" if windows else "lib"
+executable_suffix = ".exe" if windows else ""
+artifacts = {}
 
 # Common libs
-add_lib_target("sentry")
-add_lib_target("crashpad_client")
-add_lib_target("crashpad_handler_lib")
-add_lib_target("crashpad_minidump")
-add_lib_target("crashpad_snapshot")
-add_lib_target("crashpad_tools")
-add_lib_target("crashpad_util")
-add_lib_target("crashpad_mpack")
-add_lib_target("mini_chromium")
+static_libs = ["sentry"]
+if not shared and default_backend == "crashpad":
+    static_libs += [
+        "crashpad_client",
+        "crashpad_handler_lib",
+        "crashpad_minidump",
+        "crashpad_snapshot",
+        "crashpad_tools",
+        "crashpad_util",
+        "crashpad_mpack",
+        "mini_chromium",
+        "crashpad_compat",
+    ]
+env.Append(LIBS=static_libs)
 
 # Platform-specific libs
-if platform == "windows":
-    add_lib_target("crashpad_compat")
-    env.Append(
-        LIBS=[
+if windows:
+    # Platform detection uses the registry independently of sentry-native linkage.
+    env.Append(LIBS=["advapi32"])
+
+if not shared:
+    if windows:
+        env.Append(LIBS=[
             "winhttp",
-            "advapi32",
             "DbgHelp",
             "Version",
             "synchronization",
-        ]
-    )
-elif platform == "linux":
-    add_lib_target("crashpad_compat")
-    add_lib_target("unwind")
-    env.Append(
-        LIBS=[
+        ])
+    elif platform == "linux":
+        static_libs.append("unwind")
+        env.Append(LIBS=[
+            "unwind",
             "curl",
-        ]
-    )
-elif platform == "macos":
-    env.Append(
-        LIBS=[
-            "curl",
-            "bsm"
-        ],
-        LINKFLAGS=[
-            "-framework", "Foundation",
-        ]
-    )
-
-# Crashpad handler
-if platform == "windows":
-    build_targets.append(File("sentry-native/install/bin/crashpad_handler.exe"))
-    build_targets.append(File("sentry-native/install/bin/crashpad_wer.dll"))
-    build_targets.append(File("sentry-native/install/bin/crashpad_wer.pdb"))
-else:
-    build_targets.append(File("sentry-native/install/bin/crashpad_handler"))
+        ])
 
 # Other defines
-env.Append(CPPDEFINES=["SENTRY_BUILD_STATIC", "SDK_NATIVE"])
-env.Append(CPPPATH=[Dir("sentry-native/include/")])
-env.Append(LIBPATH=[Dir("sentry-native/install/lib/")])
+env.Append(CPPDEFINES=["SDK_NATIVE", "SENTRY_NATIVE_SHARED" if shared else "SENTRY_BUILD_STATIC"])
+env.Append(CPPDEFINES=[f"SENTRY_HANDLER_{backend.upper()}" for backend in backends])
+env.Append(CPPPATH=[Dir("sentry-native/include")])
+env.Append(LIBPATH=[Dir(f"sentry-native/{install_dir}/lib")])
 
 
 # *** Chapter 2: CMake
 
-cmake_gen = "cmake -B build"
-cmake_gen += " -DSENTRY_BUILD_SHARED_LIBS=OFF"
-cmake_gen += " -DSENTRY_BACKEND=crashpad"
-cmake_gen += " -DSENTRY_SDK_NAME=\"sentry.native.godot\""
-cmake_gen += " -DCMAKE_BUILD_TYPE=RelWithDebInfo"
+cmake_flags = [
+    "-DSENTRY_BUILD_SHARED_LIBS=" + ("ON" if shared else "OFF"),
+    "-DSENTRY_SDK_NAME=sentry.native.godot",
+    "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+    "-DCMAKE_INSTALL_LIBDIR=lib",
+    "-DSENTRY_BUILD_TESTS=OFF",
+    "-DSENTRY_BUILD_EXAMPLES=OFF",
+]
 
-if platform == "windows":
-    cmake_gen += " -DSENTRY_BUILD_RUNTIMESTATIC=ON"
-    if arch == "x86_32":
-        cmake_arch = "-A Win32"
-    elif arch == "x86_64":
-        cmake_arch = "-A x64"
-    elif arch == "arm64":
-        cmake_arch = "-A ARM64"
-    else:
-        print(f"ERROR: Unsupported architecture '{arch}' for platform '{platform}'")
-        Exit(1)
-    cmake_gen += f' -G "Visual Studio 17 2022" {cmake_arch}'
+if platform in ["windows", "linux"] and arch not in ["x86_32", "x86_64", "arm64"]:
+    print(f"ERROR: Unsupported architecture '{arch}' for platform '{platform}'")
+    Exit(1)
+
+if windows:
+    cmake_arch = {"x86_32": "Win32", "x86_64": "x64", "arm64": "ARM64"}[arch]
+    cmake_flags += ['-G "Visual Studio 17 2022"', f"-A {cmake_arch}", "-DSENTRY_BUILD_RUNTIMESTATIC=ON"]
 elif platform == "linux":
-    if arch == "x86_32":
-        cmake_gen += ' -DSENTRY_BUILD_FORCE32=ON -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" -DLINK_OPTIONS="-m32"'
-    elif arch == "x86_64":
-        cmake_gen += ' -DCMAKE_C_FLAGS="-m64" -DCMAKE_CXX_FLAGS="-m64" -DLINK_OPTIONS="-m64"'
+    if arch in ["x86_32", "x86_64"]:
+        bits = "32" if arch == "x86_32" else "64"
+        cmake_flags += [f"-DCMAKE_C_FLAGS=-m{bits}", f"-DCMAKE_CXX_FLAGS=-m{bits}"]
+        if arch == "x86_32":
+            cmake_flags.append("-DSENTRY_BUILD_FORCE32=ON")
     elif arch == "arm64":
         pass  # Native compilation on arm64 host; no special flags needed.
-    else:
-        print(f"ERROR: Unsupported architecture '{arch}' for platform '{platform}'")
-        Exit(1)
-elif platform == "macos":
-    cmake_arch = "arm64;x86_64" if arch == "universal" else arch
-    cmake_gen += f' -DCMAKE_OSX_ARCHITECTURES="{cmake_arch}"'
-    macos_deployment_target = env.get("macos_deployment_target", "default")
-    if macos_deployment_target != "default":
-        cmake_gen += f' -DCMAKE_OSX_DEPLOYMENT_TARGET=\"{macos_deployment_target}\"'
-
-cmake_sentry = "cmake --build build --target sentry --parallel --config RelWithDebInfo"
-cmake_crashpad = "cmake --build build --target crashpad_handler --parallel --config RelWithDebInfo"
-cmake_install = "cmake --install build --prefix install --config RelWithDebInfo"
 
 
 ## *** Chapter 3: Build Commands
 
-sentry_native_path = Dir('sentry-native').abspath
+# Use new environment importing current shell's env for greater compatibility.
+env_cmake = Environment(ENV=os.environ)
+previous_build = None
 
-actions = [
-        f"cd {sentry_native_path} && {cmake_gen}",
-        f"cd {sentry_native_path} && {cmake_sentry}",
-        f"cd {sentry_native_path} && {cmake_crashpad}",
-        f"cd {sentry_native_path} && {cmake_install}",
+for backend in backends:
+    build, install = backend_dirs(backend)
+    handler = "sentry-crash" if backend == "native" else "crashpad_handler"
+    handler_name = handler + executable_suffix
+
+    # Native crash handler
+    files = {handler_name: f"{install}/bin/{handler_name}"}
+    if shared:
+        files[library_name] = f"{install}/{library_dir}/{library_name}"
+    if windows:
+        wer = "sentry-wer" if backend == "native" else "crashpad_wer"
+        files[f"{wer}.dll"] = f"{install}/bin/{wer}.dll"
+        if shared or backend == "crashpad":
+            pdb_dir = f"{build}/RelWithDebInfo" if backend == "native" else f"{build}/crashpad_build/handler/RelWithDebInfo"
+            if shared:
+                files["sentry.pdb"] = f"{install}/bin/sentry.pdb"
+            files[f"{handler}.pdb"] = f"{pdb_dir}/{handler}.pdb"
+            files[f"{wer}.pdb"] = f"{pdb_dir}/{wer}.pdb"
+        else:
+            files[f"{handler}.pdb"] = f"{install}/bin/{handler}.pdb"
+            files[f"{wer}.pdb"] = f"{install}/bin/{wer}.pdb"
+
+    targets = [File(f"sentry-native/{path}") for path in files.values()]
+    if shared:
+        if windows:
+            targets.append(File(f"sentry-native/{install}/lib/sentry.lib"))
+    else:
+        for lib_name in static_libs:
+            if windows:
+                targets += [File(f"sentry-native/{install}/lib/{lib_name}.{suffix}") for suffix in ["lib", "pdb"]]
+            else:
+                targets.append(File(f"sentry-native/{install}/lib/lib{lib_name}.a"))
+
+    flags = cmake_flags + [f"-DSENTRY_BACKEND={backend}"]
+    build_target = " --target sentry" if not shared and backend == "native" else ""
+    actions = [
+        f'cd "{root}" && cmake -B {build} ' + " ".join(flags),
+        f'cd "{root}" && cmake --build {build}{build_target} --config RelWithDebInfo --parallel',
+        f'cd "{root}" && cmake --install {build} --prefix {install} --config RelWithDebInfo',
     ]
 
-# Copy crashpad handler PDB
-if platform == "windows":
-    target_file = File("sentry-native/install/bin/crashpad_handler.pdb")
-    actions.append(
-        Copy(
-            target_file,
-            File("sentry-native/build/crashpad_build/handler/RelWithDebInfo/crashpad_handler.pdb")
-        )
-    )
-    build_targets.append(target_file)
+    # Copy native crash handler PDB
+    if windows and not shared and backend == "native":
+        actions.append(Copy(
+            File(f"sentry-native/{install}/bin/{handler}.pdb"),
+            File(f"sentry-native/{build}/RelWithDebInfo/{handler}.pdb"),
+        ))
 
-# Use new environment importing current shell's env for greater compatibility.
-env_cmake = Environment(ENV = os.environ)
-
-sentry_native = env_cmake.Command(
-    target=build_targets,
-    source=[Dir("sentry-native/src")],
-    action=actions
-)
-
-# Force sentry-native to be built sequential to godot-cpp (not in parallel)
-Depends(sentry_native, "godot-cpp")
-
-Default(sentry_native)
-
-Clean(sentry_native, [Dir("sentry-native/build"), Dir("sentry-native/install")])
+    nodes = env_cmake.Command(targets, [Dir("sentry-native/src"), File("sentry-native/CMakeLists.txt")], actions)
+    # Force sentry-native to be built sequential to godot-cpp (not in parallel)
+    Depends(nodes, "godot-cpp")
+    if previous_build is not None:
+        Depends(nodes, previous_build)
+    previous_build = nodes
+    Default(nodes)
+    Clean(nodes, [Dir(f"sentry-native/{build}"), Dir(f"sentry-native/{install}")])
+    artifacts[backend] = files
 
 
-## *** Chapter 4: Export pseudo-builder to copy crashpad handler
+## *** Chapter 4: Export pseudo-builder to copy native crash handler
 
-def CopyCrashpadHandler(self, target_dir):
-    actions = []
-    targets = []
-    sources = []
-
-    def copy_file_action(target_file, source_file):
-        actions.append(Copy(target_file, source_file))
-        targets.append(target_file)
-        sources.append(source_file)
-
-    source_dir = Dir("modules/sentry-native/install/bin")
-
-    if platform == "windows":
-        copy_file_action(
-            target_dir.File("crashpad_handler.exe"),
-            source_dir.File("crashpad_handler.exe")
-        )
-        copy_file_action(
-            target_dir.File("crashpad_handler.pdb"),
-            source_dir.File("crashpad_handler.pdb")
-        )
-        copy_file_action(
-            target_dir.File("crashpad_wer.dll"),
-            source_dir.File("crashpad_wer.dll")
-        )
-        copy_file_action(
-            target_dir.File("crashpad_wer.pdb"),
-            source_dir.File("crashpad_wer.pdb")
-        )
-    else:
-        copy_file_action(
-            target_dir.File("crashpad_handler"),
-            source_dir.File("crashpad_handler")
-        )
-
-    return env.Command(targets, sources, actions)
-
-env.AddMethod(CopyCrashpadHandler, "CopyCrashpadHandler")
+def CopyCrashHandler(self, target_dir):
+    deployed = []
+    for backend, files in artifacts.items():
+        destinations = []
+        if shared:
+            destinations.append(target_dir.Dir(backend))
+        if backend == default_backend:
+            # The editor uses the default backend; exports package the selected variant.
+            destinations.append(target_dir)
+        for name, path in files.items():
+            source = File(f"modules/sentry-native/{path}")
+            for destination in destinations:
+                node = self.Command(destination.File(name), source, Copy("$TARGET", "$SOURCE"))
+                deployed += node
+                if platform == "linux" and self["separate_debug_symbols"]:
+                    self.SeparateDebugSymbols(str(node[0]) + ".debug", node)
+    return deployed
 
 
+env.AddMethod(CopyCrashHandler, "CopyCrashHandler")
 Return("env")

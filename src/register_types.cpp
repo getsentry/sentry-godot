@@ -66,6 +66,7 @@
 #include "editor/sentry_editor_export_plugin_android.h"
 #include "editor/sentry_editor_export_plugin_ios.h"
 #include "editor/sentry_editor_export_plugin_macos.h"
+#include "editor/sentry_editor_export_plugin_native.h"
 #include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_export_plugin_web.h"
 #include "editor/sentry_editor_plugin.h"
@@ -148,6 +149,7 @@ void register_editor_classes() {
 	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginIOS);
 	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginMacOS);
 	GDREGISTER_INTERNAL_CLASS(SentryEditorPlugin);
+	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginNative);
 
 #ifndef WINDOWS_ENABLED
 	GDREGISTER_INTERNAL_CLASS(SentryEditorExportPluginUnix);

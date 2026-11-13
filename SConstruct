@@ -58,11 +58,32 @@ def add_custom_bool_option(name, description, default=False):
     })
 
 
+def add_custom_enum_option(name, description, choices, default):
+    value = ARGUMENTS.get(name, default).lower()
+    if value not in choices:
+        print(f"ERROR: {name} must be one of: {', '.join(choices)}")
+        Exit(1)
+    custom_options[name] = value
+    help_entries.append({
+        'name': name,
+        'description': description,
+        'choices': '|'.join(choices),
+        'default': default,
+        'actual': value
+    })
+
+
 # Define our custom options.
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
 add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux, Android, Web)", True)
 add_custom_bool_option("generate_js_bundle", "Generate JavaScript bundle", False)
+add_custom_bool_option("sentry_native_shared", "Build shared native SDKs for export-time backend selection", True)
+add_custom_enum_option("sentry_native_backend", "Native crash backend(s) to build", ["native", "crashpad", "both"],
+                       "both" if custom_options["sentry_native_shared"] else "native")
+if not custom_options["sentry_native_shared"] and custom_options["sentry_native_backend"] == "both":
+    print("ERROR: sentry_native_backend=both requires sentry_native_shared=yes")
+    Exit(1)
 add_custom_bool_option("tests", "Build C++ unit tests into the GDExtension", False)
 
 # Set project defaults for godot-cpp options.
@@ -101,7 +122,7 @@ for name, value in custom_options.items():
 # Generate help for custom options
 help_text = "\nCustom sentry-godot-cocoa options:\n"
 for entry in help_entries:
-    help_text += f"\n{entry['name']}: {entry['description']} (yes|no)\n"
+    help_text += f"\n{entry['name']}: {entry['description']} ({entry.get('choices', 'yes|no')})\n"
     help_text += f"    default: {entry['default']}\n"
     help_text += f"    actual: {entry['actual']}\n"
 Help(help_text)
@@ -136,7 +157,7 @@ out_dir = f"project/addons/sentry/bin/{platform}"
 if internal_sdk == SDK.DISABLED:
     out_dir = "project/addons/sentry/bin/noop"
 elif internal_sdk == SDK.NATIVE:
-    # Separate arch dirs to avoid crashpad handler filename conflicts.
+    # Separate arch dirs to avoid native crash handler filename conflicts.
     out_dir += "/" + arch
 out_dir = Dir(out_dir)
 
@@ -146,14 +167,13 @@ out_dir = Dir(out_dir)
 if internal_sdk == SDK.NATIVE:
     env = SConscript("modules/sentry-native.SConscript", exports=["env"])
 
-    # Deploy crashpad handler to project directory.
-    deploy_crashpad_handler = env.CopyCrashpadHandler(out_dir)
-    Default(deploy_crashpad_handler)
-
-    if env["separate_debug_symbols"] and platform == "linux":
-        handler_path = str(deploy_crashpad_handler[0])
-        symbols_path = f"{handler_path}.debug"
-        Default(env.SeparateDebugSymbols(File(symbols_path), File(handler_path)))
+    # Deploy native crash handler to project directory.
+    deploy_crash_handler = env.CopyCrashHandler(out_dir)
+    Default(deploy_crash_handler)
+    mode = "shared" if env["sentry_native_shared"] else "static"
+    linkage_target = "release" if env["target"] == "template_release" else "debug"
+    Default(env.Textfile(out_dir.File(f"linkage.{linkage_target}.txt"), [mode]))
+    Default(env.Textfile(out_dir.File(f"backends.{linkage_target}.txt"), [env["sentry_native_backend"]]))
 
 
 # *** Utilize sentry-cocoa.
