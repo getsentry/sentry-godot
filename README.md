@@ -2,7 +2,7 @@
 
 Sentry for Godot helps you monitor your game's health during QA and after release. It provides insights into crash reports, script errors, hardware information, user feedback, attachments and more through real-time alerting and an intuitive web dashboard. With automatic error reporting, release tracking, and AI-assisted analysis, you can quickly identify, prioritize, and resolve issues for a better player experience.
 
-**Architecture**: Built as a C++ GDExtension library using mature Sentry SDKs like [sentry-native](https://github.com/getsentry/sentry-native) as the foundation.
+**Architecture**: Built as a C++ GDExtension on top of mature Sentry SDKs like [sentry-native](https://github.com/getsentry/sentry-native). On Linux and Windows, Crashpad is the default crash backend. To use the native crash backend instead, select it under **Sentry → Crash Backend** in your export preset.
 
 ![issue-example](./.github/issue_example.png)
 
@@ -42,6 +42,8 @@ In the Godot editor, you can adjust options by going to `Project Settings -> Sen
 ## Building from source
 
 For build instructions, see our [**Contributing Guide**](https://github.com/getsentry/sentry-godot/blob/master/CONTRIBUTING.md#building-sdk).
+
+Desktop builds default to `sentry_native_shared=yes sentry_native_backend=both`. The editor uses Crashpad. To build a single backend, set `sentry_native_backend=crashpad` or `sentry_native_backend=native`. Static builds remain available with `sentry_native_shared=no` and default to Crashpad.
 
 ## Contributing
 

@@ -30,7 +30,7 @@ void _set_executable_permissions(const String &p_path) {
 	}
 }
 
-void _find_and_fix_crashpad_handler(const String &p_path) {
+void _find_and_fix_crash_handler(const String &p_path) {
 	List<String> dirs_to_process;
 	dirs_to_process.push_back(FileAccess::file_exists(p_path) ? p_path.get_base_dir() : p_path);
 
@@ -52,7 +52,7 @@ void _find_and_fix_crashpad_handler(const String &p_path) {
 			if (da->current_is_dir() && file != "." && file != "..") {
 				// Add subdirectory to be processed
 				dirs_to_process.push_back(full_path);
-			} else if (file == "crashpad_handler") {
+			} else if ((file == "sentry-crash" || file == "crashpad_handler")) {
 				_set_executable_permissions(full_path);
 			}
 
@@ -81,8 +81,8 @@ void SentryEditorExportPluginUnix::_export_end() {
 	if (!active) {
 		return;
 	}
-	// Fix crashpad handler executable permissions on Unix platforms.
-	_find_and_fix_crashpad_handler(export_path);
+	// Fix native crash handler executable permissions on Unix platforms.
+	_find_and_fix_crash_handler(export_path);
 }
 
 #endif // TOOLS_ENABLED && !WINDOWS_ENABLED

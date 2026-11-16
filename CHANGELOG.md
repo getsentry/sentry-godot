@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased (v3)
+
+### Features
+
+- Windows & Linux: Add export-time selection between Crashpad and Sentry's native crash handler, with Crashpad remaining the default ([#1092](https://github.com/getsentry/sentry-godot/pull/1092))
+
 ## Unreleased
 
 ### Features

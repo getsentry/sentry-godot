@@ -12,6 +12,7 @@ class SentryEditorPlugin : public EditorPlugin {
 
 private:
 	Ref<EditorExportPlugin> android_export_plugin;
+	Ref<EditorExportPlugin> native_export_plugin;
 	Ref<EditorExportPlugin> unix_export_plugin;
 	Ref<EditorExportPlugin> web_export_plugin;
 	Ref<EditorExportPlugin> ios_export_plugin;
