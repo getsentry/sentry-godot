@@ -447,19 +447,24 @@ void NativeSDK::init() {
 	sentry_options_set_logger_enabled_when_crashed(options, false);
 
 	// Establish handler path.
-	String handler_fn;
+#ifdef SENTRY_CRASH_BACKEND_NATIVE
+	String handler_fn = "sentry-crash";
+	const String backend_dir = "native";
+#else
+	String handler_fn = "crashpad_handler";
+	const String backend_dir = "crashpad";
+#endif
+
 	String platform_dir;
 	String export_subdir;
 #ifdef LINUX_ENABLED
-	handler_fn = "crashpad_handler";
-	platform_dir = "linux/" + Engine::get_singleton()->get_architecture_name();
+	platform_dir = String("linux").path_join(Engine::get_singleton()->get_architecture_name()).path_join(backend_dir);
 #elif MACOS_ENABLED
-	handler_fn = "crashpad_handler";
 	platform_dir = "macos";
 	export_subdir = "../Frameworks";
 #elif WINDOWS_ENABLED
-	handler_fn = "crashpad_handler.exe";
-	platform_dir = "windows/" + Engine::get_singleton()->get_architecture_name();
+	handler_fn += ".exe";
+	platform_dir = String("windows").path_join(Engine::get_singleton()->get_architecture_name()).path_join(backend_dir);
 #else
 	ERR_PRINT("Sentry: Internal Error: NativeSDK should not be initialized on an unsupported platform (this should not happen).");
 #endif
@@ -473,7 +478,7 @@ void NativeSDK::init() {
 	if (FileAccess::file_exists(handler_path)) {
 		sentry_options_set_handler_path(options, handler_path.utf8().get_data());
 	} else {
-		ERR_PRINT(vformat("Sentry: Failed to locate crash handler (crashpad) - backend disabled (%s)", handler_path));
+		ERR_PRINT(vformat("Sentry: Failed to locate crash handler - %s backend disabled", handler_path));
 		sentry_options_set_backend(options, NULL);
 	}
 

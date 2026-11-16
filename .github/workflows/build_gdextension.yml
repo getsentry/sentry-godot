@@ -22,86 +22,194 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: 🐧 Linux (x86_64, release)
+          - name: 🐧 Linux (x86_64, release, crashpad)
             runner: ubuntu-22.04
             platform: linux
+            crash-backend: crashpad
             target: template_release
             arch: x86_64
             scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (x86_64, debug)
+          - name: 🐧 Linux (x86_64, release, native)
             runner: ubuntu-22.04
             platform: linux
+            crash-backend: native
+            target: template_release
+            arch: x86_64
+            scons-flags: debug_symbols=yes
+
+          - name: 🐧 Linux (x86_64, debug, crashpad)
+            runner: ubuntu-22.04
+            platform: linux
+            crash-backend: crashpad
             target: editor
             arch: x86_64
             scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (x86_32, release)
+          - name: 🐧 Linux (x86_64, debug, native)
             runner: ubuntu-22.04
             platform: linux
+            crash-backend: native
+            target: editor
+            arch: x86_64
+            scons-flags: debug_symbols=yes
+
+          - name: 🐧 Linux (x86_32, release, crashpad)
+            runner: ubuntu-22.04
+            platform: linux
+            crash-backend: crashpad
             target: template_release
             arch: x86_32
             scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (x86_32, debug)
+          - name: 🐧 Linux (x86_32, release, native)
             runner: ubuntu-22.04
             platform: linux
+            crash-backend: native
+            target: template_release
+            arch: x86_32
+            scons-flags: debug_symbols=yes
+
+          - name: 🐧 Linux (x86_32, debug, crashpad)
+            runner: ubuntu-22.04
+            platform: linux
+            crash-backend: crashpad
             target: editor
             arch: x86_32
             scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (arm64, release)
+          - name: 🐧 Linux (x86_32, debug, native)
+            runner: ubuntu-22.04
+            platform: linux
+            crash-backend: native
+            target: editor
+            arch: x86_32
+            scons-flags: debug_symbols=yes
+
+          - name: 🐧 Linux (arm64, release, crashpad)
             runner: ubuntu-22.04-arm
             platform: linux
+            crash-backend: crashpad
             target: template_release
             arch: arm64
             scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (arm64, debug)
+          - name: 🐧 Linux (arm64, release, native)
             runner: ubuntu-22.04-arm
             platform: linux
-            target: editor
-            arch: arm64
-            scons-flags: debug_symbols=yes
-
-          - name: 🪟 Windows (x86_64, release)
-            runner: windows-latest
-            platform: windows
-            target: template_release
-            arch: x86_64
-            scons-flags: debug_symbols=yes
-
-          - name: 🪟 Windows (x86_64, debug)
-            runner: windows-latest
-            platform: windows
-            target: editor
-            arch: x86_64
-            scons-flags: debug_symbols=yes
-
-          - name: 🪟 Windows (x86_32, release)
-            runner: windows-latest
-            platform: windows
-            target: template_release
-            arch: x86_32
-            scons-flags: debug_symbols=yes
-
-          - name: 🪟 Windows (x86_32, debug)
-            runner: windows-latest
-            platform: windows
-            target: editor
-            arch: x86_32
-            scons-flags: debug_symbols=yes
-
-          - name: 🪟 Windows (arm64, release)
-            runner: windows-11-arm
-            platform: windows
+            crash-backend: native
             target: template_release
             arch: arm64
             scons-flags: debug_symbols=yes
 
-          - name: 🪟 Windows (arm64, debug)
+          - name: 🐧 Linux (arm64, debug, crashpad)
+            runner: ubuntu-22.04-arm
+            platform: linux
+            crash-backend: crashpad
+            target: editor
+            arch: arm64
+            scons-flags: debug_symbols=yes
+
+          - name: 🐧 Linux (arm64, debug, native)
+            runner: ubuntu-22.04-arm
+            platform: linux
+            crash-backend: native
+            target: editor
+            arch: arm64
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (x86_64, release, crashpad)
+            runner: windows-latest
+            platform: windows
+            crash-backend: crashpad
+            target: template_release
+            arch: x86_64
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (x86_64, release, native)
+            runner: windows-latest
+            platform: windows
+            crash-backend: native
+            target: template_release
+            arch: x86_64
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (x86_64, debug, crashpad)
+            runner: windows-latest
+            platform: windows
+            crash-backend: crashpad
+            target: editor
+            arch: x86_64
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (x86_64, debug, native)
+            runner: windows-latest
+            platform: windows
+            crash-backend: native
+            target: editor
+            arch: x86_64
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (x86_32, release, crashpad)
+            runner: windows-latest
+            platform: windows
+            crash-backend: crashpad
+            target: template_release
+            arch: x86_32
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (x86_32, release, native)
+            runner: windows-latest
+            platform: windows
+            crash-backend: native
+            target: template_release
+            arch: x86_32
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (x86_32, debug, crashpad)
+            runner: windows-latest
+            platform: windows
+            crash-backend: crashpad
+            target: editor
+            arch: x86_32
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (x86_32, debug, native)
+            runner: windows-latest
+            platform: windows
+            crash-backend: native
+            target: editor
+            arch: x86_32
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (arm64, release, crashpad)
             runner: windows-11-arm
             platform: windows
+            crash-backend: crashpad
+            target: template_release
+            arch: arm64
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (arm64, release, native)
+            runner: windows-11-arm
+            platform: windows
+            crash-backend: native
+            target: template_release
+            arch: arm64
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (arm64, debug, crashpad)
+            runner: windows-11-arm
+            platform: windows
+            crash-backend: crashpad
+            target: editor
+            arch: arm64
+            scons-flags: debug_symbols=yes
+
+          - name: 🪟 Windows (arm64, debug, native)
+            runner: windows-11-arm
+            platform: windows
+            crash-backend: native
             target: editor
             arch: arm64
             scons-flags: debug_symbols=yes
@@ -292,7 +400,7 @@ jobs:
       - name: Compile GDExtension library
         shell: bash
         run: |
-          scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}} ${{matrix.scons-flags}}
+          scons platform=${{matrix.platform}} target=${{matrix.target}} arch=${{matrix.arch}} crash_backend=${{matrix.crash-backend || 'crashpad'}} ${{matrix.scons-flags}}
 
       - name: Verify macOS binary compatibility
         if: matrix.platform == 'macos'
@@ -302,7 +410,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}${{ contains(matrix.scons-flags, 'threads=no') && '.nothreads' || '' }}
+          name: sentry.${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}${{ matrix.crash-backend && format('.{0}', matrix.crash-backend) || '' }}${{ contains(matrix.scons-flags, 'threads=no') && '.nothreads' || '' }}
           # NOTE: Include-exclude pattern forces archive to start with project/ as root directory.
           path: |
             project/

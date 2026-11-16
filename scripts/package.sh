@@ -144,10 +144,10 @@ if [[ ! -f "$LICENSE_ABS" ]]; then
     abort "LICENSE not found: $LICENSE_ABS"
 fi
 
-# Fix crashpad_handler permissions;
+# Fix crash handler permissions;
 # workaround for https://github.com/actions/upload-artifact/issues/38
 if [[ -d "$SOURCE/addons/sentry/bin" ]]; then
-    find "$SOURCE/addons/sentry/bin/" -name "crashpad_handler" -exec chmod 755 "{}" \;
+    find "$SOURCE/addons/sentry/bin/" \( -name "crashpad_handler" -o -name "sentry-crash" \) -exec chmod 755 "{}" \;
 fi
 
 # --- Debug symbols package ---

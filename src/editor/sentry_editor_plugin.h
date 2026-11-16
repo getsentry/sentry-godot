@@ -11,6 +11,7 @@ class SentryEditorPlugin : public EditorPlugin {
 	GDCLASS(SentryEditorPlugin, EditorPlugin);
 
 private:
+	Ref<EditorExportPlugin> _native_export_plugin;
 	Ref<EditorExportPlugin> android_export_plugin;
 	Ref<EditorExportPlugin> unix_export_plugin;
 	Ref<EditorExportPlugin> web_export_plugin;
