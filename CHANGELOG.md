@@ -29,6 +29,12 @@
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#701)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.13.0...7.0.1)
 
+### Dependencies
+
+- Bump Sentry JavaScript from v11.12.0 to v11.13.0 ([#1097](https://github.com/getsentry/sentry-godot/pull/1097))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#11130)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/11.12.0...11.13.0)
+
 ## 2.5.1
 
 ### Fixes
