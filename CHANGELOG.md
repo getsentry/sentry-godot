@@ -14,6 +14,7 @@
 
 ### Fixes
 
+- iOS/macOS: Fix Godot errors not counting toward session errors ([#1098](https://github.com/getsentry/sentry-godot/pull/1098))
 - Fix C# `SentrySdk.StartSession()` and `EndSession()` to control the sessions tracked by the SDK instead of separate .NET sessions that could double-count sessions ([#1076](https://github.com/getsentry/sentry-godot/pull/1076)).
 
 ### Deprecations
