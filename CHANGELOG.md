@@ -21,6 +21,12 @@
 - .NET: Deprecate `PauseSession()`, `ResumeSession()`, and `CaptureSession()` as no-ops, and `IsSessionActive` as always returning `false`. The deprecated `EndSession(status)` overload ends the session but ignores the status. These compatibility APIs warn once per member at runtime and will be removed in v3 ([#1076](https://github.com/getsentry/sentry-godot/pull/1076)).
 - Deprecate `SentrySDK.create_event()` in favor of `SentryEvent.new()`. The factory remains available until version 3.0 ([#1081](https://github.com/getsentry/sentry-godot/pull/1081))
 
+### Dependencies
+
+- Bump Cocoa SDK from v9.34.0 to v9.35.0 ([#1098](https://github.com/getsentry/sentry-godot/pull/1098))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9350)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.34.0...9.35.0)
+
 ## 2.5.1
 
 ### Fixes
