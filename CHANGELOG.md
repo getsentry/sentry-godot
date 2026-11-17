@@ -20,6 +20,14 @@
 
 - .NET: Deprecate `PauseSession()`, `ResumeSession()`, and `CaptureSession()` as no-ops, and `IsSessionActive` as always returning `false`. The deprecated `EndSession(status)` overload ends the session but ignores the status. These compatibility APIs warn once per member at runtime and will be removed in v3 ([#1076](https://github.com/getsentry/sentry-godot/pull/1076)).
 - Deprecate `SentrySDK.create_event()` in favor of `SentryEvent.new()`. The factory remains available until version 3.0 ([#1081](https://github.com/getsentry/sentry-godot/pull/1081))
+- .NET: Keep `SentryGodotOptions.EnableLogs` and `EnableMetrics` as deprecated compatibility properties until v3. Both always return `true` and ignore assignments. To drop managed logs or metrics, return `null` from `SetBeforeSendLog` or `SetBeforeSendMetric`, respectively ([#1091](https://github.com/getsentry/sentry-godot/pull/1091)).
+
+### Dependencies
+
+- Bump Sentry .NET SDK from v6.13.0 to v7.0.1 ([#1091](https://github.com/getsentry/sentry-godot/pull/1091))
+  - **Breaking:** `Scope.Release` and `Scope.Distribution` are removed. Set `Release` and `Distribution` on the options passed to `SentrySdk.Init()` instead.
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#701)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.13.0...7.0.1)
 
 ## 2.5.1
 
