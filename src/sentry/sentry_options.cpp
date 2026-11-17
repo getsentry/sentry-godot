@@ -112,6 +112,26 @@ void SentryExperimental::_bind_methods() {
 	BIND_PROPERTY_SIMPLE_DEPRECATED(SentryExperimental, Variant::CALLABLE, before_send_metric);
 }
 
+void SentryNativeOptions::_bind_methods() {
+	BIND_ENUM_CONSTANT(CRASH_REPORTING_MODE_MINIDUMP);
+	BIND_ENUM_CONSTANT(CRASH_REPORTING_MODE_NATIVE);
+	BIND_ENUM_CONSTANT(CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP);
+	BIND_PROPERTY(SentryNativeOptions, PropertyInfo(Variant::INT, "crash_reporting_mode", PROPERTY_HINT_ENUM, "Minidump Only:0,Native Stackwalking Only:1,Native Stackwalking With Minidump:2"), set_crash_reporting_mode, get_crash_reporting_mode);
+
+	BIND_ENUM_CONSTANT(MINIDUMP_MODE_STACK_ONLY);
+	BIND_ENUM_CONSTANT(MINIDUMP_MODE_SMART);
+	BIND_ENUM_CONSTANT(MINIDUMP_MODE_FULL);
+	BIND_PROPERTY(SentryNativeOptions, PropertyInfo(Variant::INT, "minidump_mode", PROPERTY_HINT_ENUM, "Stack Only:0,Smart:1,Full Memory:2"), set_minidump_mode, get_minidump_mode);
+
+	BIND_ENUM_CONSTANT(THREAD_STACKWALK_MODE_CRASHED_ONLY);
+	BIND_ENUM_CONSTANT(THREAD_STACKWALK_MODE_ALL);
+	BIND_PROPERTY(SentryNativeOptions, PropertyInfo(Variant::INT, "thread_stackwalk_mode", PROPERTY_HINT_ENUM, "Crashed Thread Only:1,All Threads:2"), set_thread_stackwalk_mode, get_thread_stackwalk_mode);
+
+	BIND_ENUM_CONSTANT(CRASH_UPLOAD_MODE_SYNC);
+	BIND_ENUM_CONSTANT(CRASH_UPLOAD_MODE_ASYNC);
+	BIND_PROPERTY(SentryNativeOptions, PropertyInfo(Variant::INT, "crash_upload_mode", PROPERTY_HINT_ENUM, "Synchronous:0,Asynchronous:1"), set_crash_upload_mode, get_crash_upload_mode);
+}
+
 // *** SentryAndroidOptions
 
 void SentryAndroidOptions::_bind_methods() {
@@ -224,6 +244,12 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/repeated_error_window_ms", PROPERTY_HINT_RANGE, "0,10000"), limits->get_repeated_error_window_ms(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/throttle_events", PROPERTY_HINT_RANGE, "0,20"), limits->get_throttle_events(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/godot_logger/limits/throttle_window_ms", PROPERTY_HINT_RANGE, "0,10000"), limits->get_throttle_window_ms(), false);
+
+	Ref<SentryNativeOptions> native = p_options->get_native();
+	_define_setting(PropertyInfo(Variant::INT, "sentry/native/native_crash_backend/crash_reporting_mode", PROPERTY_HINT_ENUM, "Minidump Only:0,Native Stackwalking Only:1,Native Stackwalking With Minidump:2"), native->get_crash_reporting_mode(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/native/native_crash_backend/minidump_mode", PROPERTY_HINT_ENUM, "Stack Only:0,Smart:1,Full Memory:2"), native->get_minidump_mode(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/native/native_crash_backend/thread_stackwalk_mode", PROPERTY_HINT_ENUM, "Crashed Thread Only:1,All Threads:2"), native->get_thread_stackwalk_mode(), false);
+	_define_setting(PropertyInfo(Variant::INT, "sentry/native/native_crash_backend/crash_upload_mode", PROPERTY_HINT_ENUM, "Synchronous:0,Asynchronous:1"), native->get_crash_upload_mode(), false);
 
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/enable_detection"), p_options->get_android()->get_enable_anr_detection(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_interval_ms"), p_options->get_android()->get_anr_timeout_interval_ms(), false);
@@ -338,6 +364,24 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	limits->set_repeated_error_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/repeated_error_window_ms", limits->get_repeated_error_window_ms()));
 	limits->set_throttle_events(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/throttle_events", limits->get_throttle_events()));
 	limits->set_throttle_window_ms(ProjectSettings::get_singleton()->get_setting("sentry/godot_logger/limits/throttle_window_ms", limits->get_throttle_window_ms()));
+
+	Ref<SentryNativeOptions> native = p_options->get_native();
+	native->set_crash_reporting_mode(static_cast<SentryNativeOptions::CrashReportingMode>(int(
+			ProjectSettings::get_singleton()->get_setting(
+					"sentry/native/native_crash_backend/crash_reporting_mode",
+					native->get_crash_reporting_mode()))));
+	native->set_minidump_mode(static_cast<SentryNativeOptions::MinidumpMode>(int(
+			ProjectSettings::get_singleton()->get_setting(
+					"sentry/native/native_crash_backend/minidump_mode",
+					native->get_minidump_mode()))));
+	native->set_thread_stackwalk_mode(static_cast<SentryNativeOptions::ThreadStackwalkMode>(int(
+			ProjectSettings::get_singleton()->get_setting(
+					"sentry/native/native_crash_backend/thread_stackwalk_mode",
+					native->get_thread_stackwalk_mode()))));
+	native->set_crash_upload_mode(static_cast<SentryNativeOptions::CrashUploadMode>(int(
+			ProjectSettings::get_singleton()->get_setting(
+					"sentry/native/native_crash_backend/crash_upload_mode",
+					native->get_crash_upload_mode()))));
 
 	p_options->android->set_enable_anr_detection(
 			ProjectSettings::get_singleton()->get_setting(
@@ -558,6 +602,7 @@ void SentryOptions::_bind_methods() {
 	BIND_PROPERTY(SentryOptions, PropertyInfo(Variant::CALLABLE, "before_capture_screenshot"), set_before_capture_screenshot, get_before_capture_screenshot);
 
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);
+	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "native", PROPERTY_HINT_TYPE_STRING, "SentryNativeOptions", PROPERTY_USAGE_NONE), get_native);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "android", PROPERTY_HINT_TYPE_STRING, "SentryAndroidOptions", PROPERTY_USAGE_NONE), get_android);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "apple", PROPERTY_HINT_TYPE_STRING, "SentryAppleOptions", PROPERTY_USAGE_NONE), get_apple);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "web", PROPERTY_HINT_TYPE_STRING, "SentryWebOptions", PROPERTY_USAGE_NONE), get_web);
@@ -597,6 +642,7 @@ void SentryOptions::_bind_methods() {
 }
 
 SentryOptions::SentryOptions() {
+	native.instantiate();
 	experimental.instantiate();
 	experimental->owner = this;
 	android.instantiate();

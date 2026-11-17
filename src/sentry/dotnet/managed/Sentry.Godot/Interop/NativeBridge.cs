@@ -177,10 +177,21 @@ internal static partial class NativeBridge
         public GodotStringHandle attachment_type;
     }
 
+    // Must match layout of NativeOptionsData in csharp_interop.cpp.
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeOptionsData
+    {
+        public int crash_reporting_mode;
+        public int minidump_mode;
+        public int thread_stackwalk_mode;
+        public int crash_upload_mode;
+    }
+
     // Must match layout of NativeOptions in csharp_interop.cpp.
     [StructLayout(LayoutKind.Sequential)]
     private struct NativeOptions
     {
+        public NativeOptionsData native;
         public AutoMetricsOptionsData auto_metrics;
         public LoggerLimitsData logger_limits;
         public GodotStringHandle dsn;
@@ -221,6 +232,7 @@ internal static partial class NativeBridge
     [StructLayout(LayoutKind.Sequential)]
     private unsafe struct ManagedOptions
     {
+        public NativeOptionsData native;
         public AutoMetricsOptionsData auto_metrics;
         public LoggerLimitsData logger_limits;
         public char* dsn;
@@ -671,6 +683,10 @@ internal static partial class NativeBridge
 
     private static void ApplyNativeOptions(NativeOptions data, SentryGodotOptions opts)
     {
+        opts.Native.CrashReportingMode = (SentryCrashReportingMode)data.native.crash_reporting_mode;
+        opts.Native.MinidumpMode = (SentryMinidumpMode)data.native.minidump_mode;
+        opts.Native.ThreadStackwalkMode = (SentryThreadStackwalkMode)data.native.thread_stackwalk_mode;
+        opts.Native.CrashUploadMode = (SentryCrashUploadMode)data.native.crash_upload_mode;
         opts.AutoMetrics.EnableFrameMetrics = data.auto_metrics.enable_frame_metrics != 0;
         opts.AutoMetrics.EnableRenderingMetrics = data.auto_metrics.enable_rendering_metrics != 0;
         opts.AutoMetrics.EnableMemoryMetrics = data.auto_metrics.enable_memory_metrics != 0;
@@ -990,6 +1006,13 @@ internal static partial class NativeBridge
         {
             var managed = new ManagedOptions
             {
+                native = new NativeOptionsData
+                {
+                    crash_reporting_mode = (int)opts.Native.CrashReportingMode,
+                    minidump_mode = (int)opts.Native.MinidumpMode,
+                    thread_stackwalk_mode = (int)opts.Native.ThreadStackwalkMode,
+                    crash_upload_mode = (int)opts.Native.CrashUploadMode,
+                },
                 auto_metrics = new AutoMetricsOptionsData
                 {
                     enable_frame_metrics = (byte)(opts.AutoMetrics.EnableFrameMetrics ? 1 : 0),

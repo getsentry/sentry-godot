@@ -187,6 +187,9 @@
 		<member name="max_breadcrumbs" type="int" setter="set_max_breadcrumbs" getter="get_max_breadcrumbs" default="100">
 			Maximum number of breadcrumbs to send with an event. You should be aware that Sentry has a maximum payload size and any events exceeding that payload size will be dropped.
 		</member>
+		<member name="native" type="SentryNativeOptions" setter="" getter="get_native">
+			Configures native-specific options for the sentry-native SDK, which is used on Linux and Windows. See [SentryNativeOptions] for details.
+		</member>
 		<member name="org_id" type="String" setter="set_org_id" getter="get_org_id" default="&quot;&quot;">
 			Sets the organization ID included as [code]sentry-org_id[/code] in the [code]baggage[/code] header returned by [method SentrySpan.get_trace_headers]. If empty, the SDK derives it from [member dsn].
 			Set this when the DSN does not include an organization ID, as can happen with self-hosted Sentry or a local Relay. Downstream services use the ID to determine whether an incoming trace belongs to the same organization before continuing it.
