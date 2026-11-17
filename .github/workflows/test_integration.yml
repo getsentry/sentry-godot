@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   integration-tests:
-    name: Test ${{matrix.test-platform}} ${{matrix.godot-arch}}${{matrix.dotnet && ' .NET' || ''}}
+    name: Test ${{matrix.test-platform}} ${{matrix.godot-arch}}${{matrix.dotnet && ' .NET' || ''}}${{matrix.crash-backend && format(' ({0})', matrix.crash-backend) || ''}}
     runs-on: ${{matrix.runner}}
     timeout-minutes: 60
     strategy:
@@ -31,26 +31,62 @@ jobs:
           - test-platform: Linux
             runner: ubuntu-latest
             godot-arch: x86_64
+            crash-backend: crashpad
+
+          - test-platform: Linux
+            runner: ubuntu-latest
+            godot-arch: x86_64
+            crash-backend: native
 
           - test-platform: Linux
             runner: ubuntu-latest
             godot-arch: x86_32
+            crash-backend: crashpad
+
+          - test-platform: Linux
+            runner: ubuntu-latest
+            godot-arch: x86_32
+            crash-backend: native
 
           - test-platform: Linux
             runner: ubuntu-22.04-arm
             godot-arch: arm64
+            crash-backend: crashpad
+
+          - test-platform: Linux
+            runner: ubuntu-22.04-arm
+            godot-arch: arm64
+            crash-backend: native
 
           - test-platform: Windows
             runner: windows-latest
             godot-arch: x86_64
+            crash-backend: crashpad
+
+          - test-platform: Windows
+            runner: windows-latest
+            godot-arch: x86_64
+            crash-backend: native
 
           - test-platform: Windows
             runner: windows-latest
             godot-arch: x86_32
+            crash-backend: crashpad
+
+          - test-platform: Windows
+            runner: windows-latest
+            godot-arch: x86_32
+            crash-backend: native
 
           - test-platform: Windows
             runner: windows-11-arm
             godot-arch: arm64
+            crash-backend: crashpad
+
+          - test-platform: Windows
+            runner: windows-11-arm
+            godot-arch: arm64
+            crash-backend: native
 
           - test-platform: macOS
             runner: macos-latest
@@ -79,12 +115,28 @@ jobs:
           - test-platform: Linux
             runner: ubuntu-latest
             godot-arch: x86_64
+            crash-backend: crashpad
+            dotnet: true
+            test-script: tests/integration/Integration.Dotnet.Tests.ps1
+
+          - test-platform: Linux
+            runner: ubuntu-latest
+            godot-arch: x86_64
+            crash-backend: native
             dotnet: true
             test-script: tests/integration/Integration.Dotnet.Tests.ps1
 
           - test-platform: Windows
             runner: windows-latest
             godot-arch: x86_64
+            crash-backend: crashpad
+            dotnet: true
+            test-script: tests/integration/Integration.Dotnet.Tests.ps1
+
+          - test-platform: Windows
+            runner: windows-latest
+            godot-arch: x86_64
+            crash-backend: native
             dotnet: true
             test-script: tests/integration/Integration.Dotnet.Tests.ps1
 
@@ -202,6 +254,7 @@ jobs:
         shell: pwsh
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
+          GODOT_EDITOR_CUSTOM_FEATURES: ${{ matrix.crash-backend && format('sentry_crash_backend_{0}', matrix.crash-backend) || '' }}
           SENTRY_TEST_PLATFORM: ${{ matrix.test-platform }}
           SENTRY_TEST_EXECUTABLE: ${{ matrix.test-executable }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
