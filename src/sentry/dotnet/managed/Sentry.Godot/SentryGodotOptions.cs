@@ -35,6 +35,28 @@ public sealed class SentryGodotOptions : SentryOptions
     /// </summary>
     public SentryNativeOptions Native { get; } = new();
 
+    /// <remarks>
+    /// Always returns true; assignments have no effect. This compatibility property will be removed in v3.
+    /// To filter or drop managed logs, use SetBeforeSendLog and return null.
+    /// </remarks>
+    [Obsolete("EnableLogs has no effect and will be removed in v3. To drop logs, use SetBeforeSendLog and return null.")]
+    public bool EnableLogs
+    {
+        get => true;
+        set { }
+    }
+
+    /// <remarks>
+    /// Always returns true; assignments have no effect. This compatibility property will be removed in v3.
+    /// To filter or drop managed metrics, use SetBeforeSendMetric and return null.
+    /// </remarks>
+    [Obsolete("EnableMetrics has no effect and will be removed in v3. To drop metrics, use SetBeforeSendMetric and return null.")]
+    public bool EnableMetrics
+    {
+        get => true;
+        set { }
+    }
+
     /// <summary>
     /// If enabled, the SDK will attach the Godot log file to the event.
     /// </summary>
