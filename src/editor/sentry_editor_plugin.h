@@ -12,11 +12,11 @@ class SentryEditorPlugin : public EditorPlugin {
 
 private:
 	Ref<EditorExportPlugin> _native_export_plugin;
-	Ref<EditorExportPlugin> android_export_plugin;
-	Ref<EditorExportPlugin> unix_export_plugin;
-	Ref<EditorExportPlugin> web_export_plugin;
-	Ref<EditorExportPlugin> ios_export_plugin;
-	Ref<EditorExportPlugin> macos_export_plugin;
+	Ref<EditorExportPlugin> _android_export_plugin;
+	Ref<EditorExportPlugin> _unix_export_plugin;
+	Ref<EditorExportPlugin> _web_export_plugin;
+	Ref<EditorExportPlugin> _ios_export_plugin;
+	Ref<EditorExportPlugin> _macos_export_plugin;
 
 protected:
 	static void _bind_methods() {}
