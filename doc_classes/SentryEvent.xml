@@ -43,6 +43,13 @@
 				Useful for distinguishing crash reports from other event types such as logs or script errors.
 			</description>
 		</method>
+		<method name="remove_extra">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<description>
+				Removes the extra value with the specified [param key].
+			</description>
+		</method>
 		<method name="remove_tag">
 			<return type="void" />
 			<param index="0" name="key" type="String" />
@@ -65,6 +72,14 @@
 			<param index="1" name="value" type="String" />
 			<description>
 				Sets the value of the exception at the specified [param index].
+			</description>
+		</method>
+		<method name="set_extra">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets an extra value with the specified [param key]. If an extra with that key already exists, its value is replaced.
 			</description>
 		</method>
 		<method name="set_fingerprint">

@@ -87,6 +87,16 @@ String SentryEvent::get_tag(const String &p_key) {
 	return _impl->get_tag(p_key);
 }
 
+void SentryEvent::set_extra(const String &p_key, const Variant &p_value) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set extra with an empty key.");
+	_impl->set_extra(p_key, p_value);
+}
+
+void SentryEvent::remove_extra(const String &p_key) {
+	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't remove an extra with an empty key.");
+	_impl->remove_extra(p_key);
+}
+
 void SentryEvent::set_user(const Ref<SentryUser> &p_user) {
 	_impl->set_user(p_user);
 }
@@ -171,6 +181,8 @@ void SentryEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tag", "key", "value"), &SentryEvent::set_tag);
 	ClassDB::bind_method(D_METHOD("remove_tag", "key"), &SentryEvent::remove_tag);
 	ClassDB::bind_method(D_METHOD("get_tag", "key"), &SentryEvent::get_tag);
+	ClassDB::bind_method(D_METHOD("set_extra", "key", "value"), &SentryEvent::set_extra);
+	ClassDB::bind_method(D_METHOD("remove_extra", "key"), &SentryEvent::remove_extra);
 	ClassDB::bind_method(D_METHOD("set_user", "user"), &SentryEvent::set_user);
 	ClassDB::bind_method(D_METHOD("set_fingerprint", "fingerprint"), &SentryEvent::set_fingerprint);
 	ClassDB::bind_method(D_METHOD("set_context", "key", "value"), &SentryEvent::set_context);
