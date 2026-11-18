@@ -151,6 +151,34 @@ func test_event_json_with_event_tags() -> void:
 		.verify()
 
 
+func test_event_json_with_event_extras() -> void:
+	var event := SentryEvent.new()
+	event.set_extra("score", 10)
+	event.set_extra("player", {
+		"name": "Mighty Fighter",
+		"items": ["sword", "shield"],
+	})
+	event.set_extra("score", 20)
+
+	var json := event.to_json()
+
+	assert_json(json).describe("Extra values are serialized and overwritten by key") \
+		.at("/extra") \
+		.is_object() \
+		.must_contain("score", 20) \
+		.must_contain("player", {"name": "Mighty Fighter", "items": ["sword", "shield"]}) \
+		.verify()
+
+	event.remove_extra("score")
+	json = event.to_json()
+
+	assert_json(json).describe("Removed extra is omitted while other extras remain") \
+		.at("/extra") \
+		.must_not_contain("score") \
+		.must_contain("player", {"name": "Mighty Fighter", "items": ["sword", "shield"]}) \
+		.verify()
+
+
 func test_event_json_with_global_tags() -> void:
 	SentrySDK.set_tag("game_mode", "survival")
 	SentrySDK.set_tag("level_type", "procedural")

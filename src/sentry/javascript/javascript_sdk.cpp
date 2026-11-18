@@ -24,6 +24,8 @@
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/reg_ex.hpp>
 
+#include <emscripten.h>
+
 namespace sentry::javascript {
 
 namespace {
