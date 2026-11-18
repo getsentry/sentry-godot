@@ -676,10 +676,11 @@ void SentrySDK::prepare_and_auto_initialize() {
 	// user extracts the distribution archive without preserving such permissions.
 	if (OS::get_singleton()->is_debug_build()) {
 		_fix_unix_executable_permissions("res://addons/sentry/bin/macos/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/x86_64/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/x86_32/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/arm64/crashpad_handler");
-		_fix_unix_executable_permissions("res://addons/sentry/bin/linux/arm32/crashpad_handler");
+		for (const char *arch : { "x86_64", "x86_32", "arm64" }) {
+			String bin_dir = String("res://addons/sentry/bin/linux").path_join(arch);
+			_fix_unix_executable_permissions(bin_dir.path_join("crashpad/crashpad_handler"));
+			_fix_unix_executable_permissions(bin_dir.path_join("native/sentry-crash"));
+		}
 	}
 #endif
 

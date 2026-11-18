@@ -8,19 +8,43 @@ compatibility_minimum = "{compatibility_minimum}"
 macos.debug = "res://addons/sentry/bin/macos/libsentry.macos.debug.dylib"
 macos.release = "res://addons/sentry/bin/macos/libsentry.macos.release.dylib"
 
-windows.debug.x86_64 = "res://addons/sentry/bin/windows/x86_64/libsentry.windows.debug.x86_64.dll"
-windows.release.x86_64 = "res://addons/sentry/bin/windows/x86_64/libsentry.windows.release.x86_64.dll"
-windows.debug.x86_32 = "res://addons/sentry/bin/windows/x86_32/libsentry.windows.debug.x86_32.dll"
-windows.release.x86_32 = "res://addons/sentry/bin/windows/x86_32/libsentry.windows.release.x86_32.dll"
-windows.debug.arm64 = "res://addons/sentry/bin/windows/arm64/libsentry.windows.debug.arm64.dll"
-windows.release.arm64 = "res://addons/sentry/bin/windows/arm64/libsentry.windows.release.arm64.dll"
+windows.debug.x86_64 = "res://addons/sentry/bin/windows/x86_64/crashpad/libsentry.windows.debug.x86_64.dll"
+windows.debug.x86_64.sentry_crash_backend_crashpad = "res://addons/sentry/bin/windows/x86_64/crashpad/libsentry.windows.debug.x86_64.dll"
+windows.debug.x86_64.sentry_crash_backend_native = "res://addons/sentry/bin/windows/x86_64/native/libsentry.windows.debug.x86_64.dll"
+windows.release.x86_64 = "res://addons/sentry/bin/windows/x86_64/crashpad/libsentry.windows.release.x86_64.dll"
+windows.release.x86_64.sentry_crash_backend_crashpad = "res://addons/sentry/bin/windows/x86_64/crashpad/libsentry.windows.release.x86_64.dll"
+windows.release.x86_64.sentry_crash_backend_native = "res://addons/sentry/bin/windows/x86_64/native/libsentry.windows.release.x86_64.dll"
+windows.debug.x86_32 = "res://addons/sentry/bin/windows/x86_32/crashpad/libsentry.windows.debug.x86_32.dll"
+windows.debug.x86_32.sentry_crash_backend_crashpad = "res://addons/sentry/bin/windows/x86_32/crashpad/libsentry.windows.debug.x86_32.dll"
+windows.debug.x86_32.sentry_crash_backend_native = "res://addons/sentry/bin/windows/x86_32/native/libsentry.windows.debug.x86_32.dll"
+windows.release.x86_32 = "res://addons/sentry/bin/windows/x86_32/crashpad/libsentry.windows.release.x86_32.dll"
+windows.release.x86_32.sentry_crash_backend_crashpad = "res://addons/sentry/bin/windows/x86_32/crashpad/libsentry.windows.release.x86_32.dll"
+windows.release.x86_32.sentry_crash_backend_native = "res://addons/sentry/bin/windows/x86_32/native/libsentry.windows.release.x86_32.dll"
+windows.debug.arm64 = "res://addons/sentry/bin/windows/arm64/crashpad/libsentry.windows.debug.arm64.dll"
+windows.debug.arm64.sentry_crash_backend_crashpad = "res://addons/sentry/bin/windows/arm64/crashpad/libsentry.windows.debug.arm64.dll"
+windows.debug.arm64.sentry_crash_backend_native = "res://addons/sentry/bin/windows/arm64/native/libsentry.windows.debug.arm64.dll"
+windows.release.arm64 = "res://addons/sentry/bin/windows/arm64/crashpad/libsentry.windows.release.arm64.dll"
+windows.release.arm64.sentry_crash_backend_crashpad = "res://addons/sentry/bin/windows/arm64/crashpad/libsentry.windows.release.arm64.dll"
+windows.release.arm64.sentry_crash_backend_native = "res://addons/sentry/bin/windows/arm64/native/libsentry.windows.release.arm64.dll"
 
-linux.debug.x86_64 = "res://addons/sentry/bin/linux/x86_64/libsentry.linux.debug.x86_64.so"
-linux.release.x86_64 = "res://addons/sentry/bin/linux/x86_64/libsentry.linux.release.x86_64.so"
-linux.debug.x86_32 = "res://addons/sentry/bin/linux/x86_32/libsentry.linux.debug.x86_32.so"
-linux.release.x86_32 = "res://addons/sentry/bin/linux/x86_32/libsentry.linux.release.x86_32.so"
-linux.debug.arm64 = "res://addons/sentry/bin/linux/arm64/libsentry.linux.debug.arm64.so"
-linux.release.arm64 = "res://addons/sentry/bin/linux/arm64/libsentry.linux.release.arm64.so"
+linux.debug.x86_64 = "res://addons/sentry/bin/linux/x86_64/crashpad/libsentry.linux.debug.x86_64.so"
+linux.debug.x86_64.sentry_crash_backend_crashpad = "res://addons/sentry/bin/linux/x86_64/crashpad/libsentry.linux.debug.x86_64.so"
+linux.debug.x86_64.sentry_crash_backend_native = "res://addons/sentry/bin/linux/x86_64/native/libsentry.linux.debug.x86_64.so"
+linux.release.x86_64 = "res://addons/sentry/bin/linux/x86_64/crashpad/libsentry.linux.release.x86_64.so"
+linux.release.x86_64.sentry_crash_backend_crashpad = "res://addons/sentry/bin/linux/x86_64/crashpad/libsentry.linux.release.x86_64.so"
+linux.release.x86_64.sentry_crash_backend_native = "res://addons/sentry/bin/linux/x86_64/native/libsentry.linux.release.x86_64.so"
+linux.debug.x86_32 = "res://addons/sentry/bin/linux/x86_32/crashpad/libsentry.linux.debug.x86_32.so"
+linux.debug.x86_32.sentry_crash_backend_crashpad = "res://addons/sentry/bin/linux/x86_32/crashpad/libsentry.linux.debug.x86_32.so"
+linux.debug.x86_32.sentry_crash_backend_native = "res://addons/sentry/bin/linux/x86_32/native/libsentry.linux.debug.x86_32.so"
+linux.release.x86_32 = "res://addons/sentry/bin/linux/x86_32/crashpad/libsentry.linux.release.x86_32.so"
+linux.release.x86_32.sentry_crash_backend_crashpad = "res://addons/sentry/bin/linux/x86_32/crashpad/libsentry.linux.release.x86_32.so"
+linux.release.x86_32.sentry_crash_backend_native = "res://addons/sentry/bin/linux/x86_32/native/libsentry.linux.release.x86_32.so"
+linux.debug.arm64 = "res://addons/sentry/bin/linux/arm64/crashpad/libsentry.linux.debug.arm64.so"
+linux.debug.arm64.sentry_crash_backend_crashpad = "res://addons/sentry/bin/linux/arm64/crashpad/libsentry.linux.debug.arm64.so"
+linux.debug.arm64.sentry_crash_backend_native = "res://addons/sentry/bin/linux/arm64/native/libsentry.linux.debug.arm64.so"
+linux.release.arm64 = "res://addons/sentry/bin/linux/arm64/crashpad/libsentry.linux.release.arm64.so"
+linux.release.arm64.sentry_crash_backend_crashpad = "res://addons/sentry/bin/linux/arm64/crashpad/libsentry.linux.release.arm64.so"
+linux.release.arm64.sentry_crash_backend_native = "res://addons/sentry/bin/linux/arm64/native/libsentry.linux.release.arm64.so"
 
 android.debug.arm64 = "res://addons/sentry/bin/android/libsentry.android.debug.arm64.so"
 android.release.arm64 = "res://addons/sentry/bin/android/libsentry.android.release.arm64.so"
@@ -40,33 +64,6 @@ web.debug.threads.wasm32 = "res://addons/sentry/bin/web/libsentry.web.debug.wasm
 web.release.threads.wasm32 = "res://addons/sentry/bin/web/libsentry.web.release.wasm32.wasm"
 
 [dependencies]
-
-linux.x86_64 = {
-	"res://addons/sentry/bin/linux/x86_64/crashpad_handler" : ""
-}
-
-linux.x86_32 = {
-	"res://addons/sentry/bin/linux/x86_32/crashpad_handler" : ""
-}
-
-linux.arm64 = {
-	"res://addons/sentry/bin/linux/arm64/crashpad_handler" : ""
-}
-
-windows.x86_64 = {
-	"res://addons/sentry/bin/windows/x86_64/crashpad_handler.exe" : "",
-	"res://addons/sentry/bin/windows/x86_64/crashpad_wer.dll": ""
-}
-
-windows.x86_32 = {
-	"res://addons/sentry/bin/windows/x86_32/crashpad_handler.exe" : "",
-	"res://addons/sentry/bin/windows/x86_32/crashpad_wer.dll": ""
-}
-
-windows.arm64 = {
-	"res://addons/sentry/bin/windows/arm64/crashpad_handler.exe" : "",
-	"res://addons/sentry/bin/windows/arm64/crashpad_wer.dll": ""
-}
 
 macos.debug = {
 	"res://addons/sentry/bin/macos/libSentry.dylib" : ""

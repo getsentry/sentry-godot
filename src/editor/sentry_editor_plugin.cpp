@@ -5,6 +5,7 @@
 #include "editor/sentry_editor_export_plugin_android.h"
 #include "editor/sentry_editor_export_plugin_ios.h"
 #include "editor/sentry_editor_export_plugin_macos.h"
+#include "editor/sentry_editor_export_plugin_native.h"
 #include "editor/sentry_editor_export_plugin_unix.h"
 #include "editor/sentry_editor_export_plugin_web.h"
 #include "sentry/logging/print.h"
@@ -14,60 +15,70 @@ void SentryEditorPlugin::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			sentry::logging::print_debug("adding export plugins");
 
-			if (android_export_plugin.is_null()) {
-				android_export_plugin = Ref(memnew(SentryEditorExportPluginAndroid));
+			if (_native_export_plugin.is_null()) {
+				_native_export_plugin = Ref(memnew(SentryEditorExportPluginNative));
 			}
-			add_export_plugin(android_export_plugin);
+			add_export_plugin(_native_export_plugin);
+
+			if (_android_export_plugin.is_null()) {
+				_android_export_plugin = Ref(memnew(SentryEditorExportPluginAndroid));
+			}
+			add_export_plugin(_android_export_plugin);
 
 #ifndef WINDOWS_ENABLED
-			if (unix_export_plugin.is_null()) {
-				unix_export_plugin = Ref(memnew(SentryEditorExportPluginUnix));
+			if (_unix_export_plugin.is_null()) {
+				_unix_export_plugin = Ref(memnew(SentryEditorExportPluginUnix));
 			}
-			add_export_plugin(unix_export_plugin);
+			add_export_plugin(_unix_export_plugin);
 #endif
 
-			if (web_export_plugin.is_null()) {
-				web_export_plugin = Ref(memnew(SentryEditorExportPluginWeb));
+			if (_web_export_plugin.is_null()) {
+				_web_export_plugin = Ref(memnew(SentryEditorExportPluginWeb));
 			}
-			add_export_plugin(web_export_plugin);
+			add_export_plugin(_web_export_plugin);
 
-			if (ios_export_plugin.is_null()) {
-				ios_export_plugin = Ref(memnew(SentryEditorExportPluginIOS));
+			if (_ios_export_plugin.is_null()) {
+				_ios_export_plugin = Ref(memnew(SentryEditorExportPluginIOS));
 			}
-			add_export_plugin(ios_export_plugin);
+			add_export_plugin(_ios_export_plugin);
 
-			if (macos_export_plugin.is_null()) {
-				macos_export_plugin = Ref(memnew(SentryEditorExportPluginMacOS));
+			if (_macos_export_plugin.is_null()) {
+				_macos_export_plugin = Ref(memnew(SentryEditorExportPluginMacOS));
 			}
-			add_export_plugin(macos_export_plugin);
+			add_export_plugin(_macos_export_plugin);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (android_export_plugin.is_valid()) {
-				remove_export_plugin(android_export_plugin);
-				android_export_plugin.unref();
+			if (_native_export_plugin.is_valid()) {
+				remove_export_plugin(_native_export_plugin);
+				_native_export_plugin.unref();
+			}
+
+			if (_android_export_plugin.is_valid()) {
+				remove_export_plugin(_android_export_plugin);
+				_android_export_plugin.unref();
 			}
 
 #ifndef WINDOWS_ENABLED
-			if (unix_export_plugin.is_valid()) {
-				remove_export_plugin(unix_export_plugin);
-				unix_export_plugin.unref();
+			if (_unix_export_plugin.is_valid()) {
+				remove_export_plugin(_unix_export_plugin);
+				_unix_export_plugin.unref();
 			}
 #endif
 
-			if (web_export_plugin.is_valid()) {
-				remove_export_plugin(web_export_plugin);
-				web_export_plugin.unref();
+			if (_web_export_plugin.is_valid()) {
+				remove_export_plugin(_web_export_plugin);
+				_web_export_plugin.unref();
 			}
 
-			if (ios_export_plugin.is_valid()) {
-				remove_export_plugin(ios_export_plugin);
-				ios_export_plugin.unref();
+			if (_ios_export_plugin.is_valid()) {
+				remove_export_plugin(_ios_export_plugin);
+				_ios_export_plugin.unref();
 			}
 
-			if (macos_export_plugin.is_valid()) {
-				remove_export_plugin(macos_export_plugin);
-				macos_export_plugin.unref();
+			if (_macos_export_plugin.is_valid()) {
+				remove_export_plugin(_macos_export_plugin);
+				_macos_export_plugin.unref();
 			}
 		} break;
 	}

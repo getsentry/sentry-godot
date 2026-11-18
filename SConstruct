@@ -53,12 +53,29 @@ def add_custom_bool_option(name, description, default=False):
     help_entries.append({
         'name': name,
         'description': description,
+        'values': ("yes", "no"),
+        'default': default,
+        'actual': value
+    })
+
+
+def add_custom_enum_option(name, description, values, default):
+    value = ARGUMENTS.get(name, default)
+    if value not in values:
+        print(f"ERROR: {name} must be one of: {', '.join(values)}")
+        Exit(1)
+    custom_options[name] = value
+    help_entries.append({
+        'name': name,
+        'description': description,
+        'values': values,
         'default': default,
         'actual': value
     })
 
 
 # Define our custom options.
+add_custom_enum_option("crash_backend", "Desktop crash backend", ("crashpad", "native"), "crashpad")
 add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from static libraries", False)
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
 add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux, Android, Web)", True)
@@ -98,10 +115,12 @@ ARGUMENTS.update(original_arguments)
 for name, value in custom_options.items():
     env[name] = value
 
+crash_backend = env["crash_backend"]
+
 # Generate help for custom options
 help_text = "\nCustom sentry-godot-cocoa options:\n"
 for entry in help_entries:
-    help_text += f"\n{entry['name']}: {entry['description']} (yes|no)\n"
+    help_text += f"\n{entry['name']}: {entry['description']} ({'|'.join(entry['values'])})\n"
     help_text += f"    default: {entry['default']}\n"
     help_text += f"    actual: {entry['actual']}\n"
 Help(help_text)
@@ -137,7 +156,7 @@ if internal_sdk == SDK.DISABLED:
     out_dir = "project/addons/sentry/bin/noop"
 elif internal_sdk == SDK.NATIVE:
     # Separate arch dirs to avoid crashpad handler filename conflicts.
-    out_dir += "/" + arch
+    out_dir += f"/{arch}/{crash_backend}"
 out_dir = Dir(out_dir)
 
 
@@ -146,12 +165,12 @@ out_dir = Dir(out_dir)
 if internal_sdk == SDK.NATIVE:
     env = SConscript("modules/sentry-native.SConscript", exports=["env"])
 
-    # Deploy crashpad handler to project directory.
-    deploy_crashpad_handler = env.CopyCrashpadHandler(out_dir)
-    Default(deploy_crashpad_handler)
+    # Deploy crash handler to project directory.
+    deploy_crash_handler = env.CopyCrashHandler(out_dir)
+    Default(deploy_crash_handler)
 
     if env["separate_debug_symbols"] and platform == "linux":
-        handler_path = str(deploy_crashpad_handler[0])
+        handler_path = str(deploy_crash_handler[0])
         symbols_path = f"{handler_path}.debug"
         Default(env.SeparateDebugSymbols(File(symbols_path), File(handler_path)))
 
