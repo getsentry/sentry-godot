@@ -29,6 +29,9 @@
   - **Breaking:** `Scope.Release` and `Scope.Distribution` are removed. Set `Release` and `Distribution` on the options passed to `SentrySdk.Init()` instead.
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#701)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.13.0...7.0.1)
+- Bump Sentry JavaScript from v11.13.0 to v11.14.0 ([#1108](https://github.com/getsentry/sentry-godot/pull/1108))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#11140)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/11.13.0...11.14.0)
 
 ### Dependencies
 
