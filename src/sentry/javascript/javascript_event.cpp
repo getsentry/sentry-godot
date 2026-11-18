@@ -184,6 +184,24 @@ String JavaScriptEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void JavaScriptEvent::set_extra(const String &p_key, const Variant &p_value) {
+	ERR_FAIL_COND(!js_obj);
+	JSObjectPtr extra_jso = js_obj->get_or_create_object_property("extra");
+	if (extra_jso) {
+		extra_jso->set_property_from_json(
+				p_key.utf8().get_data(),
+				JSON::stringify(p_value).utf8().get_data());
+	}
+}
+
+void JavaScriptEvent::remove_extra(const String &p_key) {
+	ERR_FAIL_COND(!js_obj);
+	JSObjectPtr extra_obj = js_obj->get("extra").as_object();
+	if (extra_obj) {
+		extra_obj->delete_property(p_key.utf8().get_data());
+	}
+}
+
 void JavaScriptEvent::set_user(const Ref<SentryUser> &p_user) {
 	ERR_FAIL_COND(!js_obj);
 
