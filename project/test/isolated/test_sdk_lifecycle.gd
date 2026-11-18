@@ -7,10 +7,38 @@ func before() -> void:
 	pass
 
 
+func test_get_version_info_before_init() -> void:
+	assert_bool(SentrySDK.is_enabled()).is_false()
+	var version: Dictionary = SentrySDK.get_version_info()
+	assert_int(version.size()).is_equal(4)
+	assert_str(version["version"]).is_not_empty()
+	assert_str(version["commit"]).is_not_empty()
+	if OS.has_feature("linux") or OS.has_feature("windows"):
+		assert_str(version["backend"]).is_equal("sentry-native")
+		var expected_variant: String = "sentry_crash_backend_crashpad"
+		if OS.has_feature("sentry_crash_backend_native"):
+			expected_variant = "sentry_crash_backend_native"
+		assert_str(version["variant"]).is_equal(expected_variant)
+	else:
+		var backends: Dictionary = {
+			"macos": "sentry-cocoa",
+			"ios": "sentry-cocoa",
+			"android": "sentry-android",
+			"web": "sentry-javascript",
+		}
+		for feature: String in backends:
+			if OS.has_feature(feature):
+				assert_str(version["backend"]).is_equal(backends[feature])
+		assert_str(version["variant"]).is_empty()
+	version["backend"] = "modified"
+	assert_str(SentrySDK.get_version_info()["backend"]).is_not_equal("modified")
+
+
 ## Test manual initialization and shutdown of SDK.
 func test_sdk_lifecycle() -> void:
 	# SDK should be disabled at start.
 	assert_bool(SentrySDK.is_enabled()).is_false()
+	var version: Dictionary = SentrySDK.get_version_info()
 
 	SentrySDK.capture_message("message not captured before SDK is initialized")
 	await assert_signal(self).is_not_emitted("event_captured")
@@ -20,6 +48,7 @@ func test_sdk_lifecycle() -> void:
 		options.shutdown_timeout_ms = 2000
 	)
 	assert_bool(SentrySDK.is_enabled()).is_true()
+	assert_dict(SentrySDK.get_version_info()).is_equal(version)
 
 	SentrySDK.capture_message("message captured when SDK is initialiazed")
 	await assert_signal(self).is_emitted("event_captured")
@@ -30,6 +59,7 @@ func test_sdk_lifecycle() -> void:
 	#       isEnabled only updates after flushing is finished.
 	await get_tree().create_timer(2.0).timeout
 	assert_bool(SentrySDK.is_enabled()).is_false()
+	assert_dict(SentrySDK.get_version_info()).is_equal(version)
 
 	SentrySDK.capture_message("message not captured when SDK is closed")
 	await assert_signal(self).is_not_emitted("event_captured")

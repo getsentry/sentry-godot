@@ -64,6 +64,9 @@ $CommonTestCases = @(
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
             ($SentryEvent.tags | Where-Object { $_.key -eq "test.suite" }).value | Should -Be "integration"
             ($SentryEvent.tags | Where-Object { $_.key -eq "test.type" }).value | Should -Be $TestType
+            if ($env:SENTRY_TEST_EXPECTED_SDK_VARIANT) {
+                ($SentryEvent.tags | Where-Object { $_.key -eq "test.sdk_variant" }).value | Should -Be $env:SENTRY_TEST_EXPECTED_SDK_VARIANT
+            }
         }
     }
     @{ Name = "Has correct environment tag"; TestBlock = {

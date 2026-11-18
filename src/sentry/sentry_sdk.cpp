@@ -240,6 +240,15 @@ Ref<SentrySpan> SentrySDK::get_active_span() const {
 	return get_current_scope()->get_span();
 }
 
+Dictionary SentrySDK::get_version_info() const {
+	Dictionary version;
+	version["version"] = SENTRY_GODOT_SDK_VERSION_BASE;
+	version["commit"] = SENTRY_GODOT_SDK_COMMIT;
+	version["backend"] = SENTRY_GODOT_SDK_BACKEND;
+	version["variant"] = SENTRY_GODOT_SDK_VARIANT;
+	return version;
+}
+
 void SentrySDK::init(const Callable &p_configuration_callback) {
 	ERR_FAIL_COND_MSG(OS::get_singleton()->get_thread_caller_id() != OS::get_singleton()->get_main_thread_id(),
 			"Sentry: init() must be called from the main thread.");
@@ -706,6 +715,7 @@ void SentrySDK::_bind_methods() {
 	BIND_ENUM_CONSTANT(LEVEL_ERROR);
 	BIND_ENUM_CONSTANT(LEVEL_FATAL);
 
+	ClassDB::bind_method(D_METHOD("get_version_info"), &SentrySDK::get_version_info);
 	ClassDB::bind_method(D_METHOD("init", "configuration_callback"), &SentrySDK::init, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("close"), &SentrySDK::close);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &SentrySDK::is_enabled);

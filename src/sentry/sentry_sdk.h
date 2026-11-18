@@ -105,6 +105,8 @@ public:
 
 	// * Exported API
 
+	Dictionary get_version_info() const;
+
 	void init(const Callable &p_configuration_callback = Callable());
 	void close();
 	bool is_enabled() const { return internal_sdk->is_enabled(); }
