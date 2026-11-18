@@ -43,6 +43,9 @@ public:
 	virtual void remove_tag(const String &p_key) override;
 	virtual String get_tag(const String &p_key) override;
 
+	virtual void set_extra(const String &p_key, const Variant &p_value) override;
+	virtual void remove_extra(const String &p_key) override;
+
 	virtual void set_user(const Ref<SentryUser> &p_user) override;
 
 	virtual void set_fingerprint(const PackedStringArray &p_fingerprint) override;
