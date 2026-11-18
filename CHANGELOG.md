@@ -7,6 +7,7 @@
 - Add `auto_session_tracking` to control automatic session tracking and `session_tracking_interval_ms` to configure its background timeout ([#1069](https://github.com/getsentry/sentry-godot/pull/1069))
 - Add `SentrySDK.start_session()` and `SentrySDK.end_session()` to control session boundaries manually ([#1070](https://github.com/getsentry/sentry-godot/pull/1070))
 - Add an optional native crash backend for Linux and Windows, selectable through the export preset. Crashpad remains the default ([#1096](https://github.com/getsentry/sentry-godot/pull/1096))
+- Add native crash backend options for crash reporting, minidump capture, thread stackwalking, and crash upload, configurable through `SentryOptions.native` and Project Settings ([#1105](https://github.com/getsentry/sentry-godot/pull/1105))
 
 ### Improvements
 

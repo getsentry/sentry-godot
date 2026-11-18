@@ -162,6 +162,10 @@ public partial class DotnetTestHarness : RefCounted
             _receivedOptions["repeated_error_window_ms"] = (int)options.GodotLogger.Limits.RepeatedErrorWindow.TotalMilliseconds;
             _receivedOptions["throttle_events"] = options.GodotLogger.Limits.ThrottleEvents;
             _receivedOptions["throttle_window_ms"] = (int)options.GodotLogger.Limits.ThrottleWindow.TotalMilliseconds;
+            _receivedOptions["crash_reporting_mode"] = (int)options.Native.CrashReportingMode;
+            _receivedOptions["minidump_mode"] = (int)options.Native.MinidumpMode;
+            _receivedOptions["thread_stackwalk_mode"] = (int)options.Native.ThreadStackwalkMode;
+            _receivedOptions["crash_upload_mode"] = (int)options.Native.CrashUploadMode;
             _receivedOptions["enable_anr_detection"] = options.Android.EnableAnrDetection;
             _receivedOptions["anr_timeout_interval_ms"] = (int)options.Android.AnrTimeoutInterval.TotalMilliseconds;
             _receivedOptions["attach_anr_thread_dump"] = options.Android.AttachAnrThreadDump;
@@ -211,6 +215,10 @@ public partial class DotnetTestHarness : RefCounted
             options.GodotLogger.Limits.RepeatedErrorWindow = TimeSpan.FromMilliseconds(2201);
             options.GodotLogger.Limits.ThrottleEvents = 22;
             options.GodotLogger.Limits.ThrottleWindow = TimeSpan.FromMilliseconds(2202);
+            options.Native.CrashReportingMode = SentryCrashReportingMode.Native;
+            options.Native.MinidumpMode = SentryMinidumpMode.Full;
+            options.Native.ThreadStackwalkMode = SentryThreadStackwalkMode.All;
+            options.Native.CrashUploadMode = SentryCrashUploadMode.Sync;
             options.Android.EnableAnrDetection = true;
             options.Android.AnrTimeoutInterval = TimeSpan.FromMilliseconds(2400);
             options.Android.AttachAnrThreadDump = false;

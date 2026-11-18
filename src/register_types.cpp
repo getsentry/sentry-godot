@@ -76,6 +76,7 @@ void register_runtime_classes() {
 	GDREGISTER_CLASS(SentryLoggerLimits);
 	GDREGISTER_CLASS(SentryExperimental);
 	GDREGISTER_CLASS(SentryAndroidOptions);
+	GDREGISTER_CLASS(SentryNativeOptions);
 	GDREGISTER_CLASS(SentryAppleOptions);
 	GDREGISTER_CLASS(SentryWebOptions);
 	GDREGISTER_CLASS(SentryAutoMetricsOptions);

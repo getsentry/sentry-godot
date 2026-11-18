@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SentryNativeOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Configures native-specific options.
+	</brief_description>
+	<description>
+		Contains configuration options for the sentry-native SDK, which is used on Linux and Windows. Access this configuration through [member SentryOptions.native].
+		Configure these options in Project Settings under [b]Sentry &gt; Native[/b], or override them in the initialization callback passed to [method SentrySDK.init].
+		Crashpad is the default crash backend. To use the native crash backend in an exported game, select [b]Native[/b] under [b]Sentry &gt; Crash Backend[/b] in the Linux or Windows export preset.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="crash_reporting_mode" type="int" setter="set_crash_reporting_mode" getter="get_crash_reporting_mode" enum="SentryNativeOptions.CrashReportingMode" default="2">
+			Controls how crash data is collected and sent to Sentry: a minidump for server-side stackwalking, an event with client-side stacktraces, or an event with client-side stacktraces and a minidump attachment. Defaults to [constant CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP].
+			[b]Note:[/b] Applies only to the native crash backend on Linux and Windows; other crash backends ignore this option.
+		</member>
+		<member name="crash_upload_mode" type="int" setter="set_crash_upload_mode" getter="get_crash_upload_mode" enum="SentryNativeOptions.CrashUploadMode" default="0">
+			Controls whether the crashed application waits for upload and daemon shutdown. Defaults to [constant CRASH_UPLOAD_MODE_SYNC].
+			Asynchronous upload allows the application to terminate after crash data is captured while the daemon continues uploading. Capture itself still blocks.
+			[b]Note:[/b] Applies only to the native crash backend on Linux and Windows; other crash backends ignore this option.
+		</member>
+		<member name="minidump_mode" type="int" setter="set_minidump_mode" getter="get_minidump_mode" enum="SentryNativeOptions.MinidumpMode" default="1">
+			Controls how much memory is captured in crash minidumps. Defaults to [constant MINIDUMP_MODE_SMART]. Applies only when [member crash_reporting_mode] includes a minidump. Larger captures take longer to generate and upload.
+			[b]Note:[/b] Applies only to the native crash backend on Linux and Windows; other crash backends ignore this option.
+		</member>
+		<member name="thread_stackwalk_mode" type="int" setter="set_thread_stackwalk_mode" getter="get_thread_stackwalk_mode" enum="SentryNativeOptions.ThreadStackwalkMode" default="2">
+			Controls which threads receive client-side stacktraces. Defaults to [constant THREAD_STACKWALK_MODE_ALL]. Applies only when [member crash_reporting_mode] enables native stackwalking. In crashed-thread-only mode, other threads are still reported with their IDs and names, without stacktraces.
+			Walking all threads provides more context but can delay crash collection in applications with many threads.
+			[b]Note:[/b] Applies only to the native crash backend on Linux and Windows; other crash backends ignore this option.
+		</member>
+	</members>
+	<constants>
+		<constant name="CRASH_REPORTING_MODE_MINIDUMP" value="0" enum="CrashReportingMode">
+			Send a minidump for server-side stackwalking and symbolication.
+		</constant>
+		<constant name="CRASH_REPORTING_MODE_NATIVE" value="1" enum="CrashReportingMode">
+			Send an event with client-side stacktraces, without a minidump.
+		</constant>
+		<constant name="CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP" value="2" enum="CrashReportingMode">
+			Send an event with client-side stacktraces and a minidump attachment.
+		</constant>
+		<constant name="MINIDUMP_MODE_STACK_ONLY" value="0" enum="MinidumpMode">
+			Capture only stack memory.
+		</constant>
+		<constant name="MINIDUMP_MODE_SMART" value="1" enum="MinidumpMode">
+			Capture stack memory and heap memory around the crash site.
+		</constant>
+		<constant name="MINIDUMP_MODE_FULL" value="2" enum="MinidumpMode">
+			Capture full process memory.
+		</constant>
+		<constant name="THREAD_STACKWALK_MODE_CRASHED_ONLY" value="1" enum="ThreadStackwalkMode">
+			Walk only the crashed thread. Other threads retain their IDs and names.
+		</constant>
+		<constant name="THREAD_STACKWALK_MODE_ALL" value="2" enum="ThreadStackwalkMode">
+			Walk all threads.
+		</constant>
+		<constant name="CRASH_UPLOAD_MODE_SYNC" value="0" enum="CrashUploadMode">
+			Keep the application blocked until the crash daemon finishes upload and shutdown.
+		</constant>
+		<constant name="CRASH_UPLOAD_MODE_ASYNC" value="1" enum="CrashUploadMode">
+			Allow the application to terminate after crash data is captured while the daemon continues upload and shutdown work.
+		</constant>
+	</constants>
+</class>

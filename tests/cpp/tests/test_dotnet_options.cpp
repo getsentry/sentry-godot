@@ -103,6 +103,10 @@ TEST_SUITE("[.NET] Options interop") {
 			{ "sentry/godot_logger/limits/repeated_error_window_ms",           "godot_logger:limits:repeated_error_window_ms", 1101,                           2201 },
 			{ "sentry/godot_logger/limits/throttle_events",                    "godot_logger:limits:throttle_events",          12,                             22 },
 			{ "sentry/godot_logger/limits/throttle_window_ms",                 "godot_logger:limits:throttle_window_ms",       1102,                           2202 },
+			{ "sentry/native/native_crash_backend/crash_reporting_mode",       "native:crash_reporting_mode",                  SentryNativeOptions::CRASH_REPORTING_MODE_MINIDUMP, SentryNativeOptions::CRASH_REPORTING_MODE_NATIVE },
+			{ "sentry/native/native_crash_backend/minidump_mode",              "native:minidump_mode",                         SentryNativeOptions::MINIDUMP_MODE_STACK_ONLY, SentryNativeOptions::MINIDUMP_MODE_FULL },
+			{ "sentry/native/native_crash_backend/thread_stackwalk_mode",      "native:thread_stackwalk_mode",                 SentryNativeOptions::THREAD_STACKWALK_MODE_CRASHED_ONLY, SentryNativeOptions::THREAD_STACKWALK_MODE_ALL },
+			{ "sentry/native/native_crash_backend/crash_upload_mode",          "native:crash_upload_mode",                     SentryNativeOptions::CRASH_UPLOAD_MODE_ASYNC, SentryNativeOptions::CRASH_UPLOAD_MODE_SYNC },
 			{ "sentry/android/application_not_responding/enable_detection",    "android:enable_anr_detection",                 false,                          true },
 			{ "sentry/android/application_not_responding/timeout_interval_ms", "android:anr_timeout_interval_ms",              1300,                           2400 },
 			{ "sentry/android/application_not_responding/attach_thread_dump",  "android:attach_anr_thread_dump",               true,                           false },
@@ -129,7 +133,7 @@ TEST_SUITE("[.NET] Options interop") {
 			};
 
 			// NOTE: Excluded SentryWebOptions because Godot does not support .NET Web exports.
-			for (const char *class_name : { "SentryOptions", "SentryAutoMetricsOptions", "SentryGodotLoggerOptions", "SentryLoggerLimits", "SentryAndroidOptions", "SentryAppleOptions" }) {
+			for (const char *class_name : { "SentryOptions", "SentryAutoMetricsOptions", "SentryGodotLoggerOptions", "SentryLoggerLimits", "SentryNativeOptions", "SentryAndroidOptions", "SentryAppleOptions" }) {
 				const TypedArray<Dictionary> properties = ClassDBSingleton::get_singleton()->class_get_property_list(class_name, true);
 				for (int i = 0; i < properties.size(); i++) {
 					const Dictionary property = properties[i];

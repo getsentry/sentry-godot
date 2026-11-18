@@ -213,8 +213,17 @@ struct AttachmentMeta {
 	GodotStringHandle attachment_type;
 };
 
+// Must match layout of NativeOptionsData in NativeBridge.cs.
+struct NativeOptionsData {
+	int32_t crash_reporting_mode;
+	int32_t minidump_mode;
+	int32_t thread_stackwalk_mode;
+	int32_t crash_upload_mode;
+};
+
 // Must match layout of NativeOptions in NativeBridge.cs.
 struct NativeOptions {
+	NativeOptionsData native;
 	AutoMetricsOptionsData auto_metrics;
 	LoggerLimitsData logger_limits;
 
@@ -269,6 +278,7 @@ struct NativeOptions {
 // C# pins strings; native reads synchronously. No free needed.
 // Must match layout of ManagedOptions in NativeBridge.cs.
 struct ManagedOptions {
+	NativeOptionsData native;
 	AutoMetricsOptionsData auto_metrics;
 	LoggerLimitsData logger_limits;
 
@@ -327,6 +337,12 @@ struct NativeTraceContext {
 };
 
 static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions> options) {
+	Ref<SentryNativeOptions> native = options->get_native();
+	native->set_crash_reporting_mode(static_cast<SentryNativeOptions::CrashReportingMode>(data.native.crash_reporting_mode));
+	native->set_minidump_mode(static_cast<SentryNativeOptions::MinidumpMode>(data.native.minidump_mode));
+	native->set_thread_stackwalk_mode(static_cast<SentryNativeOptions::ThreadStackwalkMode>(data.native.thread_stackwalk_mode));
+	native->set_crash_upload_mode(static_cast<SentryNativeOptions::CrashUploadMode>(data.native.crash_upload_mode));
+
 	Ref<SentryAutoMetricsOptions> auto_metrics = options->get_auto_metrics();
 	auto_metrics->set_enable_frame_metrics(data.auto_metrics.enable_frame_metrics);
 	auto_metrics->set_enable_rendering_metrics(data.auto_metrics.enable_rendering_metrics);
@@ -379,6 +395,12 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 
 void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &options) {
 	r_data = {};
+
+	Ref<SentryNativeOptions> native = options->get_native();
+	r_data.native.crash_reporting_mode = native->get_crash_reporting_mode();
+	r_data.native.minidump_mode = native->get_minidump_mode();
+	r_data.native.thread_stackwalk_mode = native->get_thread_stackwalk_mode();
+	r_data.native.crash_upload_mode = native->get_crash_upload_mode();
 
 	Ref<SentryAutoMetricsOptions> auto_metrics = options->get_auto_metrics();
 	r_data.auto_metrics.enable_frame_metrics = auto_metrics->get_enable_frame_metrics();

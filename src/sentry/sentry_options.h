@@ -77,6 +77,38 @@ protected:
 	static void _bind_methods();
 };
 
+class SentryNativeOptions : public RefCounted {
+	GDCLASS(SentryNativeOptions, RefCounted);
+
+public:
+	enum CrashReportingMode {
+		CRASH_REPORTING_MODE_MINIDUMP = 0,
+		CRASH_REPORTING_MODE_NATIVE = 1,
+		CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP = 2,
+	};
+	enum MinidumpMode {
+		MINIDUMP_MODE_STACK_ONLY = 0,
+		MINIDUMP_MODE_SMART = 1,
+		MINIDUMP_MODE_FULL = 2,
+	};
+	enum ThreadStackwalkMode {
+		THREAD_STACKWALK_MODE_CRASHED_ONLY = 1,
+		THREAD_STACKWALK_MODE_ALL = 2,
+	};
+	enum CrashUploadMode {
+		CRASH_UPLOAD_MODE_SYNC = 0,
+		CRASH_UPLOAD_MODE_ASYNC = 1,
+	};
+
+	SIMPLE_PROPERTY(CrashReportingMode, crash_reporting_mode, CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP);
+	SIMPLE_PROPERTY(MinidumpMode, minidump_mode, MINIDUMP_MODE_SMART);
+	SIMPLE_PROPERTY(ThreadStackwalkMode, thread_stackwalk_mode, THREAD_STACKWALK_MODE_ALL);
+	SIMPLE_PROPERTY(CrashUploadMode, crash_upload_mode, CRASH_UPLOAD_MODE_SYNC);
+
+protected:
+	static void _bind_methods();
+};
+
 class SentryAndroidOptions : public RefCounted {
 	GDCLASS(SentryAndroidOptions, RefCounted);
 
@@ -187,6 +219,7 @@ private:
 	int app_hang_timeout_ms = 5000;
 
 	Ref<SentryExperimental> experimental;
+	Ref<SentryNativeOptions> native;
 	Ref<SentryAndroidOptions> android;
 	Ref<SentryAppleOptions> apple;
 	Ref<SentryWebOptions> web;
@@ -310,6 +343,7 @@ public:
 	_FORCE_INLINE_ void set_before_capture_screenshot(const Callable &p_before_capture_screenshot) { before_capture_screenshot = p_before_capture_screenshot; }
 
 	_FORCE_INLINE_ Ref<SentryExperimental> get_experimental() const { return experimental; }
+	_FORCE_INLINE_ Ref<SentryNativeOptions> get_native() const { return native; }
 	_FORCE_INLINE_ Ref<SentryAndroidOptions> get_android() const { return android; }
 	_FORCE_INLINE_ Ref<SentryAppleOptions> get_apple() const { return apple; }
 	_FORCE_INLINE_ Ref<SentryWebOptions> get_web() const { return web; }
@@ -386,3 +420,8 @@ public:
 
 VARIANT_ENUM_CAST(sentry::SentryOptions::TraceLifecycle);
 VARIANT_BITFIELD_CAST(sentry::SentryOptions::GodotLoggerEventMask);
+
+VARIANT_ENUM_CAST(sentry::SentryNativeOptions::CrashReportingMode);
+VARIANT_ENUM_CAST(sentry::SentryNativeOptions::MinidumpMode);
+VARIANT_ENUM_CAST(sentry::SentryNativeOptions::ThreadStackwalkMode);
+VARIANT_ENUM_CAST(sentry::SentryNativeOptions::CrashUploadMode);

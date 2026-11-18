@@ -34,6 +34,54 @@ using NativeEvent = sentry::native::NativeEvent;
 using NativeLog = sentry::native::NativeLog;
 using NativeMetric = sentry::native::NativeMetric;
 
+#ifdef SENTRY_CRASH_BACKEND_NATIVE
+
+sentry_crash_reporting_mode_t _to_native(sentry::SentryNativeOptions::CrashReportingMode p_mode) {
+	switch (p_mode) {
+		case sentry::SentryNativeOptions::CRASH_REPORTING_MODE_MINIDUMP:
+			return SENTRY_CRASH_REPORTING_MODE_MINIDUMP;
+		case sentry::SentryNativeOptions::CRASH_REPORTING_MODE_NATIVE:
+			return SENTRY_CRASH_REPORTING_MODE_NATIVE;
+		case sentry::SentryNativeOptions::CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP:
+			return SENTRY_CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP;
+	}
+	return SENTRY_CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP;
+}
+
+sentry_minidump_mode_t _to_native(sentry::SentryNativeOptions::MinidumpMode p_mode) {
+	switch (p_mode) {
+		case sentry::SentryNativeOptions::MINIDUMP_MODE_STACK_ONLY:
+			return SENTRY_MINIDUMP_MODE_STACK_ONLY;
+		case sentry::SentryNativeOptions::MINIDUMP_MODE_SMART:
+			return SENTRY_MINIDUMP_MODE_SMART;
+		case sentry::SentryNativeOptions::MINIDUMP_MODE_FULL:
+			return SENTRY_MINIDUMP_MODE_FULL;
+	}
+	return SENTRY_MINIDUMP_MODE_SMART;
+}
+
+sentry_thread_stackwalk_mode_t _to_native(sentry::SentryNativeOptions::ThreadStackwalkMode p_mode) {
+	switch (p_mode) {
+		case sentry::SentryNativeOptions::THREAD_STACKWALK_MODE_CRASHED_ONLY:
+			return SENTRY_THREAD_STACKWALK_MODE_CRASHED_ONLY;
+		case sentry::SentryNativeOptions::THREAD_STACKWALK_MODE_ALL:
+			return SENTRY_THREAD_STACKWALK_MODE_ALL;
+	}
+	return SENTRY_THREAD_STACKWALK_MODE_ALL;
+}
+
+sentry_crash_upload_mode_t _to_native(sentry::SentryNativeOptions::CrashUploadMode p_mode) {
+	switch (p_mode) {
+		case sentry::SentryNativeOptions::CRASH_UPLOAD_MODE_SYNC:
+			return SENTRY_CRASH_UPLOAD_MODE_SYNC;
+		case sentry::SentryNativeOptions::CRASH_UPLOAD_MODE_ASYNC:
+			return SENTRY_CRASH_UPLOAD_MODE_ASYNC;
+	}
+	return SENTRY_CRASH_UPLOAD_MODE_SYNC;
+}
+
+#endif // SENTRY_CRASH_BACKEND_NATIVE
+
 sentry_value_t _handle_before_send(sentry_value_t event, sentry_hint_t *hint, void *closure) {
 	Ref<SentryEvent> event_obj = NativeEvent::wrap(event, false);
 	Ref<SentryEvent> processed = sentry::process_event(event_obj);
@@ -445,6 +493,14 @@ void NativeSDK::init() {
 	sentry_options_set_auto_session_tracking(options, SENTRY_OPTIONS()->is_auto_session_tracking_enabled());
 	sentry_options_set_sdk_name(options, "sentry.native.godot");
 	sentry_options_set_logger_enabled_when_crashed(options, false);
+
+#ifdef SENTRY_CRASH_BACKEND_NATIVE
+	Ref<SentryNativeOptions> native = SENTRY_OPTIONS()->get_native();
+	sentry_options_set_crash_reporting_mode(options, _to_native(native->get_crash_reporting_mode()));
+	sentry_options_set_minidump_mode(options, _to_native(native->get_minidump_mode()));
+	sentry_options_set_thread_stackwalk_mode(options, _to_native(native->get_thread_stackwalk_mode()));
+	sentry_options_set_crash_upload_mode(options, _to_native(native->get_crash_upload_mode()));
+#endif
 
 	// Establish handler path.
 #ifdef SENTRY_CRASH_BACKEND_NATIVE

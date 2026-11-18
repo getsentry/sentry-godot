@@ -55,6 +55,13 @@ func test_web_defaults() -> void:
 	assert_bool(options.web.tunnel_trailing_slash).is_false()
 
 
+func test_native_defaults() -> void:
+	assert_int(options.native.crash_reporting_mode).is_equal(SentryNativeOptions.CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP)
+	assert_int(options.native.minidump_mode).is_equal(SentryNativeOptions.MINIDUMP_MODE_SMART)
+	assert_int(options.native.thread_stackwalk_mode).is_equal(SentryNativeOptions.THREAD_STACKWALK_MODE_ALL)
+	assert_int(options.native.crash_upload_mode).is_equal(SentryNativeOptions.CRASH_UPLOAD_MODE_SYNC)
+
+
 @warning_ignore("unused_parameter")
 func test_web_options_retain_assigned_values(property: String, value: Variant, test_parameters := [
 		["enable_tunnel", true],
