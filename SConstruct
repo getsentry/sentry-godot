@@ -57,6 +57,8 @@ add_custom_bool_option("generate_js_bundle", "Generate JavaScript bundle", False
 add_custom_bool_option("tests", "Build C++ unit tests into the GDExtension", False)
 
 # Set project defaults for godot-cpp options.
+default_target = "template_release" if ARGUMENTS.get("platform") == "web" else "editor"
+ARGUMENTS.setdefault("target", default_target)
 ARGUMENTS.setdefault("ios_min_version", IOS_MIN_VERSION)
 ARGUMENTS.setdefault("macos_deployment_target", MACOS_MIN_VERSION)
 
@@ -265,7 +267,6 @@ if env["target"] in ["editor", "template_debug"]:
     except AttributeError:
         print("Not including class reference as we're targeting a pre-4.3 baseline.")
 
-build_type = "release" if env["target"] == "template_release" else "debug"
 shlib_suffix = env["SHLIBSUFFIX"]
 extra = ""
 
@@ -277,7 +278,7 @@ if platform == "ios":
         extra += ".simulator"
 
     temp_dir = "project/addons/sentry/bin/ios/temp"
-    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}.dylib"
+    lib_name = f"libsentry.{platform}.{arch}{extra}.dylib"
     lib_path = f"{temp_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
@@ -285,9 +286,9 @@ if platform == "ios":
     Default(library)
 
     # Generate XCFramework for iOS GDExtension libs if requested
-    device_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.arm64.dylib"
-    simulator_lib = f"{temp_dir}/libsentry.{platform}.{build_type}.universal.simulator.dylib"
-    xcframework_path = f"{out_dir}/libsentry.{platform}.{build_type}.xcframework"
+    device_lib = f"{temp_dir}/libsentry.{platform}.arm64.dylib"
+    simulator_lib = f"{temp_dir}/libsentry.{platform}.universal.simulator.dylib"
+    xcframework_path = f"{out_dir}/libsentry.{platform}.xcframework"
 
     ios_framework = env.CreateXCFrameworkFromLibs(
         framework_path=xcframework_path,
@@ -302,7 +303,7 @@ if platform == "ios":
 elif platform == "macos":
     # *** Build macOS shared library.
 
-    lib_name = f"libsentry.{platform}.{build_type}{extra}.dylib"
+    lib_name = f"libsentry.{platform}{extra}.dylib"
     lib_path = f"{out_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
@@ -316,7 +317,7 @@ else:
     if env["threads"] is False:
         extra += ".nothreads"
 
-    lib_name = f"libsentry.{platform}.{build_type}.{arch}{extra}{shlib_suffix}"
+    lib_name = f"libsentry.{platform}.{arch}{extra}{shlib_suffix}"
     lib_path = f"{out_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
