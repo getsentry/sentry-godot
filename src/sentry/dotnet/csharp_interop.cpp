@@ -105,6 +105,18 @@ struct ManagedStringMap {
 	int32_t pair_count;
 };
 
+// Managed-owned trace propagation targets for passing across P/Invoke.
+// C# builds and pins this; native reads it synchronously during the call.
+// Buffer layout: all patterns concatenated as UTF-16, with one length and regex flag per entry.
+struct ManagedTracePropagationTargets {
+	const char16_t *buffer;
+	const int32_t *lengths;
+	const uint8_t *is_regex;
+	int32_t count;
+};
+
+} // extern "C"
+
 // Decode a ManagedStringMap into a Godot Dictionary (String -> String).
 static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map) {
 	Dictionary dict;
@@ -123,16 +135,6 @@ static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map)
 	}
 	return dict;
 }
-
-// Managed-owned trace propagation targets for passing across P/Invoke.
-// C# builds and pins this; native reads it synchronously during the call.
-// Buffer layout: all patterns concatenated as UTF-16, with one length and regex flag per entry.
-struct ManagedTracePropagationTargets {
-	const char16_t *buffer;
-	const int32_t *lengths;
-	const uint8_t *is_regex;
-	int32_t count;
-};
 
 static Array _managed_trace_propagation_targets_to_array(const ManagedTracePropagationTargets &list) {
 	Array result;
@@ -155,6 +157,8 @@ static Array _managed_trace_propagation_targets_to_array(const ManagedTracePropa
 	}
 	return result;
 }
+
+extern "C" {
 
 // Managed functions that are called from native layer.
 // Must match ManagedFunctions struct in NativeBridge.cs.
