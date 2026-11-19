@@ -29,7 +29,7 @@ namespace {
 
 struct OptionCase {
 	// Project setting used by the native layer as the option's initial value.
-	const char *setting;
+	String setting;
 
 	// Indexed property path on SentryOptions, using ':' for nested sub-objects.
 	const char *property;
@@ -125,6 +125,10 @@ TEST_SUITE("[.NET] Options interop") {
 			{ "sentry/android/application_not_responding/timeout_interval_ms", "android:anr_timeout_interval_ms",              1300,                           2400 },
 			{ "sentry/android/application_not_responding/attach_thread_dump",  "android:attach_anr_thread_dump",               true,                           false },
 			{ "sentry/apple/metrickit/enabled",                                "apple:enable_metrickit",                       true,                           false },
+			{ "sentry/crash_reporter/enabled",                                 "crash_reporter:enabled",                       true,                           false },
+#if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED)
+			{ SentryCrashReporterOptions::get_current_path_setting(),          "crash_reporter:path",                          "interop-native-reporter",      "interop-managed-reporter" },
+#endif
 			// clang-format on
 		};
 
@@ -137,6 +141,10 @@ TEST_SUITE("[.NET] Options interop") {
 			}
 			// Glob patterns of option paths that deliberately don't cross managed boundary.
 			const PackedStringArray exempt_patterns = {
+#if !defined(LINUX_ENABLED) && !defined(WINDOWS_ENABLED)
+				// The SDK reads the crash reporter path setting only on Linux and Windows.
+				"crash_reporter:path",
+#endif
 				// Web options are not synced because Godot does not support .NET on Web platform.
 				"web:*",
 				// Only affects the JavaScript SDK on Web.

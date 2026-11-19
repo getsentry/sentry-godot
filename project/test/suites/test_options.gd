@@ -55,6 +55,29 @@ func test_web_defaults() -> void:
 	assert_bool(options.web.tunnel_trailing_slash).is_false()
 
 
+func test_crash_reporter_options() -> void:
+	assert_bool(options.crash_reporter.enabled).is_false()
+	assert_str(options.crash_reporter.path).is_empty()
+
+	options.crash_reporter.enabled = true
+	options.crash_reporter.path = "reporter/custom_reporter"
+	assert_bool(options.crash_reporter.enabled).is_true()
+	assert_str(options.crash_reporter.path).is_equal("reporter/custom_reporter")
+
+
+@warning_ignore("unused_parameter")
+func test_crash_reporter_path_setting_defaults(setting: String, expected: String, test_parameters := [
+		["sentry/crash_reporter/path_windows_x86_64", "res://addons/sentry/crash_reporter/windows/x86_64/Sentry.CrashReporter.exe"],
+		["sentry/crash_reporter/path_windows_arm64", "res://addons/sentry/crash_reporter/windows/arm64/Sentry.CrashReporter.exe"],
+		["sentry/crash_reporter/path_windows_x86_32", ""],
+		["sentry/crash_reporter/path_linux_x86_64", "res://addons/sentry/crash_reporter/linux/x86_64/Sentry.CrashReporter"],
+		["sentry/crash_reporter/path_linux_arm64", "res://addons/sentry/crash_reporter/linux/arm64/Sentry.CrashReporter"],
+		["sentry/crash_reporter/path_linux_x86_32", ""],
+]) -> void:
+	assert_bool(ProjectSettings.has_setting(setting)).is_true()
+	assert_str(ProjectSettings.property_get_revert(setting)).is_equal(expected)
+
+
 func test_native_defaults() -> void:
 	assert_int(options.native.crash_reporting_mode).is_equal(SentryNativeOptions.CRASH_REPORTING_MODE_NATIVE_WITH_MINIDUMP)
 	assert_int(options.native.minidump_mode).is_equal(SentryNativeOptions.MINIDUMP_MODE_SMART)
