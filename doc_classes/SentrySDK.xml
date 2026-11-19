@@ -106,6 +106,19 @@
 				Returns the ID of the last captured event.
 			</description>
 		</method>
+		<method name="get_version_info" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns build information for the loaded Sentry GDExtension. All values are strings:
+				- [code]version[/code]: The Sentry Godot SDK version, without the commit suffix.
+				- [code]commit[/code]: The abbreviated Git commit used to build the extension.
+				- [code]backend[/code]: The underlying SDK used by the extension: [code]"sentry-native"[/code], [code]"sentry-cocoa"[/code], [code]"sentry-android"[/code], [code]"sentry-javascript"[/code], or [code]"disabled"[/code].
+				- [code]variant[/code]: The feature tag identifying the loaded GDExtension variant, or an empty string when the build has no variant feature tag.
+				Variant feature tags:
+				- [code]sentry_crash_backend_native[/code]: sentry-native with the native crash backend.
+				- [code]sentry_crash_backend_crashpad[/code]: sentry-native with the Crashpad crash backend.
+			</description>
+		</method>
 		<method name="init">
 			<return type="void" />
 			<param index="0" name="configuration_callback" type="Callable" default="Callable()" />

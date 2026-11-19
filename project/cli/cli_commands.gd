@@ -508,6 +508,9 @@ func _add_integration_test_context(p_command: String) -> void:
 
 	SentrySDK.set_tag("test.suite", "integration")
 	SentrySDK.set_tag("test.type", p_command)
+	var variant: String = SentrySDK.get_version_info()["variant"]
+	if not variant.is_empty():
+		SentrySDK.set_tag("test.sdk_variant", variant)
 
 	SentrySDK.add_breadcrumb(SentryBreadcrumb.create("Context configuration finished"))
 

@@ -255,6 +255,7 @@ jobs:
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_API_TOKEN }}
           GODOT_EDITOR_CUSTOM_FEATURES: ${{ matrix.crash-backend && format('sentry_crash_backend_{0}', matrix.crash-backend) || '' }}
+          SENTRY_TEST_EXPECTED_SDK_VARIANT: ${{ matrix.crash-backend && format('sentry_crash_backend_{0}', matrix.crash-backend) || '' }}
           SENTRY_TEST_PLATFORM: ${{ matrix.test-platform }}
           SENTRY_TEST_EXECUTABLE: ${{ matrix.test-executable }}
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}

@@ -45,6 +45,12 @@ public partial class DotnetCliTriggers : RefCounted
 
         SentrySdk.SetTag("test.suite", "integration");
         SentrySdk.SetTag("test.type", testType);
+        var version = Engine.GetSingleton("SentrySDK").Call("get_version_info").AsGodotDictionary();
+        var variant = version["variant"].AsString();
+        if (!string.IsNullOrEmpty(variant))
+        {
+            SentrySdk.SetTag("test.sdk_variant", variant);
+        }
 
         SentrySdk.AddBreadcrumb("Context configuration finished");
     }
