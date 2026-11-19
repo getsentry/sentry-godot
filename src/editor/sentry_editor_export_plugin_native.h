@@ -20,6 +20,7 @@ private:
 	static constexpr CrashBackend DEFAULT_BACKEND = CrashBackend::CRASHPAD;
 
 	CrashBackend _resolve_crash_backend() const;
+	void _export_crash_reporter(const String &p_platform, const String &p_arch);
 
 protected:
 	static void _bind_methods() {}
