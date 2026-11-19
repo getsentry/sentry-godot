@@ -109,6 +109,23 @@ protected:
 	static void _bind_methods();
 };
 
+class SentryCrashReporterOptions : public RefCounted {
+	GDCLASS(SentryCrashReporterOptions, RefCounted);
+
+	SIMPLE_PROPERTY(bool, enabled, false);
+	SIMPLE_PROPERTY(String, path, "");
+
+protected:
+	static void _bind_methods();
+
+public:
+	static String get_path_setting(const String &p_platform, const String &p_arch);
+	static String get_default_path(const String &p_platform, const String &p_arch);
+
+	// Returns the path setting for the running platform and architecture, or empty if there is none.
+	static String get_current_path_setting();
+};
+
 class SentryAndroidOptions : public RefCounted {
 	GDCLASS(SentryAndroidOptions, RefCounted);
 
@@ -220,6 +237,7 @@ private:
 
 	Ref<SentryExperimental> experimental;
 	Ref<SentryNativeOptions> native;
+	Ref<SentryCrashReporterOptions> crash_reporter;
 	Ref<SentryAndroidOptions> android;
 	Ref<SentryAppleOptions> apple;
 	Ref<SentryWebOptions> web;
@@ -344,6 +362,7 @@ public:
 
 	_FORCE_INLINE_ Ref<SentryExperimental> get_experimental() const { return experimental; }
 	_FORCE_INLINE_ Ref<SentryNativeOptions> get_native() const { return native; }
+	_FORCE_INLINE_ Ref<SentryCrashReporterOptions> get_crash_reporter() const { return crash_reporter; }
 	_FORCE_INLINE_ Ref<SentryAndroidOptions> get_android() const { return android; }
 	_FORCE_INLINE_ Ref<SentryAppleOptions> get_apple() const { return apple; }
 	_FORCE_INLINE_ Ref<SentryWebOptions> get_web() const { return web; }
