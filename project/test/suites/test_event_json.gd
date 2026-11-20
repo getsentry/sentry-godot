@@ -177,6 +177,25 @@ func test_event_json_with_event_extras() -> void:
 		.must_not_contain("score") \
 		.must_contain("player", {"name": "Mighty Fighter", "items": ["sword", "shield"]}) \
 		.verify()
+	
+	event.set_extra("score", null)
+	event.set_extra("player", {
+		"name": "Mighty Fighter",
+		"items": null,
+	})
+	json = event.to_json()
+
+	assert_json(json).describe("Top-level null removes only that extra") \
+		.at("/extra") \
+		.is_object() \
+		.must_not_contain("score") \
+		.must_contain("player") \
+		.verify()
+
+	assert_json(json).describe("Nested null is preserved") \
+		.at("/extra/player/items") \
+		.is_null() \
+		.verify()
 
 
 func test_event_json_with_global_tags() -> void:

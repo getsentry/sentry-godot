@@ -89,6 +89,10 @@ String SentryEvent::get_tag(const String &p_key) {
 
 void SentryEvent::set_extra(const String &p_key, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(p_key.is_empty(), "Sentry: Can't set extra with an empty key.");
+	if (p_value.get_type() == Variant::Type::NIL) {
+		_impl->remove_extra(p_key);
+		return;
+	}
 	_impl->set_extra(p_key, p_value);
 }
 
