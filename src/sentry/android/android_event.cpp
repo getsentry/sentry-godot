@@ -108,7 +108,9 @@ String AndroidEvent::get_tag(const String &p_key) {
 
 void AndroidEvent::set_extra(const String &p_key, const Variant &p_value) {
 	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
-	plugin->call(ANDROID_SN(eventSetExtra), event_handle, p_key, p_value);
+	Dictionary wrapper;
+	wrapper["value"] = sanitize_variant(p_value);
+	plugin->call(ANDROID_SN(eventSetExtra), event_handle, p_key, wrapper);
 }
 
 void AndroidEvent::remove_extra(const String &p_key) {

@@ -720,8 +720,14 @@ class SentryAndroidGodotPlugin(godot: Godot) : GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun eventSetExtra(eventHandle: Int, key: String, value: Any?) {
-        getBaseEvent(eventHandle)?.setExtra(key, value)
+    fun eventSetExtra(eventHandle: Int, key: String, wrapper: Dictionary) {
+        val event = getBaseEvent(eventHandle) ?: return
+        val value = wrapper["value"]
+        if (value != null) {
+            event.setExtra(key, value)
+        } else {
+            event.removeExtra(key)
+        }
     }
 
     @UsedByGodot
