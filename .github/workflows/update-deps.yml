@@ -31,6 +31,15 @@ jobs:
           name: Cocoa SDK
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
+  crash-reporter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # v3.5.0
+        with:
+          path: modules/sentry-crash-reporter.properties
+          name: Crash Reporter
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
+
   sentry-android:
     runs-on: ubuntu-latest
     steps:

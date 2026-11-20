@@ -82,6 +82,9 @@ jobs:
             sentry-godot-dylibs.zip
           rm sentry-godot-dylibs.zip
 
+      - name: Download crash reporter
+        run: scripts/download-crash-reporter.sh --output project/addons/sentry/crash_reporter
+
       - name: Assemble packages
         run: scripts/package.sh --source project/ --output out/
 

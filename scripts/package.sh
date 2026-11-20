@@ -14,6 +14,8 @@ built addon (addons/sentry/):
   <name>-<version>.zip                 addon only (addons/sentry/), symbols removed
   <name>-demo-project-<version>.zip    demo project bundled with the addon
   <name>-debug-symbols-<version>.zip   split native debug symbols
+  <name>-crash-reporter-<version>.zip  crash reporter executables, if downloaded
+                                       (see scripts/download-crash-reporter.sh)
 
 Options:
   --source <dir>     Tree with addons/ and the demo project (default: project)
@@ -39,6 +41,9 @@ SYMBOL_PATTERNS=(
     "addons/sentry/bin/macos/dSYMs/*"
     "addons/sentry/bin/ios/dSYMs/*"
 )
+
+# Optional crash reporter, shipped as its own package and dropped from addon and demo zips.
+CRASH_REPORTER_DIR="addons/sentry/crash_reporter"
 
 # Paths dropped from the demo-project zip (in addition to the symbol patterns).
 DEMO_EXCLUDE_PATTERNS=(
@@ -159,7 +164,7 @@ echo "Wrote $zipfile"
 # --- Addon package ---
 
 zipfile="$OUT_ABS/${NAME}-${VERSION}.zip"
-make_zip "$zipfile" addons/sentry -x "${SYMBOL_PATTERNS[@]}"
+make_zip "$zipfile" addons/sentry -x "${SYMBOL_PATTERNS[@]}" "$CRASH_REPORTER_DIR/*"
 stage_file "$zipfile" "$LICENSE_ABS" "addons/sentry/LICENSE.md"
 echo "Wrote $zipfile"
 
@@ -170,7 +175,7 @@ if [[ ! -f "$SOURCE/project.godot" ]]; then
 fi
 
 zipfile="$OUT_ABS/${NAME}-demo-project-${VERSION}.zip"
-make_zip "$zipfile" . -x "${DEMO_EXCLUDE_PATTERNS[@]}" "${SYMBOL_PATTERNS[@]}"
+make_zip "$zipfile" . -x "${DEMO_EXCLUDE_PATTERNS[@]}" "${SYMBOL_PATTERNS[@]}" "$CRASH_REPORTER_DIR/*"
 
 # Sanitize project.godot: drop [editor_plugins]/[gdunit4] sections, clear DSN.
 tmp="$(mktemp -d)"
@@ -185,3 +190,13 @@ stage_file "$zipfile" "$LICENSE_ABS" "LICENSE.md"
 stage_file "$zipfile" "$LICENSE_ABS" "addons/sentry/LICENSE.md"
 
 echo "Wrote $zipfile"
+
+# --- Crash reporter package ---
+
+if [[ -d "$SOURCE/$CRASH_REPORTER_DIR" ]]; then
+    zipfile="$OUT_ABS/${NAME}-crash-reporter-${VERSION}.zip"
+    make_zip "$zipfile" "$CRASH_REPORTER_DIR"
+    echo "Wrote $zipfile"
+else
+    echo "Warning: $SOURCE/$CRASH_REPORTER_DIR not found; skipping crash reporter package (see scripts/download-crash-reporter.sh)" >&2
+fi
