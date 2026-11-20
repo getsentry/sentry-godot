@@ -2,9 +2,16 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "sentry/sentry_options.h"
+#include "sentry/util/file_permissions.h"
+
 #include <godot_cpp/classes/editor_export_preset.hpp>
+#include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 
 #include <initializer_list>
+
+using sentry::SentryCrashReporterOptions;
 
 namespace {
 
@@ -80,6 +87,18 @@ PackedStringArray SentryEditorExportPluginNative::_get_export_features(const Ref
 	return features;
 }
 
+void SentryEditorExportPluginNative::_export_begin(const PackedStringArray &p_features, bool p_is_debug, const String &p_path, uint32_t p_flags) {
+	_export_path = p_path;
+	_exported_reporter = String();
+}
+
+void SentryEditorExportPluginNative::_export_end() {
+	// Godot copies shared objects without execute bits.
+	if (!_exported_reporter.is_empty()) {
+		sentry::util::ensure_unix_executable(_export_path.get_base_dir().path_join(_exported_reporter));
+	}
+}
+
 void SentryEditorExportPluginNative::_export_file(const String &p_path, const String &p_type, const PackedStringArray &p_features) {
 	if (p_path != "res://addons/sentry/sentry.gdextension") {
 		return;
@@ -112,6 +131,45 @@ void SentryEditorExportPluginNative::_export_file(const String &p_path, const St
 	add_shared_object(source_dir.path_join(extension), PackedStringArray(), String());
 	for (const char *dependency : dependencies) {
 		add_shared_object(source_dir.path_join(dependency), PackedStringArray(), String());
+	}
+
+	_export_crash_reporter(platform, arch);
+}
+
+void SentryEditorExportPluginNative::_export_crash_reporter(const String &p_platform, const String &p_arch) {
+	Ref<EditorExportPreset> preset = get_export_preset();
+	ERR_FAIL_COND(preset.is_null());
+	const bool is_enabled = preset->get_project_setting("sentry/crash_reporter/enabled").operator bool();
+	if (!is_enabled) {
+		return;
+	}
+
+	Ref<EditorExportPlatform> export_platform = get_export_platform();
+	ERR_FAIL_COND(export_platform.is_null());
+
+	const String path_setting = SentryCrashReporterOptions::get_path_setting(p_platform, p_arch);
+	// Architectures without a path setting have no reporter.
+	const String path = ProjectSettings::get_singleton()->has_setting(path_setting) ? String(preset->get_project_setting(path_setting)) : String();
+	if (path.is_empty()) {
+		export_platform->add_message(EditorExportPlatform::EXPORT_MESSAGE_WARNING, "Sentry",
+				vformat("Crash reporter is enabled, but \"%s\" is empty. Exporting without the crash reporter.", path_setting));
+		return;
+	}
+
+	if (!FileAccess::file_exists(path)) {
+		String message = vformat("Crash reporter not found at \"%s\".", path);
+		if (path == SentryCrashReporterOptions::get_default_path(p_platform, p_arch)) {
+			message += " Install the Sentry crash reporter package (sentry-godot-crash-reporter-<version>.zip) from the SDK release, or disable the crash reporter.";
+		} else {
+			message += vformat(" Update \"%s\" in the project settings, or disable the crash reporter.", path_setting);
+		}
+		export_platform->add_message(EditorExportPlatform::EXPORT_MESSAGE_ERROR, "Sentry", message);
+		return;
+	}
+
+	add_shared_object(path, PackedStringArray(), String());
+	if (p_platform == "linux") {
+		_exported_reporter = path.get_file();
 	}
 }
 

@@ -4,6 +4,7 @@
 #include "sentry/settings_migrations.h"
 #include "sentry_sdk.h" // for SentrySDK::Level variant casts
 
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/reg_ex.hpp>
@@ -132,6 +133,38 @@ void SentryNativeOptions::_bind_methods() {
 	BIND_PROPERTY(SentryNativeOptions, PropertyInfo(Variant::INT, "crash_upload_mode", PROPERTY_HINT_ENUM, "Synchronous:0,Asynchronous:1"), set_crash_upload_mode, get_crash_upload_mode);
 }
 
+// *** SentryCrashReporterOptions
+
+void SentryCrashReporterOptions::_bind_methods() {
+	BIND_PROPERTY_SIMPLE(SentryCrashReporterOptions, Variant::BOOL, enabled);
+	BIND_PROPERTY_SIMPLE(SentryCrashReporterOptions, Variant::STRING, path);
+}
+
+String SentryCrashReporterOptions::get_path_setting(const String &p_platform, const String &p_arch) {
+	return vformat("sentry/crash_reporter/path_%s_%s", p_platform, p_arch);
+}
+
+String SentryCrashReporterOptions::get_default_path(const String &p_platform, const String &p_arch) {
+	// No x86_32 build of the Sentry reporter exists.
+	if (p_platform == "windows" && (p_arch == "x86_64" || p_arch == "arm64")) {
+		return vformat("res://addons/sentry/crash_reporter/windows/%s/Sentry.CrashReporter.exe", p_arch);
+	}
+	if (p_platform == "linux" && (p_arch == "x86_64" || p_arch == "arm64")) {
+		return vformat("res://addons/sentry/crash_reporter/linux/%s/Sentry.CrashReporter", p_arch);
+	}
+	return "";
+}
+
+String SentryCrashReporterOptions::get_current_path_setting() {
+#if defined(WINDOWS_ENABLED)
+	return get_path_setting("windows", Engine::get_singleton()->get_architecture_name());
+#elif defined(LINUX_ENABLED)
+	return get_path_setting("linux", Engine::get_singleton()->get_architecture_name());
+#else
+	return "";
+#endif
+}
+
 // *** SentryAndroidOptions
 
 void SentryAndroidOptions::_bind_methods() {
@@ -250,6 +283,14 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/native/native_crash_backend/minidump_mode", PROPERTY_HINT_ENUM, "Stack Only:0,Smart:1,Full Memory:2"), native->get_minidump_mode(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/native/native_crash_backend/thread_stackwalk_mode", PROPERTY_HINT_ENUM, "Crashed Thread Only:1,All Threads:2"), native->get_thread_stackwalk_mode(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/native/native_crash_backend/crash_upload_mode", PROPERTY_HINT_ENUM, "Synchronous:0,Asynchronous:1"), native->get_crash_upload_mode(), false);
+
+	_define_setting("sentry/crash_reporter/enabled", p_options->get_crash_reporter()->get_enabled());
+	for (const char *platform : { "windows", "linux" }) {
+		for (const char *arch : { "x86_64", "arm64", "x86_32" }) {
+			_define_setting(PropertyInfo(Variant::STRING, SentryCrashReporterOptions::get_path_setting(platform, arch), PROPERTY_HINT_FILE),
+					SentryCrashReporterOptions::get_default_path(platform, arch), false);
+		}
+	}
 
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/enable_detection"), p_options->get_android()->get_enable_anr_detection(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_interval_ms"), p_options->get_android()->get_anr_timeout_interval_ms(), false);
@@ -382,6 +423,13 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 			ProjectSettings::get_singleton()->get_setting(
 					"sentry/native/native_crash_backend/crash_upload_mode",
 					native->get_crash_upload_mode()))));
+
+	Ref<SentryCrashReporterOptions> crash_reporter = p_options->get_crash_reporter();
+	crash_reporter->set_enabled(ProjectSettings::get_singleton()->get_setting("sentry/crash_reporter/enabled", crash_reporter->get_enabled()));
+	const String crash_reporter_path_setting = SentryCrashReporterOptions::get_current_path_setting();
+	if (!crash_reporter_path_setting.is_empty()) {
+		crash_reporter->set_path(ProjectSettings::get_singleton()->get_setting(crash_reporter_path_setting, crash_reporter->get_path()));
+	}
 
 	p_options->android->set_enable_anr_detection(
 			ProjectSettings::get_singleton()->get_setting(
@@ -603,6 +651,7 @@ void SentryOptions::_bind_methods() {
 
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "experimental", PROPERTY_HINT_TYPE_STRING, "SentryExperimental", PROPERTY_USAGE_NONE), get_experimental);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "native", PROPERTY_HINT_TYPE_STRING, "SentryNativeOptions", PROPERTY_USAGE_NONE), get_native);
+	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "crash_reporter", PROPERTY_HINT_TYPE_STRING, "SentryCrashReporterOptions", PROPERTY_USAGE_NONE), get_crash_reporter);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "android", PROPERTY_HINT_TYPE_STRING, "SentryAndroidOptions", PROPERTY_USAGE_NONE), get_android);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "apple", PROPERTY_HINT_TYPE_STRING, "SentryAppleOptions", PROPERTY_USAGE_NONE), get_apple);
 	BIND_PROPERTY_READONLY(SentryOptions, PropertyInfo(Variant::OBJECT, "web", PROPERTY_HINT_TYPE_STRING, "SentryWebOptions", PROPERTY_USAGE_NONE), get_web);
@@ -643,6 +692,7 @@ void SentryOptions::_bind_methods() {
 
 SentryOptions::SentryOptions() {
 	native.instantiate();
+	crash_reporter.instantiate();
 	experimental.instantiate();
 	experimental->owner = this;
 	android.instantiate();

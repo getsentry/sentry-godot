@@ -19,9 +19,11 @@
 #include "sentry/processing/process_transaction.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_sdk.h"
+#include "sentry/util/file_permissions.h"
 #include "sentry/util/screenshot.h"
 
 #include <cstdio>
+#include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
@@ -81,6 +83,61 @@ sentry_crash_upload_mode_t _to_native(sentry::SentryNativeOptions::CrashUploadMo
 }
 
 #endif // SENTRY_CRASH_BACKEND_NATIVE
+
+// Returns the absolute path of the crash reporter executable, or empty if not found.
+String _resolve_crash_reporter_path(const String &p_path) {
+	if (p_path.is_empty()) {
+		return String();
+	}
+
+	// Export places the reporter beside the game executable.
+	const String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
+	const String exported_path = exe_dir.path_join(p_path.get_file());
+	if (FileAccess::file_exists(exported_path)) {
+		return exported_path;
+	}
+
+	const String given_path = p_path.is_relative_path()
+			? exe_dir.path_join(p_path)
+			: ProjectSettings::get_singleton()->globalize_path(p_path);
+	if (FileAccess::file_exists(given_path)) {
+		return given_path;
+	}
+
+	return String();
+}
+
+void _configure_crash_reporter(sentry_options_t *p_options) {
+	Ref<sentry::SentryCrashReporterOptions> reporter_opts = SENTRY_OPTIONS()->get_crash_reporter();
+	if (!reporter_opts->get_enabled()) {
+		return;
+	}
+
+	// The reporter shows a dialog, which needs a display.
+	if (DisplayServer::get_singleton() == nullptr || DisplayServer::get_singleton()->get_name() == "headless") {
+		sentry::logging::print_debug("Skipping crash reporter on headless display server.");
+		return;
+	}
+
+	const String path = reporter_opts->get_path();
+	if (path.is_empty()) {
+		WARN_PRINT_ONCE("Sentry: Crash reporter is enabled, but its path is empty. Crashes will be sent without the reporter dialog.");
+		return;
+	}
+
+	const String resolved_path = _resolve_crash_reporter_path(path);
+	if (resolved_path.is_empty()) {
+		WARN_PRINT_ONCE(vformat("Sentry: Crash reporter not found at \"%s\". Crashes will be sent without the reporter dialog.", path));
+		return;
+	}
+
+#ifdef LINUX_ENABLED
+	sentry::util::ensure_unix_executable(resolved_path);
+#endif
+
+	sentry::logging::print_debug("Using crash reporter: ", resolved_path);
+	sentry_options_set_external_crash_reporter_path(p_options, resolved_path.utf8().get_data());
+}
 
 sentry_value_t _handle_before_send(sentry_value_t event, sentry_hint_t *hint, void *closure) {
 	Ref<SentryEvent> event_obj = NativeEvent::wrap(event, false);
@@ -537,6 +594,8 @@ void NativeSDK::init() {
 		ERR_PRINT(vformat("Sentry: Failed to locate crash handler - %s backend disabled", handler_path));
 		sentry_options_set_backend(options, NULL);
 	}
+
+	_configure_crash_reporter(options);
 
 	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
 		String absolute_path = att->get_globalized_path();
