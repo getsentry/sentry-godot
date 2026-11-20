@@ -15,6 +15,7 @@
 #include "sentry/processing/view_hierarchy_processor.h"
 #include "sentry/sentry_attachment.h"
 #include "sentry/sentry_options.h"
+#include "sentry/util/file_permissions.h"
 #include "sentry/util/library_path.h"
 #include "sentry/util/simple_bind.h"
 #include "sentry/uuid.h"
@@ -81,32 +82,6 @@ void _verify_project_settings() {
 		if (!ps->get_setting("debug/file_logging/enable_file_logging")) {
 #endif
 			ERR_PRINT("Sentry: Please enable File Logging in your Project Settings if you want to include log files with Sentry events or disable attaching logs in your Sentry options.");
-		}
-	}
-}
-
-void _fix_unix_executable_permissions(const String &p_path) {
-	if (!FileAccess::file_exists(p_path)) {
-		return;
-	}
-
-	BitField<FileAccess::UnixPermissionFlags> perm = FileAccess::get_unix_permissions(p_path);
-	BitField<FileAccess::UnixPermissionFlags> new_perm = perm;
-
-	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_OWNER)) {
-		new_perm.set_flag(FileAccess::UNIX_EXECUTE_OWNER);
-	}
-	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_GROUP)) {
-		new_perm.set_flag(FileAccess::UNIX_EXECUTE_GROUP);
-	}
-	if (!perm.has_flag(FileAccess::UNIX_EXECUTE_OTHER)) {
-		new_perm.set_flag(FileAccess::UNIX_EXECUTE_OTHER);
-	}
-
-	if (perm != new_perm) {
-		godot::Error err = FileAccess::set_unix_permissions(p_path, new_perm);
-		if (err != OK && err != ERR_UNAVAILABLE) {
-			sentry::logging::print_error(vformat("Failed to set executable permissions for %s (error code %d)", p_path, err));
 		}
 	}
 }
@@ -684,11 +659,11 @@ void SentrySDK::prepare_and_auto_initialize() {
 	// Fix crashpad handler executable bit permissions on Unix platforms if the
 	// user extracts the distribution archive without preserving such permissions.
 	if (OS::get_singleton()->is_debug_build()) {
-		_fix_unix_executable_permissions("res://addons/sentry/bin/macos/crashpad_handler");
+		sentry::util::ensure_unix_executable("res://addons/sentry/bin/macos/crashpad_handler");
 		for (const char *arch : { "x86_64", "x86_32", "arm64" }) {
 			String bin_dir = String("res://addons/sentry/bin/linux").path_join(arch);
-			_fix_unix_executable_permissions(bin_dir.path_join("crashpad/crashpad_handler"));
-			_fix_unix_executable_permissions(bin_dir.path_join("native/sentry-crash"));
+			sentry::util::ensure_unix_executable(bin_dir.path_join("crashpad/crashpad_handler"));
+			sentry::util::ensure_unix_executable(bin_dir.path_join("native/sentry-crash"));
 		}
 	}
 #endif

@@ -144,32 +144,34 @@ public partial class DotnetTestHarness : RefCounted
             _receivedOptions["screenshot_level"] = (int)options.ScreenshotLevel;
             _receivedOptions["enable_app_hang_tracking"] = options.EnableAppHangTracking;
             _receivedOptions["app_hang_timeout_ms"] = (int)options.AppHangTimeout.TotalMilliseconds;
-            _receivedOptions["enable_frame_metrics"] = options.AutoMetrics.EnableFrameMetrics;
-            _receivedOptions["frame_metrics_interval_sec"] = options.AutoMetrics.FrameMetricsIntervalSec;
-            _receivedOptions["enable_rendering_metrics"] = options.AutoMetrics.EnableRenderingMetrics;
-            _receivedOptions["rendering_metrics_interval_sec"] = options.AutoMetrics.RenderingMetricsIntervalSec;
-            _receivedOptions["enable_memory_metrics"] = options.AutoMetrics.EnableMemoryMetrics;
-            _receivedOptions["memory_metrics_interval_sec"] = options.AutoMetrics.MemoryMetricsIntervalSec;
-            _receivedOptions["enable_network_metrics"] = options.AutoMetrics.EnableNetworkMetrics;
-            _receivedOptions["network_metrics_interval_sec"] = options.AutoMetrics.NetworkMetricsIntervalSec;
-            _receivedOptions["enabled"] = options.GodotLogger.Enabled;
-            _receivedOptions["include_source_context"] = options.GodotLogger.IncludeSourceContext;
-            _receivedOptions["include_variables"] = options.GodotLogger.IncludeVariables;
-            _receivedOptions["event_mask"] = (int)options.GodotLogger.EventMask;
-            _receivedOptions["breadcrumb_mask"] = (int)options.GodotLogger.BreadcrumbMask;
-            _receivedOptions["log_mask"] = (int)options.GodotLogger.LogMask;
-            _receivedOptions["events_per_frame"] = options.GodotLogger.Limits.EventsPerFrame;
-            _receivedOptions["repeated_error_window_ms"] = (int)options.GodotLogger.Limits.RepeatedErrorWindow.TotalMilliseconds;
-            _receivedOptions["throttle_events"] = options.GodotLogger.Limits.ThrottleEvents;
-            _receivedOptions["throttle_window_ms"] = (int)options.GodotLogger.Limits.ThrottleWindow.TotalMilliseconds;
-            _receivedOptions["crash_reporting_mode"] = (int)options.Native.CrashReportingMode;
-            _receivedOptions["minidump_mode"] = (int)options.Native.MinidumpMode;
-            _receivedOptions["thread_stackwalk_mode"] = (int)options.Native.ThreadStackwalkMode;
-            _receivedOptions["crash_upload_mode"] = (int)options.Native.CrashUploadMode;
-            _receivedOptions["enable_anr_detection"] = options.Android.EnableAnrDetection;
-            _receivedOptions["anr_timeout_interval_ms"] = (int)options.Android.AnrTimeoutInterval.TotalMilliseconds;
-            _receivedOptions["attach_anr_thread_dump"] = options.Android.AttachAnrThreadDump;
-            _receivedOptions["enable_metrickit"] = options.Apple.EnableMetricKit;
+            _receivedOptions["auto_metrics:enable_frame_metrics"] = options.AutoMetrics.EnableFrameMetrics;
+            _receivedOptions["auto_metrics:frame_metrics_interval_sec"] = options.AutoMetrics.FrameMetricsIntervalSec;
+            _receivedOptions["auto_metrics:enable_rendering_metrics"] = options.AutoMetrics.EnableRenderingMetrics;
+            _receivedOptions["auto_metrics:rendering_metrics_interval_sec"] = options.AutoMetrics.RenderingMetricsIntervalSec;
+            _receivedOptions["auto_metrics:enable_memory_metrics"] = options.AutoMetrics.EnableMemoryMetrics;
+            _receivedOptions["auto_metrics:memory_metrics_interval_sec"] = options.AutoMetrics.MemoryMetricsIntervalSec;
+            _receivedOptions["auto_metrics:enable_network_metrics"] = options.AutoMetrics.EnableNetworkMetrics;
+            _receivedOptions["auto_metrics:network_metrics_interval_sec"] = options.AutoMetrics.NetworkMetricsIntervalSec;
+            _receivedOptions["godot_logger:enabled"] = options.GodotLogger.Enabled;
+            _receivedOptions["godot_logger:include_source_context"] = options.GodotLogger.IncludeSourceContext;
+            _receivedOptions["godot_logger:include_variables"] = options.GodotLogger.IncludeVariables;
+            _receivedOptions["godot_logger:event_mask"] = (int)options.GodotLogger.EventMask;
+            _receivedOptions["godot_logger:breadcrumb_mask"] = (int)options.GodotLogger.BreadcrumbMask;
+            _receivedOptions["godot_logger:log_mask"] = (int)options.GodotLogger.LogMask;
+            _receivedOptions["godot_logger:limits:events_per_frame"] = options.GodotLogger.Limits.EventsPerFrame;
+            _receivedOptions["godot_logger:limits:repeated_error_window_ms"] = (int)options.GodotLogger.Limits.RepeatedErrorWindow.TotalMilliseconds;
+            _receivedOptions["godot_logger:limits:throttle_events"] = options.GodotLogger.Limits.ThrottleEvents;
+            _receivedOptions["godot_logger:limits:throttle_window_ms"] = (int)options.GodotLogger.Limits.ThrottleWindow.TotalMilliseconds;
+            _receivedOptions["native:crash_reporting_mode"] = (int)options.Native.CrashReportingMode;
+            _receivedOptions["native:minidump_mode"] = (int)options.Native.MinidumpMode;
+            _receivedOptions["native:thread_stackwalk_mode"] = (int)options.Native.ThreadStackwalkMode;
+            _receivedOptions["native:crash_upload_mode"] = (int)options.Native.CrashUploadMode;
+            _receivedOptions["android:enable_anr_detection"] = options.Android.EnableAnrDetection;
+            _receivedOptions["android:anr_timeout_interval_ms"] = (int)options.Android.AnrTimeoutInterval.TotalMilliseconds;
+            _receivedOptions["android:attach_anr_thread_dump"] = options.Android.AttachAnrThreadDump;
+            _receivedOptions["apple:enable_metrickit"] = options.Apple.EnableMetricKit;
+            _receivedOptions["crash_reporter:enabled"] = options.CrashReporter.Enabled;
+            _receivedOptions["crash_reporter:path"] = options.CrashReporter.Path;
 
             // Init sends these back through ManagedOptions. Every value differs from the one above,
             // so a value can only reach the native layer by actually crossing the boundary.
@@ -223,6 +225,8 @@ public partial class DotnetTestHarness : RefCounted
             options.Android.AnrTimeoutInterval = TimeSpan.FromMilliseconds(2400);
             options.Android.AttachAnrThreadDump = false;
             options.Apple.EnableMetricKit = false;
+            options.CrashReporter.Enabled = false;
+            options.CrashReporter.Path = "interop-managed-reporter";
         });
     }
 

@@ -29,7 +29,7 @@ namespace {
 
 struct OptionCase {
 	// Project setting used by the native layer as the option's initial value.
-	const char *setting;
+	String setting;
 
 	// Indexed property path on SentryOptions, using ':' for nested sub-objects.
 	const char *property;
@@ -41,7 +41,6 @@ struct OptionCase {
 	Variant from_managed;
 };
 
-// The managed harness stores received options by leaf property name.
 String option_name(const OptionCase &p_option) {
 	const String path = p_option.property;
 	return path.substr(path.rfind(":") + 1);
@@ -56,7 +55,7 @@ void _configure_trace_propagation_targets(const Ref<SentryOptions> &p_options, c
 TEST_SUITE("[.NET] Options interop") {
 	TEST_CASE("Options crossing the interop boundary") {
 		// To cover a new option: add a row here, then report it from InitWithInteropOptions()
-		// in DotnetTestHarness.cs, keyed by the last segment of the property path.
+		// in DotnetTestHarness.cs, keyed by the property path.
 		// The two value columns must differ from each other, and "from native" must differ from the
 		// option's C# default, or the managed side reports a value that never crossed and the row passes.
 		using Strings = PackedStringArray;
@@ -111,6 +110,10 @@ TEST_SUITE("[.NET] Options interop") {
 			{ "sentry/android/application_not_responding/timeout_interval_ms", "android:anr_timeout_interval_ms",              1300,                           2400 },
 			{ "sentry/android/application_not_responding/attach_thread_dump",  "android:attach_anr_thread_dump",               true,                           false },
 			{ "sentry/apple/metrickit/enabled",                                "apple:enable_metrickit",                       true,                           false },
+			{ "sentry/crash_reporter/enabled",                                 "crash_reporter:enabled",                       true,                           false },
+#if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED)
+			{ SentryCrashReporterOptions::get_current_path_setting(),          "crash_reporter:path",                          "interop-native-reporter",      "interop-managed-reporter" },
+#endif
 			// clang-format on
 		};
 
@@ -122,6 +125,10 @@ TEST_SUITE("[.NET] Options interop") {
 				crossed.insert(option_name(option));
 			}
 			const HashSet<String> not_crossed = {
+#if !defined(LINUX_ENABLED) && !defined(WINDOWS_ENABLED)
+				// The SDK reads the crash reporter path setting only on Linux and Windows.
+				"path",
+#endif
 				// Only affects the JavaScript SDK on Web.
 				"trace_lifecycle",
 				// Deprecated no-ops.
@@ -133,7 +140,7 @@ TEST_SUITE("[.NET] Options interop") {
 			};
 
 			// NOTE: Excluded SentryWebOptions because Godot does not support .NET Web exports.
-			for (const char *class_name : { "SentryOptions", "SentryAutoMetricsOptions", "SentryGodotLoggerOptions", "SentryLoggerLimits", "SentryNativeOptions", "SentryAndroidOptions", "SentryAppleOptions" }) {
+			for (const char *class_name : { "SentryOptions", "SentryAutoMetricsOptions", "SentryGodotLoggerOptions", "SentryLoggerLimits", "SentryNativeOptions", "SentryCrashReporterOptions", "SentryAndroidOptions", "SentryAppleOptions" }) {
 				const TypedArray<Dictionary> properties = ClassDBSingleton::get_singleton()->class_get_property_list(class_name, true);
 				for (int i = 0; i < properties.size(); i++) {
 					const Dictionary property = properties[i];
@@ -171,7 +178,7 @@ TEST_SUITE("[.NET] Options interop") {
 					const Ref<SentryOptions> options = SENTRY_OPTIONS();
 					for (const OptionCase &option : cases) {
 						INFO(std::string(option_name(option).utf8().get_data()));
-						CHECK(received[option_name(option)] == option.from_native);
+						CHECK(received[option.property] == option.from_native);
 						CHECK(options->get_indexed(option.property) == option.from_managed);
 					}
 				}
