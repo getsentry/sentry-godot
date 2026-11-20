@@ -22,23 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: 🐧 Linux (x86_64, release, crashpad)
-            runner: ubuntu-22.04
-            platform: linux
-            crash-backend: crashpad
-            target: template_release
-            arch: x86_64
-            scons-flags: debug_symbols=yes
-
-          - name: 🐧 Linux (x86_64, release, native)
-            runner: ubuntu-22.04
-            platform: linux
-            crash-backend: native
-            target: template_release
-            arch: x86_64
-            scons-flags: debug_symbols=yes
-
-          - name: 🐧 Linux (x86_64, debug, crashpad)
+          - name: 🐧 Linux (x86_64, crashpad)
             runner: ubuntu-22.04
             platform: linux
             crash-backend: crashpad
@@ -46,7 +30,7 @@ jobs:
             arch: x86_64
             scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (x86_64, debug, native)
+          - name: 🐧 Linux (x86_64, native)
             runner: ubuntu-22.04
             platform: linux
             crash-backend: native
@@ -54,23 +38,7 @@ jobs:
             arch: x86_64
             scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (x86_32, release, crashpad)
-            runner: ubuntu-22.04
-            platform: linux
-            crash-backend: crashpad
-            target: template_release
-            arch: x86_32
-            scons-flags: debug_symbols=yes
-
-          - name: 🐧 Linux (x86_32, release, native)
-            runner: ubuntu-22.04
-            platform: linux
-            crash-backend: native
-            target: template_release
-            arch: x86_32
-            scons-flags: debug_symbols=yes
-
-          - name: 🐧 Linux (x86_32, debug, crashpad)
+          - name: 🐧 Linux (x86_32, crashpad)
             runner: ubuntu-22.04
             platform: linux
             crash-backend: crashpad
@@ -78,7 +46,7 @@ jobs:
             arch: x86_32
             scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (x86_32, debug, native)
+          - name: 🐧 Linux (x86_32, native)
             runner: ubuntu-22.04
             platform: linux
             crash-backend: native
@@ -86,23 +54,7 @@ jobs:
             arch: x86_32
             scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (arm64, release, crashpad)
-            runner: ubuntu-22.04-arm
-            platform: linux
-            crash-backend: crashpad
-            target: template_release
-            arch: arm64
-            scons-flags: debug_symbols=yes
-
-          - name: 🐧 Linux (arm64, release, native)
-            runner: ubuntu-22.04-arm
-            platform: linux
-            crash-backend: native
-            target: template_release
-            arch: arm64
-            scons-flags: debug_symbols=yes
-
-          - name: 🐧 Linux (arm64, debug, crashpad)
+          - name: 🐧 Linux (arm64, crashpad)
             runner: ubuntu-22.04-arm
             platform: linux
             crash-backend: crashpad
@@ -110,7 +62,7 @@ jobs:
             arch: arm64
             scons-flags: debug_symbols=yes
 
-          - name: 🐧 Linux (arm64, debug, native)
+          - name: 🐧 Linux (arm64, native)
             runner: ubuntu-22.04-arm
             platform: linux
             crash-backend: native
@@ -118,23 +70,7 @@ jobs:
             arch: arm64
             scons-flags: debug_symbols=yes
 
-          - name: 🪟 Windows (x86_64, release, crashpad)
-            runner: windows-latest
-            platform: windows
-            crash-backend: crashpad
-            target: template_release
-            arch: x86_64
-            scons-flags: debug_symbols=yes
-
-          - name: 🪟 Windows (x86_64, release, native)
-            runner: windows-latest
-            platform: windows
-            crash-backend: native
-            target: template_release
-            arch: x86_64
-            scons-flags: debug_symbols=yes
-
-          - name: 🪟 Windows (x86_64, debug, crashpad)
+          - name: 🪟 Windows (x86_64, crashpad)
             runner: windows-latest
             platform: windows
             crash-backend: crashpad
@@ -142,7 +78,7 @@ jobs:
             arch: x86_64
             scons-flags: debug_symbols=yes
 
-          - name: 🪟 Windows (x86_64, debug, native)
+          - name: 🪟 Windows (x86_64, native)
             runner: windows-latest
             platform: windows
             crash-backend: native
@@ -150,23 +86,7 @@ jobs:
             arch: x86_64
             scons-flags: debug_symbols=yes
 
-          - name: 🪟 Windows (x86_32, release, crashpad)
-            runner: windows-latest
-            platform: windows
-            crash-backend: crashpad
-            target: template_release
-            arch: x86_32
-            scons-flags: debug_symbols=yes
-
-          - name: 🪟 Windows (x86_32, release, native)
-            runner: windows-latest
-            platform: windows
-            crash-backend: native
-            target: template_release
-            arch: x86_32
-            scons-flags: debug_symbols=yes
-
-          - name: 🪟 Windows (x86_32, debug, crashpad)
+          - name: 🪟 Windows (x86_32, crashpad)
             runner: windows-latest
             platform: windows
             crash-backend: crashpad
@@ -174,7 +94,7 @@ jobs:
             arch: x86_32
             scons-flags: debug_symbols=yes
 
-          - name: 🪟 Windows (x86_32, debug, native)
+          - name: 🪟 Windows (x86_32, native)
             runner: windows-latest
             platform: windows
             crash-backend: native
@@ -182,23 +102,7 @@ jobs:
             arch: x86_32
             scons-flags: debug_symbols=yes
 
-          - name: 🪟 Windows (arm64, release, crashpad)
-            runner: windows-11-arm
-            platform: windows
-            crash-backend: crashpad
-            target: template_release
-            arch: arm64
-            scons-flags: debug_symbols=yes
-
-          - name: 🪟 Windows (arm64, release, native)
-            runner: windows-11-arm
-            platform: windows
-            crash-backend: native
-            target: template_release
-            arch: arm64
-            scons-flags: debug_symbols=yes
-
-          - name: 🪟 Windows (arm64, debug, crashpad)
+          - name: 🪟 Windows (arm64, crashpad)
             runner: windows-11-arm
             platform: windows
             crash-backend: crashpad
@@ -206,7 +110,7 @@ jobs:
             arch: arm64
             scons-flags: debug_symbols=yes
 
-          - name: 🪟 Windows (arm64, debug, native)
+          - name: 🪟 Windows (arm64, native)
             runner: windows-11-arm
             platform: windows
             crash-backend: native
@@ -214,129 +118,66 @@ jobs:
             arch: arm64
             scons-flags: debug_symbols=yes
 
-          - name: 🍎 macOS (universal, release)
-            runner: macos-15
-            platform: macos
-            target: template_release
-            arch: universal
-            scons-flags: debug_symbols=yes
-
-          - name: 🍎 macOS (universal, debug)
+          - name: 🍎 macOS (universal)
             runner: macos-15
             platform: macos
             target: editor
             arch: universal
             scons-flags: debug_symbols=yes
 
-          - name: 🤖 Android (arm64, release)
-            runner: ubuntu-latest
-            platform: android
-            target: template_release
-            arch: arm64
-            scons-flags: debug_symbols=yes
-
-          - name: 🤖 Android (arm64, debug)
+          - name: 🤖 Android (arm64)
             runner: ubuntu-latest
             platform: android
             target: editor
             arch: arm64
             scons-flags: debug_symbols=yes
 
-          - name: 🤖 Android (arm32, release)
-            runner: ubuntu-latest
-            platform: android
-            target: template_release
-            arch: arm32
-            scons-flags: debug_symbols=yes
-
-          - name: 🤖 Android (arm32, debug)
+          - name: 🤖 Android (arm32)
             runner: ubuntu-latest
             platform: android
             target: editor
             arch: arm32
             scons-flags: debug_symbols=yes
 
-          - name: 🤖 Android (x86_64, release)
-            runner: ubuntu-latest
-            platform: android
-            target: template_release
-            arch: x86_64
-            scons-flags: debug_symbols=yes
-
-          - name: 🤖 Android (x86_64, debug)
+          - name: 🤖 Android (x86_64)
             runner: ubuntu-latest
             platform: android
             target: editor
             arch: x86_64
             scons-flags: debug_symbols=yes
 
-          - name: 🤖 Android (x86_32, release)
-            runner: ubuntu-latest
-            platform: android
-            target: template_release
-            arch: x86_32
-            scons-flags: debug_symbols=yes
-
-          - name: 🤖 Android (x86_32, debug)
+          - name: 🤖 Android (x86_32)
             runner: ubuntu-latest
             platform: android
             target: editor
             arch: x86_32
             scons-flags: debug_symbols=yes
 
-          - name: 🍏 iOS (arm64, release)
-            runner: macos-15
-            platform: ios
-            target: template_release
-            arch: arm64
-            scons-flags: debug_symbols=yes
-
-          - name: 🍏 iOS (arm64, debug)
+          - name: 🍏 iOS (arm64)
             runner: macos-15
             platform: ios
             target: editor
             arch: arm64
             scons-flags: debug_symbols=yes
 
-          - name: 🍏 iOS (simulator, release)
-            runner: macos-15
-            platform: ios
-            target: template_release
-            arch: universal
-            scons-flags: debug_symbols=yes ios_simulator=yes
-
-          - name: 🍏 iOS (simulator, debug)
+          - name: 🍏 iOS (simulator)
             runner: macos-15
             platform: ios
             target: editor
             arch: universal
             scons-flags: debug_symbols=yes ios_simulator=yes
 
-          - name: 🌐 Web (threads, release)
+          - name: 🌐 Web (threads)
             runner: ubuntu-latest
             platform: web
             target: template_release
             arch: wasm32
             scons-flags: debug_symbols=yes threads=yes
 
-          - name: 🌐 Web (threads, debug)
-            runner: ubuntu-latest
-            platform: web
-            target: editor
-            arch: wasm32
-            scons-flags: debug_symbols=yes threads=yes
-
-          - name: 🌐 Web (nothreads, release)
+          - name: 🌐 Web (nothreads)
             runner: ubuntu-latest
             platform: web
             target: template_release
-            arch: wasm32
-            scons-flags: debug_symbols=yes threads=no
-
-          - name: 🌐 Web (nothreads, debug)
-            runner: ubuntu-latest
-            platform: web
-            target: editor
             arch: wasm32
             scons-flags: debug_symbols=yes threads=no
 
@@ -478,7 +319,6 @@ jobs:
       - name: Create iOS XCFramework
         run: |
           scons platform=ios target=editor ios_framework
-          scons platform=ios target=template_release ios_framework
           rm -rf project/addons/sentry/bin/ios/temp/
 
       - name: Upload artifact

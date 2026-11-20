@@ -29,7 +29,6 @@ EOF
 # Debug-symbol paths dropped from addon and demo zips.
 # Zip globs span '/', so one '*' covers per-arch subdirs.
 # Keep patterns platform-specific to avoid matching:
-#   - iOS XCFramework binary literally named "libsentry.ios.debug"
 #   - .NET pdbs under addons/sentry/dotnet/ are needed for local stack walking
 SYMBOL_PATTERNS=(
     "addons/sentry/bin/linux/*.debug"

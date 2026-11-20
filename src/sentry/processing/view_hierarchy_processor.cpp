@@ -11,9 +11,11 @@
 namespace sentry {
 
 Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p_event) {
-#ifdef DEBUG_ENABLED
-	auto start = std::chrono::high_resolution_clock::now();
-#endif
+	const bool debug_enabled = SENTRY_OPTIONS()->is_debug_enabled();
+	std::chrono::high_resolution_clock::time_point start;
+	if (debug_enabled) {
+		start = std::chrono::high_resolution_clock::now();
+	}
 
 	std::remove(json_file_path.ptr());
 
@@ -42,11 +44,11 @@ Ref<SentryEvent> ViewHierarchyProcessor::process_event(const Ref<SentryEvent> &p
 		sentry::logging::print_error(vformat("Failed to write scene tree data - unable to open file for writing: %s", json_file_path.get_data()));
 	}
 
-#ifdef DEBUG_ENABLED
-	auto end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-	sentry::logging::print_debug("Capturing scene tree data took ", (int64_t)duration.count(), " usec");
-#endif
+	if (debug_enabled) {
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+		sentry::logging::print_debug("Capturing scene tree data took ", (int64_t)duration.count(), " usec");
+	}
 
 	return p_event;
 }
