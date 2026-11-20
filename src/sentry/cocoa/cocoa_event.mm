@@ -154,6 +154,26 @@ String CocoaEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void CocoaEvent::set_extra(const String &p_key, const Variant &p_value) {
+	ERR_FAIL_NULL(cocoa_event);
+
+	NSMutableDictionary *mut_extra = [cocoa_event.extra mutableCopy] ?: [NSMutableDictionary dictionary];
+	mut_extra[string_to_objc(p_key)] = variant_to_objc(p_value);
+	cocoa_event.extra = mut_extra;
+}
+
+void CocoaEvent::remove_extra(const String &p_key) {
+	ERR_FAIL_NULL(cocoa_event);
+
+	if (cocoa_event.extra == nil) {
+		return;
+	}
+
+	NSMutableDictionary *mut_extra = [cocoa_event.extra mutableCopy];
+	[mut_extra removeObjectForKey:string_to_objc(p_key)];
+	cocoa_event.extra = mut_extra.count > 0 ? mut_extra : nil;
+}
+
 void CocoaEvent::set_user(const Ref<SentryUser> &p_user) {
 	ERR_FAIL_NULL(cocoa_event);
 

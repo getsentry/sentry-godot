@@ -56,6 +56,8 @@ struct AndroidStringNameData {
 	const StringName eventSetTag{ "eventSetTag" };
 	const StringName eventRemoveTag{ "eventRemoveTag" };
 	const StringName eventGetTag{ "eventGetTag" };
+	const StringName eventSetExtra{ "eventSetExtra" };
+	const StringName eventRemoveExtra{ "eventRemoveExtra" };
 	const StringName eventSetUser{ "eventSetUser" };
 	const StringName eventRemoveUser{ "eventRemoveUser" };
 	const StringName eventSetFingerprint{ "eventSetFingerprint" };

@@ -75,6 +75,9 @@ public:
 	void remove_tag(const String &p_key);
 	String get_tag(const String &p_key);
 
+	void set_extra(const String &p_key, const Variant &p_value);
+	void remove_extra(const String &p_key);
+
 	void set_user(const Ref<SentryUser> &p_user);
 
 	void set_fingerprint(const PackedStringArray &p_fingerprint);
