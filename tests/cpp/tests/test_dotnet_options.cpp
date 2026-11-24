@@ -41,10 +41,24 @@ struct OptionCase {
 	Variant from_managed;
 };
 
-// The managed harness stores received options by leaf property name.
-String option_name(const OptionCase &p_option) {
-	const String path = p_option.property;
-	return path.substr(path.rfind(":") + 1);
+// Returns the property paths of scalar options on p_object and its nested option objects.
+PackedStringArray _get_option_paths(Object *p_object, const String &p_prefix = String()) {
+	PackedStringArray paths;
+	const TypedArray<Dictionary> properties = ClassDBSingleton::get_singleton()->class_get_property_list(p_object->get_class(), true);
+	for (int i = 0; i < properties.size(); i++) {
+		const Dictionary property = properties[i];
+		const String name = property["name"];
+		const Variant::Type type = static_cast<Variant::Type>(property["type"].operator int64_t());
+		if (type == Variant::OBJECT) {
+			Object *nested = p_object->get(name);
+			if (nested != nullptr) {
+				paths.append_array(_get_option_paths(nested, p_prefix + name + ":"));
+			}
+		} else if (type != Variant::CALLABLE) {
+			paths.push_back(p_prefix + name);
+		}
+	}
+	return paths;
 }
 
 void _configure_trace_propagation_targets(const Ref<SentryOptions> &p_options, const Array &p_targets) {
@@ -56,7 +70,7 @@ void _configure_trace_propagation_targets(const Ref<SentryOptions> &p_options, c
 TEST_SUITE("[.NET] Options interop") {
 	TEST_CASE("Options crossing the interop boundary") {
 		// To cover a new option: add a row here, then report it from InitWithInteropOptions()
-		// in DotnetTestHarness.cs, keyed by the last segment of the property path.
+		// in DotnetTestHarness.cs, keyed by the property path.
 		// The two value columns must differ from each other, and "from native" must differ from the
 		// option's C# default, or the managed side reports a value that never crossed and the row passes.
 		using Strings = PackedStringArray;
@@ -119,33 +133,45 @@ TEST_SUITE("[.NET] Options interop") {
 			// added to the crossing cases or deliberately listed as not crossing.
 			HashSet<String> crossed;
 			for (const OptionCase &option : cases) {
-				crossed.insert(option_name(option));
+				crossed.insert(option.property);
 			}
-			const HashSet<String> not_crossed = {
+			// Glob patterns of option paths that deliberately don't cross managed boundary.
+			const PackedStringArray exempt_patterns = {
+				// Web options are not synced because Godot does not support .NET on Web platform.
+				"web:*",
 				// Only affects the JavaScript SDK on Web.
 				"trace_lifecycle",
 				// Deprecated no-ops.
-				"enable_logs", "enable_metrics",
-				// Deprecated aliases for the properties above.
-				"logger_messages_as_breadcrumbs", "app_hang_tracking", "app_hang_timeout_sec",
-				"logger_enabled", "logger_include_source", "logger_include_variables",
-				"logger_event_mask", "logger_breadcrumb_mask", "logger_log_mask"
+				"enable_logs",
+				"enable_metrics",
+				"experimental:enable_metrics",
+				// Deprecated alias for "godot_logger:limits".
+				"logger_limits:*",
+				// Deprecated aliases for the properties in the table above.
+				"app_hang_tracking",
+				"app_hang_timeout_sec",
+				"logger_messages_as_breadcrumbs",
+				"logger_enabled",
+				"logger_include_source",
+				"logger_include_variables",
+				"logger_event_mask",
+				"logger_breadcrumb_mask",
+				"logger_log_mask",
+			};
+			const auto is_exempt = [&exempt_patterns](const String &p_path) {
+				for (const String &pattern : exempt_patterns) {
+					if (p_path.match(pattern)) {
+						return true;
+					}
+				}
+				return false;
 			};
 
-			// NOTE: Excluded SentryWebOptions because Godot does not support .NET Web exports.
-			for (const char *class_name : { "SentryOptions", "SentryAutoMetricsOptions", "SentryGodotLoggerOptions", "SentryLoggerLimits", "SentryNativeOptions", "SentryAndroidOptions", "SentryAppleOptions" }) {
-				const TypedArray<Dictionary> properties = ClassDBSingleton::get_singleton()->class_get_property_list(class_name, true);
-				for (int i = 0; i < properties.size(); i++) {
-					const Dictionary property = properties[i];
-					const Variant::Type type = static_cast<Variant::Type>(property["type"].operator int64_t());
-					if (type == Variant::OBJECT || type == Variant::CALLABLE) {
-						continue;
-					}
-
-					const String name = property["name"];
-					INFO((std::string(class_name) + "." + name.utf8().get_data()));
-					CHECK((crossed.has(name) || not_crossed.has(name)));
-				}
+			Ref<SentryOptions> options;
+			options.instantiate();
+			for (const String &path : _get_option_paths(options.ptr())) {
+				INFO(std::string(path.utf8().get_data()));
+				CHECK((crossed.has(path) || is_exempt(path)));
 			}
 		}
 
@@ -170,8 +196,8 @@ TEST_SUITE("[.NET] Options interop") {
 					const Dictionary received = harness->call("GetReceivedOptions");
 					const Ref<SentryOptions> options = SENTRY_OPTIONS();
 					for (const OptionCase &option : cases) {
-						INFO(std::string(option_name(option).utf8().get_data()));
-						CHECK(received[option_name(option)] == option.from_native);
+						INFO(std::string(option.property));
+						CHECK(received[option.property] == option.from_native);
 						CHECK(options->get_indexed(option.property) == option.from_managed);
 					}
 				}
