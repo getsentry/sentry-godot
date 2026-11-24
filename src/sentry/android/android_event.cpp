@@ -106,6 +106,18 @@ String AndroidEvent::get_tag(const String &p_key) {
 	return plugin->call(ANDROID_SN(eventGetTag), event_handle, p_key);
 }
 
+void AndroidEvent::set_extra(const String &p_key, const Variant &p_value) {
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
+	Dictionary wrapper;
+	wrapper["value"] = sanitize_variant(p_value);
+	plugin->call(ANDROID_SN(eventSetExtra), event_handle, p_key, wrapper);
+}
+
+void AndroidEvent::remove_extra(const String &p_key) {
+	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
+	plugin->call(ANDROID_SN(eventRemoveExtra), event_handle, p_key);
+}
+
 void AndroidEvent::set_user(const Ref<SentryUser> &p_user) {
 	ENSURE_ANDROID_PLUGIN(plugin, _android_plugin);
 	if (p_user.is_valid()) {

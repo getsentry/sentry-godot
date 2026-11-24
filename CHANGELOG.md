@@ -9,6 +9,7 @@
 - Add an optional native crash backend for Linux and Windows, selectable through the export preset. Crashpad remains the default ([#1096](https://github.com/getsentry/sentry-godot/pull/1096))
 - Add native crash backend options for crash reporting, minidump capture, thread stackwalking, and crash upload, configurable through `SentryOptions.native` and Project Settings ([#1105](https://github.com/getsentry/sentry-godot/pull/1105))
 - Add `SentrySDK.get_version_info()` to inspect the loaded SDK's version, commit, backend, and variant feature tag ([#1110](https://github.com/getsentry/sentry-godot/pull/1110))
+- Expose `SentryEvent.extra` via `set_extra()` and `remove_extra()` ([#1115](https://github.com/getsentry/sentry-godot/pull/1115))
 
 ### Improvements
 

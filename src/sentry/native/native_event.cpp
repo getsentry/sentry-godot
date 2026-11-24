@@ -171,6 +171,22 @@ String NativeEvent::get_tag(const String &p_key) {
 	return String();
 }
 
+void NativeEvent::set_extra(const String &p_key, const Variant &p_value) {
+	sentry_value_t extra = sentry_value_get_by_key(native_event, "extra");
+	if (sentry_value_is_null(extra)) {
+		extra = sentry_value_new_object();
+		sentry_value_set_by_key(native_event, "extra", extra);
+	}
+	sentry_value_set_by_key(extra, p_key.utf8().get_data(), sentry::native::variant_to_sentry_value(p_value));
+}
+
+void NativeEvent::remove_extra(const String &p_key) {
+	sentry_value_t extra = sentry_value_get_by_key(native_event, "extra");
+	if (!sentry_value_is_null(extra)) {
+		sentry_value_remove_by_key(extra, p_key.utf8().get_data());
+	}
+}
+
 void NativeEvent::set_user(const Ref<SentryUser> &p_user) {
 	if (p_user.is_null()) {
 		sentry_value_remove_by_key(native_event, "user");
