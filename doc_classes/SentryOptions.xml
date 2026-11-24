@@ -121,6 +121,9 @@
 			[b]On Web:[/b] This callback is supported only when [member trace_lifecycle] is set to [constant TRACE_LIFECYCLE_STATIC].
 			[b]Note:[/b] The borrowed transaction is valid only while the callback runs. Modify it in place and do not retain a reference to it.
 		</member>
+		<member name="crash_reporter" type="SentryCrashReporterOptions" setter="" getter="get_crash_reporter">
+			Configures the crash reporter, which shows a dialog after a crash on Windows and Linux. See [SentryCrashReporterOptions] for details.
+		</member>
 		<member name="debug" type="bool" setter="set_debug_enabled" getter="is_debug_enabled" default="true">
 			If [code]true[/code], the SDK will print useful debugging information to standard output. These messages do not appear in the Godot console but can be seen when launching Godot from a terminal.
 			You can control the verbosity using the [member diagnostic_level] option.

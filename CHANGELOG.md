@@ -10,6 +10,7 @@
 - Add native crash backend options for crash reporting, minidump capture, thread stackwalking, and crash upload, configurable through `SentryOptions.native` and Project Settings ([#1105](https://github.com/getsentry/sentry-godot/pull/1105))
 - Add `SentrySDK.get_version_info()` to inspect the loaded SDK's version, commit, backend, and variant feature tag ([#1110](https://github.com/getsentry/sentry-godot/pull/1110))
 - Expose `SentryEvent.extra` via `set_extra()` and `remove_extra()` ([#1115](https://github.com/getsentry/sentry-godot/pull/1115))
+- Windows/Linux: Support external crash reporter that shows a dialog after a crash, letting the player review, comment on, and send the report; configure it in Project Settings under Sentry > Crash Reporter ([#1116](https://github.com/getsentry/sentry-godot/pull/1116))
 
 ### Improvements
 
