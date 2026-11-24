@@ -236,6 +236,10 @@ Available presets:
 - **iOS Tests** — iOS debug export with custom templates
 - **Web Tests** — Web debug export with threads and GDExtension support
 
+### Crash Reporter
+
+Testing crash reporter support requires the [Sentry Desktop Crash Reporter](https://github.com/getsentry/sentry-desktop-crash-reporter) executables, which this repository doesn't build. Run `scripts/download-crash-reporter.sh` to download the version pinned in `modules/sentry-crash-reporter.properties` into `project/addons/sentry/crash_reporter/`. CI packages the same folder as the `sentry-godot-crash-reporter-<version>.zip` release asset.
+
 ### Local Tests
 
 Testing is performed using the **gdUnit4** testing framework in GDScript. Unit tests (and other types of tests) are located in the `project/test/` directory. These tests can be executed from the Godot editor, except for isolated tests (see below).

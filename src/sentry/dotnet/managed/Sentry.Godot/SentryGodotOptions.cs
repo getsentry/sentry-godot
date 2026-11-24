@@ -498,6 +498,10 @@ public sealed class SentryAppleOptions
 /// When the <c>sentry/crash_reporter/enabled</c> project setting is enabled, export copies the reporter beside the
 /// game executable. If you enable the reporter in code instead, export doesn't include it, and you need to bundle it
 /// with your game manually.
+/// Each SDK release offers the prebuilt
+/// <see href="https://github.com/getsentry/sentry-desktop-crash-reporter">Sentry Desktop Crash Reporter</see> as an
+/// optional package, <c>sentry-godot-crash-reporter-&lt;version&gt;.zip</c>. To use it, unpack the package into your
+/// project folder and set <see cref="Enabled"/> to <c>true</c>. No other configuration is needed.
 /// Applies only on Linux and Windows. Has no effect on other platforms. The SDK skips the crash reporter on headless
 /// display servers.
 /// To learn more, visit <see href="https://docs.sentry.io/platforms/godot/configuration/crash-reporter/">Crash Reporter documentation</see>.
@@ -517,7 +521,8 @@ public sealed class SentryCrashReporterOptions
     /// <remarks>
     /// At initialization, the SDK loads this value from the <c>sentry/crash_reporter/path_&lt;platform&gt;_&lt;arch&gt;</c>
     /// project setting for the running platform and architecture. The SDK looks for a file with this name beside the
-    /// game executable first, then at the path as given. If neither exists, the SDK prints a warning and continues without the crash reporter.
+    /// game executable first, then at the path as given. If neither exists, the SDK prints a warning and continues
+    /// without the crash reporter.
     /// </remarks>
     public string Path { get; set; } = "";
 }
