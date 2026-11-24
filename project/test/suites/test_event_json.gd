@@ -192,9 +192,14 @@ func test_event_json_with_event_extras() -> void:
 		.must_contain("player") \
 		.verify()
 
+	# TODO: sentry-cocoa converts nested NSNull to "<null>". Remove the branching when fixed.
 	assert_json(json).describe("Nested null is preserved") \
 		.at("/extra/player/items") \
-		.is_null() \
+		.either() \
+			.is_null() \
+		.or_else() \
+			.must_be("<null>") \
+		.end() \
 		.verify()
 
 
