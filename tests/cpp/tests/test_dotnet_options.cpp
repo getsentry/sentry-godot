@@ -129,6 +129,16 @@ TEST_SUITE("[.NET] Options interop") {
 #if defined(LINUX_ENABLED) || defined(WINDOWS_ENABLED)
 			{ SentryCrashReporterOptions::get_current_path_setting(),          "crash_reporter:path",                          "interop-native-reporter",      "interop-managed-reporter" },
 #endif
+			{ "sentry/crash_reporter/appearance/window_title",                 "crash_reporter:window_title",                  "interop-native-title",         "interop-managed-title" },
+			{ "sentry/crash_reporter/appearance/header_text",                  "crash_reporter:header_text",                   "interop-native-header",        "interop-managed-header" },
+			{ "sentry/crash_reporter/appearance/header_description",           "crash_reporter:header_description",            "interop-native-description",   "interop-managed-description" },
+			{ "sentry/crash_reporter/appearance/submit_button_label",          "crash_reporter:submit_button_label",           "interop-native-submit",        "interop-managed-submit" },
+			{ "sentry/crash_reporter/appearance/cancel_button_label",          "crash_reporter:cancel_button_label",           "interop-native-cancel",        "interop-managed-cancel" },
+			{ "sentry/crash_reporter/appearance/accent_color",                 "crash_reporter:accent_color",                  Color::hex(0xFF8000FF),         Color::hex(0x224466FF) },
+			{ "sentry/crash_reporter/appearance/logo_light_theme",             "crash_reporter:logo_light_theme",              "interop-native-light.png",     "interop-managed-light.png" },
+			{ "sentry/crash_reporter/appearance/logo_dark_theme",              "crash_reporter:logo_dark_theme",               "interop-native-dark.png",      "interop-managed-dark.png" },
+			{ "sentry/crash_reporter/appearance/window_closable",              "crash_reporter:window_closable",               false,                          true },
+			{ "sentry/crash_reporter/appearance/views",                        "crash_reporter:views",                         Array({ 7, 0 }),                Array({ 8, 1 }) },
 			// clang-format on
 		};
 

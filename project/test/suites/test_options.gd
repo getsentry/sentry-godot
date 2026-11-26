@@ -65,6 +65,36 @@ func test_crash_reporter_options() -> void:
 	assert_str(options.crash_reporter.path).is_equal("reporter/custom_reporter")
 
 
+func test_crash_reporter_appearance_defaults() -> void:
+	assert_str(options.crash_reporter.window_title).is_empty()
+	assert_str(options.crash_reporter.header_text).is_empty()
+	assert_str(options.crash_reporter.header_description).is_empty()
+	assert_str(options.crash_reporter.submit_button_label).is_empty()
+	assert_str(options.crash_reporter.cancel_button_label).is_empty()
+	assert_float(options.crash_reporter.accent_color.a).is_equal(0.0)
+	assert_str(options.crash_reporter.logo_light_theme).is_empty()
+	assert_str(options.crash_reporter.logo_dark_theme).is_empty()
+	assert_bool(options.crash_reporter.window_closable).is_true()
+	assert_array(options.crash_reporter.views).is_empty()
+
+
+@warning_ignore("unused_parameter")
+func test_crash_reporter_appearance_retains_assigned_values(property: String, value: Variant, test_parameters := [
+		["window_title", "Game Crashed"],
+		["header_text", "Sorry!"],
+		["header_description", "Tell us what happened."],
+		["submit_button_label", "Send"],
+		["cancel_button_label", "Skip"],
+		["accent_color", Color.ORANGE_RED],
+		["logo_light_theme", "res://logo_light.png"],
+		["logo_dark_theme", "res://logo_dark.png"],
+		["window_closable", false],
+		["views", [SentryCrashReporterOptions.VIEW_STACKTRACE, SentryCrashReporterOptions.VIEW_FEEDBACK]],
+]) -> void:
+	options.crash_reporter.set(property, value)
+	assert_that(options.crash_reporter.get(property)).is_equal(value)
+
+
 @warning_ignore("unused_parameter")
 func test_crash_reporter_path_setting_defaults(setting: String, expected: String, test_parameters := [
 		["sentry/crash_reporter/path_windows_x86_64", "res://addons/sentry/crash_reporter/windows/x86_64/Sentry.CrashReporter.exe"],

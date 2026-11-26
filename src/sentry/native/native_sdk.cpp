@@ -4,6 +4,7 @@
 #include "sentry/common_defs.h"
 #include "sentry/level.h"
 #include "sentry/logging/print.h"
+#include "sentry/native/crash_reporter_config.h"
 #include "sentry/native/native_breadcrumb.h"
 #include "sentry/native/native_event.h"
 #include "sentry/native/native_log.h"
@@ -28,6 +29,7 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/resource_uid.hpp>
 
 namespace {
 
@@ -84,22 +86,23 @@ sentry_crash_upload_mode_t _to_native(sentry::SentryNativeOptions::CrashUploadMo
 
 #endif // SENTRY_CRASH_BACKEND_NATIVE
 
-// Returns the absolute path of the crash reporter executable, or empty if not found.
+// Returns the absolute path of a crash reporter file, such as its executable or logo, or empty if not found.
 String _resolve_crash_reporter_path(const String &p_path) {
-	if (p_path.is_empty()) {
+	const String path = ResourceUID::ensure_path(p_path);
+	if (path.is_empty()) {
 		return String();
 	}
 
-	// Export places the reporter beside the game executable.
+	// Export places the file beside the game executable.
 	const String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
-	const String exported_path = exe_dir.path_join(p_path.get_file());
+	const String exported_path = exe_dir.path_join(path.get_file());
 	if (FileAccess::file_exists(exported_path)) {
 		return exported_path;
 	}
 
-	const String given_path = p_path.is_relative_path()
-			? exe_dir.path_join(p_path)
-			: ProjectSettings::get_singleton()->globalize_path(p_path);
+	const String given_path = path.is_relative_path()
+			? exe_dir.path_join(path)
+			: ProjectSettings::get_singleton()->globalize_path(path);
 	if (FileAccess::file_exists(given_path)) {
 		return given_path;
 	}
@@ -107,7 +110,7 @@ String _resolve_crash_reporter_path(const String &p_path) {
 	return String();
 }
 
-void _configure_crash_reporter(sentry_options_t *p_options) {
+void _configure_crash_reporter(sentry_options_t *p_options, const String &p_database_path) {
 	Ref<sentry::SentryCrashReporterOptions> reporter_opts = SENTRY_OPTIONS()->get_crash_reporter();
 	if (!reporter_opts->get_enabled()) {
 		return;
@@ -134,6 +137,21 @@ void _configure_crash_reporter(sentry_options_t *p_options) {
 #ifdef LINUX_ENABLED
 	sentry::util::ensure_unix_executable(resolved_path);
 #endif
+
+	const String logo_light_theme = reporter_opts->get_logo_light_theme();
+	const String resolved_logo_light_theme = _resolve_crash_reporter_path(logo_light_theme);
+	if (!logo_light_theme.is_empty() && resolved_logo_light_theme.is_empty()) {
+		WARN_PRINT(vformat("Sentry: Crash reporter logo not found at \"%s\". The reporter will show its default logo.", logo_light_theme));
+	}
+
+	const String logo_dark_theme = reporter_opts->get_logo_dark_theme();
+	const String resolved_logo_dark_theme = _resolve_crash_reporter_path(logo_dark_theme);
+	if (!logo_dark_theme.is_empty() && resolved_logo_dark_theme.is_empty()) {
+		WARN_PRINT(vformat("Sentry: Crash reporter logo not found at \"%s\". The reporter will show its default logo.", logo_dark_theme));
+	}
+
+	const Dictionary app_config = sentry::crash_reporter::make_app_config(reporter_opts, resolved_logo_light_theme, resolved_logo_dark_theme);
+	sentry::crash_reporter::write_app_config(app_config, p_database_path);
 
 	sentry::logging::print_debug("Using crash reporter: ", resolved_path);
 	sentry_options_set_external_crash_reporter_path(p_options, resolved_path.utf8().get_data());
@@ -533,7 +551,7 @@ void NativeSDK::init() {
 	sentry_options_t *options = sentry_options_new();
 
 	sentry_options_set_dsn(options, SENTRY_OPTIONS()->get_dsn().utf8().get_data());
-	String db_path = OS::get_singleton()->get_user_data_dir() + "/sentry";
+	const String db_path = OS::get_singleton()->get_user_data_dir() + "/sentry";
 	sentry_options_set_database_path(options, db_path.utf8().get_data());
 	sentry_options_set_debug(options, SENTRY_OPTIONS()->is_debug_enabled());
 	sentry_options_set_release(options, SENTRY_OPTIONS()->get_release().utf8().get_data());
@@ -595,7 +613,7 @@ void NativeSDK::init() {
 		sentry_options_set_backend(options, NULL);
 	}
 
-	_configure_crash_reporter(options);
+	_configure_crash_reporter(options, db_path);
 
 	for (const Ref<SentryAttachment> &att : SENTRY_OPTIONS()->get_default_attachments()) {
 		String absolute_path = att->get_globalized_path();

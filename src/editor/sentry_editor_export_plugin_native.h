@@ -21,6 +21,7 @@ private:
 
 	String _export_path;
 	String _exported_reporter;
+	PackedStringArray _exported_logos;
 
 	CrashBackend _resolve_crash_backend() const;
 	void _export_crash_reporter(const String &p_platform, const String &p_arch);

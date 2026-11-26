@@ -117,6 +117,21 @@ struct ManagedTracePropagationTargets {
 
 } // extern "C"
 
+// Copies a typed array into a native array of T elements.
+template <typename T, typename E>
+static NativeArray _make_native_array(const TypedArray<E> &p_array) {
+	NativeArray result = {};
+	if (!p_array.is_empty()) {
+		T *items = memnew_arr(T, p_array.size());
+		for (int i = 0; i < p_array.size(); i++) {
+			items[i] = p_array[i];
+		}
+		result.ptr = items;
+		result.count = p_array.size();
+	}
+	return result;
+}
+
 // Decode a ManagedStringMap into a Godot Dictionary (String -> String).
 static Dictionary _managed_string_map_to_dictionary(const ManagedStringMap &map) {
 	Dictionary dict;
@@ -275,6 +290,16 @@ struct NativeOptions {
 	// Crash reporter
 	uint8_t crash_reporter_enabled;
 	GodotStringHandle crash_reporter_path;
+	GodotStringHandle crash_reporter_window_title;
+	GodotStringHandle crash_reporter_header_text;
+	GodotStringHandle crash_reporter_header_description;
+	GodotStringHandle crash_reporter_submit_button_label;
+	GodotStringHandle crash_reporter_cancel_button_label;
+	GodotStringHandle crash_reporter_logo_light_theme;
+	GodotStringHandle crash_reporter_logo_dark_theme;
+	NativeArray crash_reporter_views;
+	uint32_t crash_reporter_accent_color;
+	uint8_t crash_reporter_window_closable;
 
 	// Trace propagation
 	GodotStringHandle org_id;
@@ -335,6 +360,24 @@ struct ManagedOptions {
 	uint8_t crash_reporter_enabled;
 	const char16_t *crash_reporter_path;
 	int32_t crash_reporter_path_len;
+	const char16_t *crash_reporter_window_title;
+	int32_t crash_reporter_window_title_len;
+	const char16_t *crash_reporter_header_text;
+	int32_t crash_reporter_header_text_len;
+	const char16_t *crash_reporter_header_description;
+	int32_t crash_reporter_header_description_len;
+	const char16_t *crash_reporter_submit_button_label;
+	int32_t crash_reporter_submit_button_label_len;
+	const char16_t *crash_reporter_cancel_button_label;
+	int32_t crash_reporter_cancel_button_label_len;
+	const char16_t *crash_reporter_logo_light_theme;
+	int32_t crash_reporter_logo_light_theme_len;
+	const char16_t *crash_reporter_logo_dark_theme;
+	int32_t crash_reporter_logo_dark_theme_len;
+	const int32_t *crash_reporter_views;
+	int32_t crash_reporter_views_count;
+	uint32_t crash_reporter_accent_color;
+	uint8_t crash_reporter_window_closable;
 
 	// Trace propagation
 	const char16_t *org_id;
@@ -400,8 +443,23 @@ static void _apply_managed_options(const ManagedOptions &data, Ref<SentryOptions
 	options->get_android()->set_anr_timeout_interval_ms(data.android_anr_timeout_interval_ms);
 	options->get_android()->set_attach_anr_thread_dump(data.android_attach_anr_thread_dump);
 	options->get_apple()->set_enable_metrickit(data.apple_enable_metrickit);
-	options->get_crash_reporter()->set_enabled(data.crash_reporter_enabled);
-	options->get_crash_reporter()->set_path(String::utf16(data.crash_reporter_path, data.crash_reporter_path_len));
+	Ref<SentryCrashReporterOptions> crash_reporter = options->get_crash_reporter();
+	crash_reporter->set_enabled(data.crash_reporter_enabled);
+	crash_reporter->set_path(String::utf16(data.crash_reporter_path, data.crash_reporter_path_len));
+	crash_reporter->set_window_title(String::utf16(data.crash_reporter_window_title, data.crash_reporter_window_title_len));
+	crash_reporter->set_header_text(String::utf16(data.crash_reporter_header_text, data.crash_reporter_header_text_len));
+	crash_reporter->set_header_description(String::utf16(data.crash_reporter_header_description, data.crash_reporter_header_description_len));
+	crash_reporter->set_submit_button_label(String::utf16(data.crash_reporter_submit_button_label, data.crash_reporter_submit_button_label_len));
+	crash_reporter->set_cancel_button_label(String::utf16(data.crash_reporter_cancel_button_label, data.crash_reporter_cancel_button_label_len));
+	crash_reporter->set_logo_light_theme(String::utf16(data.crash_reporter_logo_light_theme, data.crash_reporter_logo_light_theme_len));
+	crash_reporter->set_logo_dark_theme(String::utf16(data.crash_reporter_logo_dark_theme, data.crash_reporter_logo_dark_theme_len));
+	TypedArray<int> crash_reporter_views;
+	for (int32_t i = 0; i < data.crash_reporter_views_count; i++) {
+		crash_reporter_views.push_back(data.crash_reporter_views[i]);
+	}
+	crash_reporter->set_views(crash_reporter_views);
+	crash_reporter->set_accent_color(Color::hex(data.crash_reporter_accent_color));
+	crash_reporter->set_window_closable(data.crash_reporter_window_closable);
 	options->set_org_id(String::utf16(data.org_id, data.org_id_len));
 	options->set_trace_propagation_targets(_managed_trace_propagation_targets_to_array(data.trace_propagation_targets));
 	options->set_propagate_traceparent(data.propagate_traceparent);
@@ -461,8 +519,19 @@ void _populate_options_data(NativeOptions &r_data, const Ref<SentryOptions> &opt
 	r_data.android_anr_timeout_interval_ms = options->get_android()->get_anr_timeout_interval_ms();
 	r_data.android_attach_anr_thread_dump = options->get_android()->get_attach_anr_thread_dump();
 	r_data.apple_enable_metrickit = options->get_apple()->get_enable_metrickit();
-	r_data.crash_reporter_enabled = options->get_crash_reporter()->get_enabled();
-	r_data.crash_reporter_path = _make_handle(options->get_crash_reporter()->get_path());
+	Ref<SentryCrashReporterOptions> crash_reporter = options->get_crash_reporter();
+	r_data.crash_reporter_enabled = crash_reporter->get_enabled();
+	r_data.crash_reporter_path = _make_handle(crash_reporter->get_path());
+	r_data.crash_reporter_window_title = _make_handle(crash_reporter->get_window_title());
+	r_data.crash_reporter_header_text = _make_handle(crash_reporter->get_header_text());
+	r_data.crash_reporter_header_description = _make_handle(crash_reporter->get_header_description());
+	r_data.crash_reporter_submit_button_label = _make_handle(crash_reporter->get_submit_button_label());
+	r_data.crash_reporter_cancel_button_label = _make_handle(crash_reporter->get_cancel_button_label());
+	r_data.crash_reporter_logo_light_theme = _make_handle(crash_reporter->get_logo_light_theme());
+	r_data.crash_reporter_logo_dark_theme = _make_handle(crash_reporter->get_logo_dark_theme());
+	r_data.crash_reporter_views = _make_native_array<int32_t>(crash_reporter->get_views());
+	r_data.crash_reporter_accent_color = crash_reporter->get_accent_color().to_rgba32();
+	r_data.crash_reporter_window_closable = crash_reporter->get_window_closable();
 	r_data.org_id = _make_handle(options->get_org_id());
 	r_data.trace_propagation_targets = _make_trace_propagation_targets(options->get_trace_propagation_targets());
 	r_data.propagate_traceparent = options->is_propagate_traceparent_enabled();
