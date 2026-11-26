@@ -24,9 +24,6 @@ src/gen/
 # Godot binary: downloaded by scripts/setup-godot.sh into ./godot/ by default.
 /godot/
 
-# Cocoa: downloaded automatically.
-modules/sentry-cocoa/
-
 # wasm-split: downloaded automatically.
 modules/wasm-split/
 

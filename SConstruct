@@ -188,7 +188,7 @@ if internal_sdk == SDK.NATIVE:
         Default(env.SeparateDebugSymbols(File(symbols_path), File(handler_path)))
 
 
-# *** Utilize sentry-cocoa.
+# *** Build sentry-cocoa.
 
 if internal_sdk == SDK.COCOA:
     env = SConscript("modules/sentry-cocoa.SConscript", exports=["env"])
@@ -281,6 +281,7 @@ if platform == "ios":
     lib_path = f"{temp_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
+    Requires(library[0].sources, env["cocoa_build"])
     Depends(library, deploy_cocoa)
     Default(library)
 
@@ -306,6 +307,7 @@ elif platform == "macos":
     lib_path = f"{out_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
+    Requires(library[0].sources, env["cocoa_build"])
     Depends(library, deploy_cocoa)
     Default(library)
 

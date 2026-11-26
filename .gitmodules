@@ -16,3 +16,6 @@
 [submodule "modules/doctest"]
 	path = modules/doctest
 	url = https://github.com/doctest/doctest
+[submodule "modules/sentry-cocoa"]
+	path = modules/sentry-cocoa
+	url = https://github.com/getsentry/sentry-cocoa.git

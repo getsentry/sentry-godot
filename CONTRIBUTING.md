@@ -77,6 +77,21 @@ You can perform both steps by adding `build_android_lib=yes` option to scons com
 scons target=editor debug_symbols=yes platform=android build_android_lib=yes
 ```
 
+### Apple platforms
+
+macOS and iOS builds require Xcode and `xcbeautify` (`brew install xcbeautify`).
+SCons builds Sentry Cocoa from the `modules/sentry-cocoa` submodule, then deploys
+its libraries and debug symbols into `project/addons/sentry/bin/`. No separate
+Cocoa build command is required. The first build produces the macOS, iOS device,
+and iOS simulator slices; subsequent builds reuse them until the Cocoa source,
+build script, or Xcode version changes.
+
+To build only the Cocoa dependency:
+
+```bash
+scons -j 11 platform=macos target=editor debug_symbols=yes sentry_cocoa
+```
+
 ### iOS
 
 Building for iOS requires making separate builds for device and simulator architectures, then combining them into an XCFramework using the `generate_ios_framework=yes` option:
