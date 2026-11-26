@@ -51,6 +51,9 @@
 - Bump Cocoa SDK from v9.35.0 to v9.36.0 ([#1135](https://github.com/getsentry/sentry-godot/pull/1135))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9360)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.35.0...9.36.0)
+- Bump Crash Reporter from v0.3.5 to v0.3.6 ([#1137](https://github.com/getsentry/sentry-godot/pull/1137))
+  - [changelog](https://github.com/getsentry/sentry-desktop-crash-reporter/blob/main/CHANGELOG.md#036)
+  - [diff](https://github.com/getsentry/sentry-desktop-crash-reporter/compare/0.3.5...0.3.6)
 
 ### Dependencies
 
