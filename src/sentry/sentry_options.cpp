@@ -136,8 +136,28 @@ void SentryNativeOptions::_bind_methods() {
 // *** SentryCrashReporterOptions
 
 void SentryCrashReporterOptions::_bind_methods() {
+	BIND_ENUM_CONSTANT(VIEW_FEEDBACK);
+	BIND_ENUM_CONSTANT(VIEW_TAGS);
+	BIND_ENUM_CONSTANT(VIEW_CONTEXTS);
+	BIND_ENUM_CONSTANT(VIEW_EXTRA);
+	BIND_ENUM_CONSTANT(VIEW_SDK);
+	BIND_ENUM_CONSTANT(VIEW_USER);
+	BIND_ENUM_CONSTANT(VIEW_ATTACHMENTS);
+	BIND_ENUM_CONSTANT(VIEW_STACKTRACE);
+	BIND_ENUM_CONSTANT(VIEW_ENVELOPE);
+
 	BIND_PROPERTY_SIMPLE(SentryCrashReporterOptions, Variant::BOOL, enabled);
 	BIND_PROPERTY_SIMPLE(SentryCrashReporterOptions, Variant::STRING, path);
+	BIND_PROPERTY_SIMPLE(SentryCrashReporterOptions, Variant::STRING, window_title);
+	BIND_PROPERTY_SIMPLE(SentryCrashReporterOptions, Variant::STRING, header_text);
+	BIND_PROPERTY_SIMPLE(SentryCrashReporterOptions, Variant::STRING, header_description);
+	BIND_PROPERTY_SIMPLE(SentryCrashReporterOptions, Variant::STRING, submit_button_label);
+	BIND_PROPERTY_SIMPLE(SentryCrashReporterOptions, Variant::STRING, cancel_button_label);
+	BIND_PROPERTY_SIMPLE(SentryCrashReporterOptions, Variant::COLOR, accent_color);
+	BIND_PROPERTY(SentryCrashReporterOptions, PropertyInfo(Variant::STRING, "logo_light_theme", PROPERTY_HINT_FILE, "*.png"), set_logo_light_theme, get_logo_light_theme);
+	BIND_PROPERTY(SentryCrashReporterOptions, PropertyInfo(Variant::STRING, "logo_dark_theme", PROPERTY_HINT_FILE, "*.png"), set_logo_dark_theme, get_logo_dark_theme);
+	BIND_PROPERTY_SIMPLE(SentryCrashReporterOptions, Variant::BOOL, window_closable);
+	BIND_PROPERTY(SentryCrashReporterOptions, PropertyInfo(Variant::ARRAY, "views", PROPERTY_HINT_TYPE_STRING, get_view_hint_string()), set_views, get_views);
 }
 
 String SentryCrashReporterOptions::get_path_setting(const String &p_platform, const String &p_arch) {
@@ -163,6 +183,11 @@ String SentryCrashReporterOptions::get_current_path_setting() {
 #else
 	return "";
 #endif
+}
+
+String SentryCrashReporterOptions::get_view_hint_string() {
+	return vformat("%d/%d:Feedback:0,Tags:1,Contexts:2,Additional Data:3,SDK:4,User:5,Attachments:6,Stacktrace:7,Envelope:8",
+			Variant::INT, PROPERTY_HINT_ENUM);
 }
 
 // *** SentryAndroidOptions
@@ -284,13 +309,24 @@ void SentryOptions::_define_project_settings(const Ref<SentryOptions> &p_options
 	_define_setting(PropertyInfo(Variant::INT, "sentry/native/native_crash_backend/thread_stackwalk_mode", PROPERTY_HINT_ENUM, "Crashed Thread Only:1,All Threads:2"), native->get_thread_stackwalk_mode(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/native/native_crash_backend/crash_upload_mode", PROPERTY_HINT_ENUM, "Synchronous:0,Asynchronous:1"), native->get_crash_upload_mode(), false);
 
-	_define_setting("sentry/crash_reporter/enabled", p_options->get_crash_reporter()->get_enabled());
+	Ref<SentryCrashReporterOptions> crash_reporter = p_options->get_crash_reporter();
+	_define_setting("sentry/crash_reporter/enabled", crash_reporter->get_enabled());
 	for (const char *platform : { "windows", "linux" }) {
 		for (const char *arch : { "x86_64", "arm64", "x86_32" }) {
 			_define_setting(PropertyInfo(Variant::STRING, SentryCrashReporterOptions::get_path_setting(platform, arch), PROPERTY_HINT_FILE),
 					SentryCrashReporterOptions::get_default_path(platform, arch), false);
 		}
 	}
+	_define_setting("sentry/crash_reporter/appearance/window_title", crash_reporter->get_window_title(), false);
+	_define_setting("sentry/crash_reporter/appearance/header_text", crash_reporter->get_header_text(), false);
+	_define_setting(PropertyInfo(Variant::STRING, "sentry/crash_reporter/appearance/header_description", PROPERTY_HINT_MULTILINE_TEXT), crash_reporter->get_header_description(), false);
+	_define_setting("sentry/crash_reporter/appearance/submit_button_label", crash_reporter->get_submit_button_label(), false);
+	_define_setting("sentry/crash_reporter/appearance/cancel_button_label", crash_reporter->get_cancel_button_label(), false);
+	_define_setting(PropertyInfo(Variant::COLOR, "sentry/crash_reporter/appearance/accent_color"), crash_reporter->get_accent_color(), false);
+	_define_setting(PropertyInfo(Variant::STRING, "sentry/crash_reporter/appearance/logo_light_theme", PROPERTY_HINT_FILE, "*.png"), crash_reporter->get_logo_light_theme(), false);
+	_define_setting(PropertyInfo(Variant::STRING, "sentry/crash_reporter/appearance/logo_dark_theme", PROPERTY_HINT_FILE, "*.png"), crash_reporter->get_logo_dark_theme(), false);
+	_define_setting("sentry/crash_reporter/appearance/window_closable", crash_reporter->get_window_closable(), false);
+	_define_setting(PropertyInfo(Variant::ARRAY, "sentry/crash_reporter/appearance/views", PROPERTY_HINT_TYPE_STRING, SentryCrashReporterOptions::get_view_hint_string()), crash_reporter->get_views(), false);
 
 	_define_setting(PropertyInfo(Variant::BOOL, "sentry/android/application_not_responding/enable_detection"), p_options->get_android()->get_enable_anr_detection(), false);
 	_define_setting(PropertyInfo(Variant::INT, "sentry/android/application_not_responding/timeout_interval_ms"), p_options->get_android()->get_anr_timeout_interval_ms(), false);
@@ -430,6 +466,16 @@ void SentryOptions::_load_project_settings(const Ref<SentryOptions> &p_options) 
 	if (!crash_reporter_path_setting.is_empty()) {
 		crash_reporter->set_path(ProjectSettings::get_singleton()->get_setting(crash_reporter_path_setting, crash_reporter->get_path()));
 	}
+	crash_reporter->set_window_title(ProjectSettings::get_singleton()->get_setting("sentry/crash_reporter/appearance/window_title", crash_reporter->get_window_title()));
+	crash_reporter->set_header_text(ProjectSettings::get_singleton()->get_setting("sentry/crash_reporter/appearance/header_text", crash_reporter->get_header_text()));
+	crash_reporter->set_header_description(ProjectSettings::get_singleton()->get_setting("sentry/crash_reporter/appearance/header_description", crash_reporter->get_header_description()));
+	crash_reporter->set_submit_button_label(ProjectSettings::get_singleton()->get_setting("sentry/crash_reporter/appearance/submit_button_label", crash_reporter->get_submit_button_label()));
+	crash_reporter->set_cancel_button_label(ProjectSettings::get_singleton()->get_setting("sentry/crash_reporter/appearance/cancel_button_label", crash_reporter->get_cancel_button_label()));
+	crash_reporter->set_accent_color(ProjectSettings::get_singleton()->get_setting("sentry/crash_reporter/appearance/accent_color", crash_reporter->get_accent_color()));
+	crash_reporter->set_logo_light_theme(ProjectSettings::get_singleton()->get_setting("sentry/crash_reporter/appearance/logo_light_theme", crash_reporter->get_logo_light_theme()));
+	crash_reporter->set_logo_dark_theme(ProjectSettings::get_singleton()->get_setting("sentry/crash_reporter/appearance/logo_dark_theme", crash_reporter->get_logo_dark_theme()));
+	crash_reporter->set_window_closable(ProjectSettings::get_singleton()->get_setting("sentry/crash_reporter/appearance/window_closable", crash_reporter->get_window_closable()));
+	crash_reporter->set_views(ProjectSettings::get_singleton()->get_setting("sentry/crash_reporter/appearance/views", crash_reporter->get_views()));
 
 	p_options->android->set_enable_anr_detection(
 			ProjectSettings::get_singleton()->get_setting(

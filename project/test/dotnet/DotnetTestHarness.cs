@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Godot;
@@ -172,6 +173,18 @@ public partial class DotnetTestHarness : RefCounted
             _receivedOptions["apple:enable_metrickit"] = options.Apple.EnableMetricKit;
             _receivedOptions["crash_reporter:enabled"] = options.CrashReporter.Enabled;
             _receivedOptions["crash_reporter:path"] = options.CrashReporter.Path;
+            _receivedOptions["crash_reporter:window_title"] = options.CrashReporter.WindowTitle;
+            _receivedOptions["crash_reporter:header_text"] = options.CrashReporter.HeaderText;
+            _receivedOptions["crash_reporter:header_description"] = options.CrashReporter.HeaderDescription;
+            _receivedOptions["crash_reporter:submit_button_label"] = options.CrashReporter.SubmitButtonLabel;
+            _receivedOptions["crash_reporter:cancel_button_label"] = options.CrashReporter.CancelButtonLabel;
+            _receivedOptions["crash_reporter:accent_color"] = options.CrashReporter.AccentColor is { } accent
+                ? Color.Color8(accent.R, accent.G, accent.B, accent.A)
+                : new Color(0, 0, 0, 0);
+            _receivedOptions["crash_reporter:logo_light_theme"] = options.CrashReporter.LogoLightTheme;
+            _receivedOptions["crash_reporter:logo_dark_theme"] = options.CrashReporter.LogoDarkTheme;
+            _receivedOptions["crash_reporter:window_closable"] = options.CrashReporter.WindowClosable;
+            _receivedOptions["crash_reporter:views"] = new Godot.Collections.Array<int>(options.CrashReporter.Views.Select(view => (int)view));
 
             // Init sends these back through ManagedOptions. Every value differs from the one above,
             // so a value can only reach the native layer by actually crossing the boundary.
@@ -227,6 +240,18 @@ public partial class DotnetTestHarness : RefCounted
             options.Apple.EnableMetricKit = false;
             options.CrashReporter.Enabled = false;
             options.CrashReporter.Path = "interop-managed-reporter";
+            options.CrashReporter.WindowTitle = "interop-managed-title";
+            options.CrashReporter.HeaderText = "interop-managed-header";
+            options.CrashReporter.HeaderDescription = "interop-managed-description";
+            options.CrashReporter.SubmitButtonLabel = "interop-managed-submit";
+            options.CrashReporter.CancelButtonLabel = "interop-managed-cancel";
+            options.CrashReporter.AccentColor = System.Drawing.Color.FromArgb(255, 0x22, 0x44, 0x66);
+            options.CrashReporter.LogoLightTheme = "interop-managed-light.png";
+            options.CrashReporter.LogoDarkTheme = "interop-managed-dark.png";
+            options.CrashReporter.WindowClosable = true;
+            options.CrashReporter.Views.Clear();
+            options.CrashReporter.Views.Add(SentryCrashReporterView.Envelope);
+            options.CrashReporter.Views.Add(SentryCrashReporterView.Tags);
         });
     }
 

@@ -112,8 +112,33 @@ protected:
 class SentryCrashReporterOptions : public RefCounted {
 	GDCLASS(SentryCrashReporterOptions, RefCounted);
 
+public:
+	enum View {
+		VIEW_FEEDBACK = 0,
+		VIEW_TAGS = 1,
+		VIEW_CONTEXTS = 2,
+		VIEW_EXTRA = 3,
+		VIEW_SDK = 4,
+		VIEW_USER = 5,
+		VIEW_ATTACHMENTS = 6,
+		VIEW_STACKTRACE = 7,
+		VIEW_ENVELOPE = 8,
+	};
+
 	SIMPLE_PROPERTY(bool, enabled, false);
 	SIMPLE_PROPERTY(String, path, "");
+
+	// Appearance.
+	SIMPLE_PROPERTY(String, window_title, "");
+	SIMPLE_PROPERTY(String, header_text, "");
+	SIMPLE_PROPERTY(String, header_description, "");
+	SIMPLE_PROPERTY(String, submit_button_label, "");
+	SIMPLE_PROPERTY(String, cancel_button_label, "");
+	SIMPLE_PROPERTY(Color, accent_color, Color(0, 0, 0, 0));
+	SIMPLE_PROPERTY(String, logo_light_theme, "");
+	SIMPLE_PROPERTY(String, logo_dark_theme, "");
+	SIMPLE_PROPERTY(bool, window_closable, true);
+	SIMPLE_PROPERTY(TypedArray<int>, views, {});
 
 protected:
 	static void _bind_methods();
@@ -124,6 +149,9 @@ public:
 
 	// Returns the path setting for the running platform and architecture, or empty if there is none.
 	static String get_current_path_setting();
+
+	// Returns the hint string that lists the views as enum choices.
+	static String get_view_hint_string();
 };
 
 class SentryAndroidOptions : public RefCounted {
@@ -444,3 +472,5 @@ VARIANT_ENUM_CAST(sentry::SentryNativeOptions::CrashReportingMode);
 VARIANT_ENUM_CAST(sentry::SentryNativeOptions::MinidumpMode);
 VARIANT_ENUM_CAST(sentry::SentryNativeOptions::ThreadStackwalkMode);
 VARIANT_ENUM_CAST(sentry::SentryNativeOptions::CrashUploadMode);
+
+VARIANT_ENUM_CAST(sentry::SentryCrashReporterOptions::View);

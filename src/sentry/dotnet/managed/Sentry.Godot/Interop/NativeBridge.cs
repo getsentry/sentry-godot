@@ -115,6 +115,29 @@ internal static partial class NativeBridge
         }
     }
 
+    private static unsafe SentryCrashReporterView[] TakeCrashReporterViews(NativeArray array)
+    {
+        try
+        {
+            if (array.Ptr == IntPtr.Zero)
+            {
+                return [];
+            }
+
+            var values = (int*)array.Ptr;
+            var views = new SentryCrashReporterView[array.Count];
+            for (int i = 0; i < array.Count; i++)
+            {
+                views[i] = (SentryCrashReporterView)values[i];
+            }
+            return views;
+        }
+        finally
+        {
+            array.Dispose();
+        }
+    }
+
     [LibraryImport(Lib)]
     private static partial void csharp_interop_free_array(IntPtr array);
 
@@ -225,6 +248,16 @@ internal static partial class NativeBridge
         public byte apple_enable_metrickit;
         public byte crash_reporter_enabled;
         public GodotStringHandle crash_reporter_path;
+        public GodotStringHandle crash_reporter_window_title;
+        public GodotStringHandle crash_reporter_header_text;
+        public GodotStringHandle crash_reporter_header_description;
+        public GodotStringHandle crash_reporter_submit_button_label;
+        public GodotStringHandle crash_reporter_cancel_button_label;
+        public GodotStringHandle crash_reporter_logo_light_theme;
+        public GodotStringHandle crash_reporter_logo_dark_theme;
+        public NativeArray crash_reporter_views;
+        public uint crash_reporter_accent_color;
+        public byte crash_reporter_window_closable;
         public GodotStringHandle org_id;
         public NativeArray trace_propagation_targets;
         public byte propagate_traceparent;
@@ -274,6 +307,24 @@ internal static partial class NativeBridge
         public byte crash_reporter_enabled;
         public char* crash_reporter_path;
         public int crash_reporter_path_len;
+        public char* crash_reporter_window_title;
+        public int crash_reporter_window_title_len;
+        public char* crash_reporter_header_text;
+        public int crash_reporter_header_text_len;
+        public char* crash_reporter_header_description;
+        public int crash_reporter_header_description_len;
+        public char* crash_reporter_submit_button_label;
+        public int crash_reporter_submit_button_label_len;
+        public char* crash_reporter_cancel_button_label;
+        public int crash_reporter_cancel_button_label_len;
+        public char* crash_reporter_logo_light_theme;
+        public int crash_reporter_logo_light_theme_len;
+        public char* crash_reporter_logo_dark_theme;
+        public int crash_reporter_logo_dark_theme_len;
+        public int* crash_reporter_views;
+        public int crash_reporter_views_count;
+        public uint crash_reporter_accent_color;
+        public byte crash_reporter_window_closable;
         public char* org_id;
         public int org_id_len;
         public ManagedTracePropagationTargets trace_propagation_targets;
@@ -738,6 +789,20 @@ internal static partial class NativeBridge
         opts.Apple.EnableMetricKit = data.apple_enable_metrickit != 0;
         opts.CrashReporter.Enabled = data.crash_reporter_enabled != 0;
         opts.CrashReporter.Path = data.crash_reporter_path.TakeString() ?? "";
+        opts.CrashReporter.WindowTitle = data.crash_reporter_window_title.TakeString() ?? "";
+        opts.CrashReporter.HeaderText = data.crash_reporter_header_text.TakeString() ?? "";
+        opts.CrashReporter.HeaderDescription = data.crash_reporter_header_description.TakeString() ?? "";
+        opts.CrashReporter.SubmitButtonLabel = data.crash_reporter_submit_button_label.TakeString() ?? "";
+        opts.CrashReporter.CancelButtonLabel = data.crash_reporter_cancel_button_label.TakeString() ?? "";
+        opts.CrashReporter.LogoLightTheme = data.crash_reporter_logo_light_theme.TakeString() ?? "";
+        opts.CrashReporter.LogoDarkTheme = data.crash_reporter_logo_dark_theme.TakeString() ?? "";
+        opts.CrashReporter.Views.Clear();
+        foreach (var view in TakeCrashReporterViews(data.crash_reporter_views))
+        {
+            opts.CrashReporter.Views.Add(view);
+        }
+        opts.CrashReporter.AccentColor = ColorFromRgba(data.crash_reporter_accent_color);
+        opts.CrashReporter.WindowClosable = data.crash_reporter_window_closable != 0;
         opts.OrgId = data.org_id.TakeString();
         opts.TracePropagationTargets.Clear();
         foreach (StringOrRegex target in TakeTracePropagationTargets(data.trace_propagation_targets))
@@ -992,6 +1057,22 @@ internal static partial class NativeBridge
     [LibraryImport(Lib)]
     private static unsafe partial void csharp_interop_sdk_init(ManagedOptions opts);
 
+    // Colors cross the boundary as RGBA, where zero alpha stands for no color.
+    private static System.Drawing.Color? ColorFromRgba(uint rgba)
+    {
+        var alpha = (int)(rgba & 0xFF);
+        return alpha == 0
+            ? null
+            : System.Drawing.Color.FromArgb(alpha, (int)(rgba >> 24), (int)((rgba >> 16) & 0xFF), (int)((rgba >> 8) & 0xFF));
+    }
+
+    private static uint ColorToRgba(System.Drawing.Color? color)
+    {
+        return color is { } c
+            ? ((uint)c.R << 24) | ((uint)c.G << 16) | ((uint)c.B << 8) | c.A
+            : 0;
+    }
+
     public static unsafe void InitNativeSdk(SentryGodotOptions opts)
     {
         var dsn = opts.Dsn ?? "";
@@ -1000,6 +1081,18 @@ internal static partial class NativeBridge
         var env = opts.Environment ?? "";
         var orgId = opts.OrgId ?? "";
         var crashReporterPath = opts.CrashReporter.Path ?? "";
+        var crashReporterWindowTitle = opts.CrashReporter.WindowTitle ?? "";
+        var crashReporterHeaderText = opts.CrashReporter.HeaderText ?? "";
+        var crashReporterHeaderDescription = opts.CrashReporter.HeaderDescription ?? "";
+        var crashReporterSubmitButtonLabel = opts.CrashReporter.SubmitButtonLabel ?? "";
+        var crashReporterCancelButtonLabel = opts.CrashReporter.CancelButtonLabel ?? "";
+        var crashReporterLogoLightTheme = opts.CrashReporter.LogoLightTheme ?? "";
+        var crashReporterLogoDarkTheme = opts.CrashReporter.LogoDarkTheme ?? "";
+        var crashReporterViews = new int[opts.CrashReporter.Views.Count];
+        for (int i = 0; i < crashReporterViews.Length; i++)
+        {
+            crashReporterViews[i] = (int)opts.CrashReporter.Views[i];
+        }
         var (tracePropagationTargetsBuffer, tracePropagationTargetsLengths, tracePropagationTargetsIsRegex) =
                 MarshallTracePropagationTargets(opts.TracePropagationTargets);
 
@@ -1009,6 +1102,14 @@ internal static partial class NativeBridge
         fixed (char* envPtr = env)
         fixed (char* orgIdPtr = orgId)
         fixed (char* crashReporterPathPtr = crashReporterPath)
+        fixed (char* crashReporterWindowTitlePtr = crashReporterWindowTitle)
+        fixed (char* crashReporterHeaderTextPtr = crashReporterHeaderText)
+        fixed (char* crashReporterHeaderDescriptionPtr = crashReporterHeaderDescription)
+        fixed (char* crashReporterSubmitButtonLabelPtr = crashReporterSubmitButtonLabel)
+        fixed (char* crashReporterCancelButtonLabelPtr = crashReporterCancelButtonLabel)
+        fixed (char* crashReporterLogoLightThemePtr = crashReporterLogoLightTheme)
+        fixed (char* crashReporterLogoDarkThemePtr = crashReporterLogoDarkTheme)
+        fixed (int* crashReporterViewsPtr = crashReporterViews)
         fixed (char* tracePropagationTargetsPtr = tracePropagationTargetsBuffer)
         fixed (int* tracePropagationTargetLengthsPtr = tracePropagationTargetsLengths)
         fixed (byte* tracePropagationTargetsIsRegexPtr = tracePropagationTargetsIsRegex)
@@ -1077,6 +1178,24 @@ internal static partial class NativeBridge
                 crash_reporter_enabled = (byte)(opts.CrashReporter.Enabled ? 1 : 0),
                 crash_reporter_path = crashReporterPathPtr,
                 crash_reporter_path_len = crashReporterPath.Length,
+                crash_reporter_window_title = crashReporterWindowTitlePtr,
+                crash_reporter_window_title_len = crashReporterWindowTitle.Length,
+                crash_reporter_header_text = crashReporterHeaderTextPtr,
+                crash_reporter_header_text_len = crashReporterHeaderText.Length,
+                crash_reporter_header_description = crashReporterHeaderDescriptionPtr,
+                crash_reporter_header_description_len = crashReporterHeaderDescription.Length,
+                crash_reporter_submit_button_label = crashReporterSubmitButtonLabelPtr,
+                crash_reporter_submit_button_label_len = crashReporterSubmitButtonLabel.Length,
+                crash_reporter_cancel_button_label = crashReporterCancelButtonLabelPtr,
+                crash_reporter_cancel_button_label_len = crashReporterCancelButtonLabel.Length,
+                crash_reporter_logo_light_theme = crashReporterLogoLightThemePtr,
+                crash_reporter_logo_light_theme_len = crashReporterLogoLightTheme.Length,
+                crash_reporter_logo_dark_theme = crashReporterLogoDarkThemePtr,
+                crash_reporter_logo_dark_theme_len = crashReporterLogoDarkTheme.Length,
+                crash_reporter_views = crashReporterViewsPtr,
+                crash_reporter_views_count = crashReporterViews.Length,
+                crash_reporter_accent_color = ColorToRgba(opts.CrashReporter.AccentColor),
+                crash_reporter_window_closable = (byte)(opts.CrashReporter.WindowClosable ? 1 : 0),
                 org_id = orgIdPtr,
                 org_id_len = orgId.Length,
                 trace_propagation_targets = new ManagedTracePropagationTargets

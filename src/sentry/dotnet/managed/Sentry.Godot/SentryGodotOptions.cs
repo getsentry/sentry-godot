@@ -502,6 +502,9 @@ public sealed class SentryAppleOptions
 /// <see href="https://github.com/getsentry/sentry-desktop-crash-reporter">Sentry Desktop Crash Reporter</see> as an
 /// optional package, <c>sentry-godot-crash-reporter-&lt;version&gt;.zip</c>. To use it, unpack the package into your
 /// project folder and set <see cref="Enabled"/> to <c>true</c>. No other configuration is needed.
+/// Customize the dialog's appearance with options such as <see cref="WindowTitle"/>, <see cref="AccentColor"/>,
+/// <see cref="LogoLightTheme"/>, and <see cref="Views"/>. They apply only to the Sentry Desktop Crash Reporter; custom
+/// reporters may ignore them.
 /// Applies only on Linux and Windows. Has no effect on other platforms. The SDK skips the crash reporter on headless
 /// display servers.
 /// To learn more, visit <see href="https://docs.sentry.io/platforms/godot/configuration/crash-reporter/">Crash Reporter documentation</see>.
@@ -525,4 +528,100 @@ public sealed class SentryCrashReporterOptions
     /// without the crash reporter.
     /// </remarks>
     public string Path { get; set; } = "";
+
+    /// <summary>
+    /// Title of the crash reporter window. If empty, the reporter uses its default title.
+    /// </summary>
+    public string WindowTitle { get; set; } = "";
+
+    /// <summary>
+    /// Heading shown at the top of the crash reporter dialog. If empty, the reporter uses its default heading.
+    /// </summary>
+    public string HeaderText { get; set; } = "";
+
+    /// <summary>
+    /// Text shown under the heading of the crash reporter dialog. If empty, the reporter uses its default text.
+    /// </summary>
+    public string HeaderDescription { get; set; } = "";
+
+    /// <summary>
+    /// Label of the button that sends the report. If empty, the reporter uses its default label.
+    /// </summary>
+    public string SubmitButtonLabel { get; set; } = "";
+
+    /// <summary>
+    /// Label of the button that closes the dialog without sending the report. If empty, the reporter uses its default
+    /// label.
+    /// </summary>
+    public string CancelButtonLabel { get; set; } = "";
+
+    /// <summary>
+    /// Accent color of buttons and highlights in the crash reporter dialog. If <c>null</c> or fully transparent, the
+    /// reporter uses its default color.
+    /// </summary>
+    /// <remarks>
+    /// The dialog shows any other color as opaque, whatever its alpha.
+    /// </remarks>
+    public System.Drawing.Color? AccentColor { get; set; }
+
+    /// <summary>
+    /// Path to a PNG image that replaces the logo in the crash reporter dialog when the system uses a light theme:
+    /// absolute, <c>user://</c>, or relative to the game executable's directory. If empty, the reporter shows its
+    /// default logo.
+    /// </summary>
+    /// <remarks>
+    /// When the <c>sentry/crash_reporter/appearance/logo_light_theme</c> project setting is set, export copies the image
+    /// beside the game executable. The SDK looks for a file with this name beside the game executable first, then at
+    /// the path as given.
+    /// </remarks>
+    public string LogoLightTheme { get; set; } = "";
+
+    /// <summary>
+    /// Path to a PNG image that replaces the logo in the crash reporter dialog when the system uses a dark theme:
+    /// absolute, <c>user://</c>, or relative to the game executable's directory. If empty, the reporter shows its
+    /// default logo.
+    /// </summary>
+    /// <remarks>
+    /// When the <c>sentry/crash_reporter/appearance/logo_dark_theme</c> project setting is set, export copies the image
+    /// beside the game executable. The SDK looks for a file with this name beside the game executable first, then at
+    /// the path as given.
+    /// </remarks>
+    public string LogoDarkTheme { get; set; } = "";
+
+    /// <summary>
+    /// If <c>false</c>, the player must send the report to close the crash reporter dialog. The dialog disables the
+    /// window's close button and hides the cancel button.
+    /// </summary>
+    public bool WindowClosable { get; set; } = true;
+
+    /// <summary>
+    /// Tabs that the crash reporter dialog shows, listed in display order. If empty, the dialog shows all tabs in its
+    /// default order.
+    /// </summary>
+    public IList<SentryCrashReporterView> Views { get; } = new List<SentryCrashReporterView>();
+}
+
+/// <summary>
+/// Views of the crash reporter dialog.
+/// </summary>
+public enum SentryCrashReporterView
+{
+    /// <summary>Form where the player describes what happened before the crash and can add a name and contact email (optional).</summary>
+    Feedback = 0,
+    /// <summary>Tags of the crash event.</summary>
+    Tags = 1,
+    /// <summary>Contexts of the crash event.</summary>
+    Contexts = 2,
+    /// <summary>Additional data of the crash event.</summary>
+    Extra = 3,
+    /// <summary>SDK information of the crash event.</summary>
+    Sdk = 4,
+    /// <summary>User information of the crash event.</summary>
+    User = 5,
+    /// <summary>Files attached to the report.</summary>
+    Attachments = 6,
+    /// <summary>Stack traces of the crashed process.</summary>
+    Stacktrace = 7,
+    /// <summary>Raw contents of the report.</summary>
+    Envelope = 8,
 }

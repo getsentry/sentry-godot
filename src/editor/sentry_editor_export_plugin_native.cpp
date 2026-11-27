@@ -5,9 +5,11 @@
 #include "sentry/sentry_options.h"
 #include "sentry/util/file_permissions.h"
 
+#include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/editor_export_preset.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/resource_uid.hpp>
 
 #include <initializer_list>
 
@@ -90,12 +92,25 @@ PackedStringArray SentryEditorExportPluginNative::_get_export_features(const Ref
 void SentryEditorExportPluginNative::_export_begin(const PackedStringArray &p_features, bool p_is_debug, const String &p_path, uint32_t p_flags) {
 	_export_path = p_path;
 	_exported_reporter = String();
+	_exported_logos.clear();
 }
 
 void SentryEditorExportPluginNative::_export_end() {
 	// Godot copies shared objects without execute bits.
 	if (!_exported_reporter.is_empty()) {
 		sentry::util::ensure_unix_executable(_export_path.get_base_dir().path_join(_exported_reporter));
+	}
+
+	for (const String &logo : _exported_logos) {
+		const String source = ProjectSettings::get_singleton()->globalize_path(logo);
+		const String target = _export_path.get_base_dir().path_join(logo.get_file());
+		if (DirAccess::copy_absolute(source, target) != OK) {
+			Ref<EditorExportPlatform> export_platform = get_export_platform();
+			if (export_platform.is_valid()) {
+				export_platform->add_message(EditorExportPlatform::EXPORT_MESSAGE_ERROR, "Sentry",
+						vformat("Failed to copy crash reporter logo to \"%s\".", target));
+			}
+		}
 	}
 }
 
@@ -170,6 +185,26 @@ void SentryEditorExportPluginNative::_export_crash_reporter(const String &p_plat
 	add_shared_object(path, PackedStringArray(), String());
 	if (p_platform == "linux") {
 		_exported_reporter = path.get_file();
+	}
+
+	for (const char *theme : { "light", "dark" }) {
+		const String setting = vformat("sentry/crash_reporter/appearance/logo_%s_theme", theme);
+		const String logo = ResourceUID::ensure_path(preset->get_project_setting(setting));
+		if (logo.is_empty() || _exported_logos.has(logo)) {
+			continue;
+		}
+		if (!FileAccess::file_exists(logo)) {
+			export_platform->add_message(EditorExportPlatform::EXPORT_MESSAGE_ERROR, "Sentry",
+					vformat("Crash reporter logo not found at \"%s\". Update \"%s\" in the project settings.", logo, setting));
+			continue;
+		}
+		// Logos are copied beside the executable and found there by file name.
+		if (!_exported_logos.is_empty() && _exported_logos[0].get_file() == logo.get_file()) {
+			export_platform->add_message(EditorExportPlatform::EXPORT_MESSAGE_ERROR, "Sentry",
+					vformat("Crash reporter logos \"%s\" and \"%s\" must have different file names.", _exported_logos[0], logo));
+			continue;
+		}
+		_exported_logos.push_back(logo);
 	}
 }
 

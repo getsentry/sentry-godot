@@ -8,6 +8,7 @@
 		Configure these options in Project Settings under [b]Sentry &gt; Crash Reporter[/b], or override them in the initialization callback passed to [method SentrySDK.init]. Each [code]sentry/crash_reporter/path_&lt;platform&gt;_&lt;arch&gt;[/code] project setting specifies the reporter executable that export bundles for that target, as a [code]res://[/code] or absolute path. An empty value means no reporter for that target.
 		When the [code]sentry/crash_reporter/enabled[/code] project setting is enabled, export copies the reporter beside the game executable. If you enable the reporter in code instead, export doesn't include it, and you need to bundle it with your game manually.
 		Each SDK release offers the prebuilt [url=https://github.com/getsentry/sentry-desktop-crash-reporter]Sentry Desktop Crash Reporter[/url] as an optional package, [code]sentry-godot-crash-reporter-&lt;version&gt;.zip[/code]. To use it, unpack the package into your project folder and set [member enabled] to [code]true[/code]. No other configuration is needed.
+		Customize the dialog's appearance with options such as [member window_title], [member accent_color], [member logo_light_theme], and [member views], or in Project Settings under [b]Sentry &gt; Crash Reporter &gt; Appearance[/b]. They apply only to the Sentry Desktop Crash Reporter; custom reporters may ignore them.
 		To learn more, visit [url=https://docs.sentry.io/platforms/godot/configuration/crash-reporter/]Crash Reporter documentation[/url].
 		[b]Platform support:[/b] Linux and Windows. Has no effect on other platforms.
 		[b]Note:[/b] The SDK skips the crash reporter on headless display servers.
@@ -15,12 +16,74 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="accent_color" type="Color" setter="set_accent_color" getter="get_accent_color" default="Color(0, 0, 0, 0)">
+			Accent color of buttons and highlights in the crash reporter dialog. If the alpha component is [code]0[/code], the reporter uses its default color.
+			[b]Note:[/b] The dialog shows any other color as opaque, whatever its alpha.
+		</member>
+		<member name="cancel_button_label" type="String" setter="set_cancel_button_label" getter="get_cancel_button_label" default="&quot;&quot;">
+			Label of the button that closes the dialog without sending the report. If empty, the reporter uses its default label.
+		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled" default="false">
 			If [code]true[/code], the SDK launches the crash reporter executable after a crash. Set its location with [member path].
+		</member>
+		<member name="header_description" type="String" setter="set_header_description" getter="get_header_description" default="&quot;&quot;">
+			Text shown under the heading of the crash reporter dialog. If empty, the reporter uses its default text.
+		</member>
+		<member name="header_text" type="String" setter="set_header_text" getter="get_header_text" default="&quot;&quot;">
+			Heading shown at the top of the crash reporter dialog. If empty, the reporter uses its default heading.
+		</member>
+		<member name="logo_dark_theme" type="String" setter="set_logo_dark_theme" getter="get_logo_dark_theme" default="&quot;&quot;">
+			Path to a PNG image that replaces the logo in the crash reporter dialog when the system uses a dark theme: absolute, [code]user://[/code], or relative to the game executable's directory. If empty, the reporter shows its default logo.
+			When the [code]sentry/crash_reporter/appearance/logo_dark_theme[/code] project setting is set, export copies the image beside the game executable. The SDK looks for a file with this name beside the game executable first, then at the path as given.
+		</member>
+		<member name="logo_light_theme" type="String" setter="set_logo_light_theme" getter="get_logo_light_theme" default="&quot;&quot;">
+			Path to a PNG image that replaces the logo in the crash reporter dialog when the system uses a light theme: absolute, [code]user://[/code], or relative to the game executable's directory. If empty, the reporter shows its default logo.
+			When the [code]sentry/crash_reporter/appearance/logo_light_theme[/code] project setting is set, export copies the image beside the game executable. The SDK looks for a file with this name beside the game executable first, then at the path as given.
 		</member>
 		<member name="path" type="String" setter="set_path" getter="get_path" default="&quot;&quot;">
 			Path to the crash reporter executable: absolute, [code]user://[/code], or relative to the game executable's directory.
 			At initialization, the SDK loads this value from the [code]sentry/crash_reporter/path_&lt;platform&gt;_&lt;arch&gt;[/code] project setting for the running platform and architecture. The SDK looks for a file with this name beside the game executable first, then at the path as given. If neither exists, the SDK prints a warning and continues without the crash reporter.
 		</member>
+		<member name="submit_button_label" type="String" setter="set_submit_button_label" getter="get_submit_button_label" default="&quot;&quot;">
+			Label of the button that sends the report. If empty, the reporter uses its default label.
+		</member>
+		<member name="views" type="int[]" setter="set_views" getter="get_views" default="[]">
+			Tabs that the crash reporter dialog shows, as [enum View] values listed in display order. If empty, the dialog shows all tabs in its default order.
+		</member>
+		<member name="window_closable" type="bool" setter="set_window_closable" getter="get_window_closable" default="true">
+			If [code]false[/code], the player must send the report to close the crash reporter dialog. The dialog disables the window's close button and hides the cancel button.
+		</member>
+		<member name="window_title" type="String" setter="set_window_title" getter="get_window_title" default="&quot;&quot;">
+			Title of the crash reporter window. If empty, the reporter uses its default title.
+		</member>
 	</members>
+	<constants>
+		<constant name="VIEW_FEEDBACK" value="0" enum="View">
+			Form where the player describes what happened before the crash and can add a name and contact email (optional).
+		</constant>
+		<constant name="VIEW_TAGS" value="1" enum="View">
+			Tags of the crash event.
+		</constant>
+		<constant name="VIEW_CONTEXTS" value="2" enum="View">
+			Contexts of the crash event.
+		</constant>
+		<constant name="VIEW_EXTRA" value="3" enum="View">
+			Additional data of the crash event.
+		</constant>
+		<constant name="VIEW_SDK" value="4" enum="View">
+			SDK information of the crash event.
+		</constant>
+		<constant name="VIEW_USER" value="5" enum="View">
+			User information of the crash event.
+		</constant>
+		<constant name="VIEW_ATTACHMENTS" value="6" enum="View">
+			Files attached to the report.
+		</constant>
+		<constant name="VIEW_STACKTRACE" value="7" enum="View">
+			Stack traces of the crashed process.
+		</constant>
+		<constant name="VIEW_ENVELOPE" value="8" enum="View">
+			Raw contents of the report.
+		</constant>
+	</constants>
 </class>
