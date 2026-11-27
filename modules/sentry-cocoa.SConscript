@@ -34,6 +34,10 @@ headers = cocoa_build_dir / "include/SentryObjC"
 
 
 def build_cocoa(target, source, env):
+    if not (cocoa_source / "Package.swift").is_file():
+        print("ERROR: Initialize Cocoa with git submodule update --init modules/sentry-cocoa")
+        return 1
+
     if not shutil.which("xcbeautify"):
         print("ERROR: Cocoa builds require xcbeautify. Install it with brew install xcbeautify")
         return 1
@@ -47,16 +51,15 @@ def build_cocoa(target, source, env):
     shutil.copytree(cocoa_source / "Sources/SentryObjC/Public", headers)
 
 
-if not (cocoa_source / "Package.swift").is_file():
-    print("ERROR: Initialize Cocoa with git submodule update --init modules/sentry-cocoa")
-    Exit(1)
-
-revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=cocoa_source)
-changes = subprocess.check_output(["git", "diff", "HEAD", "--binary"], cwd=cocoa_source)
+cocoa_inputs = [File("sentry-cocoa.SConscript")]
+if (cocoa_source / "Package.swift").is_file():
+    revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=cocoa_source)
+    changes = subprocess.check_output(["git", "diff", "HEAD", "--binary"], cwd=cocoa_source)
+    cocoa_inputs.extend([Value(revision), Value(hashlib.sha256(changes).hexdigest())])
 xcode = subprocess.check_output(["xcodebuild", "-version"])
 cocoa_build = env.Command(
     [File(archive), File(headers / "SentryObjC.h")],
-    [File("sentry-cocoa.SConscript"), Value(revision), Value(hashlib.sha256(changes).hexdigest()), Value(xcode)],
+    cocoa_inputs + [Value(xcode)],
     build_cocoa,
 )
 env.Precious(cocoa_build)

@@ -19,6 +19,7 @@
 - Support creating events with `SentryEvent.new()` ([#1081](https://github.com/getsentry/sentry-godot/pull/1081))
 - Support creating breadcrumbs with `SentryBreadcrumb.new()`. `SentryBreadcrumb.create(message)` remains available as a convenience factory ([#1084](https://github.com/getsentry/sentry-godot/pull/1084))
 - Update godot-cpp to reduce SDK package size ([#1111](https://github.com/getsentry/sentry-godot/pull/1111))
+- macOS/iOS: Link Sentry Cocoa into the GDExtension so exported games no longer need a separate Cocoa library ([#1138](https://github.com/getsentry/sentry-godot/pull/1138))
 
 ### Fixes
 
