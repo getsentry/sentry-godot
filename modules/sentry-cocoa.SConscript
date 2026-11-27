@@ -2,8 +2,8 @@
 ## Purpose: macOS and iOS-specific build configuration using sentry-cocoa
 
 import hashlib
-import subprocess
 import shutil
+import subprocess
 from pathlib import Path
 
 Import("env")
@@ -12,12 +12,10 @@ Import("env")
 def remove_if_exists(filesystem_path):
     """Remove directory tree, file or link."""
     path = Path(filesystem_path)
-    if path.is_symlink():
+    if path.is_symlink() or path.is_file():
         path.unlink()
     elif path.is_dir():
         shutil.rmtree(path)
-    elif path.is_file():
-        path.unlink()
 
 
 project_root = Path(env.Dir("#").abspath)
@@ -28,9 +26,8 @@ if platform == "macos":
 else:
     sdk = "iphonesimulator" if env["ios_simulator"] else "iphoneos"
 
-cocoa_build_dir = project_root / "build/sentry-cocoa" / sdk
+cocoa_build_dir = cocoa_source / "build" / sdk
 archive = cocoa_build_dir / "lib/SentryObjC" / sdk / "libSentryObjC-Debug.a"
-headers = cocoa_build_dir / "include/SentryObjC"
 
 
 def build_cocoa(target, source, env):
@@ -42,13 +39,12 @@ def build_cocoa(target, source, env):
         print("ERROR: Cocoa builds require xcbeautify. Install it with brew install xcbeautify")
         return 1
 
-    # Keep each SDK's DerivedData beside its archive until dsymutil has linked the extension.
     subprocess.run([
-        "bash", "scripts/build-xcframework-sentryobjc.sh", "--variant", "static",
-        "--sdks", sdk, "--output-dir", str(cocoa_build_dir),
+        "bash", "scripts/build-xcframework-sentryobjc.sh",
+        "--variant", "static",
+        "--sdks", sdk,
+        "--output-dir", str(cocoa_build_dir),
     ], cwd=cocoa_source, check=True)
-    remove_if_exists(headers)
-    shutil.copytree(cocoa_source / "Sources/SentryObjC/Public", headers)
 
 
 cocoa_inputs = [File("sentry-cocoa.SConscript")]
@@ -56,26 +52,23 @@ if (cocoa_source / "Package.swift").is_file():
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=cocoa_source)
     changes = subprocess.check_output(["git", "diff", "HEAD", "--binary"], cwd=cocoa_source)
     cocoa_inputs.extend([Value(revision), Value(hashlib.sha256(changes).hexdigest())])
-xcode = subprocess.check_output(["xcodebuild", "-version"])
-cocoa_build = env.Command(
-    [File(archive), File(headers / "SentryObjC.h")],
-    cocoa_inputs + [Value(xcode)],
-    build_cocoa,
-)
-env.Precious(cocoa_build)
-env.NoCache(cocoa_build)
-env.Clean(cocoa_build, Dir(cocoa_build_dir))
-env.Alias("sentry_cocoa", cocoa_build)
-env["cocoa_build"] = cocoa_build
+xcode_version = subprocess.check_output(["xcodebuild", "-version"])
+cocoa_inputs.append(Value(xcode_version))
+
+sentry_cocoa = env.Command(File(archive), cocoa_inputs, build_cocoa)
+env.Precious(sentry_cocoa)
+env.NoCache(sentry_cocoa)
+env.Clean(sentry_cocoa, Dir(cocoa_build_dir))
+env.Alias("sentry_cocoa", sentry_cocoa)
+env["sentry_cocoa"] = sentry_cocoa
 
 swiftc = Path(subprocess.check_output(["xcrun", "--find", "swiftc"], text=True).strip())
+swift_lib_dir = swiftc.parent.parent / "lib/swift" / sdk
 env.Append(
-    CPPPATH=[str(headers.parent)],
+    CPPPATH=[str(cocoa_source / "Sources/SentryObjC/Public")],
     CCFLAGS=["-fobjc-arc"],
-    LIBPATH=[str(swiftc.parent.parent / "lib/swift" / sdk), "/usr/lib/swift"],
-    LIBS=["z", "c++"],
-    FRAMEWORKS=["Foundation", "CoreData", "CoreGraphics", "QuartzCore"],
-    LINKFLAGS=["-Xlinker", "-force_load", "-Xlinker", str(archive), "-Wl,-rpath,/usr/lib/swift"],
+    LIBPATH=[str(swift_lib_dir)],
+    LINKFLAGS=["-Xlinker", "-force_load", "-Xlinker", str(archive)],
 )
 for framework in ("SystemConfiguration", "AVFoundation", "CoreMedia", "CoreVideo", "MetricKit",
                   "PDFKit", "SwiftUI", "WebKit", "AppKit" if platform == "macos" else "UIKit"):
@@ -126,6 +119,7 @@ def CreateXCFrameworkFromLibs(self, framework_path, libraries):
 
             binary_dest = fw_dir / fw_name
             shutil.copy2(lib_path, binary_dest)
+            shutil.copy2(cocoa_source / "Sources/Resources/PrivacyInfo.xcprivacy", fw_dir)
 
             # Dylib's LC_ID_DYLIB still points to the bare .dylib path; update
             # it to the framework layout so dyld resolves it correctly at runtime.
