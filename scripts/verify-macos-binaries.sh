@@ -6,7 +6,7 @@ usage() {
     cat <<EOF >&2
 Usage: $(basename "$0") [-h|--help]
 
-Verify that packaged macOS GDExtension and Sentry Cocoa binaries are universal
+Verify that packaged macOS GDExtension binaries are universal
 and use the minimum macOS version declared in SConstruct.
 EOF
     exit "$1"
@@ -39,10 +39,10 @@ if [[ ${#extension_binaries[@]} -eq 0 ]]; then
     die "Error: No macOS GDExtension binaries found in $bin_dir"
 fi
 
-for binary in "${extension_binaries[@]}" "$bin_dir/libSentry.dylib"; do
+for binary in "${extension_binaries[@]}"; do
     lipo "$binary" -verify_arch arm64 x86_64
     for architecture in arm64 x86_64; do
-        actual_min_version="$(otool -arch "$architecture" -l "$binary" | awk '$1 == "minos" { print $2; exit }')"
+        actual_min_version="$(otool -arch "$architecture" -l "$binary" | awk '$1 == "minos" && !seen++ { print $2 }')"
         if [[ "$actual_min_version" != "$expected_min_version" ]]; then
             message="Expected $architecture minimum macOS version $expected_min_version, found ${actual_min_version:-none}."
             if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then

@@ -22,120 +22,61 @@ def remove_if_exists(filesystem_path):
 
 project_root = Path(env.Dir("#").abspath)
 cocoa_source = project_root / "modules/sentry-cocoa"
-cocoa_build_dir = project_root / "build/sentry-cocoa"
-xcframework_path = cocoa_build_dir / "SentryObjC-Dynamic.xcframework"
-macos_headers = cocoa_build_dir / "macos_include/SentryObjC"
-slices = ("macos-arm64_x86_64", "ios-arm64", "ios-arm64_x86_64-simulator")
-build_outputs = [
-    File(xcframework_path / "macos-arm64_x86_64/SentryObjC.framework/Versions/A/SentryObjC"),
-    Dir(macos_headers),
-    *[Dir(xcframework_path / name / "dSYMs/SentryObjC.framework.dSYM") for name in slices],
-    *[Dir(xcframework_path / name) for name in slices[1:]],
-]
+platform = env["platform"]
+if platform == "macos":
+    sdk = "macosx"
+else:
+    sdk = "iphonesimulator" if env["ios_simulator"] else "iphoneos"
+
+cocoa_build_dir = project_root / "build/sentry-cocoa" / sdk
+archive = cocoa_build_dir / "lib/SentryObjC" / sdk / "libSentryObjC-Debug.a"
+headers = cocoa_build_dir / "include/SentryObjC"
 
 
 def build_cocoa(target, source, env):
-    if not (cocoa_source / "Sentry.xcodeproj").exists():
-        print("ERROR: Initialize Cocoa with git submodule update --init modules/sentry-cocoa")
-        return 1
-
-    fingerprint = hashlib.sha256()
-    for command in (
-        ["git", "rev-parse", "HEAD"],
-        ["git", "diff", "HEAD", "--binary"],
-        ["xcodebuild", "-version"],
-    ):
-        fingerprint.update(subprocess.check_output(command, cwd=cocoa_source))
-    fingerprint.update((project_root / "modules/sentry-cocoa.SConscript").read_bytes())
-    build_id = fingerprint.hexdigest()
-    stamp = cocoa_build_dir / ".build-id"
-    if stamp.exists() and stamp.read_text() == build_id and all(Path(str(node)).exists() for node in target):
-        print("Sentry Cocoa build is up to date.")
-        return 0
-
     if not shutil.which("xcbeautify"):
         print("ERROR: Cocoa builds require xcbeautify. Install it with brew install xcbeautify")
         return 1
 
-    remove_if_exists(cocoa_build_dir)
+    # Keep each SDK's DerivedData beside its archive until dsymutil has linked the extension.
     subprocess.run([
-        "bash", "scripts/build-xcframework-sentryobjc.sh",
-        "--variant", "dynamic", "--sdks", "macosx,iphoneos,iphonesimulator",
+        "bash", "scripts/build-xcframework-sentryobjc.sh", "--variant", "static",
+        "--sdks", sdk, "--output-dir", str(cocoa_build_dir),
     ], cwd=cocoa_source, check=True)
-    cocoa_build_dir.mkdir(parents=True, exist_ok=True)
-    shutil.move(str(cocoa_source / xcframework_path.name), xcframework_path)
-
-    # macOS compiles against SentryObjC headers while linking the deployed libSentry.dylib.
-    macos_headers.mkdir(parents=True)
-    framework = xcframework_path / "macos-arm64_x86_64/SentryObjC.framework"
-    for directory in ("Headers", "PrivateHeaders"):
-        for header in (framework / directory).glob("*.h"):
-            shutil.copy2(header, macos_headers)
-    if not all(Path(str(node)).exists() for node in target):
-        print("ERROR: Cocoa build is missing required framework slices or debug symbols.")
-        return 1
-    stamp.write_text(build_id)
-    return 0
+    remove_if_exists(headers)
+    shutil.copytree(cocoa_source / "Sources/SentryObjC/Public", headers)
 
 
-cocoa_build = env.Command(build_outputs, File("sentry-cocoa.SConscript"), build_cocoa)
-# The action checks its fingerprint so restored CI artifacts work without SCons' signature database.
-env.AlwaysBuild(cocoa_build)
+if not (cocoa_source / "Package.swift").is_file():
+    print("ERROR: Initialize Cocoa with git submodule update --init modules/sentry-cocoa")
+    Exit(1)
+
+revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=cocoa_source)
+changes = subprocess.check_output(["git", "diff", "HEAD", "--binary"], cwd=cocoa_source)
+xcode = subprocess.check_output(["xcodebuild", "-version"])
+cocoa_build = env.Command(
+    [File(archive), File(headers / "SentryObjC.h")],
+    [File("sentry-cocoa.SConscript"), Value(revision), Value(hashlib.sha256(changes).hexdigest()), Value(xcode)],
+    build_cocoa,
+)
 env.Precious(cocoa_build)
 env.NoCache(cocoa_build)
 env.Clean(cocoa_build, Dir(cocoa_build_dir))
 env.Alias("sentry_cocoa", cocoa_build)
 env["cocoa_build"] = cocoa_build
 
-
-platform = env["platform"]
-ios_simulator = env.get("ios_simulator", False)
-
-
-# Configuring Cocoa framework.
-if platform in ["macos", "ios"]:
-    project_root = Path(env.Dir("#").abspath)
-
-    env.Append(
-        LINKFLAGS=[
-            "-framework", "Foundation",
-        ],
-        # Enable ARC for Objective-C files
-        CCFLAGS=["-fobjc-arc"]
-    )
-
-    # Add Sentry Cocoa framework to compilation.
-
-    if platform == "macos":
-        framework_dir = xcframework_path / "macos-arm64_x86_64/SentryObjC.framework"
-        env.Append(
-            CPPPATH=str(macos_headers.parent),
-            LIBPATH=f"{project_root}/project/addons/sentry/bin/macos/",
-            LIBS=["Sentry"],
-            LINKFLAGS=[
-                # Load libSentry.dylib from same dir as GDExtension.
-                "-Wl,-rpath,@loader_path/"
-            ]
-        )
-    else:
-        if ios_simulator:
-            framework_dir = xcframework_path / "ios-arm64_x86_64-simulator/SentryObjC.framework"
-        else:
-            framework_dir = xcframework_path / "ios-arm64/SentryObjC.framework"
-
-        framework_container_dir = framework_dir.parent.absolute()
-
-        env.Append(
-            CPPFLAGS=["-F" + str(framework_container_dir)],
-            LINKFLAGS=[
-                "-framework", "SentryObjC",
-                "-F" + str(framework_container_dir),
-                # Allow extension to find framework in addons/sentry/ directory.
-                "-Wl,-rpath,@loader_path/..",
-            ]
-        )
-
-        print(f"Added {platform} Sentry dynamic framework: {framework_dir}")
+swiftc = Path(subprocess.check_output(["xcrun", "--find", "swiftc"], text=True).strip())
+env.Append(
+    CPPPATH=[str(headers.parent)],
+    CCFLAGS=["-fobjc-arc"],
+    LIBPATH=[str(swiftc.parent.parent / "lib/swift" / sdk), "/usr/lib/swift"],
+    LIBS=["z", "c++"],
+    FRAMEWORKS=["Foundation", "CoreData", "CoreGraphics", "QuartzCore"],
+    LINKFLAGS=["-Xlinker", "-force_load", "-Xlinker", str(archive), "-Wl,-rpath,/usr/lib/swift"],
+)
+for framework in ("SystemConfiguration", "AVFoundation", "CoreMedia", "CoreVideo", "MetricKit",
+                  "PDFKit", "SwiftUI", "WebKit", "AppKit" if platform == "macos" else "UIKit"):
+    env.Append(LINKFLAGS=["-weak_framework", framework])
 
 
 # *** Export pseudo-builders to create xcframeworks
@@ -237,169 +178,5 @@ def CreateXCFrameworkFromLibs(self, framework_path, libraries):
     return xcframework
 
 
-def CreateXCFrameworkFromSlices(self, target_path, slice_dirs):
-    """Create an xcframework from selected framework slices."""
-    target_path = str(target_path)
-
-    def create_framework_from_slices_action(target, source, env):
-        # Check if all expected slice directories exist at build time
-        missing_slices = [slice_dir for slice_dir in slice_dirs if not Path(slice_dir).exists()]
-
-        if missing_slices:
-            print("ERROR: Missing framework slices:")
-            for slice_dir in missing_slices:
-                print(f"  {slice_dir}")
-            return 1
-
-        print(f"Creating xcframework from {len(slice_dirs)} framework slices...")
-
-        remove_if_exists(target_path)
-
-        # Run xcodebuild command
-        cmd = ["xcodebuild", "-create-xcframework"]
-        for slice_dir in slice_dirs:
-            # Each slice directory should contain a .framework
-            slice_path = Path(slice_dir)
-            framework_path = None
-            if slice_path.is_dir():
-                for item in slice_path.iterdir():
-                    if item.name.endswith('.framework'):
-                        framework_path = item
-                        break
-
-            if not framework_path or not framework_path.exists():
-                print(f"ERROR: No .framework found in slice directory: {slice_dir}")
-                return 1
-
-            cmd.extend(["-framework", str(framework_path)])
-
-        cmd.extend(["-output", target_path])
-
-        print(f"Running: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
-
-        if result.returncode != 0:
-            print("ERROR: Failed creating xcframework from slices:")
-            print(result.stdout)
-            print(result.stderr)
-            return 1
-
-        # The prebuilt addon needs neither headers nor module maps at runtime.
-        for framework in Path(target_path).glob("*/*.framework"):
-            for directory in ("Headers", "PrivateHeaders", "Modules"):
-                remove_if_exists(framework / directory)
-
-        print(f"Successfully created xcframework: {target_path}")
-        return 0
-
-    xcframework = env.Command(
-        Dir(target_path),
-        slice_dirs,
-        create_framework_from_slices_action
-    )
-    env.AlwaysBuild(xcframework)
-    Clean(xcframework, Dir(target_path))
-
-    return xcframework
-
-
-def DeploySentryCocoa(self, target_dir):
-    """Deploy Sentry Cocoa framework to target directory."""
-
-    platform = env["platform"]
-    project_root = Path(env.Dir("#").abspath)
-    source_xcframework = xcframework_path
-    target_dir_path = Path(str(target_dir))
-
-    commands = []
-
-    def copy_debug_symbols(target, source):
-        copied = env.Copy(target, source)
-        env.AddPreAction(copied, Delete("$TARGET"))
-        return copied
-
-    if platform == "ios":
-        slice_dirs = [
-            source_xcframework / "ios-arm64",
-            source_xcframework / "ios-arm64_x86_64-simulator"
-        ]
-        target_framework = target_dir_path / "Sentry.xcframework"
-
-        commands.append(
-            env.CreateXCFrameworkFromSlices(
-                target_path=target_framework,
-                slice_dirs=slice_dirs
-            )
-        )
-        Clean(commands, Dir(target_framework))
-
-        # Debug symbols
-        commands.append(
-            copy_debug_symbols(
-                Dir(target_dir_path / "dSYMs" / "SentryObjC-ios-arm64.framework.dSYM"),
-                Dir(source_xcframework / "ios-arm64" / "dSYMs" / "SentryObjC.framework.dSYM"),
-            )
-        )
-
-        commands.append(
-            copy_debug_symbols(
-                Dir(target_dir_path / "dSYMs" / "SentryObjC-ios-arm64_x86_64-simulator.framework.dSYM"),
-                Dir(source_xcframework / "ios-arm64_x86_64-simulator" / "dSYMs" / "SentryObjC.framework.dSYM")
-            )
-        )
-
-    elif platform == "macos":
-        source_framework = source_xcframework / "macos-arm64_x86_64/SentryObjC.framework"
-
-        def patch_install_name_action(target, source, env):
-            """Patch install name after copy"""
-            lib_path_str = str(target[0])
-            print(f"  Patching install name for binary: {lib_name}")
-            try:
-                new_rpath = "@rpath/libSentry.dylib"
-                cmd = ["install_name_tool", "-id", new_rpath, lib_path_str]
-                subprocess.run(cmd, capture_output=True, text=True, check=True)
-                print(f"  Successfully updated install name to: {new_rpath}")
-            except subprocess.CalledProcessError as e:
-                print(f"  WARNING: Failed to update install name: {e}")
-                print(f"  stdout: {e.stdout}")
-                print(f"  stderr: {e.stderr}")
-                return 1
-            return 0
-
-        # Copy the framework binary as dylib, and patch install name.
-        lib_name = "libSentry.dylib"
-        lib_path = target_dir_path / lib_name
-        commands.append(
-            env.Command(
-                File(lib_path),
-                File(source_framework / "Versions/A/SentryObjC"),
-                [
-                    Copy("$TARGET", "$SOURCE"),
-                    patch_install_name_action
-                ]
-            )
-        )
-
-        # Debug symbols
-        commands.append(
-            copy_debug_symbols(
-                Dir(target_dir_path / "dSYMs" / "libSentry.dylib.dSYM"),
-                Dir(source_xcframework / "macos-arm64_x86_64" / "dSYMs" / "SentryObjC.framework.dSYM")
-            )
-        )
-
-    else:
-        print("ERROR: Unexpected platform: ", platform)
-        Exit(1)
-
-    env.Depends(commands, cocoa_build)
-    return commands
-
-
-# Export pseudo-builders
 env.AddMethod(CreateXCFrameworkFromLibs, "CreateXCFrameworkFromLibs")
-env.AddMethod(CreateXCFrameworkFromSlices, "CreateXCFrameworkFromSlices")
-env.AddMethod(DeploySentryCocoa, "DeploySentryCocoa")
-
 Return("env")

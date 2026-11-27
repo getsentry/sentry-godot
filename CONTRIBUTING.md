@@ -80,11 +80,13 @@ scons target=editor debug_symbols=yes platform=android build_android_lib=yes
 ### Apple platforms
 
 macOS and iOS builds require Xcode and `xcbeautify` (`brew install xcbeautify`).
-SCons builds Sentry Cocoa from the `modules/sentry-cocoa` submodule, then deploys
-its libraries and debug symbols into `project/addons/sentry/bin/`. No separate
-Cocoa build command is required. The first build produces the macOS, iOS device,
-and iOS simulator slices; subsequent builds reuse them until the Cocoa source,
-build script, or Xcode version changes.
+SCons builds Sentry Cocoa from the `modules/sentry-cocoa` submodule, and links it statically into
+the GDExtension libraries in `project/addons/sentry/bin/`. No separate
+Cocoa build command is required. Each build selects the matching macOS, iOS device, or
+iOS simulator slice. Local builds reuse that slice until the Cocoa source,
+build script, or Xcode version changes. Both editor and release builds link the
+optimized Cocoa archive with debug information so the extension dSYM can resolve
+Cocoa frames to source lines.
 
 To build only the Cocoa dependency:
 

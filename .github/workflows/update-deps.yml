@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: getsentry/github-workflows/updater@36529d71129a14967bea1fb81bcaf2a5943cf877 # v3.5.0
         with:
-          path: modules/sentry-cocoa.properties
+          path: modules/sentry-cocoa
           name: Cocoa SDK
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
