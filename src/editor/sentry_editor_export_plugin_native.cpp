@@ -130,9 +130,8 @@ void SentryEditorExportPluginNative::_export_file(const String &p_path, const St
 	const String arch = get_option("binary_format/architecture");
 	const CrashBackend backend = _resolve_crash_backend();
 	const String source_dir = vformat("res://addons/sentry/bin/%s/%s/%s", platform, arch, backend == CrashBackend::NATIVE ? "native" : "crashpad");
-	const String extension = vformat("libsentry.%s.%s.%s.%s",
+	const String extension = vformat("libsentry.%s.%s.%s",
 			platform,
-			p_features.has("debug") ? "debug" : "release",
 			arch,
 			is_windows ? "dll" : "so");
 	const auto dependencies = is_windows

@@ -63,10 +63,7 @@ jobs:
         run: |
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            project/addons/sentry/bin/macos/libsentry.macos.debug.dylib
-          rcodesign sign --for-notarization \
-            --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
-            project/addons/sentry/bin/macos/libsentry.macos.release.dylib
+            project/addons/sentry/bin/macos/libsentry.macos.dylib
           rcodesign sign --for-notarization \
             --p12-file ${{ env.APPLE_CERT_PATH }} --p12-password ${{ secrets.APPLE_CERT_PASSWORD }} \
             project/addons/sentry/bin/macos/libSentry.dylib
@@ -76,7 +73,7 @@ jobs:
         run: |
           cd project/addons/sentry/bin/macos/
 
-          zip -r sentry-godot-dylibs.zip libsentry.macos.debug.dylib libsentry.macos.release.dylib libSentry.dylib
+          zip -r sentry-godot-dylibs.zip libsentry.macos.dylib libSentry.dylib
           rcodesign notary-submit --wait \
             --api-key-file ${{ env.APPLE_API_KEY_PATH }} \
             sentry-godot-dylibs.zip

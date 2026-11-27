@@ -34,7 +34,7 @@ if [[ -z "$expected_min_version" ]]; then
     die "Error: Could not find MACOS_MIN_VERSION in $scons_file"
 fi
 
-extension_binaries=("$bin_dir"/libsentry.macos.*.dylib)
+extension_binaries=("$bin_dir"/libsentry.macos.dylib)
 if [[ ${#extension_binaries[@]} -eq 0 ]]; then
     die "Error: No macOS GDExtension binaries found in $bin_dir"
 fi
