@@ -6,7 +6,7 @@
 #ifdef IOS_ENABLED
 #import <UIKit/UIKit.h>
 #endif
-#import <SentryObjC/SentryObjC.h>
+#import <SentryObjC.h>
 
 #else // C++ context
 

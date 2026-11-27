@@ -72,6 +72,7 @@ for key in custom_options.keys():
 
 print("Reading godot-cpp build configuration...")
 env = SConscript("modules/godot-cpp/SConstruct", {"api_version": COMPATIBILITY_MINIMUM})
+godot_cpp = env["LIBS"][-1]
 
 platform = env["platform"]
 arch = env["arch"]
@@ -188,14 +189,12 @@ if internal_sdk == SDK.NATIVE:
         Default(env.SeparateDebugSymbols(File(symbols_path), File(handler_path)))
 
 
-# *** Utilize sentry-cocoa.
+# *** Build sentry-cocoa.
 
 if internal_sdk == SDK.COCOA:
     env = SConscript("modules/sentry-cocoa.SConscript", exports=["env"])
-
-    # Deploy Sentry Cocoa dependency to project directory.
-    deploy_cocoa = env.DeploySentryCocoa(out_dir)
-    Default(deploy_cocoa)
+    if env["build_library"]:
+        Requires(env["sentry_cocoa"], godot_cpp)
 
 
 # *** Build GDExtension library.
@@ -281,7 +280,8 @@ if platform == "ios":
     lib_path = f"{temp_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
-    Depends(library, deploy_cocoa)
+    Requires(library[0].sources, env["sentry_cocoa"])
+    Depends(library, env["sentry_cocoa"])
     Default(library)
 
     # Generate XCFramework for iOS GDExtension libs if requested
@@ -306,7 +306,8 @@ elif platform == "macos":
     lib_path = f"{out_dir}/{lib_name}"
 
     library = env.SharedLibrary(lib_path, source=sources)
-    Depends(library, deploy_cocoa)
+    Requires(library[0].sources, env["sentry_cocoa"])
+    Depends(library, env["sentry_cocoa"])
     Default(library)
 
 else:

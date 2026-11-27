@@ -178,6 +178,10 @@ jobs:
           export-platform: ${{ matrix.export-platform }}
           dotnet: ${{ matrix.dotnet || 'false' }}
 
+      - name: Verify Cocoa source lines in Apple dSYMs
+        if: matrix.test-platform == 'macOS' && !matrix.dotnet
+        run: ./scripts/verify-cocoa-dsyms.sh
+
       - name: "Dotnet: Build project"
         if: matrix.dotnet
         shell: bash
