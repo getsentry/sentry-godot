@@ -36,19 +36,13 @@ brew install scons
 
 1. Clone this repository
 2. Restore submodules: `git submodule update --init --recursive`
-3. Build GDExtension libraries:
+3. Build the GDExtension library and companion binaries for the current platform:
     ```bash
-    # build *editor* library for the current platform
-    # run from the repository root dir
-    scons target=editor debug_symbols=yes
+    scons debug_symbols=yes
     ```
-    The build process should produce a GDExtension library file for the ***editor target*** at `project/addons/sentry/bin/...`.
+    The build places its artifacts in `project/addons/sentry/bin/`.
+    The editor and exported games use the same GDExtension library.
 
-    To export a project in Godot that uses this extension, you'll also need the libraries for the export templates:
-    ```bash
-    # build *export* library for the current platform
-    scons target=template_release debug_symbols=yes
-    ```
 4. Open demo project in Godot Engine:
     ```bash
     # open demo project in Godot
@@ -68,13 +62,13 @@ Building Android targets requires Android Studio. Additionally, you need to asse
 To build Android targets:
 
 ```bash
-scons target=editor debug_symbols=yes platform=android
+scons debug_symbols=yes platform=android
 ```
 
 You can perform both steps by adding `build_android_lib=yes` option to scons command:
 
 ```bash
-scons target=editor debug_symbols=yes platform=android build_android_lib=yes
+scons debug_symbols=yes platform=android build_android_lib=yes
 ```
 
 ### iOS
@@ -82,8 +76,8 @@ scons target=editor debug_symbols=yes platform=android build_android_lib=yes
 Building for iOS requires making separate builds for device and simulator architectures, then combining them into an XCFramework using the `generate_ios_framework=yes` option:
 
 ```bash
-scons platform=ios target=editor arch=arm64 ios_simulator=no
-scons platform=ios target=editor arch=universal ios_simulator=yes generate_ios_framework=yes
+scons platform=ios arch=arm64 ios_simulator=no
+scons platform=ios arch=universal ios_simulator=yes generate_ios_framework=yes
 ```
 
 ### Web
@@ -215,7 +209,7 @@ If you add or modify the public API, regenerate these files first, then fill in 
 scripts/update-doc-classes.ps1
 ```
 
-**Compile the library** with `target=editor` for your platform beforehand, or your changes will not be detected. Run the script again once you are done writing, as it corrects some style issues automatically.
+**Compile the library** for your platform beforehand, or your changes will not be detected. Run the script again once you are done writing, as it corrects some style issues automatically.
 
 
 
@@ -320,8 +314,8 @@ The generated godot-cpp bindings are specific to one architecture and are not re
 
 1. Build the web library and the JavaScript bundle. The "Web Tests" preset exports in debug mode with thread support, so build the debug, threaded variant:
     ```bash
-    scons platform=web target=editor arch=wasm32 threads=yes generate_js_bundle=yes --clean
-    scons platform=web target=editor arch=wasm32 threads=yes generate_js_bundle=yes
+    scons platform=web target=template_release arch=wasm32 threads=yes generate_js_bundle=yes --clean
+    scons platform=web target=template_release arch=wasm32 threads=yes generate_js_bundle=yes
     ```
 2. Build the editor library for your own platform:
     ```bash

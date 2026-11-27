@@ -54,11 +54,11 @@ add_custom_bool_option("generate_ios_framework", "Generate iOS xcframework from 
 add_custom_bool_option("build_android_lib", "Build Android bridge library", False)
 add_custom_bool_option("separate_debug_symbols", "Separate debug symbols (supported on macOS, iOS, Linux, Android, Web)", True)
 add_custom_bool_option("generate_js_bundle", "Generate JavaScript bundle", False)
+add_custom_bool_option("tools", "Include editor plugins and class documentation", ARGUMENTS.get("platform") != "web" or ARGUMENTS.get("target") == "editor")
 add_custom_bool_option("tests", "Build C++ unit tests into the GDExtension", False)
 
 # Set project defaults for godot-cpp options.
-default_target = "template_release" if ARGUMENTS.get("platform") == "web" else "editor"
-ARGUMENTS.setdefault("target", default_target)
+ARGUMENTS.setdefault("target", "template_release")
 ARGUMENTS.setdefault("ios_min_version", IOS_MIN_VERSION)
 ARGUMENTS.setdefault("macos_deployment_target", MACOS_MIN_VERSION)
 
@@ -202,12 +202,19 @@ if internal_sdk == SDK.COCOA:
 
 # *** Build GDExtension library.
 
+env = env.Clone()
+if env["tools"]:
+    env.AppendUnique(CPPDEFINES=["TOOLS_ENABLED"])
+elif "TOOLS_ENABLED" in env["CPPDEFINES"]:
+    env["CPPDEFINES"].remove("TOOLS_ENABLED")
+
 # Include relative to project source root.
 env.Append(CPPPATH=["src/"])
 
 # Source files to compile.
 sources = Glob("src/*.cpp")
-sources += Glob("src/editor/*.cpp")
+if env["tools"]:
+    sources += Glob("src/editor/*.cpp")
 sources += Glob("src/sentry/*.cpp")
 sources += Glob("src/sentry/engine_lifecycle/*.cpp")
 sources += Glob("src/sentry/integrations/*.cpp")
@@ -259,7 +266,7 @@ if env["tests"]:
     sources += Glob("tests/cpp/tests/*.cpp")
 
 # Generate documentation data.
-if env["target"] in ["editor", "template_debug"]:
+if env["tools"]:
     try:
         doc_data = env.GodotCPPDocData(
             "src/gen/doc_data.gen.cpp", source=Glob("doc_classes/*.xml"))
