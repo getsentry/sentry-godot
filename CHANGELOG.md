@@ -37,9 +37,9 @@
   - **Breaking:** `Scope.Release` and `Scope.Distribution` are removed. Set `Release` and `Distribution` on the options passed to `SentrySdk.Init()` instead.
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#701)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.13.0...7.0.1)
-- Bump Sentry JavaScript from v11.13.0 to v11.19.0 ([#1108](https://github.com/getsentry/sentry-godot/pull/1108), [#1117](https://github.com/getsentry/sentry-godot/pull/1117), [#1120](https://github.com/getsentry/sentry-godot/pull/1120), [#1122](https://github.com/getsentry/sentry-godot/pull/1122), [#1131](https://github.com/getsentry/sentry-godot/pull/1131), [#1136](https://github.com/getsentry/sentry-godot/pull/1136))
-  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#11190)
-  - [diff](https://github.com/getsentry/sentry-javascript/compare/11.13.0...11.19.0)
+- Bump Sentry JavaScript from v11.13.0 to v11.20.0 ([#1108](https://github.com/getsentry/sentry-godot/pull/1108), [#1117](https://github.com/getsentry/sentry-godot/pull/1117), [#1120](https://github.com/getsentry/sentry-godot/pull/1120), [#1122](https://github.com/getsentry/sentry-godot/pull/1122), [#1131](https://github.com/getsentry/sentry-godot/pull/1131), [#1136](https://github.com/getsentry/sentry-godot/pull/1136), [#1139](https://github.com/getsentry/sentry-godot/pull/1139))
+  - [changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md#11200)
+  - [diff](https://github.com/getsentry/sentry-javascript/compare/11.13.0...11.20.0)
 - Bump Sentry Android from v8.64.0 to v8.66.0 ([#1109](https://github.com/getsentry/sentry-godot/pull/1109), [#1123](https://github.com/getsentry/sentry-godot/pull/1123), [#1134](https://github.com/getsentry/sentry-godot/pull/1134))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8660)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.64.0...8.66.0)
